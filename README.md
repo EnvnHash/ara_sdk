@@ -24,7 +24,7 @@ Audio
 
 
 Communication
-=============
+-------------
 - SerialPort/USB via Boost
 - OpenSoundControl (full SceneNode Parameter-Abstraction for OSC with Median-Filtering)
 - TCP/UDP client via Boost (Boost Licenses, commercial use posible)
@@ -32,7 +32,7 @@ Communication
 
 
 Import
-======
+------
 - 2D Image Import with Freeimage (GPL v2 and v3)
 - 3D Model Import with Assimp (all popular formats, BSD 3-clause license)
 - Fonts via FreeType
@@ -40,7 +40,7 @@ Import
 
 
 Maths
-=====
+-----
 - 2D and 3D Splines
 - 2D and 3D Path Interpolator
 - Function-based Value Interpolation with Callback Functions
@@ -52,7 +52,7 @@ Maths
 
 
 Shaders/Image Processing
-========================
+------------------------
 - 2D GPU Fluid Simulation (with 2D-FBOs)
 - 3D GPU Fluid Simulation (with Multilayer 2D-FBOs)
 - BumpMaps
@@ -73,11 +73,11 @@ Shaders/Image Processing
 - RayCasting
 - SphereHarmonics
 - Various audio-based Vertex-Shaders
-- ...
+
 
 
 OpenGL C++ Wrappers
-===================
+-------------------
 - FrameBufferObjects (all formats, colors and depths - also PingPongFBOs)
 - Material and Light-Definitions (basic)
 - ShaderAssembler (String-based GLSL Abstration)
@@ -92,7 +92,7 @@ OpenGL C++ Wrappers
 
 
 OpenGL Utilities
-================
+----------------
 - Camera Abstraction (Model-View-Projection, Perspective, Ortographic, Frustum)
 - CameraSets (GeometryShader-based Camera-Array rendering)
 - Geometry Primitives (Circles, Lines, Cubes, segmentated Cubes, Disks, Lines, Quad, segmentated Quads, Spheres, Toruses)
@@ -113,7 +113,7 @@ OpenGL Utilities
 
 
 MotionCapturing/Tracking
-========================
+------------------------
 - 6 DOF Correction and Mapping of PointClouds
 - ActivityRange-Tracking for (realtime)-VideoInputs, with ModelMatrix-Generation
 - Background Substraction via DepthMap-Thresholds
@@ -136,7 +136,7 @@ MotionCapturing/Tracking
 
 
 SceneGraph
-==========
+----------
 - Full hierarchical Node-Trees with Modelmatrix inheritance
 - Full XML-abstraction (Definition of Node-Trees and Parameters)
 - SceneNodes (init, draw, update)
@@ -148,13 +148,13 @@ SceneGraph
 
 
 Typography
-==========
+----------
 - Vector-based Typography with NvPr, single-line and multiline texts, utf8 with formating
 - Texture-based Typography with Freetype (GPLv2 and v3), single-line texts, utf8, basic formating
 
 
 Video
-=====
+-----
 - Cuvid Video Textures, GPU based decodification (MPEG1,2,4)
 - FFmpeg based MediaRecorder (GPU-CPU Download, threaded, almost all formats)
 - Video4Linux Textures (threaded, camera control, etc.)
