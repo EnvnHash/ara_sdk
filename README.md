@@ -15,7 +15,7 @@ Features
 
 
 Audio
-=====
+-----
 - AudioTextures
 - FFTs (general and abstract, though also for images)
 - Multichannel FFTs
