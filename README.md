@@ -1,7 +1,7 @@
 #    Timeart Visualizer OpenGL 3.2+ framework (tav)
 
 
-written in C++ / OpenGL
+written in C++ / OpenGL, cross platform (since OsX only supports up to OpenGL 4.1 there are some restrictions on OsX).
 
 Building
 ========
