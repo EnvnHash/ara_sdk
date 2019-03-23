@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="cdt.managedbuild.config.gnu.exe.debug.1308067662">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.exe.debug.1308067662" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.exe.debug.1308067662" name="Debug" parent="cdt.managedbuild.config.gnu.exe.debug">
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.debug.1308067662." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.debug.833824172" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.debug">
+							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.debug.1649094739" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.debug"/>
+							<builder buildPath="${workspace_loc:/tav_app}/Debug" id="cdt.managedbuild.target.gnu.builder.exe.debug.1430537234" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.target.gnu.builder.exe.debug"/>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1321419849" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.617525907" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug">
+								<option id="gnu.cpp.compiler.exe.debug.option.optimization.level.322734527" name="Optimization Level" superClass="gnu.cpp.compiler.exe.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.exe.debug.option.debugging.level.424203127" name="Debug Level" superClass="gnu.cpp.compiler.exe.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.other.pic.522502418" name="Position Independent Code (-fPIC)" superClass="gnu.cpp.compiler.option.other.pic" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="gnu.cpp.compiler.option.dialect.std.1206070564" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.c++11" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.paths.1265994456" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_video/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_audio/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_audio/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_tracking/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_video/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_complex/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_app/src}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/libxml++-2.6/"/>
+									<listOptionValue builtIn="false" value="/usr/include/glibmm-2.4/"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/glibmm-2.4/include/"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/glib-2.0/include/"/>
+									<listOptionValue builtIn="false" value="/usr/include/glib-2.0/"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/libxml++-2.6/include/"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/OpenNI2"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/Nite2"/>
+									<listOptionValue builtIn="false" value="/usr/include/freetype2"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/harfbuzz"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_testing/src}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/libxml2/"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1289718252" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1050333322" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.debug">
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.exe.debug.option.optimization.level.663645711" name="Optimization Level" superClass="gnu.c.compiler.exe.debug.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.exe.debug.option.debugging.level.288031478" name="Debug Level" superClass="gnu.c.compiler.exe.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1050112088" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.debug.205982947" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.debug"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug.1899883875" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.debug">
+								<option id="gnu.cpp.link.option.libs.1075119921" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="GL"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="GLEW"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="NiTE2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="OpenNI2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="harfbuzz"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_audio"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_tracking"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_audio"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_complex"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_testing"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_video"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_video"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="glfw"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="freetype"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="freeimage"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="ucdn"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_system"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_timer"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_filesystem"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_thread"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_regex"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="lo"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="glib-2.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="glibmm-2.4"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="xml++-2.6"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="xml2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="avcodec"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="avformat"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="swscale"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="avutil"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="dlib"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="cblas"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="openblas"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_highgui"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgcodecs"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_cudaobjdetect"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_cudaoptflow"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_tracking"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":NvFlexExtRelease_x64.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":NvFlexReleaseCUDA_x64.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":NvFlexDeviceRelease_x64.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="dl"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="cuda"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="cudart"/>
+								</option>
+								<option id="gnu.cpp.link.option.paths.1794139158" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_audio/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_video/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_testing/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_tracking/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/Nite2"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/OpenNI2"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/"/>
+									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_audio/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_complex/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_video/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="/opt/OpenBLAS/lib"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.866105624" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.debug.1278661349" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.debug">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1336262246" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="cdt.managedbuild.config.gnu.exe.release.462044827">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.exe.release.462044827" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.exe.release.462044827" name="Release" parent="cdt.managedbuild.config.gnu.exe.release">
+					<folderInfo id="cdt.managedbuild.config.gnu.exe.release.462044827." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.814532568" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
+							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.release.1474166754" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.release"/>
+							<builder buildPath="${workspace_loc:/tav_app}/Release" id="cdt.managedbuild.target.gnu.builder.exe.release.105600774" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.exe.release"/>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.114420706" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.734975492" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.exe.release">
+								<option id="gnu.cpp.compiler.exe.release.option.optimization.level.2042877333" name="Optimization Level" superClass="gnu.cpp.compiler.exe.release.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.exe.release.option.debugging.level.1872904947" name="Debug Level" superClass="gnu.cpp.compiler.exe.release.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.paths.581838083" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_video/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking/src}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_tracking/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_video/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_audio}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/include/libxml++-2.6/"/>
+									<listOptionValue builtIn="false" value="/usr/include/glibmm-2.4/"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/glibmm-2.4/include/"/>
+									<listOptionValue builtIn="false" value="/usr/include/glib-2.0/"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/glib-2.0/include/"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/libxml++-2.6/include/"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/OpenNI2"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/Nite2"/>
+									<listOptionValue builtIn="false" value="/usr/include/freetype2"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_app/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_complex/src}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/harfbuzz"/>
+									<listOptionValue builtIn="false" value="/tav_sn_testing/src"/>
+									<listOptionValue builtIn="false" value="/usr/include/libxml2/"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.207460205" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.exe.release.407633735" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.exe.release">
+								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.exe.release.option.optimization.level.90626230" name="Optimization Level" superClass="gnu.c.compiler.exe.release.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.exe.release.option.debugging.level.544731774" name="Debug Level" superClass="gnu.c.compiler.exe.release.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.244387311" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.1349397052" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.exe.release.1927378092" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.exe.release">
+								<option id="gnu.cpp.link.option.libs.1415586820" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="GL"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="GLEW"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="GLFW"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="NiTE2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="OpenNI2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="FreeImage2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="harfbuzz"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_tracking"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_audio"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_video"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="freetype"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="udcn"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_system"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="lo"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="glib2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="glibmm-2.4"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="libxml++-2.6"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="xml2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_timer"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="avcodec"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="avformat"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="swscale"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="avutil"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_thread"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_testing"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_audio"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_complex"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_video"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="dlib"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_regex"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_highgui"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgcodec"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="boost_filesystem"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="cblas"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="openblas"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_cudaobjdetect"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_cudaoptflow"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="tav_sn_tracking"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":NvFlexDebugCUDA_x64"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":NvFlexExtRelease_x64.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="NvFlexDeviceRelease_x64.a"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="dl"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="cuda"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="cudart"/>
+								</option>
+								<option id="gnu.cpp.link.option.paths.1508707546" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="/usr/local/lib"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_audio/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="/tav_core/Release"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/Nite2"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/OpenNI2"/>
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu/"/>
+									<listOptionValue builtIn="false" value="/usr/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_tracking/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_testing/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_audio/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_complex/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_sn_video/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="/opt/OpenBLAS/lib"/>
+									<listOptionValue builtIn="false" value="../cudart"/>
+									<listOptionValue builtIn="false" value="../opencv_cudaoptflow"/>
+									<listOptionValue builtIn="false" value="../opencv_cudaimgproc"/>
+									<listOptionValue builtIn="false" value="../opencv_cudaobjdetect"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.237872819" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.exe.release.249647519" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.exe.release">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.610455191" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="tav_app.cdt.managedbuild.target.gnu.exe.1310276786" name="Executable" projectType="cdt.managedbuild.target.gnu.exe"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1308067662;cdt.managedbuild.config.gnu.exe.debug.1308067662.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.617525907;cdt.managedbuild.tool.gnu.cpp.compiler.input.1289718252">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.462044827;cdt.managedbuild.config.gnu.exe.release.462044827.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.407633735;cdt.managedbuild.tool.gnu.c.compiler.input.244387311">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.1308067662;cdt.managedbuild.config.gnu.exe.debug.1308067662.;cdt.managedbuild.tool.gnu.c.compiler.exe.debug.1050333322;cdt.managedbuild.tool.gnu.c.compiler.input.1050112088">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.462044827;cdt.managedbuild.config.gnu.exe.release.462044827.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.734975492;cdt.managedbuild.tool.gnu.cpp.compiler.input.207460205">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/tav_app"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/tav_app"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+</cproject>

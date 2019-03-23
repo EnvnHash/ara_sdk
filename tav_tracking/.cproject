@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="cdt.managedbuild.config.gnu.so.debug.599083161">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.so.debug.599083161" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+				<externalSettings>
+					<externalSetting>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/tav_tracking_lib"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/tav_tracking_lib/Debug"/>
+						<entry flags="RESOLVED" kind="libraryFile" name="tav_tracking_lib" srcPrefixMapping="" srcRootPath=""/>
+					</externalSetting>
+				</externalSettings>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="so" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.sharedLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.sharedLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.so.debug.599083161" name="Debug" parent="cdt.managedbuild.config.gnu.so.debug">
+					<folderInfo id="cdt.managedbuild.config.gnu.so.debug.599083161." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.so.debug.1610625044" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.so.debug">
+							<targetPlatform id="cdt.managedbuild.target.gnu.platform.so.debug.178761443" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.so.debug"/>
+							<builder buildPath="${workspace_loc:/tav_tracking_lib}/Debug" id="cdt.managedbuild.target.gnu.builder.so.debug.1536135257" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="unlimited" superClass="cdt.managedbuild.target.gnu.builder.so.debug"/>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.616192767" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.so.debug.998905246" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.so.debug">
+								<option id="gnu.cpp.compiler.so.debug.option.optimization.level.726822544" name="Optimization Level" superClass="gnu.cpp.compiler.so.debug.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.so.debug.option.debugging.level.109974103" name="Debug Level" superClass="gnu.cpp.compiler.so.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.dialect.std.27007386" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.other.pic.530798067" name="Position Independent Code (-fPIC)" superClass="gnu.cpp.compiler.option.other.pic" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="gnu.cpp.compiler.option.other.other.1267475002" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -std=c++11" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.include.paths.912706425" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="/usr/local/include/OpenNI2"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/KinectInput}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/StereoMatching}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/NiTE}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/OpenCvUtils}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/headers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GeoPrimitives}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/XnLib"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/NiTE"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/OpenNI"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/XnLib"/>
+									<listOptionValue builtIn="false" value="/usr/include/freetype2/"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/Nite2"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GLUtils}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GLUtils/GLSL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/Communication}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/Communication/OSC}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GUI}&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1346852843" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_GLIBCXX_USE_CXX11_ABI=0"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.866943269" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.compiler.so.debug.556561370" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.so.debug">
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.so.debug.option.optimization.level.1705060961" name="Optimization Level" superClass="gnu.c.compiler.so.debug.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.so.debug.option.debugging.level.1780452945" name="Debug Level" superClass="gnu.c.compiler.so.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.dialect.std.33733621" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.c11" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.include.paths.1213985109" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="/usr/local/include/OpenNI2"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/KinectInput}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/StereoMatching}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/NiTE}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/OpenCvUtils}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GeoPrimitives}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/headers}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/XnLib"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/NiTE"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/OpenNI"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/XnLib"/>
+									<listOptionValue builtIn="false" value="/usr/include/freetype2/"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/Nite2"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GLUtils}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GLUtils/GLSL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/Communication}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/Communication/OSC}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GUI}&quot;"/>
+								</option>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.131785958" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_GLIBCXX_USE_CXX11_ABI=0"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1374018434" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.so.debug.452222420" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.so.debug">
+								<option defaultValue="true" id="gnu.c.link.so.debug.option.shared.2035793293" name="Shared (-shared)" superClass="gnu.c.link.so.debug.option.shared" valueType="boolean"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.so.debug.2002041347" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.so.debug">
+								<option defaultValue="true" id="gnu.cpp.link.so.debug.option.shared.1279008490" name="Shared (-shared)" superClass="gnu.cpp.link.so.debug.option.shared" valueType="boolean"/>
+								<option id="gnu.cpp.link.option.libs.1839297224" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="NiTE2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="XnLib"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="OpenNI2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_calib3d"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgcodecs"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgproc"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_video"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_highgui"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="freenect2"/>
+								</option>
+								<option id="gnu.cpp.link.option.paths.1271534081" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="/home/sven/local/lib"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/Nite2/"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/OpenNI2"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.847160627" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.so.debug.1515962830" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.so.debug">
+								<option id="gnu.both.asm.option.include.paths.422164071" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/KinectInput}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/StereoMatching}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/NiTE}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking_lib/OpenCvUtils}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/headers}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GeoPrimitives}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/OpenNI2"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/XnLib"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/NiTE"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/OpenNI"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/XnLib"/>
+									<listOptionValue builtIn="false" value="/usr/include/freetype2/"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/Nite2"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GLUtils}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GLUtils/GLSL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/Communication}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/Communication/OSC}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core_lib/GUI}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.654400494" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
+			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+		</cconfiguration>
+		<cconfiguration id="cdt.managedbuild.config.gnu.so.release.473620498">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.so.release.473620498" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings>
+					<externalSetting>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/tav_tracking_lib"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/Timeart Visualizer_tracking"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/tav_tracking"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/tav_tracking_lib/Release"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/Timeart Visualizer_tracking/Release"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/tav_tracking/Release"/>
+						<entry flags="RESOLVED" kind="libraryFile" name="tav_tracking_lib" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="RESOLVED" kind="libraryFile" name="Timeart Visualizer_tracking" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="RESOLVED" kind="libraryFile" name="tav_tracking" srcPrefixMapping="" srcRootPath=""/>
+					</externalSetting>
+				</externalSettings>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.GNU_ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactExtension="so" artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.sharedLib" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.sharedLib,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.so.release.473620498" name="Release" parent="cdt.managedbuild.config.gnu.so.release" postbuildStep="">
+					<folderInfo id="cdt.managedbuild.config.gnu.so.release.473620498." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.so.release.1019739911" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.so.release">
+							<targetPlatform id="cdt.managedbuild.target.gnu.platform.so.release.1682837830" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.so.release"/>
+							<builder buildPath="${workspace_loc:/tav_tracking_lib}/Release" command="make" enableAutoBuild="false" enabledIncrementalBuild="true" id="cdt.managedbuild.target.gnu.builder.so.release.1753624033" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.target.gnu.builder.so.release"/>
+							<tool id="cdt.managedbuild.tool.gnu.archiver.base.739109665" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
+							<tool command="g++" id="cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1929029945" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.so.release">
+								<option id="gnu.cpp.compiler.so.release.option.optimization.level.2014501862" name="Optimization Level" superClass="gnu.cpp.compiler.so.release.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.so.release.option.debugging.level.2053878003" name="Debug Level" superClass="gnu.cpp.compiler.so.release.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.paths.612864499" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="/usr/local/include/OpenNI2"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/Nite2"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/XnLib"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/include/XnLib"/>
+									<listOptionValue builtIn="false" value="/usr/include/freetype2/"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_core/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_tracking/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/tav_video/src}&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.dialect.std.317011709" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.c++11" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.other.pic.197389030" name="Position Independent Code (-fPIC)" superClass="gnu.cpp.compiler.option.other.pic" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.529777509" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false"/>
+								<option id="gnu.cpp.compiler.option.other.other.1364162784" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fPIC -Wno-reorder" valueType="string"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.259627545" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool command="gcc" id="cdt.managedbuild.tool.gnu.c.compiler.so.release.1445882629" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.so.release">
+								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.so.release.option.optimization.level.1997135459" name="Optimization Level" superClass="gnu.c.compiler.so.release.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.so.release.option.debugging.level.833768616" name="Debug Level" superClass="gnu.c.compiler.so.release.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.include.paths.1070363265" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false"/>
+								<option id="gnu.c.compiler.option.dialect.std.1894641153" name="Language standard" superClass="gnu.c.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.c.compiler.dialect.c11" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.misc.other.1449235064" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fPIC" valueType="string"/>
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1267534317" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1919697953" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.c.linker.so.release.1096766246" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.so.release">
+								<option defaultValue="true" id="gnu.c.link.so.release.option.shared.1106516142" name="Shared (-shared)" superClass="gnu.c.link.so.release.option.shared" valueType="boolean"/>
+							</tool>
+							<tool command="g++" id="cdt.managedbuild.tool.gnu.cpp.linker.so.release.55672583" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.so.release">
+								<option defaultValue="true" id="gnu.cpp.link.so.release.option.shared.933290670" name="Shared (-shared)" superClass="gnu.cpp.link.so.release.option.shared" useByScannerDiscovery="false" valueType="boolean"/>
+								<option id="gnu.cpp.link.option.paths.1631335547" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
+									<listOptionValue builtIn="false" value="/usr/local/lib"/>
+									<listOptionValue builtIn="false" value="/home/sven/local/lib"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/OpenNI2"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib/Nite2/"/>
+								</option>
+								<option id="gnu.cpp.link.option.libs.7114415" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="NiTE2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="XnLib"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="OpenNI2"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_calib3d"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgcodecs"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgproc"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_video"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_highgui"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="freenect2"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.665748240" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.assembler.so.release.918732815" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.so.release">
+								<option id="gnu.both.asm.option.include.paths.1168515346" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" useByScannerDiscovery="false"/>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.2065830105" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="src/KinectInput|src/NiTE|src/StereoMatching|build/|CMakeLists.txt" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/KinectInput"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/NiTE"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/StereoMatching"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="org.eclipse.cdt.core.language.mapping"/>
+			<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+			<storageModule moduleId="de.marw.cdt.cmake.core.settings">
+				<options/>
+			</storageModule>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="tav_tracking_lib.cdt.managedbuild.target.gnu.so.1421530610" name="Shared Library" projectType="cdt.managedbuild.target.gnu.so"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.so.release.473620498;cdt.managedbuild.config.gnu.so.release.473620498.;cdt.managedbuild.tool.gnu.cpp.compiler.so.release.1929029945;cdt.managedbuild.tool.gnu.cpp.compiler.input.259627545">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.so.release.473620498;cdt.managedbuild.config.gnu.so.release.473620498.;cdt.managedbuild.tool.gnu.c.compiler.so.release.1445882629;cdt.managedbuild.tool.gnu.c.compiler.input.1919697953">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.so.debug.599083161;cdt.managedbuild.config.gnu.so.debug.599083161.;cdt.managedbuild.tool.gnu.c.compiler.so.debug.556561370;cdt.managedbuild.tool.gnu.c.compiler.input.1374018434">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.so.debug.599083161;cdt.managedbuild.config.gnu.so.debug.599083161.;cdt.managedbuild.tool.gnu.cpp.compiler.so.debug.998905246;cdt.managedbuild.tool.gnu.cpp.compiler.input.866943269">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/tav_tracking_lib"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="FOLDER" workspacePath="/tav_tracking_lib/NiTE"/>
+			<resource resourceType="FOLDER" workspacePath="/tav_tracking_lib/OpenCvUtils"/>
+			<resource resourceType="FOLDER" workspacePath="/tav_tracking_lib/Freenect2"/>
+			<resource resourceType="FOLDER" workspacePath="/tav_tracking_lib/Release"/>
+			<resource resourceType="FOLDER" workspacePath="/tav_tracking_lib/Debug"/>
+			<resource resourceType="FOLDER" workspacePath="/tav_tracking_lib/KinectInput"/>
+			<resource resourceType="FOLDER" workspacePath="/tav_tracking_lib/StereoMatching"/>
+			<resource resourceType="PROJECT" workspacePath="/tav_tracking_lib"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+</cproject>

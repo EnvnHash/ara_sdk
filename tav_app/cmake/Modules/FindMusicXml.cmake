@@ -1,0 +1,25 @@
+# - Try to find libsndfile
+# Once done, this will define
+#
+#  MUSICXML_FOUND - system has libsndfile
+#  MUSICXML_INCLUDE_DIRS - the libsndfile include directories
+#  MUSICXML_LIBRARIES - link these to use libsndfile
+
+
+FIND_PATH(MUSICXML_INCLUDE_DIR "libmusicxml/xml.h")
+FIND_LIBRARY (MUSICXML_LIBRARY NAMES musicxml2)
+
+# handle the QUIETLY and REQUIRED arguments and set MUSICXML_FOUND to TRUE if 
+# all listed variables are TRUE
+INCLUDE (FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS (MUSICXML DEFAULT_MSG 
+  MUSICXML_LIBRARY 
+  MUSICXML_INCLUDE_DIR)
+
+IF(MUSICXML_FOUND)
+  SET (MUSICXML_LIBRARIES ${MUSICXML_LIBRARY})
+ELSE (MUSICXML_FOUND)
+  SET (MUSICXML_LIBRARIES)
+ENDIF (MUSICXML_FOUND)
+
+MARK_AS_ADVANCED (MUSICXML_INCLUDE_DIR MUSICXML_LIBRARY)

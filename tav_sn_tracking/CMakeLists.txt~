@@ -1,0 +1,95 @@
+cmake_minimum_required (VERSION 2.6)
+project (tav_sn_tracking)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_BUILD_TYPE Release)
+
+# use, i.e. don't skip the full RPATH for the build tree
+SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+
+# the RPATH to be used when installing
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+# don't add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+
+# The version number.
+set (Tutorial_VERSION_MAJOR 0)
+set (Tutorial_VERSION_MINOR 1)
+
+
+# add the binary tree to the search path for include files
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/kinect")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/particle")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/typo")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src/video")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../tav_audio/src")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../tav_core/src")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../tav_core/src/headers")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../tav_tracking/src")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../tav_video/src")
+
+file(GLOB tav_sn_tracking_SRC "src/*.cpp")
+
+add_library(tav_sn_tracking SHARED ${tav_sn_tracking_SRC}) 
+
+
+#find_package (assimp REQUIRED)
+#find_package (Boost 1.55 REQUIRED thread)
+find_package (Freetype REQUIRED)
+#find_package (dlib REQUIRED)
+#find_package (GLEW REQUIRED)
+#find_package (GLM REQUIRED)
+#find_package (HarfBuzz REQUIRED)
+#find_package (OpenGL REQUIRED)
+find_package (OpenNI2 REQUIRED)
+find_package (NITE2 REQUIRED)
+
+
+# Boost
+if (BOOST_FOUND)
+  include_directories(${BOOST_INCLUDE_DIRS})
+  target_link_libraries (tav_sn_tracking ${BOOST_LIBRARIES})
+endif (BOOST_FOUND)
+
+#if (DLIB_FOUND)
+#  include_directories(${DLIB_INCLUDE_DIRS})
+#  target_link_libraries (tav_sn_tracking ${DLIB_LIBRARIES})
+#endif (DLIB_FOUND)
+
+if (FREETYPE_FOUND)
+  include_directories(${FREETYPE_INCLUDE_DIRS})
+  target_link_libraries (tav_sn_tracking ${FREETYPE_LIBRARIES})
+endif (FREETYPE_FOUND)
+
+# NITE2
+if (NITE2_FOUND)
+	include_directories(${NITE2_INCLUDE_DIRS})
+	target_link_libraries(tav_sn_tracking ${NITE2_LIBS})
+endif (NITE2_FOUND)
+
+# OpenNI2
+if (OPENNI2_FOUND)
+	include_directories(${OPENNI2_INCLUDE_DIRS})
+	target_link_libraries(tav_sn_tracking ${OPENNI2_LIBS})
+endif (OPENNI2_FOUND)
+
+
+target_link_libraries(tav_sn_tracking ${LIBS})
+
+# tell GLFW to not include gl headers
+add_definitions(-DGLFW_INCLUDE_NONE)
+
+
+# add the install targets
+install (TARGETS tav_sn_tracking DESTINATION "lib")
+
+file( GLOB _HeadersCore "src/*.h" )
+install(FILES ${_HeadersCore} DESTINATION "include/tav/tav_sn_tracking")
