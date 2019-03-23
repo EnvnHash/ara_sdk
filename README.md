@@ -8,7 +8,11 @@ Building
 
 tav uses CMake (mkdir build, cd build, cmake .., make)
 
-Running 
+Running
+=======
+
+tav needs a data folder in the users home directory called tav_data
+copy the example setup.xml into this folder and run ./tav setup.xml
 
 Features
 ========
