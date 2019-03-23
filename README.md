@@ -4,13 +4,14 @@
 written in C++ / OpenGL
 
 Building
+========
 
 tav uses CMake (mkdir build, cd build, cmake .., make)
 
 Running 
 
 Features
---------
+========
 
 
 Audio
@@ -28,26 +29,6 @@ Communication
 - OpenSoundControl (full SceneNode Parameter-Abstraction for OSC with Median-Filtering)
 - TCP/UDP client via Boost (Boost Licenses, commercial use posible)
 - TCP/UDP server via Boost
-
-
-GUI
-===
-- Sequencer written in QT/SuperCollider
-   - Animations via fixed values, after-effects like curves or formulas
-   - Automatic sceneNode activation and deactivation
-   - Cut/Copy/Paste for (cascaded) tracks, groups, selections
-   - Communicaton via OSC
-   - Graphical view for mapping (4-Point Distortion, Blending, Cropping, Scaling and Offsetting)
-   - Full XML-Abstraction
-   - Meta-Tracks or cascadable tracks
-   - Tracking muting and soloing
-   - Unlimited amount of tracks
-- GUI Classes in pure OpenGL (in work)
-   - Buttons, Text
-   - Fully Event-Based with Lambda Functions/Callbacks
-   - Hierarchical Widget-Trees
-   - ModelMatrix inheritance
-   - Object-Selection via Depth-Images and Geometry-Shaders-Readbacks
 
 
 Import
