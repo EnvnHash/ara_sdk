@@ -158,4 +158,4 @@ Video
 - Cuvid Video Textures, GPU based decodification (MPEG1,2,4)
 - FFmpeg based MediaRecorder (GPU-CPU Download, threaded, almost all formats)
 - Video4Linux Textures (threaded, camera control, etc.)
-- VideoTextures via FFMpeg (threaded, allmost all formats)
+- VideoTextures via FFMpeg (threaded, all common formats)
