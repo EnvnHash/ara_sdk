@@ -1,0 +1,11 @@
+include(Android/CreateMainActivity)
+include(Android/CreateSplashActivity)
+include(Android/CreateJNIInterface)
+include(Android/CreateCameraPermissionHelper)
+
+macro(create_app_java_sources)
+    create_main_activity()
+    create_splashscreen_activity()
+    create_jni_interface()
+    create_camera_permission_helper()
+endmacro()

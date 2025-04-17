@@ -1,0 +1,110 @@
+# Sample ara Resource File
+
+demo_style {
+	text:"hello"
+	x:100px		# origin is always left top, if no align or v-align is set
+	y:10%		# position y towards the screen bottom
+	width:defaults.width
+	height:20%
+	font {font:"regular" size:50}
+	text-color:colors.tone_1
+	bkcolor:colors.blue
+	border-color:rgb(180,180,180)
+	border-radius:10
+	border-width:10
+
+	# the highLighted sub definition can be applied to any element
+	# and is used when the mouse is hovering over the element
+	highLighted {
+		text-color:colors.white
+		bkcolor:colors.black
+		border-color:rgba(255,280,255,80)
+		text:"highlighted"
+		font {font:"bold" size:50}
+		width:300px
+	}
+}
+
+defaults {
+	width:200px
+}
+
+colors {
+	tone_1:hsla(100, 40, 49, 1)
+	white:#FFF
+	background:rgb(40,40,40)
+
+	blue:rgb(10,10,100)
+	title:rgb(50,250,160)
+	comment:rgb(200,100,100)
+}
+
+# texture source (note: also mipmaps can be changed on the fly)
+sampletex {imgsrc:"test/test-tex.png" grid:32 mipmaps:5}
+
+chtest {
+
+	sample-image {
+		padding:10
+		bkcolor:rgb(140,100,200)
+
+		image:sampletex
+		img-scale:0.2 		# works only in when img-flag is set to "scale"
+		img-flags:fill		# fill,scale,hflip,vflip,int,no-aspect
+		img-align:center,vcenter
+	}
+}
+
+
+infoDiag {
+	padding:10
+	border-width:1
+	text-align:left
+	border-color:rgb(110,110,110)
+	bkcolor:rgb(30,30,30)
+
+	message {
+
+		border-width:1px
+		border-radius:4px
+		bkcolor:colors.background
+		font {font:"regular" size:21}
+		text-color:rgb(255,255,255)
+
+		info {
+			border-color:rgb(0,0,255)
+		}
+		warning {
+			border-color:rgb(255,255,0)
+		}
+		error {
+			padding:0,28,0,0
+			text-valign:top
+			border-color:colors.red
+		}
+	}
+
+	okButt {
+		bkcolor:rgb(92, 92, 92)
+		align:center
+		v-align:bottom
+		y: -20px
+		width:100px
+		height:36px
+		border-radius:4px
+		font {font:"regular" size:22}
+		text:"OK"
+	}
+
+	cancelButt {
+		bkcolor:rgb(92, 92, 92)
+		align:center
+		v-align:bottom
+		y:-20px
+		width:100px
+		height:36px
+		border-radius:4px
+		font {font:"regular" size:22}
+		text:"CANCEL"
+	}
+}

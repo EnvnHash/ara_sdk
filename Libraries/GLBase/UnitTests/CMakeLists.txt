@@ -1,0 +1,88 @@
+cmake_minimum_required(VERSION 3.10)
+project(GLBase_UnitTests VERSION 0.1 LANGUAGES CXX)
+
+
+add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+
+include(GeneralSettings)
+include(GoogleTest)
+enable_testing()
+
+include_directories(${GTEST_INCLUDE_DIRS}
+        ${CMAKE_SOURCE_DIR}/Libraries/GLBase/src
+        ${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
+        ${CMAKE_SOURCE_DIR}/Libraries/third_party/nameof
+)
+
+# add test source files
+file(GLOB GLBASE_UT_SRC
+        TypoGlyphMapTest.cpp
+        ContextSharing.cpp
+        ContextSharingFbo.cpp
+        CreateFbo.cpp
+        CreateFbo.cpp
+        CreateGLCtx.cpp
+        CreateWindow.cpp
+        CtrlPointSerialization.cpp
+        DrawQuad.cpp
+        MemLeakTests/DrawQuadMemLeak.cpp
+        GLBaseCreationDestruction.cpp
+        GLBaseStopStart.cpp
+        GLBaseStopStartResources.cpp
+        GLRendererTest.cpp
+        #GLRendDispPartTest.cpp # not working TODO: fixme
+        LoadTextureMipMap.cpp
+        LoadTexture.cpp
+
+        MaskLayerSerialization.cpp
+        ##MaskStackSerialization.cpp
+        ##MaskLayerSerializationHps.cpp
+
+        NativeWindow.cpp
+        PolygonTest.cpp
+        PolygonSerializationHps.cpp
+        PolygonSerialization.cpp
+        ThreadedWindow.cpp
+)
+
+
+add_executable(${PROJECT_NAME} ${GLBASE_UT_SRC})
+
+# automatically scan for gtest macros in target
+gtest_add_tests(TARGET ${PROJECT_NAME}
+        TEST_SUFFIX .noArgs
+        TEST_LIST noArgsTests
+)
+
+include(GLBaseDepInclude)
+include(GLBaseDependencies)
+include(GLBaseCopyDependencies)
+include(ResCompInclude)
+include(UtilitiesDependencies)
+include(UtilitiesDepInclude)
+include(Gtk3Include)
+
+set(TARGET_LIBS gmock_main gtest_main GLBase Utilities)
+if (NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
+    list(APPEND TARGET_LIBS resources)
+endif ()
+
+if (UNIX AND NOT APPLE)
+    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} glfw assimp)
+elseif (APPLE)
+    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
+else ()
+    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} Dwmapi.lib)
+endif ()
+
+
+#copy GLBase to executable dir
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/data/FullHD_Pattern.png ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/data/typoGlyphTest.png ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/data/loadTexTest.png ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/data/OpenSans-Light.ttf ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+INSTALL(TARGETS ${PROJECT_NAME}
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR} COMPONENT ${PROJECT_NAME} OPTIONAL)

@@ -1,0 +1,438 @@
+//
+// Created by sven on 02-03-25.
+//
+
+#include "Node.h"
+#include "string_utils.h"
+
+#ifdef ARA_USE_CMRC
+#include <cmrc/cmrc.hpp>
+CMRC_DECLARE(ara);
+#endif
+
+using json = nlohmann::json;
+using namespace std::chrono_literals;
+
+namespace ara {
+
+Node::Node() {
+    setTypeName<Node>();
+}
+
+Node::~Node() {
+    if (!m_fileName.empty()) {
+        auto r = std::find_if(m_watchFiles.begin(), m_watchFiles.end(), [&](auto& it) {
+            return it.path.string() == m_fileName;
+        });
+        if (r != m_watchFiles.end()) {
+            std::unique_lock<std::mutex> lock(m_watchMtx);
+            m_watchFiles.erase(r);
+        }
+    }
+}
+
+void Node::pop() {
+    if (m_undoBufRoot) {
+        m_undoBufRoot->saveState();
+    }
+
+    if (!m_children.empty()) {
+        auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
+        auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
+        for (auto &it : preRemoveCbs) {
+            it();
+        }
+        {
+            std::unique_lock<std::mutex> l(m_mtx);
+            m_children.pop_back();
+        }
+        for (auto &it : postRemoveCbs) {
+            it();
+        }
+    }
+}
+
+void Node::remove(Node* node) {
+    if (m_undoBufRoot) {
+        m_undoBufRoot->saveState();
+    }
+
+    if (!m_children.empty()) {
+        auto res = std::find_if(m_children.begin(), m_children.end(),
+                                [&](auto& it) { return it.get() == node; });
+        if (res != m_children.end()) {
+            auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
+            auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
+            for (auto &it : preRemoveCbs) {
+                it();
+            }
+            {
+                std::unique_lock<std::mutex> l(m_mtx);
+                m_children.erase(res);
+            }
+            for (auto &it : postRemoveCbs) {
+                it();
+            }
+        }
+    }
+}
+
+void Node::clearChildren() {
+    if (m_undoBufRoot) {
+        m_undoBufRoot->saveState();
+    }
+
+    auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
+    auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
+    for (auto &it : preRemoveCbs) {
+        it();
+    }
+    {
+        std::unique_lock<std::mutex> l(m_mtx);
+        children().clear();
+    }
+    for (auto &it : postRemoveCbs) {
+        it();
+    }
+}
+
+std::deque<Node*> Node::findChild(const std::string& name) {
+    std::deque<Node*> list;
+    if (m_name == name) {
+        list.emplace_back(this);
+    }
+    iterateChildren(*this, [&](Node& nd) {
+        if (nd.name() == name) {
+            list.emplace_back(&nd);
+        }
+    });
+    return list;
+}
+
+void Node::removeChangeCb(Node::cbType cbType, void *ptr) {
+        auto c = m_changeCb[cbType].find(ptr);
+        if (c != m_changeCb[cbType].end()) {
+            m_changeCb[cbType].erase(c);
+        }
+    }
+
+void Node::signalChange(Node::cbType cbType) {
+    for (auto &it : m_changeCb[cbType]) {
+        it.second();
+    }
+}
+
+json Node::asJson() {
+    json root;
+    {
+        std::unique_lock<std::mutex> l(m_mtx);
+        serialize(root);
+    }
+    return root;
+}
+
+json Node::serializeValues() {
+    json j;
+    serializeValues(j);
+    return j;
+}
+
+// Serialize the node tree to JSON
+void Node::serialize(json& j)  {
+    serializeValues(j);
+
+    if (!m_children.empty()) {
+        j["children"] = json::array();
+        for (const auto& child : m_children) {
+            j["children"].push_back(json{});
+            child->serialize(j["children"].back());
+        }
+    }
+}
+
+void Node::deserialize(const std::string& str) {
+    json j = json::parse(str);
+    deserialize(j);
+}
+
+void Node::deserialize(const json& j) {
+    if (serializeValues() != getValues(j)) {
+        deserializeValues(j);
+        for (auto& it: m_changeCb[cbType::postChange]) {
+            it.second();
+        }
+    }
+
+    std::unordered_map<std::string, Node*> existingChildren;
+    for (auto& child : m_children) {
+        existingChildren[child->uuid()] = child.get();
+    }
+
+    if (j.contains("children") && j["children"].is_array()) {
+        for (auto jChild = j["children"].begin(); jChild != j["children"].end(); ++jChild) {
+            auto it = existingChildren.find(jChild->at("uuid"));
+            if (it != existingChildren.end()) {
+                it->second->deserialize(*jChild);
+                // assure correct order
+                auto childIt = std::find_if(m_children.begin(), m_children.end(), [&](auto& el){ return el.get() == it->second; });
+                auto childIdx = std::distance(m_children.begin(), childIt);
+                auto jChildIdx = std::distance(j["children"].begin(), jChild);
+                if (childIdx != jChildIdx) {
+                    m_children.splice(std::next(m_children.begin(), jChildIdx), m_children, childIt);
+                }
+                existingChildren.erase(it);
+            } else {
+                // Create a new child and add it to the node
+                auto fact_child = m_factory.create(jChild->at("typeName"));
+                if (fact_child) {
+                    auto& newChild = push(std::move(fact_child));
+                    newChild.deserialize(*jChild);
+                }
+            }
+        }
+    }
+
+    // Remove remaining existing children that were not found in the JSON input
+    for (auto& pair : existingChildren) {
+        remove(pair.second);
+    }
+}
+
+void Node::load(const std::filesystem::path& filePath) {
+    m_fileName = filePath;
+    load();
+}
+
+void Node::load() {
+    if (m_undoBufRoot) {
+        saveState();
+    }
+
+    json j;
+
+#ifdef ARA_USE_CMRC
+    auto fs = cmrc::ara::get_filesystem();
+    if (fs.exists(m_fileName)) {
+        auto file = fs.open(m_fileName);
+        std::stringstream ss;
+        ss.write(file.begin(), static_cast<long>(file.size()));
+        j = json::parse(ss);
+        deserialize(j);
+    }
+#else
+    if (std::filesystem::exists(m_fileName)) {
+        std::ifstream i(m_fileName);
+        i >> j;
+        deserialize(j);
+    }
+#endif
+
+    if (m_watchFile && m_watchFile->time == std::filesystem::file_time_type{}) {
+        m_watchFile->time = std::filesystem::last_write_time(m_watchFile->path);
+    }
+
+    // update file watching
+    if (m_watch) {
+        setWatch(true);
+    }
+}
+
+void Node::saveAs(const std::filesystem::path& filePath) {
+    m_fileName = filePath;
+    save();
+}
+
+void Node::save() {
+    std::ofstream o(m_fileName);
+    o << std::setw(4) << asJson() << std::endl;
+
+    if (m_watchFile) {
+        m_watchFile->time = std::filesystem::last_write_time(m_watchFile->path);
+    }
+}
+
+void Node::saveState() {
+    if (m_undoing) {
+        return;
+    }
+
+    // if there were new changes after one or several undos
+    // remove all entries which lie in the future after the actual entry
+    if (!m_undoBuf.empty() && m_undoBufIt != m_undoBuf.end() - 1) {
+        m_undoBuf.erase(m_undoBufIt, m_undoBuf.end());
+    }
+
+    // if the undo queue is filled, delete the first element
+    if (m_undoBuf.size() + 1 >= m_maxUndoBufSize) {
+        m_undoBuf.erase(m_undoBuf.begin());
+    }
+
+    // serialize the actual state to a binary json and push it to the undo queue
+    m_undoBuf.emplace_back(json::to_bson(asJson()));
+    m_undoBufIt = m_undoBuf.end() - 1; // set the undoBufPtr to the new entry
+}
+
+void Node::undo() {
+    if (m_undoBuf.empty()) {
+        return;
+    }
+
+    // we need to be able to reproduce the last step, so also create an undo
+    // copy in case we are at the end of the undoBuf queue
+    if (--m_undoBuf.end() == m_undoBufIt) {
+        saveState();    // will set the undoBufIt tp the end of the queue
+    }
+
+    m_undoBufIt--;  // set back one entry
+
+    m_undoing = true;
+    deserialize(json::from_bson(*m_undoBufIt));
+    m_undoing = false;
+}
+
+void Node::redo() {
+    if (m_undoBuf.empty()) {
+        return;
+    }
+
+    if (m_undoBufIt != --m_undoBuf.end()) {
+        m_undoBufIt++;
+        m_undoing = true;
+        deserialize(json::from_bson(*m_undoBufIt));
+        m_undoing = false;
+    }
+}
+
+void Node::iterateChildren(Node& node, const std::function<void(Node&)>& f) {
+    f(node);
+    for (auto& it: node.children()) {
+        iterateChildren(*it, f);
+    }
+}
+
+std::deque<std::function<void()>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
+    std::deque<std::function<void()>> list;
+    if  (!withChildrenOnly || !m_children.empty()) {
+        for (auto &it : m_changeCb[cbType]) {
+            list.emplace_back(it.second);
+        }
+    }
+
+    iterateChildren(*this, [&withChildrenOnly, &list, &cbType](Node& node) {
+        if  (!withChildrenOnly || !node.children().empty()) {
+            for (auto &it: node.changeCb()[cbType]) {
+                list.emplace_back(it.second);
+            }
+        }
+    });
+
+    return list;
+}
+
+Node* Node::root() {
+    std::unique_lock<std::mutex> l(m_mtx);
+    auto currentParent = m_parent;
+    if (!currentParent) {
+        return this;
+    }
+    while (currentParent->parent()) {
+        currentParent = currentParent->parent();
+    }
+    return currentParent;
+}
+
+void Node::changeVal(const std::function<void()>& f) {
+    if (m_undoBufRoot) {
+        m_undoBufRoot->saveState();
+    }
+    for (auto & it: m_changeCb[cbType::preChange]) {
+        it.second();
+    }
+    {
+        std::unique_lock<std::mutex> l(m_mtx);
+        f();
+    }
+    for (auto & it: m_changeCb[cbType::postChange]) {
+        it.second();
+    }
+}
+
+void Node::setUndoBuffer(bool enabled, size_t size) {
+    m_maxUndoBufSize = size;
+    iterateChildren(*this, [this](Node& node){
+        node.setUndoBufferRoot(this);
+    });
+}
+
+void Node::checkAndAddWatchPath(const std::string& fn) {
+    auto r = std::find_if(m_watchFiles.begin(), m_watchFiles.end(), [&](auto& it) {
+        return it.path.string() == fn;
+    });
+
+    if (r == m_watchFiles.end()) {
+        m_watchFile = &m_watchFiles.emplace_back(NodeWatchFile{this, fn});
+        if (std::filesystem::exists(m_watchFile->path)) {
+            m_watchFile->time = std::filesystem::last_write_time(m_watchFile->path);
+        }
+    }
+}
+
+void Node::setWatch(bool val) {
+#ifndef ARA_USE_CMRC
+    m_watch = val;
+    if (!m_fileName.empty()) {
+        checkAndAddWatchPath(m_fileName.string());
+        iterateChildren(*this, [&val, this](Node& nd){
+            if (&nd != this) {
+                nd.setWatch(val);
+            }
+        });
+
+        if (val && !m_watchThreadRunning) {
+            m_watchThreadRunning = true;
+            Node::startWatchThread();
+        }
+    }
+#endif
+}
+
+void Node::startWatchThread() {
+#ifndef ARA_USE_CMRC
+    m_watchThrd = std::thread([&]{
+        std::filesystem::file_time_type init_ft{};
+        while (m_watchThreadRunning) {
+            {
+                std::unique_lock<std::mutex> lock(m_watchMtx);
+                try {
+                    for (auto &wfIt : m_watchFiles) {
+                        if (std::filesystem::exists(wfIt.path)) {
+                            auto ft = std::filesystem::last_write_time(wfIt.path);
+                            if (ft != init_ft && ft != wfIt.time) {
+                                // the file may actually being written to, file size needs to be constant
+                                if (wfIt.fileSize != std::filesystem::file_size(wfIt.path)) {
+                                    wfIt.fileSize = std::filesystem::file_size(wfIt.path);
+                                } else {
+                                    LOG << "Detected File change: " << wfIt.path;
+                                    wfIt.node->load();
+                                    LOG << " loading finished after File change: " << wfIt.path;
+                                    wfIt.time = ft;
+                                }
+                            }
+                        }
+                    }
+                } catch (...) {
+                    LOGE << "Node file watcher caught an error checking files";
+                }
+            }
+            std::this_thread::sleep_for(1.0s);
+        }
+    });
+    m_watchThrd.detach();
+#endif
+}
+
+void Node::stopWatchThread() {
+    m_watchThreadRunning = false;
+}
+
+}

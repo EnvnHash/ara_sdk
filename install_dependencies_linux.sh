@@ -1,0 +1,2 @@
+#!/bin/bash
+sudo apt-get install libfreeimage-dev libglew-dev libglfw3-dev libassimp-dev libpugixml-dev libglm-dev libgtk-3-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libpostproc-dev libswsample-dev libswscale-dev

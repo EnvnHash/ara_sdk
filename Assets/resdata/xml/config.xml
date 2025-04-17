@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding="UTF-8" ?>
+<body name="root" mouseicon="arrow">
+
+    <!-- Variables, have to be declared inside the body tag, before being used  -->
+    <var name="key_step_coarse" value="0.05"/>
+    <var name="key_step_fine" value="0.005"/>
+
+    <var name="v_ic_size" value="35" />
+    <var name="v_insp_width" value="150" />
+    <var name="v_insp_width_neg" value="-150" />
+    <var name="v_bar_col" value="0.25,0.25,0.25,1.0" />
+    <var name="v_col_black" value="0.0,0.0,0.0,1.0" />
+    <var name="v_col_transp" value="0.0,0.0,0.0,0.0" />
+
+    <!-- negative width or height means 100% - width/height[pix] -->
+
+    <div id="right_side" width="v_insp_width_neg" height="-25" align="right" valign="top" background_color="v_bar_col">
+        <div id="vc_view" background_color="0.125,0.125,0.125,1.0" width="100%" height="100%" align="left" valign="top" zoom="0.7" mouseicon="rotate">
+            <img id="vc_cam_img" src="Icons/black.png" background_color="0.0,0.0,0.0,1.0" border_color="v_bar_col" border_width="1" width="100%" height="100%" align="center" valign="middle">
+                <ctrlpoint_grid id="vc" width="100%" height="100%" mouseicon="move" ctrlpointsize="34" alpha="0.9" />
+            </img>
+        </div>
+        <!-- <div id="right_side" width="v_insp_width" height="100%" align="right" valign="top" color="v_bar_col"></div>-->
+        <button id="vc_rotx" img="Icons/rot_xaxis.png" onstate_back_img="Icons/icon_round_selected.png" left="-15" top="0" width="40" height="40" align="right" valign="middle" value="1" mouseicon="rotate" />
+        <button id="vc_roty" img="Icons/rot_yaxis.png" onstate_back_img="Icons/icon_round_selected.png" left="0" top="-40" width="40" height="40" align="center" valign="bottom" value="1" mouseicon="rotate" />
+    </div>
+
+    <!-- The Menu Bar with all principal functions -->
+    <div id="leftMenu" background_color="v_bar_col" width="v_insp_width" height="100%" align="left">
+        <button id="butt_undo" img="Icons/undo_icon.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" top="5" alt_text="undo last edit (CTRL+Z)" />
+        <button id="butt_scale" isToggle="1" img="Icons/scale_icon.png" onstate_back_img="Icons/icon_selected.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" left="38" top="5" alt_text="scale / deform mode"/>
+        <button id="butt_line_grip" isToggle="1" img="Icons/gripper_icon.png" onstate_back_img="Icons/icon_selected.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" left="76" top="5" alt_text="toggle line grippers (F2)" />
+        <button id="butt_key_move" isToggle="1" img="Icons/coarse_fine_icon.png" onstate_img="Icons/coarse_fine_icon_pressed.png" onstate_back_img="Icons/icon_selected.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" left="112" top="5" alt_text="keyboard: fine / coarse (F4)" />
+        <button id="butt_add_col" img="Icons/add_vline.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" top="42" alt_text="add column"/>
+        <button id="butt_del_col" img="Icons/del_vline.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" top="42" left="38" alt_text="delete column"/>
+        <button id="butt_add_row" img="Icons/add_hline.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" top="42" left="76" alt_text="add row"/>
+        <button id="butt_del_row" img="Icons/del_hline.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" top="42" left="112" alt_text="delete row"/>
+        <button id="butt_interp" isToggle="1" img="Icons/interpol_mode_lin.png" onstate_img="Icons/interpol_mode.png" onstate_back_img="Icons/icon_selected.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" top="83" value="1" alt_text="linear / bicubic interpolation" />
+        <button id="butt_prev" isToggle="1" img="Icons/view_icon2.png" onstate_back_img="Icons/icon_selected.png" width="v_ic_size" height="v_ic_size" align="left" valign="top" top="83" left="38" value="1" alt_text="show preview"/>
+
+        <button id="butt_lay1" isToggle="1" img="Icons/l1_persp_butt_off.png" onstate_img="Icons/l1_persp_butt_on.png" width="130" height="v_ic_size" align="right" valign="top" top="175" left="-10" value="1" alt_text="show layer 1"/>
+        <button id="butt_lay2" isToggle="1" img="Icons/l2_persp_butt_off.png" onstate_img="Icons/l2_persp_butt_on.png" width="130" height="v_ic_size" align="right" valign="top" top="220" left="-10" value="1" alt_text="show layer 2"/>
+        <!-- <button id="butt_stage3D" isToggle="1" img="stage3D_butt_off.png" onstate_img="stage3D_butt_on.png" width="130" height="v_ic_size" align="right" valign="top" top="265" left="-10" value="0" alt_text="show camera input"/>-->
+        <button id="butt_cam" isToggle="1" img="Icons/cam_img_butt_off.png" onstate_img="Icons/cam_img_butt_on.png" width="130" height="v_ic_size" align="right" valign="top" top="265" left="-10" value="1" alt_text="show camera input"/>
+
+    </div>
+
+    <div id="bottomMenu" background_color="v_bar_col" width="100%" height="25" valign="bottom">
+        <num_input id="numViewX" color="0.0,0.0,0.0,1.0" background_color="1.0,1.0,1.0,1.0" left="45" width="110" height="21" valign="middle" mouseicon="ibeam" fontSize="22"/>
+        <num_input id="numViewY" color="0.0,0.0,0.0,1.0" background_color="1.0,1.0,1.0,1.0" left="162" width="110" height="21" valign="middle" mouseicon="ibeam" fontSize="22"/>
+        <slider id="fovSlider" min="0.0" max="2.0" value="1.0" scale="linear" color="0.8,0.8,0.8,1.0" background_color="0.125,0.125,0.125,0.0" border_width="0" border_color="0.0,0.0,0.0,1.0" line_color="0.5,0.5,0.5,1.0" align="right" valign="middle" left="-355" width="200" height="21" >
+            <label id="fovLabel" text="Z-Pos" background_color="v_col_transp" color="1.0,1.0,1.0,1.0" width="45" height="21" left="-50" align="left" fontSize="22" />
+        </slider>
+        <propSlider id="zoomSlider"></propSlider>
+        <!--
+        <slider id="zoomSlider" min="10" max="400" value="100" scale="sqrt" color="0.8,0.8,0.8,1.0" background_color="0.125,0.125,0.125,1.0" border_width="1" border_color="0.0,0.0,0.0,1.0" line_color="0.5,0.5,0.5,1.0" align="right" valign="middle" left="-65" width="200" height="21" mouseicon="hresize">
+            <label id="zoomLabel" text="Zoom" background_color="v_col_transp" color="v_col_black" width="45" height="21" left="-50" align="left" fontSize="22" />
+            <num_input id="zoomNum" color="0.0,0.0,0.0,1.0" background_color="1.0,1.0,1.0,1.0" width="55" height="21" left="60" align="right" mouseicon="ibeam" fontSize="21" as_int="1" />
+        </slider>            
+        -->
+    </div>
+</body>

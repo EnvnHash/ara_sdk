@@ -1,0 +1,546 @@
+# Sample ara Resource File
+# 20220205
+
+#fonts
+fonts {
+    "light":"Fonts/NeoSans/NeoSansMedium.TTF"
+    "regular":"Fonts/NeoSans/NeoSansRegular.TTF"
+    "bold":"Fonts/NeoSans/NeoSansBold.TTF"
+    "tab::regular":"Fonts/NeoSans/NeoSansRegular.TTF"
+    "tab::bold":"Fonts/NeoSans/NeoSansBold.TTF"
+}
+
+#icons
+icons {imgsrc:"ui-icons.png" grid:32 mipmaps:3
+    close {img pos:15,1 size:64,64}
+	minimize {img pos:19,1 size:64,64}
+	maximize {img pos:17,1 size:64,64}
+	restore {img pos:21,1 size:64,64}
+}
+
+# color
+tone_1:hsla(10, 50, 49, 1)
+tone_2:hsla(60, 70, 44, 1)
+tone_3:hsla(120, 70, 44, 1)
+tone_4:hsla(180, 70, 51, 1)
+tone_5:hsla(240,70,50, 1) 
+
+defaults {
+	padding:5
+	projNodeWidth: 195px
+	projNodeContWidth: 182px
+	canvasProjNodeWidth: 401px	# this must be 2 * projNodeWidth + spacing (arithemic operation are not yet implemented)
+}
+    
+colors {
+	white:#FFF
+	#white:rgb(255,255,255)
+	black:rgb(0,0,0)
+	transparent:rgba(0,0,0,0)
+    blue:rgb(0, 153, 230)
+    darkBlue:rgb(0, 92, 125)
+	background:rgb(40,40,40)
+	red:rgb(255,0,0)
+	lightBackground:rgb(92, 92, 92)
+    darkBackground:rgb(30,30,30)
+    highlight:rgb(0, 153, 222)
+	hiBg:rgb(140,140,140)
+
+	green:rgb(0,255,0)
+	yellow:rgb(255,255,0)
+	title:rgb(50,250,160)
+	comment:rgb(200,100,100)
+
+	projNodeWidth: 140
+    
+	viButtonHoverBg:rgb(33, 33, 33)
+	viButtonBg:rgb(89, 89, 89)
+
+    text:rgb(204, 204, 204)
+
+	ctrlBorder:rgba( 170, 170, 170, 128)
+    ctrlDisplayBorder:rgba( 100, 149, 237, 255)
+    ctrlBk:rgba( 211, 211, 211, 255)
+    transparentBk:rgba( 0, 0, 0, 0  )
+    ctrlDisplayBk:rgba( 173, 216, 230, 255)
+    ctrlEditBk:rgba( 153, 196, 210, 255)
+}
+
+menuBar {
+	close {
+        image: icons.close
+	}
+
+	minimize {
+        image: icons.minimize
+	}
+
+	maximize {
+        image: icons.maximize
+		imageOnState: icons.restore
+	}
+}
+
+propertySlider {
+	height:40px
+	align:center
+
+	label {
+		width:15%
+		text-color:colors.white
+		text-align:left
+		font-size:21
+	}
+	
+	slider {
+		align:left
+		x:15%
+		width:62%
+		height:40px
+	}
+
+	edit {
+		align:right
+		border-width:1
+		border-radius:4
+		border-color:colors.lightBackground
+		width:20%
+		height:80%
+		v-align:center
+		text-valign:center
+		bkcolor:rgba(255,255,255,30)
+	}
+}
+
+#----- Icons (global) --------------------------------------------------------------------------------------------------
+
+icons {imgsrc:"ui-icons.png" grid:32 mipmaps:3
+
+	combo_down {img pos:1,1 size:32,32}
+	node_add_butt {img pos:1,2 size:64,64}
+	node_add_butt_cam {img pos:1,4 size:192,64}
+	node_add_butt_surf {img pos:1,6 size:192,64}
+	node_add_butt_eyep {img pos:1,8 size:192,64}
+	mt_view_butt {img pos:4,13 size:96,64}
+	mt_view_butt_dark {img pos:4,13 size:96,64}
+	folder {img pos:13,13 size:96,96}
+
+}
+
+#----- Info Dialog --------------------------------------------------------------------------------------------------
+
+infoDiag {
+	padding:10
+	border-width:1
+	text-align:left
+	border-color:rgb(110,110,110)
+	bkcolor:colors.darkBackground
+
+	message {
+		
+		border-width:1px
+		border-radius:4px
+		bkcolor:colors.background
+		font {font:"regular" size:21}
+		text-color:colors.white
+
+		info {
+			border-color:colors.blue
+		}
+		warning {
+			border-color:colors.yellow
+		}
+		error {
+			padding:0,28,0,0
+			text-valign:top
+			border-color:colors.red
+		}
+	}
+
+	okButt {
+		bkcolor:colors.lightBackground
+		align:center
+		v-align:bottom
+		y: -20px
+		width:100px
+		height:36px
+		border-radius:4px
+		font {font:"regular" size:22}
+		text:"OK"
+	}
+	
+	cancelButt {
+		bkcolor:colors.lightBackground
+		align:center
+		v-align:bottom
+		y:-20px
+		width:100px
+		height:36px
+		border-radius:4px
+		font {font:"regular" size:22}
+		text:"CANCEL"
+	}
+}
+
+#-----------------------------------------------------------------------------------------------------------------------
+
+one {imgsrc:"test/ui-main.png" grid:32
+
+	s1 {img pos:1,1 size:100,50}
+	s2 {img pos:11,1 size:16,16 frame sep:32,32}
+	s3 {img pos:14,1 size:16,16 frame sep:32,32}
+	s4 {img pos:17,1 size:16,16 frame sep:16,16}
+	
+	but1 {img frame pos:17,3 size:16,16 sep:16,16 vdist:64 ver:0,1,2,3 default:0}
+	
+	state {img pos:24,11 size:203,36 vdist:64 ver:0,1,2,3}
+	
+	but_up {img pos:10,5 size:20,11}
+	but_down {img pos:11,5 size:20,11}
+ 
+}
+
+check {img:one pos:7,11 size:20 hdist:32 ver:0,0,1,2}
+radio {img:one pos:7,12 size:20 hdist:32 ver:0,0,1,2}
+
+styles {
+
+	rtext {
+	
+		padding:10,10,10,10
+		bkcolor:rgb(140,100,200)
+	
+	}
+
+	rdiv {
+	
+		padding:10,10,10,10
+		bkcolor:rgb(140,100,200)
+		border-width:2
+		border-radius:15
+		border-color:rgb(200,10,0)
+	 
+	}
+
+	irdiv {
+	
+		padding:0,0,0,0
+		bkcolor:hsl(240,100,50)
+		border-width:3
+	
+	}
+
+}
+
+	 
+#--- DEBUG STUFF!!! --------------------------------------------------------------------------------------------------------------------
+
+text_test {
+	bkcolor:hsla(40,30,50, 0.5) 
+	text-color:hsla(190,100,50, 1.0) 
+	font {font:"Fonts/verdana.ttf" size:28}
+	#font {font:"Fonts/Code New Roman.otf" size:24}
+	text:!<[[Lorem Ipsum is simply dummy text of the printing and typesetting industry.]]>
+}
+
+	
+logo {img:one pos:6,16 size:300,83}
+icon {img:"one" pos:10,20 size:24}
+
+fonts {
+
+	title {font:"Fonts/verdana.ttf" size:35 bold color:rgb(200,200,100)}
+	comment {font:"Fonts/Code New Roman.otf" size:22 italic color:rgb(200,200,100)}
+	text {font:"Fonts/OpenSans-Regular.ttf" size:20}
+
+}
+
+large_text:!<[[text here
+This is a long piece of text
+of many lines, with CR/LF too
+Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
+Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
+when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
+It has survived not only five centuries, but also the leap into electronic typesetting, 
+remaining essentially unchanged. It was popularised in the 1960s with the release of 
+Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing 
+software like Aldus PageMaker including versions of Lorem Ipsum.]]>
+
+glsl {
+
+	draw_1 {
+	
+		vert:!<[[
+			#version 330 core
+
+			out vec2 uv;
+
+			uniform mat4 mvp;
+			uniform vec2 pos=vec2(0,0);
+			uniform vec2 size=vec2(0,0);
+
+			void main(void){    
+
+				const vec2[4] vr = vec2[4](vec2(0.,0.),vec2(1.,0.),vec2(0.,1.),vec2(1.,1.));
+				uv=vr[gl_VertexID];
+				
+				gl_Position = mvp * vec4(pos+uv*size,0,1);
+				
+				
+			}  
+		]]>
+		
+		frag:!<[[
+			#version 330 core
+
+			in vec2 uv;
+			out vec4 fcolor;
+			uniform vec4 color=vec4(1,1,1,1);
+
+			void main(void)
+			{  
+				fcolor=color;
+				
+			}
+ 		]]>
+	
+	} 
+	      
+}
+
+two {imgsrc:"test/ui-sec.png" grid:32}
+
+test2:sample_func(!<[[a single line parameter]]>,
+!<[[A multi-line
+parameter,
+is it working?]]>)
+
+
+
+sampletex {imgsrc:"test/test-tex.png" mipmaps:3}
+imageButText {imgsrc:"Icons/invert_icon.png"}
+imageButTextSel {imgsrc:"Icons/invert_icon_dark.png"}
+
+
+#test for live add/remove items    
+chtest {
+          
+	col_1:colors.white
+	col_a:hsl(10,50,50)
+	col_b:hsl(80,50,50)
+	col_d:hsl(220,50,50)
+	col_e:hsl(320,50,50)
+	col_f:hsl(320,50,50)
+	
+	icon {
+		image:one.but1
+		selected {		
+			image:one.state
+		}
+	}
+	
+	sample-image {
+		padding:10
+		bkcolor:rgb(140,100,200)
+	
+		image:sampletex
+		img-scale:0.5
+		img-flags:no-aspect
+		img-align:center,vcenter
+	}
+       
+	sample-imageButton {
+		width:100px
+		height:100px
+		x:500px
+		y:600px
+		bkcolor:colors.lightBackground
+		
+		image:imageButText
+		imageOnState:imageButTextSel
+
+		img-scale:0.5
+		img-flags:scale # fill, scale, hflip, vflip, int, no-aspect
+		img-align:center,vcenter
+	}
+
+}
+
+defTest {
+	x:200px
+	y:200px
+	width:defaults.projNodeWidth
+	height:200px
+	bkcolor:rgb(255,0,0)
+}
+
+defTest2 {
+	bkcolor:rgb(0,0,255)
+}
+ 
+demos {
+
+	edit {
+
+		ed-sl-label {
+			width:150px
+			height:30px
+			y:150px
+			x:10px
+			text:"Integer Edit"
+			text-align:left
+			edit-align:center
+			edit-valign:center
+		}
+
+		
+		ed-sl-label-float {
+			width:150px
+			height:30px
+			y:230px
+			x:10px
+			text:"Float Edit"
+			text-align:left
+			edit-align:center
+			edit-valign:center
+		}
+	
+		ed-sl {
+		
+			width:500px
+			height:30px
+			y:190px
+			
+			color:hsla(220,10,90,1)
+			bkcolor:hsla(120,10,10,1)
+		
+			selected {
+				border-width:0
+				border-radius:0
+				border-color:rgb(0,160,0)
+				bkcolor:hsla(120,20,30,1)
+			}
+			
+			padding:2
+			
+			font {font:"Fonts/verdana.ttf" size:18}
+
+			edit-align:center
+			edit-valign:center
+			#edit-opt:accept-tabs,single-line
+			caret-color:rgb(255,200,200)
+			
+			#edit-opt:pass
+		}
+		
+		ed-sl-float {
+		
+			width:500px
+			height:30px
+			x:10px
+			y:260px
+			
+			color:hsla(220,10,90,1)
+			bkcolor:hsla(20,50,20,1)
+
+			padding:2
+			
+			font {font:"Fonts/verdana.ttf" size:18}
+
+			edit-align:center
+			edit-valign:center
+			caret-color:rgb(255,200,200)
+		}
+	
+		ed-ml {
+			width:500px
+			height:400px
+			
+			color:hsla(220,10,90,1)
+			bkcolor:hsla(220,10,20,1)
+		
+			border-width:2
+			border-radius:0
+			border-color:hsla(20,80,50,1)
+			
+			padding:5
+			
+			font {font:"Fonts/verdana.ttf" size:18}
+			
+			text-valign:center
+			edit-align:right
+			edit-opt:accept-tabs
+		}
+		
+		font-test {	
+			font {font:"Fonts/NeoSans/NeoSansRegular.TTF" size:20}		
+		}
+		
+		label {	
+			x:10px
+			y:760px
+			width:380px
+			height:80px
+			
+			color:hsla(220,10,90,1)
+			bkcolor:hsla(220,10,20,1)
+		
+			border-width:1
+			border-radius:0
+			border-color:hsla(20,80,50,1)
+			
+			padding:1
+			
+			font {font:"Fonts/verdana.ttf" size:18}
+			
+			text-align:left
+			text-valign:center
+			text-opt:single-line,end-ellipsis
+			
+			text:"This is a line of text to test the label, long enough to see the ellipsis at the end."
+		}
+	}
+}
+
+but_style_test {
+
+	width:100px
+	height:50px
+	
+	bkcolor:rgb(200,0,0)
+	
+	text:"e"
+	
+	text-align:center
+	text-valign:center
+	
+	font {font:"Fonts/verdana.ttf" size:18}
+	
+	text-opt:
+
+}
+
+test_corner {
+	x: 300px
+	width: 300px
+	height: 300px
+	border-radius:20
+	border-width:1
+	border-color:rgb(0,255,0)
+	bkcolor:colors.red
+}
+
+selected_test {
+	width:50px
+	height:50px
+	x:200px
+	bkcolor:rgb(0,0,255)
+
+	selected {
+		bkcolor:rgb(0,255,255)
+	}
+}
+
+mainWndCtrl {
+    padding:50
+}
