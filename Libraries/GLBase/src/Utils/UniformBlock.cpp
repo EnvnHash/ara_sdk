@@ -4,9 +4,9 @@
 //  Created by Sven Hahne on 14.08.17
 //
 //  should be used after the shader is linked
-//  uniform block has to be used in shader, otherwise the compiler optimizes it,
-//  means kill it
+//  uniform block has to be used in shader, otherwise the compiler optimizes it, means kill it
 
+#include <algorithm>
 #include "Utils/UniformBlock.h"
 
 namespace ara {
@@ -64,6 +64,12 @@ void UniformBlock::changeVarName(const std::string &name, void *inVal, GLenum ty
         }
     } else
         LOGE << "UniformBlock::changeVarName Error, name not found ";
+}
+
+ubBlockVar* UniformBlock::getVar(const std::string &name) {
+    auto it = std::find_if(m_valPairs.begin(), m_valPairs.end(),
+                          [name](const ubBlockVar &ub) { return ub.name == name; });
+    return (it != m_valPairs.end() ? &(*it) : nullptr);
 }
 
 void UniformBlock::update() {

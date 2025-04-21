@@ -45,12 +45,8 @@ public:
     static std::size_t       TypeSize(GLenum type);
     bool                     isInited() { return m_inited; }
     std::vector<ubBlockVar> *getValPairs() { return &m_valPairs; }
-    ubBlockVar              *getVar(const std::string &name) {
-        auto it = std::find_if(m_valPairs.begin(), m_valPairs.end(),
-                                            [name](const ubBlockVar &ub) { return ub.name == name; });
-        return (it != m_valPairs.end() ? &(*it) : nullptr);
-    }
-    GLuint getProgram() { return m_program; }
+    ubBlockVar              *getVar(const std::string &name);
+    GLuint                   getProgram() { return m_program; }
 
 private:
     std::vector<ubBlockVar> m_valPairs;
