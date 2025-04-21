@@ -2,7 +2,7 @@
 
 Cross-platform opengl bases graphics engine for 2D UI and 3D graphics, written in C++17.
 
-[![CMake on ubuntu gcc](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-ubuntu-gcc.yml/badge.svg)](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-ubuntu-gcc.yml)
+[![CMake build on ubuntu, windows, macos](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml)
 
 ## Building
 
