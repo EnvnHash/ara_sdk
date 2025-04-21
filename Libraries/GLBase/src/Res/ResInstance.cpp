@@ -1,7 +1,7 @@
-#include "Res/ResInstance.h"
+#include <algorithm>
 
 #include <RwBinFile.h>
-
+#include "Res/ResInstance.h"
 #include "Res/ImgSection.h"
 #include "Res/ResColor.h"
 #include "Res/ResSrcFile.h"
@@ -217,7 +217,7 @@ size_t Instance::loadResource(ResNode *node, std::vector<uint8_t> &dest, const s
     if (node) {
         e_file_bind                   eb{node->getPath(), path};
         vector<e_file_bind>::iterator wIt;
-        if ((wIt = find_if(m_FileBind.begin(), m_FileBind.end(), [&](e_file_bind &e) {
+        if ((wIt = std::find_if(m_FileBind.begin(), m_FileBind.end(), [&](e_file_bind &e) {
                  return e.file_path == eb.file_path && e.node_path == eb.node_path;
              })) == m_FileBind.end()) {
             m_FileBind.push_back(eb);
