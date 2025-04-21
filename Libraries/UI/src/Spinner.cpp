@@ -123,8 +123,8 @@ bool Spinner::drawFunc(const uint32_t* objId) {
         m_shader->setUniform1f("objId", static_cast<float>(*objId));
         m_shader->setUniform1f("alpha", m_absoluteAlpha);
 
+        glActiveTexture(GL_TEXTURE0);
         if (m_imgBase) {
-            glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, m_imgBase->getTexID());
         } else if (m_tex) {
             m_tex->bind();
