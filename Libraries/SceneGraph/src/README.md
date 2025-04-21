@@ -1,4 +1,4 @@
-# GLSceneGraph
+# SceneGraph
 
 - [3D SceneGraph](#3D-scenegraph)
   - [AssimpImport](#assimpimport)

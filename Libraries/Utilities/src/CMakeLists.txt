@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(Utilities VERSION 0.1 LANGUAGES CXX)
 
-if (COMPILE_GLSCENEGRAPH_LIB)
+if (COMPILE_SCENEGRAPH_LIB)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif ()
 

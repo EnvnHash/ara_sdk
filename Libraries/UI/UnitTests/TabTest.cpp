@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::TabViewTest {
+namespace ara::SceneGraphUnitTest::TabViewTest {
 
 TabView* addTabView(UIApplication* app, std::array<bool, 3>& checks) {
     auto rootNode = app->getMainWindow()->getRootNode();

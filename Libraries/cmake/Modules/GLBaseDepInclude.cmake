@@ -2,7 +2,7 @@ set(GLSG_LIB_DIR ${ARA_SDK_SOURCE_DIR}/Libraries/third_party)
 
 include_directories(
 	${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src
-	${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src
+	${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src
 	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/
 )
 

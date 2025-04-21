@@ -31,7 +31,7 @@ else()
 endif()
 
 
-set(TARGET_LIBS GLBase GLSceneGraph VideoInput Utilities)
+set(TARGET_LIBS GLBase SceneGraph VideoInput Utilities)
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
 	list(APPEND TARGET_LIBS resources)
 endif()

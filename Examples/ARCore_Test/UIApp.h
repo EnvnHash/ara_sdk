@@ -6,7 +6,7 @@
 
 #include <UIApplication.h>
 #include <Scene3D.h>
-#include "../../Libraries/GLSceneGraph/src/CameraSets/CsPerspFbo.h"
+#include "../../Libraries/SceneGraph/src/CameraSets/CsPerspFbo.h"
 
 #ifdef ARA_USE_ARCORE
 #include "Android/ARCoreCam.h"

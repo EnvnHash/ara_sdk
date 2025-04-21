@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::HidTest {
+namespace ara::SceneGraphUnitTest::HidTest {
 
 class HidNode :  public Div {
 public:

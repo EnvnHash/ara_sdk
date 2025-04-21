@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::GetPixelPosition_ParentRelative {
+namespace ara::SceneGraphUnitTest::GetPixelPosition_ParentRelative {
 TEST(UITest, GetPixelPosition_ParentRealtive) {
     UIApplication app;
     app.setEnableMenuBar(false); app.setEnableWindowResizeHandles(false);

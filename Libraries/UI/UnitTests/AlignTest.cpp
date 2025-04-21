@@ -7,7 +7,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::AlignTest {
+namespace ara::SceneGraphUnitTest::AlignTest {
 
 struct checkPix {
     glm::ivec2 pos{};

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::Stage3DMemLeak
+namespace ara::SceneGraphUnitTest::Stage3DMemLeak
 {
 	ShaderCollector shCol;  // create a ShaderCollector
 	GLFWWindow gwin;
@@ -18,7 +18,7 @@ namespace ara::GLSceneGraphUnitTest::Stage3DMemLeak
 
 	bool didFindMemLeak = false;
 
-	TEST(GLSceneGraphUnitTest, Stage3DMemLeak)
+	TEST(SceneGraphUnitTest, Stage3DMemLeak)
 	{
         UIApplication app;
         app.winWidth = 200;

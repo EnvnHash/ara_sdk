@@ -73,7 +73,7 @@ endif()
 if (ARA_USE_EGL)
     add_compile_definitions(ARA_USE_EGL)
 endif()
-if (ARA_USE_GLFW AND NOT COMPILE_GLSCENEGRAPH_LIB_NO_GLFW)
+if (ARA_USE_GLFW AND NOT COMPILE_SCENEGRAPH_LIB_NO_GLFW)
     add_compile_definitions(ARA_USE_GLFW)
 endif()
 if (ARA_USE_GLES31)
@@ -110,11 +110,11 @@ if (${ARA_ANDROID_PURE_NATIVE_APP})
     add_compile_definitions(ARA_ANDROID_PURE_NATIVE_APP)
 endif()
 
-set(COMPILE_GLSCENEGRAPH_LIB OFF)           # standalone compilation of UI Framework
-set(COMPILE_GLSCENEGRAPH_LIB_NO_GLFW OFF)   # compile without glfw
-set(COMPILE_GLSCENEGRAPH_LIB_STATIC OFF)    # compile with MTd / MT switch for windows
+set(COMPILE_SCENEGRAPH_LIB OFF)           # standalone compilation of UI Framework
+set(COMPILE_SCENEGRAPH_LIB_NO_GLFW OFF)   # compile without glfw
+set(COMPILE_SCENEGRAPH_LIB_STATIC OFF)    # compile with MTd / MT switch for windows
 
-if (COMPILE_GLSCENEGRAPH_LIB)
+if (COMPILE_SCENEGRAPH_LIB)
     add_compile_definitions(ARA_USE_GLBASE)
 endif ()
 

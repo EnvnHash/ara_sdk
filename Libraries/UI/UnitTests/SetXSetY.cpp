@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::SetXSetY{
+namespace ara::SceneGraphUnitTest::SetXSetY{
 
     void checkRed(size_t ptr, std::vector<GLubyte>& data)
     {

@@ -10,7 +10,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::ScrollViewTest{
+namespace ara::SceneGraphUnitTest::ScrollViewTest{
 
 TEST(UITest, ScrollViewTestNoScrollbar) {
     appBody([&](UIApplication* app){

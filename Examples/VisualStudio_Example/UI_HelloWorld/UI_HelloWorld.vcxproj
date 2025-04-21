@@ -86,9 +86,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;COMPILE_GLSCENEGRAPH_LIB;ARA_USE_FREEIMAGE;ARA_USE_GLFW;ARA_USE_GLBASE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;COMPILE_SCENEGRAPH_LIB;ARA_USE_FREEIMAGE;ARA_USE_GLFW;ARA_USE_GLBASE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\user\Source\Repos\UI_Example\UISDK\include\GLBase;C:\Users\user\Source\Repos\UI_Example\UISDK\include\GLSceneGraph;C:\Users\user\Source\Repos\UI_Example\UISDK\include\Utilities;C:\Users\user\Source\Repos\UI_Example\UISDK\include\GL;C:\Users\user\Source\Repos\UI_Example\UISDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\user\Source\Repos\UI_Example\UISDK\include\GLBase;C:\Users\user\Source\Repos\UI_Example\UISDK\include\SceneGraph;C:\Users\user\Source\Repos\UI_Example\UISDK\include\Utilities;C:\Users\user\Source\Repos\UI_Example\UISDK\include\GL;C:\Users\user\Source\Repos\UI_Example\UISDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -102,9 +102,9 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;COMPILE_GLSCENEGRAPH_LIB;ARA_USE_FREEIMAGE;ARA_USE_GLFW;ARA_USE_GLBASE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;COMPILE_SCENEGRAPH_LIB;ARA_USE_FREEIMAGE;ARA_USE_GLFW;ARA_USE_GLBASE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\user\Source\Repos\UI_Example\UISDK\include\GLBase;C:\Users\user\Source\Repos\UI_Example\UISDK\include\GLSceneGraph;C:\Users\user\Source\Repos\UI_Example\UISDK\include\Utilities;C:\Users\user\Source\Repos\UI_Example\UISDK\include\GL;C:\Users\user\Source\Repos\UI_Example\UISDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\user\Source\Repos\UI_Example\UISDK\include\GLBase;C:\Users\user\Source\Repos\UI_Example\UISDK\include\SceneGraph;C:\Users\user\Source\Repos\UI_Example\UISDK\include\Utilities;C:\Users\user\Source\Repos\UI_Example\UISDK\include\GL;C:\Users\user\Source\Repos\UI_Example\UISDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -118,9 +118,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;COMPILE_GLSCENEGRAPH_LIB;ARA_USE_FREEIMAGE;ARA_USE_GLFW;ARA_USE_GLBASE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;COMPILE_SCENEGRAPH_LIB;ARA_USE_FREEIMAGE;ARA_USE_GLFW;ARA_USE_GLBASE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)UISDK\include\GLBase;$(SolutionDir)UISDK\include\GLSceneGraph;$(SolutionDir)UISDK\include\Utilities;$(SolutionDir)UISDK\include\GL;$(SolutionDir)UISDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)UISDK\include\GLBase;$(SolutionDir)UISDK\include\SceneGraph;$(SolutionDir)UISDK\include\Utilities;$(SolutionDir)UISDK\include\GL;$(SolutionDir)UISDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -128,7 +128,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)UISDK\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>GLSceneGraphd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SceneGraphd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
@@ -141,9 +141,9 @@ xcopy "$(SolutionDir)\UISDK\resdata\*" "$(TargetDir)resdata\" /e /y /i /r</Comma
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;COMPILE_GLSCENEGRAPH_LIB;ARA_USE_FREEIMAGE;ARA_USE_GLFW;ARA_USE_GLBASE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;COMPILE_SCENEGRAPH_LIB;ARA_USE_FREEIMAGE;ARA_USE_GLFW;ARA_USE_GLBASE</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\user\Source\Repos\UI_Example\UISDK\include\GLBase;C:\Users\user\Source\Repos\UI_Example\UISDK\include\GLSceneGraph;C:\Users\user\Source\Repos\UI_Example\UISDK\include\Utilities;C:\Users\user\Source\Repos\UI_Example\UISDK\include\GL;C:\Users\user\Source\Repos\UI_Example\UISDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\user\Source\Repos\UI_Example\UISDK\include\GLBase;C:\Users\user\Source\Repos\UI_Example\UISDK\include\SceneGraph;C:\Users\user\Source\Repos\UI_Example\UISDK\include\Utilities;C:\Users\user\Source\Repos\UI_Example\UISDK\include\GL;C:\Users\user\Source\Repos\UI_Example\UISDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

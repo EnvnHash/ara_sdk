@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::GetPixelPosition_Absolute {
+namespace ara::SceneGraphUnitTest::GetPixelPosition_Absolute {
 
 TEST(UITest, GetPixelPosition_Absolute) {
     UIApplication app;

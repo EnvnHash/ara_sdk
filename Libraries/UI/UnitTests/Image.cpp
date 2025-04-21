@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::ImageTests {
+namespace ara::SceneGraphUnitTest::ImageTests {
 
 TEST(UITest, ImageSingle) {
     glm::ivec2 buttSize{200, 100};

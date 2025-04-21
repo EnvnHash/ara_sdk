@@ -23,7 +23,7 @@ if(ARA_USE_FFMPEG)
 endif()
 
 #NDI
-if (NOT COMPILE_GLSCENEGRAPH_LIB)
+if (NOT COMPILE_SCENEGRAPH_LIB)
     if(ANDROID)
         include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/NDI/Android/Include)
     else()

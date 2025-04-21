@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::ComboBoxTest {
+namespace ara::SceneGraphUnitTest::ComboBoxTest {
 
     void addCombo(UIApplication* app, bool& flag) {
         auto rootNode = app->getMainWindow()->getRootNode();

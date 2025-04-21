@@ -4,7 +4,7 @@ project(GLBase VERSION 0.1 LANGUAGES CXX)
 include(GeneralSettings)
 include(AraConfigure)
 
-if (NOT COMPILE_GLSCENEGRAPH_LIB)
+if (NOT COMPILE_SCENEGRAPH_LIB)
     add_compile_definitions(WGLWINDOW)
 endif ()
 

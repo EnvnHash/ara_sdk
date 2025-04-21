@@ -42,7 +42,7 @@ include(GLBaseCopyDependencies)
 include(UtilitiesDependencies)
 include(UtilitiesDepInclude)
 
-set(TARGET_LIBS gmock_main gtest_main GLBase GLSceneGraph UI Utilities)
+set(TARGET_LIBS gmock_main gtest_main GLBase SceneGraph UI Utilities)
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
      list(APPEND TARGET_LIBS resources)
 endif()

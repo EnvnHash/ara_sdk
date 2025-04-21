@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
 
-if (COMPILE_GLSCENEGRAPH_LIB)
+if (COMPILE_SCENEGRAPH_LIB)
     if (${CMAKE_BUILD_TYPE} MATCHES Debug)
-        project(GLSceneGraphd VERSION 0.1 LANGUAGES CXX)
+        project(SceneGraphd VERSION 0.1 LANGUAGES CXX)
     else ()
-        project(GLSceneGraph VERSION 0.1 LANGUAGES CXX)
+        project(SceneGraph VERSION 0.1 LANGUAGES CXX)
     endif ()
     add_compile_definitions(GLSG_EXPORT GLBASE_EXPORT)
 else ()
-    project(GLSceneGraph VERSION 0.1 LANGUAGES CXX)
+    project(SceneGraph VERSION 0.1 LANGUAGES CXX)
 endif ()
 
 include(GeneralSettings)
@@ -50,8 +50,8 @@ set(GLSG_ALL_SRC
         ${GLSG_ANDROID_SRC}
         ${GLSG_HEADERS} CACHE INTERNAL "glsg_src_all")
 
-if (COMPILE_GLSCENEGRAPH_LIB AND NOT ANDROID)
-    if (COMPILE_GLSCENEGRAPH_LIB_STATIC)
+if (COMPILE_SCENEGRAPH_LIB AND NOT ANDROID)
+    if (COMPILE_SCENEGRAPH_LIB_STATIC)
         add_library(${PROJECT_NAME} STATIC ${GLSG_ALL_SRC} $<TARGET_OBJECTS:Utilities> $<TARGET_OBJECTS:GLBase>)
         if (ARA_USE_CURL)
             target_link_libraries(${PROJECT_NAME} Utilities GLBase UI VideoInput Dwmapi.lib libcurl.a)
@@ -82,7 +82,7 @@ if (ANDROID)
 endif ()
 
 include(GLBaseDepInclude)
-if (COMPILE_GLSCENEGRAPH_LIB)
+if (COMPILE_SCENEGRAPH_LIB)
     include(GLBaseDependencies)
 
     set(TP_DIR ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/)
@@ -113,20 +113,20 @@ if (COMPILE_GLSCENEGRAPH_LIB)
     file(GLOB_RECURSE GLBASE_UTIL_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/Utils/*.h)
     file(GLOB_RECURSE GLBASE_WMMANAG_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/WindowManagement/*.h)
 
-    file(GLOB GLSCENEGRAPH_ASSIMP_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/Assimp/*.h)
-    file(GLOB GLSCENEGRAPH_CAMSET_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/CameraSets/*.h)
-    file(GLOB GLSCENEGRAPH_COMMON_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/glsg_common/*.h)
-    file(GLOB GLSCENEGRAPH_UTILS_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/GLUtils/*.h)
-    file(GLOB GLSCENEGRAPH_LIGHTS_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/Lights/*.h)
-    file(GLOB GLSCENEGRAPH_SCNNODES_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/SceneNodes/*.h)
-    file(GLOB GLSCENEGRAPH_SHADERS_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/Shaders/*.h)
-    file(GLOB GLSCENEGRAPH_SHADERS_PROP_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/Shaders/ShaderProperties/*.h)
-    file(GLOB GLSCENEGRAPH_SHADERS_PROTO_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/Shaders/ShaderPrototype/*.h)
-    file(GLOB GLSCENEGRAPH_SHADERS_MAP_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/Shaders/ShadowMap/*.h)
-    file(GLOB GLSCENEGRAPH_UI_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/UI/*.h)
-    file(GLOB GLSCENEGRAPH_UI_DIAG_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/UI/Dialoges/*.h)
-    file(GLOB GLSCENEGRAPH_UI_ITEME_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/UI/ItemEditors/*.h)
-    file(GLOB GLSCENEGRAPH_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/*.h)
+    file(GLOB GLSCENEGRAPH_ASSIMP_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/Assimp/*.h)
+    file(GLOB GLSCENEGRAPH_CAMSET_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/CameraSets/*.h)
+    file(GLOB GLSCENEGRAPH_COMMON_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/glsg_common/*.h)
+    file(GLOB GLSCENEGRAPH_UTILS_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/GLUtils/*.h)
+    file(GLOB GLSCENEGRAPH_LIGHTS_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/Lights/*.h)
+    file(GLOB GLSCENEGRAPH_SCNNODES_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/SceneNodes/*.h)
+    file(GLOB GLSCENEGRAPH_SHADERS_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/Shaders/*.h)
+    file(GLOB GLSCENEGRAPH_SHADERS_PROP_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/Shaders/ShaderProperties/*.h)
+    file(GLOB GLSCENEGRAPH_SHADERS_PROTO_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/Shaders/ShaderPrototype/*.h)
+    file(GLOB GLSCENEGRAPH_SHADERS_MAP_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/Shaders/ShadowMap/*.h)
+    file(GLOB GLSCENEGRAPH_UI_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/UI/*.h)
+    file(GLOB GLSCENEGRAPH_UI_DIAG_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/UI/Dialoges/*.h)
+    file(GLOB GLSCENEGRAPH_UI_ITEME_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/UI/ItemEditors/*.h)
+    file(GLOB GLSCENEGRAPH_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/*.h)
 
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}
@@ -164,34 +164,34 @@ if (COMPILE_GLSCENEGRAPH_LIB)
     )
 
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_HEADERS} ${DST_DIR}/include/GLSceneGraph
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/Assimp
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_ASSIMP_HEADERS} ${DST_DIR}/include/GLSceneGraph/Assimp
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/CameraSets
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_CAMSET_HEADERS} ${DST_DIR}/include/GLSceneGraph/CameraSets
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/glsg_common
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_COMMON_HEADERS} ${DST_DIR}/include/GLSceneGraph/glsg_common
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/GLUtils
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_UTILS_HEADERS} ${DST_DIR}/include/GLSceneGraph/GLUtils
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/Lights
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_LIGHTS_HEADERS} ${DST_DIR}/include/GLSceneGraph/Lights
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/SceneNodes
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_SCNNODES_HEADERS} ${DST_DIR}/include/GLSceneGraph/SceneNodes
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/Shaders
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_HEADERS} ${DST_DIR}/include/SceneGraph
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/Assimp
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_ASSIMP_HEADERS} ${DST_DIR}/include/SceneGraph/Assimp
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/CameraSets
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_CAMSET_HEADERS} ${DST_DIR}/include/SceneGraph/CameraSets
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/glsg_common
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_COMMON_HEADERS} ${DST_DIR}/include/SceneGraph/glsg_common
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/GLUtils
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_UTILS_HEADERS} ${DST_DIR}/include/SceneGraph/GLUtils
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/Lights
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_LIGHTS_HEADERS} ${DST_DIR}/include/SceneGraph/Lights
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/SceneNodes
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_SCNNODES_HEADERS} ${DST_DIR}/include/SceneGraph/SceneNodes
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/Shaders
             #COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_SHADERS_HEADERS} ${DST_DIR}/include/SceneGraph/Shaders # is empty
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/Shaders/ShaderProperties
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_SHADERS_PROP_HEADERS} ${DST_DIR}/include/GLSceneGraph/Shaders/ShaderProperties
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/Shaders/ShaderPrototype
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_SHADERS_PROTO_HEADERS} ${DST_DIR}/include/GLSceneGraph/Shaders/ShaderPrototype
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/Shaders/ShadowMap
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_SHADERS_MAP_HEADERS} ${DST_DIR}/include/GLSceneGraph/Shaders/ShadowMap
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/UI/
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_UI_HEADERS} ${DST_DIR}/include/GLSceneGraph/UI
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/UI/Dialoges
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_UI_DIAG_HEADERS} ${DST_DIR}/include/GLSceneGraph/UI/Dialoges
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLSceneGraph/UI/ItemEditors
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_UI_ITEME_HEADERS} ${DST_DIR}/include/GLSceneGraph/UI/ItemEditors
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/Shaders/ShaderProperties
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_SHADERS_PROP_HEADERS} ${DST_DIR}/include/SceneGraph/Shaders/ShaderProperties
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/Shaders/ShaderPrototype
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_SHADERS_PROTO_HEADERS} ${DST_DIR}/include/SceneGraph/Shaders/ShaderPrototype
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/Shaders/ShadowMap
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_SHADERS_MAP_HEADERS} ${DST_DIR}/include/SceneGraph/Shaders/ShadowMap
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/UI/
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_UI_HEADERS} ${DST_DIR}/include/SceneGraph/UI
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/UI/Dialoges
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_UI_DIAG_HEADERS} ${DST_DIR}/include/SceneGraph/UI/Dialoges
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/SceneGraph/UI/ItemEditors
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLSCENEGRAPH_UI_ITEME_HEADERS} ${DST_DIR}/include/SceneGraph/UI/ItemEditors
 
             COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/Utilities
             COMMAND ${CMAKE_COMMAND} -E copy ${UTILITY_HEADERS} ${DST_DIR}/include/Utilities
@@ -267,7 +267,7 @@ if (COMPILE_GLSCENEGRAPH_LIB)
         )
     endif ()
 
-    if (WIN32 AND COMPILE_GLSCENEGRAPH_LIB_STATIC)
+    if (WIN32 AND COMPILE_SCENEGRAPH_LIB_STATIC)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.lib ${DST_DIR}/lib/x64)
     elseif (APPLE)
@@ -331,7 +331,7 @@ if (COMPILE_GLSCENEGRAPH_LIB)
             COMMAND ${CMAKE_COMMAND} -E copy ${ARA_SDK_SOURCE_DIR}/scripts/create_symlink.bat ${DST_DIR}
     )
 
-    if (NOT COMPILE_GLSCENEGRAPH_LIB_STATIC)
+    if (NOT COMPILE_SCENEGRAPH_LIB_STATIC)
         if (WIN32)
             if (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
                 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

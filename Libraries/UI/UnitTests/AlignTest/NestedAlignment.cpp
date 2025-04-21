@@ -9,7 +9,7 @@
 using namespace std;
 using namespace glm;
 
-namespace ara::GLSceneGraphUnitTest::NestedAlignment{
+namespace ara::SceneGraphUnitTest::NestedAlignment{
 
     TEST(UITest, NestedAlignment)
     {

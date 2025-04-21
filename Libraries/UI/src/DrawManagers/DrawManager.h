@@ -4,10 +4,8 @@
 
 #pragma once
 
-//#include <GLBase.h>
-//#include <Shaders/Shaders.h>
 #include "Utils/VAO.h"
-#include "glsg_common/glsg_common.h"
+#include "ui_common.h"
 
 namespace ara {
 

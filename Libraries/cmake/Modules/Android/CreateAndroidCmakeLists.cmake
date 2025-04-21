@@ -93,7 +93,7 @@ add_subdirectory(Assets)
 
 file(GLOB_RECURSE ARA_SDK_SOURCES
     \${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/*.cpp
-    \${ARA_SDK_SOURCE_DIR}/Libraries/GLSceneGraph/src/*.cpp
+    \${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/*.cpp
     \${ARA_SDK_SOURCE_DIR}/Libraries/Utilities/src/*.cpp
     \${ARA_SDK_SOURCE_DIR}/Libraries/VideoInput/src/*.cpp
     )

@@ -42,7 +42,7 @@ if (ARA_USE_FFMPEG)
 endif()
 
 #NDI
-if (NOT COMPILE_GLSCENEGRAPH_LIB AND ARA_USE_NDI)
+if (NOT COMPILE_SCENEGRAPH_LIB AND ARA_USE_NDI)
     if (WIN32)
         target_link_libraries(${PROJECT_NAME}
             ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/NDI/lib/${LIB_ARCH_PATH}/Processing.NDI.Lib.${LIB_ARCH_PATH}.lib
@@ -58,7 +58,7 @@ if (NOT COMPILE_GLSCENEGRAPH_LIB AND ARA_USE_NDI)
 endif()
 
 #OpenAL
-if (NOT COMPILE_GLSCENEGRAPH_LIB AND ARA_USE_OPENAL)
+if (NOT COMPILE_SCENEGRAPH_LIB AND ARA_USE_OPENAL)
     if (WIN32)
         target_link_libraries(${PROJECT_NAME} ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/OpenAL/lib/x64/OpenAL32.lib)
     elseif(APPLE)

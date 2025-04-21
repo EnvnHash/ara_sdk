@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace ara::GLSceneGraphUnitTest::ButtonTests{
+namespace ara::SceneGraphUnitTest::ButtonTests{
 
 TEST(UITest, ButtonTests) {
     glm::ivec2 buttSize{200, 100};

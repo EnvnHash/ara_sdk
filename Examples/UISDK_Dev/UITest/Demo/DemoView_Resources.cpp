@@ -60,7 +60,8 @@ bool DemoView_Resources::draw(uint32_t* objId) {
     if (node) {
         // Colors
         for (ResNode::Ptr& p : node->m_Node) {
-            if (typeid(*p) == typeid(ResColor)) {
+            auto& deref = *p; // silence warning with clang
+            if (typeid(deref) == typeid(ResColor)) {
                 ResColor* rc=dynamic_cast<ResColor*>(p.get());
 
                 util_FillRect(10, 100+i*40, 28, 28, rc->getColor4fv());
@@ -76,8 +77,8 @@ bool DemoView_Resources::draw(uint32_t* objId) {
     if (node != nullptr) {
         // Colors
         for (ResNode::Ptr& p : node->m_Node) {
-            //LOG << p->m_Name << "  type=" << typeid(*p).name();
-            if (typeid(*p) == typeid(ResColor)) {
+            auto& deref = *p; // silence warning with clang
+            if (typeid(deref) == typeid(ResColor)) {
                 ResColor* rc=dynamic_cast<ResColor*>(p.get());
                 util_FillRect(10,100+i*40,28,28,rc->getColor4fv());
                 //util_Print(60,float(100+i*40+22),"regular",22,nullptr,rc->m_Name.c_str());
@@ -92,8 +93,8 @@ bool DemoView_Resources::draw(uint32_t* objId) {
     if (node != nullptr) {
         // Colors
         for (ResNode::Ptr& p : node->m_Node) {
-            //LOG << p->m_Name << "  type=" << typeid(*p).name();
-            if (typeid(*p) == typeid(ResColor)) {
+            auto& deref = *p; // silence warning with clang
+            if (typeid(deref) == typeid(ResColor)) {
                 ResColor* rc=dynamic_cast<ResColor*>(p.get());
                 util_FillRect(10,100+i*40,28,28,rc->getColor4fv());
                 //util_Print(60,float(100+i*40+22),"regular",22,nullptr,rc->m_Name.c_str());
@@ -125,9 +126,8 @@ bool DemoView_Resources::draw(uint32_t* objId) {
                 if (n->Load()) {
                     if (n->errList.empty()) {
                         for (ResNode::Ptr& p : n->m_Node) {
-                            LOG << p->m_Name << "  type=" << typeid(*p).name();
-
-                            if (typeid(*p) == typeid(ResColor)) {
+                            auto& deref = *p; // silence warning with clang
+                            if (typeid(deref) == typeid(ResColor)) {
 
                                 auto* rc=dynamic_cast<ResColor*>(p.get());
                                 util_FillRect(10,100+i*40,28,28,rc->getColor4fv());
@@ -174,57 +174,6 @@ bool DemoView_Resources::draw(uint32_t* objId) {
             f->drawDGlyphs(dgv, getMvp(), m_glyphShader, *getSharedRes()->nullVao, &glm::vec4(1.f)[0],
                            pos[0]+tp[0], pos[1]+tp[1]-bb[1], pos[0], pos[1], size[0], size[1]);
         }
-    }
-
-    if (0) {
-
-        static Texture* tm=nullptr;
-
-        if (!tm)
-        {
-            std::vector<uint8_t> vp;
-
-            getSharedRes()->res->loadResource(nullptr, vp, "FullHD_Pattern.png");
-
-            tm=new Texture(m_glbase);
-            tm->loadFromMemPtr(&vp[0],vp.size(),GL_TEXTURE_2D, 1, 0);
-        }
-
-        Shaders* sh= m_sharedRes->shCol->getUIGridTexSimple();
-
-        if (!sh) return false;
-
-        sh->begin();
-
-        sh->setUniform1i("stex", 0);
-        sh->setUniformMatrix4fv("mvp", getMVPMatPtr());
-
-        sh->setUniform2f("pos", getContentOffset().x, getContentOffset().y);
-        sh->setUniform2f("size", getContentSize().x, getContentSize().y);
-
-        sh->setUniform4fv("color", &glm::vec4(1.f)[0]);
-        sh->setUniform1i("flags", 0);
-        sh->setUniform2i("align", 0,0);
-        sh->setUniform1f("scale", 1);
-
-        sh->setUniform2i("section_pos", 0, 0);
-        sh->setUniform2i("section_size", tm->getWidth(), tm->getHeight());
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, tm->getId());
-
-        glBindVertexArray(*m_sharedRes->nullVao);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glBindVertexArray(0);
-
-
-        /*
-
-        (*m_texCol)[filename] = make_unique<Texture>();
-        (*m_texCol)[filename]->loadTexture2D(filename, m_mimMapLevel);
-        (*m_texCol)[filename]->setFiltering(GL_LINEAR, GL_LINEAR);
-        (*m_texCol)[filename]->setWraping(GL_CLAMP_TO_BORDER);
-        */
     }
 
     return false;
