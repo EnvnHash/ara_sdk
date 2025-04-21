@@ -60,11 +60,19 @@ bool ResNode::error_string(const string &str) {
 }
 
 bool ResNode::error(char *str, ...) {
-    char    estr[1024];
+    const int estr_size = 1024;
+    char    estr[estr_size];
     va_list p;
 
     va_start(p, str);
-    vsnprintf(estr, sizeof(estr), str, p);
+
+    auto result = vsnprintf(estr, estr_size, str, p);
+    if (result < 0) {
+        LOGE << "Error: Formatting failed";
+    } else if (static_cast<size_t>(result) >= estr_size) {
+        LOGE << "Error: Buffer overflow detected. Required " << result + 1 << " bytes, but only " << estr_size << " available.";
+    }
+
     va_end(p);
 
     return error_string(estr);

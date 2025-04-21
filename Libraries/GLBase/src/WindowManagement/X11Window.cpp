@@ -1325,7 +1325,7 @@ unsigned long X11Window::getWindowProperty(Window window, Atom property, Atom ty
 // Splits and translates a text/uri-list into separate file paths
 // NOTE: This function destroys the provided string
 char **X11Window::parseUriList(char *text, int *count) {
-    const char *prefix = "file://";
+    std::string prefix = "file://";
     char      **paths  = NULL;
     char       *line;
 
@@ -1338,8 +1338,8 @@ char **X11Window::parseUriList(char *text, int *count) {
             continue;
         }
 
-        if (std::string(line).substr(0, strlen(prefix)) == std::string(prefix)) {
-            line += strlen(prefix);
+        if (std::string(line).substr(0, prefix.length()) == prefix) {
+            line += prefix.length;
             while (*line != '/') {
                 ++line;
             }
