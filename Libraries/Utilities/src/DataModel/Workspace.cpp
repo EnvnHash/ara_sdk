@@ -33,9 +33,10 @@ void Workspace::init() {
                        std::filesystem::path(m_appName))
                           .string();
 #else
-    m_homeDirectory =
-        (std::filesystem::path(getenv("HOME")) / std::filesystem::path("Documents") / std::filesystem::path(m_appName))
-            .string();
+    auto sanitizedHomeDir = std::getenv("HOME")
+                            ? std::filesystem::path(std::getenv("HOME")) / std::filesystem::path("Documents")
+                            : std::filesystem::current_path();
+    m_homeDirectory = (sanitizedHomeDir / std::filesystem::path("Documents") / std::filesystem::path(m_appName)).string();
 #endif
     if (!std::filesystem::create_directory(m_homeDirectory, ec)) {
         if (0 != ec.value())  // already exist

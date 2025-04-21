@@ -95,9 +95,9 @@ std::string ConvertWCSToStdString(const wchar_t *wideStr) {
 }
 
 LPCWSTR StringToLPCWSTR(const std::string& utf8String) {
-    int sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, &utf8String[0], (int)utf8String.size(), NULL, 0);
+    auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, &utf8String[0], (int)utf8String.size(), nullptr, 0);
     std::wstring wstrTo(sizeNeeded, 0);
-    MultiByteToWideChar(CP_UTF8, 0, &utf8String[0], (int)utf8String.size(), &wstrTo[0], sizeNeeded);
+    MultiByteToWideChar(CP_UTF8, 0, &utf8String[0], static_cast<int>(utf8String.size()), &wstrTo[0], sizeNeeded);
     return wstrTo.c_str();
 }
 #endif
