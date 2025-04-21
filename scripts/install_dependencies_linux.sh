@@ -1,3 +1,4 @@
 #!/bin/bash
 sudo apt-get update
-sudo apt-get install -y libfreeimage-dev libglew-dev libglfw3-dev libassimp-dev libpugixml-dev libglm-dev libgtk-3-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libpostproc-dev libswsample-dev libswscale-dev
+sudo apt-get install -y libfreeimage-dev libglew-dev libglfw3-dev libassimp-dev libglm-dev libgtk-3-dev
+#  libswscale-dev libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavutil-dev libpostproc-dev libswsample-dev libpugixml-dev
