@@ -13,46 +13,55 @@ ResFile::ResFile() { m_Header.entry_count = 0; }
 bool ResFile::OpenFromFile(const filesystem::path &srcpath) {
     m_Entry.clear();
 
-    if (!filesystem::exists(srcpath)) return false;
+    if (!filesystem::exists(srcpath)) {
+        return false;
+    }
 
     src_FilePath = srcpath;
-
     ifstream file(srcpath, ios::in | ios::binary | ios::ate);
 
-    if (!file.is_open()) return false;
+    if (!file.is_open()) {
+        return false;
+    }
 
     size_t size = static_cast<int>(file.tellg());
-    if (size < sizeof(e_hdr)) return false;
+    if (size < sizeof(e_hdr)) {
+        return false;
+    }
 
     file.seekg(0, ios::beg);
     file.read((char *)&m_Header, sizeof(e_hdr));
 
-    // appmsg("ResFile(ver=%X count=%u
-    // comp_par=[%s])",m_Header.ver,m_Header.entry_count,m_Header.comp_par);
+    if (m_Header.fid != ('R' | ('E' << 8) | ('S' << 16) | ('F' << 24))) {
+        return false;
+    }
 
-    if (m_Header.fid != ('R' | ('E' << 8) | ('S' << 16) | ('F' << 24))) return false;
+    if (m_Header.ver != 0x0100) {
+        return false;
+    }
 
-    if (m_Header.ver != 0x0100) return false;
-
-    if (m_Header.entry_count <= 0) return true;
-
-    if (m_Header.entry_count > 1 << 20)  // let's set a limit, just in case file is corrupt (1M
-                                         // elements?  should this be fine?)
+    if (m_Header.entry_count <= 0) {
         return true;
+    }
+
+    // let's set a limit, just in case file is corrupt (1M elements?  should this be fine?)
+    if (m_Header.entry_count > 1 << 20) {
+        return true;
+    }
 
     file.seekg(m_Header.entry_pos);
-
     m_Entry.resize(m_Header.entry_count);
-
     file.read((char *)&m_Entry[0], sizeof(e_entry) * m_Header.entry_count);
-
 
     return true;
 }
 
 ResFile::e_entry *ResFile::FindEntry(string &path) {
-    for (ResFile::e_entry &ee : m_Entry)
-        if (ee.path == path) return &ee;
+    for (ResFile::e_entry &ee : m_Entry) {
+        if (ee.path == path) {
+            return &ee;
+        }
+    }
 
     return nullptr;
 }
@@ -100,7 +109,9 @@ bool ResFile::BeginCreate(const filesystem::path &fpath) {
     o_File = make_unique<ofstream>(fpath, ios::binary);
     m_Entry.clear();
 
-    if (!o_File->is_open()) return false;
+    if (!o_File->is_open()) {
+        return false;
+    }
 
     memset(&m_Header, 0, sizeof(e_hdr));
 
@@ -113,13 +124,15 @@ bool ResFile::BeginCreate(const filesystem::path &fpath) {
 }
 
 bool ResFile::Feed(std::vector<uint8_t> &vp, const string &path) {
-    if (o_File == nullptr) return false;
+    if (o_File == nullptr) {
+        return false;
+    }
 
-    e_entry e;
+    e_entry e{};
 
     memset(&e, 0, sizeof(e_entry));
 
-    strcpy(e.path, path.c_str());
+    e.path          = path;
     e.pos         = o_File->tellp();
     e.comp_size   = vp.size();
     e.uncomp_size = vp.size();
@@ -127,27 +140,28 @@ bool ResFile::Feed(std::vector<uint8_t> &vp, const string &path) {
     if (!m_Header.encode_par[0]) {
         o_File->write((char *)&vp[0], e.uncomp_size);
     } else {
-        // marco.g : compression not implemented yet
         return false;
     }
 
     m_Entry.push_back(e);
-
     return true;
 }
 
 bool ResFile::Finish() {
-    if (o_File == nullptr) return false;
+    if (o_File == nullptr) {
+        return false;
+    }
 
     m_Header.entry_pos   = o_File->tellp();
     m_Header.entry_count = static_cast<uint32_t>(m_Entry.size());
 
-    if (m_Header.entry_count > 0) o_File->write((char *)&m_Entry[0], sizeof(ResFile::e_entry) * m_Entry.size());
+    if (m_Header.entry_count > 0) {
+        o_File->write((char *)&m_Entry[0], sizeof(ResFile::e_entry) * m_Entry.size());
+    }
 
     o_File->seekp(0);
     o_File->write((char *)&m_Header, sizeof(ResFile::e_hdr));
     o_File->close();
-
     o_File.reset();
 
     return true;

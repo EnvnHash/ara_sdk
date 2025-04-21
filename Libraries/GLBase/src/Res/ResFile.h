@@ -21,10 +21,10 @@ public:
     };
 
     struct e_entry {
-        char     path[256];
-        uint64_t pos;
-        uint64_t comp_size;
-        uint64_t uncomp_size;
+        std::string path;
+        uint64_t    pos;
+        uint64_t    comp_size;
+        uint64_t    uncomp_size;
     };
 
     ResFile();
