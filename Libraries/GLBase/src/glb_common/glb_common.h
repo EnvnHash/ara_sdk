@@ -10,6 +10,11 @@
 #include <util_common.h>
 
 #include <cstdint>
+#include <algorithm>
+#include <unordered_map>
+#include <utility>
+#include <random>  // for random number generation
+
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,9 +27,6 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/vector_angle.hpp>
-#include <unordered_map>
-#include <utility>
-#include <random>  // for random number generation
 
 #include "glb_common/gl_headers.h"
 #include "glb_common/matrix.h"

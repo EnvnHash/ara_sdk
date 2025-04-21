@@ -6,7 +6,6 @@
 //  should be used after the shader is linked
 //  uniform block has to be used in shader, otherwise the compiler optimizes it, means kill it
 
-#include <algorithm>
 #include "Utils/UniformBlock.h"
 
 namespace ara {

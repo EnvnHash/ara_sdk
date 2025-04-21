@@ -37,7 +37,7 @@ private:
     std::vector<glm::vec3>                  m_normals;
     std::vector<glm::vec2>                  m_texCoords;
     std::vector<std::unique_ptr<MPQuad>>    m_quads;
-    glm::vec3                               m_qaNormal;
+    glm::vec3                               m_qaNormal{0.f, 0.f, 1.f};
 
     std::vector<CoordType> *m_instAttribs    = nullptr;
     int                     m_maxNrInstances = 1;

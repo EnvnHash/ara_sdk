@@ -25,7 +25,7 @@ public:
     void setAreaType(AreaType t) { m_type = t; }
 
 private:
-    AreaType   m_type;
+    AreaType   m_type{};
     glm::ivec2 m_dragStartWinPos;
     glm::ivec2 m_dragStartWinSize;
     glm::ivec2 m_mouseDownPixelPos;

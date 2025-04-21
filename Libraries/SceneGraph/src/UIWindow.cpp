@@ -1475,7 +1475,7 @@ std::string UIWindow::OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuff
     return out;
 }
 
-std::string UIWindow::SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes) {
+std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
 #ifdef _WIN32
 #ifdef ARA_USE_GLFW
     HWND owner = getWinHandle()->getHwndHandle();

@@ -44,18 +44,19 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
         glm::vec2 v = std::any_cast<glm::vec2>(val);
         m_Slider->setValue((v[idx] - prop->getMin()[idx]) / (prop->getMax()[idx] - prop->getMin()[idx]));
         m_Edit->setValue(v[idx]);
-        if (m_valChangeCb) m_valChangeCb();
+        if (m_valChangeCb) {
+            m_valChangeCb();
+        }
     });
 
     m_Edit->changeValType(UIEdit::num_fp);
 
     // update property on element changes
     m_Edit->addEnterCb(
-        [prop, idx](std::string txt) {
+        [prop, idx](const std::string& txt) {
             glm::vec2 lastVal = (*prop)();
             lastVal[idx]      = (float)atof(txt.c_str());
-            (*prop)           = lastVal;  // to be done this way in order to cause a
-                                          // onPreChange()
+            (*prop)           = lastVal;  // to be done this way in order to cause a onPreChange()
         },
         prop);
 
@@ -64,8 +65,7 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
         if (!m_onMouseUpUpdtMode) {
             glm::vec2 lastVal = (*prop)();
             lastVal[idx]      = newVal;
-            (*prop)           = lastVal;  // to be done this way in order to cause a
-                                          // onPreChange()
+            (*prop)           = lastVal;  // to be done this way in order to cause a onPreChange()
         } else {
             m_Edit->setValue(newVal);
         }
@@ -75,8 +75,7 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
         if (m_onMouseUpUpdtMode) {
             glm::vec2 lastVal = (*prop)();
             lastVal[idx] = m_Slider->getValue() * (prop->getMax()[idx] - prop->getMin()[idx]) + prop->getMin()[idx];
-            (*prop)      = lastVal;  // to be done this way in order to cause a
-                                     // onPreChange()
+            (*prop)      = lastVal;  // to be done this way in order to cause a onPreChange()
         }
     });
 

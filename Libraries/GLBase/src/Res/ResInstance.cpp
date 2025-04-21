@@ -1,5 +1,3 @@
-#include <algorithm>
-
 #include <RwBinFile.h>
 #include "Res/ResInstance.h"
 #include "Res/ImgSection.h"

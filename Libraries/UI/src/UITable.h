@@ -119,8 +119,8 @@ private:
     bool m_geoUpdating      = false;
 
     // temporary local variables made members for performance reasons
-    dTableType pp[2];
-    int        ii[2];
+    dTableType pp[2] {};
+    int        ii[2] {};
 };
 
 }  // namespace ara

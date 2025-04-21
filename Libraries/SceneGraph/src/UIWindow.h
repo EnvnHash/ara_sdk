@@ -51,7 +51,7 @@ public:
         return OpenFileDialog(allowedSuffix);
     }
 
-    std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes) {
+    std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
         return SaveFileDialog(fileTypes);
     }
 #elif __APPLE__
@@ -215,7 +215,7 @@ public:
     virtual void startRenderLoop();
     virtual void stopRenderLoop();
     Conditional* getGlInitedSema() { return m_winHandle->getGlInitedSema(); }
-    bool         isInited() { return m_winHandle ? m_winHandle->isInited() : false; }
+    bool         isInited() { return m_winHandle != nullptr && m_winHandle->isInited(); }
     void         focus() { if (m_winHandle) m_winHandle->focus();}
 #else
     virtual void hide() {}

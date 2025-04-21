@@ -28,7 +28,6 @@ QuadArrayAdj::QuadArrayAdj(int nrSegsX, int nrSegsY, float x, float y, float w, 
                            float a, std::vector<CoordType> *instAttribs, int nrInstances, GLenum usage)
     : GeoPrimitive(), m_x(x), m_y(y), m_width(w), m_height(h), m_nrSegsX(nrSegsX), m_nrSegsY(nrSegsY),
       m_totalWidth(2.f), m_totalHeight(2.f), m_instAttribs(instAttribs), m_maxNrInstances(nrInstances), m_usage(usage) {
-    m_qaNormal = glm::vec3(0.f, 0.f, 1.f);
     m_r        = r;
     m_g        = g;
     m_b        = b;

@@ -10,18 +10,17 @@ Shaders::Shaders(const string &comp_str, bool readFromFile) : m_comp(readFromFil
     create();
 }
 
-Shaders::Shaders(const string &vert, const string &frag, bool readFromFile) {
-    m_vs = readFromFile ? textFileRead(vert) : vert;
-    m_fs = readFromFile ? textFileRead(frag) : frag;
-
+Shaders::Shaders(const string &vert, const string &frag, bool readFromFile) :
+    m_vs(readFromFile ? textFileRead(vert) : vert),
+    m_fs(readFromFile ? textFileRead(frag) : frag)
+{
     create();
 }
 
-Shaders::Shaders(const string &vert, const string &geom, const string &frag, bool readFromFile) {
-    m_vs = readFromFile ? textFileRead(vert) : vert;
-    m_gs = readFromFile ? textFileRead(geom) : geom;
-    m_fs = readFromFile ? textFileRead(frag) : frag;
-
+Shaders::Shaders(const string &vert, const string &geom, const string &frag, bool readFromFile) :
+    m_vs(readFromFile ? textFileRead(vert) : vert),
+    m_gs(readFromFile ? textFileRead(geom) : geom),
+    m_fs(readFromFile ? textFileRead(frag) : frag) {
     create();
 }
 
@@ -36,11 +35,15 @@ Shaders::Shaders(const string &vert, const string &tessCtr, const string &tessEv
     create();
 }
 
-// create programm
+// create program
 GLuint Shaders::create() {
-    if (m_comp.empty()) m_program = glCreateProgram();
+    if (m_comp.empty()) {
+        m_program = glCreateProgram();
+    }
 
-    if (!m_vs.empty()) attachShader(m_program, GL_VERTEX_SHADER, m_vs);
+    if (!m_vs.empty()) {
+        attachShader(m_program, GL_VERTEX_SHADER, m_vs);
+    }
 
 #ifndef __EMSCRIPTEN__
     if (!m_comp.empty()) {
@@ -80,15 +83,20 @@ GLuint Shaders::create() {
     }
 
 #ifndef ARA_USE_GLES31
-    if (!m_cs.empty()) attachShader(m_program, GL_TESS_CONTROL_SHADER, m_cs);
-
-    if (!m_es.empty()) attachShader(m_program, GL_TESS_EVALUATION_SHADER, m_es);
-
+    if (!m_cs.empty()) {
+        attachShader(m_program, GL_TESS_CONTROL_SHADER, m_cs);
+    }
+    if (!m_es.empty()) {
+        attachShader(m_program, GL_TESS_EVALUATION_SHADER, m_es);
+    }
 #endif
-    if (!m_gs.empty()) attachShader(m_program, GL_GEOMETRY_SHADER, m_gs);
+    if (!m_gs.empty()) {
+        attachShader(m_program, GL_GEOMETRY_SHADER, m_gs);
+    }
 #endif
-
-    if (!m_fs.empty()) attachShader(m_program, GL_FRAGMENT_SHADER, m_fs);
+    if (!m_fs.empty()) {
+        attachShader(m_program, GL_FRAGMENT_SHADER, m_fs);
+    }
 
     bLoaded    = true;
     m_identMat = glm::mat4(1.f);
@@ -99,14 +107,20 @@ GLuint Shaders::create() {
 void Shaders::checkStatusLink(GLuint obj) {
     GLint status = GL_FALSE, len = 10;
 
-    if (glIsProgram(obj)) glGetProgramiv(obj, GL_LINK_STATUS, &status);
+    if (glIsProgram(obj)) {
+        glGetProgramiv(obj, GL_LINK_STATUS, &status);
+    }
 
     if (status != GL_TRUE) {
         LOGE << "Shaders Error: shader didn´t link!!!";
 
-        if (glIsShader(obj)) glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &len);
+        if (glIsShader(obj)) {
+            glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &len);
+        }
 
-        if (glIsProgram(obj)) glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &len);
+        if (glIsProgram(obj)) {
+            glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &len);
+        }
 
         std::string log;
         log.resize(len);
@@ -121,7 +135,9 @@ void Shaders::checkStatusLink(GLuint obj) {
             LOGE << log;
         }
 
-        if (!m_gs.empty()) LOG << "shader geometry code: log: " + m_gs;
+        if (!m_gs.empty()) {
+            LOG << "shader geometry code: log: " + m_gs;
+        }
     } else {
         bLoaded = true;
 
@@ -147,12 +163,20 @@ void Shaders::checkStatusCompile(GLuint obj) {
     if (status != GL_TRUE) {
         LOGE << "shader didn´t compile!!!";
 
-        if (glIsShader(obj)) glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &len);
-        if (glIsProgram(obj)) glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &len);
+        if (glIsShader(obj)) {
+            glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &len);
+        }
+        if (glIsProgram(obj)) {
+            glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &len);
+        }
 
         vector<GLchar> log(len);
-        if (glIsShader(obj)) glGetShaderInfoLog(obj, len, nullptr, &log[0]);
-        if (glIsProgram(obj)) glGetProgramInfoLog(obj, len, nullptr, &log[0]);
+        if (glIsShader(obj)) {
+            glGetShaderInfoLog(obj, len, nullptr, &log[0]);
+        }
+        if (glIsProgram(obj)) {
+            glGetProgramInfoLog(obj, len, nullptr, &log[0]);
+        }
 
         std::string logStr(log.begin(), log.end());
         LOG << "shader log: \n" << logStr;
@@ -210,8 +234,9 @@ void Shaders::getGlVersions() {
 }
 
 inline GLint Shaders::getUniformLocation(const std::string &name) {
-    if (m_locations.find(name) == m_locations.end()) m_locations[name] = glGetUniformLocation(m_program, name.c_str());
-
+    if (m_locations.find(name) == m_locations.end()) {
+        m_locations[name] = glGetUniformLocation(m_program, name.c_str());
+    }
     return m_locations[name];
 }
 
@@ -229,9 +254,13 @@ inline void Shaders::pathToResources() {
 
 Shaders::~Shaders() {
     glUseProgram(0);
-    if (m_program) glDeleteProgram(m_program);
+    if (m_program) {
+        glDeleteProgram(m_program);
+    }
 
-    if (m_progPipe) glDeleteProgramPipelines(1, &m_progPipe);
+    if (m_progPipe) {
+        glDeleteProgramPipelines(1, &m_progPipe);
+    }
 }
 
 }  // namespace ara

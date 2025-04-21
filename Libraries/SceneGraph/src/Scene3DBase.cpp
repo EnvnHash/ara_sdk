@@ -600,13 +600,14 @@ void Scene3DBase::moveObjectByArrowKeys(hidData* data) {
                                   (float)(g->m_nameFlag & GLSG_ROT_GIZMO_Z)};
 
                 float     offs = m_keyRotStep[(int)m_cfState];
-                glm::mat4 newRot =
-                    *object->getRotMat() *
+                glm::mat4 newRot = *object->getRotMat() *
                     glm::rotate((data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_LEFT) ? -offs : offs, rotAxis);
 
                 // offset
                 object->rotate(newRot);
-                if (object->getName() == getTypeName<LICamera>()) dynamic_cast<LICamera*>(object)->setup();
+                if (object->getName() == getTypeName<LICamera>()) {
+                    dynamic_cast<LICamera*>(object)->setup();
+                }
             }
         }
     }
@@ -620,15 +621,17 @@ void Scene3DBase::moveObjectByArrowKeys(hidData* data) {
 
 void Scene3DBase::mouseDown(hidData* data) {
     // process the object map at the position of the mouse
-    if (m_objSel)
+    if (m_objSel) {
         m_objSel->mouseDownLeft((float)data->mousePos.x - getWinPos().x, (float)data->mousePos.y - getWinPos().y,
                                 m_rootNode.get());
+    }
 
     s_mousePos = data->mousePos - getWinPos();
 
-    if (m_sceneRenderCam->getInteractCam())
+    if (m_sceneRenderCam->getInteractCam()) {
         m_sceneRenderCam->getInteractCam()->mouseDownLeft((float)data->mousePosNodeRel.x / getSize().x,
                                                           (float)data->mousePosNodeRel.y / getSize().y);
+    }
 
     m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
     m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
@@ -682,19 +685,17 @@ void Scene3DBase::mouseUp(hidData* data) {
         m_objSel->mouseUpLeft(m_rootNode.get());
     }
 
-    if (m_sceneRenderCam->getInteractCam() && data)
+    if (m_sceneRenderCam->getInteractCam() && data) {
         m_sceneRenderCam->getInteractCam()->mouseUpLeft((float)data->mousePosNodeRel.x / getSize().x,
                                                         (float)data->mousePosNodeRel.y / getSize().y);
+    }
 
     m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
     m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
     m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
 
     if (getWindow()) {
-        // getWindow()->setMouseCursorVisible(true);
-
         if (data && data->dragging && (!m_leftClick || forceResetMouse || m_leftClickViewDrag)) {
-            //  resetMousePos();
             m_leftClickViewDrag = false;
         }
     }
@@ -702,23 +703,27 @@ void Scene3DBase::mouseUp(hidData* data) {
     m_leftClick = false;
     setDrawFlag();
 
-    data->consumed = true;
+    if (data) {
+        data->consumed = true;
+    }
 }
 
 void Scene3DBase::mouseDownRight(hidData* data) {
     s_mousePos = data->mousePos - getWinPos();
 
-    if (m_sceneRenderCam->getInteractCam())
+    if (m_sceneRenderCam->getInteractCam()) {
         m_sceneRenderCam->getInteractCam()->mouseDownRight((float)data->mousePosNodeRel.x / getSize().x,
                                                            (float)data->mousePosNodeRel.y / getSize().y);
+    }
 
     m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
     m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
     m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
 
     setDrawFlag();
-
-    data->consumed = true;
+    if (data) {
+        data->consumed = true;
+    }
 }
 
 void Scene3DBase::mouseUpRight(hidData* data) {
@@ -732,30 +737,30 @@ void Scene3DBase::mouseUpRight(hidData* data) {
     m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
     m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
 
-    if (getWindow()) {
-        // getWindow()->setMouseCursorVisible(true);
-        // if (data->dragging) resetMousePos();
-    }
-
     setDrawFlag();
 
-    data->consumed = true;
+    if (data) {
+        data->consumed = true;
+    }
 }
 
 void Scene3DBase::mouseDrag(hidData* data) {
+    if (!m_objSel || !data) {
+        return;
+    }
+
     s_mousePos = data->mousePos - getWinPos();
 
-    if (!m_objSel) return;
-
-    if (data->mousePressed && !data->shiftPressed && !data->altPressed && !data->ctrlPressed)  // left mouse
+    if (data->mousePressed && !data->shiftPressed && !data->altPressed && !data->ctrlPressed)  {
         m_forceMouseUp = true;  // process the object map at the position of the mouse
+    }
 
-    if (data->mousePressed) m_objSel->mouseMove(s_mousePos.x, s_mousePos.y);
+    if (data->mousePressed) {
+        m_objSel->mouseMove(s_mousePos.x, s_mousePos.y);
+    }
 
     if (m_sceneRenderCam->getInteractCam()) {
-        if (data->mousePressed && !data->shiftPressed && !data->altPressed && data->ctrlPressed &&
-            m_forceMouseUp)  // left mouse with ctrl pressed
-        {
+        if (data->mousePressed && !data->shiftPressed && !data->altPressed && data->ctrlPressed && m_forceMouseUp) { // left mouse with ctrl pressed
             m_forceMouseUp = false;
             mouseUp(nullptr);
         }
@@ -770,9 +775,6 @@ void Scene3DBase::mouseDrag(hidData* data) {
     }
 
     if (data->dragStart) {
-        // if (getWindow())
-        //     getWindow()->setMouseCursorVisible(false);
-
         m_dragStartPos = data->mousePos;
     }
 
@@ -797,7 +799,6 @@ void Scene3DBase::mouseWheel(hidData* data) {
     m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
 
     getSharedRes()->requestRedraw = true;
-
     data->consumed = true;
 }
 
@@ -826,30 +827,36 @@ void Scene3DBase::setViewport(float x, float y, float width, float height) { UIN
 void Scene3DBase::updateScene3DBaseViewport(float x, float y, float width, float height) {
     glm::vec4 newVp{x, y, width, height};
 
-    if (glm::all(glm::equal(s_sd.winViewport, newVp))) return;
+    if (glm::all(glm::equal(s_sd.winViewport, newVp))) {
+        return;
+    }
 
     memcpy(&s_sd.winViewport[0], &newVp[0], sizeof(glm::vec4));
 
     // avoid the recalculation of FBO being done on every event
     // unfortunately m_camSet and m_netCamera iteration also has to be done on
     // mouseup
-    for (auto& it : m_camSet)
-        it->setViewport(0, 0, (uint)s_sd.winViewport.z, (uint)s_sd.winViewport.w,
-                        true);  // set the viewport and resize the ShaderProto
+    for (auto& it : m_camSet) {
+        it->setViewport(0, 0, (uint)s_sd.winViewport.z, (uint)s_sd.winViewport.w, true);  // set the viewport and resize the ShaderProto
+    }
 
-    // virtual cameras (NetCameras) have their own Matrix setup
-    // (LICamera::setup) since by default Camera sets inside a CameraSets are
-    // rebuilt, but those parameters are not available we have to call the
-    // NetCameras setup again here
-    for (auto& cam : m_netCameras) cam->setup();
+    // virtual cameras (NetCameras) have their own Matrix setup (LICamera::setup) since by default Camera sets inside
+    // a CameraSets are rebuilt, but those parameters are not available we have to call the NetCameras setup again here
+    for (auto& cam : m_netCameras) {
+        cam->setup();
+    }
 
-    // LOG << "updateScene3DBaseViewport " << x << ", " << y << ", "<< width <<
-    // ", "<< height; update camera matrices
-    for (auto& c : *m_sceneRenderCam->getCameras()) c.first->updateMatrices();
+    for (auto& c : *m_sceneRenderCam->getCameras()) {
+        c.first->updateMatrices();
+    }
 
-    if (m_useSsao && m_ssao) m_ssao->resize((uint)s_sd.winViewport.z, (uint)s_sd.winViewport.w);
+    if (m_useSsao && m_ssao) {
+        m_ssao->resize((uint)s_sd.winViewport.z, (uint)s_sd.winViewport.w);
+    }
 
-    if (m_gizmoFbo) m_gizmoFbo->resize((int)s_sd.winViewport.z, (int)s_sd.winViewport.w);
+    if (m_gizmoFbo) {
+        m_gizmoFbo->resize((int)s_sd.winViewport.z, (int)s_sd.winViewport.w);
+    }
 
     m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
     m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
@@ -911,7 +918,9 @@ void Scene3DBase::addLightObj(SPObjectSelector* objSel, const string& _type) {
 }
 
 bool Scene3DBase::addCamToSet(LICamera* netCam) {
-    if (!m_sceneRenderCam) return false;
+    if (!m_sceneRenderCam) {
+        return false;
+    }
 
     // set the scenefbo size
     netCam->getCamDef()->m_screenWidth  = m_sceneRenderCam->getViewport()->z;
@@ -923,23 +932,19 @@ bool Scene3DBase::addCamToSet(LICamera* netCam) {
 
     int camInd = (int)(camIt - m_sceneRenderCam->s_cam.begin());
 
-    // register the drawing mutex of this scene to the SceneCameras FBO, this
-    // way it can be used to sync drawing, when sharing
-    // m_sceneRenderCam->getFbo()->setSharedDrawMtx(&s_drawMtx);
+    // register the drawing mutex of this scene to the SceneCameras FBO; this way it can be used to sync drawing,
+    // when sharing m_sceneRenderCam->getFbo()->setSharedDrawMtx(&s_drawMtx);
 
-    // since we share one layer of the scenes cameras fbo which may change
-    // resolution or be remove we need to update the shared reference, when
-    // changes happen
+    // since we share one layer of the scene cameras fbo which may change resolution or be remove we need to update the
+    // shared reference when changes happen
     m_sceneRenderCam->addUpdtCb([this, netCam, camInd]() { netCam->setCsFboPtr(m_sceneRenderCam->getFbo(), camInd); },
                                 netCam);
 
-    // get a view onto the FBO corresponding to this camera, this is a
-    // multilayer fbo
+    // get a view onto the FBO corresponding to this camera; this is a multilayer fbo
     netCam->setCsFboPtr(m_sceneRenderCam->getFbo(), camInd);
 
-    // mark the Camera's visible representation to be skipped during rendering
-    // when it is used (avoid rendering the camera's visible representation into
-    // it's own framebuffer)
+    // mark the Camera's visible representation to be skipped during rendering when it is used (avoid rendering the
+    // camera's visible representation into its own framebuffer)
     netCam->iterateNodeParent(netCam, netCam->getFirstParentNode(), [camInd](SceneNode* node, SceneNode* parent) {
         node->m_skipForCamInd[parent] = camInd;
         return true;
@@ -951,8 +956,8 @@ bool Scene3DBase::addCamToSet(LICamera* netCam) {
         return true;
     });
 
-    // set a callback in the shaderproptype, when the camera setup was called -
-    // that is the camera configuration has changed
+    // set a callback in the shaderproptype, when the camera setup was called - that is the camera configuration has
+    // changed
     netCam->clearSetupCb();
     netCam->pushSetupCb([this]() { m_sceneRenderCam->buildCamMatrixArrays(); });
 
@@ -963,13 +968,17 @@ bool Scene3DBase::addCamToSet(LICamera* netCam) {
 }
 
 void Scene3DBase::removeCamFromSet(LICamera* netCam) {
-    if (m_netCameras.empty() || !netCam) return;
+    if (m_netCameras.empty() || !netCam) {
+        return;
+    }
 
     m_sceneRenderCam->removeCamera((void*)netCam);
 
     auto c =
         std::find_if(m_netCameras.begin(), m_netCameras.end(), [netCam](const LICamera* lic) { return lic == netCam; });
-    if (c != m_netCameras.end()) m_netCameras.erase(c);
+    if (c != m_netCameras.end()) {
+        m_netCameras.erase(c);
+    }
 }
 
 void Scene3DBase::addCameraViewRelative(SPObjectSelector* objSel) {
@@ -996,18 +1005,30 @@ void Scene3DBase::addCameraViewRelative(SPObjectSelector* objSel) {
 }
 
 void Scene3DBase::setFloorVisibility(bool val) {
-    if (m_gridFloor) m_gridFloor->setVisibility(val);
-    if (m_gridFloorPre) m_gridFloorPre->setVisibility(val);
-    if (m_gridFloorAxes) m_gridFloorAxes->setVisibility(val);
-    if (m_gridFloorAxesPre) m_gridFloorAxesPre->setVisibility(val);
+    if (m_gridFloor) {
+        m_gridFloor->setVisibility(val);
+    }
+    if (m_gridFloorPre) {
+        m_gridFloorPre->setVisibility(val);
+    }
+    if (m_gridFloorAxes) {
+        m_gridFloorAxes->setVisibility(val);
+    }
+    if (m_gridFloorAxesPre) {
+        m_gridFloorAxesPre->setVisibility(val);
+    }
 }
 
 void Scene3DBase::setWorldAxesVisibility(bool val, float ndcSize) {
     m_worldAxisNdcSize = ndcSize;
 
-    if (m_sceneGizmoPre) m_sceneGizmoPre->m_staticNDCSize = ndcSize;
+    if (m_sceneGizmoPre) {
+        m_sceneGizmoPre->m_staticNDCSize = ndcSize;
+    }
 
-    if (m_sceneGizmo) m_sceneGizmo->m_staticNDCSize = ndcSize;
+    if (m_sceneGizmo) {
+        m_sceneGizmo->m_staticNDCSize = ndcSize;
+    }
 
     setWorldAxesVisibility(val);
 }
@@ -1015,14 +1036,24 @@ void Scene3DBase::setWorldAxesVisibility(bool val, float ndcSize) {
 void Scene3DBase::setWorldAxesVisibility(bool val) {
     m_worldAxisVisibility = val;
 
-    if (m_worldAxes) m_worldAxes->setVisibility(val);
-    if (m_worldAxesPre) m_worldAxesPre->setVisibility(val);
-    if (m_sceneGizmoPre) m_sceneGizmoPre->setVisibility(val);
-    if (m_sceneGizmo) m_sceneGizmo->setVisibility(val);
+    if (m_worldAxes) {
+        m_worldAxes->setVisibility(val);
+    }
+    if (m_worldAxesPre) {
+        m_worldAxesPre->setVisibility(val);
+    }
+    if (m_sceneGizmoPre) {
+        m_sceneGizmoPre->setVisibility(val);
+    }
+    if (m_sceneGizmo) {
+        m_sceneGizmo->setVisibility(val);
+    }
 }
 
 void Scene3DBase::swapCameras(TrackBallCam* cam1, TrackBallCam* cam2) {
-    if (!m_sceneRenderCam || !cam1 || !cam2) return;
+    if (!m_sceneRenderCam || !cam1 || !cam2) {
+        return;
+    }
     m_sceneRenderCam->swapCameras(cam1, cam2);
 
     auto camSet = m_sceneRenderCam->getCameras();
@@ -1032,17 +1063,17 @@ void Scene3DBase::swapCameras(TrackBallCam* cam1, TrackBallCam* cam2) {
         // get the pointer of the cam in the scene camera set
         auto camIt = std::find_if(camSet->begin(), camSet->end(),
                                   [cam](const pair<Camera*, void*>& p) { return p.first == cam; });
-        if (camIt == camSet->end()) continue;
+        if (camIt == camSet->end()) {
+            continue;
+        }
 
-        // don't process the default scene camera (which contains the
-        // m_sceneCamSet pointer as second entry)
+        // don't process the default scene camera (which contains the m_sceneCamSet pointer as the second entry)
         if (camIt->second && camIt->second != m_sceneRenderCam.get()) {
             int  camInd = (int)(camIt - camSet->begin());
             auto netCam = static_cast<LICamera*>(camIt->second);
 
-            // mark the Camera's visible representation to be skipped during
-            // rendering when it is used (avoid rendering the camera's visible
-            // representation into its own framebuffer)
+            // mark the Camera's visible representation to be skipped during rendering when it is used (avoid rendering
+            // the camera's visible representation into its own framebuffer)
             netCam->iterateNodeParent(netCam, netCam->getFirstParentNode(),
                                       [camInd](SceneNode* node, SceneNode* parent) {
                                           node->m_skipForCamInd[parent] = camInd;
@@ -1050,17 +1081,22 @@ void Scene3DBase::swapCameras(TrackBallCam* cam1, TrackBallCam* cam2) {
                                       });
 
             // skip the gizmo drawing when the LICamera is rendered
-            if (gizmoTree)
+            if (gizmoTree) {
                 gizmoTree->iterateNodeParent(gizmoTree, m_rootNode.get(), [camInd](SceneNode* node, SceneNode* parent) {
                     node->m_skipForCamInd[parent] = camInd;
                     return true;
                 });
+            }
 
             if (cam == m_sceneRenderCam->getInteractCam()) {
                 // trackball needs to update the cameras SceneNodes modelmatrix
                 cam->setUptCamSceneNodeCb([netCam](TbModData& data) {
-                    if (data.trans) netCam->translate(data.trans);
-                    if (data.rotQ) netCam->rotate(glm::angle(*data.rotQ), glm::axis(*data.rotQ));
+                    if (data.trans) {
+                        netCam->translate(data.trans);
+                    }
+                    if (data.rotQ) {
+                        netCam->rotate(glm::angle(*data.rotQ), glm::axis(*data.rotQ));
+                    }
                 });
             } else {
                 cam->removeUpdtCamSceneNodeCb();
@@ -1076,22 +1112,30 @@ void Scene3DBase::swapCameras(TrackBallCam* cam1, TrackBallCam* cam2) {
         int skipInd = m_sceneRenderCam->getInteractCam() == m_sceneCam ? 1 : 0;
 
         m_sceneGizmo->m_skipForCamInd[m_sceneTreeCont] = skipInd;
-        for (auto& it : *m_sceneGizmo->getChildren()) it->m_skipForCamInd[m_sceneGizmo] = skipInd;
+        for (auto& it : *m_sceneGizmo->getChildren()) {
+            it->m_skipForCamInd[m_sceneGizmo] = skipInd;
+        }
 
         m_sceneGizmoPre->m_skipForCamInd[m_sceneTreeCont] = skipInd;
-        for (auto& it : *m_sceneGizmoPre->getChildren()) it->m_skipForCamInd[m_sceneGizmoPre] = skipInd;
+        for (auto& it : *m_sceneGizmoPre->getChildren()) {
+            it->m_skipForCamInd[m_sceneGizmoPre] = skipInd;
+        }
     }
 }
 
 void Scene3DBase::addShaderProto(const std::string* shdrName) {
-    for (auto& cIt : m_camSet) cIt->addShaderProto(*shdrName, {GLSG_SHADOW_MAP_PASS, GLSG_SCENE_PASS, GLSG_GIZMO_PASS});
+    for (auto& cIt : m_camSet) {
+        cIt->addShaderProto(*shdrName, {GLSG_SHADOW_MAP_PASS, GLSG_SCENE_PASS, GLSG_GIZMO_PASS});
+    }
 
     //-----------------------------------------------------------------------
-    // there might be parameter changes, before the scene has been m_inited, if
+    // there might be parameter changes before the scene has been m_inited, if
     // this is the case, process them now.
     for (auto& it : m_preSceneShdrProtoPar) {
         if (!strcmp(it.first.c_str(), shdrName->c_str())) {
-            for (auto& cb : it.second) cb(this);
+            for (auto& cb : it.second) {
+                cb(this);
+            }
             it.second.clear();
         }
     }
@@ -1100,59 +1144,74 @@ void Scene3DBase::addShaderProto(const std::string* shdrName) {
 void Scene3DBase::setBasePlane(basePlane bp) {
     m_basePlane = bp;
 
-    if (m_gridFloorPre) m_gridFloorPre->setBasePlane(bp);
-    if (m_gridFloorAxesPre) m_gridFloorAxesPre->setBasePlane(bp);
-    if (m_gridFloor) m_gridFloor->setBasePlane(bp);
-    if (m_gridFloorAxes) m_gridFloorAxes->setBasePlane(bp);
+    if (m_gridFloorPre) {
+        m_gridFloorPre->setBasePlane(bp);
+    }
+    if (m_gridFloorAxesPre) {
+        m_gridFloorAxesPre->setBasePlane(bp);
+    }
+    if (m_gridFloor) {
+        m_gridFloor->setBasePlane(bp);
+    }
+    if (m_gridFloorAxes) {
+        m_gridFloorAxes->setBasePlane(bp);
+    }
 }
 
 ShaderProto* Scene3DBase::getShaderProto(uint ind, string&& name) {
-    if (m_camSet.size() > ind)
+    if (m_camSet.size() > ind){
         return m_camSet[ind]->getShaderProto(name);
-    else
+    } else {
         return nullptr;
+    }
 }
 
 SceneNode* Scene3DBase::getModelSN(string&& name) {
-    if (!strcmp(name.c_str(), "SpotLight"))
+    if (!strcmp(name.c_str(), "SpotLight")) {
         return spotLightSN.get();
-    else if (name == getTypeName<LIProjector>())
+    } else if (name == getTypeName<LIProjector>()) {
         return projectorSN.get();
-    else if (name == getTypeName<LICamera>())
+    } else if (name == getTypeName<LICamera>()) {
         return netCamSN.get();
-    else
+    } else {
         return nullptr;
+    }
 }
 
 SceneNode* Scene3DBase::getModelSN(string* name) {
-    if (!strcmp(name->c_str(), "SpotLight"))
+    if (!strcmp(name->c_str(), "SpotLight")) {
         return spotLightSN.get();
-    else if ((*name) == getTypeName<LIProjector>())
+    } else if ((*name) == getTypeName<LIProjector>()) {
         return projectorSN.get();
-    else if ((*name) == getTypeName<LICamera>())
+    } else if ((*name) == getTypeName<LICamera>()) {
         return netCamSN.get();
-    else
+    } else {
         return nullptr;
+    }
 }
 
 void Scene3DBase::selectObj(int objId) {
-    if (m_inited)
+    if (m_inited) {
         for (auto& cIt : m_camSet) {
             auto objSelector = (SPObjectSelector*)cIt->getShaderProto(getTypeName<SPObjectSelector>());
             if (!objSelector->getLastSceneTree()) objSelector->setLastSceneTree(m_sceneTree);
             objSelector->selectObj(objId, true);
             m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
         }
+    }
 }
 
 void Scene3DBase::setAddGizmoCb(std::function<void(transMode)> f) {
-    if (m_inited)
-        for (auto& cIt : m_camSet) {
-            auto objSelector = (SPObjectSelector*)cIt->getShaderProto(getTypeName<SPObjectSelector>());
-            if (objSelector) objSelector->setAddGizmoCb(std::move(f));
+    if (m_inited) {
+        for (auto &cIt: m_camSet) {
+            auto objSelector = (SPObjectSelector *) cIt->getShaderProto(getTypeName<SPObjectSelector>());
+            if (objSelector) {
+                objSelector->setAddGizmoCb(std::move(f));
+            }
         }
-    else
+    } else {
         m_addGizmoCb = std::move(f);
+    }
 }
 
 void Scene3DBase::addPassiveGizmo(SceneNode* node, float objRelativeSize, float worldScale) {
@@ -1164,13 +1223,11 @@ void Scene3DBase::addPassiveGizmo(SceneNode* node, float objRelativeSize, float 
         gizmo->setName("passive_gizmo");
 
         // position onto the node's center
-        gizmo->translate(
-            ((*node->getBoundingBoxMax() - *node->getBoundingBoxMin()) * 0.5f + *node->getBoundingBoxMin()) *
+        gizmo->translate(((*node->getBoundingBoxMax() - *node->getBoundingBoxMin()) * 0.5f + *node->getBoundingBoxMin()) *
             worldScale);
 
         // scale relative to node
-        float diag = std::sqrt(glm::length(*node->getBoundingBoxMax() - *node->getBoundingBoxMin())) * objRelativeSize *
-                     worldScale;
+        float diag = std::sqrt(glm::length(*node->getBoundingBoxMax() - *node->getBoundingBoxMin())) * objRelativeSize * worldScale;
         gizmo->scale(diag, diag, diag);
 
         // set a screen relative limit for the size of the gizmo
@@ -1182,32 +1239,45 @@ void Scene3DBase::removePassiveGizmo(SceneNode* node) {
     if (node) {
         auto ptr = std::find_if(node->getChildren()->begin(), node->getChildren()->end(),
                                 [](SceneNode* nd) { return nd->getName() == "passive_gizmo"; });
-        if (ptr != node->getChildren()->end()) node->removeChild(*ptr);
+        if (ptr != node->getChildren()->end()) {
+            node->removeChild(*ptr);
+        }
     }
 }
 
 void Scene3DBase::deselectAll() {
-    for (auto& cIt : m_camSet)
-        if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end())
+    for (auto& cIt : m_camSet) {
+        if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
             ((SPObjectSelector*)cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get())->deselect();
+        }
+    }
 
-    if (getSceneTree()) getSceneTree()->setSelected(false, nullptr, false);
+    if (getSceneTree()) {
+        getSceneTree()->setSelected(false, nullptr, false);
+    }
 
-    if (m_deselectAllCb) m_deselectAllCb();
+    if (m_deselectAllCb) {
+        m_deselectAllCb();
+    }
 }
 
 void Scene3DBase::setCfState(cfState cf) {
-    if (m_cfState == cf) return;
+    if (m_cfState == cf) {
+        return;
+    }
 
     m_cfState = cf;
 
-    for (auto& cIt : m_camSet)
+    for (auto& cIt : m_camSet) {
         if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
             auto objSel = dynamic_cast<SPObjectSelector*>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get());
             if (objSel->getCfState() != cf) objSel->setCfState(cf);
         }
+    }
 }
 
-Scene3DBase::~Scene3DBase() { freeGLResources(); }
+Scene3DBase::~Scene3DBase() {
+    freeGLResources();
+}
 
 }  // namespace ara

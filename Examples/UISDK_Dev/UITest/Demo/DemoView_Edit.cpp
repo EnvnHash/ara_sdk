@@ -40,9 +40,9 @@ void DemoView_Edit::init() {
     ed=addChild<UIEdit>(getStyleClass()+".ed-sl");
     ed->setOpt(UIEdit::single_line | UIEdit::num_int);
     ed->setValue(100);
-    ed->addEnterCb([this](std::string str){ LOG << "entercb " << str; }, this);
-    ed->setOnFocusedCb([this]{ LOG << "focused"; });
-    ed->setOnLostFocusCb([this]{ LOG << "lost focus";  });
+    ed->addEnterCb([](const std::string& str){ LOG << "entercb " << str; }, this);
+    ed->setOnFocusedCb([]{ LOG << "focused"; });
+    ed->setOnLostFocusCb([]{ LOG << "lost focus";  });
     ed->setUseWheel(true);
 
     addChild<Label>(getStyleClass()+".ed-sl-label-float");

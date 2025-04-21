@@ -415,12 +415,9 @@ std::vector<uint8_t> RTMPSender::flv_build_additional_meta_data() {
             packet.emplace_back(AMF_OBJECT);
             {
                 push_str(packet, "type");
-
                 packet.emplace_back(AMF_NUMBER);
-                double d_val = RTMP_PACKET_TYPE_AUDIO;
-                push_wb64(packet, *(uint64_t *)&d_val);
+                push_wb64(packet, static_cast<uint64_t>(RTMP_PACKET_TYPE_AUDIO));
 
-                /* ---- */
 
                 push_str(packet, "mediaLabels");
 

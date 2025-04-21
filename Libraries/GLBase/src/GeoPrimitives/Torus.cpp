@@ -35,15 +35,7 @@ Torus::Torus() : GeoPrimitive() {
 }
 
 Torus::Torus(int nrSegsX, int nrSegsY, float rad, std::vector<CoordType> *instAttribs, int nrInstances)
-    : GeoPrimitive() {
-    m_nrSegsX = nrSegsX;
-    m_nrSegsY = nrSegsY;
-
-    m_instAttribs    = instAttribs;
-    m_maxNrInstances = nrInstances;
-
-    m_qaNormal = glm::vec3(0.f, 0.f, 1.f);
-
+    : GeoPrimitive(), m_nrSegsX(nrSegsX), m_nrSegsY(nrSegsY), m_instAttribs(instAttribs), m_maxNrInstances(nrInstances) {
     Torus::init();
 }
 
