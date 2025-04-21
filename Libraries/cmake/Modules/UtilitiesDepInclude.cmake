@@ -11,15 +11,3 @@ include_directories(
 if (ARA_USE_CURL)
 	include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/curl/include)
 endif()
-
-if (ARA_USE_LIBRTMP)
-	if (WITH_RTMPS)
-		find_package(MbedTLS REQUIRED)
-		find_package(ZLIB REQUIRED)
-		add_definitions(-DCRYPTO -DUSE_MBEDTLS)
-		include_directories(${MBEDTLS_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS})
-	else()
-		add_definitions(-DNO_CRYPTO)
-	endif()
-endif()
-

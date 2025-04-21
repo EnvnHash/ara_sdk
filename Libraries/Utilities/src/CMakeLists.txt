@@ -57,21 +57,6 @@ if (ANDROID)
     list(APPEND COMMON_SRC ${ANDROID_UTIL_SRC})
 endif ()
 
-if (WIN32 AND ARA_USE_LIBRTMP)
-    file(GLOB LIBRTMP_SRC
-            Network/rtmp/librtmp/amf.c
-            Network/rtmp/librtmp/cencode.c
-            Network/rtmp/librtmp/hashswf.c
-            Network/rtmp/librtmp/log.c
-            Network/rtmp/librtmp/md5.c
-            Network/rtmp/librtmp/parseurl.c
-            Network/rtmp/librtmp/rtmp.c
-            Network/rtmp/RTMPSender.cpp
-            Network/rtmp/RTMPUtils.cpp
-    )
-    list(APPEND COMMON_SRC ${LIBRTMP_SRC})
-endif ()
-
 if (WIN32)
     file(GLOB UTILITIES_SRC ${COMMON_SRC}
             OSFileDialog.cpp
