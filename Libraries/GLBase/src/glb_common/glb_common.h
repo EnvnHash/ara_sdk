@@ -425,8 +425,7 @@ enum class glFun : int { Enable = 0, Disable, BlendEquation, BlendFunc, PolygonM
 enum class changeWinEvent : int { OnResize, SetViewport, Maximize, Minimize, SetWinPos };
 enum class StereoEye : int { left = 0, right = 1, count = 2 };
 
-// process steps, order matters!!!, these are for fixed functionality that is
-// used frequently
+// process steps, order matters!!!, these are for fixed functionality that is used frequently
 enum winProcStep : int { Callbacks = 0, Tesselate, L1Lines, Select, ClearSel, Draw, Update, Count };
 
 class custVec3 {
@@ -436,7 +435,7 @@ public:
     float z = 0.f;
 };
 
-// shortcut for strongly typed enums to be casted to their underlying type
+// shortcut for strongly typed enums to be cast to their underlying type
 template <typename E>
 constexpr typename std::underlying_type<E>::type toType(E e) {
     return static_cast<typename std::underlying_type<E>::type>(e);

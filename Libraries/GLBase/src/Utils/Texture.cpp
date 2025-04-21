@@ -86,7 +86,7 @@ std::array<float, 2> Texture::getFileImageSize(const std::string &filename) {
             if (fif == FIF_UNKNOWN) {
                 LOGE << "Unknown image file format";
             } else {
-                FIMEMORY* mem = FreeImage_OpenMemory(vp.data(), vp.size());
+                FIMEMORY* mem = FreeImage_OpenMemory(vp.data(), static_cast<DWORD>(vp.size()));
                 if (mem == nullptr) {
                     LOGE << "Failed to open image memory";
                 } else {

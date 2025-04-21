@@ -35,6 +35,9 @@ endif()
 
 # gcc debug flags
 if (UNIX AND NOT ANDROID AND NOT APPLE)
+	string(APPEND CMAKE_C_FLAGS " -Wno-nonnull")
+	string(APPEND CMAKE_CXX_FLAGS " -Wno-nonnull")
+
 	set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0" CACHE STRING "" FORCE)
 	#set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wno-class-conversion")
 	# supress deprecated warnings

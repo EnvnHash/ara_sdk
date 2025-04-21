@@ -1,10 +1,12 @@
 //
 // Created by user on 04.02.2021.
 //
-#include "Res/ResNode.h"
+
+#include <algorithm>
 
 #include <string_utils.h>
 
+#include "Res/ResNode.h"
 #include "Res/ImgSection.h"
 #include "Res/ResColor.h"
 #include "Res/ResFont.h"
@@ -19,7 +21,7 @@ namespace ara {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool SrcLine::isEmpty() {
-    return !(find_if(str.begin(), str.end(), [&](auto &x) { return x > 32; }) != str.end());
+    return !(std::find_if(str.begin(), str.end(), [&](auto &x) { return x > 32; }) != str.end());
 }
 
 bool SrcLine::isComment() const {

@@ -50,7 +50,7 @@ bool WGLWindow::create(char* title, uint32_t width, uint32_t height, uint32_t po
         wc.hbrBackground = NULL;                                // No Background Required For GL
         wc.lpszMenuName  = NULL;                                // We Don't Want A Menu
         m_thisClassName  = "OpenGL_" + std::to_string((uint64_t)this);
-        wc.lpszClassName = m_thisClassName.c_str();  // Set The Class Name
+        wc.lpszClassName = StringToLPCWSTR(m_thisClassName);  // Set The Class Name
 
         if (!RegisterClass(&wc))  // Attempt To Register The Window Class
         {

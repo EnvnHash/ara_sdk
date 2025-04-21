@@ -13,7 +13,7 @@ namespace ara {
 void GLSplashScreen::open() {
     DWORD          DispNum       = 0;
     DISPLAY_DEVICE DisplayDevice = {0};
-    DEVMODEA       defaultMode;
+    DEVMODEA       defaultMode{};
     float          actDeskWidth;
     float          actDeskHeight;
 
@@ -22,7 +22,6 @@ void GLSplashScreen::open() {
 
     // get all display devices
     while (EnumDisplayDevices(nullptr, DispNum, &DisplayDevice, 0)) {
-        ZeroMemory(&defaultMode, sizeof(DEVMODE));
         defaultMode.dmSize = sizeof(DEVMODE);
         if (!EnumDisplaySettingsA((LPSTR)DisplayDevice.DeviceName, ENUM_REGISTRY_SETTINGS, &defaultMode))
             OutputDebugStringA("Store default failed\n");
@@ -51,9 +50,6 @@ void GLSplashScreen::open() {
     gp.shiftX       = (static_cast<int>(actDeskWidth) - gp.width) / 2;
     gp.shiftY       = (static_cast<int>(actDeskHeight) - gp.height) / 2;
     gp.resizeable   = false;
-    // printf(" got display: offs: %d %d  physical size %d %d \n",
-    //        gp.m_posX, gp.m_posY,
-    //        gp.width, gp.height);
     m_win.create(gp);
 
     glViewportIndexedf(0, 0.f, 0.f, static_cast<float>(gp.width), static_cast<float>(gp.height));

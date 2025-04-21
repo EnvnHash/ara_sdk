@@ -13,6 +13,7 @@ std::string str_toupper(std::string s);
 
 #ifdef _WIN32
 std::string ConvertWCSToStdString(const wchar_t *wcharStr);
+LPCWSTR StringToLPCWSTR(const std::string& utf8String);
 #endif
 // std::string ConvertBSTRToMBS(BSTR bstr);
 }  // namespace ara
