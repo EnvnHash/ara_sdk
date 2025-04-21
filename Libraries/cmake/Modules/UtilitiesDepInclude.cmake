@@ -8,10 +8,6 @@ include_directories(
 	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/threadpool
 )
 
-if(ARA_USE_CMRC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
-	include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/cmrc/include)
-endif()
-
 if (ARA_USE_CURL)
 	include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/curl/include)
 endif()

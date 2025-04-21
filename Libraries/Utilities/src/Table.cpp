@@ -1,4 +1,6 @@
+#include <iostream>
 #include "Table.h"
+#include "Log.h"
 
 namespace ara {
 
@@ -79,7 +81,6 @@ bool TableRC::set(int index, eTable_rc &rc) {
     }
 
     iVector[index] = rc;
-
     return true;
 }
 
@@ -294,20 +295,16 @@ bool Table::updateGeo(float w, float h, float left_margin, float top_margin, flo
                       float h_padding, float v_padding) {
     m_Mat[0].updateGeo(h, top_margin, bottom_margin, v_padding);
     m_Mat[1].updateGeo(w, left_margin, right_margin, h_padding);
-    // updateCells();
     return true;
 }
 
 int Table::getCellCount() {
-    // return ((!m_Mat[0].getCount() && !m_Mat[1].getCount()) ? 0 :
-    // std::max<int>(m_Mat[0].getCount(), 1) *
-    // std::max<int>(m_Mat[1].getCount(), 1));
     return m_Mat[0].getCount() * m_Mat[1].getCount();
 }
 
 bool Table::startSepInt(float p[2]) {
-    if (static_cast<int>(m_Mat[0].evalByPix(sepInt[0].idx, p[1])) != 0 &&
-        static_cast<int>(m_Mat[1].evalByPix(sepInt[1].idx, p[0])) != 0) {
+    if (static_cast<int>(m_Mat[0].evalByPix(sepInt[0].idx, p[1])) == 0 &&
+        static_cast<int>(m_Mat[1].evalByPix(sepInt[1].idx, p[0])) == 0) {
         return false;
     }
 

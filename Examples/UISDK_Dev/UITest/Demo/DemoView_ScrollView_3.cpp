@@ -1,17 +1,15 @@
 #include "DemoView.h"
-#include "../../../../Libraries/GLSceneGraph/src/UI/Image.h"
+#include <Image.h>
 
 using namespace ara;
 using namespace glm;
 using namespace std;
-using namespace ara;
 
 DemoView_ScrollView_3::DemoView_ScrollView_3() : DemoView("Scroll View demo / Horizontal arrange",glm::vec4(.15f,.15f,.15f,1.f)) {
     setName(getTypeName<DemoView_ScrollView_3>());
 }
 
-void DemoView_ScrollView_3::init()
-{
+void DemoView_ScrollView_3::init() {
     ui_SV = addChild<ScrollView>();
     ui_SV->setY(80);
     ui_SV->setHeight(240);
@@ -20,8 +18,7 @@ void DemoView_ScrollView_3::init()
 
     char se[256];
 
-    for (int i=0; i<8; i++)
-    {
+    for (int i=0; i<8; i++) {
         auto unit = ui_SV->addChild<DemoView_ScrollView_3::Unit>();
         sprintf(se,"Item %02d",i+1);
         unit->m_Title = se;
@@ -33,8 +30,7 @@ void DemoView_ScrollView_3::init()
     }
 }
 
-void DemoView_ScrollView_3::Unit::init()
-{
+void DemoView_ScrollView_3::Unit::init() {
     setPadding(10);
 
     addChild(make_unique<Label>(0, 0, 180, 24, m_fontColor, glm::vec4(.1f, .1f, .2f, 1.f), m_Title,
@@ -42,7 +38,7 @@ void DemoView_ScrollView_3::Unit::init()
 
     auto img = addChild<Image>();
     img->setSize(110, 110);
-    img->setImg(std::rand()&1 ? "Icons/layer1_on.png" : "Icons/layer2_on.png",1);
+    img->setImg(std::rand()&1 ? "trigrid.png" : "FullHD_Pattern.png",1);
     img->setAlign(align::center, valign::center);
 
     auto l2=(Label*) addChild( make_unique<Label>(0, 0, 180, 24, glm::vec4(.4f, .4f, .4f, 1.f), getBackgroundColor(), "More text here",

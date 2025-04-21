@@ -13,7 +13,7 @@ demo_style {
 	border-radius:10
 	border-width:10
 
-	# the highLighted sub definition can be applied to any element
+	# the highLighted subdefinition can be applied to any element
 	# and is used when the mouse is hovering over the element
 	highLighted {
 		text-color:colors.white

@@ -18,7 +18,6 @@ int GLFWWindow::init(glWinPar &gp) {
     m_heightVirt = gp.height;
     m_monWidth   = 0;
     m_monHeight  = 0;
-
 #ifdef ARA_DEBUG
     gp.debug = true;
 #endif
@@ -26,7 +25,7 @@ int GLFWWindow::init(glWinPar &gp) {
     glfwSetErrorCallback(error_callback);
 
     // Initialize the library
-    if (gp.doInit && !glfwInit() && !m_glfwInited) {
+    if (gp.doInit && !glfwInit()) {
         LOGE << "GLFW init failed!!!!";
         return true;
     }
@@ -64,7 +63,6 @@ int GLFWWindow::init(glWinPar &gp) {
         }
     }
 
-    // if (gp.doInit)
     getMonitorScales();
 
     if (gp.fullScreen) {
@@ -90,8 +88,7 @@ int GLFWWindow::init(glWinPar &gp) {
 
         if (gp.debug) {
             for (int j = 0; j < countVm; j++) {
-                printf("%i: current video mode: width: %i height: %i refreshRate: "
-                        "%i\n",
+                printf("%i: current video mode: width: %i height: %i refreshRate: %i\n",
                         j, modes[j].width, modes[j].height, modes[j].refreshRate);
             }
         }
@@ -146,8 +143,7 @@ int GLFWWindow::init(glWinPar &gp) {
     } else {
         if (gp.debug) {
             for (int i = 0; i < m_count; i++) {
-                printf( "Window monitor %i: %s current video mode: width: %i "
-                        "height: %i refreshRate: %i scaleY: %f scaleY: %f "
+                printf( "Window monitor %i: %s current video mode: width: %i height: %i refreshRate: %i scaleY: %f scaleY: %f "
                         "decorated: %d floating: %d \n",
                         i, glfwGetMonitorName(m_monitors[i]), glfwGetVideoMode(m_monitors[i])->width,
                         glfwGetVideoMode(m_monitors[i])->height, glfwGetVideoMode(m_monitors[i])->refreshRate,
@@ -180,10 +176,8 @@ int GLFWWindow::init(glWinPar &gp) {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT,
-                       GL_TRUE);  // uncomment this statement to fix compilation on OS X
-        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER,
-                       GL_FALSE);  // uncomment this statement to fix compilation on OS X
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // uncomment this statement to fix compilation on OS X
+        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);  // uncomment this statement to fix compilation on OS X
 #endif
 
 #ifndef __EMSCRIPTEN__
@@ -256,6 +250,8 @@ int GLFWWindow::init(glWinPar &gp) {
     m_posYreal   = (int)(gp.shiftY * m_contentScale.y);
 #endif
 
+    glfwSetWindowPos(m_window, m_posXreal, m_posYreal);
+
     if (gp.debug) {
         LOG << "Vendor:  " << glGetString(GL_VENDOR);
         LOG << "Renderer: " << glGetString(GL_RENDERER);
@@ -281,11 +277,9 @@ int GLFWWindow::init(glWinPar &gp) {
     m_mouseCursors[toType(WinMouseIcon::vresize)]   = glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR);
     m_mouseCursors[toType(WinMouseIcon::crossHair)] = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
 
-    // if this window is instance without the GLFWWindowManager, hid callback
-    // functions are set here unfortunately passing this classes member function
-    // as c-pointer would require them to be static what would mean that a
-    // second instance will overwrite them. So solve this problems lambdas are
-    // used inside which a static cast happens
+    // if this window is an instance without the GLFWWindowManager, hid callback functions are set here unfortunately
+    // passing this classes member function as c-pointer would require them to be static what would mean that a
+    // second instance will overwrite them. To solve this problem, lambdas are used inside which a static cast happens
     if (gp.hidInput && !gp.hidExtern) {
         glfwSetWindowUserPointer(m_window, this);
 
@@ -421,8 +415,7 @@ void GLFWWindow::startDrawThread(std::function<bool(double, double, int)> f) {
     }
 }
 
-/** note: must be called from a different thread than the window's draw thread
- * in order to avoid dead-locking */
+/** note: must be called from a different thread than the window's draw thread in order to avoid dead-locking */
 void GLFWWindow::stopDrawThread() {
     if (m_run) {
         m_run = false;

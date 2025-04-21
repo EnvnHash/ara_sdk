@@ -30,7 +30,7 @@ public:
     bool floating     = false;  // window always on top
     bool createHidden = false;
     bool openGlDebug  = false;  // set the GLFW_OPENGL_DEBUG_CONTEXT flag
-    bool debug        = false;  // m_show debug info
+    bool debug        = false;  // show debug info
     bool resizeable   = true;
     bool transparent  = false;
     bool hidInput     = true;

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include <GLBase.h>
-#include <UIApplication.h>
-#include <Scene3D.h>
+#include "GLBase.h"
+#include "UIApplication.h"
+#include "Scene3D.h"
 
 #ifdef _WIN32
 #include <crtdbg.h>

@@ -1,5 +1,5 @@
 #include "DemoView.h"
-#include "../../../../Libraries/GLSceneGraph/src/UI/Spinner.h"
+#include <Spinner.h>
 
 using namespace ara;
 using namespace glm;

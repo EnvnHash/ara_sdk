@@ -12,6 +12,7 @@ include(VisualStudioSettings)
 project(UITest)
 
 include_directories(
+	${CMAKE_SOURCE_DIR}/Libraries/UI/src
 	${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
 	)
 
@@ -43,7 +44,7 @@ if (COMPILE_GLSCENEGRAPH_LIB)
 		${CMAKE_BINARY_DIR}/Libraries/GLSceneGraph/src/libGLSceneGraph${LIB_SUFFIX}.so
 		${CMAKE_BINARY_DIR}/Libraries/Utilities/src/libUtilities.so)
 else()
-	set(TARGET_LIBS GLBase GLSceneGraph Utilities)
+	set(TARGET_LIBS GLBase GLSceneGraph UI Utilities)
 endif()
 
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)

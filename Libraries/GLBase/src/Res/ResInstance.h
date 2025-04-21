@@ -27,98 +27,45 @@ public:
     ResNode *findNode(const std::string &path) { return rootNode->findNode(path); }
 
     template <typename T>
-    T *findNode(std::string path) { /*std::unique_lock<std::mutex> l(m_updtMtx);*/
-        ResNode *n = findNode(std::move(path));
-        if (n == nullptr) return nullptr;
+    T *findNode(const std::string& path) { /*std::unique_lock<std::mutex> l(m_updtMtx);*/
+        ResNode *n = findNode(path);
+        if (n == nullptr) {
+            return nullptr;
+        }
         return (typeid(n[0]) == typeid(T)) ? (T *)n : nullptr;
     }
 
     bool getvalue(std::string &dest, const std::string &path);
     bool getvalue(std::string &dest, const std::string &path, int index);
 
-    std::string value(const std::string &path) {
-        auto node = findNode<ResFont>(path);
-        if (node == nullptr) return std::string();
-        return node->m_Value;
-    }
-
-    std::string value(const std::string &path, const std::string def) {
-        auto node = findNode<ResFont>(path);
-        if (node == nullptr) return def;
-        return node->m_Value;
-    }
-
-    int value1i(const std::string &path, int def) {
-        std::string s;
-        if (!getvalue(s, path)) return def;
-        int v;
-        try {
-            v = stoi(s);
-        } catch (...) {
-            v = def;
-        }
-        return v;
-    }
-
-    float value1f(const std::string &path, float def) {
-        std::string s;
-        if (!getvalue(s, path)) return def;
-        float v;
-        try {
-            v = stof(s);
-        } catch (...) {
-            v = def;
-        }
-        return v;
-    }
-
+    std::string value(const std::string &path);
+    std::string value(const std::string &path, const std::string& def);
+    int value1i(const std::string &path, int def);
+    float value1f(const std::string &path, float def);
     bool valueiv(std::vector<int> &v, const std::string &path, int fcount = 0, int def = 0);
     bool valuefv(std::vector<float> &v, const std::string &path, int fcount = 0, float def = 0);
 
-    float *color(std::string path);
-
-    Font *font(std::string path, float pixRatio);
+    float *color(const std::string& path);
+    Font *font(const std::string& path, float pixRatio);
 
     // resources
     // this function will decide if it loads from the compilation or an external file, tries internal first, then external
     size_t loadResource(ResNode *node, std::vector<uint8_t> &dest, const std::string& path, bool force_external = false);
-    size_t loadResourceFromCompilation(std::vector<uint8_t> &dest, std::string path) {
-        if (!m_ResFile.isOK()) {
-            return 0;
-        }
-        return m_ResFile.ReadEntry(dest, path);
-    }
-
-    static size_t loadResourceFromExternal(std::vector<uint8_t> &dest, const std::string &path) {
-        size_t ts = ReadBinFile(dest, path);
-        if (!ts) {
-            LOGE << "[ERROR] loadResourceFromExternal(" << path << ") size=" << ts;
-        }
-        return ts;
-    }
-
+    size_t loadResourceFromCompilation(std::vector<uint8_t> &dest, std::string path);
+    static size_t loadResourceFromExternal(std::vector<uint8_t> &dest, const std::string &path);
     Font *loadFont(const std::string& path, int size, float pixRatio);
 
-    //
     ImageBase *img(const std::string& path);
-    // void						drawImg(std::string
-    // path, float* mvp, float x, float y, float w, float h, float* color, int
-    // flags, int index, int align_x, int align_h, float scale);
 
-    //
-    bool isOK() { return m_LoadState == 100; }
+    bool isOK() const { return m_LoadState; }
     bool usingComp() { return m_ResFile.isOK(); }  // Using compilation
 
-    //
     bool checkForResSourceChange();
     bool checkForChangesInFolderFiles();
     void CallResSourceChange();
     void CallForChangesInFolderFiles();
+    bool Compile(const std::filesystem::path& p);
 
-    //
-    bool Compile(std::filesystem::path p);
-
-    //
     void         setPreContent(std::string &str) { m_PreContent = str; }
     void         setPostContent(std::string &str) { m_PostContent = str; }
     void         setPostContent(std::string str) { m_PostContent = std::move(str); }
@@ -141,7 +88,7 @@ private:
     std::filesystem::file_time_type m_ResFileLastTime;
     std::filesystem::path           m_ResSysFile;
 
-    unsigned m_LoadState = 0;
+    bool m_LoadState = false;
 
     std::map<std::filesystem::directory_entry, std::filesystem::file_time_type> m_ResFolderFiles;
 
@@ -160,10 +107,8 @@ private:
             tp - TP::clock::now() + std::chrono::system_clock::now()));
     }
 
-    // Fonts
     FontList m_FontList;
 
-    // Resources
     void populateFolderFiles();
 
     ResFile     m_ResFile;

@@ -1,10 +1,10 @@
 #include "DemoView.h"
-#include "../../../../Libraries/GLSceneGraph/src/UI/Image.h"
-#include "../../../../Libraries/Utilities/src/Log.h"
-#include "../../../../Libraries/GLBase/src/Res/ResColor.h"
-#include "../../../../Libraries/GLBase/src/Res/ResInstance.h"
-#include "../../../../Libraries/GLBase/src/Res/ResNode.h"
-#include "../../../../Libraries/GLBase/src/Res/ResSrcFile.h"
+#include <Image.h>
+#include <Log.h>
+#include <Res/ResColor.h>
+#include <Res/ResInstance.h>
+#include <Res/ResNode.h>
+#include <Res/ResSrcFile.h>
 
 using namespace ara;
 using namespace glm;
@@ -12,61 +12,20 @@ using namespace std;
 using namespace ara;
 
 DemoView_Resources::DemoView_Resources() : DemoView("Resources Demo",glm::vec4(.15f,.15f,.15f,1.f)) {
-
     setName(getTypeName<DemoView_Resources>());
     addStyleClass("chtest");
-
 }
 
-void DemoView_Resources::init()
-{
+void DemoView_Resources::init() {
     setPadding(10);
     fontList.setGlbase(m_glbase);
 
-    /*
-    auto l = addChild(make_unique<Label>("text_test"));
-    l->setSize(200, 100);
-    l->setY(50);
+    addChild(make_unique<Label>("text_test"));
 
-    for (int i = 0; i < 4; i++){
-        auto img = addChild<Image>("check");
-        img->setPos(50 + i * 30,400);
-        img->selectSection(i);
-        img->setScaleToTex(true);
-    }
-
-    auto img = addChild<Image>("sampletex");
-    img->setPos(150,200);
-    img->setSize(300,200);
-    img->setScaleToFill(true);
-
-    img = addChild<Image>("one.but1");
-    img->setPos(150,500);
-    img->setSize(300,200);
-    img->setBackgroundColor(1.f, 0.f, 0.f, 1.f);
-    img->setScaleToFill(true);
-    img->selectSection(1);
-
-    auto a=addChild<RawText>();
-    a->setSize(200,100);
-    a->setPos(500,40);
-    a->setIdColor(1,1,1,1);
-    a->setText("this is a text line");
-    a->setStyleClass("styles.rtext");
-
-    auto dp=addChild<Div>();
-    dp->setSize(300,200);
-    dp->setPos(500,300);
-    dp->setStyleClass("styles.rdiv");
-
-    auto idp=dp->addChild<Div>();
-    idp->setSize(1.f,1.f);
-    idp->addStyleClass("styles.irdiv");
-    */
+    auto dp= addChild<Div>("styles.rdiv");
+    dp->addChild<Div>("styles.irdiv");
 
     auto image = addChild<Image>("chtest.sample-image");
-    image->setPos(500,100);
-    image->setSize(400,400);
     image->setLod(3);
 
     image = addChild<Image>("chtest.icon");
@@ -91,25 +50,17 @@ void DemoView_Resources::init()
 }
 
 bool DemoView_Resources::draw(uint32_t* objId) {
-
     float pos[2]={200.f,100.f};
     float ss[2]={300.f,100.f};
 
     DemoView::draw(objId);
-
     glm::mat4 imat = *getMvp();
-
     int i=0;
-
-    ResNode *node = getStyleResNode();
-
-    if (node)
-    {
+    auto node = getStyleResNode();
+    if (node) {
         // Colors
-        for (ResNode::Ptr& p : node->m_Node)
-        {
-            if (typeid(*p) == typeid(ResColor))
-            {
+        for (ResNode::Ptr& p : node->m_Node) {
+            if (typeid(*p) == typeid(ResColor)) {
                 ResColor* rc=dynamic_cast<ResColor*>(p.get());
 
                 util_FillRect(10, 100+i*40, 28, 28, rc->getColor4fv());
@@ -125,11 +76,8 @@ bool DemoView_Resources::draw(uint32_t* objId) {
     if (node != nullptr) {
         // Colors
         for (ResNode::Ptr& p : node->m_Node) {
-
             //LOG << p->m_Name << "  type=" << typeid(*p).name();
-
             if (typeid(*p) == typeid(ResColor)) {
-
                 ResColor* rc=dynamic_cast<ResColor*>(p.get());
                 util_FillRect(10,100+i*40,28,28,rc->getColor4fv());
                 //util_Print(60,float(100+i*40+22),"regular",22,nullptr,rc->m_Name.c_str());
@@ -142,25 +90,19 @@ bool DemoView_Resources::draw(uint32_t* objId) {
     node=m_sharedRes->res->findNode("poststyle");
 
     if (node != nullptr) {
-
         // Colors
         for (ResNode::Ptr& p : node->m_Node) {
-
             //LOG << p->m_Name << "  type=" << typeid(*p).name();
-
             if (typeid(*p) == typeid(ResColor)) {
-
                 ResColor* rc=dynamic_cast<ResColor*>(p.get());
                 util_FillRect(10,100+i*40,28,28,rc->getColor4fv());
                 //util_Print(60,float(100+i*40+22),"regular",22,nullptr,rc->m_Name.c_str());
-
                 i++;
             }
         }
     }
 
     if (1) {
-
         string style = "\n"
                        "sven:rgb(255,0,0)\n"
                        "\n";

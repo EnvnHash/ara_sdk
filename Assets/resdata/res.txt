@@ -3,11 +3,11 @@
 
 #fonts
 fonts {
-    "light":"Fonts/NeoSans/NeoSansMedium.TTF"
-    "regular":"Fonts/NeoSans/NeoSansRegular.TTF"
-    "bold":"Fonts/NeoSans/NeoSansBold.TTF"
-    "tab::regular":"Fonts/NeoSans/NeoSansRegular.TTF"
-    "tab::bold":"Fonts/NeoSans/NeoSansBold.TTF"
+    "light":"Fonts/VeraMono.ttf"
+    "regular":"Fonts/verdana.ttf"
+    "bold":"Fonts/verdanab.ttf"
+    "tab::regular":"Fonts/verdanaz.ttf"
+    "tab::bold":"Fonts/verdanab.ttf"
 }
 
 #icons
@@ -29,7 +29,7 @@ defaults {
 	padding:5
 	projNodeWidth: 195px
 	projNodeContWidth: 182px
-	canvasProjNodeWidth: 401px	# this must be 2 * projNodeWidth + spacing (arithemic operation are not yet implemented)
+	canvasProjNodeWidth: 401px	# this must be 2 * projNodeWidth + spacing (arithmetic operations are not yet implemented)
 }
     
 colors {
@@ -191,7 +191,13 @@ one {imgsrc:"test/ui-main.png" grid:32
 	s3 {img pos:14,1 size:16,16 frame sep:32,32}
 	s4 {img pos:17,1 size:16,16 frame sep:16,16}
 	
-	but1 {img frame pos:17,3 size:16,16 sep:16,16 vdist:64 ver:0,1,2,3 default:0}
+	but1 {img frame
+	    pos:17,3
+	    size:16,16
+	    sep:16,16
+	    vdist:64
+	    ver:0,1,2,3
+	    default:0}
 	
 	state {img pos:24,11 size:203,36 vdist:64 ver:0,1,2,3}
 	
@@ -204,41 +210,37 @@ check {img:one pos:7,11 size:20 hdist:32 ver:0,0,1,2}
 radio {img:one pos:7,12 size:20 hdist:32 ver:0,0,1,2}
 
 styles {
-
-	rtext {
-	
-		padding:10,10,10,10
-		bkcolor:rgb(140,100,200)
-	
-	}
-
 	rdiv {
-	
+	    width: 100
+	    height: 100
+	    x: 0
+	    y: 100
 		padding:10,10,10,10
 		bkcolor:rgb(140,100,200)
 		border-width:2
 		border-radius:15
-		border-color:rgb(200,10,0)
-	 
+		border-color:rgb(120,200,100)
 	}
 
 	irdiv {
-	
+	    width: 90%
+	    height: 90%
 		padding:0,0,0,0
 		bkcolor:hsl(240,100,50)
 		border-width:3
-	
 	}
-
 }
 
 	 
 #--- DEBUG STUFF!!! --------------------------------------------------------------------------------------------------------------------
 
 text_test {
+    width: 450
+    height: 30
+    y: 50
 	bkcolor:hsla(40,30,50, 0.5) 
 	text-color:hsla(190,100,50, 1.0) 
-	font {font:"Fonts/verdana.ttf" size:28}
+	font {font:"Fonts/verdana.ttf" size:14}
 	#font {font:"Fonts/Code New Roman.otf" size:24}
 	text:!<[[Lorem Ipsum is simply dummy text of the printing and typesetting industry.]]>
 }
@@ -308,7 +310,7 @@ glsl {
 	      
 }
 
-two {imgsrc:"test/ui-sec.png" grid:32}
+#two {imgsrc:"test/ui-sec.png" grid:32}
 
 test2:sample_func(!<[[a single line parameter]]>,
 !<[[A multi-line
@@ -317,7 +319,7 @@ is it working?]]>)
 
 
 
-sampletex {imgsrc:"test/test-tex.png" mipmaps:3}
+sampletex {imgsrc:"test/test-tex.png" mipmaps:1}
 imageButText {imgsrc:"Icons/invert_icon.png"}
 imageButTextSel {imgsrc:"Icons/invert_icon_dark.png"}
 
@@ -342,7 +344,11 @@ chtest {
 	sample-image {
 		padding:10
 		bkcolor:rgb(140,100,200)
-	
+	    x: 500
+	    y: 50
+        width: 720
+        height: 500
+
 		image:sampletex
 		img-scale:0.5
 		img-flags:no-aspect
@@ -352,8 +358,8 @@ chtest {
 	sample-imageButton {
 		width:100px
 		height:100px
-		x:500px
-		y:600px
+		x:0px
+		y:350px
 		bkcolor:colors.lightBackground
 		
 		image:imageButText
@@ -379,26 +385,23 @@ defTest2 {
 }
  
 demos {
-
 	edit {
-
 		ed-sl-label {
 			width:150px
 			height:30px
-			y:150px
-			x:10px
+			y:90px
+			x:520px
 			text:"Integer Edit"
 			text-align:left
 			edit-align:center
 			edit-valign:center
 		}
-
 		
 		ed-sl-label-float {
 			width:150px
 			height:30px
-			y:230px
-			x:10px
+			x:520px
+			y:130px
 			text:"Float Edit"
 			text-align:left
 			edit-align:center
@@ -406,10 +409,10 @@ demos {
 		}
 	
 		ed-sl {
-		
 			width:500px
 			height:30px
-			y:190px
+			x:10px
+			y:90px
 			
 			color:hsla(220,10,90,1)
 			bkcolor:hsla(120,10,10,1)
@@ -438,7 +441,7 @@ demos {
 			width:500px
 			height:30px
 			x:10px
-			y:260px
+			y:130px
 			
 			color:hsla(220,10,90,1)
 			bkcolor:hsla(20,50,20,1)
@@ -454,7 +457,7 @@ demos {
 	
 		ed-ml {
 			width:500px
-			height:400px
+			height:300px
 			
 			color:hsla(220,10,90,1)
 			bkcolor:hsla(220,10,20,1)

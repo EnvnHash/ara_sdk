@@ -1190,14 +1190,10 @@ void Texture::saveFrontBuffer(const std::string &filename, int w, int h, int nrC
 
     if (bitmap) {
         BYTE *bits = (BYTE *)FreeImage_GetBits(bitmap);
-
         glReadBuffer(GL_FRONT);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-        // read the whole framebuffer
-        glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE,
-                     bits);  // synchronous, blocking command, no swap() needed
+        glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bits);  // synchronous, blocking command, no swap() needed
     }
 
     if (!FreeImage_Save(filetype, bitmap, filename.c_str())) {

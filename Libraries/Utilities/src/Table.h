@@ -36,19 +36,17 @@ public:
     typedef std::vector<eTable_rc> RCV;
 
     int  getCount() { return (int)V().size(); }
-    bool add(int count);                        // adds content with defaults
-    bool addPix(int count, int pix);            // adds content with int_val=pix
-    bool addPercent(int count, float percent);  // adds content with fp_val=percent [0..100]
-    bool ins(int at, int count);                // inserts content with defaults // for all :
-                                                // if at==-1 at=getCount()
-    bool insPix(int at, int count,
-                int pix);  // inserts content with int_val=pix
-    bool insPercent(int at, int count,
-                    float percent);  // inserts content with fp_val=percent [0..100]
+    bool add(int count);                                // adds content with defaults
+    bool addPix(int count, int pix);                    // adds content with int_val=pix
+    bool addPercent(int count, float percent);          // adds content with fp_val=percent [0..100]
+    bool ins(int at, int count);                        // inserts content with defaults // for all :
+                                                        // if at==-1 at=getCount()
+    bool insPix(int at, int count, int pix);            // inserts content with int_val=pix
+    bool insPercent(int at, int count, float percent);  // inserts content with fp_val=percent [0..100]
     bool setPix(int index, int pix);
     bool setPercent(int index, float percent);
-    bool ins(int at, int count, eTable_rc &rc);  // at==-1 : at=getCount()
-    bool del(int at, int count);                 // erase count elements at 'at' if count==-1 count=getCount()
+    bool ins(int at, int count, eTable_rc &rc);         // at==-1 : at=getCount()
+    bool del(int at, int count);                        // erase count elements at 'at' if count==-1 count=getCount()
     bool      set(int index, eTable_rc &rc);
     eTable_rc get(int index);
 

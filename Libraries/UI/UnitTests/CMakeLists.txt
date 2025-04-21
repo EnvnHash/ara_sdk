@@ -1,36 +1,34 @@
 cmake_minimum_required(VERSION 3.10)
-project(GLSceneGraph_UnitTests VERSION 0.1 LANGUAGES CXX)
+project(UI_UnitTests VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 
 include(GeneralSettings)
 include(VisualStudioSettings)
-include(GoogleTest)
+include(UnitTestDependencies)
 include(UtilitiesDepInclude)
 
-enable_testing()
-
 include_directories(
-    ${GTEST_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}/Libraries/UI/src
     ${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
     ${CMAKE_SOURCE_DIR}/Libraries/third_party/nameof
 )
 
 # add test source files
-file(GLOB GLBASE_UT_SRC
-    AlignTest.cpp
-    ButtonTests.cpp
-    ComboBoxTest.cpp
-    HidTest.cpp
-    Image.cpp
-    ScrollViewTest.cpp
-    SetXSetY.cpp
-    TabTest.cpp
-    UIMatTests/GetPixelPosition_Absolute.cpp
-    UIMatTests/GetPixelPosition_ParentRelative.cpp
+file(GLOB UI_UT_SRC
+        AlignTest.cpp
+        ButtonTests.cpp
+        ComboBoxTest.cpp
+        HidTest.cpp
+        Image.cpp
+        ScrollViewTest.cpp
+        SetXSetY.cpp
+        TabTest.cpp
+        UIMatTests/GetPixelPosition_Absolute.cpp
+        UIMatTests/GetPixelPosition_ParentRelative.cpp
 )
 
-add_executable(${PROJECT_NAME} ${GLBASE_UT_SRC})
+add_executable(${PROJECT_NAME} ${UI_UT_SRC})
 
 # automatically scan for gtest macros in target
 gtest_add_tests(TARGET      ${PROJECT_NAME}
@@ -44,7 +42,7 @@ include(GLBaseCopyDependencies)
 include(UtilitiesDependencies)
 include(UtilitiesDepInclude)
 
-set(TARGET_LIBS gmock_main gtest_main GLBase GLSceneGraph Utilities)
+set(TARGET_LIBS gmock_main gtest_main GLBase GLSceneGraph UI Utilities)
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
      list(APPEND TARGET_LIBS resources)
 endif()

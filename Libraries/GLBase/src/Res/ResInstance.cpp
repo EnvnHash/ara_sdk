@@ -74,22 +74,19 @@ bool Instance::Load(const string &path, bool force_external) {
         memcpy(&vp[p], getPostContent().c_str(), (int)getPostContent().size());
     }
 
-    m_LoadState = 2;
+    m_LoadState = false;
 
     if (sfile.Process(rootNode.get(), vp)) {
-        m_LoadState = 3;
         rootNode->Preprocess();
-
-        m_LoadState = 4;
         rootNode->Process();
 
-        if (!rootNode->errList.empty()) return rootNode->error((char *)"instance: Cannot process");
+        if (!rootNode->errList.empty()) {
+            return rootNode->error((char *)"instance: Cannot process");
+        }
 
-        m_LoadState = 5;
-
-        if (!rootNode->Load()) return rootNode->error((char *)"instance: Cannot load");
-
-        m_LoadState = 100;
+        if (!rootNode->Load()) {
+            return rootNode->error((char *)"instance: Cannot load");
+        }
 
         // get fonts
         auto fontsNode = findNode("fonts");
@@ -98,6 +95,8 @@ bool Instance::Load(const string &path, bool force_external) {
                 m_FontLUT.insert({f->m_Name, e_font_lut{f->m_Value, 20}});
             }
         }
+
+        m_LoadState = true;
         return true;
     }
 
@@ -106,11 +105,11 @@ bool Instance::Load(const string &path, bool force_external) {
 
 bool Instance::getvalue(string &dest, const string &path) {
     auto *node = findNode<ResFont>(path);
-
-    if (node == nullptr) return false;
+    if (node == nullptr) {
+        return false;
+    }
 
     dest = node->m_Value;
-
     return true;
 }
 
@@ -167,13 +166,13 @@ bool Instance::valuefv(std::vector<float> &v, const string &path, int fcount, fl
     return true;
 }
 
-float *Instance::color(string path) {
-    auto c = findNode<ResColor>(std::move(path));
+float *Instance::color(const string& path) {
+    auto c = findNode<ResColor>(path);
     return c == nullptr ? default_Color : c->getColor4fv();
 }
 
-Font *Instance::font(string path, float pixRatio) {
-    auto font = findNode<ResFont>(std::move(path));
+Font *Instance::font(const string& path, float pixRatio) {
+    auto font = findNode<ResFont>(path);
     auto f    = getGLFont(string("Fonts/verdana.ttf"), 20, pixRatio);
 
     if (font != nullptr) {
@@ -194,8 +193,11 @@ Font *Instance::getGLFont(string font_type_path, int size, float pixRatio) {
 
     if (f == nullptr) {
         std::vector<uint8_t> vp;
-        if (loadResource(nullptr, vp, font_type_path, false) > 0)
-            if ((f = m_FontList.add(vp, font_type_path, size, pixRatio)) != nullptr) return f;
+        if (loadResource(nullptr, vp, font_type_path, false) > 0) {
+            if ((f = m_FontList.add(vp, font_type_path, size, pixRatio)) != nullptr) {
+                return f;
+            }
+        }
     }
 
     if (!f) {
@@ -225,6 +227,21 @@ size_t Instance::loadResource(ResNode *node, std::vector<uint8_t> &dest, const s
     return loadResourceFromExternal(dest, m_DataRootPath + path);
 }
 
+size_t Instance::loadResourceFromCompilation(std::vector<uint8_t> &dest, std::string path) {
+    if (!m_ResFile.isOK()) {
+        return 0;
+    }
+    return m_ResFile.ReadEntry(dest, path);
+}
+
+size_t Instance::loadResourceFromExternal(std::vector<uint8_t> &dest, const std::string &path) {
+    size_t ts = ReadBinFile(dest, path);
+    if (!ts) {
+        LOGE << "[ERROR] loadResourceFromExternal(" << path << ") size=" << ts;
+    }
+    return ts;
+}
+
 Font *Instance::loadFont(const string& path, int size, float pixRatio) {
     std::vector<uint8_t> v;
     if (loadResource(nullptr, v, path) <= 0) {
@@ -234,12 +251,17 @@ Font *Instance::loadFont(const string& path, int size, float pixRatio) {
 }
 
 void Instance::populateFolderFiles() {
-    if (m_ResFile.isOK()) return;
+    if (m_ResFile.isOK()) {
+        return;
+    }
 
-    if (!std::filesystem::exists(m_DataRootPath)) return;
+    if (!std::filesystem::exists(m_DataRootPath)) {
+        return;
+    }
 
-    for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator(m_DataRootPath))
+    for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator(m_DataRootPath)) {
         m_ResFolderFiles[file] = filesystem::last_write_time(file);
+    }
 }
 
 bool Instance::checkForResSourceChange() {
@@ -261,8 +283,13 @@ bool Instance::checkForResSourceChange() {
 bool Instance::checkForChangesInFolderFiles() {
     bool change = false;
 
-    if (usingComp()) return false;
-    if (!isOK()) return false;
+    if (usingComp()) {
+        return false;
+    }
+
+    if (!isOK()) {
+        return false;
+    }
 
     filesystem::file_time_type ft;
 
@@ -348,7 +375,9 @@ bool Instance::Reload() {
 }
 
 void Instance::CallResSourceChange() {
-    if (usingComp() || !isOK()) return;
+    if (usingComp() || !isOK()) {
+        return;
+    }
 
     filesystem::file_time_type ft;
 
@@ -364,8 +393,6 @@ void Instance::CallResSourceChange() {
         ResNode::Ptr nroot;
 
         LOG << "\x1B[93mRes-File Changed (" << m_ResSysFile << ") \x1B[37m";
-
-        // appmsg("^:YLoading %s...",m_ResFilePath.c_str());
 
         nroot = std::make_unique<ResNode>("root", m_glbase);
         nroot->setInstance(this);
@@ -400,8 +427,9 @@ void Instance::CallResSourceChange() {
 
             if (err) {
                 LOGE << "New resource file has errors";
-                for (ResNode::e_error &e : nroot->errList)
+                for (ResNode::e_error &e : nroot->errList) {
                     LOGE << "Line " << std::to_string(e.lineIndex + 1) << " " << e.errorString;
+                }
             }
         }
 
@@ -417,13 +445,9 @@ void Instance::CallForChangesInFolderFiles() {
     // Check for new files...
     for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator("resdata")) {
         if (m_ResFolderFiles.find(file) == m_ResFolderFiles.end()) {
-            // appmsg("NEW FILE! %s",file.path().string().c_str());
-
             m_ResFolderFiles[file] = filesystem::last_write_time(file);
         }
     }
-
-    // std::unique_lock<mutex> lock(m_updtMtx);
 
     // check for file deletion or modification
     bool keep;
@@ -433,11 +457,8 @@ void Instance::CallForChangesInFolderFiles() {
 
         for (auto &e : m_ResFolderFiles) {
             if (!filesystem::exists(e.first)) {
-                // appmsg("FILE DELETED %s", e.first.path().string().c_str());
-
                 m_ResFolderFiles.erase(e.first);
                 keep = true;
-
                 break;
             } else {
                 try {
@@ -449,9 +470,7 @@ void Instance::CallForChangesInFolderFiles() {
                     string str = e.first.path().string();
                     std::replace(str.begin(), str.end(), '\\', '/');
                     str.erase(0, m_DataRootPath.size());
-
                     PropagateFileChange(false, str);
-
                     m_ResFolderFiles[e.first] = ft;
                 }
             }
@@ -460,10 +479,11 @@ void Instance::CallForChangesInFolderFiles() {
 }
 
 void Instance::PropagateFileChange(bool deleted, const string &fpath) {
-    if (usingComp()) return;
+    if (usingComp()) {
+        return;
+    }
 
     ResNode *node;
-
     LOG << "PROPAGATE " << fpath;
 
     for (e_file_bind &fb : m_FileBind) {
@@ -476,7 +496,7 @@ void Instance::PropagateFileChange(bool deleted, const string &fpath) {
     }
 }
 
-bool Instance::Compile(filesystem::path p) {
+bool Instance::Compile(const filesystem::path& p) {
     if (usingComp()) return false;
 
     ResFile         rfile;
@@ -509,6 +529,46 @@ ImageBase *Instance::img(const string& path) {
     }
 
     return (ImageBase *)node;
+}
+
+std::string Instance::value(const std::string &path) {
+    auto node = findNode<ResFont>(path);
+    if (node == nullptr) {
+        return {};
+    }
+    return node->m_Value;
+}
+
+std::string Instance::value(const std::string &path, const std::string& def) {
+    auto node = findNode<ResFont>(path);
+    if (node == nullptr) {
+        return def;
+    }
+    return node->m_Value;
+}
+
+int Instance::value1i(const std::string &path, int def) {
+    std::string s;
+    if (!getvalue(s, path)) return def;
+    int v;
+    try {
+        v = stoi(s);
+    } catch (...) {
+        v = def;
+    }
+    return v;
+}
+
+float Instance::value1f(const std::string &path, float def) {
+    std::string s;
+    if (!getvalue(s, path)) return def;
+    float v;
+    try {
+        v = stof(s);
+    } catch (...) {
+        v = def;
+    }
+    return v;
 }
 
 }  // namespace ara

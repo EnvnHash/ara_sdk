@@ -5,14 +5,11 @@ set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 
 include(GeneralSettings)
 include(VisualStudioSettings)
-include(GoogleTest)
 include(UtilitiesDepInclude)
-
-enable_testing()
+include(UnitTestDependencies)
 
 include_directories(
-        ${GTEST_INCLUDE_DIRS}
-        ${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
+    ${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
 )
 
 # add test source files

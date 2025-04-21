@@ -5,6 +5,5 @@ project(Libraries)
 add_subdirectory(src)
 
 if (NOT ANDROID)
-    #include(FetchGoogleTest) # fetch google test from github if necessary
     add_subdirectory(UnitTests)
 endif()

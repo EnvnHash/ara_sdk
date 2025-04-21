@@ -246,14 +246,14 @@ GLWindow *WindowManager::addWin(glWinPar *gp) {
 #endif
         m_windows.push_back(std::make_unique<GLWindow>());
 
-        // if there is no explicit request to share a specific content, and we
-        // already got another context to share, take the first added window as
-        // a shared context
+        // if there is no explicit request to share a specific content, and we already got another context to share,
+        // take the first added window as a shared context
         gp->shareCont = gp->shareCont ? gp->shareCont : m_shareCtx;
         gp->hidExtern = true;  // HID input must be managed by WindowManager
         m_windows.back()->init(*gp);
-
-        if (!m_windows.back()->getCtx()) return nullptr;
+        if (!m_windows.back()->getCtx()) {
+            return nullptr;
+        }
 
 #ifdef _WIN32
     }
@@ -265,10 +265,10 @@ GLWindow *WindowManager::addWin(glWinPar *gp) {
     glfwSetWindowUserPointer(m_windows.back()->getCtx(), reinterpret_cast<void *>(this));
 #endif
 
-    if (static_cast<unsigned int>(m_windows.size()) == 1) m_shareCtx = (void *)m_windows.back()->getCtx();
+    if (static_cast<unsigned int>(m_windows.size()) == 1) {
+        m_shareCtx = (void *)m_windows.back()->getCtx();
+    }
 
-    // get the new windows raw pointer ... just for keeping the following code
-    // more compact
     auto win = m_windows.back().get();
 
     if (gp->hidInput) {
@@ -327,8 +327,12 @@ GLWindow *WindowManager::addWin(glWinPar *gp) {
 
 #ifdef ARA_USE_GLFW
     // set diagonal mouse cursor icons, if already loaded
-    if (m_diagResizeAscCursor) win->setMouseCursorIcon(m_diagResizeAscCursor, WinMouseIcon::lbtrResize);
-    if (m_diagResizeDescCursor) win->setMouseCursorIcon(m_diagResizeDescCursor, WinMouseIcon::ltbrResize);
+    if (m_diagResizeAscCursor) {
+        win->setMouseCursorIcon(m_diagResizeAscCursor, WinMouseIcon::lbtrResize);
+    }
+    if (m_diagResizeDescCursor) {
+        win->setMouseCursorIcon(m_diagResizeDescCursor, WinMouseIcon::ltbrResize);
+    }
 #endif
 
     m_multCtx = m_windows.size() > 1;
@@ -336,46 +340,74 @@ GLWindow *WindowManager::addWin(glWinPar *gp) {
 }
 
 void WindowManager::removeWin(GLWindow *win, bool terminateGLFW) {
-    if (!win) return;
+    if (!win) {
+        return;
+    }
 
     // remove window callbacks
     auto kcIt = m_keyCbMap.find(win->getCtx());
-    if (kcIt != m_keyCbMap.end()) m_keyCbMap.erase(kcIt);
+    if (kcIt != m_keyCbMap.end()) {
+        m_keyCbMap.erase(kcIt);
+    }
 
     auto ccIt = m_charCbMap.find(win->getCtx());
-    if (ccIt != m_charCbMap.end()) m_charCbMap.erase(ccIt);
+    if (ccIt != m_charCbMap.end()) {
+        m_charCbMap.erase(ccIt);
+    }
 
     auto mbIt = m_mouseButCbMap.find(win->getCtx());
-    if (mbIt != m_mouseButCbMap.end()) m_mouseButCbMap.erase(mbIt);
+    if (mbIt != m_mouseButCbMap.end()) {
+        m_mouseButCbMap.erase(mbIt);
+    }
 
     auto mcIt = m_cursorCbMap.find(win->getCtx());
-    if (mcIt != m_cursorCbMap.end()) m_cursorCbMap.erase(mcIt);
+    if (mcIt != m_cursorCbMap.end()) {
+        m_cursorCbMap.erase(mcIt);
+    }
 
     auto wrIt = m_winResizeCbMap.find(win->getCtx());
-    if (wrIt != m_winResizeCbMap.end()) m_winResizeCbMap.erase(wrIt);
+    if (wrIt != m_winResizeCbMap.end()) {
+        m_winResizeCbMap.erase(wrIt);
+    }
 
     auto wpIt = m_winPosCbMap.find(win->getCtx());
-    if (wpIt != m_winPosCbMap.end()) m_winPosCbMap.erase(wpIt);
+    if (wpIt != m_winPosCbMap.end()) {
+        m_winPosCbMap.erase(wpIt);
+    }
 
     auto wcIt = m_winCloseCbMap.find(win->getCtx());
-    if (wcIt != m_winCloseCbMap.end()) m_winCloseCbMap.erase(wcIt);
+    if (wcIt != m_winCloseCbMap.end()) {
+        m_winCloseCbMap.erase(wcIt);
+    }
 
     auto wmIt = m_winMaxmimizeCbMap.find(win->getCtx());
-    if (wmIt != m_winMaxmimizeCbMap.end()) m_winMaxmimizeCbMap.erase(wmIt);
+    if (wmIt != m_winMaxmimizeCbMap.end()) {
+        m_winMaxmimizeCbMap.erase(wmIt);
+    }
 
     auto scIt = m_scrollCbMap.find(win->getCtx());
-    if (scIt != m_scrollCbMap.end()) m_scrollCbMap.erase(scIt);
+    if (scIt != m_scrollCbMap.end()) {
+        m_scrollCbMap.erase(scIt);
+    }
 
     auto icIt = m_winIconfifyCbMap.find(win->getCtx());
-    if (icIt != m_winIconfifyCbMap.end()) m_winIconfifyCbMap.erase(icIt);
+    if (icIt != m_winIconfifyCbMap.end()) {
+        m_winIconfifyCbMap.erase(icIt);
+    }
 
     auto fmIt = m_winFocusCbMap.find(win->getCtx());
-    if (fmIt != m_winFocusCbMap.end()) m_winFocusCbMap.erase(fmIt);
+    if (fmIt != m_winFocusCbMap.end()) {
+        m_winFocusCbMap.erase(fmIt);
+    }
 
     auto wreIt = m_winRefreshCbMap.find(win->getCtx());
-    if (wreIt != m_winRefreshCbMap.end()) m_winRefreshCbMap.erase(wreIt);
+    if (wreIt != m_winRefreshCbMap.end()) {
+        m_winRefreshCbMap.erase(wreIt);
+    }
 
-    if (m_shareCtx == win->getCtx()) m_shareCtx = nullptr;
+    if (m_shareCtx == win->getCtx()) {
+        m_shareCtx = nullptr;
+    }
 
     auto wIt = std::find_if(m_windows.begin(), m_windows.end(),
                             [win](const std::unique_ptr<GLWindow> &w) { return w.get() == win; });
@@ -395,75 +427,95 @@ void WindowManager::addEvtLoopCb(const std::function<bool()> &f) {
 // Note: all global...Cb are called on the main thread (same as startEventLoop()
 // )
 void WindowManager::globalKeyCb(GLContext ctx, int key, int scancode, int action, int mods) {
-    // on asus GL503V debian linux with spanish keyboard layout, arrow left
-    // right are different keycodes glfw doesn't seem to know them...
-    if (key == 263)
+    // on asus GL503V debian linux with spanish keyboard layout, arrow left right are different keycodes glfw doesn't
+    // seem to know them...
+    if (key == 263) {
         key = 18;
-    else if (key == 262)
+    } else if (key == 262) {
         key = 20;
-    else if (key == 265)
+    } else if (key == 265) {
         key = 19;
-    else if (key == 264)
+    } else if (key == 264) {
         key = 21;
+    }
 
-    // get the window user pointer -> this is the GWindowManger instance, set
-    // above in "addWin" method pass a pointer to this WindowManager instance to
-    // glfw, to be used inside the HID callback functions
+    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method pass a pointer
+    // to this WindowManager instance to glfw, to be used inside the HID callback functions
     auto winMan = getThis(ctx);
-    if (!winMan) return;
+    if (!winMan) {
+        return;
+    }
 
-    // go through the window specific keyCallback vectors and call the
-    // corresponding functions
+    // go through the window specific keyCallback vectors and call the corresponding functions
     auto winIt = winMan->m_keyCbMap.find(ctx);
-    if (winIt != winMan->m_keyCbMap.end()) winIt->second(key, scancode, action, mods);
+    if (winIt != winMan->m_keyCbMap.end()) {
+        winIt->second(key, scancode, action, mods);
+    }
 
     // call the global function which applies for all windows
-    for (auto &it : winMan->m_globalKeyCb) it.second(ctx, key, scancode, action, mods);
+    for (auto &it : winMan->m_globalKeyCb) {
+        it.second(ctx, key, scancode, action, mods);
+    }
 }
 
 void WindowManager::globalCharCb(GLContext ctx, unsigned int codepoint) {
-    // get the window user pointer -> this is the GWindowManger instance, set
-    // above in "addWin" method
+    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method
     auto winMan = getThis(ctx);
-    if (!winMan) return;
+    if (!winMan) {
+        return;
+    }
 
-    // go through the window specific keyCallback vectors and call the
-    // corresponding functions
+    // go through the window specific keyCallback vectors and call the corresponding functions
     auto winIt = winMan->m_charCbMap.find(ctx);
-    if (winIt != winMan->m_charCbMap.end()) winIt->second(codepoint);
+    if (winIt != winMan->m_charCbMap.end()) {
+        winIt->second(codepoint);
+    }
 
     // call the global function which applies for all windows
-    for (auto &it : winMan->m_globalCharCb) it.second(ctx, codepoint);
+    for (auto &it : winMan->m_globalCharCb) {
+        it.second(ctx, codepoint);
+    }
 }
 
 void WindowManager::globalMouseButCb(GLContext ctx, int button, int action, int mods) {
-    // get the window user pointer -> this is the GWindowManger instance, set
-    // above in "addWin" method
+    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method
     auto winMan = getThis(ctx);
-    if (!winMan) return;
+    if (!winMan) {
+        return;
+    }
 
-    // go through the mouseCallback vectors and call the corresponding functions
-    // of the actual window that is the rootWidget callback of this window
+    // go through the mouseCallback vectors and call the corresponding functions of the actual window that is the
+    // rootWidget callback of this window
     auto winIt = winMan->m_mouseButCbMap.find(ctx);
-    if (winIt != winMan->m_mouseButCbMap.end()) winIt->second(button, action, mods);
+    if (winIt != winMan->m_mouseButCbMap.end()) {
+        winIt->second(button, action, mods);
+    }
 
     // call the global function which applies for all windows
-    for (auto &it : winMan->m_globalButtonCb) it.second(ctx, button, action, mods);
+    for (auto &it : winMan->m_globalButtonCb) {
+        it.second(ctx, button, action, mods);
+    }
 }
 
 void WindowManager::globalMouseCursorCb(GLContext ctx, double xpos, double ypos) {
     // get the window user pointer -> this is the GWindowManger instance, set
     // above in "addWin" method
     auto winMan = getThis(ctx);
-    if (!winMan) return;
+    if (!winMan) {
+        return;
+    }
 
     // go through the cursorCallback vectors and call the corresponding
     // functions
     auto cbIt = winMan->m_cursorCbMap.find(ctx);
-    if (cbIt != winMan->m_cursorCbMap.end()) cbIt->second(xpos, ypos);
+    if (cbIt != winMan->m_cursorCbMap.end()) {
+        cbIt->second(xpos, ypos);
+    }
 
     // call the global function which applies for all windows
-    for (auto &it : winMan->m_globalMouseCursorCb) it.second(ctx, xpos, ypos);
+    for (auto &it : winMan->m_globalMouseCursorCb) {
+        it.second(ctx, xpos, ypos);
+    }
 
     // save last mouse Pos
     winMan->m_lastMouseX = xpos;

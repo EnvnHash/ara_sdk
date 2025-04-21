@@ -5,9 +5,9 @@
 
 #include "test_common.h"
 
-#include <UIApplication.h>
-#include <UI/ComboBox.h>
-#include <UI/Div.h>
+#include "UIApplication.h"
+#include <ComboBox.h>
+#include <Div.h>
 
 using namespace std;
 
@@ -17,7 +17,7 @@ namespace ara::GLSceneGraphUnitTest::ComboBoxTest {
         auto rootNode = app->getMainWindow()->getRootNode();
 
         auto combo = rootNode->addChild<ComboBox>();
-        combo->setMenuName("BoxesitoCombito");
+        combo->setMenuName("ComboBox");
         combo->setPos(0,50);
         combo->setSize(200,40);
         combo->setFontType("regular");
@@ -32,10 +32,9 @@ namespace ara::GLSceneGraphUnitTest::ComboBoxTest {
         combo->addEntry("Entry 2", [&]{ LOG << " entry two "; });
         combo->addEntry("Entry 3", [&]{ LOG << " entry three "; });
         combo->addEntry("Entry 4", [&]{ LOG << " entry four "; });
-
     }
 
-    TEST(GLSceneGraphTest, ComboBoxTest) {
+    TEST(UITest, ComboBoxTest) {
         bool entryOne = false;
         appBody([&](UIApplication* app){
             addCombo(app, entryOne);
@@ -45,7 +44,7 @@ namespace ara::GLSceneGraphUnitTest::ComboBoxTest {
         }, 600, 400);
     }
 
-    TEST(GLSceneGraphTest, ComboBoxTestClicked) {
+    TEST(UITest, ComboBoxTestClicked) {
         bool entryOne = false;
         appBody([&](UIApplication* app){
             auto mainWin = app->getMainWindow();
@@ -63,7 +62,7 @@ namespace ara::GLSceneGraphUnitTest::ComboBoxTest {
         }, 600, 400);
     }
 
-    TEST(GLSceneGraphTest, ComboBoxTestListHover) {
+    TEST(UITest, ComboBoxTestListHover) {
         bool entryOne = false;
         appBody([&](UIApplication* app){
             auto mainWin = app->getMainWindow();
@@ -88,7 +87,7 @@ namespace ara::GLSceneGraphUnitTest::ComboBoxTest {
         }, 600, 400);
     }
 
-    TEST(GLSceneGraphTest, ComboBoxTestListClicked) {
+    TEST(UITest, ComboBoxTestListClicked) {
         bool entryOne = false;
         appBody([&](UIApplication* app){
             auto mainWin = app->getMainWindow();

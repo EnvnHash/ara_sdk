@@ -66,7 +66,7 @@ static HidNode* addDiv(UIApplication* app) {
     return div;
 }
 
-TEST(GLSceneGraphTest, HidDefaultTest) {
+TEST(UITest, HidDefaultTest) {
     HidNode* div = nullptr;
     appBody([&](UIApplication* app){
         div = addDiv(app);
@@ -80,7 +80,7 @@ TEST(GLSceneGraphTest, HidDefaultTest) {
     }, 600, 400);
 }
 
-TEST(GLSceneGraphTest, HidDivClickTest) {
+TEST(UITest, HidDivClickTest) {
     HidNode* div = nullptr;
     appBody([&](UIApplication* app){
         div = addDiv(app);
@@ -100,7 +100,7 @@ TEST(GLSceneGraphTest, HidDivClickTest) {
     }, 600, 400);
 }
 
-TEST(GLSceneGraphTest, HidDivClickNegTest) {
+TEST(UITest, HidDivClickNegTest) {
     HidNode* div = nullptr;
     appBody([&](UIApplication* app){
         div = addDiv(app);
@@ -120,7 +120,7 @@ TEST(GLSceneGraphTest, HidDivClickNegTest) {
     }, 600, 400);
 }
 
-TEST(GLSceneGraphTest, HidDivClickCallbackTest) {
+TEST(UITest, HidDivClickCallbackTest) {
     HidNode* div = nullptr;
     std::unordered_map<hidEvent, bool> cbCalled{};
     for (auto i=0; i<static_cast<int32_t>(hidEvent::Size);i++) {
@@ -158,7 +158,7 @@ TEST(GLSceneGraphTest, HidDivClickCallbackTest) {
     }, 600, 400);
 }
 
-TEST(GLSceneGraphTest, HidDivClickCallbackNegTest) {
+TEST(UITest, HidDivClickCallbackNegTest) {
     HidNode* div = nullptr;
     std::unordered_map<hidEvent, bool> cbCalled{};
     for (auto i=0; i<static_cast<int32_t>(hidEvent::Size);i++) {
@@ -199,7 +199,7 @@ TEST(GLSceneGraphTest, HidDivClickCallbackNegTest) {
     }, 600, 400);
 }
 
-TEST(GLSceneGraphTest, HidDivNestedClick) {
+TEST(UITest, HidDivNestedClick) {
     HidNode* div = nullptr;
     HidNode* childDiv = nullptr;
 
@@ -248,7 +248,7 @@ TEST(GLSceneGraphTest, HidDivNestedClick) {
     }, 600, 400);
 }
 
-TEST(GLSceneGraphTest, HidDivDoubleNestedClick) {
+TEST(UITest, HidDivDoubleNestedClick) {
     HidNode* div = nullptr;
     HidNode* childDiv = nullptr;
     HidNode* childChildDiv = nullptr;
@@ -305,7 +305,7 @@ TEST(GLSceneGraphTest, HidDivDoubleNestedClick) {
     }, 600, 400);
 }
 
-TEST(GLSceneGraphTest, HidDivNestedClickConsume) {
+TEST(UITest, HidDivNestedClickConsume) {
     HidNode* div = nullptr;
     HidNode* childDiv = nullptr;
     HidNode* childChildDiv = nullptr;
@@ -386,7 +386,7 @@ TEST(GLSceneGraphTest, HidDivNestedClickConsume) {
     }, 600, 400);
 }
 
-TEST(GLSceneGraphTest, HidDivNestedClickExclude) {
+TEST(UITest, HidDivNestedClickExclude) {
     HidNode* div = nullptr;
     HidNode* childDiv = nullptr;
     HidNode* childChildDiv = nullptr;
@@ -458,7 +458,7 @@ TEST(GLSceneGraphTest, HidDivNestedClickExclude) {
     }, 600, 400);
 }
 
-TEST(GLSceneGraphTest, HidDivOverlap) {
+TEST(UITest, HidDivOverlap) {
     HidNode* div = nullptr;
     HidNode* div2 = nullptr;
 
@@ -491,7 +491,7 @@ TEST(GLSceneGraphTest, HidDivOverlap) {
     });
 }
 
-TEST(GLSceneGraphTest, HidDivInvisibleOverlap) {
+TEST(UITest, HidDivInvisibleOverlap) {
     HidNode* div = nullptr;
     HidNode* div2 = nullptr;
 

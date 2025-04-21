@@ -18,6 +18,7 @@ endif()
 
 if(WIN32)
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+	add_compile_definitions(UNICODE _UNICODE)
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 	if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 	    set(ARCH_POSTFIX "")
@@ -73,3 +74,8 @@ if (APPLE)
 		SET(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for Mac OS X" FORCE)
 	endif()
 endif()
+
+# virtual filesystem
+if (ARA_USE_CMRC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
+	include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/cmrc/include)
+endif ()

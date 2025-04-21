@@ -2,16 +2,16 @@
 // Created by sven on 11/15/20.
 //
 
-#include "test_common.h"
+#include "../test_common.h"
 
-#include <UIApplication.h>
+#include "UIApplication.h"
 
 using namespace std;
 using namespace glm;
 
 namespace ara::GLSceneGraphUnitTest::NestedAlignment{
 
-    TEST(GLSceneGraphTest, NestedAlignment)
+    TEST(UITest, NestedAlignment)
     {
         UIApplication app;
         app.setEnableMenuBar(false);

@@ -32,7 +32,6 @@ Texture *TextureCollector::addFromMem(const std::filesystem::path &fileName, con
     }
 
     auto fn = fileName.string();
-    LOG << "TextureCollector::addFromMem " << fn;
     return checkForExistence(fn, &dataPath,[&]  {
         std::vector<uint8_t> vp;
         ReadBinFile(vp, dataPath / fn);
@@ -56,7 +55,6 @@ Texture *TextureCollector::add(std::vector<uint8_t>& vp, const std::string &fn, 
     if (vp.empty()) {
         return nullptr;
     }
-    LOG << "TextureCollector::add " << fn;
 
     m_texMap[fn] = { Texture(m_glBase) };
     m_texMap[fn].texture.loadFromMemPtr(&vp[0], vp.size(), GL_TEXTURE_2D, mipMapLevel);

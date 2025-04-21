@@ -5,11 +5,11 @@
 #pragma once
 
 #include <UIApplication.h>
-#include <UI/Spinner.h>
-#include <UI/UITable.h>
-#include <UI/ScrollBar.h>
-#include <UI/ScrollView.h>
-#include <UI/TabView.h>
+#include <Spinner.h>
+#include <UITable.h>
+#include <ScrollBar.h>
+#include <ScrollView.h>
+#include <TabView.h>
 
 #include "Demo/DemoView.h"
 

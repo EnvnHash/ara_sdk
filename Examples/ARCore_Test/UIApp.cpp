@@ -10,15 +10,13 @@ using namespace ara;
 using namespace ara;
 using namespace ara;
 
-UIApp::UIApp() : UIApplication()
-{
+UIApp::UIApp() : UIApplication() {
     m_appStateCbs[android_app_cmd::onResume].emplace_back([this](android_cmd_data* cd){ m_arCore.onResume(cd); });
     m_appStateCbs[android_app_cmd::OnDisplayGeometryChanged].emplace_back([this](android_cmd_data* cd){ m_arCore.onDisplayGeometryChanged(cd); });
     m_appStateCbs[android_app_cmd::OnTouched].emplace_back([this](android_cmd_data* cd){ m_arCore.onTouched(cd); });
 }
 
-void UIApp::init(std::function<void()> initCb)
-{
+void UIApp::init(std::function<void()> initCb) {
     // create the main UI-Window. must be on the same thread on that glbase.init happened, in order to have
     // context sharing work
     m_mainWindow = addWindow(1600, 1000, 50, 20, false);
@@ -70,7 +68,6 @@ void UIApp::init(std::function<void()> initCb)
     startRenderLoop();  // main UIApplication renderloop (for all windows) -> blocking on all OSes but android
 }
 
-void UIApp::exit()
-{
+void UIApp::exit() {
     UIApplication::exit();
 }

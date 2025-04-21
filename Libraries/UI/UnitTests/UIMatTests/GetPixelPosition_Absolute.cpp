@@ -2,16 +2,16 @@
 // Created by sven on 11/15/20.
 //
 
-#include "test_common.h"
+#include "../test_common.h"
 
-#include <UIApplication.h>
-#include "UI/Button/Button.h"
+#include "UIApplication.h"
+#include "Button/Button.h"
 
 using namespace std;
 
 namespace ara::GLSceneGraphUnitTest::GetPixelPosition_Absolute {
 
-TEST(GLSceneGraphTest, GetPixelPosition_Absolute) {
+TEST(UITest, GetPixelPosition_Absolute) {
     UIApplication app;
     app.setEnableMenuBar(false); app.setEnableWindowResizeHandles(false);
 

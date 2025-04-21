@@ -1,1 +1,7 @@
-CMakeLists.txt not found in /home/sven/local/github/ara_sdk Select CMakeLists.txt
+/usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/338/bin/ninja/linux/x64/ninja -G Ninja -S /home/sven/local/github/ara_sdk -B /home/sven/local/github/ara_sdk/cmake-build-debug
+-- ARA_SDK_SOURCE_DIR: /home/sven/local/github/ara_sdk
+-- Found GLFW: /usr/include (found version "3.3.10") 
+-- Found GLFW: /usr/include (found version "3.3.10") 
+-- Configuring done (1.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/sven/local/github/ara_sdk/cmake-build-debug

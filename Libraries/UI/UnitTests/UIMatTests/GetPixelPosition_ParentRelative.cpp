@@ -3,13 +3,13 @@
 //
 
 #include <gtest/gtest.h>
-#include <UIApplication.h>
-#include "UI/Button/Button.h"
+#include "UIApplication.h"
+#include "Button/Button.h"
 
 using namespace std;
 
 namespace ara::GLSceneGraphUnitTest::GetPixelPosition_ParentRelative {
-TEST(GLSceneGraphTest, GetPixelPosition_ParentRealtive) {
+TEST(UITest, GetPixelPosition_ParentRealtive) {
     UIApplication app;
     app.setEnableMenuBar(false); app.setEnableWindowResizeHandles(false);
 

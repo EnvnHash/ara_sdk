@@ -4,14 +4,14 @@
 
 #include "test_common.h"
 
-#include <UIApplication.h>
-#include "UI/Button/Button.h"
+#include "UIApplication.h"
+#include "Button/Button.h"
 
 using namespace std;
 
 namespace ara::GLSceneGraphUnitTest::ButtonTests{
 
-TEST(GLSceneGraphTest, ButtonTests) {
+TEST(UITest, ButtonTests) {
     glm::ivec2 buttSize{200, 100};
 
     appBody([&](UIApplication* app){
@@ -19,21 +19,19 @@ TEST(GLSceneGraphTest, ButtonTests) {
         glm::vec4 fgColor(0.f, 0.f, 1.f, 1.f);
         glm::vec4 bgColor(0.2f, 0.2f, 0.2f, 1.f);
         auto button = rootNode->addChild<Button>(0, 0, buttSize.x, buttSize.y, fgColor, bgColor);
-        button->setFontSize(50);
+        button->setFontSize(30);
         button->setText("HelloBut");
-        button->setTextAlign(align::left, valign::center);
+        button->setTextAlign(align::center, valign::center);
         button->setPadding(20.f, 0.f, 0.f, 0.f);
         button->setBorderWidth(1);
         button->setBorderColor(1.f, 0.f, 0.f, 1.f);
-        button->setBorderRadius(30);
+        button->setBorderRadius(25);
     }, [&](UIApplication* app){
-        auto data = getPixels(0, app->getWinBase()->getHeight() - buttSize.y, buttSize.x, buttSize.y);
-        compareBitmaps(data, filesystem::current_path() / "butt_test.png", buttSize.x, buttSize.y);
-    });
+        compareFrameBufferToImage(filesystem::current_path() / "butt_test.png", app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+    }, 800, 400);
 }
 
-
-TEST(GLSceneGraphTest, ButtonClickTests) {
+TEST(UITest, ButtonClickTests) {
     glm::ivec2 buttSize{200, 100};
     bool flag = false;
 
@@ -42,13 +40,13 @@ TEST(GLSceneGraphTest, ButtonClickTests) {
         glm::vec4 fgColor(0.f, 0.f, 1.f, 1.f);
         glm::vec4 bgColor(0.2f, 0.2f, 0.2f, 1.f);
         auto button = rootNode->addChild<Button>(0, 0, buttSize.x, buttSize.y, fgColor, bgColor);
-        button->setFontSize(50);
+        button->setFontSize(30);
         button->setText("HelloBut");
-        button->setTextAlign(align::left, valign::center);
+        button->setTextAlign(align::center, valign::center);
         button->setPadding(20.f, 0.f, 0.f, 0.f);
         button->setBorderWidth(1);
         button->setBorderColor(1.f, 0.f, 0.f, 1.f);
-        button->setBorderRadius(30);
+        button->setBorderRadius(25);
         button->setClickedCb([&]{
             flag = true;
         });
@@ -61,9 +59,8 @@ TEST(GLSceneGraphTest, ButtonClickTests) {
 
     }, [&](UIApplication* app){
         ASSERT_TRUE(flag);
-        auto data = getPixels(0, app->getWinBase()->getHeight() - buttSize.y, buttSize.x, buttSize.y);
-        compareBitmaps(data, filesystem::current_path() / "butt_test.png", buttSize.x, buttSize.y);
-    });
+        compareFrameBufferToImage(filesystem::current_path() / "butt_test.png", app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+    }, 800, 400);
 }
 
 }

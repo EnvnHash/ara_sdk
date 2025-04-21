@@ -4,21 +4,21 @@
 
 #include "test_common.h"
 
-#include <UIApplication.h>
-#include "UI/Image.h"
+#include "UIApplication.h"
+#include "Image.h"
 
 using namespace std;
 
 namespace ara::GLSceneGraphUnitTest::ImageTests {
 
-TEST(GLSceneGraphTest, ImageSingle) {
+TEST(UITest, ImageSingle) {
     glm::ivec2 buttSize{200, 100};
 
     appBody([&](UIApplication *app) {
         auto rootNode = app->getMainWindow()->getRootNode();
 
         auto img = rootNode->addChild<Image>();
-        img->setImg((filesystem::current_path() / "resdata" / "FullHD_Pattern.png").string(), 1);
+        img->setImg((filesystem::current_path() / "resdata" / "test" / "test_img.jpg").string(), 1);
         img->setSize(200, 200);
         img->setAlign(align::center, valign::center);
 
@@ -28,13 +28,13 @@ TEST(GLSceneGraphTest, ImageSingle) {
     }, 300, 300);
 }
 
-TEST(GLSceneGraphTest, ImageSingleLod) {
+TEST(UITest, ImageSingleLod) {
     Image* img;
 
     appBody([&](UIApplication *app) {
         auto rootNode = app->getMainWindow()->getRootNode();
         img = rootNode->addChild<Image>();
-        img->setImg((filesystem::current_path() / "resdata" / "FullHD_Pattern.png").string(), 8);
+        img->setImg((filesystem::current_path() / "resdata" / "test" / "test_img.jpg").string(), 8);
         img->setSize(400, 400);
         img->setAlign(align::center, valign::center);
         img->setLod(8);
@@ -63,7 +63,7 @@ TEST(GLSceneGraphTest, ImageSingleLod) {
     }, 500, 500);
 }
 
-TEST(GLSceneGraphTest, ImageSingleFill) {
+TEST(UITest, ImageSingleFill) {
     Image* img;
 
     appBody([&](UIApplication *app) {
@@ -84,7 +84,7 @@ TEST(GLSceneGraphTest, ImageSingleFill) {
     }, 500, 500);
 }
 
-TEST(GLSceneGraphTest, ImageSingleScale) {
+TEST(UITest, ImageSingleScale) {
     Image* img;
 
     appBody([&](UIApplication *app) {
@@ -106,7 +106,7 @@ TEST(GLSceneGraphTest, ImageSingleScale) {
     }, 500, 500);
 }
 
-TEST(GLSceneGraphTest, ImageSingleHFlip) {
+TEST(UITest, ImageSingleHFlip) {
     appBody([&](UIApplication *app) {
         auto rootNode = app->getMainWindow()->getRootNode();
         auto img = rootNode->addChild<Image>();
@@ -125,7 +125,7 @@ TEST(GLSceneGraphTest, ImageSingleHFlip) {
     }, 500, 500);
 }
 
-TEST(GLSceneGraphTest, ImageSingleVFlip) {
+TEST(UITest, ImageSingleVFlip) {
     appBody([&](UIApplication *app) {
         auto rootNode = app->getMainWindow()->getRootNode();
         auto img = rootNode->addChild<Image>();
@@ -137,14 +137,13 @@ TEST(GLSceneGraphTest, ImageSingleVFlip) {
         unsigned iflags = 0;
         iflags |= 8;
         img->setImgFlags(iflags);
-
     }, [&](UIApplication *app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_vflip.png",
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
     }, 500, 500);
 }
 
-TEST(GLSceneGraphTest, ImageSingleNoAspect) {
+TEST(UITest, ImageSingleNoAspect) {
     appBody([&](UIApplication *app) {
         auto rootNode = app->getMainWindow()->getRootNode();
         auto img = rootNode->addChild<Image>();
@@ -156,7 +155,6 @@ TEST(GLSceneGraphTest, ImageSingleNoAspect) {
         unsigned iflags = 0;
         iflags |= 32;
         img->setImgFlags(iflags);
-
     }, [&](UIApplication *app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_no_aspect.png",
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());

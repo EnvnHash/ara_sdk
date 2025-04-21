@@ -1,5 +1,5 @@
 #include "DemoView.h"
-#include "../../../../Libraries/GLSceneGraph/src/UI/Image.h"
+#include <Image.h>
 
 using namespace ara;
 using namespace glm;

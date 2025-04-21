@@ -1,14 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(GLBase_UnitTests VERSION 0.1 LANGUAGES CXX)
 
-
-add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
-
 include(GeneralSettings)
-include(GoogleTest)
-enable_testing()
+include(UnitTestDependencies)
 
-include_directories(${GTEST_INCLUDE_DIRS}
+include_directories(
         ${CMAKE_SOURCE_DIR}/Libraries/GLBase/src
         ${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
         ${CMAKE_SOURCE_DIR}/Libraries/third_party/nameof
@@ -33,10 +29,6 @@ file(GLOB GLBASE_UT_SRC
         #GLRendDispPartTest.cpp # not working TODO: fixme
         LoadTextureMipMap.cpp
         LoadTexture.cpp
-
-        MaskLayerSerialization.cpp
-        ##MaskStackSerialization.cpp
-        ##MaskLayerSerializationHps.cpp
 
         NativeWindow.cpp
         PolygonTest.cpp

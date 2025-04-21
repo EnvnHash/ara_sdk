@@ -5,9 +5,9 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include <UIApplication.h>
-#include <Utils/Texture.h>
-#include <BS_thread_pool.hpp>
+#include "UIApplication.h"
+#include "Utils/Texture.h"
+#include "threadpool/BS_thread_pool.hpp"
 
 static inline BS::thread_pool g_thread_pool;
 static inline glm::vec2       contentScale{1.f, 1.f};
@@ -41,19 +41,6 @@ static std::vector<GLubyte> getPixels(int x, int y, uint32_t width, uint32_t hei
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glReadPixels(x, y, static_cast<GLint>(width), static_cast<GLint>(height), GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);	// synchronous, blocking command, no swap() needed
-
-    /*
-     auto texData = &data[0];
-
-      for (uint32_t y = 0; y < height; y++) {
-        for (uint32_t x = 0; x < width; x++) {
-            if (static_cast<int>(*(texData)) != 0) {
-                LOG << "[" << x << ":" << y << "]" << static_cast<int>(*(texData)) << ", " << static_cast<int>(*(texData + 1)) << ", "
-                    << static_cast<int>(*(texData + 2)) << ", " << static_cast<int>(*(texData + 3));
-            }
-            texData += 4;
-        }
-      }*/
     return data;
 }
 
@@ -65,26 +52,12 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
     FIBITMAP* pBitmap = ara::Texture::ImageLoader(p.string().c_str(), 0);
     ASSERT_TRUE(pBitmap);
 
-    /*
-    auto texData = &data[0];
-
-    for (uint32_t y = 0; y < height; y++) {
-        for (uint32_t x = 0; x < width; x++) {
-            if (static_cast<int>(*(texData)) != 0) {
-                LOG << "[" << x << ":" << y << "]" << static_cast<int>(*(texData)) << ", "
-                    << static_cast<int>(*(texData + 1)) << ", " << static_cast<int>(*(texData + 2)) << ", "
-                    << static_cast<int>(*(texData + 3));
-            }
-            texData += 4;
-        }
-    }*/
-
     std::list<std::future<void>> futures;
     auto tc = g_thread_pool.get_thread_count();
     uint32_t ySlices = height / tc;
     
     for (uint32_t i=0; i<tc; i++) {
-        futures.emplace_back(g_thread_pool.submit([&] {
+        futures.emplace_back(g_thread_pool.submit([&data, pBitmap, width, ySlices, i]() {
             auto texData = &data[0];
             auto refTex = static_cast<uint8_t*>(FreeImage_GetBits(pBitmap));
 

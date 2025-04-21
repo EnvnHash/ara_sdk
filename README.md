@@ -46,7 +46,9 @@ The _GenerateAndroidProject_ macro involves a few automatically executed steps
 
 [GLBase](Libraries/GLBase/src/README.md) OpenGL Utilities and wrapper classes / Window Management
 
-[GLSceneGraph](Libraries/GLSceneGraph/src/README.md) 3D Scenegraph and 2D UI System
+[GLSceneGraph](Libraries/SceneGraph/src/README.md) 3D Scenegraph 
+
+[UI](Libraries/UI/src/README.md) UI System
 
 [Utilities](Libraries/Utilities/src/README.md) FileSystem, Network, String and other utilities
 

@@ -11,7 +11,7 @@ DemoView_ComboBox::DemoView_ComboBox() : DemoView("ComboBoxes",glm::vec4(.1f,.1f
 
 void DemoView_ComboBox::init() {
     m_combo =  addChild<ComboBox>();
-    m_combo->setMenuName("BoxesitoCombito");
+    m_combo->setMenuName("ComboBox");
     m_combo->setPos(0,50);
     m_combo->setSize(200,40);
     m_combo->setFontType("regular");

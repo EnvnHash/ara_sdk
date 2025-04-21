@@ -84,13 +84,6 @@ if(ARA_USE_CMRC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
     add_dependencies(GLBase resources)
 endif()
 
-add_subdirectory(GLSceneGraph)
+add_subdirectory(SceneGraph)
+add_subdirectory(UI)
 add_subdirectory(Utilities)
-
-# google libyuv
-if (NOT WIN32)
-    add_subdirectory(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/libyuv)
-endif()
-
-add_subdirectory(VideoInput)
-

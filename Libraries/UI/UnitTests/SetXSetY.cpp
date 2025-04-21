@@ -31,7 +31,7 @@ namespace ara::GLSceneGraphUnitTest::SetXSetY{
         return (win->getWidthReal() * yPos + xPos ) * 4;
     }
 
-    TEST(GLSceneGraphTest, SetXSetY)
+    TEST(UITest, SetXSetY)
     {
         UIApplication app;
         app.setEnableMenuBar(false);

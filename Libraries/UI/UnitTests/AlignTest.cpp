@@ -3,7 +3,7 @@
 //
 
 #include "test_common.h"
-#include <UIApplication.h>
+#include "UIApplication.h"
 
 using namespace std;
 
@@ -28,7 +28,7 @@ void checkVals(const std::vector<GLubyte>& data, GLWindow* mainWin, std::vector<
     }
 }
 
-TEST(GLSceneGraphTest, AlignLeftBottom) {
+TEST(UITest, AlignLeftBottom) {
     int width = 200;
     int height = 100;
 
@@ -69,7 +69,7 @@ TEST(GLSceneGraphTest, AlignLeftBottom) {
     });
 }
 
-TEST(GLSceneGraphTest, AlignRightBottom) {
+TEST(UITest, AlignRightBottom) {
     int width = 200;
     int height = 100;
     appBody([&](UIApplication* app){
@@ -110,7 +110,7 @@ TEST(GLSceneGraphTest, AlignRightBottom) {
     });
 }
 
-TEST(GLSceneGraphTest, AlignLeftTop) {
+TEST(UITest, AlignLeftTop) {
     int width = 200;
     int height = 100;
     appBody([&](UIApplication* app){
@@ -164,7 +164,7 @@ TEST(GLSceneGraphTest, AlignLeftTop) {
     });
 }
 
-TEST(GLSceneGraphTest, AlignRightTop) {
+TEST(UITest, AlignRightTop) {
     int width = 200;
     int height = 100;
     appBody([&](UIApplication* app){
@@ -210,7 +210,7 @@ TEST(GLSceneGraphTest, AlignRightTop) {
     });
 }
 
-TEST(GLSceneGraphTest, AlignCenter) {
+TEST(UITest, AlignCenter) {
     int width = 200;
     int height = 100;
     appBody([&](UIApplication* app){
@@ -259,7 +259,7 @@ TEST(GLSceneGraphTest, AlignCenter) {
     });
 }
 
-TEST(GLSceneGraphTest, BorderRadiusOutOfBoundsLimit) {
+TEST(UITest, BorderRadiusOutOfBoundsLimit) {
     int width = 200;
     int height = 200;
     appBody([&](UIApplication* app){

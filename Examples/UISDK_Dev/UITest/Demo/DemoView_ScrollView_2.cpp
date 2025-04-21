@@ -1,5 +1,5 @@
 #include "DemoView.h"
-#include "../../../../Libraries/GLSceneGraph/src/UI/Image.h"
+#include <Image.h>
 
 using namespace ara;
 using namespace glm;
@@ -8,11 +8,9 @@ using namespace ara;
 
 DemoView_ScrollView_2::DemoView_ScrollView_2() : DemoView("Scroll View demo",glm::vec4(.15f,.15f,.15f,1.f)) {
     setName(getTypeName<DemoView_ScrollView_2>());
-
 }
 
-void DemoView_ScrollView_2::init()
-{
+void DemoView_ScrollView_2::init() {
     setPadding(10);
 
     UITable* taux;
