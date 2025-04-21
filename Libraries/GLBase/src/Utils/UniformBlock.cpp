@@ -98,16 +98,26 @@ void UniformBlock::update() {
         // Copy the uniform values into the buffer
         i = 0;
         for (auto &it : m_valPairs) {
+            auto ptr = &m_buffer[0] + m_offset[i];
+            auto dataSize = m_size[i] * TypeSize(m_type[i]);
             switch (m_valPairs[i].inType) {
-                case GL_INT: memcpy(&m_buffer[0] + m_offset[i], it.iVal, m_size[i] * TypeSize(m_type[i])); break;
-                case GL_FLOAT: memcpy(&m_buffer[0] + m_offset[i], it.fVal, m_size[i] * TypeSize(m_type[i])); break;
-                case GL_UNSIGNED_INT:
-                    memcpy(&m_buffer[0] + m_offset[i], it.uVal, m_size[i] * TypeSize(m_type[i]));
+                case GL_INT:
+                    std::copy(it.iVal, it.iVal + dataSize, ptr);
                     break;
-                case GL_BOOL: memcpy(&m_buffer[0] + m_offset[i], it.bVal, m_size[i] * TypeSize(m_type[i])); break;
-                default: memcpy(&m_buffer[0] + m_offset[i], it.vVal, m_size[i] * TypeSize(m_type[i])); break;
+                case GL_FLOAT:
+                    std::copy(it.fVal, it.fVal + dataSize, ptr);
+                    break;
+                case GL_UNSIGNED_INT:
+                    std::copy(it.uVal, it.uVal + dataSize, ptr);
+                    break;
+                case GL_BOOL:
+                    std::copy(it.bVal, it.bVal + dataSize, ptr);
+                    break;
+                default:
+                    std::copy(static_cast<GLubyte*>(it.vVal), static_cast<GLubyte*>(it.vVal) + dataSize, ptr);
+                    break;
             }
-            i++;
+            ++i;
         }
 
         // Create the uniform buffer object, initialize its storage, and

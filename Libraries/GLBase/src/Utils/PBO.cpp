@@ -72,9 +72,9 @@ void PBO::upload(GLuint textureId, void *dataPtr) {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbos[m_nextIndex]);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, m_dataSize, nullptr, GL_STREAM_DRAW);  // discard the buffer, avoid waiting
 
-    auto *ptr = (GLubyte *)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_dataSize, GL_MAP_WRITE_BIT);
+    auto ptr = static_cast<GLubyte*>(glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_dataSize, GL_MAP_WRITE_BIT));
     if (ptr) {
-        memcpy(ptr, dataPtr, m_dataSize);
+        std::copy(static_cast<const uint8_t*>(dataPtr), static_cast<const uint8_t*>(dataPtr) + m_dataSize, ptr);
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);  // release the mapped buffer
     }
 

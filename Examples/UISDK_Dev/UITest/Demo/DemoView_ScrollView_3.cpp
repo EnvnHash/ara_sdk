@@ -16,12 +16,11 @@ void DemoView_ScrollView_3::init() {
     ui_SV->setBackgroundColor(.1f, .1f, .1f, 1.f);
     ui_SV->setPadding(10.f);
 
-    char se[256];
-
     for (int i=0; i<8; i++) {
         auto unit = ui_SV->addChild<DemoView_ScrollView_3::Unit>();
-        sprintf(se,"Item %02d",i+1);
-        unit->m_Title = se;
+        std::stringstream ss;
+        ss << "Item "<< std::fixed << std::setprecision(2) << i+1;
+        unit->m_Title = ss.str();
         unit->setX(i * (200+10));
         unit->setAlignY(valign::center);
         unit->setSize(200, 200);

@@ -251,9 +251,10 @@ void Image::updateDrawData() {
         m_texSize.x = m_extTexWidth;
         m_texSize.y = m_extTexHeight;
     } else if (m_imgBase) {
-        memcpy(&m_secPos[0], m_imgBase->getVerPos(m_ppos, m_sectIndex), sizeof(int) * 2);
-        memcpy(&m_secSize[0], m_imgBase->getSectionSize(), sizeof(int) * 2);
-        memcpy(&m_secSep[0], m_imgBase->getSectionSep(), sizeof(int) * 2);
+        std::copy(m_imgBase->getVerPos(m_sectIndex).begin(), m_imgBase->getVerPos(m_sectIndex).end(), &m_secPos[0]);
+        std::copy(m_imgBase->getSectionSize().begin(), m_imgBase->getSectionSize().end(), &m_secSize[0]);
+        std::copy(m_imgBase->getSectionSep().begin(), m_imgBase->getSectionSep().end(), &m_secSep[0]);
+
         if (m_imgBase->getTexture()) {
             m_texSize.x = static_cast<int>(m_imgBase->getTexture()->getWidth());
             m_texSize.y = static_cast<int>(m_imgBase->getTexture()->getHeight());

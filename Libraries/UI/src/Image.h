@@ -69,7 +69,6 @@ public:
     glm::ivec2   getExtTexSize() const { return {m_extTexWidth, m_extTexHeight}; }
     int          getExtTexBitCount() const { return m_extTexBitCount; }
     bool         isLoaded() { return m_loaded; }
-    int         *getImgBasePos() { return m_ppos; }
     int          getSectIdx() { return m_sectIndex; }
     PBO         *getUplPbo() { return &m_uplPbo; }
 
@@ -102,7 +101,6 @@ protected:
     bool m_objUsesTexAlpha = false;
     bool m_mpInBounds      = false;
 
-    //int m_useDepthTexId      = 0;
     int m_mipMapLevel        = 8;
     int m_sectIndex          = 0;
     int m_extTexWidth        = 0;
@@ -125,7 +123,9 @@ protected:
     GLenum      m_dstBlendFunc      = GL_ONE_MINUS_SRC_ALPHA;
     GLenum      m_srcBlendAlphaFunc = GL_SRC_ALPHA;
     GLenum      m_dstBlendAlphaFunc = GL_ONE_MINUS_SRC_ALPHA;
+
     glm::mat4   m_pvm               = glm::mat4(1.f);
+
     glm::ivec2  m_secPos{0};
     glm::ivec2  m_secSize{0};
     glm::ivec2  m_secSep{0};
@@ -135,7 +135,6 @@ protected:
     glm::vec2   m_tuvSize{0.f};
     glm::vec2   m_uvSize{0.f};
     glm::vec2   m_hidMp{0.f};
-    int         m_ppos[2]{0};
 
     std::function<void(int, int)> m_sizeChangeCb;
     std::vector<GLenum>           m_attachments = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};

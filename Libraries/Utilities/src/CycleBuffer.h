@@ -24,23 +24,20 @@ public:
 
     void allocateBuffers(size_t nrBuffs, size_t bufferSize) {
         m_buffer.clear();
-
         for (size_t i = 0; i < nrBuffs; i++) {
             m_buffer.emplace_back(CIBufferArray<T>(bufferSize));
         }
     }
 
-    // ...for use with c legacy code, suppose an input c-array of same type and
-    // size as CIBufferArray<T>
+    // ...for use with c legacy code, suppose an input c-array of the same type and size as CIBufferArray<T>
     size_t feed(T *buffer) {
-        memcpy(m_buffer[m_buffPos].getData(), buffer, m_buffer[m_buffPos].size() * sizeof(T));
+        std::copy(buffer, buffer + m_buffer[m_buffPos].size() * sizeof(T), m_buffer[m_buffPos].getData());
         return countUp();
     }
 
     size_t countUp() {
         m_buffLastPos = m_buffPos;
         m_buffPos++;
-        // if (!m_filled && m_buffPos == m_buffer.size()) m_filled = true;
         m_buffPos %= m_buffer.size();
         m_fillAmt++;
         return m_buffPos;
@@ -79,7 +76,6 @@ public:
         m_buffPos     = 0;
         m_buffLastPos = 0;
         m_fillAmt = 0;
-        // m_filled = false;
         m_lastUplBuf = nullptr;
     }
 

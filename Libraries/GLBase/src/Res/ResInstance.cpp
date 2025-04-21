@@ -38,7 +38,6 @@ Instance::Instance(const string &data_root_path, const string &compilation_filep
 
 bool Instance::Load(const string &path, bool force_external) {
     SrcFile              sfile(m_glbase);
-    std::vector<uint8_t> vp;
 
     m_LoadState   = 1;
     m_ResFilePath = path;
@@ -48,7 +47,9 @@ bool Instance::Load(const string &path, bool force_external) {
 
 #ifdef ARA_USE_CMRC
         auto fs = cmrc::ara::get_filesystem();
-        if (!fs.exists(m_ResSysFile.string())) return false;
+        if (!fs.exists(m_ResSysFile.string())) {
+            return false;
+        }
 #else
         if (!filesystem::exists(m_ResSysFile)) {
             LOGE << "Instance::Load Error: could not open " << m_ResSysFile;
@@ -59,17 +60,15 @@ bool Instance::Load(const string &path, bool force_external) {
 #endif
     }
 
+    std::vector<uint8_t> vp;
     loadResource(nullptr, vp, path, force_external);
 
     if (!getPreContent().empty()) {
-        vp.insert(vp.begin(), getPreContent().size(), 0);
-        memcpy(&vp[0], getPreContent().c_str(), (int)getPreContent().size());
+        vp.insert(vp.begin(), getPreContent().begin(), getPreContent().end());
     }
 
     if (!getPostContent().empty()) {
-        size_t p = vp.size();
-        vp.resize(p + getPostContent().size());
-        memcpy(&vp[p], getPostContent().c_str(), (int)getPostContent().size());
+        vp.insert(vp.end(), getPostContent().begin(), getPostContent().end());
     }
 
     m_LoadState = false;

@@ -132,15 +132,16 @@ TEST(UITest, ScrollViewIntable) {
         int i;
         glm::vec4 color_bg(.1f,.2f,.3f,1.f);
         glm::vec4 color_text(1.f);
-        char se[256];
 
         for (i = 0; i < 20; i++) {
-            sprintf(se,"%02d",i);
+            std::stringstream ss;
+            ss << std::fixed << std::setprecision(2) << i;
+
             nt->insertRow(-1, 1, 100, false, false);						// fixed row
             Label* l = nt->setCell(i, 0, make_unique<Label>() );
             l->setFont("regular", 22,  align::center, valign::center, color_text);
             l->setBackgroundColor(color_bg);
-            l->setText(se);
+            l->setText(ss.str());
         }
 
         nt->setDynamicWidth(true);

@@ -91,7 +91,7 @@ public:
         uint8_t *src  = h->getPos();
 
         for (unsigned c = 0; c < count; c++) {
-            memcpy(dest, src, size);
+            std::copy(src, src + size, dest);
 
             src += size;
             dest += size;
@@ -233,10 +233,10 @@ public:
     [[nodiscard]] uint   getDepth() const { return static_cast<uint>(m_texData.depth); }
     [[nodiscard]] uint   getNrChans() const { return m_texData.nrChan; }
 
-    int* getSize() {
+    std::array<int, 2>& getSize() {
         m_sizeInt[0] = static_cast<int32_t>(m_texData.width);
         m_sizeInt[1] = static_cast<int32_t>(m_texData.height);
-        return &m_sizeInt[0];
+        return m_sizeInt;
     }
 
     [[nodiscard]] unsigned char *getBits() const { return m_texData.bits; }
@@ -295,8 +295,8 @@ protected:
     uint    m_mipmapLevels    = 1;
     GLsizei m_maxTexSize      = 0;
 
-    std::string m_filename;
-    int         m_sizeInt[2]{0, 0};
-    FIBITMAP   *m_saveBufCont = nullptr;
+    std::string         m_filename;
+    std::array<int, 2>  m_sizeInt{0, 0};
+    FIBITMAP*           m_saveBufCont = nullptr;
 };
 }  // namespace ara

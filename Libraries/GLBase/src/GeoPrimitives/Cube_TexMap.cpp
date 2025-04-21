@@ -26,8 +26,11 @@ Cube_TexMap::Cube_TexMap(float w, float h, float d) : GeoPrimitive() {
     GLfloat           cube_normals[36 * 3];
     constexpr GLfloat nvalue[6 * 3] = {0, 0, 1, -1, 0, 0, 0, -1, 0, 0, 0, -1, 1, 0, 0, 0, 1, 0};
 
-    for (int i = 0; i < 6; i++)
-        for (int j = 0; j < 6; j++) memcpy(&cube_normals[i * 6 * 3 + j * 3], &nvalue[i * 3], sizeof(GLfloat) * 3);
+    for (int i = 0; i < 6; i++){
+        for (int j = 0; j < 6; j++) {
+            std::copy(&nvalue[i * 3], &nvalue[i * 3] + sizeof(GLfloat) * 3, &cube_normals[i * 6 * 3 + j * 3]);
+        }
+    }
 
 #define p(a, b) (a) / 4.0f, 1 - (b) / 3.0f
 
@@ -40,14 +43,15 @@ Cube_TexMap::Cube_TexMap(float w, float h, float d) : GeoPrimitive() {
         p(3, 2), p(4, 2), p(3, 1), p(4, 1), p(3, 1), p(4, 2),  // bottom
     };
 
-    // Set
     m_vao = make_unique<VAO>("position:4f,normal:3f,texCoord:2f", GL_STATIC_DRAW, nullptr, 1, true);
     m_vao->upload(CoordType::Position, cube_positions, 36);
     m_vao->upload(CoordType::Normal, cube_normals, 36);
     m_vao->upload(CoordType::TexCoord, tex_coords, 36);
 }
 
-void Cube_TexMap::draw(TFO *_tfo) { m_vao->draw(GL_TRIANGLES, 0, 36, nullptr); }
+void Cube_TexMap::draw(TFO *_tfo) {
+    m_vao->draw(GL_TRIANGLES, 0, 36, nullptr);
+}
 
 void Cube_TexMap::init() {}
 

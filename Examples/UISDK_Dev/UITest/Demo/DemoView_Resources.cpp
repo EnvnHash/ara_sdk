@@ -111,14 +111,11 @@ bool DemoView_Resources::draw(uint32_t* objId) {
         SrcFile s(m_glbase);
 
         vector<uint8_t> vp;
+        vp.insert(vp.end(), style.begin(), style.end());
 
-        vp.resize(style.size() + 1);
-        memcpy(&vp[0], style.c_str(), style.size() + 1);
-
-        ResNode::Ptr n=std::make_unique<ResNode>("ms", m_glbase);
+        ResNode::Ptr n = std::make_unique<ResNode>("ms", m_glbase);
 
         if (s.Process(n.get(), vp)) {
-
             n->Preprocess();
             n->Process();
 
@@ -128,10 +125,8 @@ bool DemoView_Resources::draw(uint32_t* objId) {
                         for (ResNode::Ptr& p : n->m_Node) {
                             auto& deref = *p; // silence warning with clang
                             if (typeid(deref) == typeid(ResColor)) {
-
-                                auto* rc=dynamic_cast<ResColor*>(p.get());
+                                auto rc = dynamic_cast<ResColor*>(p.get());
                                 util_FillRect(10,100+i*40,28,28,rc->getColor4fv());
-                                //util_Print(60,float(100+i*40+22),"regular",22,nullptr,rc->m_Name.c_str());
 
                                 i++;
                             }
@@ -152,7 +147,6 @@ bool DemoView_Resources::draw(uint32_t* objId) {
         util_FillRect((int) pos[0],(int) pos[1],(int) size[0],(int) size[1],&glm::vec4(1.f,1.f,1.f,0.1f)[0]);
 
         if (f) {
-
             std::string teststring="In nuclear fission the nucleus of an atom breaks up into two lighter nuclei. The process may take place spontaneously in some cases or may be induced by the excitation of the nucleus with a variety of particles (e.g., neutrons, protons, deuterons, or alpha particles) or with electromagnetic radiation in the form of gamma rays.";
             FontGlyphVector dgv;
             vec4 bb;
@@ -162,14 +156,15 @@ bool DemoView_Resources::draw(uint32_t* objId) {
             dgv.Process(f, size, sep, align::left, teststring, true);
             dgv.calculateBoundingBox(bb);
 
-            switch (valign)
-            {
+            switch (valign) {
                 case 1 : tp[1] = size[1]/2 - (bb[3]-bb[1])/2; break;
                 case 2 : tp[1] = size[1] - (bb[3]-bb[1]); break;
                 default : tp[1] = 0;
             }
 
-            if (!m_glyphShader) m_glyphShader = getSharedRes()->shCol->getStdGlyphShdr();
+            if (!m_glyphShader) {
+                m_glyphShader = getSharedRes()->shCol->getStdGlyphShdr();
+            }
 
             f->drawDGlyphs(dgv, getMvp(), m_glyphShader, *getSharedRes()->nullVao, &glm::vec4(1.f)[0],
                            pos[0]+tp[0], pos[1]+tp[1]-bb[1], pos[0], pos[1], size[0], size[1]);

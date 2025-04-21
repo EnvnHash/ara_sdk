@@ -26,14 +26,17 @@ public:
         t_Spacing[0] = px;
         t_Spacing[1] = py;
     }  // Table cell padding
+
     virtual void t_setTLMargin(float dx, float dy) {
         t_Margin[0][0] = dx;
         t_Margin[0][1] = dy;
     }  // Table Top-Left margins
+
     virtual void t_setBRMargin(float dx, float dy) {
         t_Margin[1][0] = dx;
         t_Margin[1][1] = dy;
     }  // Table Bottom-Right margins
+
     virtual void t_setMargins(float dx, float dy) {
         t_setTLMargin(dx, dy);
         t_setBRMargin(dx, dy);
@@ -120,7 +123,7 @@ private:
 
     // temporary local variables made members for performance reasons
     dTableType pp[2] {};
-    int        ii[2] {};
+    int        ii[2] {0,0};
 };
 
 }  // namespace ara

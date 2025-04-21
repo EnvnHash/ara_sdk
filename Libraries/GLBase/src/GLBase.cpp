@@ -83,20 +83,22 @@ void GLBase::checkCapabilities() {
     LOG << " Using GLES Version " << g_caps.major_vers << "." << g_caps.minor_vers;
 #endif
 
-    char se[111] = {0};
+    std::stringstream ss;
 #if defined(ARA_USE_EGL) || defined(ARA_USE_GLES31)
     // note: the precision qualifiers are necessary for GLES!!!
-    sprintf(se,
-            "#version %d%d%d es\n#extension GL_EXT_shader_io_blocks : enable\nprecision highp float;\nprecision highp "
-            "sampler3D;\n",
-            g_caps.major_vers, g_caps.minor_vers > 10 ? g_caps.minor_vers / 10 : g_caps.minor_vers,
-            g_caps.minor_vers > 10 ? g_caps.minor_vers % 10 : 0);
+    ss << "#version "
+        << std::to_string(g_caps.major_vers)
+        << std::to_string(g_caps.minor_vers > 10 ? g_caps.minor_vers / 10 : g_caps.minor_vers)
+        << std::to_string(g_caps.minor_vers > 10 ? g_caps.minor_vers % 10 : 0)
+        << " es\n#extension GL_EXT_shader_io_blocks : enable\nprecision highp float;\nprecision highp sampler3D;\n";
 #else
-    sprintf(se, "#version %d%d%d\n", g_caps.major_vers,
-            g_caps.minor_vers > 10 ? g_caps.minor_vers / 10 : g_caps.minor_vers,
-            g_caps.minor_vers > 10 ? g_caps.minor_vers % 10 : 0);
+    ss << "#version "
+        << std::to_string(g_caps.major_vers)
+        << std::to_string(g_caps.minor_vers > 10 ? g_caps.minor_vers / 10 : g_caps.minor_vers)
+        << std::to_string(g_caps.minor_vers > 10 ? g_caps.minor_vers % 10 : 0)
+        << "\n";
 #endif
-    setShaderHeader(se);
+    setShaderHeader(ss.str());
 
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &g_caps.max_tex_units);
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &g_caps.max_tex_size);
