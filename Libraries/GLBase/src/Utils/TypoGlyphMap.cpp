@@ -247,7 +247,7 @@ glm::ivec2 TypoGlyphMap::getPixTextWidth(const char *text, int fontSize, int max
     glm::vec2 s{0, 0};
     int       minMaxY[2] = {std::numeric_limits<int>::max(), std::numeric_limits<int>::min()};
     int       width      = 0;
-    int       maxIdx     = (int)strlen(text) - 1;
+    int       maxIdx     = static_cast<int>(std::string(text).length() - 1);
     int       firstX     = 0;
 
     // bake font for this fontSize if necessary

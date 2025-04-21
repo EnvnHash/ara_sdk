@@ -55,7 +55,7 @@ std::vector<std::string> split(const std::string &s, std::string delim) {
 
     while (fPos != std::string::npos) {
         elems.push_back(strCpy.substr(0, fPos));
-        strCpy = strCpy.substr(fPos + std::strlen(delim.c_str()), std::strlen(strCpy.c_str()) - 1);
+        strCpy = strCpy.substr(fPos + delim.length(), strCpy.length() - 1);
         fPos   = strCpy.find(delim);
     }
 

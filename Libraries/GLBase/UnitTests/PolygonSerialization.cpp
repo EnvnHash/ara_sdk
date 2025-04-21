@@ -9,7 +9,7 @@ using namespace pugi;
 namespace ara::GLBaseUnitTest::PolygonSerialization {
 
 void countNodes(const pugi::xml_node& node, int32_t& count) {
-    if (strlen(node.name()) == 0) {
+    if (std::string(node.name()).empty()) {
         return;
     }
     count += 1; // Count this node

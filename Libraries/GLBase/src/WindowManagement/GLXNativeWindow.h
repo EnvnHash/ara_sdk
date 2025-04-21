@@ -29,19 +29,26 @@ public:
 
         // Extension names should not have spaces.
         where = strchr(extension, ' ');
-        if (where || *extension == '\0') return false;
+        if (where || *extension == '\0') {
+          return false;
+        }
 
         // It takes a bit of care to be fool-proof about parsing the
         // OpenGL extensions string. Don't be fooled by sub-strings,  etc.
         for (start = extList;;) {
             where = strstr(start, extension);
 
-            if (!where) break;
+            if (!where) {
+              break;
+            }
 
-            terminator = where + strlen(extension);
+            terminator = where + std::string(extension).length();
 
-            if (where == start || *(where - 1) == ' ')
-                if (*terminator == ' ' || *terminator == '\0') return true;
+            if (where == start || *(where - 1) == ' ') {
+                if (*terminator == ' ' || *terminator == '\0') {
+                  return true;
+                }
+            }
 
             start = terminator;
         }
@@ -58,11 +65,6 @@ public:
                 uint32_t nrSamples, bool fullscreenflag, bool hidden = false, bool decorated = true,
                 bool resizable = true, bool floating = false, bool transparent = false, void *shareCtx = nullptr);
 
-    /*
-        bool create(uint32_t xPos, uint32_t yPos, uint32_t width, uint32_t
-       height, uint32_t nrSamples=2, bool hidden= false, GLXContext
-       sharedCtx=0);
-                        */
     bool init();
 
     void open() {
@@ -98,9 +100,6 @@ public:
     bool       isOpen() { return m_isOpen; }
     bool       getRequestOpen() { return m_requestOpen; }
     bool       getRequestClose() { return m_requestClose; }
-
-    //    void setVSync(bool val)         { if (display)
-    //    glXSwapIntervalEXT(display, win, (int)val); }
 
     void     requestOpen(bool val) { m_requestOpen = val; }
     void     requestClose(bool val) { m_requestClose = val; }

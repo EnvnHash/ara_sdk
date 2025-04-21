@@ -811,7 +811,7 @@ Atom X11Window::writeTargetToProperty(const XSelectionRequestEvent *request) {
 
             if (j < formatCount) {
                 XChangeProperty(m_display, request->requestor, targets[i + 1], targets[i], 8, PropModeReplace,
-                                (unsigned char *)selectionString, strlen(selectionString));
+                                (unsigned char *)selectionString, std::string(selectionString).length());
             } else
                 targets[i + 1] = None;
         }
@@ -840,7 +840,7 @@ Atom X11Window::writeTargetToProperty(const XSelectionRequestEvent *request) {
             // The requested target is one we support
 
             XChangeProperty(m_display, request->requestor, request->property, request->target, 8, PropModeReplace,
-                            (unsigned char *)selectionString, strlen(selectionString));
+                            (unsigned char *)selectionString, std::string(selectionString).length());
 
             return request->property;
         }
@@ -1347,7 +1347,7 @@ char **X11Window::parseUriList(char *text, int *count) {
 
         ++(*count);
 
-        char *path        = (char *)calloc(strlen(line) + 1, 1);
+        char *path        = (char *)calloc(std::string(line).length() + 1, 1);
         paths             = (char **)realloc(paths, *count * sizeof(char *));
         paths[*count - 1] = path;
 
