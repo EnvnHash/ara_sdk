@@ -29,7 +29,6 @@ CvFxChain::CvFxChain(std::vector<std::string> *_args, int _width, int _height, i
     dWidth  = static_cast<float>(width);
     dHeight = static_cast<float>(height);
 
-    upSample = cv::Size(1, 1);
     imgSize  = cv::Size(width, height);
 
     // init frame
@@ -43,7 +42,7 @@ CvFxChain::CvFxChain(std::vector<std::string> *_args, int _width, int _height, i
 
         fxChain->push_back(new FxOpts());
         std::vector<FxOpts *>::iterator fxIt = fxChain->end();
-        fxIt--;
+        --fxIt;
 
         // ------ name ----------
 
@@ -78,8 +77,8 @@ CvFxChain::CvFxChain(std::vector<std::string> *_args, int _width, int _height, i
             // (*fxIt)->auxMat = new cv::Mat(3,3,CV_8U,cv::Scalar(nrChannels));
         }
         if (std::strncmp(routine, "erosion", maxStringSize) == 0) {
-            // der letzte parameter scheint keine auswirkungen zu haben
-            // je niedriger die ersten beiden werte, desto feiner die konturen.
+            // der letzte parameter scheint keine auswirkungen zu haben je niedriger die ersten beiden werte, desto
+            // feiner die konturen.
             int erosion_size = 10;
             element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
                                                 cv::Point(erosion_size, erosion_size));
@@ -122,7 +121,6 @@ CvFxChain::CvFxChain(std::vector<std::string> *_args, int _width, int _height, i
     }
 
     //----- Threading init
-    //-------------------------------------------------------------------------------------
 
     subPics    = new cv::Mat *[nrThreads];
     subOutPics = new cv::Mat *[nrThreads];

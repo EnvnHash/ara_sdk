@@ -42,7 +42,7 @@ private:
     std::vector<glm::vec3> m_positions;
     std::vector<glm::vec3> m_normals;
     std::vector<glm::vec2> m_texCoords;
-    glm::vec3              m_qaNormal;
+    glm::vec3              m_qaNormal{0.f, 0.f, 1.f};
 
     std::vector<CoordType> *m_instAttribs    = nullptr;
     int                     m_maxNrInstances = 1;

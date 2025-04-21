@@ -46,7 +46,7 @@ public:
 
     char *fxName;
 
-    cv::Size upSamp;
+    cv::Size upSamp{1, 1};
 
     cv::Mat *auxMat       = nullptr;
     cv::Mat *cameraMatrix = nullptr;

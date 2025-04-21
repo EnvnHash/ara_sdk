@@ -18,7 +18,7 @@ int Align::Calc(int orientation, int align, e_align_attr &attr) {
         sum   = attr.margin[0][0] + attr.padding[0] * (n - 1) + attr.margin[1][0];
         sleft = attr.size[1] - attr.margin[0][1] - attr.margin[1][1];
 
-        for (it = begin(); it < end(); it++) {
+        for (it = begin(); it < end(); ++it) {
             sum += it->size[0];
             it->position[0] = pos[0] + it->offset[0];
 
@@ -39,7 +39,7 @@ int Align::Calc(int orientation, int align, e_align_attr &attr) {
         sum   = attr.margin[0][1] + attr.padding[1] * (n - 1) + attr.margin[1][1];
         sleft = attr.size[0] - attr.margin[0][0] - attr.margin[1][0];
 
-        for (it = begin(); it < end(); it++) {
+        for (it = begin(); it < end(); ++it) {
             sum += it->size[1];
             it->position[1] = pos[1] + it->offset[1];
 

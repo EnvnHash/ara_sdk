@@ -311,7 +311,7 @@ void SceneNode::removeChild(std::string searchName) {
     iterateNode(this, [searchName](SceneNode* thisNode) {
         vector<unique_ptr<SceneNode>>* intChildren = thisNode->getIntChildren();
         bool                           contIt      = true;
-        for (vector<unique_ptr<SceneNode>>::iterator it = intChildren->begin(); it != intChildren->end(); it++)
+        for (vector<unique_ptr<SceneNode>>::iterator it = intChildren->begin(); it != intChildren->end(); ++it)
             if (!strcmp((*it)->getName().c_str(), searchName.c_str())) {
                 contIt = false;
                 intChildren->erase(it);
@@ -332,16 +332,14 @@ SceneNode* SceneNode::getParentNode(int objId) {
 }
 
 SceneNode* SceneNode::getRootNode() {
-    // if the SceneNode's rootnode is equal to itself, check again
+    // if the SceneNode's root node is equal to itself, check again
     if (!m_rootNode || (m_rootNode && m_rootNode == this)) {
         // get the root node
         SceneNode* root = this;
         while (root->getFirstParentNode()) root = root->getFirstParentNode();
 
-        // in order to have the object map generation succed also before all
-        // SceneNodes are assigned allow also the rootNode to be equal to the
-        // SceneNode itself (in case it has not yet been assigned) if (root !=
-        // this)
+        // to have the object map generation succeed also before all SceneNodes are assigned, allow also the
+        // rootNode to be equal to the SceneNode itself (in case it has not yet been assigned) if (root != this)
         m_rootNode = root;
     }
 

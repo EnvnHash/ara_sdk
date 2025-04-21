@@ -194,7 +194,7 @@ dTableType TableRC::evalByPix(int &index, float pix) {
     int                 i = 0;
     RCV::const_iterator it;
 
-    for (it = iVector.begin(); it < iVector.end(); it++) {
+    for (it = iVector.begin(); it < iVector.end(); ++it) {
         if ((pix >= it->pos) && (pix < it->pos + it->size)) {
             index = i;
             return dTableType::Cell;

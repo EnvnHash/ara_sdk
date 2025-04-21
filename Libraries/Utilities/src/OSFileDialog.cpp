@@ -169,7 +169,7 @@ std::string OpenFileDialog(std::vector<const char*>& allowedSuffix) {
     return outFileName;
 }
 
-std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes) {
+std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
     std::string outFileName;
     return outFileName;
 }

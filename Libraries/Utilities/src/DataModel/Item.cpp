@@ -41,20 +41,20 @@ void Item::undo() {
     // copy in case we are at the end of the undoBuf queue
     if (--m_undoBuf.end() == m_undoBufIt) {
         saveState();
-        m_undoBufIt--;
+        --m_undoBufIt;
     }
 
     auto root = (*m_undoBufIt)[itemType().c_str()];
     parseFromJson(root);
 
     if (m_undoBufIt != m_undoBuf.begin()) {
-        m_undoBufIt--;
+        --m_undoBufIt;
     }
 }
 
 void Item::redo() {
     if (m_undoBufIt != --m_undoBuf.end()) {
-        m_undoBufIt++;
+        ++m_undoBufIt;
         auto root = (*m_undoBufIt)[itemType().c_str()];
         parseFromJson(root);
     }

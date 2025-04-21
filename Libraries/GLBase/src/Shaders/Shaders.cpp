@@ -6,8 +6,7 @@ using namespace std;
 
 namespace ara {
 
-Shaders::Shaders(const string &comp_str, bool readFromFile) {
-    m_comp = readFromFile ? textFileRead(comp_str) : comp_str;
+Shaders::Shaders(const string &comp_str, bool readFromFile) : m_comp(readFromFile ? textFileRead(comp_str) : comp_str) {
     create();
 }
 

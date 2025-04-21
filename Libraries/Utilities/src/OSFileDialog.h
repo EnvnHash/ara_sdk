@@ -23,7 +23,7 @@ std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> file
 
 #elif __APPLE__
 std::string OpenFileDialog(std::vector<const char*>& allowedSuffix);
-std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes);
+std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes);
 #endif
 
 }  // namespace ara

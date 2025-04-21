@@ -21,7 +21,7 @@ namespace ara {
 
 UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY, bool osDecoration, bool transparentFB,
                    bool floating, bool initToCurrentCtx, bool multisample, void *extWinHandle, bool scaleToMonitor)
-    : WindowBase(), m_glbase(glbase),
+    : WindowBase(), m_glbase(glbase), m_drawMan(make_unique<DrawManager>(glbase))
 #ifdef ARA_USE_GLES31
       m_multisample(false),
 #else
@@ -32,7 +32,6 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
     uint32_t rHeight = height;
     uint32_t vWidth  = width;
     uint32_t vHeight = height;
-    m_drawMan        = make_unique<DrawManager>(glbase);
 
     bool restartGlBaseLoop = false;
 

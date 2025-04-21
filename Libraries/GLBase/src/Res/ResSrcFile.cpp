@@ -28,19 +28,19 @@ bool SrcFile::ExtractLines(std::vector<uint8_t> &vp) {
     while (e < vp.end()) {
         if (e[0] == '\n' || e[0] == '\r') {
             m_Line.push_back(SrcLine{lidx++, string(b, e)});
-            e++;
+            ++e;
 
             if (e < vp.end()) {
                 if (e[-1] == '\n' && e[0] == '\r') {
-                    e++;
+                    ++e;
                 } else if (e[-1] == '\r' && e[0] == '\n') {
-                    e++;
+                    ++e;
                 }
             }
 
             b = e;
         } else {
-            e++;
+            ++e;
         }
     }
 
@@ -84,7 +84,7 @@ bool SrcFile::Process(ResNode *root) {
                         node->add(std::make_unique<ResNode>(parname, &(*line), m_glbase))->setFunc(funcname, parv);
                         rpar = 0;
                         parp = 0;
-                        e++;
+                        ++e;
                     }
                 } else {
                     auto endIt = m_Line.end();
@@ -95,11 +95,10 @@ bool SrcFile::Process(ResNode *root) {
                         parv.clear();
                         funcname = name;
                         rpar     = 1;
-                        e++;
+                        ++e;
 
-                        if (e[0] == ',') {  // special case (marco.g: should improve) -
-                                            // has a comma right after the '(', this
-                                            // should be donde better, but run by now
+                        if (e[0] == ',') {  // special case (marco.g: should improve) - has a comma right after the '(',
+                                            // this should be donde better, but run by now
                             parv.push_back("");
                         }
                     } else {
@@ -108,9 +107,8 @@ bool SrcFile::Process(ResNode *root) {
                             parp = 0;
                         } else {
                             if (e[0] == '{') {
-                                node = node->add(std::make_unique<ResNode>(name, &(*line),
-                                                                           m_glbase));  // adding a group
-                                e++;
+                                node = node->add(std::make_unique<ResNode>(name, &(*line), m_glbase));  // adding a group
+                                ++e;
                             } else {
                                 if (!name.empty()) {
                                     if (e[0] != ':' || e[0] == '}' || !e[0]) {
@@ -123,19 +121,21 @@ bool SrcFile::Process(ResNode *root) {
                 }
 
                 if (e[0] == '}') {
-                    if (node == root) return node->error((char *)"Too many closing brackets");
+                    if (node == root) {
+                        return node->error((char *)"Too many closing brackets");
+                    }
 
                     node = node->getParent();
 
                     parp = 0;
                     rpar = 0;
-                    e++;
+                    ++e;
                 } else if (e[0] == ':') {
                     parname = name;
                     parp    = 1;
-                    e++;
+                    ++e;
                 } else if (e[0] == ',')
-                    e++;
+                    ++e;
 
                 b = e;
 
@@ -145,13 +145,17 @@ bool SrcFile::Process(ResNode *root) {
         line++;
     }
 
-    if (node != root) return node->error((char *)"Closing bracket missing");
+    if (node != root) {
+        return node->error((char *)"Closing bracket missing");
+    }
 
     return true;
 }
 
 const char *SrcFile::clearSpaces(const char *e) {
-    while (e[0] && e[0] <= 32) e++;
+    while (e[0] && e[0] <= 32) {
+        ++e;
+    }
     return e;
 }
 
@@ -159,7 +163,9 @@ const char *SrcFile::processRawText(std::string &dest, const char *e, std::vecto
                                     std::vector<SrcLine>::iterator &src_end, ResNode *node) {
     const char *b;
 
-    if (strncmp(e, "!<[[", 4)) return e;
+    if (strncmp(e, "!<[[", 4)) {
+        return e;
+    }
 
     dest.clear();
     b = e + 4;
@@ -170,12 +176,13 @@ const char *SrcFile::processRawText(std::string &dest, const char *e, std::vecto
                 dest += std::string(b, std::distance(b, e));
                 return e + 3;
             }
-
-            e++;
+            ++e;
         }
 
-        if (!e[0]) dest += std::string(b, std::distance(b, e)) + "\r\n";
-        line++;
+        if (!e[0]) {
+            dest += std::string(b, std::distance(b, e)) + "\r\n";
+        }
+        ++line;
         e = b = line->str.c_str();
     }
 
@@ -188,67 +195,83 @@ const char *SrcFile::readStr(std::string &dest, const char *e, std::vector<SrcLi
 
     b = e = clearSpaces(e);
 
-    if ((e = processRawText(dest, e, line, src_end, node)) != b) return e;
+    if ((e = processRawText(dest, e, line, src_end, node)) != b) {
+        return e;
+    }
 
     if (e[0] == '\"') {
-        e++;
+        ++e;
 
-        while (e[0] && e[0] != '\"') e++;
+        while (e[0] && e[0] != '\"') {
+            ++e;
+        }
 
         if (e[0] == '\"') {
             dest = std::string(b + 1, std::distance(b, e) - 1);
 
-            while (e[0] && e[0] > 32 && e[0] != '{' && e[0] != '}' && e[0] != ':' && e[0] != '(' && e[0] != ')') e++;
+            while (e[0] && e[0] > 32 && e[0] != '{' && e[0] != '}' && e[0] != ':' && e[0] != '(' && e[0] != ')') {
+                ++e;
+            }
 
             return clearSpaces(e);
         }
     }
 
-    while (e[0] && e[0] > 32 && e[0] != '{' && e[0] != '}' && e[0] != ':' && e[0] != '(' && e[0] != ')') e++;
+    while (e[0] && e[0] > 32 && e[0] != '{' && e[0] != '}' && e[0] != ':' && e[0] != '(' && e[0] != ')') {
+        ++e;
+    };
 
     dest = std::string(b, std::distance(b, e));
-
     return clearSpaces(e);
 }
 
 const char *SrcFile::readPar(std::string &dest, const char *e, std::vector<SrcLine>::iterator &line,
                              std::vector<SrcLine>::iterator &src_end, ResNode *node) {
     const char *b;
-
     b = e = clearSpaces(e);
 
     if ((e = processRawText(dest, e, line, src_end, node)) != b) {
-        if (e == nullptr) return nullptr;
+        if (e == nullptr) {
+            return nullptr;
+        }
 
-        while (e[0] && e[0] <= 32 && e[0] != ',' && e[0] != ')') e++;
+        while (e[0] && e[0] <= 32 && e[0] != ',' && e[0] != ')') {
+            ++e;
+        }
 
         return clearSpaces(e);
     }
 
     if (e[0] == '\"') {
-        e++;
+        ++e;
 
-        while (e[0] && e[0] != '\"') e++;
+        while (e[0] && e[0] != '\"') {
+            ++e;
+        }
 
         dest = std::string(b + 1, std::distance(b, e) - 1);
 
-        while (e[0] && e[0] != ',' && e[0] != ')') e++;
+        while (e[0] && e[0] != ',' && e[0] != ')') {
+            ++e;
+        }
 
         return clearSpaces(e);
     }
 
-    while (e[0] && e[0] > 32 && e[0] != ',' && e[0] != ')') e++;
+    while (e[0] && e[0] > 32 && e[0] != ',' && e[0] != ')') {
+        ++e;
+    }
 
     dest = std::string(b, std::distance(b, e));
 
-    while (e[0] && e[0] <= 32 && e[0] != ',' && e[0] != ')') e++;
+    while (e[0] && e[0] <= 32 && e[0] != ',' && e[0] != ')') {
+        ++e;
+    }
 
     return clearSpaces(e);
 }
 
 bool SrcFile::error(SrcLine &line, string msg) {
-    // appmsg("[ERROR] Line %d / %s",line.index+1,msg.c_str());
-
     return false;
 }
 

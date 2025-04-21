@@ -15,17 +15,8 @@ using namespace std;
 namespace ara {
 
 AssimpTexture::AssimpTexture(GLBase* glbase) {
-    m_texturePath = "";
     m_texture     = make_unique<Texture>(glbase);
 }
-
-/*
-AssimpTexture::AssimpTexture(Texture* texture, std::string texturePath)
-{
-    m_texture = *texture;
-    m_texturePath = texturePath;
-}
-*/
 
 Texture* AssimpTexture::getTextureRef() { return m_texture.get(); }
 

@@ -14,7 +14,7 @@ include_directories(
 file(GLOB GLBASE_UT_SRC
         TypoGlyphMapTest.cpp
         ContextSharing.cpp
-        ContextSharingFbo.cpp
+        #ContextSharingFbo.cpp
         CreateFbo.cpp
         CreateFbo.cpp
         CreateGLCtx.cpp

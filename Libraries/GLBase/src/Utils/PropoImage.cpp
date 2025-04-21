@@ -10,8 +10,7 @@
 
 namespace ara {
 
-PropoImage::PropoImage(GLBase* glbase) {
-    imgTex = std::make_unique<Texture>(glbase);
+PropoImage::PropoImage(GLBase* glbase) : imgTex(std::make_unique<Texture>(glbase)) {
 }
 
 PropoImage::PropoImage(const std::string& fileName, int _screenW, int _screenH, float _logoWidth, propoImagePos _pos,

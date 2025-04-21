@@ -11,9 +11,8 @@ namespace ara::proj {
 //                               SocketAddress
 // ----------------------------------------------------------------------------------
 
-SocketAddress::SocketAddress(unsigned int addr, unsigned short port) {
-    sin_family      = AF_INET;
-    sin_port        = Socket::hton(port);
+SocketAddress::SocketAddress(unsigned int addr, unsigned short port) :
+    sin_port(Socket::hton(port)), sin_family(AF_INET) {
     sin_addr.s_addr = Socket::hton(addr);
 }
 

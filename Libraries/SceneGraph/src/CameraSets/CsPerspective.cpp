@@ -5,7 +5,6 @@ using namespace std;
 
 namespace ara {
 CsPerspective::CsPerspective(sceneData* sc) : CameraSet(sc) {
-    camPos = vec3(0.f, 0.f, 1.f);
 
     if (s_sd) {
         float aspect = s_sd->winViewport.z / s_sd->winViewport.w;

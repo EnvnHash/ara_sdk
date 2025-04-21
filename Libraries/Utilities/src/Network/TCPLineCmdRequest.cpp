@@ -59,7 +59,7 @@ bool TCPLineCmdRequest(std::vector<uint8_t> &dest, std::string &ipaddr, int port
     return true;
 }
 
-std::string TCPLineCmdRequest(std::string &ipaddr, int port, std::string cmd) {
+std::string TCPLineCmdRequest(std::string &ipaddr, int port, const std::string& cmd) {
     std::vector<uint8_t> dest;
 
     if (!TCPLineCmdRequest(dest, ipaddr, port, cmd)) return std::string();

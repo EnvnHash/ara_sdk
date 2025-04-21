@@ -10,7 +10,7 @@ using namespace ara;
 
 #ifndef __ANDROID__
 
-DemoView_FloatingMenu::DemoView_FloatingMenu() : DemoView("FloatingMenu",glm::vec4(.1f,.1f,.1f,1.f)) {
+DemoView_FloatingMenu::DemoView_FloatingMenu() : DemoView("FloatingMenu", glm::vec4(.1f,.1f,.1f,1.f)) {
     setName(getTypeName<DemoView_FloatingMenu>());
 }
 
@@ -48,7 +48,7 @@ void DemoView_FloatingMenu::init() {
                 return true;
            });
 
-           rightClickMen->setOnClose([](string returnValue){
+           rightClickMen->setOnClose([](const string& returnValue){
                LOG << "returnValue: " << returnValue;
            });
 

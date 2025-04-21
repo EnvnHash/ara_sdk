@@ -17,7 +17,6 @@ namespace ara {
 QuadArrayAdj::QuadArrayAdj()
     : GeoPrimitive(), m_x(-1.f), m_y(-1.f), m_width(1.f), m_height(1.f), m_nrSegsX(4), m_nrSegsY(4), m_totalWidth(2.f),
       m_totalHeight(2.f), m_instAttribs(nullptr), m_maxNrInstances(1), m_usage(GL_STATIC_DRAW) {
-    m_qaNormal = glm::vec3(0.f, 0.f, 1.f);
     m_r        = 1.f;
     m_g        = 1.f;
     m_b        = 1.f;
@@ -40,8 +39,7 @@ QuadArrayAdj::QuadArrayAdj(int nrSegsX, int nrSegsY, float x, float y, float w, 
 QuadArrayAdj::QuadArrayAdj(int nrSegsX, int nrSegsY, float x, float y, float w, float h, glm::vec3 inNormal,
                            std::vector<CoordType> *instAttribs, int nrInstances, GLenum usage)
     : GeoPrimitive(), m_x(x), m_y(y), m_width(w), m_height(h), m_nrSegsX(nrSegsX), m_nrSegsY(nrSegsY),
-      m_totalWidth(2.f), m_totalHeight(2.f), m_instAttribs(instAttribs), m_maxNrInstances(nrInstances), m_usage(usage) {
-    m_qaNormal = inNormal;
+      m_totalWidth(2.f), m_totalHeight(2.f), m_instAttribs(instAttribs), m_maxNrInstances(nrInstances), m_usage(usage), m_qaNormal(inNormal) {
     m_r        = 0.f;
     m_g        = 0.f;
     m_b        = 0.f;
