@@ -119,7 +119,7 @@ TEST(UITest, ScrollViewIntable) {
         ui_SV->setPos(0, 0);
         ui_SV->setBackgroundColor(.1f, .1f, .1f, 1.f);
 
-        auto nt = (UITable*) ui_SV->addChild(make_unique<UITable>(0.f, 0.f, 600.f, 200.f, 0, 0));
+        auto nt = static_cast<UITable *>(ui_SV->addChild(make_unique<UITable>(0.f, 0.f, 600.f, 200.f, 0, 0)));
         nt->t_setSpacing(8, 8);
         nt->t_setMargins(2, 2);
         nt->setColor(.2f, .2f, .2f, 1.f);
@@ -135,7 +135,7 @@ TEST(UITest, ScrollViewIntable) {
 
         for (i = 0; i < 20; i++) {
             std::stringstream ss;
-            ss << std::fixed << std::setprecision(2) << i;
+            ss << std::setw(2) << std::setfill('0') << i;
 
             nt->insertRow(-1, 1, 100, false, false);						// fixed row
             Label* l = nt->setCell(i, 0, make_unique<Label>() );

@@ -31,15 +31,15 @@ public:
 
     // ...for use with c legacy code, suppose an input c-array of the same type and size as CIBufferArray<T>
     size_t feed(T *buffer) {
-        std::copy(buffer, buffer + m_buffer[m_buffPos].size() * sizeof(T), m_buffer[m_buffPos].getData());
+        std::copy(buffer, buffer + m_buffer[m_buffPos].size(), m_buffer[m_buffPos].getData());
         return countUp();
     }
 
     size_t countUp() {
         m_buffLastPos = m_buffPos;
-        m_buffPos++;
+        ++m_buffPos;
         m_buffPos %= m_buffer.size();
-        m_fillAmt++;
+        ++m_fillAmt;
         return m_buffPos;
     }
 
@@ -62,7 +62,7 @@ public:
             return nullptr;
         }
 
-        m_fillAmt--;
+        --m_fillAmt;
         m_tcp        = m_consumePos;
         m_consumePos = ++m_consumePos % m_buffer.size();
         return &m_buffer[m_tcp];
@@ -83,7 +83,7 @@ public:
     bool              isFilled() { return m_fillAmt >= m_buffer.size(); }
     size_t            getLastBuffPos() { return m_buffLastPos; }
     size_t            size() { return m_buffer.size(); }
-    bool              empty() { return !m_buffer.size(); }
+    bool              empty() { return m_buffer.empty(); }
     size_t            getWritePos() { return m_buffPos; }
     size_t            getFillAmt() { return m_fillAmt; }
     size_t            getFreeSpace() { return m_buffer.size() - m_fillAmt; }

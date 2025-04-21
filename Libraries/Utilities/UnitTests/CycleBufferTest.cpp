@@ -6,16 +6,15 @@ namespace ara {
 class CycleBufferTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Setup the cycle buffer with some initial parameters
-        cb.allocateBuffers(3, 10);
+        cb.allocateBuffers(3, m_bufSize);
     }
 
     void TearDown() override {
-        // Clear the cycle buffer after each test
         cb.clear();
     }
 
     CycleBuffer<int> cb;
+    int m_bufSize = 10;
 };
 
 TEST_F(CycleBufferTest, AllocateBuffers) {

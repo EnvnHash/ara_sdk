@@ -10,8 +10,7 @@ DemoView_Spinner::DemoView_Spinner() : DemoView("Spinner demo",glm::vec4(.1f,.1f
     setName("DemoView_Spinner");
 }
 
-void DemoView_Spinner::init()
-{
+void DemoView_Spinner::init() {
     addChild<Spinner>(100, 100, 40, 40, "Spinner/spinner-1.png");
 	addChild<Spinner>(100, 240, 80, 80, "Spinner/spinner-1.png");
 

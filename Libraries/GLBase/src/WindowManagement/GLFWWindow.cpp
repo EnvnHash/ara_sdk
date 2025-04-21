@@ -29,7 +29,6 @@ int GLFWWindow::init(glWinPar &gp) {
         LOGE << "GLFW init failed!!!!";
         return true;
     }
-    m_glfwInited = true;
 
     // get all the information about the m_monitors
     m_monitors = glfwGetMonitors(&m_count);
@@ -250,7 +249,7 @@ int GLFWWindow::init(glWinPar &gp) {
     m_posYreal   = (int)(gp.shiftY * m_contentScale.y);
 #endif
 
-    glfwSetWindowPos(m_window, m_posXreal, m_posYreal);
+    glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));
 
     if (gp.debug) {
         LOG << "Vendor:  " << glGetString(GL_VENDOR);
@@ -488,7 +487,6 @@ std::vector<GLFWvidmode> GLFWWindow::getVideoModes() {
             m_modes.emplace_back();
             m_modes.back().width  = thisMode->width;
             m_modes.back().height = thisMode->height;
-            // memcpy(&modes.back(), thisMode, sizeof(GLFWvidmode));
         }
     }
 
@@ -521,11 +519,10 @@ std::vector<std::pair<float, float>> GLFWWindow::getMonitorScales() {
 glm::vec2 GLFWWindow::getPrimaryMonitorWindowContentScale() {
     glm::vec2 contentScale{};
 
-    if (!glfwInit() && !m_glfwInited) {
+    if (!glfwInit()) {
         LOGE << "GLFW init failed!!!!";
         return {};
     }
-    m_glfwInited = true;
 
     auto window = glfwCreateWindow(50, 50, "", nullptr, nullptr);
     if (!window) {
@@ -556,10 +553,10 @@ glm::ivec2 GLFWWindow::getSize() {
 #else
     m_widthReal  = size.x;
     m_heightReal = size.y;
-    m_widthVirt  = (uint32_t)(size.x / m_contentScale.x);
-    m_heightVirt = (uint32_t)(size.y / m_contentScale.y);
+    m_widthVirt  = static_cast<uint32_t>(size.x / m_contentScale.x);
+    m_heightVirt = static_cast<uint32_t>(size.y / m_contentScale.y);
 #endif
-    return glm::ivec2{(int)m_widthVirt, (int)m_heightVirt};
+    return glm::ivec2{static_cast<int>(m_widthVirt), static_cast<int>(m_heightVirt)};
 }
 
 /// returns virtual coordinates
@@ -572,12 +569,12 @@ glm::ivec2 GLFWWindow::getPosition() {
     m_posXvirt = (float)pos.x;
     m_posYvirt = (float)pos.y;
 #else
-    m_posXreal = (float)pos.x;
-    m_posYreal = (float)pos.y;
-    m_posXvirt = (float)pos.x / m_contentScale.x;
-    m_posYvirt = (float)pos.y / m_contentScale.y;
+    m_posXreal = static_cast<float>(pos.x);
+    m_posYreal = static_cast<float>(pos.y);
+    m_posXvirt = static_cast<float>(pos.x) / m_contentScale.x;
+    m_posYvirt = static_cast<float>(pos.y) / m_contentScale.y;
 #endif
-    return glm::ivec2{(int)m_posXvirt, (int)m_posYvirt};
+    return glm::ivec2{static_cast<int>(m_posXvirt), static_cast<int>(m_posYvirt)};
 }
 
 void GLFWWindow::close() {

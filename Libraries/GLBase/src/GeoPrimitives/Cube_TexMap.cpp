@@ -28,7 +28,7 @@ Cube_TexMap::Cube_TexMap(float w, float h, float d) : GeoPrimitive() {
 
     for (int i = 0; i < 6; i++){
         for (int j = 0; j < 6; j++) {
-            std::copy(&nvalue[i * 3], &nvalue[i * 3] + sizeof(GLfloat) * 3, &cube_normals[i * 6 * 3 + j * 3]);
+            std::copy(&nvalue[i * 3], &nvalue[i * 3] + 3, &cube_normals[i * 6 * 3 + j * 3]);
         }
     }
 

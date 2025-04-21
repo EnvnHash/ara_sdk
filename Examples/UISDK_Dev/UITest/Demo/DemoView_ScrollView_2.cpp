@@ -49,7 +49,7 @@ void DemoView_ScrollView_2::init() {
 
     for (i = 0; i < 20; i++) {
         std::stringstream ss;
-        ss << std::fixed << std::setprecision(2) << i;
+        ss << std::setw(2) << std::setfill('0') << i;
 
         nt->insertRow(-1, 1, 100, false, false);						// fixed row
 

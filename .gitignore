@@ -8,3 +8,8 @@
 /.idea/
 /cmake-build-debug-coverage/
 /Libraries/third_party/opencv/
+/Libraries/third_party/assimp/
+/Libraries/third_party/ffmpeg/
+/Libraries/third_party/FreeImage/
+/Libraries/third_party/GLEW/
+/Libraries/third_party/portaudio/

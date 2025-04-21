@@ -36,11 +36,10 @@ public:
     int  init(glWinPar &gp);
 
     /**
-     * @param f the drawing function which will be execute or every iteration
-     * @param eventBased choose wheter the loop should run freely or stop and
-     * wait for the m_iterate signal
-     * @param terminateGLFW shall GLFW be terminated when the loop exits? in
-     * case of multiple window it probably shouldn't
+     * @param f the drawing function which will be executed or every iteration
+     * @param eventBased choose whether the loop should run freely or stop and wait for the m_iterate signal
+     * @param terminateGLFW shall GLFW be terminated when the loop exits? in case of multiple window it probably shouldn't
+     * @param destroyWinOnExit destroy window on exit
      */
     void runLoop(std::function<bool(double, double, int)> f, bool eventBased = false, bool terminateGLFW = true,
                  bool destroyWinOnExit = true);
@@ -56,8 +55,7 @@ public:
         m_isOpen = true;
     }
 
-    /** hide window, including removing it from the taskbar, dock or windowlist
-     */
+    /** hide window, including removing it from the taskbar, dock or windowlist */
     void hide() {
         glfwHideWindow(m_window);
         m_isOpen = false;
@@ -97,14 +95,14 @@ public:
         }
     }
 
-    void focus() {
+    void focus() const {
         if (m_window) {
             glfwFocusWindow(m_window);
         }
     }
     void minimize() override { glfwIconifyWindow(m_window); }
 
-    void maximize() {
+    void maximize() const {
 #ifdef __APPLE__
         // on macOS glfwMaximizeWindow doesn't work
         m_restoreWinPar.x = getPosition().x;
@@ -137,9 +135,9 @@ public:
     // GLFWcursor* createMouseCursor(const char* file, float xHot, float yHot);
     void          setMouseCursorIcon(GLFWcursor *icon, WinMouseIcon tp) { m_mouseCursors[toType(tp)] = icon; }
     bool          isOpen() const { return m_isOpen; }
-    bool          isMinimized() { return glfwGetWindowAttrib(m_window, GLFW_ICONIFIED); }
-    bool          isMaximized() { return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED); }
-    bool          isHidBlocked() { return m_hidBlocked; }
+    bool          isMinimized() const { return glfwGetWindowAttrib(m_window, GLFW_ICONIFIED); }
+    bool          isMaximized() const { return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED); }
+    bool          isHidBlocked() const { return m_hidBlocked; }
     int           getMonitorId() const { return useMonitor; }
     unsigned int  getMonitorWidth() const { return m_monWidth; }
     unsigned int  getMonitorHeight() const { return m_monHeight; }
@@ -148,18 +146,15 @@ public:
     unsigned int  getWidthReal() { return m_widthReal; }    /// in real pixels
     unsigned int  getHeightReal() { return m_heightReal; }  /// in real pixels
     void         *getWin() override { return m_window; }
-    GLFWwindow   *getCtx() { return m_window; }
-    GLFWmonitor **getMonitors() { return m_monitors; }
-    GLFWmonitor  *getMonitor(int i) { return m_monitors[i]; }
+    GLFWwindow   *getCtx() const { return m_window; }
+    GLFWmonitor **getMonitors() const { return m_monitors; }
+    GLFWmonitor  *getMonitor(int i) const { return m_monitors[i]; }
     int           getNrMonitors() const { return m_count; }
-    int           getPosX() const { return (int)m_posXvirt; }      /// in virtual pixels
-    int           getPosY() const { return (int)m_posYvirt; }      /// in virtual pixels
-    int           getPosXReal() const { return (int)m_posXreal; }  /// in real pixels
-    int           getPosYReal() const { return (int)m_posYreal; }  /// in real pixels
-    int           getFocus() {
-        int foc = glfwGetWindowAttrib(m_window, GLFW_FOCUSED);
-        return foc;
-    }
+    int           getPosX() const { return static_cast<int>(m_posXvirt); }      /// in virtual pixels
+    int           getPosY() const { return static_cast<int>(m_posYvirt); }      /// in virtual pixels
+    int           getPosXReal() const { return static_cast<int>(m_posXreal); }  /// in real pixels
+    int           getPosYReal() const { return static_cast<int>(m_posYreal); }  /// in real pixels
+    int           getFocus() const { return glfwGetWindowAttrib(m_window, GLFW_FOCUSED); }
 
     void *getNativeCtx() override { return m_nativeHandle; }
 
@@ -170,35 +165,35 @@ public:
 #ifdef __APPLE__
         return {(int)xpos, (int)ypos};
 #else
-        return glm::ivec2((int)(xpos / m_contentScale.x), (int)(ypos / m_contentScale.y));
+        return {static_cast<int>(xpos / m_contentScale.x), static_cast<int>(ypos / m_contentScale.y)};
 #endif
     }
 
-    glm::ivec2 getAbsMousePos() {
-        glm::ivec2 mp;
+    glm::ivec2 getAbsMousePos() const {
+        glm::ivec2 mp{};
         mouse::getAbsMousePos(mp.x, mp.y);
 #ifdef __APPLE__
         return mp;
 #else
-        return glm::ivec2{(int)((float)mp.x / m_contentScale.x), (int)((float)mp.y / m_contentScale.y)};
+        return glm::ivec2{static_cast<int>(static_cast<float>(mp.x) / m_contentScale.x), static_cast<int>(static_cast<float>(mp.y) / m_contentScale.y)};
 #endif
     }
 
 #ifdef _WIN32
-    HWND  getHwndHandle() { return m_hwndHandle; }
-    HGLRC getHglrcHandle() { return m_wglHandle; }
+    HWND  getHwndHandle() const { return m_hwndHandle; }
+    HGLRC getHglrcHandle() const { return m_wglHandle; }
 #endif
 
     int         *getWorkArea() { return m_workArea; }
     Conditional *getIterateSema() { return &m_iterate; }
-    bool         getBlockResizing() { return m_blockResizing; }
+    bool         getBlockResizing() const { return m_blockResizing; }
     bool         getRequestOpen() const { return m_requestOpen; }
-    bool         getRequestClose() { return m_requestClose; }
+    bool         getRequestClose() const { return m_requestClose; }
     void         requestOpen(bool val) { m_requestOpen = val; }
     void         requestClose(bool val) { m_requestClose = val; }
     std::function<void()>& getOnCloseCb() { return m_onCloseCb; }
 
-    glm::vec2 getDpi() {
+    static glm::vec2 getDpi() {
 #ifdef __linux__
         auto   dpy = glfwGetX11Display();
         auto   scr = 0;
@@ -215,8 +210,8 @@ public:
     void setSize(int inWidth, int inHeight) {
         m_widthVirt  = inWidth;
         m_heightVirt = inHeight;
-        m_widthReal  = (int)((float)inWidth * m_contentScale.x);
-        m_heightReal = (int)((float)inHeight * m_contentScale.y);
+        m_widthReal  = static_cast<int>(static_cast<float>(inWidth) * m_contentScale.x);
+        m_heightReal = static_cast<int>(static_cast<float>(inHeight) * m_contentScale.y);
 #ifdef __APPLE__
         glfwSetWindowSize(m_window, inWidth, inHeight);
 #else
@@ -228,14 +223,14 @@ public:
 
     /// input in virtual pixels
     void setPosition(int posx, int posy) {
-        m_posXvirt = (float)posx;
-        m_posYvirt = (float)posy;
-        m_posXreal = (float)posx * m_contentScale.x;
-        m_posYreal = (float)posy * m_contentScale.y;
+        m_posXvirt = static_cast<float>(posx);
+        m_posYvirt = static_cast<float>(posy);
+        m_posXreal = static_cast<float>(posx) * m_contentScale.x;
+        m_posYreal = static_cast<float>(posy) * m_contentScale.y;
 #ifdef __APPLE__
         glfwSetWindowPos(m_window, m_posXvirt, m_posYvirt);
 #else
-        glfwSetWindowPos(m_window, (int)m_posXreal, (int)m_posYreal);
+        glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));
 #endif
         iterate();
     }
@@ -244,7 +239,7 @@ public:
     void setBlockResizing(bool val) { m_blockResizing = val; }
     void setBlockMouseIconSwitch(bool val) { m_blockMouseIconSwitch = val; }
 
-    void setMouseCursor(WinMouseIcon iconTyp) {
+    void setMouseCursor(WinMouseIcon iconTyp) const {
         if (!m_blockMouseIconSwitch) {
             glfwSetCursor(m_window, m_mouseCursors[toType(iconTyp)]);
         }
@@ -253,18 +248,18 @@ public:
     void setBlockHid(bool val) { m_hidBlocked = val; }
     void setFloating(bool val) { glfwWindowHint(GLFW_FLOATING, val); }
     // utility methods for unified window handling (GLFWWindow -> GLWindow)
-    void setKeyCallback(GLFWkeyfun f) { glfwSetKeyCallback(m_window, f); }
-    void setCharCallback(GLFWcharfun f) { glfwSetCharCallback(m_window, f); }
-    void setMouseButtonCallback(GLFWmousebuttonfun f) { glfwSetMouseButtonCallback(m_window, f); }
-    void setCursorPosCallback(GLFWcursorposfun f) { glfwSetCursorPosCallback(m_window, f); }
-    void setWindowSizeCallback(GLFWwindowsizefun f) { glfwSetWindowSizeCallback(m_window, f); }
-    void setWindowCloseCallback(GLFWwindowclosefun f) { glfwSetWindowCloseCallback(m_window, f); }
-    void setWindowMaximizeCallback(GLFWwindowmaximizefun f) { glfwSetWindowMaximizeCallback(m_window, f); }
-    void setWindowIconifyCallback(GLFWwindowiconifyfun f) { glfwSetWindowIconifyCallback(m_window, f); }
-    void setWindowFocusCallback(GLFWwindowfocusfun f) { glfwSetWindowFocusCallback(m_window, f); }
-    void setWindowPosCallback(GLFWwindowposfun f) { glfwSetWindowPosCallback(m_window, f); }
-    void setScrollCallback(GLFWscrollfun f) { glfwSetScrollCallback(m_window, f); }
-    void setWindowRefreshCallback(GLFWwindowrefreshfun f) { glfwSetWindowRefreshCallback(m_window, f); }
+    void setKeyCallback(GLFWkeyfun f) const { glfwSetKeyCallback(m_window, f); }
+    void setCharCallback(GLFWcharfun f) const { glfwSetCharCallback(m_window, f); }
+    void setMouseButtonCallback(GLFWmousebuttonfun f) const { glfwSetMouseButtonCallback(m_window, f); }
+    void setCursorPosCallback(GLFWcursorposfun f) const { glfwSetCursorPosCallback(m_window, f); }
+    void setWindowSizeCallback(GLFWwindowsizefun f) const { glfwSetWindowSizeCallback(m_window, f); }
+    void setWindowCloseCallback(GLFWwindowclosefun f) const { glfwSetWindowCloseCallback(m_window, f); }
+    void setWindowMaximizeCallback(GLFWwindowmaximizefun f) const { glfwSetWindowMaximizeCallback(m_window, f); }
+    void setWindowIconifyCallback(GLFWwindowiconifyfun f) const { glfwSetWindowIconifyCallback(m_window, f); }
+    void setWindowFocusCallback(GLFWwindowfocusfun f) const { glfwSetWindowFocusCallback(m_window, f); }
+    void setWindowPosCallback(GLFWwindowposfun f) const { glfwSetWindowPosCallback(m_window, f); }
+    void setScrollCallback(GLFWscrollfun f) const { glfwSetScrollCallback(m_window, f); }
+    void setWindowRefreshCallback(GLFWwindowrefreshfun f) const { glfwSetWindowRefreshCallback(m_window, f); }
     void setOnCloseCb(std::function<void()> f) { m_onCloseCb = std::move(f); }
 
     void onWindowSize(int width, int height) override;
@@ -278,12 +273,11 @@ public:
     static glm::vec2 getPrimaryMonitorWindowContentScale();
 
     static void initLibrary() {
-        printf("initLibrary");
-        if (!m_glfwInited && !glfwInit()) {
+        printf("init Library \n");
+        if (!glfwInit()) {
             printf("ERROR: Couldn't init glfw\n");
             exit(EXIT_FAILURE);
         }
-        m_glfwInited = true;
     }
 
     static void terminateLibrary() { glfwTerminate(); }
@@ -310,17 +304,15 @@ protected:
     std::vector<std::pair<float, float>> m_monContScale;
     std::function<void()>                m_onCloseCb;
 
-    int monitorRefreshRate;
+    int monitorRefreshRate{};
     int useMonitor = 0;
-    int m_workArea[4];
+    int m_workArea[4]{};
 
     bool m_isOpen               = false;
     bool m_requestOpen          = false;
     bool m_requestClose         = false;
     bool m_blockResizing        = false;
     bool m_blockMouseIconSwitch = false;
-
-    static inline bool m_glfwInited = false;
 
     double m_medDt      = 0.066;
     double m_lastTime   = 0;
@@ -344,7 +336,7 @@ protected:
     GLFWwindow   *m_window   = nullptr;
     GLFWmonitor **m_monitors = nullptr;
     GLFWmonitor  *m_mon      = nullptr;
-    GLFWcursor   *m_mouseCursors[toType(WinMouseIcon::count)];
+    GLFWcursor   *m_mouseCursors[toType(WinMouseIcon::count)]{};
 
     glm::ivec4 m_restoreWinPar{0};
     std::mutex m_drawMtx;

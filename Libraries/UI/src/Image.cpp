@@ -251,9 +251,11 @@ void Image::updateDrawData() {
         m_texSize.x = m_extTexWidth;
         m_texSize.y = m_extTexHeight;
     } else if (m_imgBase) {
-        std::copy(m_imgBase->getVerPos(m_sectIndex).begin(), m_imgBase->getVerPos(m_sectIndex).end(), &m_secPos[0]);
-        std::copy(m_imgBase->getSectionSize().begin(), m_imgBase->getSectionSize().end(), &m_secSize[0]);
-        std::copy(m_imgBase->getSectionSep().begin(), m_imgBase->getSectionSep().end(), &m_secSep[0]);
+        for (int i=0; i<2; ++i) {
+            m_secPos[i] = m_imgBase->getVerPos(m_sectIndex)[i];
+            m_secSize[i] = m_imgBase->getSectionSize()[i];
+            m_secSep[i] = m_imgBase->getSectionSep()[i];
+        }
 
         if (m_imgBase->getTexture()) {
             m_texSize.x = static_cast<int>(m_imgBase->getTexture()->getWidth());
@@ -300,7 +302,7 @@ void Image::updateDrawData() {
         // pre calculate texture coordinates
         for (auto& it : stdQuadVertices) {
             if (m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) {
-                v = it * (m_size - (float)m_borderWidth * 2.f);
+                v = it * (m_size - static_cast<float>(m_borderWidth) * 2.f);
             } else {
                 v  = it * m_nSize;
                 uv = vec2(v.x - (m_ImgAlign[0] == 1   ? (m_nSize.x * 0.5f - ts.x * 0.5f)
@@ -327,8 +329,8 @@ void Image::updateDrawData() {
             if (m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) {
                 dIt->pos = m_mvp * vec4(m_nPos - vec2(m_padding) + v, 0.f, 1.f);
 
-                dIt->aux0.x = m_size.x - (float)m_borderWidth * 2.f;
-                dIt->aux0.y = m_size.y - (float)m_borderWidth * 2.f;
+                dIt->aux0.x = m_size.x - static_cast<float>(m_borderWidth) * 2.f;
+                dIt->aux0.y = m_size.y - static_cast<float>(m_borderWidth) * 2.f;
                 dIt->aux0.z = v.x;
                 dIt->aux0.w = v.y;
             } else {
@@ -376,13 +378,13 @@ void Image::updateDrawData() {
             dIt->color = m_borderColor;
 
             if (m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) {
-                dIt->aux1.x = (float)m_secPos.x;
-                dIt->aux1.y = (float)m_secPos.y;
-                dIt->aux1.z = (float)m_secSize.x;
-                dIt->aux1.w = (float)m_secSize.y;
+                dIt->aux1.x = static_cast<float>(m_secPos.x);
+                dIt->aux1.y = static_cast<float>(m_secPos.y);
+                dIt->aux1.z = static_cast<float>(m_secSize.x);
+                dIt->aux1.w = static_cast<float>(m_secSize.y);
 
-                dIt->aux2.x = (float)m_secSep.x;
-                dIt->aux2.y = (float)m_secSep.y;
+                dIt->aux2.x = static_cast<float>(m_secSep.x);
+                dIt->aux2.y = static_cast<float>(m_secSep.y);
                 dIt->aux2.z = m_texUnit;  // texture unit
             } else {
                 dIt->aux1.x = getBorderWidthRel().x;
@@ -393,11 +395,11 @@ void Image::updateDrawData() {
                 dIt->aux2.x = getBorderAliasRel().x;
                 dIt->aux2.y = getBorderAliasRel().y;
                 dIt->aux2.z = m_texUnit;       // texture unit
-                dIt->aux2.w = (float)m_ImgFlags;
+                dIt->aux2.w = static_cast<float>(m_ImgFlags);
             }
 
             dIt->aux3.x = (m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) ? 3.f : 2.f;          // type indicator (2=Image simple, 3=Image frame)
-            dIt->aux3.y = (float)m_extTexBitCount;  // bitcount
+            dIt->aux3.y = static_cast<float>(m_extTexBitCount);  // bitcount
             dIt->aux3.z = m_lod;                    // mipmap lod
             dIt->aux3.w = m_absoluteAlpha;
 
@@ -649,14 +651,14 @@ bool Image::isInBounds(glm::vec2& pos) {
         m_hidMp = glm::min(glm::max((pos - m_winRelPos) / m_winRelSize, m_zeroVec), m_oneVec);
 
         // offset and scale by the uv coordinates for this section
-        m_hidMp = (vec2)m_secPos + m_hidMp * (vec2)m_secSize;
+        m_hidMp = static_cast<vec2>(m_secPos) + m_hidMp * (vec2)m_secSize;
 
         // check if alpha value at the mouse position is > 0 (convert from lt
         // origin to lb origin, freeimage is using lb origin)
-        return (int)*(m_imgBase->getTexture()->getBits() +
-                      ((m_imgBase->getTexture()->getHeight() - (int)m_hidMp.y) * m_imgBase->getTexture()->getWidth() +
-                       (int)m_hidMp.x) * m_imgBase->getTexture()->getNrChans() +
-                      3) > 0;
+        return static_cast<int>(*(m_imgBase->getTexture()->getBits() +
+                                  ((m_imgBase->getTexture()->getHeight() - static_cast<int>(m_hidMp.y)) * m_imgBase->getTexture()->getWidth() +
+                                   static_cast<int>(m_hidMp.x)) * m_imgBase->getTexture()->getNrChans() +
+                                  3)) > 0;
     } else {
         return true;
     }

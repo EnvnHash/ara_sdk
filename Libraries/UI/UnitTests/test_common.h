@@ -14,7 +14,7 @@ static inline glm::vec2       contentScale{1.f, 1.f};
 
 static void appBody(const std::function<void(ara::UIApplication*)>& drawFunc,
                     const std::function<void(ara::UIApplication*)>& verifyFunc, 
-                    int width = 1280, int height = 720) { // width and height are in hardware pixels (non scaled)
+                    int width = 1280, int height = 720) { // width and height are in hardware pixels (non-scaled)
     ara::UIApplication app;
     app.setWinWidth(width);
     app.setWinHeight(height);
@@ -53,15 +53,15 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
     ASSERT_TRUE(pBitmap);
 
     std::list<std::future<void>> futures;
-    auto tc = g_thread_pool.get_thread_count();
+    const auto tc = g_thread_pool.get_thread_count();
     uint32_t ySlices = height / tc;
     
     for (uint32_t i=0; i<tc; i++) {
         futures.emplace_back(g_thread_pool.submit([&data, pBitmap, width, ySlices, i]() {
             auto texData = &data[0];
-            auto refTex = static_cast<uint8_t*>(FreeImage_GetBits(pBitmap));
+            auto refTex = FreeImage_GetBits(pBitmap);
 
-            uint32_t offs = (ySlices * width * 4) * i;
+            const uint32_t offs = (ySlices * width * 4) * i;
             texData += offs;
             refTex += offs;
 

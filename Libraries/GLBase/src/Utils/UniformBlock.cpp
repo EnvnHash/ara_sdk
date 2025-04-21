@@ -17,8 +17,7 @@ void UniformBlock::init(GLuint program, const std::string &blockName) {
 
     glUseProgram(m_program);
 
-    // Find the uniform buffer index for "Uniforms", and determine the block’s
-    // sizes
+    // Find the uniform buffer index for "Uniforms", and determine the block’s sizes
     m_uboIndex = glGetUniformBlockIndex(m_program, blockName.c_str());
 
     if (m_uboIndex == GL_INVALID_INDEX) {
@@ -33,7 +32,9 @@ void UniformBlock::init(GLuint program, const std::string &blockName) {
 void UniformBlock::addVarName(std::string name, void *inVal, GLenum type) {
     auto it =
         std::find_if(m_valPairs.begin(), m_valPairs.end(), [name](const ubBlockVar &ub) { return ub.name == name; });
-    if (it != m_valPairs.end()) return;
+    if (it != m_valPairs.end()) {
+        return;
+    }
 
     m_valPairs.emplace_back(ubBlockVar{std::move(name), type});
 
@@ -99,22 +100,22 @@ void UniformBlock::update() {
         i = 0;
         for (auto &it : m_valPairs) {
             auto ptr = &m_buffer[0] + m_offset[i];
-            auto dataSize = m_size[i] * TypeSize(m_type[i]);
+            auto dataSize = m_size[i];
             switch (m_valPairs[i].inType) {
                 case GL_INT:
-                    std::copy(it.iVal, it.iVal + dataSize, ptr);
+                    std::copy_n(it.iVal, dataSize, ptr);
                     break;
                 case GL_FLOAT:
-                    std::copy(it.fVal, it.fVal + dataSize, ptr);
+                    std::copy_n(it.fVal, dataSize, ptr);
                     break;
                 case GL_UNSIGNED_INT:
-                    std::copy(it.uVal, it.uVal + dataSize, ptr);
+                    std::copy_n(it.uVal, dataSize, ptr);
                     break;
                 case GL_BOOL:
-                    std::copy(it.bVal, it.bVal + dataSize, ptr);
+                    std::copy_n(it.bVal, dataSize, ptr);
                     break;
                 default:
-                    std::copy(static_cast<GLubyte*>(it.vVal), static_cast<GLubyte*>(it.vVal) + dataSize, ptr);
+                    std::copy_n(static_cast<GLubyte*>(it.vVal), dataSize, ptr);
                     break;
             }
             ++i;
@@ -165,7 +166,9 @@ size_t UniformBlock::TypeSize(GLenum type) {
 }
 
 UniformBlock::~UniformBlock() {
-    if (m_ubo) glDeleteBuffers(1, &m_ubo);
+    if (m_ubo) {
+        glDeleteBuffers(1, &m_ubo);
+    }
 }
 
 }  // namespace ara

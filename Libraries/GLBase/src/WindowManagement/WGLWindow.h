@@ -27,11 +27,12 @@ public:
     } ntdll;
 
     bool create(glWinPar& gp) {
-        return create((char*)"", gp.width, gp.height, gp.shiftX, gp.shiftY, gp.bits, gp.fullScreen, gp.createHidden,
+        LPCWSTR lpszClass = L"WGLWindow";
+        return create(lpszClass, gp.width, gp.height, gp.shiftX, gp.shiftY, gp.bits, gp.fullScreen, gp.createHidden,
                       gp.decorated, gp.resizeable, gp.floating, gp.transparent, (HGLRC)gp.shareCont);
     }
 
-    bool create(char* title, uint32_t width, uint32_t height, uint32_t posX, uint32_t posY, uint32_t bits,
+    bool create(LPCWSTR title, uint32_t width, uint32_t height, uint32_t posX, uint32_t posY, uint32_t bits,
                 bool fullscreenflag, bool hidden = false, bool decorated = true, bool resizable = true,
                 bool floating = false, bool transparent = false, HGLRC shareCtx = nullptr);
 
@@ -88,18 +89,24 @@ public:
 
     // Notifies shared code of files or directories dropped on a window
     void inputDrop(int count, const char** paths) {
-        if (m_callbacks.drop) m_callbacks.drop(count, paths);
+        if (m_callbacks.drop) {
+            m_callbacks.drop(count, paths);
+        }
     }
 
     // Notifies shared code that a window framebuffer has been resized. The size
     // is specified in pixels
     void inputFramebufferSize(int width, int height) {
-        if (m_callbacks.fbsize) m_callbacks.fbsize(width, height);
+        if (m_callbacks.fbsize) {
+            m_callbacks.fbsize(width, height);
+        }
     }
 
     // Notifies shared code of a scroll event
     void inputScroll(double xoffset, double yoffset) {
-        if (m_callbacks.scroll) m_callbacks.scroll(xoffset, yoffset);
+        if (m_callbacks.scroll) {
+            m_callbacks.scroll(xoffset, yoffset);
+        }
     }
 
     // Notifies shared code that a window has been maximized or restored

@@ -8,9 +8,8 @@ using namespace std;
 
 namespace ara {
 
-// ImgBase
 std::array<int, 2> ImageBase::getVerPos(int ver) {
-    auto vidx = getVer(ver);
+    int vidx = getVer(ver);
 
     std::array<int, 2> pos{};
     pos[0] = getSectionPos()[0];
@@ -25,12 +24,8 @@ std::array<int, 2> ImageBase::getVerPos(int ver) {
     return pos;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ImgSrc
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 bool ImgSrc::OnProcess() {
-    ParVec pvsize = splitNodeValue("grid");
+    auto pvsize = splitNodeValue("grid");
 
     m_GridSize[0] = pvsize.getIntPar(0, 1);
     m_GridSize[1] = pvsize.getIntPar(1, m_GridSize[0]);
@@ -79,10 +74,6 @@ bool ImgSrc::LoadImg(int mimMapLevel) {
     return true;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ImgSection
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 bool ImgSection::OnProcess() {
     ResNode *src = getParent();
 
@@ -106,7 +97,7 @@ bool ImgSection::OnProcess() {
         }
     }
 
-    if ((m_ImgSrc = (ImgSrc *)src) == nullptr) {
+    if ((m_ImgSrc = dynamic_cast<ImgSrc *>(src)) == nullptr) {
         return error((char *)"imgsrc is null");
     }
 
@@ -153,7 +144,9 @@ bool ImgSection::OnProcess() {
 
     if (hasFlag("ver")) {
         ParVec pv_ver = splitNodeValue("ver");
-        for (int i = 0; i < pv_ver.getParCount(); i++) m_Ver[i] = pv_ver.getIntPar(i, i);
+        for (int i = 0; i < pv_ver.getParCount(); i++) {
+            m_Ver[i] = pv_ver.getIntPar(i, i);
+        }
     }
 
     m_VerDefault = value1i("default", 0);

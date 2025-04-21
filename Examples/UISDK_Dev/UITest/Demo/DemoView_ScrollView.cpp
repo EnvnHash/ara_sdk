@@ -20,7 +20,7 @@ void DemoView_ScrollView::init() {
 	ui_SV->addChild<Image>(120, 200+20, 300, 300, nullptr, nullptr)->setImg("checkerboard_small.png", 1);
     ui_SV->addChild<Image>(400, 500, 600, 600, nullptr, nullptr)->setImg("test/test_img.jpg", 1);
 
-	std::srand((unsigned) std::time(nullptr));
+	std::srand(static_cast<unsigned>(std::time(nullptr)));
 
 	for (int i=0; i<16; i++) {
         for (int j=0; j<12; j++) {

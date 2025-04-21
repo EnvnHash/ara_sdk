@@ -2,6 +2,7 @@
 // Created by user on 23.09.2020.
 //
 
+#include <string_utils.h>
 #ifdef WGLWINDOW
 #ifdef _WIN32
 
@@ -17,7 +18,7 @@ namespace ara {
  ** fullscreenflag	- Use Fullscreen Mode (true) Or Windowed Mode (false)
  */
 
-bool WGLWindow::create(char* title, uint32_t width, uint32_t height, uint32_t posX, uint32_t posY, uint32_t bits,
+bool WGLWindow::create(LPCWSTR title, uint32_t width, uint32_t height, uint32_t posX, uint32_t posY, uint32_t bits,
                        bool fullscreenflag, bool hidden, bool decorated, bool resizable, bool floating,
                        bool transparent, HGLRC shareCtx) {
     m_msgLoop = std::thread([this, title, width, height, posX, posY, bits, fullscreenflag, hidden, decorated, resizable,
@@ -39,16 +40,16 @@ bool WGLWindow::create(char* title, uint32_t width, uint32_t height, uint32_t po
         m_sharedCtx   = shareCtx;
         m_fullscreen  = fullscreenflag;  // Set The Global Fullscreen Flag
 
-        m_hInstance      = GetModuleHandle(NULL);               // Grab An Instance For Our Window
+        m_hInstance      = GetModuleHandle(nullptr);               // Grab An Instance For Our Window
         wc.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;  // Redraw On Size, And Own DC For Window.
         wc.lpfnWndProc   = (WNDPROC)WndProc;                    // WndProc Handles Messages
         wc.cbClsExtra    = 0;                                   // No Extra Window Data
         wc.cbWndExtra    = 0;                                   // No Extra Window Data
         wc.hInstance     = m_hInstance;                         // Set The Instance
-        wc.hIcon         = LoadIcon(NULL, IDI_WINLOGO);         // Load The Default Icon
-        wc.hCursor       = LoadCursor(NULL, IDC_ARROW);         // Load The Arrow Pointer
-        wc.hbrBackground = NULL;                                // No Background Required For GL
-        wc.lpszMenuName  = NULL;                                // We Don't Want A Menu
+        wc.hIcon         = LoadIcon(nullptr, IDI_WINLOGO);         // Load The Default Icon
+        wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);         // Load The Arrow Pointer
+        wc.hbrBackground = nullptr;                                // No Background Required For GL
+        wc.lpszMenuName  = nullptr;                                // We Don't Want A Menu
         m_thisClassName  = "OpenGL_" + std::to_string((uint64_t)this);
         wc.lpszClassName = StringToLPCWSTR(m_thisClassName);  // Set The Class Name
 
@@ -75,26 +76,29 @@ bool WGLWindow::create(char* title, uint32_t width, uint32_t height, uint32_t po
                 // If The Mode Fails, Offer Two Options.  Quit Or Use Windowed
                 // Mode.
                 if (MessageBox(NULL,
-                               "The Requested Fullscreen Mode Is Not Supported "
-                               "By\nYour Video Card. Use Windowed Mode Instead?",
-                               "NeHe GL", MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
+                               LPCWSTR("The Requested Fullscreen Mode Is Not Supported "
+                                   "By\nYour Video Card. Use Windowed Mode Instead?"),
+                               LPCWSTR(" GL"), MB_YESNO | MB_ICONEXCLAMATION) == IDYES) {
                     m_fullscreen = false;  // Windowed Mode Selected.  Fullscreen = false
                 } else {
-                    // Pop Up A Message Box Letting User Know The Program Is
-                    // Closing.
+                    // Pop Up A Message Box Letting User Know The Program Is Closing.
                     std::cerr << "WGLWindow: Program Will Now Close." << std::endl;
                     return;  // Return false
                 }
             }
         }
 
-        m_dwExStyle = WS_EX_APPWINDOW;  // Window Extended Style
-        if (m_fullscreen)               // Are We Still In Fullscreen Mode?
-            ShowCursor(false);          // Hide Mouse Pointer
+        m_dwExStyle = WS_EX_APPWINDOW;
+        if (m_fullscreen) {
+            ShowCursor(false);
+        }
+
         // else dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
         // // Window Extended Style
 
-        if (floating) m_dwExStyle |= WS_EX_TOPMOST;
+        if (floating) {
+            m_dwExStyle |= WS_EX_TOPMOST;
+        }
 
         m_dwStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
         // if (window->monitor) dwStyle |= WS_POPUP; else {
@@ -111,7 +115,7 @@ bool WGLWindow::create(char* title, uint32_t width, uint32_t height, uint32_t po
 
         // Create The Window
         if (!(m_hWnd = CreateWindowEx(m_dwExStyle,                                    // Extended Style For The Window
-                                      m_thisClassName.c_str(),                        // Class Name
+                                      reinterpret_cast<LPCWSTR>(m_thisClassName.c_str()),                        // Class Name
                                       title,                                          // Window Title
                                       m_dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,  // Required Window Style
                                       posX, posY,                                     // Window Position
@@ -218,10 +222,10 @@ bool WGLWindow::init() {
     GetWindowRect(m_hWnd, &rWnd);
     DWORD       dwStyle   = GetWindowLong(m_hWnd, GWL_STYLE);
     DWORD       dwExStyle = GetWindowLong(m_hWnd, GWL_EXSTYLE);
-    char const* szVer     = (const char*)glGetString(GL_VERSION);
+    LPCWSTR     szVer = reinterpret_cast<LPCWSTR>(glGetString(GL_VERSION));
     HWND        newHwnd;
     if (!(newHwnd = CreateWindowEx(dwExStyle,                // Extended Style For The Window
-                                   m_thisClassName.c_str(),  // Class Name
+                                   reinterpret_cast<LPCWSTR>(m_thisClassName.c_str()),  // Class Name
                                    szVer,                    // Window Title
                                    dwStyle |                 // Defined Window Style
                                        WS_CLIPSIBLINGS |     // Required Window Style
@@ -282,12 +286,11 @@ bool WGLWindow::init() {
         std::cerr << "WGLWindow Error: Can't Find A Suitable PixelFormat." << std::endl;
         return false;  // Return false
     }
+
     PIXELFORMATDESCRIPTOR pfd;
     DescribePixelFormat(newHDC, pixelFormatID, sizeof(pfd), &pfd);
 
-    if (!SetPixelFormat(newHDC, pixelFormatID,
-                        &pfd))  // Are We Able To Set The Pixel Format?
-    {
+    if (!SetPixelFormat(newHDC, pixelFormatID, &pfd)) {  // Are We Able To Set The Pixel Format?
         destroy();  // Reset The Display
         std::cerr << "WGLWindow Error: Can't Set The PixelFormat." << std::endl;
         return false;  // Return false
@@ -295,7 +298,7 @@ bool WGLWindow::init() {
 
     HGLRC thRC;
     // choose opengl version automatically
-    if (!(thRC = wglCreateContextAttribsARB(newHDC, m_sharedCtx, NULL))) {
+    if (!(thRC = wglCreateContextAttribsARB(newHDC, m_sharedCtx, nullptr))) {
         destroy();  // Reset The Display
         std::cerr << "WGLWindow Error: Can't Create A GL Rendering Context." << std::endl;
         return false;  // Return false
@@ -332,32 +335,6 @@ bool WGLWindow::init() {
         return false;  // Return false
     }
 
-    // start message loop
-    /*
-            // Main message loop, feed the msg callback
-            // and abuse it for external action requests
-            MSG msg = { 0 };
-            while(!m_done)
-            {
-                if(PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-                {
-                    if(msg.message == WM_QUIT)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        TranslateMessage(&msg);
-                        DispatchMessage(&msg);
-                    }
-                }
-                else
-                {
-                    SwapBuffers(m_hDC);					// Swap
-       Buffers (Double Buffering)
-                }
-            }
-    */
     return true;  // Initialization Went OK
 }
 
@@ -365,46 +342,40 @@ void WGLWindow::destroy()  // Properly Kill The Window
 {
     m_active = false;
 
-    if (m_fullscreen)                       // Are We In Fullscreen Mode?
+    if (m_fullscreen) {
         ChangeDisplaySettings(nullptr, 0);  // If So Switch Back To The Desktop
+    }
 
-    if (m_hRC)  // Do We Have A Rendering Context?
-    {
-        if (!wglMakeCurrent(nullptr,
-                            nullptr))  // Are We Able To Release The DC And RC Contexts?
+    if (m_hRC) {
+        if (!wglMakeCurrent(nullptr, nullptr)) {
             std::cout << "Release Of DC And RC Failed." << std::endl;
+        }
 
-        if (!wglDeleteContext(m_hRC))  // Are We Able To Delete The RC?
+        if (!wglDeleteContext(m_hRC)) {
             std::cout << "Release Rendering Context Failed." << std::endl;
-        m_hRC = nullptr;  // Set RC To NULL
+        }
+        m_hRC = nullptr;
     }
 
-    if (m_hDC && !ReleaseDC(m_hWnd, m_hDC))  // Are We Able To Release The DC
-    {
+    if (m_hDC && !ReleaseDC(m_hWnd, m_hDC)) {  // Are We Able To Release The DC
         std::cout << "Release Device Context Failed." << std::endl;
-        m_hDC = nullptr;  // Set DC To NULL
+        m_hDC = nullptr;
     }
 
-    if (m_hWnd && !DestroyWindow(m_hWnd))  // Are We Able To Destroy The Window?
-    {
+    if (m_hWnd && !DestroyWindow(m_hWnd)) { // Are We Able To Destroy The Window?
         std::cout << "Could Not Release hWnd.." << std::endl;
-        m_hWnd = nullptr;  // Set hWnd To NULL
+        m_hWnd = nullptr;
     }
 
-    if (!UnregisterClass(m_thisClassName.c_str(),
-                         m_hInstance))  // Are We Able To Unregister Class
-    {
-        // TODO: check this
-        // std::cout << "Could Not Unregister Class." << std::endl;
+    if (!UnregisterClass(reinterpret_cast<LPCWSTR>(m_thisClassName.c_str()), m_hInstance)) {
         m_hInstance = nullptr;  // Set m_hInstance To NULL
     }
 }
 
-void WGLWindow::resize(GLsizei width,
-                       GLsizei height)  // Resize And Initialize The GL Window
-{
-    if (height == 0)                  // Prevent A Divide By Zero By
-        height = 1;                   // Making Height Equal One
+void WGLWindow::resize(GLsizei width, GLsizei height) {
+    if (height == 0) {
+        height = 1;
+    }
     glViewport(0, 0, width, height);  // Reset The Current Viewport
 }
 
@@ -415,10 +386,8 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
 {
     auto thisWin = reinterpret_cast<WGLWindow*>(GetWindowLongPtrW(hWnd, 0));
 
-    switch (uMsg)  // Check For Windows Messages
-    {
-        case WM_ACTIVATE:  // Watch For Window Activate Message
-        {
+    switch (uMsg) {
+        case WM_ACTIVATE: {
             // LoWord Can Be WA_INACTIVE, WA_ACTIVE, WA_CLICKACTIVE,
             // The High-Order Word Specifies The Minimized State Of The Window
             // Being Activated Or Deactivated. A NonZero Value Indicates The
@@ -431,10 +400,8 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
             return 0;  // Return To The Message Loop
         }
 
-        case WM_SYSCOMMAND:  // Intercept System Commands
-        {
-            switch (wParam)  // Check System Calls
-            {
+        case WM_SYSCOMMAND: {
+            switch (wParam) {
                 case SC_SCREENSAVE:    // Screensaver Trying To Start?
                 case SC_MONITORPOWER:  // Monitor Trying To Enter Powersave?
                     return 0;          // Prevent From Happening
@@ -442,28 +409,29 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
             break;  // Exit
         }
 
-        case WM_CLOSE:  // Did We Receive A Close Message?
-        {
-            if (thisWin->m_callbacks.close) thisWin->m_callbacks.close();
+        case WM_CLOSE: {
+            if (thisWin->m_callbacks.close) {
+                thisWin->m_callbacks.close();
+            }
             PostQuitMessage(0);  // Send A Quit Message
             return 0;            // Jump Back
         }
 
         case WM_MOUSEACTIVATE: {
-            // HACK: Postpone cursor disabling when the window was activated by
-            // clicking a caption button
             if (HIWORD(lParam) == WM_LBUTTONDOWN) {
-                if (LOWORD(lParam) != HTCLIENT) thisWin->m_frameAction = true;
+                if (LOWORD(lParam) != HTCLIENT) {
+                    thisWin->m_frameAction = true;
+                }
             }
 
             break;
         }
 
         case WM_CAPTURECHANGED: {
-            // HACK: Disable the cursor once the caption button action has been
-            // completed or cancelled
             if (lParam == 0 && thisWin->m_frameAction) {
-                if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) thisWin->disableCursor();
+                if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) {
+                    thisWin->disableCursor();
+                }
                 thisWin->m_frameAction = false;
             }
 
@@ -472,42 +440,30 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
 
         case WM_SETFOCUS: {
             thisWin->inputWindowFocus(true);
-
-            // HACK: Do not disable cursor while the user is interacting with a
-            // caption button
-            if (thisWin->m_frameAction) break;
-
-            if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) thisWin->disableCursor();
-
+            if (thisWin->m_frameAction) {
+                break;
+            }
+            if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) {
+                thisWin->disableCursor();
+            }
             return 0;
         }
 
         case WM_KILLFOCUS: {
-            if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) thisWin->enableCursor();
-
-            // if (window->monitor && window->autoIconify)
-            //    _glfwPlatformIconifyWindow(window);
-
+            if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) {
+                thisWin->enableCursor();
+            }
             thisWin->inputWindowFocus(false);
             return 0;
         }
 
-        case WM_KEYDOWN:  // Did We Receive Key?
-        {
+        case WM_KEYDOWN: {
             printf(" WM_KEYDOWN \n");
             if (VK_ESCAPE == wParam) {
                 PostQuitMessage(0);  // Send A Quit Message
-
                 thisWin->m_exitSema.notify();
                 return 0;  // Jump Back
             }
-            // else if (VK_F1 == wParam)
-            //{
-            //     changeFSmode = true;					// Send
-            //     A Quit Message
-            //    return 0;
-            //    // Jump Back
-            //}
         }
 
         case WM_INPUTLANGCHANGE: {
@@ -517,14 +473,9 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
 
         case WM_UNICHAR: {
             const bool plain = (uMsg != WM_SYSCHAR);
-
             if (uMsg == WM_UNICHAR && wParam == UNICODE_NOCHAR) {
-                // WM_UNICHAR is not sent by Windows, but is sent by some
-                // third-party input method engine
-                // Returning TRUE here announces support for this message
                 return TRUE;
             }
-
             thisWin->inputChar((unsigned int)wParam, thisWin->getKeyMods(), plain);
             return 0;
         }
@@ -536,23 +487,14 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
 
             scancode = (HIWORD(lParam) & (KF_EXTENDED | 0xff));
             if (!scancode) {
-                // NOTE: Some synthetic key messages have a scancode of zero
-                // HACK: Map the virtual key back to a usable scancode
                 scancode = MapVirtualKeyW((UINT)wParam, MAPVK_VK_TO_VSC);
             }
 
             key = thisWin->m_keycodes[scancode];
-
-            // The Ctrl keys require special handling
             if (wParam == VK_CONTROL) {
                 if (HIWORD(lParam) & KF_EXTENDED) {
-                    // Right side keys have the extended key bit set
                     key = GLSG_KEY_RIGHT_CONTROL;
                 } else {
-                    // NOTE: Alt Gr sends Left Ctrl followed by Right Alt
-                    // HACK: We only want one event for Alt Gr, so if we detect
-                    //       this sequence we discard this Left Ctrl message now
-                    //       and later report Right Alt normally
                     MSG         next;
                     const DWORD time = GetMessageTime();
 
@@ -571,19 +513,13 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
                     key = GLSG_KEY_LEFT_CONTROL;
                 }
             } else if (wParam == VK_PROCESSKEY) {
-                // IME notifies that keys have been filtered by setting the
-                // virtual key-code to VK_PROCESSKEY
                 break;
             }
 
             if (action == GLSG_RELEASE && wParam == VK_SHIFT) {
-                // HACK: Release both Shift keys on Shift up event, as when both
-                //       are pressed the first release does not emit any event
-                // NOTE: The other half of this is in _glfwPlatformPollEvents
                 thisWin->inputKey(GLSG_KEY_LEFT_SHIFT, scancode, action, mods);
                 thisWin->inputKey(GLSG_KEY_RIGHT_SHIFT, scancode, action, mods);
             } else if (wParam == VK_SNAPSHOT) {
-                // HACK: Key down is not reported for the Print Screen key
                 thisWin->inputKey(key, scancode, GLSG_PRESS, mods);
                 thisWin->inputKey(key, scancode, GLSG_RELEASE, mods);
             } else
@@ -612,20 +548,30 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
                 action = GLSG_RELEASE;
 
             for (i = 0; i <= GLSG_MOUSE_BUTTON_LAST; i++) {
-                if (thisWin->m_mouseButtons[i] == GLSG_PRESS) break;
+                if (thisWin->m_mouseButtons[i] == GLSG_PRESS) {
+                    break;
+                }
             }
 
-            if (i > GLSG_MOUSE_BUTTON_LAST) SetCapture(hWnd);
+            if (i > GLSG_MOUSE_BUTTON_LAST) {
+                SetCapture(hWnd);
+            }
 
             thisWin->inputMouseClick(button, action, thisWin->getKeyMods());
 
             for (i = 0; i <= GLSG_MOUSE_BUTTON_LAST; i++) {
-                if (thisWin->m_mouseButtons[i] == GLSG_PRESS) break;
+                if (thisWin->m_mouseButtons[i] == GLSG_PRESS) {
+                    break;
+                }
             }
 
-            if (i > GLSG_MOUSE_BUTTON_LAST) ReleaseCapture();
+            if (i > GLSG_MOUSE_BUTTON_LAST) {
+                ReleaseCapture();
+            }
 
-            if (uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONUP) return TRUE;
+            if (uMsg == WM_XBUTTONDOWN || uMsg == WM_XBUTTONUP) {
+                return TRUE;
+            }
 
             return 0;
         }

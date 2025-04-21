@@ -85,14 +85,13 @@ public:
     FreeImageIO *io() { return &fIO; }
 
     static unsigned _stdcall read(void *buffer, unsigned size, unsigned count, fi_handle handle) {
-        auto *h = (FreeImg_MemHandler *)handle;
+        auto *h = static_cast<FreeImg_MemHandler *>(handle);
 
-        auto    *dest = (uint8_t *)buffer;
+        auto    *dest = static_cast<uint8_t *>(buffer);
         uint8_t *src  = h->getPos();
 
         for (unsigned c = 0; c < count; c++) {
-            std::copy(src, src + size, dest);
-
+            std::copy_n(src, size, dest);
             src += size;
             dest += size;
             h->memPos += size;
@@ -233,10 +232,10 @@ public:
     [[nodiscard]] uint   getDepth() const { return static_cast<uint>(m_texData.depth); }
     [[nodiscard]] uint   getNrChans() const { return m_texData.nrChan; }
 
-    std::array<int, 2>& getSize() {
+    int* getSize() {
         m_sizeInt[0] = static_cast<int32_t>(m_texData.width);
         m_sizeInt[1] = static_cast<int32_t>(m_texData.height);
-        return m_sizeInt;
+        return &m_sizeInt[0];
     }
 
     [[nodiscard]] unsigned char *getBits() const { return m_texData.bits; }
@@ -296,7 +295,7 @@ protected:
     GLsizei m_maxTexSize      = 0;
 
     std::string         m_filename;
-    std::array<int, 2>  m_sizeInt{0, 0};
+    int                 m_sizeInt[2]{0, 0};
     FIBITMAP*           m_saveBufCont = nullptr;
 };
 }  // namespace ara

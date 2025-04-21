@@ -40,7 +40,6 @@ namespace ara::GLBaseUnitTest::DrawQuadMemLeak {
 #endif
 
         for (int i = 0; i < 10; i++) {
-            //auto vao = make_unique<VAO>("position:4f,normal:4f,color:4f", GL_STATIC_DRAW);
             auto quad = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f,
                                           glm::vec3(0.f, 0.f, 1.f),
                                           1.f, 0.f, 0.f,
@@ -50,13 +49,12 @@ namespace ara::GLBaseUnitTest::DrawQuadMemLeak {
 
 #ifdef _WIN32
             _CrtMemCheckpoint(&sNew); //take a snapshot
-            if (_CrtMemDifference(&sDiff, &sOld, &sNew)) // if there is a difference
-            {
+            if (_CrtMemDifference(&sDiff, &sOld, &sNew)) {
                 LOG << "-----------_CrtMemDumpStatistics ---------";
                 _CrtMemDumpStatistics(&sDiff);
-                OutputDebugString("-----------_CrtMemDumpAllObjectsSince ---------");
+                OutputDebugString(LPCWSTR("-----------_CrtMemDumpAllObjectsSince ---------"));
                 _CrtMemDumpAllObjectsSince(&sOld);
-                OutputDebugString("-----------_CrtDumpMemoryLeaks ---------");
+                OutputDebugString(LPCWSTR("-----------_CrtDumpMemoryLeaks ---------"));
                 _CrtDumpMemoryLeaks();
                 didFindMemLeak = true;
             }

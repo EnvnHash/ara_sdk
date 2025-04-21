@@ -69,6 +69,7 @@ public:
     glm::ivec2   getExtTexSize() const { return {m_extTexWidth, m_extTexHeight}; }
     int          getExtTexBitCount() const { return m_extTexBitCount; }
     bool         isLoaded() { return m_loaded; }
+    int         *getImgBasePos() { return m_ppos; }
     int          getSectIdx() { return m_sectIndex; }
     PBO         *getUplPbo() { return &m_uplPbo; }
 
@@ -135,6 +136,7 @@ protected:
     glm::vec2   m_tuvSize{0.f};
     glm::vec2   m_uvSize{0.f};
     glm::vec2   m_hidMp{0.f};
+    int         m_ppos[2]{0};
 
     std::function<void(int, int)> m_sizeChangeCb;
     std::vector<GLenum>           m_attachments = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
