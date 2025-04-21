@@ -1334,15 +1334,18 @@ char **X11Window::parseUriList(char *text, int *count) {
     while ((line = strtok(text, "\r\n"))) {
         text = NULL;
 
-        if (line[0] == '#') continue;
-
-        if (strncmp(line, prefix, strlen(prefix)) == 0) {
-            line += strlen(prefix);
-            // TODO: Validate hostname
-            while (*line != '/') line++;
+        if (line[0] == '#') {
+            continue;
         }
 
-        (*count)++;
+        if (std::string(line).substr(0, strlen(prefix)) == std::string(prefix)) {
+            line += strlen(prefix);
+            while (*line != '/') {
+                ++line;
+            }
+        }
+
+        ++(*count);
 
         char *path        = (char *)calloc(strlen(line) + 1, 1);
         paths             = (char **)realloc(paths, *count * sizeof(char *));
@@ -1353,11 +1356,12 @@ char **X11Window::parseUriList(char *text, int *count) {
                 const char digits[3] = {line[1], line[2], '\0'};
                 *path                = strtol(digits, NULL, 16);
                 line += 2;
-            } else
+            } else {
                 *path = *line;
+            }
 
-            path++;
-            line++;
+            ++path;
+            ++line;
         }
     }
 

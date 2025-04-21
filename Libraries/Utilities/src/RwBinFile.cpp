@@ -39,7 +39,7 @@ std::size_t ReadBinFile(std::vector<uint8_t> &vp, const std::filesystem::path& f
     if (size > 0) {
         vp.resize(size);
         file.seekg(0, ios::beg);
-        file.read((char *)&vp[0], size);
+        file.read(reinterpret_cast<char *>(&vp[0]), size);
     }
 #endif
 

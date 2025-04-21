@@ -80,8 +80,9 @@ void ShadowMapArray::rebuildFbo(uint _nrLights) {
         s_fbo.release();
 
         // delete textures views
-        for (uint i = 0; i < std::min(nrLights, (uint)depthTexViews.size()); i++)
+        for (uint i = 0; i < std::min(nrLights, (uint)depthTexViews.size()); i++) {
             glDeleteTextures(1, &depthTexViews[i]);
+        }
     }
 
     // s_fbo for saving the depth information

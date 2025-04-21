@@ -7,15 +7,15 @@ namespace ara {
 class Spinner : public Div {
 public:
     Spinner();
-    Spinner(std::filesystem::path filepath, int x, int y, unsigned width, unsigned height);
-    virtual ~Spinner() = default;
+    Spinner(const std::filesystem::path& filepath, int x, int y, unsigned width, unsigned height);
+    ~Spinner() override = default;
 
     void init() override;
     void updateStyleIt(ResNode* node, state st, std::string& styleClass) override;
     void setImgBase(ImageBase* imgBase);
     bool draw(uint32_t* objId) override;
     bool drawIndirect(uint32_t* objId) override;
-    bool drawFunc(uint32_t* objId);
+    bool drawFunc(const uint32_t* objId);
 
     Texture* setImage(const std::filesystem::path& filepath, int mipmapLevels = 8);
     bool     setSpeed(float new_speed) {

@@ -257,20 +257,18 @@ GLuint Texture::loadFromFib(FIBITMAP *pBitmap, GLenum _textTarget, int nrMipMaps
 
     m_texData.width  = width;
     m_texData.height = height;
-    m_texData.tex_t  = (float)width / (float)m_texData.width;
-    m_texData.tex_u  = (float)height / (float)m_texData.height;
-    m_texData.target = _textTarget;  // asuming 2d pictures
-    // m_texData.internalFormat = BPP == 32 ? GL_RGBA8 : BPP == 24 ? GL_RGB8 :
-    // BPP == 8 ? GL_DEPTH_COMPONENT : 0;
+    m_texData.tex_t  = static_cast<float>(width) / static_cast<float>(m_texData.width);
+    m_texData.tex_u  = static_cast<float>(height) / static_cast<float>(m_texData.height);
+    m_texData.target = _textTarget;  // assuming 2d pictures
     m_texData.textureID = 0;  // init id
     m_texData.bpp       = BPP;
 
     // mipmap levels may have to limited in order to be not smaller than 1
-    if (generateMips)
+    if (generateMips) {
         m_mipmapLevels = std::min(m_mipmapLevels, (uint)std::log2(std::max(m_texData.width, m_texData.height)));
+    }
 
-    // if the texture is a cube map, cut the input file according to a standard
-    // cubemap separation
+    // if the texture is a cube map, cut the input file according to a standard cubemap separation
     if (m_texData.target == GL_TEXTURE_CUBE_MAP) {
         array<FIBITMAP *, 6> faceDataBM{nullptr};
 
@@ -298,7 +296,7 @@ GLuint Texture::loadFromFib(FIBITMAP *pBitmap, GLenum _textTarget, int nrMipMaps
         m_texData.height = m_texData.height / 3;
     }
 
-    GLuint texId = procTextureData();
+    auto texId = procTextureData();
 
     if (!m_keepBitmap) {
         FreeImage_Unload(pBitmap);
@@ -470,8 +468,7 @@ GLuint Texture::procTextureData() {
             break;
 #endif
         case GL_TEXTURE_CUBE_MAP:
-            // Now that storage is allocated for the texture object,
-            // we can place the texture data into its texel array.
+            // Now that storage is allocated for the texture object, we can place the texture data into its texel array.
             for (GLuint face = 0; face < 6; face++) {
                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, m_texData.internalFormat, m_texData.width,
                              m_texData.height, 0, m_texData.format, m_texData.pixelType, m_texData.faceData[face]);
@@ -1176,9 +1173,10 @@ void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
     if (!m_saveBufCont) m_saveBufCont = FreeImage_Allocate(w, h, nrChan * 8);
 
     if (m_saveBufCont) {
-        memcpy(FreeImage_GetBits(m_saveBufCont), buf, w * h * nrChan);
-        if (!FreeImage_Save(filetype, m_saveBufCont, filename))
+        std::copy_n(buf, (w * h * nrChan), FreeImage_GetBits(m_saveBufCont));
+        if (!FreeImage_Save(filetype, m_saveBufCont, filename)) {
             LOGE << "Texture::saveTexToFile2D Error: FreeImage_Save failed";
+        }
     }
 }
 #endif
@@ -1189,7 +1187,7 @@ void Texture::saveFrontBuffer(const std::string &filename, int w, int h, int nrC
     FREE_IMAGE_FORMAT filetype = FIF_PNG;
 
     if (bitmap) {
-        BYTE *bits = (BYTE *)FreeImage_GetBits(bitmap);
+        auto bits = FreeImage_GetBits(bitmap);
         glReadBuffer(GL_FRONT);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);

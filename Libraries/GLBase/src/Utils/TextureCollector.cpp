@@ -46,7 +46,7 @@ Texture *TextureCollector::addFromRes(Instance *res, const std::string &fn, int 
             res->loadResource(nullptr, vp, fn);
             return add(vp, fn, nullptr, mipMapLevel);
         } else {
-            return (Texture*)nullptr;
+            return static_cast<Texture *>(nullptr);
         }
     });
 }
@@ -56,7 +56,7 @@ Texture *TextureCollector::add(std::vector<uint8_t>& vp, const std::string &fn, 
         return nullptr;
     }
 
-    m_texMap[fn] = { Texture(m_glBase) };
+    m_texMap[fn].texture.setGlbase(m_glBase);
     m_texMap[fn].texture.loadFromMemPtr(&vp[0], vp.size(), GL_TEXTURE_2D, mipMapLevel);
     m_texMap[fn].texture.setFiltering(GL_LINEAR, mipMapLevel == 0 ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR);
 #ifndef ARA_USE_GLES31

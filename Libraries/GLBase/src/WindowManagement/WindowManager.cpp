@@ -668,7 +668,6 @@ std::vector<GLFWvidmode> WindowManager::getVideoModes() {
             m_dispModes.emplace_back();
             m_dispModes.back().width  = thisMode->width;
             m_dispModes.back().height = thisMode->height;
-            // memcpy(&modes.back(), thisMode, sizeof(GLFWvidmode));
         }
     }
     return m_dispModes;
@@ -681,7 +680,6 @@ std::vector<std::pair<int, int>> WindowManager::getMonitorOffsets() {
             glfwGetMonitorPos(m_monitors[i], &monOffsX, &monOffsY);
 
             m_dispOffsets.emplace_back(monOffsX, monOffsY);
-            // memcpy(&m_dispModes.back(), thisMode, sizeof(GLFWvidmode));
             m_displayInfo.push_back(DisplayBasicInfo{(uint32_t)monOffsX, (uint32_t)monOffsY,
                                                      (uint32_t)m_dispModes[i].width, (uint32_t)m_dispModes[i].height});
         }

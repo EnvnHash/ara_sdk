@@ -37,7 +37,7 @@ string ResNode::getPath() {
     string            str;
     vector<ResNode *> nl;
     _r_getPath(nl);
-    int i, n = (int)nl.size();
+    int i, n = static_cast<int>(nl.size());
     for (i = n - 2; i >= 0; i--) {
         str += nl[i]->m_Name;
         if (i > 0) {
@@ -64,14 +64,13 @@ bool ResNode::error(char *str, ...) {
     va_list p;
 
     va_start(p, str);
-    vsprintf(estr, str, p);
+    vsnprintf(estr, sizeof(estr), str, p);
     va_end(p);
 
     return error_string(estr);
 }
 
 void ResNode::logtree(int level) {
-    char *parent_name = (char *)(getParent() != nullptr ? getParent()->m_Name.c_str() : "");
     if (!m_Value.empty()) {
     } else {
         if (!m_Func.empty()) {
@@ -269,7 +268,7 @@ ResNode *ResNode::getByName(const string &name) {
 
 ResNode *ResNode::findNode(vector<string> &v, int level) {
     ResNode *r;
-    if (level >= (int)v.size()) {
+    if (level >= static_cast<int>(v.size())) {
         return nullptr;
     }
     if ((r = getByName(v[level])) == nullptr) {
@@ -350,7 +349,9 @@ bool ResNode::valueiv(std::vector<int> &v, const string &path, int fcount, int d
 bool ResNode::valuefv(std::vector<float> &v, const string &path, int fcount, float def) {
     v.clear();
     ResNode *node = findNode(path);
-    if (node == nullptr) return false;
+    if (node == nullptr) {
+        return false;
+    }
     ParVec tok = node->splitValue();
     fcount     = fcount > 0 ? fcount : tok.getParCount();
     for (int i = 0; i < fcount; i++) {

@@ -31,7 +31,7 @@ void Slider::init() {
 }
 
 void Slider::adjustKnob() {
-    m_knobWidth = (int)(m_size.y * m_knobProportion);
+    m_knobWidth = static_cast<int>(m_size.y * m_knobProportion);
     m_knob->setSize(m_knobWidth, m_knobWidth);
     m_knob->setBorderRadius(m_knobWidth / 2);
 
@@ -51,14 +51,17 @@ void Slider::updateMatrix() {
 UINode* Slider::addChild(std::unique_ptr<UINode> child) {
     m_children.push_back(std::move(child));
 
-    // if there is a numeric view as a child, use it to
-    // display the value
-    if (!strcmp(m_children.back()->getName().c_str(), "NumericView")) m_numView = m_children.back().get();
+    // if there is a numeric view as a child, use it to display the value
+    if (!strcmp(m_children.back()->getName().c_str(), "NumericView")) {
+        m_numView = m_children.back().get();
+    }
 
     init_child(m_children.back().get(), this);
 
     // if a value was set earlier, update now
-    if (m_numView) m_numView->setValue(getValue());
+    if (m_numView) {
+        m_numView->setValue(getValue());
+    }
 
     return m_children.back().get();
 }
@@ -82,25 +85,27 @@ void SliderKnob::mouseDrag(hidData* data) {
 }
 
 float Slider::getScaledVal(float in) {
-    if (m_scaling == GLSG_SLID_LIN)
+    if (m_scaling == GLSG_SLID_LIN) {
         return in;
-    else if (m_scaling == GLSG_SLID_SQRT)
+    } else if (m_scaling == GLSG_SLID_SQRT) {
         return std::sqrt(in);
-    else if (m_scaling == GLSG_SLID_SQ)
+    } else if (m_scaling == GLSG_SLID_SQ) {
         return in * in;
-    else
+    } else {
         return 0.f;
+    }
 }
 
 float Slider::getUnScaled(float in) {
-    if (m_scaling == GLSG_SLID_LIN)
+    if (m_scaling == GLSG_SLID_LIN) {
         return in;
-    else if (m_scaling == GLSG_SLID_SQ)
+    } else if (m_scaling == GLSG_SLID_SQ) {
         return std::sqrt(in);
-    else if (m_scaling == GLSG_SLID_SQRT)
+    } else if (m_scaling == GLSG_SLID_SQRT) {
         return in * in;
-    else
+    } else {
         return 0.f;
+    }
 }
 
 // absolute value has to be normalized internally
@@ -109,11 +114,17 @@ void Slider::setAbsValue(float val) {
     m_normValue       = (c_val - m_min) / (m_max - m_min);
     m_scaledNormValue = getScaledVal(m_normValue);
 
-    if (m_maxDragWayRel) m_knob->setX(m_normValue * m_maxDragWayRel);
+    if (m_maxDragWayRel != 0.f) {
+        m_knob->setX(m_normValue * m_maxDragWayRel);
+    }
 
-    if (m_numView) m_numView->setValue(getValue());
+    if (m_numView) {
+        m_numView->setValue(getValue());
+    }
 
-    if (m_valueChangeCb) m_valueChangeCb(getValue());
+    if (m_valueChangeCb) {
+        m_valueChangeCb(getValue());
+    }
 }
 
 // normalized value input 0-1
@@ -124,20 +135,18 @@ void Slider::setValue(float val) {
 
     m_knob->setX(m_normValue * m_maxDragWayRel);
 
-    if (m_valueChangeCb) m_valueChangeCb(getValue());
+    if (m_valueChangeCb) {
+        m_valueChangeCb(getValue());
+    }
 
-    char buf[12];
-    sprintf(buf, "%f", m_mappedValue);
-    m_valueAsString = string(buf);
+    m_valueAsString = std::to_string(m_mappedValue);
 }
 
 // normalized value input 0-1
 void Slider::setValuePtr(float* _val) {
     m_normValue   = *_val;
     m_mappedValue = m_normValue * (m_max - m_min) + m_min;
-    char buf[12];
-    sprintf(buf, "%f", m_mappedValue);
-    m_valueAsString = string(buf);
+    m_valueAsString = std::to_string(m_mappedValue);
 
     m_knob->setX(m_normValue * m_maxDragWayRel);
 }

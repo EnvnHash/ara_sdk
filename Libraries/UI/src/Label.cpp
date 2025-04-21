@@ -342,13 +342,11 @@ void Label::updateFontGeo() {
         m_alignOffset.y = m_tContSize.y * 0.5f - bs.y * 0.5f;
     }
 
-    // take the matrix of the helper content Div, since this will use the
-    // Label's content transformation
-    m_bo.x = m_Offset[0] + m_alignOffset.x;
-    m_bo.y = m_Offset[1] + m_riFont->getPixAscent() + m_alignOffset.y;
-    m_mask = calculateMask();
-
-    memcpy(&m_modMvp[0][0], &m_mvp[0][0], sizeof(float) * 16);
+    // take the matrix of the helper content Div, since this will use the Label's content transformation
+    m_bo.x      = m_Offset[0] + m_alignOffset.x;
+    m_bo.y      = m_Offset[1] + m_riFont->getPixAscent() + m_alignOffset.y;
+    m_mask      = calculateMask();
+    m_modMvp    = m_mvp;
 
     if (m_adaptScaling < 1.f) {
         // get in bounds offset
@@ -360,8 +358,8 @@ void Label::updateFontGeo() {
         m_bo.y = m_bo.y / m_adaptScaling - inBoundsOffs.y * 0.5f;
 
         m_adaptScaleMat = *m_orthoMat * *m_parentMat * m_nodePosMat * scale(vec3(m_adaptScaling, m_adaptScaling, 1.f));
-
-        memcpy(&m_modMvp[0][0], &m_adaptScaleMat[0][0], sizeof(float) * 16);
+        m_modMvp        = m_adaptScaleMat;
+        m_adaptScaleMat = m_modMvp;
 
         m_mask.z = getContentSize().x / m_adaptScaling;
         m_mask.w = getContentSize().y / m_adaptScaling;

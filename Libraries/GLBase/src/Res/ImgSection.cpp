@@ -59,7 +59,6 @@ bool ImgSrc::LoadImg(int mimMapLevel) {
     }
 
     std::vector<uint8_t> resdata;
-
     if (m_Instance->loadResource(this, resdata, m_ImgPath) <= 0) {
         return error((char *)"Cannot load resource (%s)", m_ImgPath.c_str());
     }
@@ -68,8 +67,8 @@ bool ImgSrc::LoadImg(int mimMapLevel) {
     m_texMan->setFileName(m_ImgPath);
     m_texMan->loadFromMemPtr(&resdata[0], resdata.size(), GL_TEXTURE_2D, mimMapLevel);
 
-    m_texSize.x = m_texMan->getWidth();
-    m_texSize.y = m_texMan->getHeight();
+    m_texSize.x = static_cast<int>(m_texMan->getWidth());
+    m_texSize.y = static_cast<int>(m_texMan->getHeight());
 
     return true;
 }
@@ -108,8 +107,9 @@ bool ImgSection::OnProcess() {
     m_Pos[0] = pv_pos.getIntPar(0, 0);
     m_Pos[1] = pv_pos.getIntPar(1, 0);
 
-    if (m_Pos[0] < 0 || m_Pos[1] < 0)
+    if (m_Pos[0] < 0 || m_Pos[1] < 0) {
         return error((char *)"Invalid position (%d,%d), position values should be positive", m_Pos[0], m_Pos[1]);
+    }
 
     m_PixSize[0] = pv_size.getIntPar(0, 0);
     m_PixSize[1] = pv_size.getIntPar(1, m_PixSize[0]);

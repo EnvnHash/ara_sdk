@@ -398,14 +398,11 @@ void Instance::CallResSourceChange() {
         loadResource(nullptr, vp, m_ResFilePath, true);
 
         if (!getPreContent().empty()) {
-            vp.insert(vp.begin(), getPreContent().size(), 0);
-            memcpy(&vp[0], getPreContent().c_str(), (int)getPreContent().size());
+            vp.insert(vp.begin(), getPreContent().begin(), getPreContent().end());
         }
 
         if (!getPostContent().empty()) {
-            size_t p = vp.size();
-            vp.resize(p + getPostContent().size());
-            memcpy(&vp[p], getPostContent().c_str(), (int)getPostContent().size());
+            vp.insert(vp.end(), getPostContent().begin(), getPostContent().end());
         }
 
         if (sfile.Process(nroot.get(), vp)) {
@@ -461,7 +458,7 @@ void Instance::CallForChangesInFolderFiles() {
                 }
 
                 if (ft != e.second) {
-                    string str = e.first.path().string();
+                    auto str = e.first.path().string();
                     std::replace(str.begin(), str.end(), '\\', '/');
                     str.erase(0, m_DataRootPath.size());
                     PropagateFileChange(false, str);
@@ -491,12 +488,16 @@ void Instance::PropagateFileChange(bool deleted, const string &fpath) {
 }
 
 bool Instance::Compile(const filesystem::path& p) {
-    if (usingComp()) return false;
+    if (usingComp()) {
+        return false;
+    }
 
     ResFile         rfile;
     vector<uint8_t> vp;
 
-    if (!rfile.BeginCreate(p)) return false;
+    if (!rfile.BeginCreate(p)) {
+        return false;
+    }
 
     for (auto &elem : m_ResFolderFiles) {
         string ppath = elem.first.path().string();
@@ -511,7 +512,6 @@ bool Instance::Compile(const filesystem::path& p) {
     }
 
     rfile.Finish();
-
     return true;
 }
 
@@ -522,7 +522,7 @@ ImageBase *Instance::img(const string& path) {
         return nullptr;
     }
 
-    return (ImageBase *)node;
+    return static_cast<ImageBase *>(node);
 }
 
 std::string Instance::value(const std::string &path) {

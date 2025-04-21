@@ -57,7 +57,7 @@ glm::mat4 LensDistortion::getEyeProjectionMatrix(StereoEye eye, float z_near, fl
 }
 
 void LensDistortion::getEyeFieldOfView(StereoEye eye, float *field_of_view) const {
-    std::memcpy(field_of_view, m_fov[(int)eye].data(), sizeof(float) * 4);
+    std::copy(m_fov[static_cast<int>(eye)].data(), m_fov[static_cast<int>(eye)].data() + 4, field_of_view);
 }
 
 glm::vec2 LensDistortion::getLensOffs(StereoEye eye) {
@@ -81,21 +81,21 @@ Mesh &LensDistortion::getDistortionMesh(StereoEye eye) const {
 }
 
 std::array<float, 2> LensDistortion::distortedUvForUndistortedUv(const std::array<float, 2> &in, StereoEye eye) {
-    if (m_screen_meters.x == 0 || m_screen_meters.y == 0) return {0, 0};
+    if (m_screen_meters.x == 0 || m_screen_meters.y == 0) {
+        return {0, 0};
+    }
 
     ViewportParams screen_params{}, texture_params{};
 
-    calculateViewportParameters(eye, m_fov[(int)eye], &screen_params, &texture_params);
+    calculateViewportParameters(eye, m_fov[static_cast<int>(eye)], &screen_params, &texture_params);
 
-    // Convert input from normalized [0, 1] screen coordinates to eye-centered
-    // tanangle units.
+    // Convert input from normalized [0, 1] screen coordinates to eye-centered tan angle units.
     std::array<float, 2> undistorted_uv_tanangle = {in[0] * screen_params.width - screen_params.x_eye_offset,
                                                     in[1] * screen_params.height - screen_params.y_eye_offset};
 
-    std::array<float, 2> distorted_uv_tanangle = m_distortion->Distort(undistorted_uv_tanangle);
+    auto distorted_uv_tanangle = m_distortion->Distort(undistorted_uv_tanangle);
 
-    // Convert output from tanangle units to normalized [0, 1] pre distort
-    // texture space.
+    // Convert output from tanangle units to normalized [0, 1] pre distort texture space.
     return {(distorted_uv_tanangle[0] + texture_params.x_eye_offset) / texture_params.width,
             (distorted_uv_tanangle[1] + texture_params.y_eye_offset) / texture_params.height};
 }
@@ -105,16 +105,15 @@ std::array<float, 2> LensDistortion::undistortedUvForDistortedUv(const std::arra
 
     ViewportParams screen_params{}, texture_params{};
 
-    calculateViewportParameters(eye, m_fov[(int)eye], &screen_params, &texture_params);
+    calculateViewportParameters(eye, m_fov[static_cast<int>(eye)], &screen_params, &texture_params);
 
-    // Convert input from normalized [0, 1] pre distort texture space to
-    // eye-centered tanangle units.
+    // Convert input from normalized [0, 1] pre distort texture space to eye-centered tan angle units.
     std::array<float, 2> distorted_uv_tanangle = {in[0] * texture_params.width - texture_params.x_eye_offset,
                                                   in[1] * texture_params.height - texture_params.y_eye_offset};
 
     std::array<float, 2> undistorted_uv_tanangle = m_distortion->DistortInverse(distorted_uv_tanangle);
 
-    // Convert output from tanangle units to normalized [0, 1] screen
+    // Convert output from tan angle units to normalized [0, 1] screen
     // coordinates.
     return {(undistorted_uv_tanangle[0] + screen_params.x_eye_offset) / screen_params.width,
             (undistorted_uv_tanangle[1] + screen_params.y_eye_offset) / screen_params.height};
@@ -122,8 +121,7 @@ std::array<float, 2> LensDistortion::undistortedUvForDistortedUv(const std::arra
 
 std::array<float, 4> LensDistortion::calculateFov(const PolynomialRadialDistortion &distortion,
                                                   float screen_width_meters, float screen_height_meters) {
-    // FOV angles in device parameters are in degrees so they are converted
-    // to radians for posterior use.
+    // FOV angles in device parameters are in degrees so they are converted to radians for posterior use.
     std::array<float, 4> device_fov = {
         glm::radians(m_device_params.left_eye_field_of_view_angles(0)),
         glm::radians(m_device_params.left_eye_field_of_view_angles(1)),

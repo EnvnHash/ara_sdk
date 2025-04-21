@@ -65,7 +65,6 @@ public:
         memPtr  = ptr;
         memSize = size;
         memPos  = 0;
-
         fillFreeImageIO(fIO);
     }
 
@@ -85,10 +84,10 @@ public:
     FreeImageIO *io() { return &fIO; }
 
     static unsigned _stdcall read(void *buffer, unsigned size, unsigned count, fi_handle handle) {
-        auto *h = static_cast<FreeImg_MemHandler *>(handle);
+        auto h = static_cast<FreeImg_MemHandler *>(handle);
 
-        auto    *dest = static_cast<uint8_t *>(buffer);
-        uint8_t *src  = h->getPos();
+        auto dest = static_cast<uint8_t *>(buffer);
+        auto src  = h->getPos();
 
         for (unsigned c = 0; c < count; c++) {
             std::copy_n(src, size, dest);
@@ -105,7 +104,7 @@ public:
     }
 
     static int _stdcall seek(fi_handle handle, long offset, int origin) {
-        auto *h = (FreeImg_MemHandler *)handle;
+        auto h = static_cast<FreeImg_MemHandler *>(handle);
 
         if (origin == SEEK_SET) {
             h->memPos = 0;
@@ -117,8 +116,8 @@ public:
     }
 
     static long _stdcall tell(fi_handle handle) {
-        auto *h = (FreeImg_MemHandler *)handle;
-        return (long)(h->memPos);
+        auto h = static_cast<FreeImg_MemHandler *>(handle);
+        return static_cast<long>(h->memPos);
     }
 };
 
@@ -188,7 +187,7 @@ public:
     }
 
     void bind(GLuint su, GLuint si, GLuint tu) {
-        m_samplerUnit = su;
+        m_samplerUnit = static_cast<GLint>(su);
         glActiveTexture(GL_TEXTURE0 + tu);
         glBindTexture(m_texData.target, m_texData.textureID);
         glBindSampler(m_samplerUnit, si);
@@ -213,8 +212,8 @@ public:
 
     void keepBitmap(bool val)               { m_keepBitmap = val; }
     void setFileName(const std::string &fn) { m_filename = fn; }
-    void setWidth(float w)                  { m_texData.width = (uint32_t)w; }
-    void setHeight(float h)                 { m_texData.height = (uint32_t)h; }
+    void setWidth(float w)                  { m_texData.width = static_cast<uint32_t>(w); }
+    void setHeight(float h)                 { m_texData.height = static_cast<uint32_t>(h); }
     void setGlbase(GLBase *glbase)          { m_glbase = glbase; }
 
     static void getGlFormatAndType(GLenum glInternalFormat, GLenum &glFormat, GLenum &type);

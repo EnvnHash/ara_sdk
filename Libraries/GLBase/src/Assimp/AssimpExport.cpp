@@ -69,7 +69,7 @@ void AssimpExport::singleMeshExport(uint32_t nrVert, uint32_t nrIndices, ShaderB
 
     // map and copy indices
     // could be optimized, storage buffer should be [ind[0], ind[1], ind[2],
-    // mNumIndices, ind[3], ind[4], ind[5]... this way would be a single memcpy
+    // mNumIndices, ind[3], ind[4], ind[5]... this way would be a single std::copy
     uint32_t *indPtr = indices->map(GL_MAP_READ_BIT);
     int       k      = 0;
     for (uint32_t i = 0; i < (nrIndices / 3); i++, k += 3) {

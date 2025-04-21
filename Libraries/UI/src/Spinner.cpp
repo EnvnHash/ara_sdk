@@ -10,15 +10,15 @@ namespace ara {
 Spinner::Spinner() : Div() {
     setName(getTypeName<Spinner>());
     setFocusAllowed(false);
-    setColor(1.f, 1.f, 1.f, 1.f);
+    UINode::setColor(1.f, 1.f, 1.f, 1.f);
 }
 
-Spinner::Spinner(filesystem::path filepath, int x, int y, unsigned width, unsigned height) : Div() {
+Spinner::Spinner(const filesystem::path& filepath, int x, int y, unsigned width, unsigned height) : Div() {
     setName(getTypeName<Spinner>());
     setFocusAllowed(false);
-    setPos((int)x, (int)y);
-    setSize((int)width, (int)(height == 0 ? width : height));
-    setColor(1.f, 1.f, 1.f, 1.f);
+    setPos(static_cast<int>(x), static_cast<int>(y));
+    setSize(static_cast<int>(width), static_cast<int>(height == 0 ? width : height));
+    UINode::setColor(1.f, 1.f, 1.f, 1.f);
     m_filepath = filepath;
 }
 
@@ -65,10 +65,14 @@ void Spinner::updateStyleIt(ResNode * node, state st, std::string & styleClass) 
     }
 
     // is there a style defined?
-    if (m_sharedRes->res->img(styleClass)) setImgBase(m_sharedRes->res->img(styleClass));
+    if (m_sharedRes->res->img(styleClass)) {
+        setImgBase(m_sharedRes->res->img(styleClass));
+    }
 
     if (typeid(*node) == typeid(ImgSrc) || typeid(*node) == typeid(ImgSection)) {
-        if (m_sharedRes->res->img(m_baseStyleClass)) setImgBase(m_sharedRes->res->img(m_baseStyleClass));
+        if (m_sharedRes->res->img(m_baseStyleClass)) {
+            setImgBase(m_sharedRes->res->img(m_baseStyleClass));
+        }
     } else {
         auto* inode = node->findNode<ResNode>("image");
         if (inode) {
@@ -103,7 +107,7 @@ bool Spinner::drawIndirect(uint32_t* objId) {
     return true;  // count up objId
 }
 
-bool Spinner::drawFunc(uint32_t* objId) {
+bool Spinner::drawFunc(const uint32_t* objId) {
     if (!m_inited) {
         return false;
     }
@@ -116,7 +120,7 @@ bool Spinner::drawFunc(uint32_t* objId) {
         m_shader->setUniform1f("t", m_refTime);
         m_shader->setUniformMatrix4fv("m_pvm", getMVPMatPtr());
         m_shader->setUniform2fv("size", &getSize()[0]);
-        m_shader->setUniform1f("objId", (float)(*objId));
+        m_shader->setUniform1f("objId", static_cast<float>(*objId));
         m_shader->setUniform1f("alpha", m_absoluteAlpha);
 
         if (m_imgBase) {

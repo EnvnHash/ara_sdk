@@ -615,11 +615,11 @@ glm::mat4 &TrackBallCam::lookAtBlend(float p, glm::vec3 *euler, glm::vec3 *trans
 
         if (euler) {
             extractEulerAngleYXZ(t_inv, t_newEuler[1], t_newEuler[0], t_newEuler[2]);
-            memcpy(&(*euler)[0], &t_newEuler[0], sizeof(float) * 3);
+            std::copy_n(&t_newEuler[0], 3, &(*euler)[0]);
         }
 
         if (trans) {
-            memcpy(&(*trans)[0], &t_inv[3][0], sizeof(float) * 3);
+            std::copy_n(&t_inv[3][0], 3, &(*trans)[0]);
         }
     }
 

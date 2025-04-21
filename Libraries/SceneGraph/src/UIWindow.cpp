@@ -1269,18 +1269,19 @@ void UIWindow::setAppIcon(std::string &path) {
 
     // convert to bgra
     std::array<uint8_t, 4> t{};
-    int                    x, y, idx;
-    for (y = 0; y < (logo.height); y++)
+    int                    x, y;
+    for (y = 0; y < (logo.height); y++) {
         for (x = 0; x < logo.width; x++) {
-            idx = ((y * logo.width) + x) * nrChan;
+            int idx = ((y * logo.width) + x) * nrChan;
 
             t[0] = logo.pixels[idx + 2];
             t[1] = logo.pixels[idx + 1];
             t[2] = logo.pixels[idx + 0];
             t[3] = logo.pixels[idx + 3];
 
-            memcpy(&logo.pixels[idx], &t[0], nrChan);
+            std::copy(&t[0], &t[0] + nrChan, &logo.pixels[idx]);
         }
+    }
 
     glfwSetWindowIcon((GLFWwindow *)getWinHandle()->getWin(), 1, &logo);
 #endif
