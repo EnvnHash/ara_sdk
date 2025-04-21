@@ -212,7 +212,7 @@ void Node::load() {
 
 #ifdef ARA_USE_CMRC
     auto fs = cmrc::ara::get_filesystem();
-    if (fs.exists(m_fileName)) {
+    if (fs.exists(m_fileName.string())) {
         auto file = fs.open(m_fileName.string());
         std::stringstream ss;
         ss.write(file.begin(), static_cast<long>(file.size()));

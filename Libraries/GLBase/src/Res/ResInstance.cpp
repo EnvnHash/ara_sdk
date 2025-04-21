@@ -336,14 +336,11 @@ bool Instance::Reload() {
     loadResource(nullptr, vp, m_ResFilePath, true);
 
     if (!getPreContent().empty()) {
-        vp.insert(vp.begin(), getPreContent().size(), 0);
-        memcpy(&vp[0], getPreContent().c_str(), (int)getPreContent().size());
+        vp.insert(vp.begin(), getPreContent().begin(), getPreContent().end());
     }
 
     if (!getPostContent().empty()) {
-        size_t p = vp.size();
-        vp.resize(p + getPostContent().size());
-        memcpy(&vp[p], getPostContent().c_str(), (int)getPostContent().size());
+        vp.insert(vp.end(), getPostContent().begin(), getPostContent().end());
     }
 
     if (sfile.Process(nroot.get(), vp)) {

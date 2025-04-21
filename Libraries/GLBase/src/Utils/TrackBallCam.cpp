@@ -38,8 +38,11 @@ void TrackBallCam::mouseDrag(float x, float y, bool shiftPressed, bool altPresse
     m_ctrlPressed  = ctrlPressed;
 
     // mouse key states: set dragging flag
-    for (auto &it : m_mbState)
-        if (it.pressed) it.dragging = true;
+    for (auto &it : m_mbState) {
+        if (it.pressed) {
+            it.dragging = true;
+        }
+    }
 
     bool updateMats = false;
 
@@ -104,15 +107,20 @@ void TrackBallCam::mouseDrag(float x, float y, bool shiftPressed, bool altPresse
     if (updateMats) updateMatrices();
 
     // mouse button states: proc dragStart
-    for (auto &it : m_mbState)
-        if (it.dragStart) it.dragStart = false;
+    for (auto &it : m_mbState) {
+        if (it.dragStart) {
+            it.dragStart = false;
+        }
+    }
 }
 
 void TrackBallCam::mouseDownLeft(float x, float y) {
-    if (m_mbState[(int)mouseButt::right].pressed) return;
+    if (m_mbState[static_cast<int>(mouseButt::right)].pressed) {
+        return;
+    }
 
-    m_mbState[(int)mouseButt::left].pressed   = true;
-    m_mbState[(int)mouseButt::left].dragStart = true;
+    m_mbState[static_cast<int>(mouseButt::left)].pressed   = true;
+    m_mbState[static_cast<int>(mouseButt::left)].dragStart = true;
     m_mouseDownCoord.x                        = x;
     m_mouseDownCoord.y                        = y;
     m_actMouseCoord                           = m_mouseDownCoord;
@@ -125,17 +133,19 @@ void TrackBallCam::mouseDownLeft(float x, float y) {
 }
 
 void TrackBallCam::mouseUpLeft(float x, float y) {
-    m_mbState[(int)mouseButt::left].pressed   = false;
-    m_mbState[(int)mouseButt::left].dragging  = false;
-    m_mbState[(int)mouseButt::left].dragStart = false;
+    m_mbState[static_cast<int>(mouseButt::left)].pressed   = false;
+    m_mbState[static_cast<int>(mouseButt::left)].dragging  = false;
+    m_mbState[static_cast<int>(mouseButt::left)].dragStart = false;
     m_transType                               = mouseDragType::none;
 }
 
 void TrackBallCam::mouseDownRight(float x, float y) {
-    if (m_mbState[(int)mouseButt::left].pressed) return;
+    if (m_mbState[static_cast<int>(mouseButt::left)].pressed) {
+        return;
+    }
 
-    m_mbState[(int)mouseButt::right].pressed   = true;
-    m_mbState[(int)mouseButt::right].dragStart = true;
+    m_mbState[static_cast<int>(mouseButt::right)].pressed   = true;
+    m_mbState[static_cast<int>(mouseButt::right)].dragStart = true;
     m_mouseDownCoord.x                         = x;
     m_mouseDownCoord.y                         = y;
     m_actMouseCoord                            = m_mouseDownCoord;
@@ -150,11 +160,13 @@ void TrackBallCam::mouseDownRight(float x, float y) {
 }
 
 void TrackBallCam::mouseUpRight(float x, float y) {
-    if (m_mbState[(int)mouseButt::left].pressed) return;
+    if (m_mbState[static_cast<int>(mouseButt::left)].pressed) {
+        return;
+    }
 
-    m_mbState[(int)mouseButt::right].pressed   = false;
-    m_mbState[(int)mouseButt::right].dragging  = false;
-    m_mbState[(int)mouseButt::right].dragStart = false;
+    m_mbState[static_cast<int>(mouseButt::right)].pressed   = false;
+    m_mbState[static_cast<int>(mouseButt::right)].dragging  = false;
+    m_mbState[static_cast<int>(mouseButt::right)].dragStart = false;
     m_transType                                = mouseDragType::none;
 }
 
@@ -175,9 +187,9 @@ bool TrackBallCam::updateExt(glm::vec3 *trans, glm::vec3 *rot) {
         update = true;
     }
 
-    vec3 newRot = glm::mod(*rot + vec3((float)M_TWO_PI), vec3((float)M_TWO_PI));
-    vec3 oldRot = glm::mod(m_tbEulerAngle + vec3((float)M_TWO_PI), vec3((float)M_TWO_PI));
-    vec3 diff   = glm::abs(oldRot - newRot);
+    auto newRot = glm::mod(*rot + vec3((float)M_TWO_PI), vec3((float)M_TWO_PI));
+    auto oldRot = glm::mod(m_tbEulerAngle + vec3((float)M_TWO_PI), vec3((float)M_TWO_PI));
+    auto diff   = glm::abs(oldRot - newRot);
 
     if (glm::compAdd(diff) > 1.e-5f) {
         setTrackBallRot(rot);
@@ -190,8 +202,9 @@ bool TrackBallCam::updateExt(glm::vec3 *trans, glm::vec3 *rot) {
 }
 
 void TrackBallCam::setInteractionStart() {
-    if (!std::isfinite(m_tbTrans.x) || std::isnan(m_tbTrans.x))
+    if (!std::isfinite(m_tbTrans.x) || std::isnan(m_tbTrans.x)) {
         LOGE << "TrackBallCam::startTrackBallOffset illegal values";
+    }
 
     m_tbMouseDownPos         = m_tbTrans;
     m_tbMouseDownEulerAngle  = m_tbEulerAngle;
@@ -200,18 +213,25 @@ void TrackBallCam::setInteractionStart() {
     m_tbMouseDownCamModelMat = getModelMatr();
     m_tbResultModelMat       = getModelMatr();
 
-    if (m_mode == mode::arcBall || m_mode == mode::arcBallShoe) m_tbRotQuat = glm::quat(m_tbMouseRot);
+    if (m_mode == mode::arcBall || m_mode == mode::arcBallShoe) {
+        m_tbRotQuat = glm::quat(m_tbMouseRot);
+    }
 
-    if (m_mode == mode::arcBall)
+    if (m_mode == mode::arcBall) {
         computePointOnSphere(m_mouseDownCoord, m_arcBallStartVec);
-    else if (m_mode == mode::arcBallShoe)
+    } else if (m_mode == mode::arcBallShoe) {
         m_cur_ball = screen_to_arcball(m_mouseDownCoord);
+    }
 
-    for (int i = 0; i < 3; i++) m_mdCamTrans[i] = m_tbMouseDownCamModelMat[3][i];
+    for (int i = 0; i < 3; i++) {
+        m_mdCamTrans[i] = m_tbMouseDownCamModelMat[3][i];
+    }
 }
 
 void TrackBallCam::updateMatrices() {
-    if (!m_camera) return;
+    if (!m_camera) {
+        return;
+    }
 
     switch (m_mode) {
         case mode::fixAxisMapping: dragFixMouseAxisMapping(); break;
@@ -229,8 +249,9 @@ void TrackBallCam::updateMatrices() {
 void TrackBallCam::updateSuperClass(bool callUpdtCb) {
     setModelMatr(m_tbResultModelMat);  // does implicitly update Camera::m_mvp
 
-    if (m_camSetUpdtCb)  // calls builds buildCamMatrixArrays
-        m_camSetUpdtCb();
+    if (m_camSetUpdtCb) {
+        m_camSetUpdtCb();   // calls builds buildCamMatrixArrays
+    }
 
     m_cbModData.trans     = &m_tbTrans;
     m_cbModData.rotQ      = &m_dcOri;
@@ -240,17 +261,24 @@ void TrackBallCam::updateSuperClass(bool callUpdtCb) {
     m_cbModData.mode      = (int)m_mode;
     m_cbModData.fadeStart = m_snaFadeStart;
 
-    if (m_updtSceneNodeCb) m_updtSceneNodeCb(m_cbModData);
+    if (m_updtSceneNodeCb) {
+        m_updtSceneNodeCb(m_cbModData);
+    }
 
     // avoid feedback, save the last update values
     if (callUpdtCb) {
         // if the user is starting to drag, using any of the three mouse
         // buttons, set the dragStart flag
         m_cbModData.dragStart = false;
-        for (auto &it : m_mbState) m_cbModData.dragStart = m_cbModData.dragStart || it.dragStart;
+        for (auto &it : m_mbState) {
+            m_cbModData.dragStart = m_cbModData.dragStart || it.dragStart;
+        }
 
-        for (auto &it : m_trackBallUpdtCb)
-            if (it.second) it.second(m_cbModData);  // model translate, rotate (euler angles)
+        for (auto &it : m_trackBallUpdtCb) {
+            if (it.second) {
+                it.second(m_cbModData);  // model translate, rotate (euler angles)
+            }
+        }
     }
 }
 
@@ -311,8 +339,7 @@ void TrackBallCam::dragFixMouseAxisMapping() {
     m_tbResultModelMat = m_tbMouseDownCamModelMat * glm::rotate(m_tbMouseRot.y, vec3(0.f, 1.f, 0.f));
 
     // z offset to the actual view -> take this as the center for rotation
-    // around x-axis x - rotation is always relative to the horizontal center of
-    // the screen
+    // around x-axis x - rotation is always relative to the horizontal center of the screen
     m_tbResultModelMat = glm::translate(m_virtRotCenter) * glm::rotate(m_tbMouseRot.x, vec3(1.f, 0.f, 0.f)) *
                          glm::translate(-m_virtRotCenter) * m_tbResultModelMat;
 
@@ -470,10 +497,11 @@ quat TrackBallCam::screen_to_arcball(const vec2 &p) {
 
 void TrackBallCam::snapToAxis(snap axis) {
     // avoid overlapping fades
-    if (!m_animTransf.stopped()) return;
+    if (!m_animTransf.stopped()) {
+        return;
+    }
 
-    // do the snapping by calculating a lookAt matrix and decompose this to
-    // translation and eulerAngles
+    // do the snapping by calculating a lookAt matrix and decompose this to translation and eulerAngles
     t_inv       = glm::inverse(m_tbMouseDownCamModelMat);
     m_srcUpVec  = vec3(t_inv * vec4{0.f, 1.f, 0.f, 1.f});
     m_srcCamPos = vec3(t_inv * vec4{0.f, 0.f, 1.f, 1.f});
@@ -506,14 +534,17 @@ void TrackBallCam::snapToAxis(snap axis) {
             axAbs = glm::abs(m_axes[i]);
             diff  = glm::abs(dirVecAbs - axAbs);
 
-            if (glm::compAdd(diff) != 0.f) m_sortedAxes[m_rotatedAxes[i].z] = i;
+            if (glm::compAdd(diff) != 0.f) {
+                m_sortedAxes[m_rotatedAxes[i].z] = i;
+            }
         }
 
         if (!m_sortedAxes.empty()) {
             m_dstUpVec = m_axes[vec3(getModelMatr() * vec4(dirVec, 1.f)).y >= 0.f ? m_sortedAxes.begin()->second
                                                                                   : (--m_sortedAxes.end())->second];
-        } else
+        } else {
             return;
+        }
     }
 
     m_dstCamPos = dirVec;
@@ -538,7 +569,9 @@ void TrackBallCam::fadeTo(double duration) {
 
         updateSuperClass(true);
 
-        if (m_snaFadeStart) m_snaFadeStart = false;
+        if (m_snaFadeStart) {
+            m_snaFadeStart = false;
+        }
     });
 }
 
@@ -562,10 +595,13 @@ void TrackBallCam::modelMatToTrackBallCam(bool updtEuler, bool updtPos) {
     glm::extractEulerAngleYXZ(t_inv, t_newEuler.y, t_newEuler.x, t_newEuler.z);
 
     m_eulerValid = glm::all(glm::isfinite(t_newEuler)) && !glm::all(glm::isnan(t_newEuler));
-    if (!m_eulerValid)
+    if (!m_eulerValid) {
         LOGE << "TrackBallCam::modelMatToTrackBallCam t_newEuler got in illegal values";
+    }
 
-    if (updtEuler && m_eulerValid) m_tbEulerAngle = t_newEuler;
+    if (updtEuler && m_eulerValid) {
+        m_tbEulerAngle = t_newEuler;
+    }
 }
 
 glm::mat4 &TrackBallCam::lookAtBlend(float p, glm::vec3 *euler, glm::vec3 *trans) {
@@ -582,7 +618,9 @@ glm::mat4 &TrackBallCam::lookAtBlend(float p, glm::vec3 *euler, glm::vec3 *trans
             memcpy(&(*euler)[0], &t_newEuler[0], sizeof(float) * 3);
         }
 
-        if (trans) memcpy(&(*trans)[0], &t_inv[3][0], sizeof(float) * 3);
+        if (trans) {
+            memcpy(&(*trans)[0], &t_inv[3][0], sizeof(float) * 3);
+        }
     }
 
     return m_blendMat;

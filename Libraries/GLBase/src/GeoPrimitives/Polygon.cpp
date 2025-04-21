@@ -253,15 +253,15 @@ void Polygon::tesselate() {
     m_polyIntrIt      = m_polygonInterpFlat.begin();
     m_polyIntrCountIt = m_polygonInterpCount.begin();
 
-    // iterate through all levels of the polygon and calculate the catmull-rom
-    // coefficients
+    // iterate through all levels of the polygon and calculate the catmull-rom coefficients
 #pragma omp parallel for
     for (auto &pIt : m_polygon) {
         m_polyIntrNumPoints = 0;
 
-        // make sure the array for counting the amount of points for each
-        // polygon points is big enough for this polygon level
-        if (m_polyIntrCountIt->size() != pIt.size()) m_polyIntrCountIt->resize(pIt.size());
+        // make sure the array for counting the amount of points for each polygon points is big enough for this polygon level
+        if (m_polyIntrCountIt->size() != pIt.size()) {
+            m_polyIntrCountIt->resize(pIt.size());
+        }
 
         auto pCountIt = m_polyIntrCountIt->begin();
         for (auto point = pIt.begin(); point != pIt.end(); ++point) {
@@ -270,7 +270,9 @@ void Polygon::tesselate() {
             if (point->intrPolMethod == interpolM::CatmullRomCentri ||
                 m_next->intrPolMethod == interpolM::CatmullRomCentri) {
                 auto pointSet = getCatmull4PointSeg(point, pIt);
-                if (!point->seg) point->seg = make_shared<SplineSegment>();
+                if (!point->seg) {
+                    point->seg = make_shared<SplineSegment>();
+                }
                 catmullRomCentriCalcCoeff2(point->seg.get(), pointSet.get());
 
                 // estimate a number of subdivision
@@ -289,10 +291,12 @@ void Polygon::tesselate() {
 
         // make sure, that the destination vector for the interpolated polygon
         // has enough space
-        if (m_polyIntrIt->size() != m_polyIntrNumPoints) m_polyIntrIt->resize(m_polyIntrNumPoints);
+        if (m_polyIntrIt->size() != m_polyIntrNumPoints) {
+            m_polyIntrIt->resize(m_polyIntrNumPoints);
+        }
 
-        m_polyIntrIt++;
-        m_polyIntrCountIt++;
+        ++m_polyIntrIt;
+        ++m_polyIntrCountIt;
     }
 
     // now run again through segments and create and expanded pointset with
@@ -342,35 +346,38 @@ void Polygon::tesselate() {
                 }
             } else {
                 // in case of no interpolation, just copy
-                memcpy(&(*pointIp).position[0], &point->position[0], 8);
-                memcpy(&(*pointIp).refTexCoord[0], &point->refTexCoord[0], 8);
+                std::copy_n(&point->position[0], 8, &(*pointIp).position[0]);
+                std::copy_n(&point->refTexCoord[0], 8, &(*pointIp).refTexCoord[0]);
 
-                pointIp++;
+                ++pointIp;
             }
 
             ++pointCount;
         }
-        m_polyIntrIt++;
-        m_polyIntrCountIt++;
+        ++m_polyIntrIt;
+        ++m_polyIntrCountIt;
     }
 
-    // first pass: do tesselation ignoring interpolation modes, interpolating
-    // bilinearly
+    // first pass: do tesselation ignoring interpolation modes, interpolating bilinearly
     m_indices = mapbox::earcut<GLuint>(m_polygonInterpFlat);
 
     // init the m_flatVert array, in case this has not already happened
-    // we need: position, normals, texture coords and aux0 - 2 for catmull rom
-    // interpolation
-    if (m_flatVert.empty())
-        for (auto &it : m_flatVertCoordTypes) m_flatVert[it].init(getCoTypeStdSize()[(int)it]);
+    // we need: position, normals, texture coords and aux0 - 2 for catmull rom interpolation
+    if (m_flatVert.empty()) {
+        for (auto &it : m_flatVertCoordTypes) {
+            m_flatVert[it].init(getCoTypeStdSize()[static_cast<int>(it)]);
+        }
+    }
 
     // init the VAO if not done
     if (!m_vaoFilled.isInited()) {
         string attribs;
         for (auto it = m_flatVertCoordTypes.begin(); it != m_flatVertCoordTypes.end(); ++it) {
-            attribs += getStdAttribNames()[(int)(*it)];
-            attribs += ":" + to_string(getCoTypeStdSize()[(int)(*it)]) + "f";
-            if (it != (m_flatVertCoordTypes.end() - 1)) attribs += ",";
+            attribs += getStdAttribNames()[static_cast<int>(*it)];
+            attribs += ":" + to_string(getCoTypeStdSize()[static_cast<int>(*it)]) + "f";
+            if (it != (m_flatVertCoordTypes.end() - 1)) {
+                attribs += ",";
+            }
         }
 
         m_vaoFilled.init(attribs.c_str());
@@ -383,7 +390,9 @@ void Polygon::tesselate() {
     }
 
     // create a temporary array with CtrlPoints positions
-    for (auto &it : m_flatVert) it.second.resize(nrVert);
+    for (auto &it : m_flatVert) {
+        it.second.resize(nrVert);
+    }
 
     size_t ind = 0;  // global point index
     for (auto &pIt : m_polygonInterpFlat) {
@@ -395,15 +404,23 @@ void Polygon::tesselate() {
         }
     }
 
-    for (auto &it : m_flatVertCoordTypes) m_vaoFilled.upload(it, m_flatVert[it].getPtr(), nrVert);
+    for (auto &it : m_flatVertCoordTypes) {
+        m_vaoFilled.upload(it, m_flatVert[it].getPtr(), nrVert);
+    }
 
-    if (!m_indices.empty()) m_vaoFilled.setElemIndices((uint32_t)m_indices.size(), &m_indices[0]);
+    if (!m_indices.empty()) {
+        m_vaoFilled.setElemIndices((uint32_t)m_indices.size(), &m_indices[0]);
+    }
 
-    if (nrVert && !m_inited) m_inited = true;
+    if (nrVert && !m_inited) {
+        m_inited = true;
+    }
 }
 
 void Polygon::createInv(Polygon *poly) {
-    if (!poly) return;
+    if (!poly) {
+        return;
+    }
 
     m_polygon.clear();
     m_polygon.emplace_back();
@@ -423,9 +440,8 @@ void Polygon::createInv(Polygon *poly) {
     addHole(poly->getPoints(0));
 }
 
-// check if the interpolated linesegments overlap with a preceeding or follwing
-// non-interpolated line segment
-void Polygon::checkNextLineOverlap(std::vector<CtrlPoint>::iterator point, std::vector<CtrlPoint>::iterator base,
+// check if the interpolated line segments overlap with a preceding or following non-interpolated line segment
+void Polygon::checkNextLineOverlap(const std::vector<CtrlPoint>::iterator& point, const std::vector<CtrlPoint>::iterator &base,
                                    std::vector<CtrlPoint> &polySeg) {
     constexpr size_t nrLinesToCheck = 2;
     vec2             linePoints[nrLinesToCheck][4];
@@ -446,11 +462,13 @@ void Polygon::checkNextLineOverlap(std::vector<CtrlPoint>::iterator point, std::
 
     for (auto &linePoint : linePoints) {
         intersLinePoint = lineIntersect(linePoint[0], linePoint[1], linePoint[2], linePoint[3]);
-        if (intersLinePoint.first) point->position = intersLinePoint.second;
+        if (intersLinePoint.first) {
+            point->position = intersLinePoint.second;
+        }
     }
 }
 
-void Polygon::checkCrossingLines(std::vector<CtrlPoint> *polySeg, vector<CtrlPoint>::iterator kv,
+void Polygon::checkCrossingLines(std::vector<CtrlPoint> *polySeg, const vector<CtrlPoint>::iterator& kv,
                                  glm::vec2 pointInitPos) {
     // create sets of three points defining all edges, this point is not part of
     size_t                                      polySize       = polySeg->size();
@@ -463,12 +481,14 @@ void Polygon::checkCrossingLines(std::vector<CtrlPoint> *polySeg, vector<CtrlPoi
 
     // run through all segments this point is not part of
     auto ctrlPointIdx = (size_t)(kv - polySeg->begin());
-    for (size_t i = 0; i < nrLinesToCheck; i++, ctrlPointIdx++)
+    for (size_t i = 0; i < nrLinesToCheck; i++, ctrlPointIdx++) {
         // calculate two line points
-        for (size_t j = 0; j < 2; j++) linePoints[i][j] = polySeg->begin() + ((ctrlPointIdx + 1 + j) % polySize);
+        for (size_t j = 0; j < 2; j++) {
+            linePoints[i][j] = polySeg->begin() + ((ctrlPointIdx + 1 + j) % polySize);
+        }
+    }
 
-    // check if one of the connecting lines of this Ctrlpoint is crossing with
-    // another line of the polygon
+    // check if one of the connecting lines of this Ctrlpoint is crossing with another line of the polygon
     vec2 connectingLines[2][2] = {{kv->position, linePoints[0][0]->position},
                                   {kv->position, linePoints[nrLinesToCheck - 1][1]->position}};
     vec2 connLines[2][2]       = {{initKvPos, linePoints[0][0]->position},
@@ -480,8 +500,7 @@ void Polygon::checkCrossingLines(std::vector<CtrlPoint> *polySeg, vector<CtrlPoi
 
             if (intersLinePoint.first && glm::length(connectingLines[j][0] - intersLinePoint.second) > 0.0001f &&
                 glm::length(connectingLines[j][1] - intersLinePoint.second) > 0.0001f) {
-                // recalculate the intersection with the original and not the
-                // angle-limited CtrlPoint
+                // recalculate the intersection with the original and not the angle-limited CtrlPoint
                 pair<bool, vec2> inters2 = lineIntersect(connLines[j][0], connLines[j][1], linePoints[i][0]->position,
                                                          linePoints[i][1]->position);
                 kv->position             = (inters2.second - pointInitPos) * 0.99f + pointInitPos;
@@ -540,17 +559,21 @@ void Polygon::updatePosVao(map<uint32_t, CtrlPoint *> *pointMap) {
             ptr[it.first].x = it.second->position.x;
             ptr[it.first].y = it.second->position.y;
         }
-        m_vaoFilled.unMapBuffer();
+        ara::VAO::unMapBuffer();
     }
 }
 
 void Polygon::setMainPolygon(vector<CtrlPoint> &poly) {
-    if (m_polygon[0].size() != poly.size()) m_polygon[0].reserve(poly.size());
+    if (m_polygon[0].size() != poly.size()) {
+        m_polygon[0].reserve(poly.size());
+    }
     copy(poly.begin(), poly.end(), m_polygon[0].begin());
 }
 
 vector<CtrlPoint> *Polygon::addHole(vector<CtrlPoint> *poly) {
-    if (!poly) return nullptr;
+    if (!poly) {
+        return nullptr;
+    }
 
     m_polygon.emplace_back();
     m_polygon.back().insert(m_polygon.back().begin(), poly->begin(), poly->end());
@@ -580,43 +603,53 @@ CtrlPoint *Polygon::insertBeforePoint(size_t level, uint32_t idx, float x, float
     if (m_polygon.size() > level && m_polygon[level].size() > idx) {
         m_polygon[level].insert(m_polygon[level].begin() + idx, CtrlPoint(x, y));
         return &m_polygon[level].back();
-    } else
+    } else {
         return nullptr;
+    }
 }
 
 CtrlPoint *Polygon::insertBeforePoint(size_t level, uint32_t idx, float x, float y, float tex_x, float tex_y) {
     if (m_polygon.size() > level && m_polygon[level].size() > idx) {
         m_polygon[level].insert(m_polygon[level].begin() + idx, CtrlPoint(x, y, tex_x, tex_y));
         return &m_polygon[level].back();
-    } else
+    } else {
         return nullptr;
+    }
 }
 
 void Polygon::deletePoint(size_t level, uint32_t idx) {
-    if (m_polygon.size() > level && m_polygon[level].size() > idx)
+    if (m_polygon.size() > level && m_polygon[level].size() > idx) {
         m_polygon[level].erase(m_polygon[level].begin() + idx);
+    }
 }
 
 CtrlPoint *Polygon::getPoint(size_t level, uint32_t idx) {
-    if (m_polygon.size() > level && m_polygon[level].size() > idx)
+    if (m_polygon.size() > level && m_polygon[level].size() > idx) {
         return &m_polygon[level][idx];
-    else
+    } else {
         return nullptr;
+    }
 }
 
 vector<CtrlPoint> *Polygon::getPoints(size_t level) {
-    if (m_polygon.size() > level)
+    if (m_polygon.size() > level) {
         return &m_polygon[level];
-    else
+    } else {
         return nullptr;
+    }
 }
 
 uint32_t Polygon::getTotalNrPoints() {
     uint32_t nrPoints = 0;
-    if (!m_polygonInterpFlat.empty())
-        for (auto &poly : m_polygonInterpFlat) nrPoints += (uint32_t)poly.size();
-    else
-        for (auto &poly : m_polygon) nrPoints += (uint32_t)poly.size();
+    if (!m_polygonInterpFlat.empty()) {
+        for (auto &poly : m_polygonInterpFlat) {
+            nrPoints += static_cast<uint32_t>(poly.size());
+        }
+    } else {
+        for (auto &poly : m_polygon) {
+            nrPoints += static_cast<uint32_t>(poly.size());
+        }
+    }
 
     return nrPoints;
 }
@@ -637,20 +670,29 @@ void Polygon::parseFromXml(pugi::xml_node &node) {
     pugi::xml_attribute attr;
 
     size_t nrShapes = 0;
-    if ((attr = node.attribute("nrShapes"))) nrShapes = (size_t)attr.as_uint();
+    if ((attr = node.attribute("nrShapes"))) {
+        nrShapes = static_cast<size_t>(attr.as_uint());
+    }
 
-    if (m_polygon.size() != nrShapes) m_polygon.resize(nrShapes);
+    if (m_polygon.size() != nrShapes) {
+        m_polygon.resize(nrShapes);
+    }
 
     auto shpIt = m_polygon.begin();
     for (auto xmlShp = node.begin(); xmlShp != node.end(); ++xmlShp, ++shpIt) {
         size_t nrPoints = 0;
-        if ((attr = xmlShp->attribute("nrPoints"))) nrPoints = (size_t)attr.as_uint();
+        if ((attr = xmlShp->attribute("nrPoints"))) {
+            nrPoints = (size_t)attr.as_uint();
+        }
 
-        if (shpIt->size() != nrPoints) shpIt->resize(nrPoints);
+        if (shpIt->size() != nrPoints) {
+            shpIt->resize(nrPoints);
+        }
 
         auto pointIt = shpIt->begin();
-        for (auto xmlPoint = xmlShp->begin(); xmlPoint != xmlShp->end(); ++xmlPoint, ++pointIt)
+        for (auto xmlPoint = xmlShp->begin(); xmlPoint != xmlShp->end(); ++xmlPoint, ++pointIt) {
             pointIt->parseFromXml(*xmlPoint);
+        }
     }
 }
 

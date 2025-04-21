@@ -69,12 +69,12 @@ public:
     void tesselate();
     void createInv(Polygon *poly);
 
-    static void checkNextLineOverlap(std::vector<CtrlPoint>::iterator point, std::vector<CtrlPoint>::iterator base,
+    static void checkNextLineOverlap(const std::vector<CtrlPoint>::iterator& point, const std::vector<CtrlPoint>::iterator& base,
                                      std::vector<CtrlPoint> &polySeg);
-    static void checkCrossingLines(std::vector<CtrlPoint> *polySeg, std::vector<CtrlPoint>::iterator kv,
+    static void checkCrossingLines(std::vector<CtrlPoint> *polySeg, const std::vector<CtrlPoint>::iterator& kv,
                                    glm::vec2 point);
 
-    std::unique_ptr<std::vector<glm::vec2>> getCatmull4PointSeg(std::vector<CtrlPoint>::iterator &point,
+    static std::unique_ptr<std::vector<glm::vec2>> getCatmull4PointSeg(std::vector<CtrlPoint>::iterator &point,
                                                                 std::vector<CtrlPoint>           &polygon);
     void                                    updatePosVao(std::map<uint32_t, CtrlPoint *> *pointMap);
     void                                    setMainPolygon(std::vector<CtrlPoint> &poly);

@@ -49,24 +49,23 @@ void AssimpExport::singleMeshExport(uint32_t nrVert, uint32_t nrIndices, ShaderB
     pMesh->mNumUVComponents[0] = nrVert;
 
     // map vertices and copy to aiScene
-    // unfortunately there is no possibilty to have a vec3 as a shader storage
-    // buffer could be further optimized by using PBOs and async download,
-    // storages buffer would have to be copy on gpu to PBO
-    custVec3 *posPtr = pos->map(GL_MAP_READ_BIT);
-    memcpy(pMesh->mVertices, &posPtr[0].x, sizeof(custVec3) * nrVert);
+    // unfortunately there is no possibility to have a vec3 as a shader storage buffer could be further optimized by
+    // using PBOs and async download, storages buffer would have to be copied on gpu to PBO
+    auto posPtr = pos->map(GL_MAP_READ_BIT);
+    std::copy(reinterpret_cast<uint8_t*>(posPtr), reinterpret_cast<uint8_t*>(posPtr) + nrVert * sizeof(custVec3), reinterpret_cast<uint8_t*>(pMesh->mVertices));
     pos->unmap();
 
-    custVec3 *normPtr = norm->map(GL_MAP_READ_BIT);
-    memcpy(pMesh->mNormals, &normPtr[0].x, sizeof(custVec3) * nrVert);
+    auto normPtr = norm->map(GL_MAP_READ_BIT);
+    std::copy(reinterpret_cast<uint8_t*>(normPtr), reinterpret_cast<uint8_t*>(normPtr) + nrVert * sizeof(custVec3), reinterpret_cast<uint8_t*>(pMesh->mNormals));
     norm->unmap();
 
-    custVec3 *texPtr = texc->map(GL_MAP_READ_BIT);
-    memcpy(pMesh->mTextureCoords[0], &texPtr[0].x, sizeof(custVec3) * nrVert);
+    auto texPtr = texc->map(GL_MAP_READ_BIT);
+    std::copy(reinterpret_cast<uint8_t*>(texPtr), reinterpret_cast<uint8_t*>(texPtr) + nrVert * sizeof(custVec3), reinterpret_cast<uint8_t*>(pMesh->mTextureCoords[0]));
     texc->unmap();
 
     // create faces (=triangles in this case), each face has 3 vertices
     pMesh->mFaces    = new aiFace[nrIndices / 3];
-    pMesh->mNumFaces = (unsigned int)(nrIndices / 3);
+    pMesh->mNumFaces = nrIndices / 3;
 
     // map and copy indices
     // could be optimized, storage buffer should be [ind[0], ind[1], ind[2],
@@ -77,7 +76,7 @@ void AssimpExport::singleMeshExport(uint32_t nrVert, uint32_t nrIndices, ShaderB
         aiFace &face     = pMesh->mFaces[i];
         face.mIndices    = new unsigned int[3];
         face.mNumIndices = 3;
-        memcpy(face.mIndices, &indPtr[k], 3 * sizeof(unsigned int));
+        std::copy_n( &indPtr[k], 3, face.mIndices);
     }
     indices->unmap();
 
