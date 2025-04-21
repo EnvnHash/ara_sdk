@@ -421,7 +421,9 @@ GLint VAO::addBufferFloat(uint32_t location, uint32_t size, const char *name) {
 #ifndef EMSCRIPTEN
 
 void VAO::bind(TFO *tfo, GLenum recMode) {
-    if (tfo) tfo->pauseAndOffsetBuf(recMode);
+    if (tfo) {
+        tfo->pauseAndOffsetBuf(recMode);
+    }
 
 #else
 void VAO::bind() {
@@ -436,18 +438,18 @@ void VAO::bind() {
     }
 #endif
 
-    if (!m_interleaved)
-        for (int i = 0; i < toType(CoordType::Count); i++)
-            if (m_usesStaticCoords.size() > i && m_usesStaticCoords[i]) glVertexAttrib4fv(i, &m_statCoords[i][0]);
+    if (!m_interleaved) {
+        for (int i = 0; i < toType(CoordType::Count); i++) {
+            if (m_usesStaticCoords.size() > i && m_usesStaticCoords[i]) {
+                glVertexAttrib4fv(i, &m_statCoords[i][0]);
+            }
+        }
+    }
 }
 
 void VAO::bindElementBuffer() const {
     if (m_elementBuffer) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBuffer);
-        //		for (int i = 0; i < toType(CoordType::Count); i++)
-        //          if (m_usesStaticCoords[i])
-        //            glVertexAttrib4fv(i, &m_statCoords[i][0]);
-
     } else {
         LOGE << " VAO::bindElementBuffer Error: could not bind buffer";
     }
@@ -463,7 +465,9 @@ void VAO::unbind()
 #ifndef STRICT_WEBGL_1
     glBindVertexArray(0);
 #endif
-    if (tfo) tfo->incCounters(incCntr);
+    if (tfo) {
+        tfo->incCounters(incCntr);
+    }
 }
 
 void VAO::draw(GLenum mode) {

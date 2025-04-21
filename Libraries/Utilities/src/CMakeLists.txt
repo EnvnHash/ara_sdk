@@ -10,10 +10,6 @@ include(GeneralSettings)
 include(CMakeRC)
 include(UtilitiesDepInclude)
 
-if (ARA_USE_OPENCV)
-    file(GLOB GLB_OPENCV ../../Utilities/src/ImageProcessing/OpenCV/*.cpp)
-endif ()
-
 file(GLOB COMMON_SRC
         DataModel/Project.cpp
         DataModel/Workspace.cpp
@@ -38,10 +34,6 @@ file(GLOB COMMON_SRC
         Table.cpp
         ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/easywsclient/easywsclient.cpp
 )
-
-if (ARA_USE_OPENCV)
-    list(APPEND COMMON_SRC ImageProcessing/OpenCV/CvFxChain.cpp)
-endif ()
 
 if (ANDROID)
     file(GLOB ANDROID_UTIL_SRC
@@ -75,11 +67,7 @@ endif ()
 #header files this is just to have them m_show up in the visual studio project
 if (WIN32)
     add_compile_definitions(DLL_EXPORT UNICODE _UNICODE)
-   # file(GLOB_RECURSE GLB_HEADERS src/*.h)
 endif ()
-
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ImageProcessing/OpenCV/inference_helper)
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ImageProcessing/OpenCV/inference_helper)
 
 add_library(${PROJECT_NAME} OBJECT ${UTILITIES_SRC})
 

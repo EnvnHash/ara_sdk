@@ -603,14 +603,11 @@ void GLBase::m_switchCtx(GLNativeCtxHnd &ctx) {
         std::cerr << "Error " << GetLastError() << std::endl;
     }
 #elif defined(__linux__) && !defined(ARA_USE_GLES31)
-    //    if (ctx == g_nativeCtx.ctx)
-    //       g_win->makeCurrent();
-    //  else {
-    if (!ctx.ctx) return;
-    bool res = glXMakeContextCurrent((Display *)ctx.deviceHandle, static_cast<GLXDrawable>(ctx.drawable),
-                                     static_cast<GLXDrawable>(ctx.drawable), (GLXContext)ctx.ctx);
-    // if (!res) LOGE << "GLBase glXMakeContextCurrent failed!!!";
-    //}
+    if (!ctx.ctx) {
+        return;
+    }
+    glXMakeContextCurrent((Display *)ctx.deviceHandle, static_cast<GLXDrawable>(ctx.drawable),
+                          static_cast<GLXDrawable>(ctx.drawable), (GLXContext)ctx.ctx);
 #endif
 }
 
@@ -626,9 +623,12 @@ void GLBase::appmsg(const char *format, ...) {
     va_start(args, format);
     vsnprintf(buffer, 255, format, args);
 
-    if (g_appMessages.size() >= g_appMessagesNumLines) g_appMessages.erase(g_appMessages.begin());
+    if (g_appMessages.size() >= g_appMessagesNumLines) {
+        g_appMessages.erase(g_appMessages.begin());
+    }
 
     g_appMessages.emplace_back(buffer);
+    va_end(args);
     LOG << buffer;
 }
 
@@ -638,23 +638,29 @@ void GLBase::appMsgStatic(size_t lineIdx, const char *format, ...) {
     va_start(args, format);
     vsnprintf(buffer, 255, format, args);
 
-    if (g_appMsgStatic.size() > lineIdx) g_appMsgStatic[lineIdx] = string(buffer);
+    if (g_appMsgStatic.size() > lineIdx) {
+        g_appMsgStatic[lineIdx] = string(buffer);
+    }
+    va_end(args);
 }
 
 void GLBase::renderAppMsgs() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // JUST FOR DEMO: should be done only when needed
-
     float lineHeight = g_typoGlyphMap->getRelativeLineHeight() * 1.5f;  // add a bit of space
 
-    for (size_t i = 0; i < g_appMsgStatic.size(); i++)
-        if (!g_appMsgStatic[i].empty())
+    for (size_t i = 0; i < g_appMsgStatic.size(); i++) {
+        if (!g_appMsgStatic[i].empty()) {
             g_typoGlyphMap->print(-0.95f, 0.95f - (i + 1) * lineHeight, g_appMsgStatic[i], g_typoFontHeight,
                                   &g_appMsgCol[0]);
+        }
+    }
 
-    for (size_t i = 0; i < g_appMessages.size(); i++)
-        if (!g_appMessages[i].empty())
+    for (size_t i = 0; i < g_appMessages.size(); i++) {
+        if (!g_appMessages[i].empty()) {
             g_typoGlyphMap->print(-0.95f, 0.95f - (i + 1 + g_appMsgStaticNumLines) * lineHeight, g_appMessages[i],
                                   g_typoFontHeight, &g_appMsgCol[0]);
+        }
+    }
 };
 
 void GLBase::clearGlCbQueue() {

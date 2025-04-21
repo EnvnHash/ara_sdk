@@ -45,7 +45,7 @@ public:
 
 #ifdef _WIN32
     std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC>& allowedSuffix);
-    std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes);
+    std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes);
 #elif defined(__linux__) && !defined(__ANDROID__)
     std::string OpenFileDialog(std::vector<const char*>& allowedSuffix) {
         return OpenFileDialog(allowedSuffix);

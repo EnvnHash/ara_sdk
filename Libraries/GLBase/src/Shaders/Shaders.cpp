@@ -25,13 +25,12 @@ Shaders::Shaders(const string &vert, const string &geom, const string &frag, boo
 }
 
 Shaders::Shaders(const string &vert, const string &tessCtr, const string &tessEv, const string &geom,
-                 const string &frag, bool readFromFile) {
-    m_vs = readFromFile ? textFileRead(vert) : vert;
-    m_cs = readFromFile ? textFileRead(tessCtr) : tessCtr;
-    m_es = readFromFile ? textFileRead(tessEv) : tessEv;
-    m_gs = readFromFile ? textFileRead(geom) : geom;
-    m_fs = readFromFile ? textFileRead(frag) : frag;
-
+                 const string &frag, bool readFromFile) :
+    m_vs(readFromFile ? textFileRead(vert) : vert),
+    m_cs(readFromFile ? textFileRead(tessCtr) : tessCtr),
+    m_es(readFromFile ? textFileRead(tessEv) : tessEv),
+    m_gs(readFromFile ? textFileRead(geom) : geom),
+    m_fs(readFromFile ? textFileRead(frag) : frag) {
     create();
 }
 

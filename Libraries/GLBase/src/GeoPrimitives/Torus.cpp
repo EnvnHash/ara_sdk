@@ -25,7 +25,6 @@ Torus::Torus() : GeoPrimitive() {
     m_instAttribs    = nullptr;
     m_maxNrInstances = 1;
 
-    m_qaNormal = glm::vec3(0.f, 0.f, 1.f);
     m_r        = 1.f;
     m_g        = 1.f;
     m_b        = 1.f;
