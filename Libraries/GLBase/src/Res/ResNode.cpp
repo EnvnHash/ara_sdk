@@ -18,6 +18,10 @@ namespace ara {
 // SrcLine
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+bool SrcLine::isEmpty() {
+    return !(find_if(str.begin(), str.end(), [&](auto &x) { return x > 32; }) != str.end());
+}
+
 bool SrcLine::isComment() const {
     const char *e = SrcFile::clearSpaces(str.c_str());
     return (e[0] == '#');

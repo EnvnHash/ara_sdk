@@ -15,11 +15,8 @@ public:
     int         index = 0;
     std::string str;
 
-    bool isEmpty() {
-        return !(find_if(str.begin(), str.end(), [&](auto &x) { return x > 32; }) != str.end());
-    }
-
-    bool isComment() const;
+    bool isEmpty();
+    [[nodiscard]] bool isComment() const;
 };
 
 class ParVec : public std::vector<std::string> {
