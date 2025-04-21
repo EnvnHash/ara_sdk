@@ -20,7 +20,7 @@ public:
     void init();
 
 protected:
-    float m_rowHeight;
+    float m_rowHeight=0.f;
 };
 
 }  // namespace ara

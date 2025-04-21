@@ -198,7 +198,7 @@ public:
     std::map<renderPass, std::atomic<bool>>                             m_reqRenderPasses;
 
 protected:
-    ShaderCollector*               m_shCol;
+    ShaderCollector*               m_shCol = nullptr;
     std::unique_ptr<BoundingBoxer> m_boundBoxer;
     std::unique_ptr<Quad>          m_normQuad;
 

@@ -47,13 +47,8 @@ Torus::Torus(int nrSegsX, int nrSegsY, float rad, std::vector<CoordType> *instAt
     Torus::init();
 }
 
-Torus::~Torus() {
-    for (int i = 0; i < m_nrSegsX * m_nrSegsY; i++) delete m_quads[i];
-    delete m_quads;
-}
-
 void Torus::init() {
-    m_quads          = new MPQuad *[m_nrSegsX * m_nrSegsY];
+    m_quads.resize(m_nrSegsX * m_nrSegsY);
     float quadWidth  = m_totalWidth / static_cast<float>(m_nrSegsX);
     float quadHeight = m_totalHeight / static_cast<float>(m_nrSegsY);
     float xOffs      = m_totalWidth / static_cast<float>(m_nrSegsX);
@@ -63,7 +58,7 @@ void Torus::init() {
         float yo = static_cast<float>(yInd) * yOffs - (m_totalWidth * 0.5f);
         for (auto xInd = 0; xInd < m_nrSegsX; xInd++) {
             float xo                         = static_cast<float>(xInd) * xOffs - (m_totalHeight * 0.5f);
-            m_quads[yInd * m_nrSegsX + xInd] = new MPQuad(xo, yo, quadWidth, quadHeight, m_qaNormal);
+            m_quads[yInd * m_nrSegsX + xInd] = std::make_unique<MPQuad>(xo, yo, quadWidth, quadHeight, m_qaNormal);
         }
     }
 
@@ -85,8 +80,10 @@ void Torus::init() {
         }
     }
 
-    GLenum usage = GL_DYNAMIC_DRAW;
-    if (m_instAttribs) usage = GL_DYNAMIC_DRAW;
+    auto usage = GL_DYNAMIC_DRAW;
+    if (m_instAttribs) {
+        usage = GL_DYNAMIC_DRAW;
+    }
 
     m_vao = make_unique<VAO>(m_format, usage, m_instAttribs, m_maxNrInstances);
     m_vao->setStaticColor(m_r, m_g, m_b, m_a);

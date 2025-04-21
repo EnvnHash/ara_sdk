@@ -11,13 +11,6 @@ PageView::PageView() : Div() {
 
     m_content = addChild<Div>();
     m_content->setName("PageView_Content");
-
-    /*
-    m_controls = addChild<Div>();
-    m_controls->setName("PageView_Controls");
-    m_controls->setHeight(0.15f);
-    m_controls->setAlignY(valign::bottom);
-     */
 }
 
 UINode* PageView::addPage(std::unique_ptr<UINode> child) {
@@ -27,11 +20,15 @@ UINode* PageView::addPage(std::unique_ptr<UINode> child) {
 }
 
 void PageView::showPage(int idx) {
-    if (idx >= m_pages.size()) return;
+    if (idx >= m_pages.size()) {
+        return;
+    }
 
-    for (auto& it : m_pages) it->setVisibility(false);
+    for (auto& it : m_pages) {
+        it->setVisibility(false);
+    }
 
     m_pages[idx]->setVisibility(true);
 }
 
-}  // namespace ara
+}

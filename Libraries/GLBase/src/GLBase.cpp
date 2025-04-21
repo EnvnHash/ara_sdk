@@ -103,8 +103,7 @@ void GLBase::checkCapabilities() {
 #ifndef ARA_USE_GLES31
     glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &g_caps.max_framebuffer_layers);
     glGetIntegerv(GL_MAX_GEOMETRY_SHADER_INVOCATIONS, &g_caps.max_shader_invoc);
-    glGetIntegerv(GL_MULTISAMPLE,
-                  &g_caps.multisample);  // always 1 with qtquickview?
+    glGetIntegerv(GL_MULTISAMPLE, &g_caps.multisample);
 #else
     glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS_EXT, &g_caps.max_framebuffer_layers);
     glGetIntegerv(GL_MAX_GEOMETRY_SHADER_INVOCATIONS_EXT, &g_caps.max_shader_invoc);
@@ -169,8 +168,9 @@ void GLBase::initResources() {
             LOG << "[OK] GLBase Resource file " << g_resRootPath + "/" + g_resFile << " loaded. Using compilation file "
                 << (g_resInstance->usingComp() ? "true" : "false");
         } else {
-            for (ResNode::e_error &err : g_resInstance->getRoot()->errList)
+            for (ResNode::e_error &err : g_resInstance->getRoot()->errList) {
                 LOGE << "Line " << err.lineIndex + 1 << " err:" << err.errorString;
+            }
         }
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
@@ -222,11 +222,15 @@ void GLBase::checkResourceChanges() {
                 g_resInstance->CallForChangesInFolderFiles();
 
                 // update all
-                if (g_updtResCb) g_updtResCb();
+                if (g_updtResCb) {
+                    g_updtResCb();
+                }
             });
         }
 #else
-        if (g_updtResCb) g_updtResCb();
+        if (g_updtResCb) {
+            g_updtResCb();
+        }
 #endif
     }
 }
@@ -235,18 +239,22 @@ void GLBase::checkResourceChanges() {
 /// init standard resources in existing context
 /// </summary>
 void GLBase::destroy(bool terminateGLFW) {
-    if (!g_inited) return;
+    if (!g_inited) {
+        return;
+    }
 
-    if (g_loopRunning) m_stopRenderLoop();
+    if (g_loopRunning) {
+        m_stopRenderLoop();
+    }
     g_openGlCbs.clear();
 
-    // gl render loop for sure is stopped at this point, that means also the gl
-    // context is unbound
+    // gl render loop for sure is stopped at this point, that means also the gl context is unbound
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    if (m_selfManagedCtx && g_win) g_win->makeCurrent();
+    if (m_selfManagedCtx && g_win) {
+        g_win->makeCurrent();
+    }
 #endif
-    // remove all gl resources, must be done on a valid gl context
-    // g_stdQuad.reset();
+    // remove all gl resources, must be done on a valid gl context/ g_stdQuad.reset();
     g_shaderCollector.clear();
     glDeleteVertexArrays(1, &g_nullVao);
 
@@ -301,7 +309,6 @@ void GLBase::m_startRenderLoop() {
 
         // wait for loop to be running
         g_loopRunningSem.wait();
-
         g_loopRunningSem.reset();
     }
 }

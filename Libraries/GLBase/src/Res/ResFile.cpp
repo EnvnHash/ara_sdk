@@ -46,18 +46,6 @@ bool ResFile::OpenFromFile(const filesystem::path &srcpath) {
 
     file.read((char *)&m_Entry[0], sizeof(e_entry) * m_Header.entry_count);
 
-    /*
-    appmsg("---------------------------------------------------");
-
-    unsigned i=0;
-
-    for (ResFile::e_entry& ee : m_Entry) {
-
-        appmsg("%3d > %-40s comp=%20zu uncomp=%20zu pos=%20zu ", i++, ee.path,
-    ee.comp_size,ee.uncomp_size, ee.pos);
-
-    }
-    */
 
     return true;
 }
@@ -74,7 +62,6 @@ size_t ResFile::ReadEntry(std::vector<uint8_t> &dest, string &path) {
     dest.clear();
 
     if ((e = FindEntry(path)) == nullptr) {
-        // appmsg("[ERROR] ReadEntry(%s) Entry not found",path);
         return 0;
     }
 
@@ -139,10 +126,8 @@ bool ResFile::Feed(std::vector<uint8_t> &vp, const string &path) {
 
     if (!m_Header.encode_par[0]) {
         o_File->write((char *)&vp[0], e.uncomp_size);
-
     } else {
         // marco.g : compression not implemented yet
-
         return false;
     }
 

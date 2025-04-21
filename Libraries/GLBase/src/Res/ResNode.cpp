@@ -74,23 +74,13 @@ bool ResNode::error(char *str, ...) {
 void ResNode::logtree(int level) {
     char *parent_name = (char *)(getParent() != nullptr ? getParent()->m_Name.c_str() : "");
     if (!m_Value.empty()) {
-        // appmsg("%p %sPar> (%s)=(%s) parent=(%s)", this,std::string(level * 4,
-        // ' ').c_str(), m_Name.c_str(),m_Value.c_str(),parent_name);
     } else {
         if (!m_Func.empty()) {
             string str;
-            for (string &sp : m_Par) str += sp + "|";
-            // appmsg("%p %sFunc> %s=%s(%s) parent=(%s)", this,std::string(level
-            // * 4, ' ').c_str(),
-            // m_Name.c_str(),m_Func.c_str(),str.c_str(),parent_name);
-        } else {
-            if (isFlag()) {
-                // appmsg("%p %sFlag %s parent=(%s)", this,std::string(level *
-                // 4, ' ').c_str(), m_Name.c_str(),parent_name);
-            } else {
-                // appmsg("%p %s%s parent=(%s)", this,std::string(level * 4, '
-                // ').c_str(), m_Name.c_str(),parent_name);
+            for (string &sp : m_Par) {
+                str += sp + "|";
             }
+        } else {
         }
     }
 

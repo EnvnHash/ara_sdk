@@ -20,6 +20,6 @@ public:
 
 private:
     std::vector<DropDownMenu*> m_menuEntries;
-    int                        m_menuButtSize;
+    int                        m_menuButtSize = 0;
 };
 }  // namespace ara

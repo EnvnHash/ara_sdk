@@ -15,11 +15,7 @@ bool UDPSignaler::StartBroadcast(int port, int period_ms, std::function<int(void
     m_Period_ms = period_ms;
 
     if ((m_Socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        //		m_glbase->appmsg("[ERROR] UDPSignaler() : Cannot create
-        // socket");
-
         m_Socket = 0;
-
         return false;
     }
 
@@ -48,16 +44,15 @@ bool UDPSignaler::OnCycle() {
     char buff[512];
     int  max_size = 512;
 
-    //	m_glbase->appmsg("Begin> UDPSignaler::OnCycle()");
-
     do {
-        if ((data_size = OnEmit(buff, max_size)) <= 0)
-
-            if (m_OnEmit) data_size = m_OnEmit(buff, max_size);
+        if ((data_size = OnEmit(buff, max_size)) <= 0) {
+            if (m_OnEmit) {
+                data_size = m_OnEmit(buff, max_size);
+            }
+        }
 
         if (data_size > 0) {
             data_size = data_size < max_size ? data_size : max_size;
-
             buff[data_size] = 0;
 
             if ((ret = sendto(m_Socket, buff, data_size, 0, (sockaddr *)&m_SockAddr, sizeof(m_SockAddr))) > 0) {
@@ -69,11 +64,7 @@ bool UDPSignaler::OnCycle() {
     } while ((ret > 0 || !data_size) && (m_CycleState == CycleState::running));
 
     closesocket(m_Socket);
-
     m_Socket = 0;
-
-    //	m_glbase->appmsg("END> UDPSignaler::OnCycle()");
-
     return true;
 }
 }  // namespace ara

@@ -13,13 +13,11 @@ namespace ara {
 ItemEdit::ItemEdit() : UITable(), m_rowHeight(30.f) {
     setName(getTypeName<ItemEdit>());
     setFocusAllowed(false);
-    // setDynamicHeight(true);
 }
 
 ItemEdit::ItemEdit(std::string&& styleClass) : UITable(std::move(styleClass)) {
     setName(getTypeName<ItemEdit>());
     setFocusAllowed(false);
-    // setDynamicHeight(true);
 }
 
 void ItemEdit::init() {

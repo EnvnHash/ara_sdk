@@ -21,9 +21,9 @@ namespace ara {
 
 UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY, bool osDecoration, bool transparentFB,
                    bool floating, bool initToCurrentCtx, bool multisample, void *extWinHandle, bool scaleToMonitor)
-    : WindowBase(), m_glbase(glbase), m_drawMan(make_unique<DrawManager>(glbase))
+    : WindowBase(), m_glbase(glbase), m_drawMan(make_unique<DrawManager>(glbase)),
 #ifdef ARA_USE_GLES31
-      m_multisample(false),
+    m_multisample(false),
 #else
     m_multisample(multisample),
 #endif
@@ -35,12 +35,11 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
 
     bool restartGlBaseLoop = false;
 
-    // init a UIWindow, using the GLFWWindowManager and GLbase in a separate
-    // thread
+    // init a UIWindow, using the GLFWWindowManager and GLbase in a separate thread
     if (!initToCurrentCtx) {
 #ifndef ARA_USE_EGL
-        // check if GLBase renderloop is running, if this is the case, stop it
-        // and start it later again. Otherwise, context sharing will fail
+        // check if GLBase render loop is running, if this is the case, stop it and start it later again. Otherwise,
+        // context sharing will fail
         if (m_glbase->isRunning()) {
             restartGlBaseLoop = true;
             m_glbase->stopRenderLoop();
@@ -57,8 +56,8 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
 
         m_winHandle->setDrawFunc([&](double time, double dt, int ctxNr) { return draw(time, dt, ctxNr); });
 
-        // set hid callbacks, must be done this way, as GlFW expects static c-style callbacks, which is not possible
-        // when aiming modular c++ style window architectures
+        // set hid callbacks. This must be done this way, as GlFW expects static c-style callbacks, which is not possible
+        // when aiming for modular c++ style window architectures
         m_winHandle->addKeyCb([this](int p1, int p2, int p3, int p4) { key_callback(p1, p2, p3, p4); });
         m_winHandle->setCharCb([this](unsigned int p1) { char_callback(p1); });
         m_winHandle->setMouseButtonCb([this](int button, int action, int mods) { mouseBut_callback(button, action, mods); });
@@ -86,8 +85,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         m_glbase->useSelfManagedCtx(false);
 
 #ifndef __ANDROID__
-        // resources updating must be done this way in case of non window
-        // managed setup
+        // resources updating must be done this way in case of non-window managed setup
         m_glbase->setUpdtResCb([this] {
             addGlCb(this, "resUpt", [this] {
                 if (m_glbase->getResInstance()) {

@@ -25,8 +25,7 @@ public:
     virtual void setMenuName(std::string str);
 
 protected:
-    /** called when the DropDown Menu is opened. It's not needed and not
-     * necessary to call this from outside */
+    /** called when the DropDown Menu is opened. It's not needed and not necessary to call this from outside */
     virtual void rebuildEntryList();
 
     Button*                                                  m_menuEntryButt = nullptr;

@@ -83,13 +83,9 @@ bool Conn::Process(SOCKET sock, sockaddr_in *addr) {
 
     } while (ret > 0);
 
-    if (m_Request.size() < 3)  // If the command is incomplete just return
-
+    if (m_Request.size() < 3) {  // If the command is incomplete just return
         return false;
-
-    // type_hdrmap::iterator pp = m_HdrMap.begin(); while (pp != m_HdrMap.end())
-    // { m_glbase->appmsg("par=(%s):(%s)", pp->first.c_str(),
-    // pp->second.c_str()); pp++; }		// Display parameters
+    }
 
     uint32_t                 cont_len;
     std::shared_ptr<Content> content = nullptr;

@@ -14,11 +14,7 @@ bool TCPLineCmdListener::StartListen(int                                        
     m_Port      = port;
 
     if ((m_Socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        //		m_glbase->appmsg("[ERROR] tcp_linecmdlistener() : Cannot
-        // create socket");
-
         m_Socket = 0;
-
         return false;
     }
 
@@ -29,12 +25,8 @@ bool TCPLineCmdListener::StartListen(int                                        
     sa.sin_port        = htons(m_Port);
 
     if (bind(m_Socket, (struct sockaddr *)&sa, sizeof(sa))) {
-        //		m_glbase->appmsg("[ERROR] tcp_linecmdlistener() : Cannot
-        // bind");
-
         closesocket(m_Socket);
         m_Socket = 0;
-
         return false;
     }
 
@@ -65,21 +57,14 @@ bool TCPLineCmdListener::OnCycle() {
     sockaddr_in addr;
     int         addr_size = sizeof(sockaddr_in);
 
-    //	m_glbase->appmsg("Begin> TCPLineCmdListener::OnCycle()");
-
     do {
         if ((ns = accept(m_Socket, (sockaddr *)&addr, (socklen_t *)&addr_size)) != INVALID_SOCKET) {
             std::thread(&TCPLineCmdListener::ProcessConnection, this, ns, addr).detach();
         }
-
     } while (ns != INVALID_SOCKET && (m_CycleState == CycleState::running));
 
     closesocket(m_Socket);
-
     m_Socket = 0;
-
-    //	m_glbase->appmsg("END> TCPLineCmdListener::OnCycle()");
-
     return true;
 }
 
@@ -87,9 +72,6 @@ void TCPLineCmdListener::ProcessConnection(SOCKET s, sockaddr_in sa) {
     std::string cmd;
     int         ret;
     char        ch, lch = 0;
-
-    //	m_glbase->appmsg("TCPLineCmdListener> Connection from
-    //[%s:%d]",inet_ntoa(sa.sin_addr),m_Port);
 
     do {
         if ((ret = recv(s, &ch, 1, 0)) > 0) {
@@ -109,17 +91,15 @@ void TCPLineCmdListener::ProcessConnection(SOCKET s, sockaddr_in sa) {
 
     } while (ret > 0);
 
-    //	m_glbase->appmsg("TCPLineCmdListener> Connection from [%s:%d] /
-    // END",inet_ntoa(sa.sin_addr),m_Port);
-
     closesocket(s);
 }
 
 void TCPLineCmdListener::ProcessReceive(SOCKET s, std::string &cmd, sockaddr_in *sa) {
-    if (m_OnReceive) m_OnReceive(s, cmd, sa);
+    if (m_OnReceive) {
+        m_OnReceive(s, cmd, sa);
+    }
 
     OnReceive(s, cmd, sa);
-
     closesocket(s);
 }
 }  // namespace ara

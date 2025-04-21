@@ -38,8 +38,8 @@ public:
 
 protected:
     std::vector<UINode*> m_pages;
-    Div*                 m_content;
-    Div*                 m_controls;
+    Div*                 m_content = nullptr;
+    Div*                 m_controls = nullptr;
 };
 
 }  // namespace ara

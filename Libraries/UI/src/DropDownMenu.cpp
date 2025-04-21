@@ -14,13 +14,13 @@ using namespace ara::mouse;
 
 namespace ara {
 
-DropDownMenu::DropDownMenu() : Div(), m_menuEntryName("") {
+DropDownMenu::DropDownMenu() : Div() {
     setName(getTypeName<DropDownMenu>());
     setFocusAllowed(false);
     loadStyleDefaults();
 }
 
-DropDownMenu::DropDownMenu(std::string&& styleClass) : Div(std::move(styleClass)), m_menuEntryName("") {
+DropDownMenu::DropDownMenu(std::string&& styleClass) : Div(std::move(styleClass)) {
     setName(getTypeName<DropDownMenu>());
     setFocusAllowed(false);
     loadStyleDefaults();

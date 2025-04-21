@@ -13,10 +13,7 @@ bool UDPListener::StartListen(int port, std::function<void(char *, int, sockaddr
     m_Port      = port;
 
     if ((m_Socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        // m_glbase->appmsg("[ERROR] udp_listener() : Cannot create socket");
-
         m_Socket = 0;
-
         return false;
     }
 
@@ -30,11 +27,8 @@ bool UDPListener::StartListen(int port, std::function<void(char *, int, sockaddr
     setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, (char *)&reuseaddr, sizeof(reuseaddr));
 
     if (bind(m_Socket, (struct sockaddr *)&sa, sizeof(sa))) {
-        // m_glbase->appmsg("[ERROR] udp_listener() : Cannot bind");
-
         closesocket(m_Socket);
         m_Socket = 0;
-
         return false;
     }
 
@@ -55,8 +49,6 @@ bool UDPListener::OnCycle() {
     sockaddr_in sf;
     int         sfsize = sizeof(sf);
 
-    //	m_glbase->appmsg("Begin> UDPListener::OnCycle()");
-
     do {
         if ((ret = recvfrom(m_Socket, (char *)buff, 512, 0, (sockaddr *)&sf, (socklen_t *)&sfsize)) > 0) {
             buff[ret] = 0;
@@ -69,10 +61,7 @@ bool UDPListener::OnCycle() {
     } while (ret > 0 && (m_CycleState == CycleState::running));
 
     closesocket(m_Socket);
-
     m_Socket = 0;
-
-    //	m_glbase->appmsg("END> UDPListener::OnCycle()");
 
     return true;
 }

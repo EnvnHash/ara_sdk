@@ -18,7 +18,6 @@ class MPQuad;
 class Torus : public GeoPrimitive {
 public:
     Torus();
-    ~Torus();
     Torus(int nrSegsX, int nrSegsY, float rad, std::vector<CoordType> *instAttribs = nullptr, int nrInstances = 1);
 
     void init() override;
@@ -34,11 +33,11 @@ private:
     float m_totalWidth  = 2.f;
     float m_totalHeight = 2.f;
 
-    std::vector<glm::vec3> m_positions;
-    std::vector<glm::vec3> m_normals;
-    std::vector<glm::vec2> m_texCoords;
-    MPQuad               **m_quads = nullptr;
-    glm::vec3              m_qaNormal;
+    std::vector<glm::vec3>                  m_positions;
+    std::vector<glm::vec3>                  m_normals;
+    std::vector<glm::vec2>                  m_texCoords;
+    std::vector<std::unique_ptr<MPQuad>>    m_quads;
+    glm::vec3                               m_qaNormal;
 
     std::vector<CoordType> *m_instAttribs    = nullptr;
     int                     m_maxNrInstances = 1;
