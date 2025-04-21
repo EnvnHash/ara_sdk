@@ -328,7 +328,7 @@ if (COMPILE_GLSCENEGRAPH_LIB)
             COMMAND ${CMAKE_COMMAND} -E copy ${ARA_SDK_SOURCE_DIR}/Assets/resdata/xml/config.xml ${DST_DIR}/resdata/xml
             COMMAND ${CMAKE_COMMAND} -E copy ${ARA_SDK_SOURCE_DIR}/Assets/resdata/xml/masking_config.xml ${DST_DIR}/resdata/xml
             COMMAND ${CMAKE_COMMAND} -E copy_directory ${ARA_SDK_SOURCE_DIR}/Assets/resdata/Fonts ${DST_DIR}/resdata/Fonts
-            COMMAND ${CMAKE_COMMAND} -E copy ${ARA_SDK_SOURCE_DIR}/create_symlink.bat ${DST_DIR}
+            COMMAND ${CMAKE_COMMAND} -E copy ${ARA_SDK_SOURCE_DIR}/scripts/create_symlink.bat ${DST_DIR}
     )
 
     if (NOT COMPILE_GLSCENEGRAPH_LIB_STATIC)
