@@ -23,7 +23,7 @@ public:
         m_indicesTriangles.reserve(geo.m_indicesTriangles.size() + m_indicesTriangles.size());
         m_indicesOutline.reserve(geo.m_indicesOutline.size() + m_indicesOutline.size());
 
-        uint offset = glm::uint(m_vertices.size());
+        auto offset = glm::uint(m_vertices.size());
 
         for (size_t i = 0; i < geo.m_vertices.size(); i++) {
             m_vertices.push_back(geo.m_vertices[i]);
@@ -96,10 +96,10 @@ public:
                 auto xpos = static_cast<float>(x) * xmove;
                 auto ypos = static_cast<float>(y) * ymove;
 
-                vec3 pos((xpos - 0.5f) * 2.0f, (ypos - 0.5f) * 2.0f, 0);
-                vec2 uv(xpos, ypos);
-                vec3 normal(0.0f, 0.0f, 1.0f);
-                vec4 col(1.f);
+                glm::vec3 pos((xpos - 0.5f) * 2.0f, (ypos - 0.5f) * 2.0f, 0);
+                glm::vec2 uv(xpos, ypos);
+                glm::vec3 normal(0.0f, 0.0f, 1.0f);
+                glm::vec4 col(1.f);
 
                 Vertex vert = Vertex(pos, normal, uv, col);
                 vert.position = mat * vert.position;
@@ -210,9 +210,9 @@ public:
                 float anglexy = curxy * static_cast<float>(M_PI) * 2.0f;
                 float anglez  = (1.f - curz) * static_cast<float>(M_PI);
 
-                vec3 pos(cosf(anglexy) * sinf(anglez), sinf(anglexy) * sinf(anglez), cosf(anglez));
-                vec3 normal = pos;
-                vec2 uv(curxy, curz);
+                glm::vec3 pos(cosf(anglexy) * sinf(anglez), sinf(anglexy) * sinf(anglez), cosf(anglez));
+                glm::vec3 normal = pos;
+                glm::vec2 uv(curxy, curz);
 
                 Vertex vert = Vertex(pos, normal, uv, vec4(1.f));
                 vert.position = mat * vert.position;
