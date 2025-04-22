@@ -68,6 +68,8 @@ public:
     virtual void removeCamFromSet(LICamera* netCam);
     virtual void addCameraViewRelative(SPObjectSelector* objSel);
     virtual void swapCameras(TrackBallCam* cam1, TrackBallCam* cam2);
+    virtual void updateCamTrackball(TrackBallCam* cam, LICamera* netCam);
+    virtual void hideSceneWorldAxisGizmo();
     virtual void addShaderProto(const std::string* shdrName);
     void         setBasePlane(basePlane bp);
     void freeGLResources();

@@ -35,12 +35,14 @@ public:
 
     // prints in opengl standard normalized coordinates (0,0 center,
     // left/bottom: [-1,-1], right/top: [1,1]
-    void print(float _x, float _y, std::string &&text, int fontSize, float *col);
-    void print(float _x, float _y, std::string &text, int fontSize, float *col);
+    void print(float _x, float _y, const std::string &&text, int fontSize, float *col);
+    void print(float _x, float _y, const std::string &text, int fontSize, float *col);
 
     // prints in pixel coordinates, origin is left/top
-    void      print(int _x, int _y, std::string &text, int fontSize, float *col);
-    void      print(glm::vec2 &p, std::string &text, int fontSize, float *col) { print(p.x, p.y, text, fontSize, col); }
+    void      print(int _x, int _y, const std::string &text, int fontSize, float *col);
+    void      print(glm::vec2 &p, const std::string &text, int fontSize, float *col) {
+        print(p.x, p.y, text, fontSize, col);
+    }
     glm::vec2 getTextWidth(const char *text, int fontSize);
     glm::ivec2 getPixTextWidth(const char *text, int fontSize,
                                int max_count = -1);  // marco.g: Text width for both x,y in pixels,
@@ -61,7 +63,7 @@ public:
 
 private:
     stbtt_fontinfo     m_info = {nullptr};
-    stbtt_aligned_quad q;
+    stbtt_aligned_quad q{};
     std::ifstream      m_fontFile;
 
     std::unordered_map<int, BakedFont> m_bakedFonts;
@@ -76,7 +78,7 @@ private:
     unsigned int m_tex_width     = 0;
     unsigned int m_tex_height    = 0;
 
-    glm::vec2 m_iTexSize;  // 1/texture size
+    glm::vec2 m_iTexSize{};  // 1/texture size
 
     float m_scale = 0.f;
 

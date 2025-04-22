@@ -1063,7 +1063,7 @@ void Scene3DBase::swapCameras(TrackBallCam* cam1, TrackBallCam* cam2) {
     auto camSet = m_sceneRenderCam->getCameras();
 
     list<TrackBallCam*> camList = {cam1, cam2};
-    for (auto& cam : camList) {
+    for (auto cam : camList) {
         // get the pointer of the cam in the scene camera set
         auto camIt = std::find_if(camSet->begin(), camSet->end(),
                                   [cam](const pair<Camera*, void*>& p) { return p.first == cam; });
@@ -1078,8 +1078,7 @@ void Scene3DBase::swapCameras(TrackBallCam* cam1, TrackBallCam* cam2) {
 
             // mark the Camera's visible representation to be skipped during rendering when it is used (avoid rendering
             // the camera's visible representation into its own framebuffer)
-            netCam->iterateNodeParent(netCam, netCam->getFirstParentNode(),
-                                      [camInd](SceneNode* node, SceneNode* parent) {
+            netCam->iterateNodeParent(netCam, netCam->getFirstParentNode(), [camInd](SceneNode* node, SceneNode* parent) {
                                           node->m_skipForCamInd[parent] = camInd;
                                           return true;
                                       });
@@ -1092,26 +1091,33 @@ void Scene3DBase::swapCameras(TrackBallCam* cam1, TrackBallCam* cam2) {
                 });
             }
 
-            if (cam == m_sceneRenderCam->getInteractCam()) {
-                // trackball needs to update the cameras SceneNodes modelmatrix
-                cam->setUptCamSceneNodeCb([netCam](const TbModData& data) {
-                    if (data.trans) {
-                        netCam->translate(data.trans);
-                    }
-                    if (data.rotQ) {
-                        netCam->rotate(glm::angle(*data.rotQ), glm::axis(*data.rotQ));
-                    }
-                });
-            } else {
-                cam->removeUpdtCamSceneNodeCb();
-            }
+            updateCamTrackball(cam, netCam);
         }
     }
 
     m_sceneRenderCam->buildCamMatrixArrays();
 
-    // HACK: hide scene world axis gizmo for the not scene cam ... needs a
-    // generic solution
+    // HACK: hide scene world axis gizmo for the not scene cam ... needs a generic solution
+    hideSceneWorldAxisGizmo();
+}
+
+void Scene3DBase::updateCamTrackball(TrackBallCam* cam, LICamera* netCam) {
+    if (cam == m_sceneRenderCam->getInteractCam()) {
+        // trackball needs to update the cameras SceneNodes modelmatrix
+        cam->setUptCamSceneNodeCb([netCam](const TbModData& data) {
+            if (data.trans) {
+                netCam->translate(data.trans);
+            }
+            if (data.rotQ) {
+                netCam->rotate(glm::angle(*data.rotQ), glm::axis(*data.rotQ));
+            }
+        });
+    } else {
+        cam->removeUpdtCamSceneNodeCb();
+    }
+}
+
+void Scene3DBase::hideSceneWorldAxisGizmo() {
     if (m_sceneGizmo && m_sceneGizmoPre) {
         int skipInd = m_sceneRenderCam->getInteractCam() == m_sceneCam ? 1 : 0;
 

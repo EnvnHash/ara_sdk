@@ -1,5 +1,4 @@
 #include "Utils/TypoGlyphMap.h"
-
 #include "GeoPrimitives/Quad.h"
 #include "Shaders/ShaderCollector.h"
 #include "Shaders/Shaders.h"
@@ -10,34 +9,45 @@ using namespace std;
 namespace ara {
 
 TypoGlyphMap::TypoGlyphMap(uint32_t screenWidth, uint32_t screenHeight)
-    : m_shaderInited(false), m_tex_width(512), m_tex_height(512), m_screen_width(screenWidth),
-      m_screen_height(screenHeight) {
+    : m_screen_width(screenWidth),
+    m_screen_height(screenHeight),
+    m_tex_width(512),
+    m_tex_height(512) {
     // orthographic projection matrix, origin top left, right bottom => +x +y
     m_othoProj = glm::ortho(0.0f, static_cast<float>(screenWidth), static_cast<float>(screenHeight), 0.0f);
 
-    m_iTexSize = glm::vec2(float(1.0 / m_tex_width), float(1.0 / m_tex_height));
+    m_iTexSize = glm::vec2(static_cast<float>(1.0 / m_tex_width), static_cast<float>(1.0 / m_tex_height));
 }
 
 void TypoGlyphMap::initShader() {
 #ifndef __EMSCRIPTEN__
     std::string vert =
-        STRINGIFY(layout(location = 0) in vec4 position;\n layout(location = 2) in vec2 texCoord;\n uniform mat4 m_pvm;\n uniform vec2 scale;\n uniform vec2 trans;\n out vec2 tex_coord;\n const vec2[4] vertices = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n void
-                      main() {
-                          \n tex_coord   = vec2(vertices[gl_VertexID].x, 1.0 - vertices[gl_VertexID].y);
-                          \n gl_Position = m_pvm * vec4(vertices[gl_VertexID] * scale + trans, 0.0, 1.0);
-                          \n
-                      });
+        STRINGIFY(layout(location = 0) in vec4 position;\n
+            layout(location = 2) in vec2 texCoord;\n
+            uniform mat4 m_pvm;\n
+            uniform vec2 scale;\n
+            uniform vec2 trans;\n
+            out vec2 tex_coord;\n
+            const vec2[4] vertices = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n
+            void main() { \n
+                tex_coord   = vec2(vertices[gl_VertexID].x, 1.0 - vertices[gl_VertexID].y); \n
+                gl_Position = m_pvm * vec4(vertices[gl_VertexID] * scale + trans, 0.0, 1.0); \n
+            });
 
     vert = m_shCol->getShaderHeader() + "// basic texture shader, vert\n" + vert;
 
     std::string frag = STRINGIFY(
-        uniform sampler2D tex;\n uniform vec2 tex_scale;\n uniform vec2 tex_offs;\n uniform vec4 color;\n in vec2 tex_coord;\n layout(location = 0) out vec4 fragColor;\n void
-            main() {
-                \n vec2 t_tex_coord = tex_coord * tex_scale + tex_offs;
-                float   c           = texture(tex, t_tex_coord).r;
-                \n      fragColor   = vec4(color.rgb, color.a * c);
-                \n
-            });
+        uniform sampler2D tex;\n
+        uniform vec2 tex_scale;\n
+        uniform vec2 tex_offs;\n
+        uniform vec4 color;\n
+        in vec2 tex_coord;\n
+        layout(location = 0) out vec4 fragColor;\n
+        void main() { \n
+            vec2 t_tex_coord = tex_coord * tex_scale + tex_offs;
+            float   c        = texture(tex, t_tex_coord).r;\n
+            fragColor        = vec4(color.rgb, color.a * c); \n
+        });
 
     frag = m_shCol->getShaderHeader() + "// basic texture shader, frag\n" + frag;
 
@@ -74,14 +84,20 @@ void TypoGlyphMap::initShader() {
     vert = "// TypoGlyphMap_m_draw, vert\n" + m_shCol->getShaderHeader() + vert;
 
     frag = STRINGIFY(
-        uniform sampler2D tex;\n uniform vec2 tex_size;\n uniform vec2 tex_off;\n uniform vec4 color;\n uniform vec2 xrange = vec2(0, 0);\n in vec2 tex_coord;\n in vec4 t_pos;\n layout(location = 0) out vec4 glFragColor;\n void
-            main() {
-                \n vec2 t_tex_coord = tex_coord * tex_size + tex_off;
-                if (t_pos.x < xrange[0] || t_pos.x > xrange[1]) discard;
-                float c           = texture(tex, t_tex_coord).r;
-                \n    glFragColor = vec4(color.rgb, color.a * c);
-                \n
-            });
+        uniform sampler2D tex;\n
+        uniform vec2 tex_size;\n
+        uniform vec2 tex_off;\n
+        uniform vec4 color;\n
+        uniform vec2 xrange = vec2(0, 0);\n
+        in vec2 tex_coord;\n
+        in vec4 t_pos;\n
+        layout(location = 0) out vec4 glFragColor;\n
+        void main() {\n
+            vec2 t_tex_coord = tex_coord * tex_size + tex_off;
+            if (t_pos.x < xrange[0] || t_pos.x > xrange[1]) discard;
+            float c = texture(tex, t_tex_coord).r;\n
+            glFragColor = vec4(color.rgb, color.a * c);\n
+        });
 
     frag           = "// TypoGlyphMap_m_draw, frag\n" + m_shCol->getShaderHeader() + frag;
     m_typoShader_m = m_shCol->add("TypoGlyphMap_m_draw", vert, frag);
@@ -101,7 +117,7 @@ void TypoGlyphMap::loadFont(const char *_file, ShaderCollector *_shCol) {
             m_fontFile.read(&m_fontBuffer[0], m_fontBuffer.size());
 
             // prepare font
-            if (!stbtt_InitFont(&m_info, (unsigned char *)&m_fontBuffer[0], 0))
+            if (!stbtt_InitFont(&m_info, reinterpret_cast<unsigned char *>(&m_fontBuffer[0]), 0))
                 throw runtime_error("TypoGlyphMap::loadFont> failed");
         } catch (runtime_error &e) {
             LOGE << "could not load font: " << e.what() << endl;
@@ -116,19 +132,22 @@ void TypoGlyphMap::bakeFont(int fontSize) {
 
     m_bakedFonts[fontSize] = BakedFont();
     m_bakedFonts[fontSize].bitmap.resize(m_tex_width * m_tex_height);
-    m_bakedFonts[fontSize].scale = stbtt_ScaleForPixelHeight(&m_info, (float)fontSize);
-    stbtt_GetFontVMetrics(&m_info, &m_bakedFonts[fontSize].ascent, &m_bakedFonts[fontSize].descent,
-                          &m_bakedFonts[fontSize].lineGap);
-    // apply the scalefactor to this values to get screen coordinates
-    float scaleFact                = stbtt_ScaleForPixelHeight(&m_info, (float)fontSize);
-    m_bakedFonts[fontSize].ascent  = (int)(scaleFact * (float)m_bakedFonts[fontSize].ascent);
-    m_bakedFonts[fontSize].descent = (int)(scaleFact * (float)m_bakedFonts[fontSize].descent);
-    m_bakedFonts[fontSize].lineGap = (int)(scaleFact * (float)m_bakedFonts[fontSize].lineGap);
+    m_bakedFonts[fontSize].scale = stbtt_ScaleForPixelHeight(&m_info, static_cast<float>(fontSize));
+    stbtt_GetFontVMetrics(&m_info,
+        &m_bakedFonts[fontSize].ascent,
+        &m_bakedFonts[fontSize].descent,
+        &m_bakedFonts[fontSize].lineGap);
+
+    // apply the scalefactor to these values to get screen coordinates
+    float scaleFact                = stbtt_ScaleForPixelHeight(&m_info, static_cast<float>(fontSize));
+    m_bakedFonts[fontSize].ascent  = static_cast<int>(scaleFact * static_cast<float>(m_bakedFonts[fontSize].ascent));
+    m_bakedFonts[fontSize].descent = static_cast<int>(scaleFact * static_cast<float>(m_bakedFonts[fontSize].descent));
+    m_bakedFonts[fontSize].lineGap = static_cast<int>(scaleFact * static_cast<float>(m_bakedFonts[fontSize].lineGap));
 
     // generate bitmap on CPU
-    stbtt_BakeFontBitmap((unsigned char *)&m_fontBuffer[0],
+    stbtt_BakeFontBitmap(reinterpret_cast<unsigned char *>(&m_fontBuffer[0]),
                          0,                // offset
-                         (float)fontSize,  // pixel_height, also defines the x-advance scaling
+                         static_cast<float>(fontSize),  // pixel_height, also defines the x-advance scaling
                          &m_bakedFonts[fontSize].bitmap[0], m_tex_width,
                          m_tex_height,  // pixel_width, pixel_height
                          32, 255 - 32,  // first Char, num_chars
@@ -157,28 +176,37 @@ void TypoGlyphMap::bakeFont(int fontSize) {
 // prints in opengl standard normalized coordinates (0,0 center, left/bottom:
 // [-1,-1], right/top: [1,1] this point refers to the lower left corner of the
 // rendered text
-void TypoGlyphMap::print(float _x, float _y, std::string &text, int fontSize, float *col) {
-    print((int)((_x * .5f + .5f) * (float)m_screen_width), (int)((_y * -.5f + .5f) * (float)m_screen_height), text,
-          fontSize, col);
+void TypoGlyphMap::print(float _x, float _y, const std::string &text, int fontSize, float *col) {
+    print(static_cast<int>((_x * .5f + .5f) * static_cast<float>(m_screen_width)),
+        static_cast<int>((_y * -.5f + .5f) * static_cast<float>(m_screen_height)),
+        text,
+        fontSize,
+        col);
 }
 
-void TypoGlyphMap::print(float _x, float _y, std::string &&text, int fontSize, float *col) {
-    std::string ts = text;
-    print((int)((_x * .5f + .5f) * (float)m_screen_width), (int)((_y * -.5f + .5f) * (float)m_screen_height), ts,
-          fontSize, col);
+void TypoGlyphMap::print(float _x, float _y, const std::string &&text, int fontSize, float *col) {
+    print(static_cast<int>((_x * .5f + .5f) * static_cast<float>(m_screen_width)),
+        static_cast<int>((_y * -.5f + .5f) * static_cast<float>(m_screen_height)),
+        text,
+        fontSize,
+        col);
 }
 
 // prints in pixel coordinates, origin is left/top
-void TypoGlyphMap::print(int _x, int _y, std::string &text, int fontSize, float *col) {
-    float x = (float)_x;
-    float y = (float)_y;
+void TypoGlyphMap::print(int _x, int _y, const std::string &text, int fontSize, float *col) {
+    auto x = static_cast<float>(_x);
+    auto y = static_cast<float>(_y);
 
-    if (text.empty()) return;
+    if (text.empty()) {
+        return;
+    }
 
     // bake font for this fontSize if necessary
     bakeFont(fontSize);
 
-    if (text.size() + 1 != m_charOffs.size()) m_charOffs.resize(text.size() + 1);
+    if (text.size() + 1 != m_charOffs.size()) {
+        m_charOffs.resize(text.size() + 1);
+    }
 
     m_charOffsIt = m_charOffs.begin();
 
@@ -187,9 +215,6 @@ void TypoGlyphMap::print(int _x, int _y, std::string &text, int fontSize, float 
         initShader();
         m_shaderInited = true;
     }
-
-    // glEnable(GL_BLEND);
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_typoShader->begin();
     m_typoShader->setUniform1i("tex", 0);
@@ -203,14 +228,14 @@ void TypoGlyphMap::print(int _x, int _y, std::string &text, int fontSize, float 
     int firstX = 0;
 
     for (auto ch : text) {
-        if ((uint8_t)ch >= 32 && (uint8_t)ch < 255)  // marco.g: had to do this to avoid errors when
-                                                     // (signed char) was negative (>127)
-        {
-            stbtt_GetBakedQuad(&m_bakedFonts[fontSize].cdata[0], m_tex_width, m_tex_height, (uint8_t)ch - 32, &x, &y,
+        if (static_cast<uint8_t>(ch) >= 32 && static_cast<uint8_t>(ch) < 255) {
+            stbtt_GetBakedQuad(&m_bakedFonts[fontSize].cdata[0], m_tex_width, m_tex_height, static_cast<uint8_t>(ch) - 32, &x, &y,
                                &q, 1);
 
             // does not start at x=0, ...first q.x0 > 0 - why the hack?
-            if (!idx) firstX = (int)(q.x0 - _x);
+            if (!idx) {
+                firstX = static_cast<int>(q.x0 - _x);
+            }
 
             (*m_charOffsIt++) = vec2(q.x0, q.y1);
 
@@ -254,31 +279,34 @@ glm::ivec2 TypoGlyphMap::getPixTextWidth(const char *text, int fontSize, int max
     bakeFont(fontSize);
 
     // sh: better use stbtt_GetBakedQuad like in the draw function to be sure
-    // the size is exatecly the same
+    // the size is exatesla the same
     int idx = 0;
     while (*text) {
-        if (max_count >= 0 && idx >= max_count) break;
+        if (max_count >= 0 && idx >= max_count) {
+            break;
+        }
 
-        if ((uint8_t)text[0] >= 32 && (uint8_t)text[0] < 255) {
-            stbtt_GetBakedQuad(&m_bakedFonts[fontSize].cdata[0], m_tex_width, m_tex_height, (uint8_t)text[0] - 32, &s.x,
+        if (static_cast<uint8_t>(text[0]) >= 32 && static_cast<uint8_t>(text[0]) < 255) {
+            stbtt_GetBakedQuad(&m_bakedFonts[fontSize].cdata[0], m_tex_width, m_tex_height, static_cast<uint8_t>(text[0]) - 32, &s.x,
                                &s.y, &q, 1);
 
             // does not start at x=0, ...first q.x0 > 0 - why the hack?
-            if (!idx) firstX = (int)q.x0;
-            // if (maxIdx == idx) width = (int)q.x1;
-            width = (int)q.x1;
+            if (!idx) {
+                firstX = static_cast<int>(q.x0);
+            }
+            width = static_cast<int>(q.x1);
 
-            minMaxY[0] = std::min(minMaxY[0], (int)q.y0);
-            minMaxY[0] = std::min(minMaxY[0], (int)q.y1);
+            minMaxY[0] = std::min(minMaxY[0], static_cast<int>(q.y0));
+            minMaxY[0] = std::min(minMaxY[0], static_cast<int>(q.y1));
 
-            minMaxY[1] = std::max(minMaxY[1], (int)q.y0);
-            minMaxY[1] = std::max(minMaxY[1], (int)q.y1);
+            minMaxY[1] = std::max(minMaxY[1], static_cast<int>(q.y0));
+            minMaxY[1] = std::max(minMaxY[1], static_cast<int>(q.y1));
         }
         ++text;
         ++idx;
     }
 
-    return ivec2(width - firstX, std::abs(minMaxY[1] - minMaxY[0]));
+    return {width - firstX, std::abs(minMaxY[1] - minMaxY[0])};
 }
 
 void TypoGlyphMap::setScreenSize(uint32_t screenWidth, uint32_t screenHeight) {
@@ -287,22 +315,20 @@ void TypoGlyphMap::setScreenSize(uint32_t screenWidth, uint32_t screenHeight) {
     m_othoProj      = glm::ortho(0.0f, static_cast<float>(screenWidth), static_cast<float>(screenHeight), 0.0f);
 }
 
-// - - [ ] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // - - - - - - - - - - - - - - - - - - -
 
 int TypoGlyphMap::m_print(glm::vec2 offset, const char *text, int font_size, float *col, float *pvm, float x_range_lo,
                           float x_range_hi) {
-    Shaders *shdr;
-
     if (text == nullptr || !text[0]) return 0;
 
     // bake font for this fontSize if necessary
     bakeFont(font_size);
 
-    if (!m_shaderInited) initShader();
+    if (!m_shaderInited) {
+        initShader();
+    }
 
-    shdr = m_typoShader_m;
+    Shaders *shdr = m_typoShader_m;
 
     shdr->begin();
     shdr->setUniform1i("tex", 0);
@@ -316,25 +342,25 @@ int TypoGlyphMap::m_print(glm::vec2 offset, const char *text, int font_size, flo
 
     int                idx = 0;
     stbtt_aligned_quad qa;
-    float              d3d_bias = 0;
     int                ro[2];
 
     while (text[0]) {
-        if ((uint8_t)text[0] >= 32 && (uint8_t)text[0] < 255) {
-            const stbtt_bakedchar *b = &m_bakedFonts[font_size].cdata[(uint8_t)text[0] - 32];
+        if (static_cast<uint8_t>(text[0]) >= 32 && static_cast<uint8_t>(text[0]) < 255) {
+            float d3d_bias = 0;
+            const auto b = &m_bakedFonts[font_size].cdata[static_cast<uint8_t>(text[0]) - 32];
 
             ro[0] = STBTT_ifloor((offset.x + b->xoff) + 0.5f);
             ro[1] = STBTT_ifloor((offset.y + b->yoff) + 0.5f);
 
-            qa.x0 = ro[0] + d3d_bias;
-            qa.y0 = ro[1] + d3d_bias;
-            qa.x1 = ro[0] + b->x1 - b->x0 + d3d_bias;
-            qa.y1 = ro[1] + b->y1 - b->y0 + d3d_bias;
+            qa.x0 = static_cast<float>(ro[0]) + d3d_bias;
+            qa.y0 = static_cast<float>(ro[1]) + d3d_bias;
+            qa.x1 = static_cast<float>(ro[0] + b->x1 - b->x0) + d3d_bias;
+            qa.y1 = static_cast<float>(ro[1] + b->y1 - b->y0) + d3d_bias;
 
-            qa.s0 = b->x0 * m_iTexSize.x;
-            qa.t0 = b->y0 * m_iTexSize.y;
-            qa.s1 = b->x1 * m_iTexSize.x;
-            qa.t1 = b->y1 * m_iTexSize.y;
+            qa.s0 = static_cast<float>(b->x0) * m_iTexSize.x;
+            qa.t0 = static_cast<float>(b->y0) * m_iTexSize.y;
+            qa.s1 = static_cast<float>(b->x1) * m_iTexSize.x;
+            qa.t1 = static_cast<float>(b->y1) * m_iTexSize.y;
 
             shdr->setUniform2f("pix_off", qa.x0, qa.y0);
             shdr->setUniform2f("pix_size", qa.x1 - qa.x0, qa.y1 - qa.y0);
@@ -342,19 +368,16 @@ int TypoGlyphMap::m_print(glm::vec2 offset, const char *text, int font_size, flo
             shdr->setUniform2f("tex_size", qa.s1 - qa.s0, qa.t1 - qa.t0);
 
             glBindVertexArray(m_nullVao);
-            // glBindVertexArray(m_quad->vao->getVAOId());
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
             glBindVertexArray(0);
 
             offset.x += b->xadvance;
-            idx++;
+            ++idx;
         }
-
-        text++;
+        ++text;
     }
 
     ara::Shaders::end();
-
     return idx;
 }
 
@@ -363,66 +386,77 @@ glm::ivec2 TypoGlyphMap::m_getPixExtent(const char *text, int font_size, int max
     glm::mat2 M(0.f);
     glm::vec2 offset(0, 0);
 
-    if (ppos != nullptr) ppos->clear();
+    if (ppos != nullptr) {
+        ppos->clear();
+    }
 
-    if (box != nullptr) *box = M;
+    if (box != nullptr) {
+        *box = M;
+    }
 
     if (text == nullptr || !text[0]) {
-        return glm::ivec2(0, 0);
+        return {0, 0};
     }
 
     bakeFont(font_size);
 
     int                idx = 0, i = 0;
     stbtt_aligned_quad qa       = {};
-    float              d3d_bias = 0;
     int                ro[2];
 
     while (text[0]) {
-        if (max_count >= 0 && i >= max_count) break;
+        if (max_count >= 0 && i >= max_count) {
+            break;
+        }
 
-        if ((uint8_t)text[0] >= 32 && (uint8_t)text[0] < 255) {
-            const stbtt_bakedchar *b = &m_bakedFonts[font_size].cdata[(uint8_t)text[0] - 32];
+        if (static_cast<uint8_t>(text[0]) >= 32 && static_cast<uint8_t>(text[0]) < 255) {
+            float d3d_bias = 0;
+            const auto b = &m_bakedFonts[font_size].cdata[static_cast<uint8_t>(text[0]) - 32];
 
             ro[0] = STBTT_ifloor((offset.x + b->xoff) + 0.5f);
             ro[1] = STBTT_ifloor((offset.y + b->yoff) + 0.5f);
 
-            qa.x0 = ro[0] + d3d_bias;
-            qa.y0 = ro[1] + d3d_bias;
-            qa.x1 = ro[0] + b->x1 - b->x0 + d3d_bias;
-            qa.y1 = ro[1] + b->y1 - b->y0 + d3d_bias;
+            qa.x0 = static_cast<float>(ro[0]) + d3d_bias;
+            qa.y0 = static_cast<float>(ro[1]) + d3d_bias;
+            qa.x1 = static_cast<float>(ro[0] + b->x1 - b->x0) + d3d_bias;
+            qa.y1 = static_cast<float>(ro[1] + b->y1 - b->y0) + d3d_bias;
 
-            qa.s0 = b->x0 * m_iTexSize.x;
-            qa.t0 = b->y0 * m_iTexSize.y;
-            qa.s1 = b->x1 * m_iTexSize.x;
-            qa.t1 = b->y1 * m_iTexSize.y;
+            qa.s0 = static_cast<float>(b->x0) * m_iTexSize.x;
+            qa.t0 = static_cast<float>(b->y0) * m_iTexSize.y;
+            qa.s1 = static_cast<float>(b->x1) * m_iTexSize.x;
+            qa.t1 = static_cast<float>(b->y1) * m_iTexSize.y;
 
-            if (ppos != nullptr) ppos->push_back(qa.x0);
+            if (ppos != nullptr) {
+                ppos->push_back(qa.x0);
+            }
 
             if (idx) {
                 M[0][0] = std::min(M[0][0], qa.x0);
                 M[0][1] = std::min(M[0][1], qa.y0);
                 M[1][0] = std::max(M[1][0], qa.x1);
                 M[1][1] = std::max(M[1][1], qa.y1);
-
             } else {
                 M[0] = glm::vec2(qa.x0, qa.y0);
                 M[1] = glm::vec2(qa.x1, qa.y1);
             }
 
             offset.x += b->xadvance;
-            idx++;
+            ++idx;
         }
 
-        text++;
-        i++;
+        ++text;
+        ++i;
     }
 
-    if (ppos != nullptr) ppos->push_back(qa.x1);
+    if (ppos != nullptr) {
+        ppos->push_back(qa.x1);
+    }
 
-    if (box != nullptr) *box = M;
+    if (box != nullptr) {
+        *box = M;
+    }
 
-    return glm::ivec2(int(M[1][0] - M[0][0]), int(M[1][1] - M[0][1]));
+    return {static_cast<int>(M[1][0] - M[0][0]), static_cast<int>(M[1][1] - M[0][1])};
 }
 
 }  // namespace ara
