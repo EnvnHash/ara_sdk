@@ -831,11 +831,10 @@ void Scene3DBase::updateScene3DBaseViewport(float x, float y, float width, float
         return;
     }
 
-    memcpy(&s_sd.winViewport[0], &newVp[0], sizeof(glm::vec4));
+    newVp = s_sd.winViewport;
 
-    // avoid the recalculation of FBO being done on every event
-    // unfortunately m_camSet and m_netCamera iteration also has to be done on
-    // mouseup
+    // avoid the recalculation of FBO being done on every event unfortunately m_camSet and m_netCamera iteration also
+    // has to be done on mouseup
     for (auto& it : m_camSet) {
         it->setViewport(0, 0, (uint)s_sd.winViewport.z, (uint)s_sd.winViewport.w, true);  // set the viewport and resize the ShaderProto
     }

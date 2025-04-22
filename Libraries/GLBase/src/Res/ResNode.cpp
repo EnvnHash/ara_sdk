@@ -65,14 +65,7 @@ bool ResNode::error(char *str, ...) {
     va_list p;
 
     va_start(p, str);
-
-    auto result = vsnprintf(estr, estr_size, str, p);
-    if (result < 0) {
-        LOGE << "Error: Formatting failed";
-    } else if (static_cast<size_t>(result) >= estr_size) {
-        LOGE << "Error: Buffer overflow detected. Required " << result + 1 << " bytes, but only " << estr_size << " available.";
-    }
-
+    vsnprintf(estr, estr_size, str, p);
     va_end(p);
 
     return error_string(estr);

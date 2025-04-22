@@ -1339,7 +1339,7 @@ char **X11Window::parseUriList(char *text, int *count) {
         }
 
         if (std::string(line).substr(0, prefix.length()) == prefix) {
-            line += prefix.length;
+            line += prefix.length();
             while (*line != '/') {
                 ++line;
             }
