@@ -1,10 +1,16 @@
 //
-//  MPQuad.h
-//  tav_gl4
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
 //
-//  Created by Sven Hahne on 20.08.14.
-//  Copyright (c) 2014 Sven Hahne. All rights reserved..
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
 //
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #pragma once
@@ -16,10 +22,12 @@ class MPQuad : public Mesh {
 public:
     MPQuad();
     MPQuad(float x, float y, float w, float h);
-    MPQuad(float x, float y, float w, float h, glm::vec3 inNormal, float r = 1.f, float g = 1.f, float b = 1.f,
-           float a = 1.f);
+    MPQuad(float x, float y, float w, float h, glm::vec3 inNormal, const glm::vec4& col = {1.f, 1.f, 1.f, 1.f});
 
-    virtual ~MPQuad() = default;
+    void setPositions(float x, float y, float w, float h, const glm::mat4& rMatr);
+    void setNormals();
+
+    ~MPQuad() override = default;
 
     void init();
 

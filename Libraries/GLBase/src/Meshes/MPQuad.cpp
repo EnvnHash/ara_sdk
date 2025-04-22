@@ -1,5 +1,17 @@
-//  Created by Sven Hahne on 20.08.14.
-//  Copyright (c) 2014 Sven Hahne. All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 //
 //  creates a MPQuad consisting of two triangles
 //  x, y means the lower left corner
@@ -11,189 +23,78 @@ using namespace std;
 
 namespace ara {
 
-MPQuad::MPQuad() {
-    m_width  = 1.f;
-    m_height = 1.f;
-    m_r      = 1.f;
-    m_g      = 1.f;
-    m_b      = 1.f;
-    m_a      = 1.f;
+MPQuad::MPQuad() : MPQuad(0.f, 0.f, 1.f, 1.f) {}
 
-    // first triangle, lower left, starting in the upper left corner,
-    // counterclockwise
-    m_positions.push_back(-0.5f);
-    m_positions.push_back(0.5f);
-    m_positions.push_back(0.f);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(1.f);
+MPQuad::MPQuad(float x, float y, float w, float h) : MPQuad(x, y, w, h, glm::vec3(0.f, 0.f, 1.f), glm::vec4(1.f)) {}
 
-    m_positions.push_back(-0.5f);
-    m_positions.push_back(-0.5f);
-    m_positions.push_back(0.f);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(0.f);
-
-    m_positions.push_back(0.5f);
-    m_positions.push_back(-0.5f);
-    m_positions.push_back(0.f);
-    m_texCoords.push_back(1.f);
-    m_texCoords.push_back(0.f);
-
-    // second triangle, right upper, starting in the lower right corner,
-    // counterclockwise
-    m_positions.push_back(0.5f);
-    m_positions.push_back(-0.5f);
-    m_positions.push_back(0.f);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(0.f);
-
-    m_positions.push_back(0.5f);
-    m_positions.push_back(0.5f);
-    m_positions.push_back(0.f);
-    m_texCoords.push_back(1.f);
-    m_texCoords.push_back(1.f);
-
-    m_positions.push_back(-0.5f);
-    m_positions.push_back(0.5f);
-    m_positions.push_back(0.f);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(1.f);
-
-    // set normal facing outwards of the screen
-    for (auto i = 0; i < 6; i++) {
-        m_normals.push_back(0.f);
-        m_normals.push_back(0.f);
-        m_normals.push_back(1.f);
-    }
-
-    MPQuad::init();
-}
-
-MPQuad::MPQuad(float x, float y, float w, float h) {
-    m_width  = w;
+MPQuad::MPQuad(float x, float y, float w, float h, glm::vec3 inNormal, const glm::vec4& col) {
+    m_width = w;
     m_height = h;
-    m_r      = 1.f;
-    m_g      = 1.f;
-    m_b      = 1.f;
-    m_a      = 1.f;
+    m_r = col.r;
+    m_g = col.g;
+    m_b = col.b;
+    m_a = col.a;
 
-    vec3 upperLeft  = vec3(x, y + h, 0.f);
-    vec3 lowerLeft  = vec3(x, y, 0.f);
-    vec3 lowerRight = vec3(x + w, y, 0.f);
-    vec3 upperRight = vec3(x + w, y + h, 0.f);
+    // get the rotation matrix for the projection from inNormal to the standard normal
+    auto rot = RotationBetweenVectors(vec3{0.f, 0.f, 1.f}, inNormal);
+    auto rMatr = inNormal != vec3{0.f, 0.f, -1.f} ? glm::mat4_cast(rot) :
+                 glm::rotate(mat4(1.f), static_cast<float>(M_PI), vec3{0.f, 1.f, 0.f});
 
-    // first triangle, lower left, starting in the upper left corner,
-    // counterclockwise
-    for (int i = 0; i < 3; i++) m_positions.push_back(upperLeft[i]);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(1.f);
-
-    for (int i = 0; i < 3; i++) m_positions.push_back(lowerLeft[i]);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(0.f);
-
-    for (int i = 0; i < 3; i++) m_positions.push_back(lowerRight[i]);
-    m_texCoords.push_back(1.f);
-    m_texCoords.push_back(0.f);
-
-    // second triangle, right upper, starting in the lower right corner,
-    // counterclockwise
-    for (int i = 0; i < 3; i++) m_positions.push_back(lowerRight[i]);
-    m_texCoords.push_back(1.f);
-    m_texCoords.push_back(0.f);
-
-    for (int i = 0; i < 3; i++) m_positions.push_back(upperRight[i]);
-    m_texCoords.push_back(1.f);
-    m_texCoords.push_back(1.f);
-
-    for (int i = 0; i < 3; i++) m_positions.push_back(upperLeft[i]);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(1.f);
-
-    // set normal facing outwards of the screen
-    for (auto i = 0; i < 6; i++) {
-        m_normals.push_back(0.f);
-        m_normals.push_back(0.f);
-        m_normals.push_back(1.f);
-    }
-
-    MPQuad::init();
-}
-
-MPQuad::MPQuad(float x, float y, float w, float h, glm::vec3 inNormal, float r, float g, float b, float a) {
-    m_width  = w;
-    m_height = h;
-
-    m_r = r;
-    m_g = g;
-    m_b = b;
-    m_a = a;
-
-    vec3 upperLeft  = vec3(x, y + h, 0.f);
-    vec3 lowerLeft  = vec3(x, y, 0.f);
-    vec3 lowerRight = vec3(x + w, y, 0.f);
-    vec3 upperRight = vec3(x + w, y + h, 0.f);
-
-    // get the rotation matrix for the projection from inNormal to the standard
-    // normal
-    quat rot = RotationBetweenVectors(vec3(0.f, 0.f, 1.f), inNormal);
-    mat4 rMatr;
-    // special case if inNormal is opposite of standard normal
-    if (inNormal != vec3(0.f, 0.f, -1.f))
-        rMatr = glm::mat4_cast(rot);
-    else
-        rMatr = glm::rotate(mat4(1.f), static_cast<float>(M_PI), vec3(0.f, 1.f, 0.f));
-
-    // apply the matrix
-    glm::vec4 tempV;
-    tempV     = (rMatr * vec4(upperLeft, 1.f));
-    upperLeft = vec3(tempV.x, tempV.y, tempV.z);
-
-    tempV     = rMatr * vec4(lowerLeft, 1.f);
-    lowerLeft = vec3(tempV.x, tempV.y, tempV.z);
-
-    tempV      = rMatr * vec4(lowerRight, 1.f);
-    lowerRight = vec3(tempV.x, tempV.y, tempV.z);
-
-    tempV      = rMatr * vec4(upperRight, 1.f);
-    upperRight = vec3(tempV.x, tempV.y, tempV.z);
-
-    // first triangle, lower left, starting in the upper left corner,
-    // counterclockwise
-    for (int i = 0; i < 3; i++) m_positions.push_back(upperLeft[i]);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(1.f);
-
-    for (int i = 0; i < 3; i++) m_positions.push_back(lowerLeft[i]);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(0.f);
-
-    for (int i = 0; i < 3; i++) m_positions.push_back(lowerRight[i]);
-    m_texCoords.push_back(1.f);
-    m_texCoords.push_back(0.f);
-
-    // second triangle, right upper, starting in the lower right corner,
-    // counterclockwise
-    for (int i = 0; i < 3; i++) m_positions.push_back(lowerRight[i]);
-    m_texCoords.push_back(1.f);
-    m_texCoords.push_back(0.f);
-
-    for (int i = 0; i < 3; i++) m_positions.push_back(upperRight[i]);
-    m_texCoords.push_back(1.f);
-    m_texCoords.push_back(1.f);
-
-    for (int i = 0; i < 3; i++) m_positions.push_back(upperLeft[i]);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(1.f);
-
-    // set normal facing outwards of the screen
-    for (auto i = 0; i < 6; i++) {
-        m_normals.push_back(0.f);
-        m_normals.push_back(0.f);
-        m_normals.push_back(1.f);
-    }
+    setPositions(x, y, w, h, rMatr);
+    setNormals();
 
     init();
+}
+
+void MPQuad::setPositions(float x, float y, float w, float h, const glm::mat4& rMatr) {
+    vec3 upperLeft = vec3(x + w / 2, y + h / 2, 0.f);
+    vec3 lowerLeft = vec3(x - w / 2, y - h / 2, 0.f);
+    vec3 lowerRight = vec3(x + w / 2, y - h / 2, 0.f);
+    vec3 upperRight = vec3(x - w / 2, y + h / 2, 0.f);
+
+    auto applyRotation = [](const glm::mat4& rMatr, const vec3& point) {
+        glm::vec4 tempV = (rMatr * vec4(point, 1.f));
+        return vec3(tempV.x, tempV.y, tempV.z);
+    };
+
+    upperLeft = applyRotation(rMatr, upperLeft);
+    lowerLeft = applyRotation(rMatr, lowerLeft);
+    lowerRight = applyRotation(rMatr, lowerRight);
+    upperRight = applyRotation(rMatr, upperRight);
+
+    // first triangle
+    m_positions.insert(m_positions.end(), &upperLeft[0], &upperLeft[3]);
+    m_texCoords.push_back(0.f);
+    m_texCoords.push_back(1.f);
+
+    m_positions.insert(m_positions.end(), &lowerLeft[0], &lowerLeft[3]);
+    m_texCoords.push_back(0.f);
+    m_texCoords.push_back(0.f);
+
+    m_positions.insert(m_positions.end(), &lowerRight[0], &lowerRight[3]);
+    m_texCoords.push_back(1.f);
+    m_texCoords.push_back(0.f);
+
+    // second triangle
+    m_positions.insert(m_positions.end(), &lowerRight[0], &lowerRight[3]);
+    m_texCoords.push_back(1.f);
+    m_texCoords.push_back(0.f);
+
+    m_positions.insert(m_positions.end(), &upperRight[0], &upperRight[3]);
+    m_texCoords.push_back(1.f);
+    m_texCoords.push_back(1.f);
+
+    m_positions.insert(m_positions.end(), &upperLeft[0], &upperLeft[3]);
+    m_texCoords.push_back(0.f);
+    m_texCoords.push_back(1.f);
+}
+
+void MPQuad::setNormals() {
+    for (auto i = 0; i < 6; i++) {
+        m_normals.push_back(0.f);
+        m_normals.push_back(0.f);
+        m_normals.push_back(1.f);
+    }
 }
 
 void MPQuad::init() {

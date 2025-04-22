@@ -11,17 +11,20 @@ using namespace std;
 
 namespace ara::SceneGraphUnitTest::ImageTests {
 
+Image* addImage(UIApplication *app, const std::string& imageFile, const glm::ivec2& size={400,400},
+    const glm::vec4& bgCol = {0.5f, 0.2f, 0.2f, 1.f}, int mipMap=1) {
+    auto rootNode = app->getMainWindow()->getRootNode();
+    auto img = rootNode->addChild<Image>();
+    img->setImg((filesystem::current_path() / "resdata" / "test" / imageFile).string(), mipMap);
+    img->setSize(size.x, size.y);
+    img->setBackgroundColor(bgCol.r, bgCol.g, bgCol.b, bgCol.a);
+    img->setAlign(align::center, valign::center);
+    return img;
+}
+
 TEST(UITest, ImageSingle) {
-    glm::ivec2 buttSize{200, 100};
-
     appBody([&](UIApplication *app) {
-        auto rootNode = app->getMainWindow()->getRootNode();
-
-        auto img = rootNode->addChild<Image>();
-        img->setImg((filesystem::current_path() / "resdata" / "test" / "test_img.jpg").string(), 1);
-        img->setSize(200, 200);
-        img->setAlign(align::center, valign::center);
-
+        addImage(app, "test_img.jpg", {200,200}, {0.f, 0.f, 0.f, 0.f});
     }, [&](UIApplication *app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single.png",
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
@@ -30,13 +33,8 @@ TEST(UITest, ImageSingle) {
 
 TEST(UITest, ImageSingleLod) {
     Image* img;
-
     appBody([&](UIApplication *app) {
-        auto rootNode = app->getMainWindow()->getRootNode();
-        img = rootNode->addChild<Image>();
-        img->setImg((filesystem::current_path() / "resdata" / "test" / "test_img.jpg").string(), 8);
-        img->setSize(400, 400);
-        img->setAlign(align::center, valign::center);
+        img = addImage(app, "test_img.jpg", {400,400}, {0.f, 0.f, 0.f, 0.f}, 8);
         img->setLod(8);
     }, [&](UIApplication *app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_lod8.png",
@@ -64,15 +62,8 @@ TEST(UITest, ImageSingleLod) {
 }
 
 TEST(UITest, ImageSingleFill) {
-    Image* img;
-
     appBody([&](UIApplication *app) {
-        auto rootNode = app->getMainWindow()->getRootNode();
-        img = rootNode->addChild<Image>();
-        img->setImg((filesystem::current_path() / "resdata" / "test" / "test-tex.png").string());
-        img->setSize(400, 400);
-        img->setBackgroundColor(0.5f, 0.2f, 0.2f, 1.f);
-        img->setAlign(align::center, valign::center);
+        auto img = addImage(app, "test-tex.png");
 
         unsigned iflags = 0;
         iflags |= 1;
@@ -85,15 +76,8 @@ TEST(UITest, ImageSingleFill) {
 }
 
 TEST(UITest, ImageSingleScale) {
-    Image* img;
-
     appBody([&](UIApplication *app) {
-        auto rootNode = app->getMainWindow()->getRootNode();
-        img = rootNode->addChild<Image>();
-        img->setImg((filesystem::current_path() / "resdata" / "test" / "test-tex.png").string());
-        img->setSize(400, 400);
-        img->setBackgroundColor(0.5f, 0.2f, 0.2f, 1.f);
-        img->setAlign(align::center, valign::center);
+        auto img = addImage(app, "test-tex.png");
 
         unsigned iflags = 0;
         iflags |= 2;
@@ -108,12 +92,7 @@ TEST(UITest, ImageSingleScale) {
 
 TEST(UITest, ImageSingleHFlip) {
     appBody([&](UIApplication *app) {
-        auto rootNode = app->getMainWindow()->getRootNode();
-        auto img = rootNode->addChild<Image>();
-        img->setImg((filesystem::current_path() / "resdata" / "test" / "test-tex.png").string());
-        img->setSize(400, 400);
-        img->setBackgroundColor(0.5f, 0.2f, 0.2f, 1.f);
-        img->setAlign(align::center, valign::center);
+        auto img = addImage(app, "test-tex.png");
 
         unsigned iflags = 0;
         iflags |= 4;
@@ -127,12 +106,7 @@ TEST(UITest, ImageSingleHFlip) {
 
 TEST(UITest, ImageSingleVFlip) {
     appBody([&](UIApplication *app) {
-        auto rootNode = app->getMainWindow()->getRootNode();
-        auto img = rootNode->addChild<Image>();
-        img->setImg((filesystem::current_path() / "resdata" / "test" / "test-tex.png").string());
-        img->setSize(400, 400);
-        img->setBackgroundColor(0.5f, 0.2f, 0.2f, 1.f);
-        img->setAlign(align::center, valign::center);
+        auto img = addImage(app, "test-tex.png");
 
         unsigned iflags = 0;
         iflags |= 8;
@@ -145,13 +119,7 @@ TEST(UITest, ImageSingleVFlip) {
 
 TEST(UITest, ImageSingleNoAspect) {
     appBody([&](UIApplication *app) {
-        auto rootNode = app->getMainWindow()->getRootNode();
-        auto img = rootNode->addChild<Image>();
-        img->setImg((filesystem::current_path() / "resdata" / "test" / "test-tex.png").string());
-        img->setSize(400, 400);
-        img->setBackgroundColor(0.5f, 0.2f, 0.2f, 1.f);
-        img->setAlign(align::center, valign::center);
-
+        auto img = addImage(app, "test-tex.png");
         unsigned iflags = 0;
         iflags |= 32;
         img->setImgFlags(iflags);

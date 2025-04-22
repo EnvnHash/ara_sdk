@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <Network/MicroHTTPServer.h>
+#include <Network/MicroHttpServer.h>
 #include <Network/MicroHttpConnection.h>
 
 namespace ara::microhttp {
