@@ -34,7 +34,7 @@ public:
 
     bool        Process(SOCKET sock, const sockaddr_in *addr);
     bool        parseContent();
-    int         parseLine(int& ret, Content* content);
+    void        parseLine(int& ret, Content* content);
 
     uint32_t    getContentLength();
     std::string getHdrValue(const std::string &name);

@@ -129,9 +129,10 @@ bool Conn::parseContent() {
         }
         return false;
     }
+    return true;
 }
 
-int Conn::parseLine(int& ret, Content* content) {
+void Conn::parseLine(int& ret, Content* content) {
     do {
         std::string linestr;
         if ((ret = m_rawContent.readLine(linestr)) >= 0) {
