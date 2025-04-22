@@ -19,18 +19,7 @@ SNGizmoTransAxis::SNGizmoTransAxis(sceneData* sd) : SNGizmoAxis(sd) {
     // Modern graphic cards are optimized for triangles, so we define Triangles
 
     // define a ring in the x, z plain
-    vector<GLfloat> ringPos(cylNrPointsCircle * 2);
-
-    for (uint i = 0; i < cylNrPointsCircle; i++) {
-        // define a circle with n points
-        fInd = float(i) / float(cylNrPointsCircle);
-        x    = std::cos(fInd * float(M_PI) * 2.f);
-        z    = std::sin(fInd * float(M_PI) * 2.f);
-
-        // tip and cap
-        ringPos[i * 2]     = x;
-        ringPos[i * 2 + 1] = z;
-    }
+    auto ringPos = get2DRing(cylNrPointsCircle * 2);
 
     // allocate memory for all positions and normals
     // three rings and two points with each three coordinates (x, y, z)

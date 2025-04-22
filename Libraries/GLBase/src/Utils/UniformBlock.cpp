@@ -106,7 +106,7 @@ void UniformBlock::update() {
                     std::copy_n(it.iVal, dataSize, ptr);
                     break;
                 case GL_FLOAT:
-                    std::copy_n(it.fVal, dataSize, ptr);
+                    std::copy_n(reinterpret_cast<GLubyte *>(it.fVal), dataSize, ptr);
                     break;
                 case GL_UNSIGNED_INT:
                     std::copy_n(it.uVal, dataSize, ptr);

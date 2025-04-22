@@ -30,7 +30,7 @@ public:
     using type_request = std::vector<std::string>;
     using type_content = std::vector<std::shared_ptr<Content>>;
 
-    Conn(Server *m);
+    explicit Conn(Server *m);
 
     bool        Process(SOCKET sock, const sockaddr_in *addr);
     bool        parseContent();
@@ -39,7 +39,7 @@ public:
     uint32_t    getContentLength();
     std::string getHdrValue(const std::string &name);
     std::string getHdrValue(const char *name);
-    std::string getMethod() { return m_request.size() >= 1 ? m_request[0] : ""; }
+    std::string getMethod() { return !m_request.empty() ? m_request[0] : ""; }
     std::string getURI() { return m_request.size() >= 2 ? m_request[1] : ""; }
     std::string getHTTP() { return m_request.size() >= 3 ? m_request[2] : ""; }
 

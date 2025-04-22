@@ -32,9 +32,9 @@ glm::quat RotationBetweenVectors(glm::vec3 start, glm::vec3 dest) {
     return {s * 0.5f, rotationAxis.x * invs, rotationAxis.y * invs, rotationAxis.z * invs};
 }
 
-void catmullRom(std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &outPoints, unsigned int dstNrPoints) {
+void catmullRom(const std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &outPoints, unsigned int dstNrPoints) {
     outPoints.resize(dstNrPoints);
-    float nrIntPointPerSeg = (float)dstNrPoints / (float)(inPoints.size() - 1);
+    float nrIntPointPerSeg = static_cast<float>(dstNrPoints) / static_cast<float>(inPoints.size() - 1);
 
     unsigned int offs = 0;
     unsigned int sum  = 0;
@@ -42,13 +42,13 @@ void catmullRom(std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &outPoi
 
     // go through each pair of points and interpolate
     for (size_t segNr = 0; segNr < inPoints.size() - 1; segNr++) {
-        // correct the rounding errors from float to integer, add addtional
-        // interation steps when we are behind the exact destination index.
-        sum += (int)nrIntPointPerSeg + diff;
-        diff = (int)((float)(segNr + 1) * nrIntPointPerSeg) - sum;
+        // correct the rounding errors from float to integer, add additional
+        // integration steps when we are behind the exact destination index.
+        sum += static_cast<int>(nrIntPointPerSeg) + diff;
+        diff = static_cast<int>(static_cast<float>(segNr + 1) * nrIntPointPerSeg) - sum;
 
-        for (unsigned int i = 0; i < (int)nrIntPointPerSeg + diff; i++) {
-            float fInd = float(i) / (nrIntPointPerSeg + (float)diff - 1.f);
+        for (unsigned int i = 0; i < static_cast<int>(nrIntPointPerSeg) + diff; i++) {
+            float fInd = static_cast<float>(i) / (nrIntPointPerSeg + static_cast<float>(diff) - 1.f);
 
             if (segNr == 0) {
                 // extrapolate point at the beginning by mirroring
@@ -83,14 +83,14 @@ float perlinOct1D(float x, int octaves, float persistence) {
 
         //! update amplitude
         a *= persistence;
-        freq = (float)(2 << i);
+        freq = static_cast<float>(2 << i);
     }
 
     return r;
 }
 
-// index ranges from 0-1 eingeben
-vec4 linInterpolVec4(float inInd, std::vector<vec4> *array) {
+// index ranges from 0-1
+vec4 linInterpolVec4(float inInd, const std::vector<vec4> *array) {
     vec4 outVal = vec4(0.f);
     if (!array->empty()) {
         auto  fArraySize = static_cast<float>(array->size());
@@ -112,12 +112,11 @@ vec4 linInterpolVec4(float inInd, std::vector<vec4> *array) {
 }
 
 pair<bool, vec2> projPointToLine(glm::vec2 point, glm::vec2 l1Start, glm::vec2 l1End) {
-    float     dx, dy, m1, m2, c1, c2;
     glm::vec2 out;
     bool      pointInsideLine;
 
-    dx = l1End.x - l1Start.x;
-    dy = l1End.y - l1Start.y;
+    float dx = l1End.x - l1Start.x;
+    float dy = l1End.y - l1Start.y;
     if (dx == 0) {
         out             = glm::vec2(l1Start.x, point.y);
         pointInsideLine = l1Start.y <= l1End.y ? (l1Start.y <= point.y && point.y <= l1End.y)
@@ -131,12 +130,12 @@ pair<bool, vec2> projPointToLine(glm::vec2 point, glm::vec2 l1Start, glm::vec2 l
         return make_pair(pointInsideLine, out);
     }
 
-    m1 = (dy / dx);
-    c1 = l1Start.y - m1 * l1Start.x;  // which is same as y2 - slope * x2
+    float m1 = (dy / dx);
+    float c1 = l1Start.y - m1 * l1Start.x;  // which is same as y2 - slope * x2
 
     // get the line orthogonal to this one through the point
-    m2    = -(1.f / m1);
-    c2    = point.y - m2 * point.x;
+    float m2 = -(1.f / m1);
+    float c2 = point.y - m2 * point.x;
     out.x = (c2 - c1) / (m1 - m2);
     out.y = m1 * out.x + c1;
 
@@ -149,28 +148,27 @@ pair<bool, vec2> projPointToLine(glm::vec2 point, glm::vec2 l1Start, glm::vec2 l
 }
 
 pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2Start, glm::vec2 l2End) {
-    double m1, c1, m2, c2;
-    double dx1 = 0.0, dy1, dx2 = 0.0, dy2;
+    double m1 = 0, c1 = 0, m2 = 0, c2 = 0;
+    double dx1 = 0.0, dx2 = 0.0;
     vec2   intersection     = vec2(0.f, 0.f);
     vec2   linePoints[2][2] = {{l1Start, l1End}, {l2Start, l2End}};
     bool   isOnLine         = false;
-    double roundingError    = 0.00002f;
 
-    dx1 = (double)l1End.x - (double)l1Start.x;
-    dy1 = (double)l1End.y - (double)l1Start.y;
+    dx1 = static_cast<double>(l1End.x) - static_cast<double>(l1Start.x);
+    double dy1 = static_cast<double>(l1End.y) - static_cast<double>(l1Start.y);
     if (dx1 != 0.0) {
         m1 = dy1 / dx1;
-        c1 = (double)l1Start.y - (double)m1 * (double)l1Start.x;  // which is same as y2 - slope * x2
+        c1 = static_cast<double>(l1Start.y) - (double)m1 * static_cast<double>(l1Start.x);  // which is same as y2 - slope * x2
     }
 
-    dx2 = (double)l2End.x - (double)l2Start.x;
-    dy2 = (double)l2End.y - (double)l2Start.y;
-    if (dx2 != 0.0) {  // line2 is parellel to y-axis
+    dx2 = static_cast<double>(l2End.x) - static_cast<double>(l2Start.x);
+    double dy2 = static_cast<double>(l2End.y) - static_cast<double>(l2Start.y);
+    if (dx2 != 0.0) {  // line2 is parallel to y-axis
         m2 = dy2 / dx2;
-        c2 = (double)l2End.y - m2 * (double)l2End.x;  // which is same as y2 - slope * x2
+        c2 = static_cast<double>(l2End.y) - m2 * static_cast<double>(l2End.x);  // which is same as y2 - slope * x2
     }
 
-    // lines are parallel and both parallel to y axis
+    // lines are parallel and both parallel to y-axis
     if (dx1 == 0 && dx2 == 0) return make_pair(false, glm::vec2(0.f, 0.f));
 
     if ((dx1 != 0) && (dx2 != 0) && (m1 - m2) == 0) {
@@ -180,16 +178,16 @@ pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2S
         // line1 parallel to y-axis
         if (dx1 == 0.0 && dx2 != 0.0) {
             intersection.x = (float)l1Start.x;
-            intersection.y = (float)(m2 * l1Start.x + c2);
+            intersection.y = static_cast<float>(m2 * l1Start.x + c2);
         }
         // line2 parallel to y-axis
         else if (dx2 == 0.0 && dx1 != 0.0) {
             intersection.x = l2Start.x;
-            intersection.y = (float)(m1 * l2Start.x + c1);
+            intersection.y = static_cast<float>(m1 * l2Start.x + c1);
 
         } else {
-            intersection.x = (float)((c2 - c1) / (m1 - m2));
-            intersection.y = (float)(m1 * intersection.x + c1);
+            intersection.x = static_cast<float>((c2 - c1) / (m1 - m2));
+            intersection.y = static_cast<float>(m1 * intersection.x + c1);
         }
 
         bool onLine[2] = {false, false};
@@ -197,6 +195,7 @@ pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2S
         for (size_t i = 0; i < 2; i++) {
             onLine[i] = true;
             for (auto j = 0; j < 2; j++) {
+                double roundingError    = 0.00002f;
                 bool smallerThanRoundingError = (std::abs(linePoints[i][0][j] - intersection[j]) < roundingError) ||
                                                 (std::abs(linePoints[i][1][j] - intersection[j]) < roundingError);
 
@@ -216,11 +215,11 @@ pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2S
     return make_pair(isOnLine, intersection);
 }
 
-inline double Det2D(glm::vec2 &p1, glm::vec2 &p2, glm::vec2 &p3) {
+inline double Det2D(const glm::vec2 &p1, const glm::vec2 &p2, const glm::vec2 &p3) {
     return +p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y);
 }
 
-void CheckTriWinding(glm::vec2 &p1, glm::vec2 &p2, glm::vec2 &p3, bool allowReversed) {
+void CheckTriWinding(const glm::vec2 &p1, glm::vec2 &p2, glm::vec2 &p3, bool allowReversed) {
     double detTri = Det2D(p1, p2, p3);
     if (detTri < 0.0) {
         if (allowReversed) {
@@ -232,9 +231,9 @@ void CheckTriWinding(glm::vec2 &p1, glm::vec2 &p2, glm::vec2 &p3, bool allowReve
     }
 }
 
-bool BoundaryCollideChk(glm::vec2 &p1, glm::vec2 &p2, glm::vec2 &p3, double eps) { return Det2D(p1, p2, p3) < eps; }
+bool BoundaryCollideChk(const glm::vec2 &p1, const glm::vec2 &p2, const glm::vec2 &p3, double eps) { return Det2D(p1, p2, p3) < eps; }
 
-bool BoundaryDoesntCollideChk(glm::vec2 &p1, glm::vec2 &p2, glm::vec2 &p3, double eps) {
+bool BoundaryDoesntCollideChk(const glm::vec2 &p1, const glm::vec2 &p2, const glm::vec2 &p3, double eps) {
     return Det2D(p1, p2, p3) <= eps;
 }
 
@@ -243,11 +242,14 @@ bool TriTri2D(glm::vec2 *t1, glm::vec2 *t2, double eps = 0.0, bool allowReversed
     CheckTriWinding(t1[0], t1[1], t1[2], allowReversed);
     CheckTriWinding(t2[0], t2[1], t2[2], allowReversed);
 
-    bool (*chkEdge)(glm::vec2 &, glm::vec2 &, glm::vec2 &, double) = nullptr;
-    if (onBoundary)  // Points on the boundary are considered as colliding
+    bool (*chkEdge)(const glm::vec2 &, const glm::vec2 &, const glm::vec2 &, double) = nullptr;
+    if (onBoundary) {
+        // Points on the boundary are considered as colliding
         chkEdge = BoundaryCollideChk;
-    else  // Points on the boundary are not considered as colliding
+    } else {
+        // Points on the boundary are not considered as colliding
         chkEdge = BoundaryDoesntCollideChk;
+    }
 
     // For edge E of trangle 1,
     for (int i = 0; i < 3; i++) {
@@ -274,18 +276,23 @@ bool TriTri2D(glm::vec2 *t1, glm::vec2 *t2, double eps = 0.0, bool allowReversed
 }
 
 float distPointLine(glm::vec2 _point, glm::vec2 _lineP1, glm::vec2 _lineP2, bool *projIsOutside, float *projAngle) {
-    // return minimum distance between linesegment P1P2 and point
+    // return minimum distance between line segment P1P2 and point
     float l2 = glm::length(_lineP2 - _lineP1);
     l2 *= l2;
+
     if (l2 == 0.f) {
-        if (projIsOutside) *projIsOutside = false;
+        if (projIsOutside) {
+            *projIsOutside = false;
+        }
         return glm::distance(_point, _lineP1);
     }
-    if (projIsOutside) *projIsOutside = true;
 
-    // consider the line extending the segment, parameterized as v + t (P2 -
-    // P1). we find projection of point p onto the line if falls where t = [(p -
-    // P1) . (P2 - P1)] / |P2 - P1|^2
+    if (projIsOutside) {
+        *projIsOutside = true;
+    }
+
+    // consider the line extending the segment, parameterized as v + t (P2 - P1).
+    // we find projection of point p onto the line if falls where t = [(p - P1) . (P2 - P1)] / |P2 - P1|^2
     float t = glm::dot(_point - _lineP1, _lineP2 - _lineP1) / l2;
 
     /*
@@ -295,12 +302,13 @@ float distPointLine(glm::vec2 _point, glm::vec2 _lineP1, glm::vec2 _lineP2, bool
     glm::normalize(diff));
     }
 */
-    if (t < 0.f)
+    if (t < 0.f) {
         return glm::distance(_point, _lineP1);  // beyond the P1 End of Segment
-    else if (t > 1.f)
+    } else if (t > 1.f) {
         return glm::distance(_point, _lineP2);  // beyond the P2 End of Segment
+    }
 
-    glm::vec2 proj = _lineP1 + t * (_lineP2 - _lineP1);
+    auto proj = _lineP1 + t * (_lineP2 - _lineP1);
 
     return glm::distance(_point, proj);
 }
@@ -310,15 +318,12 @@ float sign(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3) {
 }
 
 bool pointInTriangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3) {
-    float d1, d2, d3;
-    bool  has_neg, has_pos;
+    float d1 = sign(pt, v1, v2);
+    float d2 = sign(pt, v2, v3);
+    float d3 = sign(pt, v3, v1);
 
-    d1 = sign(pt, v1, v2);
-    d2 = sign(pt, v2, v3);
-    d3 = sign(pt, v3, v1);
-
-    has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
-    has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
+    bool has_neg = (d1 < 0) || (d2 < 0) || (d3 < 0);
+    bool has_pos = (d1 > 0) || (d2 > 0) || (d3 > 0);
 
     return !(has_neg && has_pos);
 }
@@ -393,16 +398,9 @@ float angleBetweenVectors(const glm::vec3& a, const glm::vec3& b) {
     return std::acos(cosTheta);
 }
 
-matrix *projection_matrix(const double *x, double *y, double *_x, double *_y) {
-    matrix *a;
-    matrix *b;
-    matrix *c;
-
-    matrix *a_inv;
-    matrix *projection;
-
-    a = matrix_new(8, 8);
-    b = matrix_new(8, 1);
+matrix *projection_matrix(const double *x, const double *y, const double *_x, const double *_y) {
+    matrix *a = matrix_new(8, 8);
+    matrix *b = matrix_new(8, 1);
 
     a->var[0][0] = x[0];
     a->var[0][1] = y[0];
@@ -461,11 +459,11 @@ matrix *projection_matrix(const double *x, double *y, double *_x, double *_y) {
     b->var[6][0] = _y[2];
     b->var[7][0] = _y[3];
 
-    a_inv = matrix_inv(a);
+    matrix *a_inv = matrix_inv(a);
 
-    c = matrix_multiple(a_inv, b);
+    matrix *c = matrix_multiple(a_inv, b);
 
-    projection            = matrix_new(3, 3);
+    matrix *projection = matrix_new(3, 3);
     projection->var[0][0] = c->var[0][0];
     projection->var[0][1] = c->var[1][0];
     projection->var[0][2] = c->var[2][0];
@@ -487,10 +485,13 @@ matrix *projection_matrix(const double *x, double *y, double *_x, double *_y) {
     return projection;
 }
 
-glm::mat4 matrixToGlm(matrix *_mat) {
-    glm::mat4 out = glm::mat4(1.f);
-    for (short j = 0; j < 3; j++)
-        for (short i = 0; i < 3; i++) out[i][j] = (float)_mat->var[j][i];
+glm::mat4 matrixToGlm(const matrix *_mat) {
+    auto out = glm::mat4(1.f);
+    for (short j = 0; j < 3; j++) {
+        for (short i = 0; i < 3; i++) {
+            out[i][j] = static_cast<float>(_mat->var[j][i]);
+        }
+    }
 
     return out;
 }
@@ -917,6 +918,23 @@ void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pix
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDeleteFramebuffers(1, &fbo);
+}
+
+vector<GLfloat> get2DRing(int nrPoints) {
+    vector<GLfloat> ringPos(nrPoints * 2);
+
+    for (int i = 0; i < nrPoints; i++) {
+        // define a circle with n points
+        float fInd = static_cast<float>(i) / static_cast<float>(nrPoints);
+        float x = std::cos(fInd * static_cast<float>(M_PI) * 2.f);
+        float z = std::sin(fInd * static_cast<float>(M_PI) * 2.f);
+
+        // tip and cap
+        ringPos[i * 2]     = x;
+        ringPos[i * 2 + 1] = z;
+    }
+
+    return ringPos;
 }
 
 bool initGLEW() {

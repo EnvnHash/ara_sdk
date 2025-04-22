@@ -509,9 +509,9 @@ glm::vec3 getRandomPointOnPlane(const glm::vec3&, const glm::vec3&, const glm::v
 void makeMatr(glm::mat4 *_matr, bool *_inited, float xOffs, float yOffs, float zOffs, float rotX, float rotY,
               float rotZ, float scaleX, float scaleY, float scaleZ);
 
-matrix *projection_matrix(const double *x, double *y, double *_x, double *_y);
+matrix *projection_matrix(const double *x, const double *y, const double *_x, const double *_y);
 
-glm::mat4 matrixToGlm(matrix *_mat);
+glm::mat4 matrixToGlm(const matrix *_mat);
 
 GLenum postGLError(bool silence = false);
 GLenum getExtType(GLenum inType);
@@ -546,6 +546,8 @@ static const inline int                stdQuadInd[6]{0, 1, 3, 3, 2, 0};  // two 
 
 void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pixelType, int width, int height,
                      GLubyte *pixels);
+
+std::vector<GLfloat> get2DRing(int nrPoints);
 
 bool initGLEW();
 

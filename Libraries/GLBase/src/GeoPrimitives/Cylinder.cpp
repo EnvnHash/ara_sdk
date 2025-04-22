@@ -32,19 +32,7 @@ void Cylinder::init() {
     // normals at same positions)
 
     // define a ring in the x, z plain
-    auto *ringPos = new GLfloat[m_nrSegs * 2];
-
-    for (unsigned int i = 0; i < m_nrSegs; i++) {
-        // define a circle with n points
-        float fInd = float(i) / float(m_nrSegs);
-        float x    = std::cos(fInd * float(M_PI) * 2.f);
-        float z    = std::sin(fInd * float(M_PI) * 2.f);
-
-        ringPos[i * 2]     = x;
-        ringPos[i * 2 + 1] = z;
-
-        // printf("ringPos [%d] %f %f \n", i, ringPos[i*2], ringPos[i*2 +1]);
-    }
+    auto ringPos = get2DRing(static_cast<int>(m_nrSegs) * 2);
 
     // ------- cylinder body
     // allocate memory for all positions and normals
@@ -84,7 +72,7 @@ void Cylinder::init() {
         normals[ind * 3 + 1] = i == 0 ? -1.f : 1.f;
         normals[ind * 3 + 2] = 0.f;
 
-        ind++;
+        ++ind;
     }
 
     // cap rings
@@ -98,7 +86,7 @@ void Cylinder::init() {
             normals[ind * 3 + 1] = ringNr == 0 ? -1.f : 1.f;
             normals[ind * 3 + 2] = 0.f;
 
-            ind++;
+            ++ind;
         }
     }
 
@@ -115,9 +103,11 @@ void Cylinder::init() {
     ind = 0;
 
     // cylinder body
-    for (unsigned int i = 0; i < m_nrSegs; i++)
-        for (unsigned int j = 0; j < 6; j++)
+    for (unsigned int i = 0; i < m_nrSegs; i++) {
+        for (unsigned int j = 0; j < 6; j++) {
             cyl_indices[ind++] = ((oneQuadTemp[j] + i) % m_nrSegs) + (m_nrSegs * upDownTemp[j]);
+        }
+    }
 
     // cap bottom and cap top
     unsigned int capCenterInd = m_nrSegs * 2;
@@ -148,7 +138,6 @@ void Cylinder::init() {
 
     m_totNrPoints = totNrVert;
 
-    delete[] ringPos;
     delete[] positions;
     delete[] normals;
     delete[] cyl_indices;
