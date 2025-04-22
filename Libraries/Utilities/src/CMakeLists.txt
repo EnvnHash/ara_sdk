@@ -24,6 +24,9 @@ file(GLOB COMMON_SRC
         Network/UDPListener.cpp
         Network/UDPSignaler.cpp
         Network/TCPListener.cpp
+        Network/MicroHTTPConnection.cpp
+        Network/MicroHTTPContent.cpp
+        Network/MicroHTTPContentRaw.cpp
         Network/MicroHTTPServer.cpp
         Network/WebSocketClient.cpp
         ThreadedTasks/Cycler.cpp

@@ -214,7 +214,7 @@ void Node::load() {
         auto file = fs.open(m_fileName.string());
         std::stringstream ss;
         ss.write(file.begin(), static_cast<long>(file.size()));
-        j = json::parse(ss);
+        json j = json::parse(ss);
         deserialize(j);
     }
 #else

@@ -15,36 +15,35 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-
 #pragma once
 
 #include <Network/NetworkCommon.h>
-#include <Network/TCPListener.h>
 
 namespace ara::microhttp {
 
-class Server;
-
-class Conn;
-
-class Server : public TCPListener {
+class Content {
 public:
-    using c_cb = std::function<void(Conn &conn)>;
-
-    bool Start(int port, Server::c_cb const &f);
-    void incRecvCount(int count);
-
-    int64_t getRecvCount() { return i_RecvByteCount; }
+    bool        setName(const std::string& str);
+    std::string getName();
+    bool        setType(const std::string& str);
+    std::string getType();
+    bool        setFileName(const std::string& str);
+    std::string getFileName();
+    bool        setData(uint8_t *dataptr, int datasize);
+    uint8_t    *getData() const;
+    int         getSize() const;
+    bool        storeToFile(const std::filesystem::path &p) const;
 
 private:
-    std::mutex i_CMutex;
-    c_cb m_OnConnection = nullptr;
-    int64_t i_RecvByteCount = 0;
+    std::string m_Name;
+    std::string m_Type;
+    std::string m_FileName;
 
-protected:
-    virtual bool OnConnect(SOCKET sock, sockaddr_in *);
+    uint8_t *m_DataPtr  = nullptr;
+    int      m_DataSize = 0;
 };
 
-void utilParse(std::string &name, std::string &val, std::string &src_string, char delimiter = '=');
 
-}  // namespace ara
+
+}
+
