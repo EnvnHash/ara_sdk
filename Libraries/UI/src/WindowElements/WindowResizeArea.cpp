@@ -11,7 +11,7 @@ using namespace glm;
 
 namespace ara {
 
-WindowResizeArea::WindowResizeArea() : Div() {
+WindowResizeArea::WindowResizeArea() : m_type(AreaType::top) {
     m_canReceiveDrag = true;
     setFocusAllowed(false);
     setName(getTypeName<WindowResizeArea>());
@@ -32,7 +32,9 @@ void WindowResizeArea::updateDrawData() {
             m_uniBlock.update();
         }
     } else {
-        if (m_indDrawBlock.vaoData.empty()) return;
+        if (m_indDrawBlock.vaoData.empty()) {
+            return;
+        }
 
         auto dIt = m_indDrawBlock.vaoData.begin();
 
@@ -40,9 +42,9 @@ void WindowResizeArea::updateDrawData() {
 
         for (auto& it : stdQuadVertices) {
             dIt->pos    = *getMvp() * vec4(it * m_size, 0.f, 1.0);
-            dIt->aux2.z = m_excludeFromObjMap ? 0.f : (float)m_objIdMin;
+            dIt->aux2.z = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
             dIt->aux2.w = m_zPos;
-            dIt++;
+            ++dIt;
         }
     }
 }
@@ -82,9 +84,9 @@ void WindowResizeArea::mouseOut(hidData* data) {
 
 void WindowResizeArea::mouseDrag(hidData* data) {
 #ifdef ARA_USE_GLFW
-    ivec2 pixOffs(0, 0);
-    ivec2 newPos(0, 0);
-    ivec2 newSize(0, 0);
+    ivec2 pixOffs{0, 0};
+    ivec2 newPos{0, 0};
+    ivec2 newSize{0, 0};
 
     auto absMousePos = m_sharedRes->winHandle->getAbsMousePos();
 
@@ -137,24 +139,19 @@ void WindowResizeArea::mouseDrag(hidData* data) {
             newSize.y = std::max<int>(newSize.y, m_sharedRes->minWinSize->y);
         }
 
-        ((UIWindow*)m_sharedRes->win)->addWinCb([this, newPos, newSize]() {
-            // the effect of winHandle->setSize is immediate, so there will be a
-            // visual artefact, since the draw buffer will not be updated
-            // immediately ... most applications ignore this artefact...
+        static_cast<UIWindow *>(m_sharedRes->win)->addWinCb([this, newPos, newSize]() {
+            // the effect of winHandle->setSize is immediate, so there will be a visual artefact, since the draw buffer
+            // will not be updated immediately ... most applications ignore this artefact...
 
-            // winHandle->setSize() this will call GLFWWindow::onWindowResize
-            // which will call UIWindow::window_size_callback
+            // winHandle->setSize() this will call GLFWWindow::onWindowResize which will call UIWindow::window_size_callback
             m_sharedRes->winHandle->setSize(newSize.x, newSize.y);
             m_sharedRes->winHandle->setPosition(newPos.x, newPos.y);
 
-            auto realSize = m_sharedRes->winHandle->getSize();
             return true;
         });
     }
 
-    // m_sharedRes->setDrawFlag();
 #endif
-
     data->consumed = true;
 }
 

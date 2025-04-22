@@ -137,7 +137,9 @@ public:
      * this callback still exists. It has to be removed when the caller is
      * destroyed with removeOnPostChange() This is meant to be used when the
      * property is part of the same class as the callback */
-    void onPostChange(std::function<void()> func, void *ptr) { m_valPostChange[ptr] = std::move(func); }
+    void onPostChange(const std::function<void()>& func, void *ptr) {
+        m_valPostChange[ptr] = func;
+    }
 
     void removeOnPreChange(void *ptr) {
         if (ptr) {
@@ -148,7 +150,7 @@ public:
         }
     }
 
-    void removeOnPostChange(const void *ptr) {
+    void removeOnPostChange(void *ptr) {
         if (ptr) {
             auto it = m_valPostChange.find(ptr);
             if (it != m_valPostChange.end()) {
@@ -210,7 +212,7 @@ public:
     }
 
     T &get() {
-        return static_cast<T&>(*ptr);
+        return reinterpret_cast<T&>(*ptr);
     }
 
     void setMinMax(T min, T max) {

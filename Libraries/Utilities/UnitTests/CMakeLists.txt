@@ -14,19 +14,19 @@ include_directories(
 
 # add test source files
 file(GLOB UTILITIES_UT_SRC 
-    #AnimValTest.cpp
-    #CommonTest.cpp
-    #ConditionalTest.cpp
-    #ConditionalTest2.cpp
-    #ConditionalTest3.cpp
+    AnimValTest.cpp
+    CommonTest.cpp
+    ConditionalTest.cpp
+    ConditionalTest2.cpp
+    ConditionalTest3.cpp
     CycleBufferTest.cpp
-    #ItemTest.cpp
-    #ListPropertyTest.cpp
-    #NodeTest.cpp
-    #PropertyTest.cpp
-    #RwBinFileTest.cpp
-    #StringUtilsTest.cpp
-    #TableTest.cpp
+    ItemTest.cpp
+    ListPropertyTest.cpp
+    NodeTest.cpp
+    PropertyTest.cpp
+    RwBinFileTest.cpp
+    StringUtilsTest.cpp
+    TableTest.cpp
 )
 
 add_executable(${PROJECT_NAME} ${UTILITIES_UT_SRC})

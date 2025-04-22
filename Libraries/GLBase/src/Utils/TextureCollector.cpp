@@ -2,7 +2,9 @@
 // Created by user on 17.03.2021.
 //
 
+#include <RwBinFile.h>
 #include <Res/ResInstance.h>
+#include <Utils/TextureCollector.h>
 
 namespace fs = std::filesystem;
 using namespace std;

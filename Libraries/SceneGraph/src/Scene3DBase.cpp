@@ -16,11 +16,11 @@ using namespace std;
 
 namespace ara {
 
-Scene3DBase::Scene3DBase() : Div() {
+Scene3DBase::Scene3DBase() : Div(), m_shCol(nullptr) {
     Div::setName(getTypeName<Scene3DBase>());
-    s_sd.netCameras = (void*)&m_netCameras;
+    s_sd.netCameras = static_cast<void *>(&m_netCameras);
     setForceInit(true);
-    setCanReceiveDrag(true);
+    UINode::setCanReceiveDrag(true);
 }
 
 void Scene3DBase::init() {
@@ -63,15 +63,15 @@ void Scene3DBase::initSceneData() {
         it->setUseGL32(m_glbase->getUseFallback());
         it->setScene((WindowBase*)getWindow());
     }
-    s_sd.aImport = (void*)&m_aImport;
+    s_sd.aImport = static_cast<void *>(&m_aImport);
 #endif
 
     s_sd.glbase          = m_glbase;
     s_sd.reqRenderPasses = &m_reqRenderPasses;
     s_sd.roomDim         = &m_roomDim;
-    s_sd.uiWindow        = (void*)getWindow();
+    s_sd.uiWindow        = static_cast<void *>(getWindow());
     s_sd.contentScale    = vec2{getWindow()->getPixelRatio(), getWindow()->getPixelRatio()};
-    s_sd.scene3D         = (void*)this;
+    s_sd.scene3D         = static_cast<void *>(this);
     s_sd.debug           = false;
     s_sd.dataPath        = m_sharedRes->dataPath.string() + "/";
     s_sd.deselectAll     = [this] { deselectAll(); };
@@ -82,21 +82,21 @@ void Scene3DBase::initSceneData() {
 
     // init the renderPass maps
     for (auto i = 0; i < GLSG_NUM_RENDER_PASSES; i++) {
-        m_renderPasses[(renderPass)i]    = false;
-        m_reqRenderPasses[(renderPass)i] = true;
+        m_renderPasses[static_cast<renderPass>(i)]    = false;
+        m_reqRenderPasses[static_cast<renderPass>(i)] = true;
     }
 }
 
 void Scene3DBase::initBoundingBoxer() {
     m_boundBoxer    = make_unique<BoundingBoxer>(m_glbase);
-    s_sd.boundBoxer = (void*)m_boundBoxer.get();
+    s_sd.boundBoxer = static_cast<void *>(m_boundBoxer.get());
 }
 
 void Scene3DBase::initSceneTree() {
     // init NodeTree structure
     m_rootNode = make_unique<SceneNode>(&s_sd);
     m_rootNode->setName("root");
-    m_rootNode->setScene((WindowBase*)this);
+    m_rootNode->setScene(reinterpret_cast<WindowBase *>(this));
     m_rootNode->setGLBase(m_glbase);
     m_rootNode->m_calcMatrixStack = true;
 
@@ -138,7 +138,7 @@ void Scene3DBase::initSceneTree() {
 
 void Scene3DBase::initGizmos() {
     m_gizmoFbo =
-        make_unique<FBO>(m_glbase, (int)(getSize().x * s_sd.contentScale.x), (int)(getSize().y * s_sd.contentScale.y),
+        make_unique<FBO>(m_glbase, static_cast<int>(getSize().x * s_sd.contentScale.x), static_cast<int>(getSize().y * s_sd.contentScale.y),
                          GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_CLAMP_TO_EDGE, false);
 
     // add a child that will contain the gizmos
@@ -147,12 +147,12 @@ void Scene3DBase::initGizmos() {
 
     // construct all 3 possible gizmos for translation, rotation and scaling
     for (uint i = 0; i < 3; i++)
-        m_gizmos.push_back((SNGizmo*)gizmoTree->addChild(make_unique<SNGizmo>((transMode)i, &s_sd), false));
+        m_gizmos.push_back(dynamic_cast<SNGizmo *>(gizmoTree->addChild(make_unique<SNGizmo>(static_cast<transMode>(i), &s_sd), false)));
 }
 
 void Scene3DBase::initSsao() {
     if (m_useSsao)
-        m_ssao = make_unique<SSAO>(m_glbase, (int)getSize().x, (int)getSize().y, SSAO::ALGORITHM_HBAO_CACHEAWARE, true,
+        m_ssao = make_unique<SSAO>(m_glbase, static_cast<int>(getSize().x), static_cast<int>(getSize().y), SSAO::ALGORITHM_HBAO_CACHEAWARE, true,
                                    2.f, 20.f);
 }
 
@@ -189,8 +189,8 @@ void Scene3DBase::loadBasicSceneModels() {
 
     // be sure that the models are loaded - not really necessary but looks
     // better than seing the objects appear one after another
-    bool allReady = false;
     if (!(loadCnds[0] && loadCnds[1] && loadCnds[2])) {
+        bool allReady = false;
         while (!allReady) {
             getWindow()->iterateGlCallbacks();
             allReady = loadCnds[0] && loadCnds[1] && loadCnds[2];
@@ -202,11 +202,11 @@ void Scene3DBase::loadBasicSceneModels() {
 
 void Scene3DBase::loadTypo() {
     if (filesystem::exists(s_sd.dataPath + "Fonts/open-sans/OpenSans-Regular.ttf")) {
-        m_typo     = make_unique<TypoGlyphMap>((int)getSize().x, (int)getSize().y);
+        m_typo     = make_unique<TypoGlyphMap>(static_cast<int>(getSize().x), static_cast<int>(getSize().y));
         m_fontSize = 18;
         m_typo->loadFont((s_sd.dataPath + "Fonts/open-sans/OpenSans-Regular.ttf").c_str(),
                          &m_glbase->shaderCollector());
-        m_typo->setScreenSize((unsigned int)getWindow()->getSize().x, (unsigned int)getWindow()->getSize().y);
+        m_typo->setScreenSize(static_cast<unsigned int>(getWindow()->getSize().x), static_cast<unsigned int>(getWindow()->getSize().y));
     }
 }
 
@@ -439,8 +439,8 @@ void Scene3DBase::updateMatrix() {
     Div::updateMatrix();
 
     if (m_sceneRenderCam && m_sceneRenderCam->getFbo() &&
-        ((int)m_sceneRenderCam->getFbo()->getWidth() != (int)(m_size.x * getWindow()->getPixelRatio()) ||
-         (int)m_sceneRenderCam->getFbo()->getHeight() != (int)(m_size.y * getWindow()->getPixelRatio()))) {
+        (static_cast<int>(m_sceneRenderCam->getFbo()->getWidth()) != static_cast<int>(m_size.x * getWindow()->getPixelRatio()) ||
+         static_cast<int>(m_sceneRenderCam->getFbo()->getHeight()) != static_cast<int>(m_size.y * getWindow()->getPixelRatio()))) {
         updateScene3DBaseViewport(0.f, 0.f, m_size.x * getWindow()->getPixelRatio(),
                                   m_size.y * getWindow()->getPixelRatio());
         getSharedRes()->requestRedraw = true;
@@ -450,7 +450,7 @@ void Scene3DBase::updateMatrix() {
 void Scene3DBase::keyDown(hidData* data) {
     // if there is an ObjectSelector, get it
     SPObjectSelector* objSel = nullptr;
-    for (auto& cIt : m_camSet)
+    for (auto cIt : m_camSet)
         if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
             objSel = dynamic_cast<SPObjectSelector*>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get());
             objSel->keyDown(data);
@@ -479,7 +479,6 @@ void Scene3DBase::keyDown(hidData* data) {
     // dump the sceneTree
     if (data->key == GLSG_KEY_D) {
         m_rootNode->dump();
-        // if(m_sceneTree) m_sceneTree->dump();
         return;
     }
 
@@ -535,21 +534,24 @@ void Scene3DBase::keyDown(hidData* data) {
 
 void Scene3DBase::keyUp(hidData* data) {
     // if there is an ObjectSelector, get it
-    for (auto& cIt : m_camSet)
+    for (auto cIt : m_camSet)
         if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
             auto objSel = dynamic_cast<SPObjectSelector*>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get());
             objSel->keyUp(data);
         }
 
-    if (m_sceneRenderCam->getInteractCam())
+    if (m_sceneRenderCam->getInteractCam()) {
         m_sceneRenderCam->getInteractCam()->keyUp(data->key, data->shiftPressed, data->altPressed, data->ctrlPressed);
+    }
 }
 
-void Scene3DBase::moveObjectByArrowKeys(hidData* data) {
+void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
     SPObjectSelector* objSel = nullptr;
-    for (auto& cIt : m_camSet)
-        if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end())
+    for (auto& cIt : m_camSet) {
+        if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
             objSel = dynamic_cast<SPObjectSelector*>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get());
+        }
+    }
 
     ///> move a selected object via the keyboard, in case a single gizmo axis is
     /// selected
@@ -557,7 +559,7 @@ void Scene3DBase::moveObjectByArrowKeys(hidData* data) {
          data->key == GLSG_KEY_RIGHT) &&
         objSel && objSel->getSelectedNode() && objSel->getSelectedObjectNode() && !m_gizmos.empty()) {
         // check if any of the gizmo axes is selected
-        for (auto& g : *m_gizmos[(int)transMode::translate]->getChildren()) {
+        for (auto g : *m_gizmos[static_cast<int>(transMode::translate)]->getChildren()) {
             if (g->isSelected()) {
                 // auto gizAxis = objSel->getSelectedNode();
                 auto object = objSel->getSelectedObjectNode();
@@ -581,25 +583,25 @@ void Scene3DBase::moveObjectByArrowKeys(hidData* data) {
                     moveVec.z = (data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_LEFT) ? -1.f : 1.f;
 
                 // rotate selected axis into object space and multiply by
-                // gizmoAxis parent (the gizmo container) scaleFact moveVec =
-                // *object->getRotMat() * vec4((vec3(moveVec) *
-                // *gizAxis->getFirstParentNode()->getScalingVec()), 0.f);
-                moveVec = *object->getRotMat() * vec4(vec3(moveVec) * m_keyTransStep[(int)m_cfState], 0.f);
+                // gizmoAxis parent (the gizmo container) scaleFact
+                moveVec = *object->getRotMat() * vec4(vec3(moveVec) * m_keyTransStep[static_cast<int>(m_cfState)], 0.f);
 
                 // offset
                 object->translate(*object->getTransVec() + vec3(moveVec));
 
-                if (object->getName() == getTypeName<LICamera>()) dynamic_cast<LICamera*>(object)->setup();
+                if (object->getName() == getTypeName<LICamera>()) {
+                    dynamic_cast<LICamera*>(object)->setup();
+                }
             }
         }
 
-        for (auto& g : *m_gizmos[(int)transMode::rotate]->getChildren()) {
+        for (auto& g : *m_gizmos[static_cast<int>(transMode::rotate)]->getChildren()) {
             if (g->isSelected()) {
                 auto      object = objSel->getSelectedObjectNode();
-                glm::vec3 rotAxis{(float)(g->m_nameFlag & GLSG_ROT_GIZMO_X), (float)(g->m_nameFlag & GLSG_ROT_GIZMO_Y),
-                                  (float)(g->m_nameFlag & GLSG_ROT_GIZMO_Z)};
+                glm::vec3 rotAxis{static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_X), static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_Y),
+                                  static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_Z)};
 
-                float     offs = m_keyRotStep[(int)m_cfState];
+                float     offs = m_keyRotStep[static_cast<int>(m_cfState)];
                 glm::mat4 newRot = *object->getRotMat() *
                     glm::rotate((data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_LEFT) ? -offs : offs, rotAxis);
 
@@ -665,9 +667,9 @@ void Scene3DBase::mouseUp(hidData* data) {
             } else if (gizNode->m_nameFlag & GLSG_TRANS_GIZMO) {
                 float scaleToArrowCenter = 0.85f;
                 offsetVec =
-                    vec4(float((m_objSel->getGizmoselected() & GLSG_TRANS_GIZMO_X) != 0) * scaleToArrowCenter,
-                         float((m_objSel->getGizmoselected() & GLSG_TRANS_GIZMO_Y) != 0) * scaleToArrowCenter,
-                         float((m_objSel->getGizmoselected() & GLSG_TRANS_GIZMO_Z) != 0) * scaleToArrowCenter, 1.f);
+                    vec4(static_cast<float>((m_objSel->getGizmoselected() & GLSG_TRANS_GIZMO_X) != 0) * scaleToArrowCenter,
+                         static_cast<float>((m_objSel->getGizmoselected() & GLSG_TRANS_GIZMO_Y) != 0) * scaleToArrowCenter,
+                         static_cast<float>((m_objSel->getGizmoselected() & GLSG_TRANS_GIZMO_Z) != 0) * scaleToArrowCenter, 1.f);
             }
 
             vec4 objPos = m_sceneRenderCam->getProjectionMatr() * m_sceneRenderCam->getModelMatr() *
@@ -727,7 +729,13 @@ void Scene3DBase::mouseDownRight(hidData* data) {
 }
 
 void Scene3DBase::mouseUpRight(hidData* data) {
-    if (m_objSel) m_objSel->mouseUpRight(m_rootNode.get());
+    if (!data) {
+        return;
+    }
+
+    if (m_objSel) {
+        m_objSel->mouseUpRight(m_rootNode.get());
+    }
 
     if (m_sceneRenderCam->getInteractCam())
         m_sceneRenderCam->getInteractCam()->mouseUpRight((float)data->mousePosNodeRel.x / getSize().x,
@@ -739,9 +747,7 @@ void Scene3DBase::mouseUpRight(hidData* data) {
 
     setDrawFlag();
 
-    if (data) {
-        data->consumed = true;
-    }
+    data->consumed = true;
 }
 
 void Scene3DBase::mouseDrag(hidData* data) {
@@ -831,12 +837,11 @@ void Scene3DBase::updateScene3DBaseViewport(float x, float y, float width, float
         return;
     }
 
-    newVp = s_sd.winViewport;
 
     // avoid the recalculation of FBO being done on every event unfortunately m_camSet and m_netCamera iteration also
     // has to be done on mouseup
-    for (auto& it : m_camSet) {
-        it->setViewport(0, 0, (uint)s_sd.winViewport.z, (uint)s_sd.winViewport.w, true);  // set the viewport and resize the ShaderProto
+    for (auto it : m_camSet) {
+        it->setViewport(0, 0, static_cast<uint>(s_sd.winViewport.z), static_cast<uint>(s_sd.winViewport.w), true);  // set the viewport and resize the ShaderProto
     }
 
     // virtual cameras (NetCameras) have their own Matrix setup (LICamera::setup) since by default Camera sets inside
@@ -850,11 +855,11 @@ void Scene3DBase::updateScene3DBaseViewport(float x, float y, float width, float
     }
 
     if (m_useSsao && m_ssao) {
-        m_ssao->resize((uint)s_sd.winViewport.z, (uint)s_sd.winViewport.w);
+        m_ssao->resize(static_cast<uint>(s_sd.winViewport.z), static_cast<uint>(s_sd.winViewport.w));
     }
 
     if (m_gizmoFbo) {
-        m_gizmoFbo->resize((int)s_sd.winViewport.z, (int)s_sd.winViewport.w);
+        m_gizmoFbo->resize(static_cast<int>(s_sd.winViewport.z), static_cast<int>(s_sd.winViewport.w));
     }
 
     m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
@@ -864,8 +869,8 @@ void Scene3DBase::updateScene3DBaseViewport(float x, float y, float width, float
 
 void Scene3DBase::scaleGizmos(float gizmoScale) {
     if (gizmoTree) {
-        for (auto& it : *gizmoTree->getChildren()) {
-            auto* giz = (SNGizmo*)it;
+        for (auto it : *gizmoTree->getChildren()) {
+            auto giz = dynamic_cast<SNGizmo *>(it);
             giz->setGizmoScreenSize(gizmoScale);
             m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
         }
@@ -929,12 +934,12 @@ bool Scene3DBase::addCamToSet(LICamera* netCam) {
     auto camIt = m_sceneRenderCam->addCamera(netCam->getCamDef(), (void*)netCam);
     netCam->setCsIt(camIt);
 
-    int camInd = (int)(camIt - m_sceneRenderCam->s_cam.begin());
+    int camInd = static_cast<int>(camIt - m_sceneRenderCam->s_cam.begin());
 
     // register the drawing mutex of this scene to the SceneCameras FBO; this way it can be used to sync drawing,
     // when sharing m_sceneRenderCam->getFbo()->setSharedDrawMtx(&s_drawMtx);
 
-    // since we share one layer of the scene cameras fbo which may change resolution or be remove we need to update the
+    // since we share one layer of the scene cameras fbo which may change resolution or be removed we need to update the
     // shared reference when changes happen
     m_sceneRenderCam->addUpdtCb([this, netCam, camInd]() { netCam->setCsFboPtr(m_sceneRenderCam->getFbo(), camInd); },
                                 netCam);
@@ -994,7 +999,7 @@ void Scene3DBase::addCameraViewRelative(SPObjectSelector* objSel) {
     // "substract" the cameraMatrix
     createPoint = inverse((*m_camSet.begin())->getModelMatr()) * createPoint;
 
-    m_netCameras.push_back((LICamera*)m_sceneTree->insertChild(0, make_unique<LICamera>()));
+    m_netCameras.push_back(dynamic_cast<LICamera *>(m_sceneTree->insertChild(0, make_unique<LICamera>())));
     m_netCameras.back()->setVisibility(true);
     m_netCameras.back()->translate(createPoint.x, createPoint.y, createPoint.z);
 
@@ -1068,7 +1073,7 @@ void Scene3DBase::swapCameras(TrackBallCam* cam1, TrackBallCam* cam2) {
 
         // don't process the default scene camera (which contains the m_sceneCamSet pointer as the second entry)
         if (camIt->second && camIt->second != m_sceneRenderCam.get()) {
-            int  camInd = (int)(camIt - camSet->begin());
+            int  camInd = static_cast<int>(camIt - camSet->begin());
             auto netCam = static_cast<LICamera*>(camIt->second);
 
             // mark the Camera's visible representation to be skipped during rendering when it is used (avoid rendering
@@ -1089,7 +1094,7 @@ void Scene3DBase::swapCameras(TrackBallCam* cam1, TrackBallCam* cam2) {
 
             if (cam == m_sceneRenderCam->getInteractCam()) {
                 // trackball needs to update the cameras SceneNodes modelmatrix
-                cam->setUptCamSceneNodeCb([netCam](TbModData& data) {
+                cam->setUptCamSceneNodeCb([netCam](const TbModData& data) {
                     if (data.trans) {
                         netCam->translate(data.trans);
                     }
@@ -1192,7 +1197,7 @@ SceneNode* Scene3DBase::getModelSN(string* name) {
 void Scene3DBase::selectObj(int objId) {
     if (m_inited) {
         for (auto& cIt : m_camSet) {
-            auto objSelector = (SPObjectSelector*)cIt->getShaderProto(getTypeName<SPObjectSelector>());
+            auto objSelector = dynamic_cast<SPObjectSelector *>(cIt->getShaderProto(getTypeName<SPObjectSelector>()));
             if (!objSelector->getLastSceneTree()) objSelector->setLastSceneTree(m_sceneTree);
             objSelector->selectObj(objId, true);
             m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
@@ -1203,8 +1208,7 @@ void Scene3DBase::selectObj(int objId) {
 void Scene3DBase::setAddGizmoCb(std::function<void(transMode)> f) {
     if (m_inited) {
         for (auto &cIt: m_camSet) {
-            auto objSelector = (SPObjectSelector *) cIt->getShaderProto(getTypeName<SPObjectSelector>());
-            if (objSelector) {
+            if (auto objSelector = dynamic_cast<SPObjectSelector *>(cIt->getShaderProto(getTypeName<SPObjectSelector>()))) {
                 objSelector->setAddGizmoCb(std::move(f));
             }
         }
@@ -1247,7 +1251,7 @@ void Scene3DBase::removePassiveGizmo(SceneNode* node) {
 void Scene3DBase::deselectAll() {
     for (auto& cIt : m_camSet) {
         if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
-            ((SPObjectSelector*)cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get())->deselect();
+            dynamic_cast<SPObjectSelector *>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get())->deselect();
         }
     }
 

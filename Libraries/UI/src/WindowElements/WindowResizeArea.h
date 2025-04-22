@@ -26,9 +26,9 @@ public:
 
 private:
     AreaType   m_type = AreaType::top;
-    glm::ivec2 m_dragStartWinPos;
-    glm::ivec2 m_dragStartWinSize;
-    glm::ivec2 m_mouseDownPixelPos;
+    glm::ivec2 m_dragStartWinPos{};
+    glm::ivec2 m_dragStartWinSize{};
+    glm::ivec2 m_mouseDownPixelPos{};
 };
 
 }  // namespace ara

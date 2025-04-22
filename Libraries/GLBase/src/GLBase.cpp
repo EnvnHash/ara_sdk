@@ -1,5 +1,6 @@
 #include "GLBase.h"
 
+#include <string_utils.h>
 #include <Utils/Texture.h>
 #include <Utils/TextureCollector.h>
 
@@ -597,9 +598,11 @@ GLNativeCtxHnd GLBase::getGLCtx() {
 
 void GLBase::m_switchCtx(GLNativeCtxHnd &ctx) {
 #ifdef _WIN32
-    if (!ctx.ctx) return;
-    bool res = wglMakeCurrent((HDC)ctx.deviceHandle, (HGLRC)ctx.ctx);
-    if (!res) {
+    if (!ctx.ctx) {
+        return;
+    }
+
+    if (!wglMakeCurrent(static_cast<HDC>(ctx.deviceHandle), static_cast<HGLRC>(ctx.ctx))) {
         LOGE << " couldn't change  ctx!!!! ";
         GetLastError();
         std::cerr << "Error " << GetLastError() << std::endl;
@@ -620,30 +623,28 @@ void GLBase::initAppMsg(const char *fontFile, int fontHeight, int screenWidth, i
 }
 
 void GLBase::appmsg(const char *format, ...) {
-    char    buffer[256];
     va_list args;
     va_start(args, format);
-    vsnprintf(buffer, 255, format, args);
+    auto str = string_format(format, args);
+    va_end(args);
 
     if (g_appMessages.size() >= g_appMessagesNumLines) {
         g_appMessages.erase(g_appMessages.begin());
     }
 
-    g_appMessages.emplace_back(buffer);
-    va_end(args);
-    LOG << buffer;
+    g_appMessages.emplace_back(str);
+    LOG << str;
 }
 
 void GLBase::appMsgStatic(size_t lineIdx, const char *format, ...) {
-    char    buffer[256];
     va_list args;
     va_start(args, format);
-    vsnprintf(buffer, 255, format, args);
+    auto str = string_format(format, args);
+    va_end(args);
 
     if (g_appMsgStatic.size() > lineIdx) {
-        g_appMsgStatic[lineIdx] = string(buffer);
+        g_appMsgStatic[lineIdx] = str;
     }
-    va_end(args);
 }
 
 void GLBase::renderAppMsgs() {

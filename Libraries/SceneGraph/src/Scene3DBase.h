@@ -51,7 +51,7 @@ public:
 
     void keyDown(hidData* data) override;
     void keyUp(hidData* data) override;
-    void moveObjectByArrowKeys(hidData* data);
+    void moveObjectByArrowKeys(const hidData* data);
     void mouseDown(hidData* data) override;
     void mouseUp(hidData* data) override;
     void mouseDownRight(hidData* data) override;
@@ -250,7 +250,7 @@ protected:
     bool m_enableSkybox         = false;
     bool m_enableGrid           = false;
 
-    int m_fontSize;
+    int m_fontSize{};
 
     double m_intTime  = 0.0;  // in seconds
     double m_lastTime = 0;

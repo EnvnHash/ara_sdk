@@ -7,16 +7,7 @@
 
 namespace ara {
 
-class StringUtilsTest : public ::testing::Test {
-protected:
-    void SetUp() override {
-    }
-
-    void TearDown() override {
-    }
-};
-
-TEST_F(StringUtilsTest, ReplaceString) {
+TEST(StringUtilsTest, ReplaceString) {
     std::string subject = "hello world";
     EXPECT_EQ(ReplaceString(subject, "world", "everyone"), "hello everyone");
 
@@ -24,7 +15,7 @@ TEST_F(StringUtilsTest, ReplaceString) {
     EXPECT_EQ(ReplaceString(subject, "repeat", "replace"), "replace replace");
 }
 
-TEST_F(StringUtilsTest, ReplaceStringInPlace) {
+TEST(StringUtilsTest, ReplaceStringInPlace) {
     std::string subject = "hello world";
     ReplaceStringInPlace(subject, "world", "everyone");
     EXPECT_EQ(subject, "hello everyone");
@@ -34,7 +25,7 @@ TEST_F(StringUtilsTest, ReplaceStringInPlace) {
     EXPECT_EQ(subject, "replace replace");
 }
 
-TEST_F(StringUtilsTest, SplitByNewline) {
+TEST(StringUtilsTest, SplitByNewline) {
     std::string text = "line1\nline2\nline3";
     std::vector<std::string> result = splitByNewline(text);
     EXPECT_EQ(result.size(), 3);
@@ -43,7 +34,7 @@ TEST_F(StringUtilsTest, SplitByNewline) {
     EXPECT_EQ(result[2], "line3");
 }
 
-TEST_F(StringUtilsTest, SplitByDelimiter) {
+TEST(StringUtilsTest, SplitByDelimiter) {
     std::string text = "apple,banana,cherry";
     char delimiter = ',';
     std::vector<std::string> result = split(text, delimiter);
@@ -53,7 +44,7 @@ TEST_F(StringUtilsTest, SplitByDelimiter) {
     EXPECT_EQ(result[2], "cherry");
 }
 
-TEST_F(StringUtilsTest, SplitByStringDelimiter) {
+TEST(StringUtilsTest, SplitByStringDelimiter) {
     std::string text = "one||two||three";
     std::string delimiter = "||";
     std::vector<std::string> result = split(text, delimiter);
@@ -63,12 +54,12 @@ TEST_F(StringUtilsTest, SplitByStringDelimiter) {
     EXPECT_EQ(result[2], "three");
 }
 
-TEST_F(StringUtilsTest, IsNumber) {
+TEST(StringUtilsTest, IsNumber) {
     EXPECT_TRUE(is_number("12345"));
     EXPECT_FALSE(is_number("abcde"));
 }
 
-TEST_F(StringUtilsTest, StrToUpper) {
+TEST(StringUtilsTest, StrToUpper) {
     std::string str = "hello world";
     EXPECT_EQ(str_toupper(str), "HELLO WORLD");
 
@@ -76,8 +67,22 @@ TEST_F(StringUtilsTest, StrToUpper) {
     EXPECT_EQ(str_toupper(str), "MIXED CASE");
 }
 
+TEST(StringUtilsTest, FormatString) {
+    std::string str = string_format("integer %d", 10);
+    EXPECT_EQ(str, "integer 10");
+
+    str = string_format("float %f", 25.23975f);
+    EXPECT_EQ(str, "float 25.239750");
+
+    str = string_format("char %c", 'e');
+    EXPECT_EQ(str, "char e");
+
+    str = string_format("string %s", "blabla blabla");
+    EXPECT_EQ(str, "string blabla blabla");
+}
+
 #ifdef _WIN32
-TEST_F(StringUtilsTest, ConvertWCSToStdString) {
+TEST(StringUtilsTest, ConvertWCSToStdString) {
     const wchar_t *wideStr = L"Hello World";
     std::string narrowStr = ConvertWCSToStdString(wideStr);
     EXPECT_EQ(narrowStr, "Hello World");

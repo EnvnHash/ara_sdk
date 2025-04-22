@@ -6,7 +6,7 @@ using namespace glm;
 using namespace std;
 
 namespace ara {
-UITable::UITable() : Div() {
+UITable::UITable() {
     setName(getTypeName<UITable>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;
@@ -19,48 +19,48 @@ UITable::UITable(std::string&& styleClass) : Div(std::move(styleClass)) {
 }
 
 UITable::UITable(float x, float y, float width, float height, int rows, int columns, float h_margin, float v_margin,
-                 float h_padding, float v_padding, float* fg_color, float* bg_color) {
+                 float h_padding, float v_padding, const float* fg_color, const float* bg_color) {
     setName(getTypeName<UITable>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;
 
-    setPos((int)x, (int)y);
-    setSize((int)width, (int)height);
-    setColor(.1f, .1f, .1f, 1.f);
+    setPos(static_cast<int>(x), static_cast<int>(y));
+    setSize(static_cast<int>(width), static_cast<int>(height));
+    UITable::setColor(.1f, .1f, .1f, 1.f);
 
     if (fg_color) {
-        setColor(fg_color[0], fg_color[1], fg_color[2], fg_color[3]);
+        UITable::setColor(fg_color[0], fg_color[1], fg_color[2], fg_color[3]);
     }
     if (bg_color) {
-        setBackgroundColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
+        UINode::setBackgroundColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
     }
 
-    t_setMargins(h_margin, v_margin);
-    t_setSpacing(h_padding, v_padding);
+    UITable::t_setMargins(h_margin, v_margin);
+    UITable::t_setSpacing(h_padding, v_padding);
 
     m_Cells(0).add(rows);
     m_Cells(1).add(columns);
 
-    initNewCellNode();
-    geo_Update();
+    UITable::initNewCellNode();
+    UITable::geo_Update();
 }
 
-UITable::UITable(float h_margin, float v_margin, float h_padding, float v_padding, float* fg_color, float* bg_color) {
+UITable::UITable(float h_margin, float v_margin, float h_padding, float v_padding, const float* fg_color, const float* bg_color) {
     setName(getTypeName<UITable>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;
 
-    setColor(.1f, .1f, .1f, 1.f);
+    UITable::setColor(.1f, .1f, .1f, 1.f);
 
     if (fg_color) {
-        setColor(fg_color[0], fg_color[1], fg_color[2], fg_color[3]);
+        UITable::setColor(fg_color[0], fg_color[1], fg_color[2], fg_color[3]);
     }
     if (bg_color) {
-        setBackgroundColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
+        UINode::setBackgroundColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
     }
 
-    t_setMargins(h_margin, v_margin);
-    t_setSpacing(h_padding, v_padding);
+    UITable::t_setMargins(h_margin, v_margin);
+    UITable::t_setSpacing(h_padding, v_padding);
 }
 
 int UITable::geo_Update() {
@@ -69,14 +69,14 @@ int UITable::geo_Update() {
     if (getDynamicWidth()) {
         float v = m_Cells(1).calculatePixGeo(t_Margin[0][0], t_Margin[1][0], t_Spacing[0]);
         if (v != getContentSize().x) {
-            setWidth((int)v);
+            setWidth(static_cast<int>(v));
         }
     }
 
     if (getDynamicHeight()) {
         float v = m_Cells(0).calculatePixGeo(t_Margin[0][1], t_Margin[1][1], t_Spacing[1]);
         if (v != getContentSize().y) {
-            setHeight((int)v);
+            setHeight(static_cast<int>(v));
         }
     }
 
@@ -93,16 +93,16 @@ int UITable::geo_Update() {
         if (m_Cells.getCellGeo(cg, i)) {
             if ((uinode = cell.ui_node) != nullptr) {
                 if (uinode->getPos().x != cg.pixPos[0] || uinode->getPos().y != cg.pixPos[1]) {
-                    uinode->setPos((int)cg.pixPos[0], (int)cg.pixPos[1]);
+                    uinode->setPos(static_cast<int>(cg.pixPos[0]), static_cast<int>(cg.pixPos[1]));
                 }
 
                 if (uinode->getSize().x != cg.pixSize[0] || uinode->getSize().y != cg.pixSize[1]) {
-                    uinode->setSize((int)cg.pixSize[0], (int)cg.pixSize[1]);
+                    uinode->setSize(static_cast<int>(cg.pixSize[0]), static_cast<int>(cg.pixSize[1]));
                 }
             }
         }
 
-        i++;
+        ++i;
     }
 
     for (auto& it : m_children) {
@@ -114,10 +114,8 @@ int UITable::geo_Update() {
 }
 
 /** to be used for moving UINodes from existing parents to the table */
-UINode* UITable::setCell(int row, int column, vector<unique_ptr<UINode> >::iterator nodeIt) {
-    int idx;
-
-    if ((idx = m_Cells.rc2index(row, column, true)) >= 0) {
+UINode* UITable::setCell(int row, int column, const vector<unique_ptr<UINode> >::iterator& nodeIt) {
+    if (int idx; (idx = m_Cells.rc2index(row, column, true)) >= 0) {
         // get the cell's ui_node
         auto cell = m_Cells[idx].ui_node;
 
@@ -129,7 +127,7 @@ UINode* UITable::setCell(int row, int column, vector<unique_ptr<UINode> >::itera
     }
 
     geo_Update();
-    return (UINode*)(*nodeIt).get();
+    return nodeIt->get();
 }
 
 void UITable::updateMatrix() {
@@ -221,12 +219,11 @@ bool UITable::insertColumn(int at, int count, float size, bool percent, bool fix
 void UITable::initNewCellNode() {
     m_Cells.updateCells();
 
-    for (int i = 0; i < (int)m_Cells.size(); i++) {
-        if (!m_Cells[i].ui_node) {
-            m_Cells[i].ui_node = addChild<Div>();
-            m_Cells[i].ui_node->setName("TableCell");
-            m_Cells[i].ui_node->setBackgroundColor(getColor());
-            //m_Cells[i].ui_node->excludeFromObjMap(true);
+    for (auto & m_Cell : m_Cells) {
+        if (!m_Cell.ui_node) {
+            m_Cell.ui_node = addChild<Div>();
+            m_Cell.ui_node->setName("TableCell");
+            m_Cell.ui_node->setBackgroundColor(getColor());
         }
     }
 }

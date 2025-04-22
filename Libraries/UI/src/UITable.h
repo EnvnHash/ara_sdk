@@ -15,9 +15,9 @@ public:
     UITable();
     UITable(std::string&& styleClass);
     UITable(float x, float y, float width, float height, int rows, int columns, float h_margin = 0, float v_margin = 0,
-            float h_padding = 0, float v_padding = 0, float* fg_color = nullptr, float* bg_color = nullptr);
-    UITable(float h_margin, float v_margin, float h_padding, float v_padding, float* fg_color, float* bg_color);
-    virtual ~UITable() = default;
+            float h_padding = 0, float v_padding = 0, const float* fg_color = nullptr, const float* bg_color = nullptr);
+    UITable(float h_margin, float v_margin, float h_padding, float v_padding, const float* fg_color, const float* bg_color);
+    ~UITable() override = default;
 
     virtual int getRowCount() { return m_Cells(0).getCount(); }
     virtual int getColumnCount() { return m_Cells(1).getCount(); }
@@ -42,7 +42,7 @@ public:
         t_setBRMargin(dx, dy);
     }  // Table margins
 
-    virtual UINode* setCell(int row, int column, std::vector<std::unique_ptr<UINode>>::iterator nodeIt);
+    virtual UINode* setCell(int row, int column, const std::vector<std::unique_ptr<UINode>>::iterator& nodeIt);
 
     virtual bool clearCell(int row, int column, bool updateGeo = true);
     virtual void clearCells();
@@ -94,11 +94,10 @@ public:
     /** add a new UINode to the Table */
     template <typename T>
     T* setCell(int row, int column, std::unique_ptr<T> node = nullptr) {
-        int idx;
-        if ((idx = m_Cells.rc2index(row, column, true)) >= 0) {
+        if (int idx; (idx = m_Cells.rc2index(row, column, true)) >= 0) {
             T* newNode;
             if (node) {
-                newNode = (T*)m_Cells[idx].ui_node->addChild(std::move(node));
+                newNode = static_cast<T *>(m_Cells[idx].ui_node->addChild(std::move(node)));
             } else {
                 newNode = m_Cells[idx].ui_node->addChild<T>();
             }
