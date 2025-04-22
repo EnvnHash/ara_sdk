@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
-#include <GLBase.h>
+#include "GLBaseUnitTestCommon.h"
+
 #include <Utils/FBO.h>
 #include <Utils/Texture.h>
 #include <GeoPrimitives/Quad.h>

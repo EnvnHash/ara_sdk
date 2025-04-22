@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <GLBase.h>
+#include "GLBaseUnitTestCommon.h"
 #include <GeoPrimitives/Quad.h>
 
 using namespace std;

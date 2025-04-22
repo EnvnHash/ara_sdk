@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <GLBase.h>
+#include "GLBaseUnitTestCommon.h"
 #include <GeoPrimitives/Polygon.h>
 #include <hps/hps.h>
 

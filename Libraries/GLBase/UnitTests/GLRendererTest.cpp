@@ -1,8 +1,6 @@
-#include <gtest/gtest.h>
-#include <GLBase.h>
+#include "GLBaseUnitTestCommon.h"
 #include <GLRenderer.h>
 #include <GeoPrimitives/Quad.h>
-#include <Utils/Texture.h>
 #include "Res/ResInstance.h"
 
 using namespace std;
@@ -30,13 +28,13 @@ TEST(GLBaseTest, GLRendererTest) {
         Conditional finSenma;
         GLRenderer rend;
         rend.setGlBase(&m_glbase);
-        int nrIt = 10;
-        for (int i = 0; i < nrIt; i++) {
-            m_glbase.runOnMainThread([&rend, &finSenma, i, nrIt] {
+        int nrItr = 10;
+        for (int i = 0; i < nrItr; i++) {
+            m_glbase.runOnMainThread([&rend, &finSenma, i, nrItr] {
                 rend.init("renderer", glm::ivec2(0, 0), glm::ivec2(1920, 1080), true);
                 rend.close(true);
                 std::cout << "." << std::flush;
-                if (i == (nrIt - 1))
+                if (i == (nrItr - 1))
                     finSenma.notify();
                 return true;
             });

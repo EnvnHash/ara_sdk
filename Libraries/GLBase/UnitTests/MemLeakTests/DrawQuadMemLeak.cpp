@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <GLBase.h>
+#include "GLBaseUnitTestCommon.h"
 #include <GeoPrimitives/Quad.h>
 
 #ifdef _WIN32
@@ -33,9 +32,7 @@ namespace ara::GLBaseUnitTest::DrawQuadMemLeak {
         ara::initGLEW();
 
 #ifdef _WIN32
-        _CrtMemState sOld;
-        _CrtMemState sNew;
-        _CrtMemState sDiff;
+        _CrtMemState sOld, sNew, sDiff;
         _CrtMemCheckpoint(&sOld); //take a snapshot
 #endif
 
@@ -48,16 +45,7 @@ namespace ara::GLBaseUnitTest::DrawQuadMemLeak {
             quad.reset();
 
 #ifdef _WIN32
-            _CrtMemCheckpoint(&sNew); //take a snapshot
-            if (_CrtMemDifference(&sDiff, &sOld, &sNew)) {
-                LOG << "-----------_CrtMemDumpStatistics ---------";
-                _CrtMemDumpStatistics(&sDiff);
-                OutputDebugString(LPCWSTR("-----------_CrtMemDumpAllObjectsSince ---------"));
-                _CrtMemDumpAllObjectsSince(&sOld);
-                OutputDebugString(LPCWSTR("-----------_CrtDumpMemoryLeaks ---------"));
-                _CrtDumpMemoryLeaks();
-                didFindMemLeak = true;
-            }
+            didFindMemLeak = checkMemLeak(sNew, sOld, sDiff);
 #endif
         }
 

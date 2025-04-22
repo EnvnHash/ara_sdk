@@ -1,12 +1,11 @@
-#include <gtest/gtest.h>
-#include <GLBase.h>
+#include "GLBaseUnitTestCommon.h"
 #include <GeoPrimitives/Polygon.h>
 
 using namespace std;
 
 namespace ara::GLBaseUnitTest::PolygonTest {
     GLFWWindow gwin;           // create an instance, this will do nothing
-    glWinPar gp;             // define Parameters for windows instanciating
+    glWinPar gp;             // define Parameters for windows instantiating
     ShaderCollector shCol;  // create a ShaderCollector
     Shaders *colShader;
     std::unique_ptr<Polygon> poly;
@@ -57,8 +56,8 @@ namespace ara::GLBaseUnitTest::PolygonTest {
         glReadBuffer(GL_FRONT);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        int ypos = (int) ((float) gwin.getHeight() * (0.65f / 2.f + 0.5f));
-        glReadPixels((int) ((float) gwin.getWidth() * 0.5f), ypos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+        int ypos = static_cast<int>(static_cast<float>(gwin.getHeight()) * (0.65f / 2.f + 0.5f));
+        glReadPixels(static_cast<int>(static_cast<float>(gwin.getWidth()) * 0.5f), ypos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
                      data);    // synchronous, blocking command, no swap() needed
 
         // check that it's really red
@@ -68,8 +67,8 @@ namespace ara::GLBaseUnitTest::PolygonTest {
         EXPECT_EQ(data[2], 0);
         EXPECT_EQ(data[3], 255);
 
-        ypos = (int) ((float) gwin.getHeight() * 0.5f);
-        glReadPixels((int) ((float) gwin.getWidth() * 0.5f), ypos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+        ypos = static_cast<int>(static_cast<float>(gwin.getHeight()) * 0.5f);
+        glReadPixels(static_cast<int>(static_cast<float>(gwin.getWidth()) * 0.5f), ypos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
                      data);    // synchronous, blocking command, no swap() needed
 
         // check that it's really red

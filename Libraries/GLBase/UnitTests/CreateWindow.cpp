@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
-#include <GLBase.h>
+#include "GLBaseUnitTestCommon.h"
+
 
 using namespace std;
 

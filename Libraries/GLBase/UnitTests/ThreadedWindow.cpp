@@ -35,7 +35,7 @@ namespace ara::GLBaseUnitTest::ThreadedWindow {
 
         // create drawing threads for each windows
         for (int i = 0; i < nrThreads; i++)
-            threads.push_back(thread([&windows, i]() {
+            threads.emplace_back([&windows, i]() {
 
                 windows[i].makeCurrent();
 
@@ -78,7 +78,7 @@ namespace ara::GLBaseUnitTest::ThreadedWindow {
                 ASSERT_EQ(data[2], 0);
                 ASSERT_EQ(data[3], 255);
 
-            }));
+            });
 
         for (int i = 0; i < nrThreads; i++) {
             threads[i].join();

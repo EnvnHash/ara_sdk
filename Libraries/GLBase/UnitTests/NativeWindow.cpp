@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include "GLBaseUnitTestCommon.h"
 #include <WindowManagement/GLWindow.h>
 
 using namespace std;

@@ -1,9 +1,7 @@
-#include <chrono>
-#include <gtest/gtest.h>
-#include <GLBase.h>
+#include "GLBaseUnitTestCommon.h"
+
 #include <GeoPrimitives/Quad.h>
 #include <Utils/TypoGlyphMap.h>
-#include <Utils/Texture.h>
 #include "Res/ResInstance.h"
 
 using namespace std;

@@ -1,5 +1,4 @@
-#include <gtest/gtest.h>
-#include <GLBase.h>
+#include "GLBaseUnitTestCommon.h"
 #include <GeoPrimitives/Quad.h>
 #include <Utils/FBO.h>
 #include <Utils/Texture.h>
@@ -13,7 +12,7 @@ using namespace std::chrono;
 
 namespace ara::GLBaseUnitTest::TypoGlyphMapTest {
     GLFWWindow gwin;           // create an instance, this will do nothing
-    glWinPar gp;             // define Parameters for windows instanciating
+    glWinPar gp;             // define Parameters for windows instantiating
     bool didRun = false;
     std::unique_ptr<TypoGlyphMap> typo;
     GLBase glbase;
