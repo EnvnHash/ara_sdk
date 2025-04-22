@@ -5,6 +5,20 @@
 
 namespace ara {
 
+struct LabelInitData {
+    int x=0;
+    int y=0;
+    int w=0;
+    int h=0;
+    glm::vec4 text_color{};
+    glm::vec4 bg_color{};
+    const std::string& text;
+    align ax{};
+    valign ay{};
+    const std::string& font_type;
+    int font_height=0;
+};
+
 class Label : public Div {
 public:
     enum eopt {
@@ -23,9 +37,9 @@ public:
 
     Label();
     Label(std::string &&styleClass);
-    Label(int x, int y, int w, int h, glm::vec4 text_color, glm::vec4 bg_color, const std::string &_text, align ax,
-          valign ay, const std::string &font_type, int font_height);
+    Label(LabelInitData initData);
     ~Label() override = default;
+
     unsigned long getOpt() const { return m_tOpt; }
 
     unsigned long setOpt(unsigned long f) {

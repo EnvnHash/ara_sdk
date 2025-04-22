@@ -55,7 +55,7 @@ public:
 template <class TVertex>
 class Plane : public Mesh<TVertex> {
 public:
-    static void add(Mesh<TVertex> &geo, const mat4 &mat, int w, int h) {
+    static void add(Mesh<TVertex> &geo, const glm::mat4 &mat, int w, int h) {
         int xdim = w;
         int ydim = h;
 
@@ -111,7 +111,7 @@ public:
             outlineIndices.emplace_back((y)*width + xdim + vertOffset, (y + 1) * width + xdim + vertOffset);
         }
         for (int x = 0; x < xdim; ++x) {
-            outlineIndices.emplace_back((x) + vertOffset, (x + 1) + vertOffset));
+            outlineIndices.emplace_back((x) + vertOffset, (x + 1) + vertOffset);
         }
         for (int x = 0; x < xdim; ++x) {
             outlineIndices.emplace_back((x) + ydim * width + vertOffset, (x + 1) + ydim * width + vertOffset);

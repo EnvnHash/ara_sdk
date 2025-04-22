@@ -8,7 +8,7 @@ using namespace std;
 
 namespace ara {
 
-Label::Label() : Div() {
+Label::Label() {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
@@ -24,21 +24,19 @@ Label::Label(std::string&& styleClass) : Div(std::move(styleClass)) {
     setFocusAllowed(false);
 }
 
-Label::Label(int x, int y, int w, int h, glm::vec4 text_color, glm::vec4 bg_color, const std::string& text, align ax,
-             valign ay, const std::string&, int font_height)
-    : Div() {
+Label::Label(LabelInitData initData) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
     setFocusAllowed(false);
     setName(getTypeName<Label>());
-    setPos(x, y);
-    setSize(w, h);
-    Div::setBackgroundColor(bg_color);
-    Div::setColor(text_color);
-    setText(text);
-    setTextAlign(ax, ay);
-    setFontSize(font_height);
+    setPos(initData.x, initData.y);
+    setSize(initData.w, initData.h);
+    Div::setBackgroundColor(initData.bg_color);
+    Div::setColor(initData.text_color);
+    setText(initData.text);
+    setTextAlign(initData.ax, initData.ay);
+    setFontSize(initData.font_height);
 }
 
 void Label::loadStyleDefaults() {
@@ -173,7 +171,7 @@ void Label::setProp(Property<std::filesystem::path>* prop) {
         if (m_sharedRes) {
             // is this really necessary as glcallback??? basically nothing
             // gl-ish  is happening on setText
-            ((UIWindow*)m_sharedRes->win)->addGlCb(this, "chgTxt", [this, val] {
+            static_cast<UIWindow *>(m_sharedRes->win)->addGlCb(this, "chgTxt", [this, val] {
                 setText(std::any_cast<std::filesystem::path>(val).string());
                 return true;
             });
@@ -504,7 +502,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
             ld->aux3.x = 1.f;  // type indicator (1=Label)
             ld->aux3.w = m_absoluteAlpha;
 
-            ld++;
+            ++ld;
         }
 
         ld -= 4;  // reset iterator to quad beginning
@@ -523,8 +521,8 @@ void Label::updateIndDrawData(bool checkFontTex) {
                 limitTexCoordsToBounds(&ld->texCoord[0], i, m_uvSize, m_uvDiff);
             }
 
-            ld++;
-            i++;
+            ++ld;
+            ++i;
         }
     }
 }
