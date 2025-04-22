@@ -31,38 +31,38 @@ public:
     using type_request = std::vector<std::string>;
     using type_content = std::vector<std::shared_ptr<Content>>;
 
-    Server *m_Server = nullptr;
-
-    type_content m_Content;
-
     Conn(Server *m);
 
-    bool     Process(SOCKET sock, const sockaddr_in *addr);
-    uint32_t getContentLength();
+    bool        Process(SOCKET sock, const sockaddr_in *addr);
+    bool        parseContent();
 
+    uint32_t    getContentLength();
     std::string getHdrValue(const std::string &name);
     std::string getHdrValue(const char *name);
-    std::string getMethod() { return m_Request.size() >= 1 ? m_Request[0] : ""; }
-    std::string getURI() { return m_Request.size() >= 2 ? m_Request[1] : ""; }
-    std::string getHTTP() { return m_Request.size() >= 3 ? m_Request[2] : ""; }
+    std::string getMethod() { return m_request.size() >= 1 ? m_request[0] : ""; }
+    std::string getURI() { return m_request.size() >= 2 ? m_request[1] : ""; }
+    std::string getHTTP() { return m_request.size() >= 3 ? m_request[2] : ""; }
 
     static std::string getQPar(const std::string& src, const std::string& parname);
-    std::string getFromAddr() { return m_FromAddr; }
+    std::string getFromAddr() { return m_fromAddr; }
 
-    int  SendString(const std::string &s) const;
-    int  SendError(int code) const;
-    int  SendOK() const;
-    int  SendResponse(int code, const std::string &text_body) const;
+    [[nodiscard]] int32_t  SendString(const std::string &s) const;
+    [[nodiscard]] int32_t  SendError(int code) const;
+    [[nodiscard]] int32_t  SendOK() const;
+    [[nodiscard]] int32_t  SendResponse(int code, const std::string &text_body) const;
     void ParseURI(std::string &filestr, std::vector<std::string> &parameter_list);
     int  sRecv(void *dest, int count);
 
+    Server*         m_server = nullptr;
+    type_content    m_Content;
+
 private:
-    RawContent m_RawContent;
-    type_hdrmap  m_HdrMap;
-    type_request m_Request;
-    std::string m_FromAddr;
-    SOCKET m_Socket{};
-    int64_t i_RecvByteCount = 0;
+    RawContent      m_rawContent;
+    type_hdrmap     m_hdrMap;
+    type_request    m_request;
+    std::string     m_fromAddr;
+    SOCKET          m_socket{};
+    int64_t         m_recvByteCount = 0;
 
     void incRecvCount(int count);
 };

@@ -30,17 +30,17 @@ public:
     bool        setFileName(const std::string& str);
     std::string getFileName();
     bool        setData(uint8_t *dataptr, int datasize);
-    uint8_t    *getData() const;
-    int         getSize() const;
-    bool        storeToFile(const std::filesystem::path &p) const;
+
+    [[nodiscard]] uint8_t    *getData() const;
+    [[nodiscard]] int         getSize() const;
+    [[nodiscard]] bool        storeToFile(const std::filesystem::path &p) const;
 
 private:
-    std::string m_Name;
-    std::string m_Type;
-    std::string m_FileName;
-
-    uint8_t *m_DataPtr  = nullptr;
-    int      m_DataSize = 0;
+    std::string m_name;
+    std::string m_type;
+    std::string m_fileName;
+    uint8_t*    m_dataPtr  = nullptr;
+    int         m_dataSize = 0;
 };
 
 

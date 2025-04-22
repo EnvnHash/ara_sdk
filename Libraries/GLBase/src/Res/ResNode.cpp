@@ -14,10 +14,6 @@ using namespace std;
 
 namespace ara {
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SrcLine
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 bool SrcLine::isEmpty() {
     return !(std::find_if(str.begin(), str.end(), [&](auto &x) { return x > 32; }) != str.end());
 }
@@ -60,12 +56,9 @@ bool ResNode::error_string(const string &str) {
 }
 
 bool ResNode::error(char *str, ...) {
-    const int estr_size = 1024;
-    char    estr[estr_size];
     va_list p;
-
     va_start(p, str);
-    vsnprintf(estr, estr_size, str, p);
+    auto estr = string_format(str, p);
     va_end(p);
 
     return error_string(estr);
@@ -92,7 +85,7 @@ ResNode *ResNode::add(ResNode::Ptr node) {
         return nullptr;
     }
     m_Node.emplace_back(std::move(node));
-    ResNode *rnode = m_Node.back().get();
+    auto rnode = m_Node.back().get();
     rnode->setParent(this);
     return rnode;
 }
@@ -173,15 +166,14 @@ ResNode::Ptr ResNode::Choose() {
 }
 
 ResNode::Ptr ResNode::Preprocess(int level) {
-    int      i, n = (int)m_Node.size();
-    ResNode *node, *newnode;
+    int      i, n = static_cast<int>(m_Node.size());
     Ptr      pret;
 
     for (i = 0; i < n; i++) {
-        node = m_Node[i].get();
+        auto node = m_Node[i].get();
 
         if ((pret = node->Choose()) != nullptr) {
-            newnode = pret.get();
+            auto newnode = pret.get();
             newnode->setParent(this);
             newnode->grabNode(node);
 
@@ -285,8 +277,7 @@ ResNode *ResNode::findNodeFromNode(const string &path, ResNode *rnode) {
     return rnode->findNode(path);
 }
 
-// ---------------------------------------------------[ VALUES
-// ]-----------------------------------------------------------------
+// ---------------------------------------------------[ VALUES ]--------------------------------------------------------
 
 string ResNode::getValue(const string &name, string def) {
     for (Ptr &node : m_Node) {

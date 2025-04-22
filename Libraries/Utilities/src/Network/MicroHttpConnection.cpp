@@ -20,12 +20,12 @@
 
 namespace ara::microhttp {
 
-Conn::Conn(Server *m): m_Socket(0), m_Server(m) {
+Conn::Conn(Server *m): m_socket(0), m_server(m) {
 }
 
 bool Conn::Process(SOCKET sock, const sockaddr_in *addr) {
-    m_FromAddr.assign(inet_ntoa(addr->sin_addr));
-    m_Socket = sock;
+    m_fromAddr.assign(inet_ntoa(addr->sin_addr));
+    m_socket = sock;
 
     std::string line;
     int         ret;
@@ -38,20 +38,19 @@ bool Conn::Process(SOCKET sock, const sockaddr_in *addr) {
                 line += ch;
             } else {
                 if (ch == '\n' && lch == '\r') {
-                    if (m_Request.empty()) {
+                    if (m_request.empty()) {
                         if ((pos = line.find(" /")) != std::string::npos) {
-                            std::size_t posa = line.find(" HTTP/");
-
-                            m_Request.push_back(line.substr(0, pos));
-                            m_Request.push_back(line.substr(pos + 2, posa - pos - 2));
-                            m_Request.push_back(line.substr(posa + 1, std::string::npos));
+                            auto posa = line.find(" HTTP/");
+                            m_request.emplace_back(line.substr(0, pos));
+                            m_request.emplace_back(line.substr(pos + 2, posa - pos - 2));
+                            m_request.emplace_back(line.substr(posa + 1, std::string::npos));
                         }
 
                     } else {
                         if ((pos = line.find(": ")) != std::string::npos) {
-                            std::string par   = line.substr(0, pos);
-                            std::string value = line.substr(pos + 2, std::string::npos);
-                            m_HdrMap.insert(std::make_pair(par, value));
+                            auto par   = line.substr(0, pos);
+                            auto value = line.substr(pos + 2, std::string::npos);
+                            m_hdrMap.insert(std::make_pair(par, value));
                         }
                     }
 
@@ -69,16 +68,19 @@ bool Conn::Process(SOCKET sock, const sockaddr_in *addr) {
 
     } while (ret > 0);
 
-    if (m_Request.size() < 3) {  // If the command is incomplete just return
+    if (m_request.size() < 3) {  // If the command is incomplete just return
         return false;
     }
 
+    return parseContent();
+}
+
+bool Conn::parseContent() {
     uint32_t                 cont_len;
     std::shared_ptr<Content> content = nullptr;
 
     if ((cont_len = getContentLength()) > 0) {
-        // if (m_RawContent.readContentData(sock, cont_len)) {
-        if (m_RawContent.readContentData(this, cont_len)) {
+        if (m_rawContent.readContentData(this, cont_len)) {
             std::string p = getHdrValue(static_cast<const char *>("Content-Type"));
 
             if (p.find("multipart/form-data") != std::string::npos) {
@@ -87,20 +89,21 @@ bool Conn::Process(SOCKET sock, const sockaddr_in *addr) {
                 if ((bpos = p.find("boundary=")) != std::string::npos) {
                     std::string boundary = "--" + p.substr(bpos + 9, std::string::npos);
 
-                    m_RawContent.SetBoundary(boundary);
+                    m_rawContent.setBoundary(boundary);
 
                     int         lpos = 0;
                     std::string linestr;
                     size_t      siaux;
                     int         iaux;
+                    int         ret=0;
 
                     do {
-                        ret = m_RawContent.MoveToNextBoundary();
+                        ret = m_rawContent.moveToNextBoundary();
 
                         if (lpos > 0 && content != nullptr) {
                             content->setData(
-                                m_RawContent.getData() + lpos,
-                                (iaux = (m_RawContent.getCurrentPos() - static_cast<int>(boundary.length()) - 4 - lpos)) > 0 ? iaux
+                                m_rawContent.getData() + lpos,
+                                (iaux = (m_rawContent.getCurrentPos() - static_cast<int>(boundary.length()) - 4 - lpos)) > 0 ? iaux
                                                                                                                 : 0);
                         }
 
@@ -108,7 +111,7 @@ bool Conn::Process(SOCKET sock, const sockaddr_in *addr) {
                             content = std::make_shared<Content>();
 
                             do {
-                                if ((ret = m_RawContent.ReadLine(linestr)) >= 0) {
+                                if ((ret = m_rawContent.readLine(linestr)) >= 0) {
                                     if (linestr.find("Content-Disposition: "
                                                      "form-data; ") != std::string::npos) {
                                         content->setName(getQPar(linestr, "name=\""));
@@ -121,7 +124,7 @@ bool Conn::Process(SOCKET sock, const sockaddr_in *addr) {
                             } while (ret > 0);
 
                             m_Content.push_back(content);
-                            lpos = m_RawContent.getCurrentPos();
+                            lpos = m_rawContent.getCurrentPos();
                         }
 
                     } while (ret >= 0);
@@ -138,17 +141,14 @@ bool Conn::Process(SOCKET sock, const sockaddr_in *addr) {
 
             } else {
                 content = std::make_shared<Content>();
-
                 content->setType(p);
-                content->setData((uint8_t *)m_RawContent.getData(), m_RawContent.getSize());
-
+                content->setData((uint8_t *)m_rawContent.getData(), m_rawContent.getSize());
                 m_Content.push_back(content);
                 return true;
             }
         }
         return false;
     }
-    return true;
 }
 
 uint32_t Conn::getContentLength() {
@@ -157,13 +157,13 @@ uint32_t Conn::getContentLength() {
 }
 
 std::string Conn::getHdrValue(const std::string &name) {
-    auto pp = m_HdrMap.begin();
-    return ((pp = m_HdrMap.find(name)) != m_HdrMap.end()) ? pp->second : "";
+    auto pp = m_hdrMap.begin();
+    return ((pp = m_hdrMap.find(name)) != m_hdrMap.end()) ? pp->second : "";
 }
 
 std::string Conn::getHdrValue(const char *name) {
-    auto pp = m_HdrMap.begin();
-    return ((pp = m_HdrMap.find(name)) != m_HdrMap.end()) ? pp->second : "";
+    auto pp = m_hdrMap.begin();
+    return ((pp = m_hdrMap.find(name)) != m_hdrMap.end()) ? pp->second : "";
 }
 
 std::string Conn::getQPar(const std::string& src, const std::string &parname) {
@@ -183,7 +183,7 @@ std::string Conn::getQPar(const std::string& src, const std::string &parname) {
 }
 
 int Conn::SendString(const std::string &s) const {
-    return send(m_Socket, s.c_str(), static_cast<int>(s.length()), 0);
+    return send(m_socket, s.c_str(), static_cast<int>(s.length()), 0);
 }
 
 int Conn::SendError(int code) const {
@@ -213,7 +213,6 @@ int Conn::SendResponse(int code, const std::string &text_body) const {
     r += "Content-Length: " + std::to_string(text_body.length()) + "\r\n\r\n";
 
     ret += SendString(r);
-
     return ret + SendString(text_body);
 }
 
@@ -235,15 +234,15 @@ void Conn::ParseURI(std::string &filestr, std::vector<std::string> &parameter_li
 }
 
 void Conn::incRecvCount(int count) {
-    i_RecvByteCount += count;
-    if (m_Server != nullptr) {
-        m_Server->incRecvCount(count);
+    m_recvByteCount += count;
+    if (m_server != nullptr) {
+        m_server->incRecvCount(count);
     }
 }
 
 int Conn::sRecv(void *dest, int count) {
     int ret;
-    if ((ret = recv(m_Socket, static_cast<char *>(dest), count, 0)) > 0) {
+    if ((ret = recv(m_socket, static_cast<char *>(dest), count, 0)) > 0) {
         incRecvCount(ret);
     }
     return ret;

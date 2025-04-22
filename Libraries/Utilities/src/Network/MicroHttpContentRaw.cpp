@@ -21,15 +21,15 @@
 namespace ara::microhttp {
 
 bool RawContent::readContentData(Conn *conn, uint32_t count) {
-    m_ContentData.reserve(count + 1024);
+    m_contentData.reserve(count + 1024);
 
     uint32_t tread = 0;
     uint32_t left  = count;
     uint32_t mtr  = 16 << 10;
-    uint8_t *dest = m_ContentData.data();
+    uint8_t *dest = m_contentData.data();
     int      ret;
 
-    m_ContentData.resize(count);
+    m_contentData.resize(count);
 
     while (left > 0) {
         auto tr = std::min<uint32_t>(mtr, left);
@@ -47,15 +47,15 @@ bool RawContent::readContentData(Conn *conn, uint32_t count) {
 }
 
 bool RawContent::readContentData(SOCKET sock, uint32_t count) {
-    m_ContentData.reserve(count + 1024);
+    m_contentData.reserve(count + 1024);
 
     uint32_t tread = 0;
     uint32_t left  = count;
     uint32_t mtr  = 16 << 10;
-    uint8_t *dest = m_ContentData.data();
+    uint8_t *dest = m_contentData.data();
     int      ret;
 
-    m_ContentData.resize(count);
+    m_contentData.resize(count);
 
     while (left > 0) {
         uint32_t tr = std::min<uint32_t>(mtr, left);
@@ -72,10 +72,10 @@ bool RawContent::readContentData(SOCKET sock, uint32_t count) {
     return true;
 }
 
-int RawContent::MoveToNextBoundary() {
-    const char *bstr = m_Boundary.c_str();
-    int         blen = static_cast<int>(m_Boundary.length());
-    int         lpos = static_cast<int>(m_ContentData.size());
+int RawContent::moveToNextBoundary() {
+    const char *bstr = m_boundary.c_str();
+    int         blen = static_cast<int>(m_boundary.length());
+    int         lpos = static_cast<int>(m_contentData.size());
 
     if (blen <= 0) {
         return -1;
@@ -87,57 +87,64 @@ int RawContent::MoveToNextBoundary() {
         return -2;
     }
 
-    auto src = reinterpret_cast<char *>(m_ContentData.data());
+    auto src = reinterpret_cast<char *>(m_contentData.data());
 
-    while (m_Pos < lpos) {
-        if (src[m_Pos] == bstr[0] && !memcmp(&src[m_Pos], bstr,
-                                             blen)) {  // check first byte and if it passes then perform
-                                                       // a full check with memcmp, this increases speed
-            m_Pos += blen;
+    while (m_pos < lpos) {
+        if (src[m_pos] == bstr[0] && !memcmp(&src[m_pos], bstr, blen)) {  // check first byte and if it passes then perform
+                                                                          // a full check with memcmp, this increases speed
+            m_pos += blen;
 
-            if (src[m_Pos + 0] == '-' && src[m_Pos + 1] == '-') {
-                m_Pos += 2;
+            if (src[m_pos + 0] == '-' && src[m_pos + 1] == '-') {
+                m_pos += 2;
                 return -4;  // reached the end
             }
 
-            if (src[m_Pos + 0] == '\r' && src[m_Pos + 1] == '\n') {
-                m_Pos += 2;
+            if (src[m_pos + 0] == '\r' && src[m_pos + 1] == '\n') {
+                m_pos += 2;
             }
-            return m_Pos;
+            return m_pos;
         }
-        ++m_Pos;
+        ++m_pos;
     }
     return -3;
 }
 
-int RawContent::ReadLine(std::string &s, int max_size) {
-    int lpos = static_cast<int>(m_ContentData.size());
-    int ipos = m_Pos, len = 0;
+bool RawContent::isEndBoundary(const char* src, int pos) {
+    return src[pos] == '-' && src[pos + 1] == '-';
+}
 
-    if (max_size <= 0 || m_Pos >= lpos) {
+bool RawContent::isLineBreak(const char* src, int pos) {
+    return src[pos] == '\r' && src[pos + 1] == '\n';
+}
+
+int RawContent::readLine(std::string &s, int max_size) {
+    int lpos = static_cast<int>(m_contentData.size());
+    int ipos = m_pos, len = 0;
+
+    if (max_size <= 0 || m_pos >= lpos) {
         return -1;
     }
 
-    auto src = reinterpret_cast<char *>(m_ContentData.data());
+    auto src = reinterpret_cast<char *>(m_contentData.data());
 
     --lpos;
 
-    while (m_Pos < lpos && (len = (m_Pos - ipos)) <= max_size) {
-        if (src[m_Pos + 0] == '\r' && src[m_Pos + 1] == '\n') {
+    while (m_pos < lpos && (len = (m_pos - ipos)) <= max_size) {
+        if (src[m_pos + 0] == '\r' && src[m_pos + 1] == '\n') {
             s.assign(&src[ipos], len);
-            m_Pos += 2;
+            m_pos += 2;
             return len;
         }
 
-        ++m_Pos;
+        ++m_pos;
     }
 
     s.assign(&src[ipos], len);
     return -2;
 }
 
-void RawContent::SetBoundary(const std::string &bstr) {
-    m_Boundary = bstr;
+void RawContent::setBoundary(const std::string &bstr) {
+    m_boundary = bstr;
 }
 
 }

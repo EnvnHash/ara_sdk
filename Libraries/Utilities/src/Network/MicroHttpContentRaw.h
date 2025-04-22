@@ -28,25 +28,24 @@ public:
     bool readContentData(Conn *conn, uint32_t count);
     bool readContentData(SOCKET sock, uint32_t count);
 
-    void Reset() { m_Pos = 0; }
+    void reset() { m_pos = 0; }
 
-    int  MoveToNextBoundary();  // moves to the position after the boundary
-    void SetBoundary(const std::string &bstr);
+    int  moveToNextBoundary();  // moves to the position after the boundary
+    bool isEndBoundary(const char* src, int pos);
+    bool isLineBreak(const char* src, int pos);
+    void setBoundary(const std::string &bstr);
 
-    uint8_t *getData() { return (uint8_t *)m_ContentData.data(); }
-    int      getSize() { return (int)m_ContentData.size(); }
-    int      ReadLine(std::string &s, int max_size = 1024);
-
-    int getCurrentPos() { return m_Pos; }
+    uint8_t*                getData() { return m_contentData.data(); }
+    [[nodiscard]] int32_t   getSize() const { return static_cast<int>(m_contentData.size()); }
+    int32_t                 readLine(std::string &s, int max_size = 1024);
+    [[nodiscard]] int32_t   getCurrentPos() const { return m_pos; }
 
 private:
-    std::vector<uint8_t> m_ContentData;
-
-    int m_Size    = 0;
-    int m_Pos     = 0;
-    int m_LastPos = 0;
-
-    std::string m_Boundary;
+    std::vector<uint8_t>    m_contentData;
+    int32_t                 m_size    = 0;
+    int32_t                 m_pos     = 0;
+    int32_t                 m_lastPos = 0;
+    std::string             m_boundary;
 };
 
 }

@@ -20,44 +20,44 @@
 namespace ara::microhttp {
 
 bool Content::setName(const std::string& str) {
-    m_Name = str;
+    m_name = str;
     return true;
 }
 
 std::string Content::getName() {
-    return m_Name;
+    return m_name;
 }
 
 bool Content::setType(const std::string& str) {
-    m_Type = str;
+    m_type = str;
     return true;
 }
 
 std::string Content::getType() {
-    return m_Type;
+    return m_type;
 }
 
 bool Content::setFileName(const std::string& str) {
-    m_FileName = str;
+    m_fileName = str;
     return true;
 }
 
 std::string Content::getFileName() {
-    return m_FileName;
+    return m_fileName;
 }
 
 bool Content::setData(uint8_t *dataptr, int datasize) {
-    m_DataPtr  = dataptr;
-    m_DataSize = datasize;
+    m_dataPtr  = dataptr;
+    m_dataSize = datasize;
     return true;
 }
 
 uint8_t *Content::getData() const {
-    return m_DataPtr;
+    return m_dataPtr;
 }
 
 int Content::getSize() const {
-    return m_DataSize;
+    return m_dataSize;
 }
 
 bool Content::storeToFile(const std::filesystem::path &p) const {
