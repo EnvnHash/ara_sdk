@@ -398,88 +398,73 @@ float angleBetweenVectors(const glm::vec3& a, const glm::vec3& b) {
     return std::acos(cosTheta);
 }
 
-matrix *projection_matrix(const double *x, const double *y, const double *_x, const double *_y) {
+double matrix_get_var(matrix* m, int row, int col) {
+    if (row >= 0 && row < m->row && col >= 0 && col < m->col) {
+        return m->var[row][col];
+    } else {
+        fprintf(stderr, "Matrix get_var: Index out of bounds\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void matrix_set_var(matrix* m, int row, int col, double value) {
+    if (row >= 0 && row < m->row && col >= 0 && col < m->col) {
+        m->var[row][col] = value;
+    } else {
+        fprintf(stderr, "Matrix set_var: Index out of bounds\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void fill_matrix_a(matrix* a, const double *x, const double *y, const double *_x, const double *_y) {
+    for (int i = 0; i < 4; ++i) {
+        matrix_set_var(a, i, 0, x[i]);
+        matrix_set_var(a, i, 1, y[i]);
+        matrix_set_var(a, i, 2, 1.0);
+        matrix_set_var(a, i, 6, -_x[i] * x[i]);
+        matrix_set_var(a, i, 7, -_x[i] * y[i]);
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        matrix_set_var(a, i + 4, 3, x[i]);
+        matrix_set_var(a, i + 4, 4, y[i]);
+        matrix_set_var(a, i + 4, 5, 1.0);
+        matrix_set_var(a, i + 4, 6, -x[i] * _y[i]);
+        matrix_set_var(a, i + 4, 7, -y[i] * _y[i]);
+    }
+}
+
+void fill_matrix_b(matrix* b, const double *_x, const double *_y) {
+    for (int i = 0; i < 4; ++i) {
+        matrix_set_var(b, i, 0, _x[i]);
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        matrix_set_var(b, i + 4, 0, _y[i]);
+    }
+}
+
+matrix* projection_matrix(const double *x, const double *y, const double *_x, const double *_y) {
     matrix *a = matrix_new(8, 8);
     matrix *b = matrix_new(8, 1);
 
-    a->var[0][0] = x[0];
-    a->var[0][1] = y[0];
-    a->var[0][2] = 1.0;
-    a->var[0][6] = -1 * _x[0] * x[0];
-    a->var[0][7] = -1 * _x[0] * y[0];
-
-    a->var[1][0] = x[1];
-    a->var[1][1] = y[1];
-    a->var[1][2] = 1.0;
-    a->var[1][6] = -1 * _x[1] * x[1];
-    a->var[1][7] = -1 * _x[1] * y[1];
-
-    a->var[2][0] = x[2];
-    a->var[2][1] = y[2];
-    a->var[2][2] = 1.0;
-    a->var[2][6] = -1 * _x[2] * x[2];
-    a->var[2][7] = -1 * _x[2] * y[2];
-
-    a->var[3][0] = x[3];
-    a->var[3][1] = y[3];
-    a->var[3][2] = 1.0;
-    a->var[3][6] = -1 * _x[3] * x[3];
-    a->var[3][7] = -1 * _x[3] * y[3];
-
-    a->var[4][3] = x[0];
-    a->var[4][4] = y[0];
-    a->var[4][5] = 1.0;
-    a->var[4][6] = -1 * x[0] * _y[0];
-    a->var[4][7] = -1 * y[0] * _y[0];
-
-    a->var[5][3] = x[1];
-    a->var[5][4] = y[1];
-    a->var[5][5] = 1.0;
-    a->var[5][6] = -1 * x[1] * _y[1];
-    a->var[5][7] = -1 * y[1] * _y[1];
-
-    a->var[6][3] = x[2];
-    a->var[6][4] = y[2];
-    a->var[6][5] = 1.0;
-    a->var[6][6] = -1 * x[2] * _y[2];
-    a->var[6][7] = -1 * y[2] * _y[2];
-
-    a->var[7][3] = x[3];
-    a->var[7][4] = y[3];
-    a->var[7][5] = 1.0;
-    a->var[7][6] = -1 * x[3] * _y[3];
-    a->var[7][7] = -1 * y[3] * _y[3];
-
-    b->var[0][0] = _x[0];
-    b->var[1][0] = _x[1];
-    b->var[2][0] = _x[2];
-    b->var[3][0] = _x[3];
-    b->var[4][0] = _y[0];
-    b->var[5][0] = _y[1];
-    b->var[6][0] = _y[2];
-    b->var[7][0] = _y[3];
+    fill_matrix_a(a, x, y, _x, _y);
+    fill_matrix_b(b, _x, _y);
 
     matrix *a_inv = matrix_inv(a);
-
     matrix *c = matrix_multiple(a_inv, b);
 
     matrix *projection = matrix_new(3, 3);
-    projection->var[0][0] = c->var[0][0];
-    projection->var[0][1] = c->var[1][0];
-    projection->var[0][2] = c->var[2][0];
-
-    projection->var[1][0] = c->var[3][0];
-    projection->var[1][1] = c->var[4][0];
-    projection->var[1][2] = c->var[5][0];
-
-    projection->var[2][0] = c->var[6][0];
-    projection->var[2][1] = c->var[7][0];
-    projection->var[2][2] = 1.0;
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            matrix_set_var(projection, i, j, matrix_get_var(c, i + j * 4, 0));
+        }
+    }
+    matrix_set_var(projection, 2, 2, 1.0);
 
     matrix_free(a);
     matrix_free(b);
     matrix_free(c);
-
     matrix_free(a_inv);
 
     return projection;

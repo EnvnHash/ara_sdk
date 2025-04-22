@@ -509,6 +509,10 @@ glm::vec3 getRandomPointOnPlane(const glm::vec3&, const glm::vec3&, const glm::v
 void makeMatr(glm::mat4 *_matr, bool *_inited, float xOffs, float yOffs, float zOffs, float rotX, float rotY,
               float rotZ, float scaleX, float scaleY, float scaleZ);
 
+double matrix_get_var(matrix* m, int row, int col);
+void matrix_set_var(matrix* m, int row, int col, double value);
+void fill_matrix_a(matrix* a, const double *x, const double *y, const double *_x, const double *_y);
+void fill_matrix_b(matrix* b, const double *_x, const double *_y);
 matrix *projection_matrix(const double *x, const double *y, const double *_x, const double *_y);
 
 glm::mat4 matrixToGlm(const matrix *_mat);
