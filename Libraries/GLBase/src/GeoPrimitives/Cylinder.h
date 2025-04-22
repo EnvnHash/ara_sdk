@@ -15,6 +15,13 @@ class Cylinder : public GeoPrimitive {
 public:
     explicit Cylinder(unsigned int nrSegs, std::vector<CoordType> *instAttribs = nullptr, int maxNrInstances = 1);
     void init() override;
+
+    void createTopRings(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, const std::vector<GLfloat>& ringPos,
+                        float cylRadius, unsigned int& ind) const;
+    static void createCapCenters(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, unsigned int& ind);
+    void createCapRings(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, const std::vector<GLfloat>& ringPos,
+                        float cylRadius, unsigned int& ind) const;
+
     void remove() {}
 
 private:

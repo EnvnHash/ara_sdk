@@ -626,17 +626,22 @@ void WindowManager::globalWindowFocusCb(GLContext ctx, int flag) {
     // get the window user pointer -> this is the GWindowManger instance, set
     // above in "addWin" method
     auto winMan = getThis(ctx);
-    if (!winMan) return;
+    if (!winMan) {
+        return;
+    }
 
     auto winIt    = std::find_if(winMan->getWindows()->begin(), winMan->getWindows()->end(),
                                  [ctx](const std::unique_ptr<GLWindow> &p) { return p->getCtx() == ctx; });
     auto isWinMan = winIt != winMan->getWindows()->end();
 
-    if (winMan->m_fixFocusWin && isWinMan && ctx != winMan->m_fixFocusWin->getCtx())
+    if (winMan->m_fixFocusWin && isWinMan && ctx != winMan->m_fixFocusWin->getCtx()) {
         GLWindow::focusWin(winMan->m_fixFocusWin->getCtx());
+    }
 
     // save this window
-    if (isWinMan) winMan->m_focusedWin = winIt->get();
+    if (isWinMan) {
+        winMan->m_focusedWin = winIt->get();
+    }
 
     // go through the keyCallback vectors and call the corresponding functions
     auto cbIt = winMan->m_winFocusCbMap.find(ctx);
@@ -645,53 +650,75 @@ void WindowManager::globalWindowFocusCb(GLContext ctx, int flag) {
     }
 
     // call the global function which applies for all windows
-    for (auto &it : winMan->m_globalWinFocusCb) it.second(ctx, flag);
+    for (auto &it : winMan->m_globalWinFocusCb) {
+        it.second(ctx, flag);
+    }
 }
 
 void WindowManager::globalWindowPosCb(GLContext ctx, int posx, int posy) {
     // get the window user pointer -> this is the GWindowManger instance, set
     // above in "addWin" method
     auto winMan = getThis(ctx);
-    if (!winMan) return;
+    if (!winMan) {
+        return;
+    }
 
     // go through the keyCallback vectors and call the corresponding functions
     auto cbIt = winMan->m_winPosCbMap.find(ctx);
-    if (cbIt != winMan->m_winPosCbMap.end()) cbIt->second(posx, posy);
+    if (cbIt != winMan->m_winPosCbMap.end()) {
+        cbIt->second(posx, posy);
+    }
 
     // call the global function which applies for all windows
-    for (auto &it : winMan->m_globalWinPosCb) it.second(ctx, posx, posy);
+    for (auto &it : winMan->m_globalWinPosCb) {
+        it.second(ctx, posx, posy);
+    }
 }
 
 void WindowManager::globalScrollCb(GLContext ctx, double posx, double posy) {
     // get the window user pointer -> this is the GWindowManger instance, set
     // above in "addWin" method
     auto winMan = getThis(ctx);
-    if (!winMan) return;
+    if (!winMan) {
+        return;
+    }
 
     // go through the keyCallback vectors and call the corresponding functions
     auto cbIt = winMan->m_scrollCbMap.find(ctx);
-    if (cbIt != winMan->m_scrollCbMap.end()) cbIt->second(posx, posy);
+    if (cbIt != winMan->m_scrollCbMap.end()) {
+        cbIt->second(posx, posy);
+    }
 
     // call the global function which applies for all windows
-    for (auto &it : winMan->m_globalScrollCb) it.second(ctx, posx, posy);
+    for (auto &it : winMan->m_globalScrollCb) {
+        it.second(ctx, posx, posy);
+    }
 }
 
 void WindowManager::globalWindowRefreshCb(GLContext ctx) {
     // get the window user pointer -> this is the GWindowManger instance, set
     // above in "addWin" method
     auto winMan = getThis(ctx);
-    if (!winMan) return;
+    if (!winMan) {
+        return;
+    }
 
     // go through the keyCallback vectors and call the corresponding functions
     auto cbIt = winMan->m_winRefreshCbMap.find(ctx);
-    if (cbIt != winMan->m_winRefreshCbMap.end()) cbIt->second();
+    if (cbIt != winMan->m_winRefreshCbMap.end()) {
+        cbIt->second();
+    }
 
     // call the global function which applies for all windows
-    for (auto &it : winMan->m_globalWinRefreshCbMap) it.second(ctx);
+    for (auto &it : winMan->m_globalWinRefreshCbMap) {
+        it.second(ctx);
+    }
 }
 
 void WindowManager::setSwapInterval(unsigned int winNr, bool swapInterval) const {
-    if (static_cast<unsigned int>(m_windows.size()) >= winNr) m_windows[winNr]->setVSync(swapInterval);
+    if (static_cast<unsigned int>(m_windows.size()) >= winNr) {
+        m_windows[winNr]->setVSync(swapInterval);
+    }
 }
 
 void WindowManager::getHwInfo() {
@@ -739,7 +766,6 @@ std::vector<std::pair<int, int>> WindowManager::getMonitorOffsets() {
 }
 
 GLFWcursor *WindowManager::createMouseCursor(std::string &file, float xHot, float yHot) const {
-    GLFWimage image;
     Texture   tex(m_glbase);
 
 #ifdef ARA_USE_FREEIMAGE
@@ -747,7 +773,7 @@ GLFWcursor *WindowManager::createMouseCursor(std::string &file, float xHot, floa
 
 #ifdef ARA_DEBUG
     if (fs::exists(fs::path("resdata") / fs::path(file))) {
-        pBitmap = tex.ImageLoader((fs::path("resdata") / fs::path(file)).string().c_str(), 0);
+        pBitmap = Texture::ImageLoader((fs::path("resdata") / fs::path(file)).string().c_str(), 0);
 #else
     if (m_res) {
         std::vector<uint8_t> vp;
@@ -762,12 +788,12 @@ GLFWcursor *WindowManager::createMouseCursor(std::string &file, float xHot, floa
             return nullptr;
         }
 #endif
-        image.pixels                    = (GLubyte *)FreeImage_GetBits(pBitmap);
-        image.width                     = static_cast<int>(FreeImage_GetWidth(pBitmap));
-        image.height                    = static_cast<int>(FreeImage_GetHeight(pBitmap));
-        FREE_IMAGE_COLOR_TYPE colorType = FreeImage_GetColorType(pBitmap);
+        GLFWimage image;
+        image.pixels    = FreeImage_GetBits(pBitmap);
+        image.width     = static_cast<int>(FreeImage_GetWidth(pBitmap));
+        image.height    = static_cast<int>(FreeImage_GetHeight(pBitmap));
 
-        GLFWcursor *c = glfwCreateCursor(&image, static_cast<int>(static_cast<float>(image.width) * xHot), static_cast<int>(static_cast<float>(image.height) * yHot));
+        auto c = glfwCreateCursor(&image, static_cast<int>(static_cast<float>(image.width) * xHot), static_cast<int>(static_cast<float>(image.height) * yHot));
         FreeImage_Unload(pBitmap);
         return c;
     }
