@@ -55,7 +55,7 @@ public:
 template <class TVertex>
 class Plane : public Mesh<TVertex> {
 public:
-    static void add(Mesh<TVertex> &geo, const glm::mat4 &mat, int w, int h) {
+    static void add(Mesh<TVertex> &geo, const mat4 &mat, int w, int h) {
         int xdim = w;
         int ydim = h;
 
@@ -63,65 +63,61 @@ public:
         float ymove = 1.0f / (float)ydim;
 
         int width = (xdim + 1);
+        auto vertOffset = static_cast<uint>(geo.m_vertices.size());
 
-        auto vertOffset = (glm::uint)geo.m_vertices.size();
+        // Create vertices
+        std::vector<Vertex> vertices( (ydim + 1) * (xdim + 1)); // Pre-allocate for efficiency
+        for (int y = 0; y < ydim + 1; ++y) {
+            for (int x = 0; x < xdim + 1; ++x) {
+                float xpos = ((float)x * xmove);
+                float ypos = ((float)y * ymove);
 
-        int x, y;
-        for (y = 0; y < ydim + 1; y++) {
-            for (x = 0; x < xdim + 1; x++) {
-                float     xpos = ((float)x * xmove);
-                float     ypos = ((float)y * ymove);
-                glm::vec3 pos;
-                glm::vec2 uv;
-                glm::vec3 normal;
-                glm::vec4 col(1.f);
-
-                pos[0] = (xpos - 0.5f) * 2.0f;
-                pos[1] = (ypos - 0.5f) * 2.0f;
-                pos[2] = 0;
-
-                uv[0] = xpos;
-                uv[1] = ypos;
-
-                normal[0] = 0.0f;
-                normal[1] = 0.0f;
-                normal[2] = 1.0f;
+                vec3 pos((xpos - 0.5f) * 2.0f, (ypos - 0.5f) * 2.0f, 0);
+                vec2 uv(xpos, ypos);
+                vec3 normal(0.0f, 0.0f, 1.0f);
+                vec4 col(1.f);
 
                 Vertex vert = Vertex(pos, normal, uv, col);
-
                 vert.position = mat * vert.position;
                 vert.normal   = mat * vert.normal;
-                geo.m_vertices.push_back(TVertex(vert));
+
+                vertices[x + y * width] = TVertex(vert); // Store in pre-allocated vector
             }
         }
+        geo.m_vertices.insert(geo.m_vertices.end(), vertices.begin(), vertices.end());
 
-        for (y = 0; y < ydim; y++) {
-            for (x = 0; x < xdim; x++) {
-                // upper tris
-                geo.m_indicesTriangles.push_back(glm::uvec3((x) + (y + 1) * width + vertOffset,
-                                                            (x) + (y)*width + vertOffset,
-                                                            (x + 1) + (y + 1) * width + vertOffset));
-                // lower tris
-                geo.m_indicesTriangles.push_back(glm::uvec3((x + 1) + (y + 1) * width + vertOffset,
-                                                            (x) + (y)*width + vertOffset,
-                                                            (x + 1) + (y)*width + vertOffset));
+
+        // Create triangles
+        std::vector<glm::uvec3> triangleIndices;
+        for (int y = 0; y < ydim; ++y) {
+            for (int x = 0; x < xdim; ++x) {
+                int topLeft     = (x) + (y + 1) * width + vertOffset;
+                int bottomLeft  = (x) + (y)*width + vertOffset;
+                int topRight    = (x + 1) + (y + 1) * width + vertOffset;
+                int bottomRight = (x + 1) + (y)*width + vertOffset;
+
+                triangleIndices.emplace_back(topLeft, bottomLeft, topRight);
+                triangleIndices.emplace_back(topRight, bottomLeft, bottomRight);
             }
         }
+        geo.m_indicesTriangles.insert(geo.m_indicesTriangles.end(), triangleIndices.begin(), triangleIndices.end());
 
-        for (y = 0; y < ydim; y++) {
-            geo.m_indicesOutline.push_back(glm::uvec2((y)*width + vertOffset, (y + 1) * width + vertOffset));
+        // Create outline indices
+        std::vector<glm::uvec2> outlineIndices;
+        for (int y = 0; y < ydim; ++y) {
+            outlineIndices.emplace_back((y)*width + vertOffset, (y + 1) * width + vertOffset);
         }
-        for (y = 0; y < ydim; y++) {
-            geo.m_indicesOutline.push_back(
-                glm::uvec2((y)*width + xdim + vertOffset, (y + 1) * width + xdim + vertOffset));
+        for (int y = 0; y < ydim; ++y) {
+            outlineIndices.emplace_back((y)*width + xdim + vertOffset, (y + 1) * width + xdim + vertOffset);
         }
-        for (x = 0; x < xdim; x++) {
-            geo.m_indicesOutline.push_back(glm::uvec2((x) + vertOffset, (x + 1) + vertOffset));
+        for (int x = 0; x < xdim; ++x) {
+            outlineIndices.emplace_back((x) + vertOffset, (x + 1) + vertOffset));
         }
-        for (x = 0; x < xdim; x++) {
-            geo.m_indicesOutline.push_back(
-                glm::uvec2((x) + ydim * width + vertOffset, (x + 1) + ydim * width + vertOffset));
+        for (int x = 0; x < xdim; ++x) {
+            outlineIndices.emplace_back((x) + ydim * width + vertOffset, (x + 1) + ydim * width + vertOffset);
         }
+
+        geo.m_indicesOutline.insert(geo.m_indicesOutline.end(), outlineIndices.begin(), outlineIndices.end());
     }
 
     explicit Plane(int segments = 1) { add(*this, glm::mat4(1), segments, segments); }
@@ -150,17 +146,13 @@ public:
                 case 5: matrixRot = glm::rotate(glm::mat4(1.f), float(M_PI * 1.5f), glm::vec3(1.f, 0.f, 0.f)); break;
             }
 
-            glm::mat4 matrixMove = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, 0.0f, 1.0f));
-            //          glm::mat4 matrixMove =
-            //          nv_math::translation_mat4(0.0f,0.0f,1.0f);
-
+            auto matrixMove = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, 0.0f, 1.0f));
             Plane<TVertex>::add(geo, mat * matrixRot * matrixMove, configs[side][0], configs[side][1]);
         }
     }
 
     explicit Box(int segments = 1) { add(*this, glm::mat4(1), segments, segments, segments); }
 };
-
 template <class TVertex>
 class Sphere : public Mesh<TVertex> {
 public:
@@ -168,80 +160,77 @@ public:
         int xydim = w;
         int zdim  = h;
 
-        auto vertOffset = (glm::uint)geo.m_vertices.size();
+        auto vertOffset = static_cast<uint>(geo.m_vertices.size());
 
-        float xyshift = 1.0f / (float)xydim;
-        float zshift  = 1.0f / (float)zdim;
+        float xyshift = 1.0f / static_cast<float>(xydim);
+        float zshift  = 1.0f / static_cast<float>(zdim);
         int   width   = xydim + 1;
 
-        int xy, z;
-        for (z = 0; z < zdim + 1; z++) {
-            for (xy = 0; xy < xydim + 1; xy++) {
-                glm::vec3 pos;
-                glm::vec3 normal;
-                glm::vec2 uv;
-                glm::vec4 col = glm::vec4(1.f);
-
-                float curxy   = xyshift * (float)xy;
-                float curz    = zshift * (float)z;
+        // Create vertices
+        std::vector<Vertex> vertices((xydim + 1) * (zdim + 1));
+        for (int z = 0; z < zdim + 1; ++z) {
+            for (int xy = 0; xy < xydim + 1; ++xy) {
+                float curxy   = xyshift * static_cast<float>(xy);
+                float curz    = zshift * static_cast<float>(z);
                 float anglexy = curxy * M_PI * 2.0f;
                 float anglez  = (1.0f - curz) * M_PI;
-                pos[0]        = cosf(anglexy) * sinf(anglez);
-                pos[1]        = sinf(anglexy) * sinf(anglez);
-                pos[2]        = cosf(anglez);
-                normal        = pos;
-                uv[0]         = curxy;
-                uv[1]         = curz;
 
-                Vertex vert   = Vertex(pos, normal, uv, col);
+                vec3 pos(cosf(anglexy) * sinf(anglez), sinf(anglexy) * sinf(anglez), cosf(anglez));
+                vec3 normal = pos;
+                vec2 uv(curxy, curz);
+
+                Vertex vert = Vertex(pos, normal, uv, vec4(1.f));
                 vert.position = mat * vert.position;
                 vert.normal   = mat * vert.normal;
 
-                geo.m_vertices.push_back(TVertex(vert));
+                vertices[xy + z * width] = TVertex(vert);
+            }
+        }
+        geo.m_vertices.insert(geo.m_vertices.end(), vertices.begin(), vertices.end());
+
+
+        // Create triangles
+        std::vector<glm::uvec3> triangleIndices;
+        for (int z = 0; z < zdim; ++z) {
+            for (int xy = 0; xy < xydim; ++xy) {
+                int vertex = xy + z * width + vertOffset;
+
+                // Calculate indices for the two triangles forming a quad.
+                int nextX  = (xy + 1) % xydim; // Wrap around to handle last column
+                int nextZ  = (z + 1) % zdim;   // Wrap around to handle last row
+
+                int v0 = vertex;
+                int v1 = xy + (z + 1) * width + vertOffset;
+                int v2 = nextX + z * width + vertOffset;
+                int v3 = nextX + (z + 1) * width + vertOffset;
+
+                triangleIndices.emplace_back(v0, v1, v2);
+                triangleIndices.emplace_back(v1, v3, v2);
+            }
+        }
+        geo.m_indicesTriangles = triangleIndices;
+
+        // Create outline indices (simplified)
+        std::vector<glm::uvec2> outlineIndices;
+
+        // Horizontal lines
+        for (int z = 0; z < zdim + 1; ++z) {
+            for (int x = 0; x < xydim; ++x) {
+                outlineIndices.emplace_back(x + z * width + vertOffset, (x + 1) + z * width + vertOffset);
             }
         }
 
-        int vertex = 0;
-        for (z = 0; z < zdim; z++) {
-            for (xy = 0; xy < xydim; xy++, vertex++) {
-                glm::uvec3 indices;
-                if (z != zdim - 1) {
-                    indices[2] = vertex + vertOffset;
-                    indices[1] = vertex + width + vertOffset;
-                    indices[0] = vertex + width + 1 + vertOffset;
-                    geo.m_indicesTriangles.push_back(indices);
-                }
-
-                if (z != 0) {
-                    indices[2] = vertex + width + 1 + vertOffset;
-                    indices[1] = vertex + 1 + vertOffset;
-                    indices[0] = vertex + vertOffset;
-                    geo.m_indicesTriangles.push_back(indices);
-                }
-            }
-            vertex++;
-        }
-
-        int middlez = zdim / 2;
-
-        for (xy = 0; xy < xydim; xy++) {
-            glm::uvec2 indices;
-            indices[0] = middlez * width + xy + vertOffset;
-            indices[1] = middlez * width + xy + 1 + vertOffset;
-            geo.m_indicesOutline.push_back(indices);
-        }
-
-        for (int i = 0; i < 4; i++) {
-            int x = (xydim * i) / 4;
-            for (z = 0; z < zdim; z++) {
-                glm::uvec2 indices;
-                indices[0] = x + width * (z) + vertOffset;
-                indices[1] = x + width * (z + 1) + vertOffset;
-                geo.m_indicesOutline.push_back(indices);
+        // Vertical lines
+        for (int x = 0; x < xydim + 1; ++x) {
+            for (int z = 0; z < zdim; ++z) {
+                outlineIndices.emplace_back(x + z * width + vertOffset, x + (z + 1) * width + vertOffset);
             }
         }
+
+        geo.m_indicesOutline = outlineIndices;
     }
 
     explicit Sphere(int w = 16, int h = 8) { add(*this, glm::mat4(1), w, h); }
 };
+
 }  // namespace ara::geometry
