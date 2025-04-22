@@ -1,5 +1,4 @@
-//
-// Created by hahne on 22.04.2025.
+
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -81,19 +80,16 @@ bool Conn::parseContent() {
 
     if ((cont_len = getContentLength()) > 0) {
         if (m_rawContent.readContentData(this, cont_len)) {
-            std::string p = getHdrValue(static_cast<const char *>("Content-Type"));
+            auto p = getHdrValue(static_cast<const char *>("Content-Type"));
 
             if (p.find("multipart/form-data") != std::string::npos) {
                 size_t      bpos;
-
                 if ((bpos = p.find("boundary=")) != std::string::npos) {
                     std::string boundary = "--" + p.substr(bpos + 9, std::string::npos);
 
                     m_rawContent.setBoundary(boundary);
 
                     int         lpos = 0;
-                    std::string linestr;
-                    size_t      siaux;
                     int         iaux;
                     int         ret=0;
 
@@ -101,29 +97,15 @@ bool Conn::parseContent() {
                         ret = m_rawContent.moveToNextBoundary();
 
                         if (lpos > 0 && content != nullptr) {
-                            content->setData(
-                                m_rawContent.getData() + lpos,
+                            content->setData(m_rawContent.getData() + lpos,
                                 (iaux = (m_rawContent.getCurrentPos() - static_cast<int>(boundary.length()) - 4 - lpos)) > 0 ? iaux
                                                                                                                 : 0);
                         }
 
                         if (ret >= 0) {
                             content = std::make_shared<Content>();
-
-                            do {
-                                if ((ret = m_rawContent.readLine(linestr)) >= 0) {
-                                    if (linestr.find("Content-Disposition: "
-                                                     "form-data; ") != std::string::npos) {
-                                        content->setName(getQPar(linestr, "name=\""));
-                                        content->setFileName(getQPar(linestr, "filename=\""));
-
-                                    } else if ((siaux = linestr.find("Content-Type: ")) != std::string::npos) {
-                                        content->setType(linestr.substr(siaux + 14));
-                                    }
-                                }
-                            } while (ret > 0);
-
-                            m_Content.push_back(content);
+                            parseLine(ret, content.get());
+                            m_Content.emplace_back(content);
                             lpos = m_rawContent.getCurrentPos();
                         }
 
@@ -135,9 +117,7 @@ bool Conn::parseContent() {
 
                     return false;  // [ERROR] Parsing unsuccessfully
                 }
-
             } else if (p.find("application/x-www-form-urlencoded") != std::string::npos) {
-                // m_glbase->appmsg("application/x-www-form-urlencoded");
 
             } else {
                 content = std::make_shared<Content>();
@@ -149,6 +129,21 @@ bool Conn::parseContent() {
         }
         return false;
     }
+}
+
+int Conn::parseLine(int& ret, Content* content) {
+    do {
+        std::string linestr;
+        if ((ret = m_rawContent.readLine(linestr)) >= 0) {
+            size_t      siaux;
+            if (linestr.find("Content-Disposition: form-data; ") != std::string::npos) {
+                content->setName(getQPar(linestr, "name=\""));
+                content->setFileName(getQPar(linestr, "filename=\""));
+            } else if ((siaux = linestr.find("Content-Type: ")) != std::string::npos) {
+                content->setType(linestr.substr(siaux + 14));
+            }
+        }
+    } while (ret > 0);
 }
 
 uint32_t Conn::getContentLength() {

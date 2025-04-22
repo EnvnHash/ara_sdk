@@ -1,5 +1,4 @@
-//
-// Created by hahne on 22.04.2025.
+
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,6 +34,7 @@ public:
 
     bool        Process(SOCKET sock, const sockaddr_in *addr);
     bool        parseContent();
+    int         parseLine(int& ret, Content* content);
 
     uint32_t    getContentLength();
     std::string getHdrValue(const std::string &name);

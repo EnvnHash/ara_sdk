@@ -1,5 +1,4 @@
-//
-// Created by hahne on 22.04.2025.
+
 //
 
 #pragma once
