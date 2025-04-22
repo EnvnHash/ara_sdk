@@ -9,9 +9,15 @@ public:
     MPCircle();
     MPCircle(int nrSegs, float outerRad, float innerRad, float angle = TWO_PI, float r = 1.f, float g = 1.f,
              float b = 1.f, float a = 1.f);
-    virtual ~MPCircle() = default;
+    ~MPCircle() override = default;
     void init();
-    int  getNrSegments() { return m_nrSegQuads; }
+    void addCirclePoints(float radius, int i, float fInd);
+    void calculateNormals(int i, float fIndPlusOne, float fInd);
+    void push_back_positions(const float* pos, int count);
+    void push_back_normals(const float* normal, int count);
+    void push_back_texCoords(const float* texCoord, int count);
+
+    int  getNrSegments() const { return m_nrSegQuads; }
 
 private:
     bool  m_closeCircle = false;

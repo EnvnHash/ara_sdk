@@ -14,7 +14,7 @@ MPCircle::MPCircle() : Mesh() {
     m_smoothNorm  = 0.5f;
 
     m_nrSegQuads  = 20;
-    m_angle       = (float)TWO_PI;
+    m_angle       = static_cast<float>(TWO_PI);
     m_closeCircle = true;
 
     m_r = 1.f;
@@ -45,69 +45,62 @@ MPCircle::MPCircle(int nrSegs, float outerRad, float innerRad, float angle, floa
 void MPCircle::init() {
     m_format = "position:3f,normal:3f,texCoord:2f,color:4f";
 
-    for (auto i = 0; i < m_nrSegQuads + 1; i++) {
+    for (int i = 0; i <= m_nrSegQuads; ++i) {
         float fInd = static_cast<float>(i) / static_cast<float>(m_nrSegQuads);
-
-        outerRing.push_back(
-            vec3(std::cos(fInd * m_angle) * m_outerRadius, std::sin(fInd * m_angle) * m_outerRadius, 0.f));
-
-        innerRing.push_back(
-            vec3(std::cos(fInd * m_angle) * m_innerRadius, std::sin(fInd * m_angle) * m_innerRadius, 0.f));
+        addCirclePoints(m_outerRadius, i, fInd);
+        addCirclePoints(m_innerRadius, i, fInd);
     }
 
-    // gehe die skelett punkte durch, konstruiere jeweils ein Quad
-    // bestehend aus zwei Triangles pro Segment
-    vec3 nrml;
-    for (int i = 0; i < m_nrSegQuads; i++) {
-        float fInd        = static_cast<float>(i) / static_cast<float>(m_nrSegQuads);
+    for (int i = 0; i < m_nrSegQuads; ++i) {
         float fIndPlusOne = static_cast<float>(i + 1) / static_cast<float>(m_nrSegQuads);
-
-        for (uint j = 0; j < 3; j++) m_positions.push_back(outerRing[i][j]);
-        m_texCoords.push_back(fInd);
-        m_texCoords.push_back(1.f);
-        nrml = vec3(0.f, 0.f, 1.f) * (1.f - m_smoothNorm) + (glm::normalize(outerRing[i]) * m_smoothNorm);
-        for (uint j = 0; j < 3; j++) m_normals.push_back(nrml[j]);
-
-        for (uint j = 0; j < 3; j++) m_positions.push_back(innerRing[(i + 1)][j]);
-        m_texCoords.push_back(fIndPlusOne);
-        m_texCoords.push_back(0.f);
-        nrml = vec3(0.f, 0.f, 1.f);
-        for (uint j = 0; j < 3; j++) m_normals.push_back(nrml[j]);
-
-        for (uint j = 0; j < 3; j++) m_positions.push_back(innerRing[i][j]);
-        m_texCoords.push_back(fInd);
-        m_texCoords.push_back(0.f);
-        for (uint j = 0; j < 3; j++) m_normals.push_back(nrml[j]);
-
-        //-----
-
-        for (uint j = 0; j < 3; j++) m_positions.push_back(innerRing[(i + 1)][j]);
-        m_texCoords.push_back(fIndPlusOne);
-        m_texCoords.push_back(0.f);
-        for (uint j = 0; j < 3; j++) m_normals.push_back(nrml[j]);
-
-        for (uint j = 0; j < 3; j++) m_positions.push_back(outerRing[(i + 1)][j]);
-        m_texCoords.push_back(fInd);
-        m_texCoords.push_back(0.f);
-        nrml = vec3(0.f, 0.f, 1.f) * (1.f - m_smoothNorm) + (glm::normalize(outerRing[i]) * m_smoothNorm);
-        for (uint j = 0; j < 3; j++) m_normals.push_back(nrml[j]);
-
-        for (uint j = 0; j < 3; j++) m_positions.push_back(outerRing[(i + 1)][j]);
-        m_texCoords.push_back(fIndPlusOne);
-        m_texCoords.push_back(0.f);
-        for (uint j = 0; j < 3; j++) m_normals.push_back(nrml[j]);
+        calculateNormals(i, fIndPlusOne, static_cast<float>(i) / static_cast<float>(m_nrSegQuads));
     }
 
-    for (auto i = 0; i < m_nrSegQuads * 6; i++) {
-        // GLfloat v[3] = { positions[i*3], positions[i*3+1], positions[i*3+2]
-        // };
+    for (int i = 0; i < m_nrSegQuads * 6; ++i) {
         push_back_positions(&m_positions[i * 3], 3);
-
-        // GLfloat n[3] = { normal[i].x, normal[i].y, normal[i].z };
         push_back_normals(&m_normals[i * 3], 3);
-
-        // GLfloat t[2] = { texCoords[i].x, texCoords[i].y };
         push_back_texCoords(&m_texCoords[i * 2], 2);
+    }
+}
+
+void MPCircle::addCirclePoints(float radius, int i, float fInd) {
+    outerRing.emplace_back(
+        std::cos(fInd * m_angle) * radius,
+        std::sin(fInd * m_angle) * radius,
+        0.f
+    );
+}
+
+void MPCircle::calculateNormals(const int i, float fIndPlusOne, float fInd) {
+    // Calculate normals for the current segment
+    auto normal = vec3{0.f, 0.f, 1.f} * (1.f - m_smoothNorm) + (glm::normalize(outerRing[i]) * m_smoothNorm);
+    push_back_normals(&normal[0], 3);
+
+    // Repeat the same normal for other vertices in this segment
+    push_back_normals(&normal[0], 3);
+    push_back_normals(&normal[0], 3);
+
+    normal = vec3{0.f, 0.f, 1.f};
+    push_back_normals(&normal[0], 3);
+    push_back_normals(&normal[0], 3);
+    push_back_normals(&normal[0], 3);
+}
+
+void MPCircle::push_back_positions(const float* pos, int count) {
+    for (int i = 0; i < count; ++i) {
+        m_positions.push_back(pos[i]);
+    }
+}
+
+void MPCircle::push_back_normals(const float* normal, int count) {
+    for (int i = 0; i < count; ++i) {
+        m_normals.push_back(normal[i]);
+    }
+}
+
+void MPCircle::push_back_texCoords(const float* texCoord, int count) {
+    for (int i = 0; i < count; ++i) {
+        m_texCoords.push_back(texCoord[i]);
     }
 }
 

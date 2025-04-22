@@ -14,8 +14,7 @@ class Circle : public GeoPrimitive {
 public:
     Circle();
 
-    Circle(int _nrSegs, float _outerRad, float _innerRad, float _angle = TWO_PI, float _r = 1.f, float _g = 1.f,
-           float _b = 1.f, float _a = 1.f, std::vector<CoordType> *_instAttribs = nullptr, int _nrInstances = 1);
+    Circle(int _nrSegs, float _outerRad, float _innerRad, float _angle = TWO_PI, glm::vec4 col = {1.f, 1.f, 1.f, 1.f}, std::vector<CoordType> *_instAttribs = nullptr, int _nrInstances = 1);
 
     virtual ~Circle() = default;
 
