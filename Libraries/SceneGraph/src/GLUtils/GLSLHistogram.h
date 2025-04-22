@@ -20,8 +20,13 @@ public:
                   unsigned int histWidth = 512, bool getBounds = true, bool normalize = true,
                   float maxValPerChan = 1.f);
     ~GLSLHistogram();
-    void procMinMax(GLint texId);
+
+    static void procMinMax(GLint texId);
     void proc(GLint texId);
+    void getMinMax(GLuint texId);
+    void getSpectrum(GLuint texId) const;
+    void getHistoBounds() const;
+    void normalizeHisto();
     void downloadMinMax();
     void downloadEnergyCenter();
 
@@ -35,25 +40,25 @@ public:
     }
     float getMaxInd(unsigned int chan = 0) {
         downloadMinMax();
-        return minMaxSpectr[chan * 4 + 2] / float(histoTexSize.x);
+        return minMaxSpectr[chan * 4 + 2] / static_cast<float>(histoTexSize.x);
     }
     float getMinInd(unsigned int chan = 0) {
         downloadMinMax();
-        return (float(histoTexSize.x - 1) - minMaxSpectr[chan * 4 + 3]) / float(histoTexSize.x);
+        return (static_cast<float>(histoTexSize.x - 1) - minMaxSpectr[chan * 4 + 3]) / static_cast<float>(histoTexSize.x);
     }
     float getHistoPeakInd(unsigned int chan = 0) {
         getEnergyCenter = true;
         downloadEnergyCenter();
-        return energyMed[chan] / float(histoTexSize.x);
+        return energyMed[chan] / static_cast<float>(histoTexSize.x);
     }
     float getEnergySum(float lowThresh) {
         energySumLowThresh = lowThresh;
         b_getEnergySum     = true;
         return energySum;
     }
-    GLint getResult() { return histoFbo->src->getColorImg(); }
-    GLint getMinMaxTex() { return minMaxFbo->getColorImg(); }
-    float getSubtrMax() { return maxValOfType; }
+    [[nodiscard]] GLint getResult() const { return histoFbo->src->getColorImg(); }
+    [[nodiscard]] GLint getMinMaxTex() const { return minMaxFbo->getColorImg(); }
+    [[nodiscard]] float getSubtrMax() const { return maxValOfType; }
     void  setSmoothing(float val) { smoothing = val; }
     void  setValThres(float val) { valThres = val; }
     void  setIndValThres(float val) { indValThres = val; }

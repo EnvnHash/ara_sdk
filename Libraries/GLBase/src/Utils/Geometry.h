@@ -1,9 +1,17 @@
-/*
- * geometry.h
- *
- *  Created on: 19.09.2016
- *      Author: sven
- */
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 #pragma once
 
@@ -23,7 +31,7 @@ public:
         m_indicesTriangles.reserve(geo.m_indicesTriangles.size() + m_indicesTriangles.size());
         m_indicesOutline.reserve(geo.m_indicesOutline.size() + m_indicesOutline.size());
 
-        auto offset = glm::uint(m_vertices.size());
+        auto offset = static_cast<glm::uint>(m_vertices.size());
 
         for (size_t i = 0; i < geo.m_vertices.size(); i++) {
             m_vertices.push_back(geo.m_vertices[i]);
@@ -45,11 +53,11 @@ public:
     }
 
     [[nodiscard]] size_t    getTriangleIndicesSize() const { return m_indicesTriangles.size() * sizeof(glm::uvec3); }
-    [[nodiscard]] glm::uint getTriangleIndicesCount() const { return (glm::uint)m_indicesTriangles.size() * 3; }
+    [[nodiscard]] glm::uint getTriangleIndicesCount() const { return static_cast<glm::uint>(m_indicesTriangles.size()) * 3; }
     [[nodiscard]] size_t    getOutlineIndicesSize() const { return m_indicesOutline.size() * sizeof(glm::uvec2); }
-    [[nodiscard]] glm::uint getOutlineIndicesCount() const { return (glm::uint)m_indicesOutline.size() * 2; }
+    [[nodiscard]] glm::uint getOutlineIndicesCount() const { return static_cast<glm::uint>(m_indicesOutline.size()) * 2; }
     [[nodiscard]] size_t    getVerticesSize() const { return m_vertices.size() * sizeof(TVertex); }
-    [[nodiscard]] glm::uint getVerticesCount() const { return (glm::uint)m_vertices.size(); }
+    [[nodiscard]] glm::uint getVerticesCount() const { return static_cast<glm::uint>(m_vertices.size()); }
 };
 
 template <class TVertex>
@@ -87,7 +95,7 @@ public:
         geo.m_indicesOutline.insert(geo.m_indicesOutline.end(), outlineIndices.begin(), outlineIndices.end());
     }
 
-    void createVertices(Mesh<TVertex> &geo, const glm::mat4 &mat, int xdim, int ydim, int width, std::vector<Vertex>& vertices) {
+    static void createVertices(Mesh<TVertex> &geo, const glm::mat4 &mat, int xdim, int ydim, int width, std::vector<Vertex>& vertices) {
         auto xmove = 1.0f / static_cast<float>(xdim);
         auto ymove = 1.0f / static_cast<float>(ydim);
 
@@ -111,8 +119,8 @@ public:
         geo.m_vertices.insert(geo.m_vertices.end(), vertices.begin(), vertices.end());
     }
 
-    void createTriangles(Mesh<TVertex> &geo, int xdim, int ydim, int width) {
-        auto vertOffset = static_cast<uint>(geo.m_vertices.size());
+    static void createTriangles(Mesh<TVertex> &geo, int xdim, int ydim, int width) {
+        auto vertOffset = static_cast<int>(geo.m_vertices.size());
         std::vector<glm::uvec3> triangleIndices;
         for (int y = 0; y < ydim; ++y) {
             for (int x = 0; x < xdim; ++x) {
@@ -142,14 +150,14 @@ public:
 
             switch (side) {
                 case 0: break;
-                case 1: matrixRot = glm::rotate(glm::mat4(1.f), float(M_PI), glm::vec3(0.f, 1.f, 0.f)); break;
+                case 1: matrixRot = glm::rotate(glm::mat4(1.f), static_cast<float>(M_PI), glm::vec3(0.f, 1.f, 0.f)); break;
                 case 2:
-                    matrixRot = glm::rotate(glm::mat4(1.f), float(M_PI * 0.5f), glm::vec3(0.f, 1.f, 0.f));
+                    matrixRot = glm::rotate(glm::mat4(1.f), static_cast<float>(M_PI * 0.5f), glm::vec3(0.f, 1.f, 0.f));
                     ;
                     break;
-                case 3: matrixRot = glm::rotate(glm::mat4(1.f), float(M_PI * 1.5f), glm::vec3(0.f, 1.f, 0.f)); break;
-                case 4: matrixRot = glm::rotate(glm::mat4(1.f), float(M_PI * 0.5f), glm::vec3(1.f, 0.f, 0.f)); break;
-                case 5: matrixRot = glm::rotate(glm::mat4(1.f), float(M_PI * 1.5f), glm::vec3(1.f, 0.f, 0.f)); break;
+                case 3: matrixRot = glm::rotate(glm::mat4(1.f), static_cast<float>(M_PI * 1.5f), glm::vec3(0.f, 1.f, 0.f)); break;
+                case 4: matrixRot = glm::rotate(glm::mat4(1.f), static_cast<float>(M_PI * 0.5f), glm::vec3(1.f, 0.f, 0.f)); break;
+                case 5: matrixRot = glm::rotate(glm::mat4(1.f), static_cast<float>(M_PI * 1.5f), glm::vec3(1.f, 0.f, 0.f)); break;
             }
 
             auto matrixMove = glm::translate(glm::mat4(1.f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -196,7 +204,7 @@ public:
         geo.m_indicesOutline = outlineIndices;
     }
 
-    void createVertices(Mesh<TVertex> &geo, const glm::mat4 &mat, int zdim, int xydim) {
+    static void createVertices(Mesh<TVertex> &geo, const glm::mat4 &mat, int zdim, int xydim) {
         std::vector<Vertex> vertices((xydim + 1) * (zdim + 1));
 
         int   width   = xydim + 1;
@@ -214,7 +222,7 @@ public:
                 glm::vec3 normal = pos;
                 glm::vec2 uv(curxy, curz);
 
-                Vertex vert = Vertex(pos, normal, uv, vec4(1.f));
+                Vertex vert = Vertex(pos, normal, uv, glm::vec4(1.f));
                 vert.position = mat * vert.position;
                 vert.normal   = mat * vert.normal;
 
@@ -224,9 +232,9 @@ public:
         geo.m_vertices.insert(geo.m_vertices.end(), vertices.begin(), vertices.end());
     }
 
-    void createTriangles(Mesh<TVertex> &geo, int zdim, int xydim) {
+    static void createTriangles(Mesh<TVertex> &geo, int zdim, int xydim) {
         int   width   = xydim + 1;
-        auto vertOffset = static_cast<uint>(geo.m_vertices.size());
+        auto vertOffset = static_cast<int>(geo.m_vertices.size());
 
         for (int z = 0; z < zdim; ++z) {
             for (int xy = 0; xy < xydim; ++xy) {

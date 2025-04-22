@@ -40,36 +40,22 @@ public:
      * iterate through all windows and call the windows startDrawThread()
      * method, thus starting a new thred with the windows draw loop
      */
-    void startThreadedRendering();
+    void startThreadedRendering() const;
 
-    /**
-     * stop all drawing windows
-     */
-    void stopThreadedRendering() {
-        for (auto &it : m_windows)
-            if (it->getDrawFunc())  // DON'T try to stop the GLBase loop by this
-                                    // function, it works differently. we filter
-                                    // it out by checking for its draw function
-                it->stopDrawThread();
-    }
+    /** stop all drawing windows */
+    void stopThreadedRendering() const;
 
-    /** drawing and event thread can run separately. use this for starting an
-     * draw-loop independent event loop */
+    std::thread getOutOfBoundsHIDLoop();
+
+    /** drawing and event thread can run separately. use this for starting an draw-loop independent event loop */
     void startEventLoop();
-
     [[maybe_unused]] void procEventQueue();
-
-    void stopEventLoop() {
-        m_run = false;
-        GLWindow::postEmptyEvent();
-    }
+    void stopEventLoop();
 
     [[maybe_unused]] Conditional *getStopEventLoopSema() { return &m_stopEventLoopSema; }
     [[maybe_unused]] Conditional *getStartEventLoopSema() { return &m_startEventLoopSema; }
 
-    /**
-     * add a new window (using the GWindow glfw-wrapper class)
-     */
+    /** add a new window (using the GWindow glfw-wrapper class) */
     GLWindow *addWin(int width, int height, int refreshRate, bool fullScreen, bool useGL32p, int shiftX = 0,
                      int shiftY = 0, int monitorNr = 0, bool decorated = true, bool floating = false,
                      unsigned int nrSamples = 2, bool hidden = false, bool scaleToMonitor = false,
@@ -77,8 +63,7 @@ public:
                      bool debug = false);
 
     /**
-     * add a new Window using the GWindow Wrapper class
-     * parameters are set via pre filled gWinPar struct
+     * add a new Window using the GWindow Wrapper class parameters are set via pre filled gWinPar struct
      */
     GLWindow *addWin(glWinPar *gp);
 
@@ -87,50 +72,32 @@ public:
     /** global Keyboard callback function, will be called from all contexts
      * context individual keyboard callbacks are called from here */
     static void globalKeyCb(GLContext ctx, int key, int scancode, int action, int mods);
-
     static void globalCharCb(GLContext ctx, unsigned int codepoint);
-
     static void globalMouseButCb(GLContext ctx, int button, int action, int mods);
-
     static void globalMouseCursorCb(GLContext ctx, double xpos, double ypos);
-
     static void globalWindowSizeCb(GLContext ctx, int width, int height);
-
     static void globalWindowCloseCb(GLContext ctx);
-
     static void globalWindowMaximizeCb(GLContext ctx, int flag);
-
     static void globalWindowIconifyCb(GLContext ctx, int flag);
-
     static void globalWindowFocusCb(GLContext ctx, int flag);
-
     static void globalWindowPosCb(GLContext ctx, int posx, int posy);
-
     static void globalScrollCb(GLContext ctx, double posx, double posy);
-
     static void globalWindowRefreshCb(GLContext ctx);
 
-    [[maybe_unused]] void setSwapInterval(unsigned int winNr, bool swapInterval);
+    [[maybe_unused]] void setSwapInterval(unsigned int winNr, bool swapInterval) const;
 
     void getHwInfo();
 
 #ifdef ARA_USE_GLFW
-
     std::vector<GLFWvidmode> getVideoModes();
-
     std::vector<std::pair<int, int>> getMonitorOffsets();
-
-    [[maybe_unused]] GLFWvidmode const &getDispMode(unsigned int idx);
-
-    GLFWcursor *createMouseCursor(std::string &file, float xHot, float yHot);
-
+    [[maybe_unused]] GLFWvidmode const &getDispMode(unsigned int idx) const;
+    GLFWcursor *createMouseCursor(std::string &file, float xHot, float yHot) const;
     void loadMouseCursors();
-
 #endif
 
-    [[maybe_unused]] unsigned int getMonitorWidth(unsigned int winNr);
-
-    [[maybe_unused]] unsigned int getMonitorHeight(unsigned int winNr);
+    [[maybe_unused]] unsigned int getMonitorWidth(unsigned int winNr) const;
+    [[maybe_unused]] unsigned int getMonitorHeight(unsigned int winNr) const;
 
     /** make a specific context visible */
     void open(unsigned int nr) {
@@ -244,7 +211,7 @@ public:
         m_globalWinRefreshCbMap[ptr] = std::move(f);
     }
 
-    void callGlobalMouseButCb(int button);
+    void callGlobalMouseButCb(int button) const;
     void addEvtLoopCb(const std::function<bool()> &);
 
     static void error_callback(int error, const char *description) {
@@ -256,8 +223,7 @@ public:
     // Set of interactive functions for independent sequence calls (marco.m_g)
     // These are useful if we want to call certain functions before and after
     // the render cycle.
-    // ------------------------------        void BeginMainLoop() { m_run =
-    // true; }
+    // ------------------------------
 
     void IterateAll(bool                                                            only_open_windows,
                     std::function<void(double time, double dt, unsigned int ctxNr)> render_function) {

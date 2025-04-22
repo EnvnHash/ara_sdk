@@ -1,5 +1,16 @@
 //
-// Created by user on 26.11.2020.
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
@@ -27,9 +38,13 @@ WindowManager::WindowManager(GLBase *glbase) : m_glbase(glbase) {
     m_run            = true;
     m_globalDrawFunc = std::move(f);
 
-    while (m_run) iterate(true);
+    while (m_run) {
+        iterate(true);
+    }
 
-    for (auto &it : m_windows) it->destroy(false);
+    for (auto &it : m_windows) {
+        it->destroy(false);
+    }
 
     GLWindow::terminateLibrary();
 }
@@ -69,7 +84,7 @@ void WindowManager::iterate(bool only_open_windows) {
 #endif
         ) {
             it->makeCurrent();
-            glViewport(0, 0, (GLsizei)it->getWidth(), (GLsizei)it->getHeight());
+            glViewport(0, 0, static_cast<GLsizei>(it->getWidth()), static_cast<GLsizei>(it->getHeight()));
 
             // note: screen clearing is managed by draw function
             // if there is global draw function set, take it, otherwise take the
@@ -82,7 +97,7 @@ void WindowManager::iterate(bool only_open_windows) {
 
             it->swap();
         }
-        m_winInd++;
+        ++m_winInd;
     }
 
     // check if new windows were requested
@@ -93,15 +108,8 @@ void WindowManager::iterate(bool only_open_windows) {
     GLWindow::makeNoneCurrent();
 }
 
-void WindowManager::startEventLoop() {
-    GLWindow::makeNoneCurrent();  // be sure no context is current in order to be able to create new windows
-
-    m_run          = true;
-    m_mainThreadId = this_thread::get_id();
-#ifdef _WIN32
-    // glfw can't capture clicks outside the active windows ... so do this here
-    // manually
-    auto th = std::thread([this] {
+std::thread WindowManager::getOutOfBoundsHIDLoop() {
+    return std::thread([this] {
         int  x = 0, y = 0;
         bool mousePressed[2] = {false, false};
         bool isOutOfBounds   = false;
@@ -117,12 +125,17 @@ void WindowManager::startEventLoop() {
                 if (mousePressed[0] || mousePressed[1]) {
                     isOutOfBounds = false;
                     getAbsMousePos(x, y);
-                    if (!x && !y) return;
-                    for (auto &w : *getWindows())
-                        if (w && w->isInited() && w->isOpen())
+                    if (!x && !y) {
+                        return;
+                    }
+
+                    for (auto &w : *getWindows()) {
+                        if (w && w->isInited() && w->isOpen()) {
                             isOutOfBounds = isOutOfBounds ||
                                             !(x >= w->getPosition().x && x <= (w->getPosition().x + w->getSize().x) &&
                                               y >= w->getPosition().y && y <= (w->getPosition().y + w->getSize().y));
+                        }
+                    }
                 }
             }
 
@@ -131,6 +144,7 @@ void WindowManager::startEventLoop() {
                     m_didSend[i] = true;
                     callGlobalMouseButCb(i == 0 ? GLFW_MOUSE_BUTTON_LEFT : GLFW_MOUSE_BUTTON_RIGHT);
                 }
+
                 if (!mousePressed[i] && m_didSend[i]) {
                     m_didSend[i] = false;
                 }
@@ -138,10 +152,19 @@ void WindowManager::startEventLoop() {
 
             this_thread::sleep_for(5ms);
         }
-
-        // m_globalMouseClickExited.notify();
     });
-    // th.detach();
+}
+
+void WindowManager::startEventLoop() {
+    GLWindow::makeNoneCurrent();  // be sure no context is current in order to be able to create new windows
+
+    m_run          = true;
+    m_mainThreadId = this_thread::get_id();
+
+#ifdef _WIN32
+    // glfw can't capture clicks outside the active windows ... so do this here manually
+    auto th = getOutOfBoundsHIDLoop();
+
 #endif
     bool funcSuccess = false;
     m_startEventLoopSema.notify();
@@ -161,7 +184,7 @@ void WindowManager::startEventLoop() {
                 if (funcSuccess) {
                     it = m_evtLoopCbs.erase(it);
                 } else {
-                    it++;
+                    ++it;
                 }
             }
 
@@ -170,17 +193,23 @@ void WindowManager::startEventLoop() {
     }
 
 #ifdef _WIN32
-    if (th.joinable()) th.join();
+    if (th.joinable()) {
+        th.join();
+    }
 #endif
 
     m_evtLoopCbs.clear();
     m_stopEventLoopSema.notify();
 }
 
-[[maybe_unused]] void WindowManager::procEventQueue() {
-    bool funcSuccess = false;
+void WindowManager::stopEventLoop() {
+    m_run = false;
+    GLWindow::postEmptyEvent();
+}
 
+void WindowManager::procEventQueue() {
     if (!m_evtLoopCbs.empty()) {
+        bool funcSuccess = false;
 #ifndef __ANDROID__
         m_evtLoopCbMtx.lock();
 #endif
@@ -194,7 +223,7 @@ void WindowManager::startEventLoop() {
             if (funcSuccess) {
                 it = m_evtLoopCbs.erase(it);
             } else {
-                it++;
+                ++it;
             }
         }
 #ifndef __ANDROID__
@@ -203,13 +232,27 @@ void WindowManager::startEventLoop() {
     }
 }
 
-void WindowManager::startThreadedRendering() {
+void WindowManager::startThreadedRendering() const {
     GLWindow::makeNoneCurrent();
 
     // run through all existing windows and start renderloops for them
-    for (auto &it : m_windows)
-        if (!it->isRunning() && it->getDrawFunc()) it->startDrawThread(it->getDrawFunc());
+    for (auto &it : m_windows) {
+        if (!it->isRunning() && it->getDrawFunc()) {
+            it->startDrawThread(it->getDrawFunc());
+        }
+    }
 }
+
+void WindowManager::stopThreadedRendering() const {
+    for (auto &it : m_windows) {
+        if (it->getDrawFunc()) {
+            // DON'T try to stop the GLBase loop by this function, it works differently. we filter
+            // it out by checking for its draw function
+            it->stopDrawThread();
+        }
+    }
+}
+
 
 GLWindow *WindowManager::addWin(int width, int height, int refreshRate, bool fullScreen, bool useGL32p, int shiftX,
                                 int shiftY, int monitorNr, bool decorated, bool floating, unsigned int nrSamples,
@@ -266,7 +309,7 @@ GLWindow *WindowManager::addWin(glWinPar *gp) {
 #endif
 
     if (static_cast<unsigned int>(m_windows.size()) == 1) {
-        m_shareCtx = (void *)m_windows.back()->getCtx();
+        m_shareCtx = static_cast<void *>(m_windows.back()->getCtx());
     }
 
     auto win = m_windows.back().get();
@@ -296,15 +339,15 @@ GLWindow *WindowManager::addWin(glWinPar *gp) {
 
         m_winResizeCbMap[win->getCtx()] = [win](int w, int h) {
 #if defined(_WIN32) || defined(__linux__)
-            win->onWindowSize((int)((float)w / win->getContentScale().x), (int)((float)h / win->getContentScale().x));
+            win->onWindowSize(static_cast<int>(static_cast<float>(w) / win->getContentScale().x), static_cast<int>(static_cast<float>(h) / win->getContentScale().x));
 #else
             win->onWindowSize(w, h);
 #endif
         };
         m_winPosCbMap[win->getCtx()] = [win](int posX, int posY) {
 #ifdef _WIN32
-            win->onWindowPos((int)((float)posX / win->getContentScale().x),
-                             (int)((float)posY / win->getContentScale().x));
+            win->onWindowPos(static_cast<int>(static_cast<float>(posX) / win->getContentScale().x),
+                             static_cast<int>(static_cast<float>(posY) / win->getContentScale().x));
 #else
             win->onWindowPos(posX, posY);
 #endif
@@ -647,7 +690,7 @@ void WindowManager::globalWindowRefreshCb(GLContext ctx) {
     for (auto &it : winMan->m_globalWinRefreshCbMap) it.second(ctx);
 }
 
-[[maybe_unused]] void WindowManager::setSwapInterval(unsigned int winNr, bool swapInterval) {
+void WindowManager::setSwapInterval(unsigned int winNr, bool swapInterval) const {
     if (static_cast<unsigned int>(m_windows.size()) >= winNr) m_windows[winNr]->setVSync(swapInterval);
 }
 
@@ -680,14 +723,14 @@ std::vector<std::pair<int, int>> WindowManager::getMonitorOffsets() {
             glfwGetMonitorPos(m_monitors[i], &monOffsX, &monOffsY);
 
             m_dispOffsets.emplace_back(monOffsX, monOffsY);
-            m_displayInfo.push_back(DisplayBasicInfo{(uint32_t)monOffsX, (uint32_t)monOffsY,
-                                                     (uint32_t)m_dispModes[i].width, (uint32_t)m_dispModes[i].height});
+            m_displayInfo.push_back(DisplayBasicInfo{static_cast<uint32_t>(monOffsX), static_cast<uint32_t>(monOffsY),
+                                                     static_cast<uint32_t>(m_dispModes[i].width), static_cast<uint32_t>(m_dispModes[i].height)});
         }
     }
     return m_dispOffsets;
 }
 
-[[maybe_unused]] GLFWvidmode const &WindowManager::getDispMode(unsigned int idx) {
+[[maybe_unused]] GLFWvidmode const &WindowManager::getDispMode(unsigned int idx) const {
     if (m_dispModes.size() > idx)
         return m_dispModes[idx];
     else {
@@ -695,7 +738,7 @@ std::vector<std::pair<int, int>> WindowManager::getMonitorOffsets() {
     }
 }
 
-GLFWcursor *WindowManager::createMouseCursor(std::string &file, float xHot, float yHot) {
+GLFWcursor *WindowManager::createMouseCursor(std::string &file, float xHot, float yHot) const {
     GLFWimage image;
     Texture   tex(m_glbase);
 
@@ -709,18 +752,22 @@ GLFWcursor *WindowManager::createMouseCursor(std::string &file, float xHot, floa
     if (m_res) {
         std::vector<uint8_t> vp;
         m_res->loadResource(nullptr, vp, file);
-        if (!vp.size()) return nullptr;
+        if (!vp.size()) {
+            return nullptr;
+        }
 
         FreeImg_MemHandler mh(&vp[0], vp.size());
         FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
-        if ((pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0)) == nullptr) return nullptr;
+        if ((pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0)) == nullptr) {
+            return nullptr;
+        }
 #endif
         image.pixels                    = (GLubyte *)FreeImage_GetBits(pBitmap);
-        image.width                     = (int)FreeImage_GetWidth(pBitmap);
-        image.height                    = (int)FreeImage_GetHeight(pBitmap);
+        image.width                     = static_cast<int>(FreeImage_GetWidth(pBitmap));
+        image.height                    = static_cast<int>(FreeImage_GetHeight(pBitmap));
         FREE_IMAGE_COLOR_TYPE colorType = FreeImage_GetColorType(pBitmap);
 
-        GLFWcursor *c = glfwCreateCursor(&image, (int)((float)image.width * xHot), (int)((float)image.height * yHot));
+        GLFWcursor *c = glfwCreateCursor(&image, static_cast<int>(static_cast<float>(image.width) * xHot), static_cast<int>(static_cast<float>(image.height) * yHot));
         FreeImage_Unload(pBitmap);
         return c;
     }
@@ -743,18 +790,24 @@ void WindowManager::loadMouseCursors() {
 
 #endif
 
-[[maybe_unused]] unsigned int WindowManager::getMonitorWidth(unsigned int winNr) {
-    if (static_cast<unsigned int>(m_windows.size()) >= winNr - 1) return m_windows[winNr]->getMonitorWidth();
+unsigned int WindowManager::getMonitorWidth(unsigned int winNr) const {
+    if (static_cast<unsigned int>(m_windows.size()) >= winNr - 1) {
+        return m_windows[winNr]->getMonitorWidth();
+    }
     return 0;
 }
 
-[[maybe_unused]] unsigned int WindowManager::getMonitorHeight(unsigned int winNr) {
-    if (static_cast<unsigned int>(m_windows.size()) >= winNr - 1) return m_windows[winNr]->getMonitorHeight();
+unsigned int WindowManager::getMonitorHeight(unsigned int winNr) const {
+    if (static_cast<unsigned int>(m_windows.size()) >= winNr - 1) {
+        return m_windows[winNr]->getMonitorHeight();
+    }
     return 0;
 }
 
-void WindowManager::callGlobalMouseButCb(int button) {
-    for (auto &it : m_globalButtonCb) it.second(nullptr, button, 0, 0);
+void WindowManager::callGlobalMouseButCb(int button) const {
+    for (auto &it : m_globalButtonCb) {
+        it.second(nullptr, button, 0, 0);
+    }
 }
 }  // namespace ara
 

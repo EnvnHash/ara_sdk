@@ -1,11 +1,20 @@
 //
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 //  GLSLHistogram.cpp
-//  tav_core
 //
-//  Created by Sven Hahne on 08/06/16.
-//  Copyright © 2016 Sven Hahne. All rights reserved.
-//
-//	GPU Histogramm Caluculation with Geometry Shaders
+//	GPU Histogram Calculation with Geometry Shaders
 //
 //  IGNORES 0 - Values !!!! Performance optimization
 //
@@ -17,7 +26,7 @@
 //	Fbo zum speicher der min/max Werte: minMaxSpectrFbo
 //  Structure: [0] = min Value, [1] = max Value, [2] = min Index Histo, [3] =
 //  max Index Histo,
-//             [4] = sum histogram index * value (normalised) / histogramWidth
+//             [4] = sum histogram index * value (normalized) / histogramWidth
 //             [5] leer
 //			   [6] = chan2 min Wert, etc.
 //
@@ -52,16 +61,16 @@ namespace ara {
 
 GLSLHistogram::GLSLHistogram(GLBase* glbase, int _width, int _height, GLenum _type, unsigned int _downSample,
                              unsigned int _histWidth, bool _getBounds, bool _normalize, float _maxValPerChan)
-    : m_glbase(glbase), shCol(&glbase->shaderCollector()), width(_width), height(_height), texType(_type), geoAmp(32),
-      downSample(_downSample), maxHistoWidth((int)_histWidth), normalize(_normalize), maxValPerChan(_maxValPerChan),
-      getBounds(_getBounds), indValThres(0.05f), valThres(0.f) {
+    : m_glbase(glbase), shCol(&glbase->shaderCollector()), texType(_type), geoAmp(32), width(_width), height(_height),
+      maxHistoWidth(static_cast<int>(_histWidth)), downSample(_downSample), normalize(_normalize), getBounds(_getBounds),
+      valThres(0.f), indValThres(0.05f), maxValPerChan(_maxValPerChan) {
     quad = new Quad(-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f,
-                    0.f);  // color will be replace when rendering with blending on
+                    0.f);  // color will be replaced when rendering with blending on
 
     minMax    = new GLfloat[2 * 4];
     minMax[0] = 0;
     minMax[1] = 0;
-    maxValSum = float(width) * float(height);
+    maxValSum = static_cast<float>(width) * static_cast<float>(height);
 
     // get nr channels
     if (_type == GL_R8
@@ -96,10 +105,14 @@ GLSLHistogram::GLSLHistogram(GLBase* glbase, int _width, int _height, GLenum _ty
 
     // array to save the downloaded Texture of the SpectrFBO
     minMaxSpectr = new GLfloat[4 * nrChan];
-    for (int i = 0; i < nrChan * 4; i++) minMaxSpectr[i] = 0;
+    for (int i = 0; i < nrChan * 4; i++) {
+        minMaxSpectr[i] = 0;
+    }
 
     energyMed = new GLfloat[nrChan];
-    for (int i = 0; i < nrChan; i++) energyMed[i] = 0;
+    for (int i = 0; i < nrChan; i++) {
+        energyMed[i] = 0;
+    }
 
     // get pixel m_format
     if (_type == GL_R8 || _type == GL_RG8 || _type == GL_RGB8 || _type == GL_RGBA8) {
@@ -205,7 +218,7 @@ GLSLHistogram::GLSLHistogram(GLBase* glbase, int _width, int _height, GLenum _ty
 
     vector<GLfloat> initSpectrEmitPos(spectrNrEmitTrig * 4);
     for (int x = 0; x < spectrNrEmitTrig; x++) {
-        initSpectrEmitPos[x * 4]     = x * (float)spectrGeoAmp;
+        initSpectrEmitPos[x * 4]     = x * static_cast<float>(spectrGeoAmp);
         initSpectrEmitPos[x * 4 + 1] = 0.f;
         initSpectrEmitPos[x * 4 + 2] = 0.f;
         initSpectrEmitPos[x * 4 + 3] = 1.f;
@@ -268,62 +281,11 @@ void GLSLHistogram::procMinMax(GLint texId) {
 }
 
 void GLSLHistogram::proc(GLint texId) {
-    // in case of float values, first get the min and max values
     if (format == GL_FLOAT) {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        minMaxFbo->bind();
-        minMaxFbo->clearToColor(-maxValOfType, -maxValOfType, -maxValOfType, 1.f);
-
-        glBlendEquation(GL_MAX);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-        minMaxShader->begin();
-        minMaxShader->setUniform1i("tex", 0);
-        minMaxShader->setUniform1i("cellInc", (int)downSample);
-        minMaxShader->setUniform2i("cellSize", cellSize.x, cellSize.y);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texId);
-
-        trigVao->draw(GL_POINTS);
-
-        glReadPixels(0, 0, 2, 1, GL_RED, GL_FLOAT, &minMax[0]);
-
-        minMaxFbo->unbind();
-
-        maximum = minMax[0];
-        minimum = -minMax[1];
-
-        glBlendEquation(GL_FUNC_ADD);
+        getMinMax(texId);
     }
 
-    // --- get spectrum -----------
-
-    histoFbo->dst->bind();
-    histoFbo->dst->clearAlpha(smoothing, 0.f);
-
-    glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_ONE, GL_ONE);
-
-    // values will be uploaded normalized if nothing else is defined....
-    histoShader->begin();
-    histoShader->setUniform1i("tex", 0);
-    histoShader->setUniform1i("cellInc", (int)downSample);
-    histoShader->setUniform2i("cellSize", cellSize.x, cellSize.y);
-    histoShader->setUniform2f("texSize", float(width), float(height));
-    histoShader->setUniform1f("range", maxValPerChan);
-    histoShader->setUniform1i("nrChan", nrChan);
-    histoShader->setUniform1f("thres", valThres);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texId);
-
-    trigVao->draw(GL_POINTS);
-
-    histoFbo->dst->unbind();
-    histoFbo->swap();
+    getSpectrum(texId);
 
     // debug values
     if (b_getEnergySum) {
@@ -336,103 +298,156 @@ void GLSLHistogram::proc(GLint texId) {
 #endif
 
         energySum = 0.f;
-        for (int i = int(energySumLowThresh * float(histoTexSize.x)); i < histoTexSize.x; i++) {
-            // std::cout << "[" << i << "]" << histoDownload[i] << std::endl;
+        for (int i = static_cast<int>(energySumLowThresh * static_cast<float>(histoTexSize.x)); i < histoTexSize.x; i++) {
             energySum += histoDownload[i];
         }
     }
 
     if (getBounds) {
-        // ----- get min and max of spectrum ------
-
-        minMaxSpectrFbo->bind();
-        minMaxSpectrFbo->clear();
-
-        glBlendEquation(GL_MAX);
-        glBlendFunc(GL_ONE, GL_ONE);
-
-        minMaxSpectrShader->begin();
-        minMaxSpectrShader->setUniform1i("tex", 0);
-        minMaxSpectrShader->setUniform1i("cellSize", spectrGeoAmp);
-        minMaxSpectrShader->setUniform1f("maxVal", maxValSum);
-        minMaxSpectrShader->setUniform1f("maxIndex", float(histoTexSize.x) - 1);
-        minMaxSpectrShader->setUniform1f("indValThres", indValThres);
-        minMaxSpectrShader->setUniform1i("nrChan", nrChan);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, histoFbo->src->getColorImg());
-
-        trigSpectrVao->draw(GL_POINTS);
-
-        minMaxSpectrFbo->unbind();
-
-        glBlendEquation(GL_FUNC_ADD);
+        getHistoBounds();
     }
 
     if (normalize) {
-        downloadMinMax();
-
-        // ------ rewrite spectrum normalized ----------
-
-        histoFbo->dst->bind();
-        histoFbo->dst->clear();
-
-        glBlendFunc(GL_ONE, GL_ZERO);
-
-        normShader->begin();
-        normShader->setIdentMatrix4fv("m_pvm");
-        normShader->setUniform1i("minMax", 1);
-        normShader->setUniform1i("histo", 0);
-        normShader->setUniform1f("nrChan", float(nrChan));
-        normShader->setUniform2f("histoSize", float(histoTexSize.x), (float)nrChan);
-
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, minMaxSpectrFbo->getColorImg());
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, histoFbo->src->getColorImg());
-
-        quad->draw();
-
-        histoFbo->dst->unbind();
-        histoFbo->swap();
-
-        // debug values
-        /*
-         glBindTexture(GL_TEXTURE_2D, histoFbo->src->getColorImg());
-         glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, &histoDownload[0]);
-         for(int i=0;i<histoTexSize.x;i++)
-         std::cout << "[" << i << "]" << histoDownload[i] << std::endl;
-         */
-
-        glEnable(GL_BLEND);
-
-        if (getEnergyCenter) {
-            energyMedFbo->bind();
-            energyMedFbo->clear();
-
-            glBlendEquation(GL_MAX);
-            glBlendFunc(GL_ONE, GL_ONE);
-
-            energyMedShader->begin();
-            energyMedShader->setUniform1i("tex", 0);
-            energyMedShader->setUniform1i("cellSize", spectrGeoAmp);
-            energyMedShader->setUniform1i("nrChan", nrChan);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, histoFbo->src->getColorImg());
-
-            trigSpectrVao->draw(GL_POINTS);
-
-            energyMedFbo->unbind();
-            procEnerFrame++;
-        }
+       normalizeHisto();
     }
 
     procFrame++;
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendEquation(GL_FUNC_ADD);
+}
+
+void GLSLHistogram::getMinMax(GLuint texId) {
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    minMaxFbo->bind();
+    minMaxFbo->clearToColor(-maxValOfType, -maxValOfType, -maxValOfType, 1.f);
+
+    glBlendEquation(GL_MAX);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+    minMaxShader->begin();
+    minMaxShader->setUniform1i("tex", 0);
+    minMaxShader->setUniform1i("cellInc", static_cast<int>(downSample));
+    minMaxShader->setUniform2i("cellSize", cellSize.x, cellSize.y);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texId);
+
+    trigVao->draw(GL_POINTS);
+
+    glReadPixels(0, 0, 2, 1, GL_RED, GL_FLOAT, &minMax[0]);
+
+    minMaxFbo->unbind();
+
+    maximum = minMax[0];
+    minimum = -minMax[1];
+
+    glBlendEquation(GL_FUNC_ADD);
+}
+
+void GLSLHistogram::getSpectrum(GLuint texId) const {
+    histoFbo->dst->bind();
+    histoFbo->dst->clearAlpha(smoothing, 0.f);
+
+    glBlendEquation(GL_FUNC_ADD);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    // values will be uploaded normalized if nothing else is defined....
+    histoShader->begin();
+    histoShader->setUniform1i("tex", 0);
+    histoShader->setUniform1i("cellInc", static_cast<int>(downSample));
+    histoShader->setUniform2i("cellSize", cellSize.x, cellSize.y);
+    histoShader->setUniform2f("texSize", static_cast<float>(width), static_cast<float>(height));
+    histoShader->setUniform1f("range", maxValPerChan);
+    histoShader->setUniform1i("nrChan", nrChan);
+    histoShader->setUniform1f("thres", valThres);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texId);
+
+    trigVao->draw(GL_POINTS);
+
+    histoFbo->dst->unbind();
+    histoFbo->swap();
+}
+
+void GLSLHistogram::getHistoBounds() const {
+    minMaxSpectrFbo->bind();
+    minMaxSpectrFbo->clear();
+
+    glBlendEquation(GL_MAX);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    minMaxSpectrShader->begin();
+    minMaxSpectrShader->setUniform1i("tex", 0);
+    minMaxSpectrShader->setUniform1i("cellSize", spectrGeoAmp);
+    minMaxSpectrShader->setUniform1f("maxVal", maxValSum);
+    minMaxSpectrShader->setUniform1f("maxIndex", static_cast<float>(histoTexSize.x) - 1);
+    minMaxSpectrShader->setUniform1f("indValThres", indValThres);
+    minMaxSpectrShader->setUniform1i("nrChan", nrChan);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, histoFbo->src->getColorImg());
+
+    trigSpectrVao->draw(GL_POINTS);
+
+    minMaxSpectrFbo->unbind();
+
+    glBlendEquation(GL_FUNC_ADD);
+}
+
+void GLSLHistogram::normalizeHisto() {
+    downloadMinMax();
+
+    // ------ rewrite spectrum normalized ----------
+
+    histoFbo->dst->bind();
+    histoFbo->dst->clear();
+
+    glBlendFunc(GL_ONE, GL_ZERO);
+
+    normShader->begin();
+    normShader->setIdentMatrix4fv("m_pvm");
+    normShader->setUniform1i("minMax", 1);
+    normShader->setUniform1i("histo", 0);
+    normShader->setUniform1f("nrChan", static_cast<float>(nrChan));
+    normShader->setUniform2f("histoSize", static_cast<float>(histoTexSize.x), static_cast<float>(nrChan));
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, minMaxSpectrFbo->getColorImg());
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, histoFbo->src->getColorImg());
+
+    quad->draw();
+
+    histoFbo->dst->unbind();
+    histoFbo->swap();
+
+    glEnable(GL_BLEND);
+
+    if (getEnergyCenter) {
+        energyMedFbo->bind();
+        energyMedFbo->clear();
+
+        glBlendEquation(GL_MAX);
+        glBlendFunc(GL_ONE, GL_ONE);
+
+        energyMedShader->begin();
+        energyMedShader->setUniform1i("tex", 0);
+        energyMedShader->setUniform1i("cellSize", spectrGeoAmp);
+        energyMedShader->setUniform1i("nrChan", nrChan);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, histoFbo->src->getColorImg());
+
+        trigSpectrVao->draw(GL_POINTS);
+
+        energyMedFbo->unbind();
+        ++procEnerFrame;
+    }
 }
 
 void GLSLHistogram::downloadMinMax() {
@@ -504,7 +519,7 @@ void GLSLHistogram::initShader() {
     std::string frag = STRINGIFY(layout(location = 0) out vec4 color; void main() { color = vec4(1.0); });
     frag             = "// GLSLHistogram Update Shader\n" + shdr_Header + frag;
 
-    histoShader = shCol->add("glsl_histogram", stdVert.c_str(), geom.c_str(), frag.c_str());
+    histoShader = shCol->add("glsl_histogram", stdVert, geom, frag);
 }
 
 void GLSLHistogram::initNormShader() {
@@ -526,7 +541,7 @@ void GLSLHistogram::initNormShader() {
                                  });
     frag             = "// GLSLHistogram Normalization Shader\n" + shdr_Header + frag;
 
-    normShader = shCol->add("glslHisto_norm", stdVert.c_str(), frag.c_str());
+    normShader = shCol->add("glslHisto_norm", stdVert, frag);
 }
 
 void GLSLHistogram::initMinMaxShader() {
@@ -568,7 +583,7 @@ void GLSLHistogram::initMinMaxShader() {
                                  void main() { color = vec4(pixLum, pixLum, pixLum, 1.0); });
     frag             = "// GLSLHistogram Update Shader\n" + shdr_Header + frag;
 
-    minMaxShader = shCol->add("GLSLHistogram_MinMax", stdVert.c_str(), geom.c_str(), frag.c_str());
+    minMaxShader = shCol->add("GLSLHistogram_MinMax", stdVert, geom, frag);
 }
 
 void GLSLHistogram::initMinMaxSpectrShader() {
@@ -622,7 +637,7 @@ void GLSLHistogram::initMinMaxSpectrShader() {
                                  void main() { color = vec4(pixLum, pixLum, pixLum, 1.0); });
     frag             = "// GLSLHistogram minMax Spectr frag Shader\n" + shdr_Header + frag;
 
-    minMaxSpectrShader = shCol->add("GLSLHistogram_MinMaxSpectr", stdVert.c_str(), geom.c_str(), frag.c_str());
+    minMaxSpectrShader = shCol->add("GLSLHistogram_MinMaxSpectr", stdVert, geom, frag);
 }
 
 void GLSLHistogram::initEnergyMedShader() {
@@ -660,7 +675,7 @@ void GLSLHistogram::initEnergyMedShader() {
 
     frag = "// GLSLHistogram energy med frag Shader\n" + shdr_Header + frag;
 
-    energyMedShader = shCol->add("GLSLHistogram_EnergyMedr", stdVert.c_str(), geom.c_str(), frag.c_str());
+    energyMedShader = shCol->add("GLSLHistogram_EnergyMedr", stdVert, geom, frag);
 }
 
 GLSLHistogram::~GLSLHistogram() {

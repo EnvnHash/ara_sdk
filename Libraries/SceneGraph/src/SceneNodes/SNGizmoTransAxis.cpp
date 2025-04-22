@@ -10,7 +10,6 @@ namespace ara {
 SNGizmoTransAxis::SNGizmoTransAxis(sceneData* sd) : SNGizmoAxis(sd) {
     m_nodeType = GLSG_GIZMO;
 
-    float x, z, fInd;
     float cylRadius[2]      = {0.0125f, 0.08f};
     float capRadius[2]      = {0.05f, 0.2f};
     float capYPos           = 0.8f;
