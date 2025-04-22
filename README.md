@@ -45,7 +45,7 @@ The _GenerateAndroidProject_ macro involves a few automatically executed steps
 - in case of a JNI app, create a java MainActivity class, a JNI interface class and a camera permission helper class
 - create a key for signing using _keytool_
 
-## Code Structure
+## Documentation
 
 [GLBase](Libraries/GLBase/src/README.md) OpenGL Utilities and wrapper classes / Window Management
 
