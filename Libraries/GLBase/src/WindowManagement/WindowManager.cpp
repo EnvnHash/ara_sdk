@@ -108,6 +108,7 @@ void WindowManager::iterate(bool only_open_windows) {
     GLWindow::makeNoneCurrent();
 }
 
+#ifdef _WIN32
 std::thread WindowManager::getOutOfBoundsHIDLoop() {
     return std::thread([this] {
         int  x = 0, y = 0;
@@ -154,6 +155,7 @@ std::thread WindowManager::getOutOfBoundsHIDLoop() {
         }
     });
 }
+#endif
 
 void WindowManager::startEventLoop() {
     GLWindow::makeNoneCurrent();  // be sure no context is current in order to be able to create new windows
@@ -164,8 +166,8 @@ void WindowManager::startEventLoop() {
 #ifdef _WIN32
     // glfw can't capture clicks outside the active windows ... so do this here manually
     auto th = getOutOfBoundsHIDLoop();
-
 #endif
+
     bool funcSuccess = false;
     m_startEventLoopSema.notify();
 

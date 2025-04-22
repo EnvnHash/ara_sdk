@@ -45,7 +45,9 @@ public:
     /** stop all drawing windows */
     void stopThreadedRendering() const;
 
+#ifdef _WIN32
     std::thread getOutOfBoundsHIDLoop();
+#endif
 
     /** drawing and event thread can run separately. use this for starting an draw-loop independent event loop */
     void startEventLoop();
