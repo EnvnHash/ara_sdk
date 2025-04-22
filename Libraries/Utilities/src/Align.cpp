@@ -2,14 +2,16 @@
 
 namespace ara {
 
-int Align::Calc(int orientation, int align, e_align_attr &attr) {
-    int             sum    = 0;
-    int             n      = int(size());
-    Align::iterator it     = begin();
-    int             pos[2] = {0, 0};
-    int             sleft  = 0;
+int Align::Calc(int orientation, int align, const e_align_attr &attr) {
+    int  sum    = 0;
+    int  n      = static_cast<int>(size());
+    auto it     = begin();
+    int  pos[2] = {0, 0};
+    int  sleft  = 0;
 
-    if (n <= 0) return 0;
+    if (n <= 0) {
+        return 0;
+    }
 
     pos[0] = attr.margin[0][0];
     pos[1] = attr.margin[0][1];
@@ -57,8 +59,6 @@ int Align::Calc(int orientation, int align, e_align_attr &attr) {
 
         return sum;
     }
-
-    return 0;
 }
 
 }

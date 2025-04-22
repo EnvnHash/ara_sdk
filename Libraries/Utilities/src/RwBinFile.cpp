@@ -39,7 +39,7 @@ std::size_t ReadBinFile(std::vector<uint8_t> &vp, const std::filesystem::path& f
     if (size > 0) {
         vp.resize(size);
         file.seekg(0, ios::beg);
-        file.read(reinterpret_cast<char *>(&vp[0]), size);
+        file.read(reinterpret_cast<char *>(&vp[0]), static_cast<streamsize>(size));
     }
 #endif
 
@@ -53,14 +53,14 @@ std::size_t WriteBinFile(std::vector<uint8_t> &vp, const std::filesystem::path& 
         return 0;
     }
 
-    if (vp.size() > 0) {
-        file.write((char *)&vp[0], vp.size());
+    if (!vp.empty()) {
+        file.write(reinterpret_cast<char *>(&vp[0]),  static_cast<streamsize>(vp.size()));
     }
 
     return vp.size();
 }
 
-std::size_t WriteBinFile(const void *buff, std::size_t size, const std::filesystem::path& filepath) {
+std::size_t WriteBinFile(void *buff, std::size_t size, const std::filesystem::path& filepath) {
     ofstream file(filepath, ios::out | ios::binary);
 
     if (!file.is_open()) {
@@ -68,7 +68,7 @@ std::size_t WriteBinFile(const void *buff, std::size_t size, const std::filesyst
     }
 
     if (size > 0 && buff != nullptr) {
-        file.write((char *)buff, size);
+        file.write(static_cast<char *>(buff),  static_cast<streamsize>(size));
     }
 
     return size;

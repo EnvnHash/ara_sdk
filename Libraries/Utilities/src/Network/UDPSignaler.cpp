@@ -4,11 +4,17 @@
 
 namespace ara {
 bool UDPSignaler::StartBroadcast(int port, int period_ms, std::function<int(void *, int)> const &f) {
-    if (m_Socket) return false;
+    if (m_Socket) {
+        return false;
+    }
 
-    if (port < 0) return false;
+    if (port < 0) {
+        return false;
+    }
 
-    if (period_ms <= 0) return false;
+    if (period_ms <= 0) {
+        return false;
+    }
 
     m_OnEmit    = f;
     m_Port      = port;
@@ -25,21 +31,22 @@ bool UDPSignaler::StartBroadcast(int port, int period_ms, std::function<int(void
 
     int broadcast = 1;
 
-    setsockopt(m_Socket, SOL_SOCKET, SO_BROADCAST, (char *)&broadcast, sizeof(broadcast));
+    setsockopt(m_Socket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char *>(&broadcast), sizeof(broadcast));
 
     return Start();
 }
 
 bool UDPSignaler::OnCycleStop() {
-    if (!m_Socket) return false;
+    if (!m_Socket) {
+        return false;
+    }
 
     closesocket(m_Socket);
-
     return true;
 }
 
 bool UDPSignaler::OnCycle() {
-    int  ret;
+    int  ret = 0;
     int  data_size;
     char buff[512];
     int  max_size = 512;
@@ -53,9 +60,11 @@ bool UDPSignaler::OnCycle() {
 
         if (data_size > 0) {
             data_size = data_size < max_size ? data_size : max_size;
-            buff[data_size] = 0;
+            if (data_size < 512) {
+                buff[data_size] = 0;
+            }
 
-            if ((ret = sendto(m_Socket, buff, data_size, 0, (sockaddr *)&m_SockAddr, sizeof(m_SockAddr))) > 0) {
+            if ((ret = sendto(m_Socket, buff, data_size, 0, reinterpret_cast<sockaddr *>(&m_SockAddr), sizeof(m_SockAddr))) > 0) {
             }
         }
 

@@ -20,7 +20,7 @@ protected:
     SOCKET      m_Socket    = 0;
     int         m_Port      = 0;
     int         m_Period_ms = 1000;
-    sockaddr_in m_SockAddr;
+    sockaddr_in m_SockAddr = {};
 
     bool OnCycleStop() override;
     bool OnCycle() override;

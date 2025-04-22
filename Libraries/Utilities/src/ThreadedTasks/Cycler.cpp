@@ -6,8 +6,9 @@ bool Cycler::Start() {
     std::unique_lock<std::mutex> lck(m_Cycle_Mutex);
 
     if (!(m_CycleState == CycleState::none || m_CycleState == CycleState::finished ||
-          m_CycleState >= CycleState::err_failed))
+          m_CycleState >= CycleState::err_failed)) {
         return false;
+    }
 
     m_CycleState = CycleState::starting;
 
@@ -18,14 +19,17 @@ bool Cycler::Start() {
 }
 
 bool Cycler::Stop(bool asynch) {
-    if (GetCycleState() != CycleState::running) return false;
+    if (GetCycleState() != CycleState::running) {
+        return false;
+    }
 
-    std::thread sth = std::thread(&Cycler::Cycle_Stop, this);
+    auto sth = std::thread(&Cycler::Cycle_Stop, this);
 
-    if (asynch)
+    if (asynch) {
         sth.detach();
-    else
+    } else {
         sth.join();
+    }
 
     return true;
 }
@@ -49,7 +53,9 @@ void Cycler::Cycle() {
 void Cycler::Cycle_Stop() {
     std::unique_lock<std::mutex> lck(m_Cycle_StopMutex);
 
-    if (!OnCycleStop()) return;
+    if (!OnCycleStop()) {
+        return;
+    }
 
     SetCycleState(CycleState::stopping);
     m_Cycle_StopCondition.wait(lck, [this] { return m_CycleState == CycleState::finished; });

@@ -35,10 +35,10 @@ public:
         Project::reassignIdsIt(&m_idCtr, this, &m_idItemMap);
     }
 
-    void reassignIdsIt(int *id, ItemUi *item, std::unordered_map<int, ItemUi *> *map) {
+    static void reassignIdsIt(int *id, ItemUi *item, std::unordered_map<int, ItemUi *> *map) {
         item->id    = *id;
         (*map)[*id] = item;
-        (*id)++;
+        ++(*id);
 
         for (auto &it : reinterpret_cast<std::list<std::unique_ptr<ItemUi>> &>(item->children())) {
             Project::reassignIdsIt(id, it.get(), map);

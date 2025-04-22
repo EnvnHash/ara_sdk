@@ -4,12 +4,11 @@
 
 #include "OSFileDialog.h"
 
-#include <codecvt>
 #include <string_utils.h>
 
 namespace ara {
 #ifdef _WIN32
-std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuffix, HWND owner) {
+std::string OpenFileDialog(const std::vector<COMDLG_FILTERSPEC> &allowedSuffix, HWND owner) {
     std::string outFileName;
     HRESULT     hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     if (SUCCEEDED(hr)) {
@@ -20,7 +19,7 @@ std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuffix, HWND o
                               reinterpret_cast<void **>(&pFileOpen));
 
         if (SUCCEEDED(hr)) {
-            hr = pFileOpen->SetFileTypes((UINT)allowedSuffix.size(), &allowedSuffix[0]);
+            pFileOpen->SetFileTypes(static_cast<UINT>(allowedSuffix.size()), &allowedSuffix[0]);
             // Show the Open dialog box.
             hr = pFileOpen->Show(owner);
 
@@ -67,11 +66,11 @@ std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> file
         IFileSaveDialog *pFileSave;
 
         // Create the FileOpenDialog object.
-        hr = CoCreateInstance(CLSID_FileSaveDialog, NULL, CLSCTX_ALL, IID_IFileSaveDialog,
+        hr = CoCreateInstance(CLSID_FileSaveDialog, nullptr, CLSCTX_ALL, IID_IFileSaveDialog,
                               reinterpret_cast<void **>(&pFileSave));
 
         if (SUCCEEDED(hr)) {
-            pFileSave->SetFileTypes((UINT)aFileTypes.size(), &aFileTypes[0]);
+            pFileSave->SetFileTypes(static_cast<UINT>(aFileTypes.size()), &aFileTypes[0]);
             pFileSave->SetDefaultExtension(L".xml");
 
             // Show the Open dialog box.

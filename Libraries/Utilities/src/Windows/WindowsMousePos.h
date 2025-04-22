@@ -12,8 +12,8 @@ namespace ara::mouse {
 static int getAbsMousePos(int &root_x, int &root_y) {
     POINT pos;
     if (GetCursorPos(&pos)) {
-        root_x = (int)pos.x;
-        root_y = (int)pos.y;
+        root_x = static_cast<int>(pos.x);
+        root_y = static_cast<int>(pos.y);
         return 0;
     }
     return 1;

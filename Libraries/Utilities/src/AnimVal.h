@@ -15,6 +15,8 @@ enum class AnimFunc : int { RAMP_LIN_UP = 0, TRI_ONE_P };
 
 class AnimValBase {
 public:
+    virtual ~AnimValBase() = default;
+
     virtual void update() = 0;
     virtual void stop() = 0;
     virtual bool stopped() = 0;
@@ -28,7 +30,7 @@ public:
     AnimVal() : m_run(false), m_delay(0.0) {}
 
     explicit AnimVal(AnimFunc func, std::function<void()> endFunc = nullptr)
-        : m_func(func), m_endFunc(std::move(endFunc)), m_run(false), m_delay(0.0) {}
+        : m_func(func), m_run(false), m_delay(0.0), m_endFunc(std::move(endFunc)) {}
 
     void update() override {
         if (m_run) {
@@ -94,7 +96,7 @@ public:
     bool                            stopped() override { return !m_run; }
     AnimFunc                        getAnimFunc() override { return m_func; }
     const std::function<void()>&    getEndFunc() { return m_endFunc; }
-    float                           getPercentage() { return m_perc; }
+    [[nodiscard]] float             getPercentage() const { return m_perc; }
 
     void reset() {
         m_perc     = 0.0;
@@ -106,7 +108,7 @@ public:
         return m_blendVal;
     }
 
-    bool isWaiting() {
+    bool isWaiting() const {
         return m_perc == 0.f;
     }
 

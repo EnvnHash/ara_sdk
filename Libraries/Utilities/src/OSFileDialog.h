@@ -14,7 +14,7 @@
 
 namespace ara {
 #ifdef _WIN32
-std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC>& allowedSuffix, HWND owner);
+std::string OpenFileDialog(const std::vector<COMDLG_FILTERSPEC>& allowedSuffix, HWND owner);
 std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes, HWND owner);
 #elif defined(__linux__) && !defined(__ANDROID__)
 

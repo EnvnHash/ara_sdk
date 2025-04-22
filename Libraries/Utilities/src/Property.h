@@ -10,7 +10,7 @@
 #include <list>
 #include <memory>
 #include <unordered_map>
-#include <iostream>
+
 #include <json/json.hpp>
 
 namespace ara {
@@ -78,7 +78,7 @@ public:
         for (auto it = m_valPreChecking.begin(); it != m_valPreChecking.end();)
             if (auto p = it->lock()) {
                 p->operator()(std::any(i));
-                it++;
+                ++it;
             } else {
                 it = m_valPreChecking.erase(it);
             }
@@ -93,7 +93,7 @@ public:
         for (auto it = m_valPostChecking.begin(); it != m_valPostChecking.end();)
             if (auto p = it->lock()) {
                 p->operator()(std::any(m_value));
-                it++;
+                ++it;
             } else {
                 it = m_valPostChecking.erase(it);
             }
@@ -108,14 +108,14 @@ public:
         return out;
     }
 
-    /** add an callback which will be called before the property changes it's
+    /** add a callback which will be called before the property changes it's
      * value. The shared_ptr is store as a weak_ptr and remove from the list,
      * when it can't be locked, which means that it's owner was deleted */
     void onPreChange(std::shared_ptr<std::function<void(std::any)>> funcPtr) {
         m_valPreChecking.emplace_back(funcPtr);
     }
 
-    /** add an callback which will be called when the property value is changed,
+    /** add a callback which will be called when the property value is changed,
      * before m_value is set. the new value is passed as arg. no checking is
      * done if the class instance passing this callback still exists. It has to
      * be removed when the caller is destroyed with removeOnPreChange() This is
@@ -125,14 +125,14 @@ public:
         m_valPreChange[ptr] = func;
     }
 
-    /** add an callback which will be called after the property changed it's
+    /** add a callback which will be called after the property changed its
      * value. The shared_ptr is store as a weak_ptr and remove from the list,
      * when it can't be locked, which means that it's owner was deleted */
     void onPostChange(std::shared_ptr<std::function<void(std::any)>> funcPtr) {
         m_valPostChecking.emplace_back(funcPtr);
     }
 
-    /** add an callback which will be called when the property value is changed,
+    /** add a callback which will be called when the property value is changed,
      * after m_value is set. no checking is done if the class instance passing
      * this callback still exists. It has to be removed when the caller is
      * destroyed with removeOnPostChange() This is meant to be used when the
@@ -148,7 +148,7 @@ public:
         }
     }
 
-    void removeOnPostChange(void *ptr) {
+    void removeOnPostChange(const void *ptr) {
         if (ptr) {
             auto it = m_valPostChange.find(ptr);
             if (it != m_valPostChange.end()) {
@@ -163,7 +163,7 @@ public:
     T m_step;
 
     void setIsAttrib(bool b) { m_isAttrib = true; }
-    bool isAttrib(bool b) { return m_isAttrib; }
+    bool isAttrib(bool b) const { return m_isAttrib; }
 
 private:
     std::list<std::weak_ptr<std::function<void(std::any)>>> m_valPreChecking;
@@ -210,7 +210,7 @@ public:
     }
 
     T &get() {
-        return(T&)(*ptr);
+        return static_cast<T&>(*ptr);
     }
 
     void setMinMax(T min, T max) {

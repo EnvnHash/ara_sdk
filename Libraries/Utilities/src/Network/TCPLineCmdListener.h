@@ -23,9 +23,7 @@ protected:
     int    m_Port   = 0;
 
     virtual bool OnCycleStop();
-
     virtual bool OnCycle();
-
     virtual bool OnReceive(SOCKET s, std::string &cmd, sockaddr_in *) { return true; }
 };
 

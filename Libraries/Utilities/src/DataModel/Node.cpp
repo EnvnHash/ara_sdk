@@ -208,8 +208,6 @@ void Node::load() {
         saveState();
     }
 
-    json j;
-
 #ifdef ARA_USE_CMRC
     auto fs = cmrc::ara::get_filesystem();
     if (fs.exists(m_fileName.string())) {
@@ -221,6 +219,7 @@ void Node::load() {
     }
 #else
     if (std::filesystem::exists(m_fileName)) {
+        json j;
         std::ifstream i(m_fileName);
         i >> j;
         deserialize(j);
@@ -283,7 +282,7 @@ void Node::undo() {
         saveState();    // will set the undoBufIt tp the end of the queue
     }
 
-    m_undoBufIt--;  // set back one entry
+    --m_undoBufIt;  // set back one entry
 
     m_undoing = true;
     deserialize(json::from_bson(*m_undoBufIt));
@@ -296,7 +295,7 @@ void Node::redo() {
     }
 
     if (m_undoBufIt != --m_undoBuf.end()) {
-        m_undoBufIt++;
+        ++m_undoBufIt;
         m_undoing = true;
         deserialize(json::from_bson(*m_undoBufIt));
         m_undoing = false;

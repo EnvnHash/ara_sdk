@@ -14,7 +14,6 @@ public:
 
 private:
     std::function<void(SOCKET s, sockaddr_in *)> m_OnConnect;
-
     void ProcessConnection(SOCKET s, sockaddr_in sa);
 
 protected:
@@ -22,9 +21,7 @@ protected:
     int    m_Port   = 0;
 
     virtual bool OnCycleStop();
-
     virtual bool OnCycle();
-
     virtual bool OnConnect(SOCKET s, sockaddr_in *) { return true; }
 };
 

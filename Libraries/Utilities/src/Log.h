@@ -3,7 +3,6 @@
 #include <functional>
 #include <iostream>
 #include <sstream>
-#include <cmath>
 
 #ifdef __ANDROID__
 #include <android/log.h>

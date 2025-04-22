@@ -36,7 +36,7 @@ public:
         }
     }
 
-    double getDt() const { return dt; }
+    [[nodiscard]] double getDt() const { return dt; }
     void   setMed(double val) { med = val; }
 
     std::chrono::time_point<std::chrono::system_clock> start;

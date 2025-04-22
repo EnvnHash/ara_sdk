@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Table.h"
 #include "Log.h"
 
@@ -10,7 +9,7 @@ bool TableRC::add(int count) {
 }
 
 bool TableRC::addPix(int count, int pix) {
-    eTable_rc tb{float(pix), dTableType::Pix};
+    eTable_rc tb{static_cast<float>(pix), dTableType::Pix};
     return ins(-1, count, tb);
 }
 
@@ -25,7 +24,7 @@ bool TableRC::ins(int at, int count) {
 }
 
 bool TableRC::insPix(int at, int count, int pix) {
-    eTable_rc tb{float(pix), dTableType::Pix};
+    eTable_rc tb{static_cast<float>(pix), dTableType::Pix};
     return ins(-1, count, tb);
 }
 
@@ -35,7 +34,7 @@ bool TableRC::insPercent(int at, int count, float percent) {
 }
 
 bool TableRC::setPix(int index, int pix) {
-    eTable_rc tb{float(pix), dTableType::Pix};
+    eTable_rc tb{static_cast<float>(pix), dTableType::Pix};
     return set(index, tb);
 }
 
@@ -44,15 +43,15 @@ bool TableRC::setPercent(int index, float percent) {
     return set(index, tb);
 }
 
-bool TableRC::ins(int at, int count, eTable_rc &rc) {
+bool TableRC::ins(int at, int count, const eTable_rc &rc) {
     if (at == -1) at = getCount();
 
     if (at < 0 || at > getCount() || count <= 0) {
         return false;
     }
 
-    auto it = iVector.begin() + at;
-    it               = iVector.insert(it, count, rc);
+    const auto it = iVector.begin() + at;
+    iVector.insert(it, count, rc);
 
     return true;
 }
@@ -75,7 +74,7 @@ bool TableRC::del(int at, int count) {
     return true;
 }
 
-bool TableRC::set(int index, eTable_rc &rc) {
+bool TableRC::set(int index, const eTable_rc &rc) {
     if (index < 0 || index >= getCount()) {
         return false;
     }
@@ -98,7 +97,7 @@ bool TableRC::updateGeo(float pix_size, float pix_margin_lo, float pix_margin_hi
         return false;
     }
 
-    float eff_size = pix_size - pix_margin_lo - pix_padding * (float)(n - 1) - pix_margin_hi;  // effective size
+    float eff_size = pix_size - pix_margin_lo - pix_padding * static_cast<float>(n - 1) - pix_margin_hi;  // effective size
     float t_size   = 0;
     float cpix = 0, cper = 0;
     int   none_count = 0;
@@ -128,7 +127,7 @@ bool TableRC::updateGeo(float pix_size, float pix_margin_lo, float pix_margin_hi
     if (none_count) {
         for (eTable_rc &rc : iVector) {
             if (rc.type == dTableType::Undef) {
-                rc.size = t_size / (float)none_count;
+                rc.size = t_size / static_cast<float>(none_count);
             }
         }
     }
@@ -136,7 +135,7 @@ bool TableRC::updateGeo(float pix_size, float pix_margin_lo, float pix_margin_hi
     float ta = eff_size, i = 0;
 
     for (eTable_rc &rc : iVector) {
-        if (i == n - 1 && !rc.fixed) {
+        if (static_cast<int>(i) == n - 1 && !rc.fixed) {
             rc.size = ta;
         }
         ta -= rc.size;
@@ -163,7 +162,6 @@ float TableRC::calculatePixGeo(float pix_margin_lo, float pix_margin_hi, float p
     }
 
     float eff_size = pix_margin_lo + pix_padding * static_cast<float>(n - 1) + pix_margin_hi;  // effective size
-    float t_size   = 0;
     float cpix = 0, cper = 0, cnone = 0;
     int   none_count = 0;
 
@@ -192,9 +190,8 @@ float TableRC::calculatePixGeo(float pix_margin_lo, float pix_margin_hi, float p
 
 dTableType TableRC::evalByPix(int &index, float pix) {
     int                 i = 0;
-    RCV::const_iterator it;
 
-    for (it = iVector.begin(); it < iVector.end(); ++it) {
+    for (RCV::const_iterator it = iVector.begin(); it < iVector.end(); ++it) {
         if ((pix >= it->pos) && (pix < it->pos + it->size)) {
             index = i;
             return dTableType::Cell;
@@ -233,7 +230,7 @@ bool TableRC::startSepInt(eTable_sepInt &si, float pix) {
     return true;
 }
 
-bool TableRC::updateSepInt(eTable_sepInt &si, float pix) {
+bool TableRC::updateSepInt(const eTable_sepInt &si, float pix) {
     if (si.type != dTableType::Separator) {
         return false;
     }
@@ -320,8 +317,8 @@ bool Table::updateSepInt(float p[2]) {
 }
 
 bool Table::stopSepInt(float p[2]) {
-    m_Mat[0].stopSepInt(sepInt[0], p[1]);
-    m_Mat[1].stopSepInt(sepInt[1], p[0]);
+    TableRC::stopSepInt(sepInt[0], p[1]);
+    TableRC::stopSepInt(sepInt[1], p[0]);
     return true;
 }
 

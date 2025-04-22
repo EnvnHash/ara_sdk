@@ -6,6 +6,8 @@ namespace ara {
 
 class Cycler {
 public:
+    virtual ~Cycler() = default;
+
     enum class CycleState { none, starting, running, stopping, finished, err_failed };
 
     CycleState GetCycleState();

@@ -30,7 +30,7 @@ public:
 
     virtual void init();
     virtual void load(const std::filesystem::path& filename);
-    virtual void saveAs(std::filesystem::path filename, bool showInfo = true);
+    virtual void saveAs(const std::filesystem::path& filename, bool showInfo = true);
     virtual void save(bool showInfo = true);
     virtual bool createNewSettings(const std::filesystem::path& path);
     virtual bool loadSettings(const std::filesystem::path& path);

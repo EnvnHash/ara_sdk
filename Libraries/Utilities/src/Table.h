@@ -35,7 +35,7 @@ class TableRC {
 public:
     typedef std::vector<eTable_rc> RCV;
 
-    int  getCount() { return (int)V().size(); }
+    int  getCount() { return static_cast<int>(V().size()); }
     bool add(int count);                                // adds content with defaults
     bool addPix(int count, int pix);                    // adds content with int_val=pix
     bool addPercent(int count, float percent);          // adds content with fp_val=percent [0..100]
@@ -45,9 +45,9 @@ public:
     bool insPercent(int at, int count, float percent);  // inserts content with fp_val=percent [0..100]
     bool setPix(int index, int pix);
     bool setPercent(int index, float percent);
-    bool ins(int at, int count, eTable_rc &rc);         // at==-1 : at=getCount()
+    bool ins(int at, int count, const eTable_rc &rc);         // at==-1 : at=getCount()
     bool del(int at, int count);                        // erase count elements at 'at' if count==-1 count=getCount()
-    bool      set(int index, eTable_rc &rc);
+    bool      set(int index, const eTable_rc &rc);
     eTable_rc get(int index);
 
     friend TableRC &operator<<(TableRC &t, eTable_rc &rc) {
@@ -64,11 +64,12 @@ public:
     RCV       &V() { return iVector; }
     dTableType evalByPix(int  &index, float pix);  // returns Type (None,Cell,Separator) index has the item's index
     bool  startSepInt(eTable_sepInt &si, float pix);
-    bool  updateSepInt(eTable_sepInt &si, float pix);
-    bool  stopSepInt(eTable_sepInt &si, float pix);
+    bool  updateSepInt(const eTable_sepInt &si, float pix);
+
+    static bool  stopSepInt(eTable_sepInt &si, float pix);
     float setSepPix(int index, float pix);  // returns the value in pixels that is accepted
     bool  setDynamicSize(bool on_off) { return (opt_DynamicSize = on_off); }
-    bool  getDynamicSize() { return opt_DynamicSize; }
+    [[nodiscard]] bool  getDynamicSize() const { return opt_DynamicSize; }
 
 private:
     RCV  iVector;
@@ -77,6 +78,8 @@ private:
 
 class Table {
 public:
+    virtual ~Table() = default;
+
     bool     updateGeo(float w, float h, float left_margin, float top_margin, float right_margin, float bottom_margin,
                        float h_padding, float v_padding);
     int      getCellCount();
@@ -105,9 +108,9 @@ public:
         return true;
     }
 
-    void reset() {
-        for (int i = 0; i < 2; i++) {
-            m_Mat[i].del(0, m_Mat[i].getCount());
+    void reset() override {
+        for (auto & i : m_Mat) {
+            i.del(0, i.getCount());
         }
 
         std::vector<T>::clear();

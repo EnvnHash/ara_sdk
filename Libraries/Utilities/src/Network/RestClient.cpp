@@ -33,17 +33,19 @@ void RestClient::init() {
                             if (!m_run) return;
 
                             RestCallResult res;
-                            RestCallCbData call(*it);  // somehow curl kills the it reference on
-                                                       // android armv8
+                            RestCallCbData call(*it);  // somehow curl kills the "it"-reference on android armv8
 
-                            if (it->callType == restCallType::post || it->callType == restCallType::get)
+                            if (it->callType == restCallType::post || it->callType == restCallType::get) {
                                 res = procCall(call);
-                            else if (it->callType == restCallType::downloadBuffer)
+                            } else if (it->callType == restCallType::downloadBuffer) {
                                 res = procDownloadBuffer(call);
-                            else if (it->callType == restCallType::downloadFile)
+                            } else if (it->callType == restCallType::downloadFile) {
                                 res = procDownloadFile(call);
+                            }
 
-                            if (res.valid) res.cb(res.msg);
+                            if (res.valid) {
+                                res.cb(res.msg);
+                            }
 
                             (*call.done) = true;
                         });
@@ -51,10 +53,11 @@ void RestClient::init() {
                 }
 
                 for (auto it = m_callQueue.begin(); it != m_callQueue.end();) {
-                    if (it->done)
+                    if (it->done) {
                         it = m_callQueue.erase(it);
-                    else
-                        it++;
+                    } else {
+                        ++it;
+                    }
                 }
             }
         }
@@ -72,8 +75,9 @@ RestCallResult RestClient::procCall(const RestCallCbData &rc) {
     std::string params;
     auto        curl = curl_easy_init();
 
-    auto rcParams = rc.hasParams ? &rc.params : nullptr;
-    if (rcParams) params = rcParams->dump();
+    if (auto rcParams = rc.hasParams ? &rc.params : nullptr) {
+        params = rcParams->dump();
+    }
 
     struct curl_slist *headers = nullptr;
     headers                    = curl_slist_append(headers, "Accept: application/json");
@@ -93,7 +97,7 @@ RestCallResult RestClient::procCall(const RestCallCbData &rc) {
         curl_easy_setopt(curl, CURLOPT_URL, rc.url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &RestClient::curlWriter);
         curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, &RestClient::progress_callback);
-        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, (void *)this);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, static_cast<void *>(this));
         curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -103,18 +107,21 @@ RestCallResult RestClient::procCall(const RestCallCbData &rc) {
         // strange things are happening on armv8 android in case httpData is a
         // simple std::string
         auto *httpData = new std::string();
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)httpData);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, static_cast<void *>(httpData));
 
         if (rc.callType == restCallType::post) {
-            if (!params.empty())
+            if (!params.empty()) {
                 curl_easy_setopt(curl, CURLOPT_POSTFIELDS, params.c_str());
-            else
+            } else {
                 curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0L);
+            }
         }
 
         // Perform the request, res will get the return code
         CURLcode res = curl_easy_perform(curl);
-        if (res != CURLE_OK) LOGE << "Error: Curl request failed \n";
+        if (res != CURLE_OK) {
+            LOGE << "Error: Curl request failed \n";
+        }
 
         int httpCode = 0;
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
@@ -125,20 +132,22 @@ RestCallResult RestClient::procCall(const RestCallCbData &rc) {
             // Response looks good - done using Curl now.  Try to parse the
             // results
             if (m_run && rc.cb) {
-                std::string err;
                 auto        msg = json::parse(*httpData);
                 delete httpData;
 
-                if (!msg.empty())
+                if (!msg.empty()) {
                     return RestCallResult{true, rc.cb, msg};
-                else
+                } else {
+                    std::string err;
                     LOGE << err;
+                }
             }
         } else {
-            if (!httpData->empty())
+            if (!httpData->empty()) {
                 LOGE << "nmsApiCall request failed " << rc.url << " no data received";
-            else
+            } else {
                 LOGE << "nmsApiCall request failed " << rc.url << " " << httpData;
+            }
 
             delete httpData;
         }
@@ -162,7 +171,7 @@ RestCallResult RestClient::procDownloadBuffer(const RestCallCbData &rc) {
         curl_easy_setopt(curl, CURLOPT_URL, rc.url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &RestClient::curlWriter);
         curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, &RestClient::progress_callback);
-        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, (void *)this);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, static_cast<void *>(this));
         curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
@@ -171,16 +180,19 @@ RestCallResult RestClient::procDownloadBuffer(const RestCallCbData &rc) {
 
         // Perform the request, res will get the return code
         CURLcode res = curl_easy_perform(curl);
-        if (res != CURLE_OK) LOGE << "Error: Curl request failed \n";
+        if (res != CURLE_OK) {
+            LOGE << "Error: Curl request failed \n";
+        }
 
         int httpCode = 0;
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode);
         curl_easy_cleanup(curl);
 
         if (httpCode == 200) {
-            // Response looks good - done using Curl now.  Try to parse the
-            // results
-            if (rc.cb && m_run) rc.cb(json());
+            // Response looks good - done using Curl now.  Try to parse the results
+            if (rc.cb && m_run) {
+                rc.cb(json());
+            }
         } else {
             LOGE << "nmsApiCall request failed " << rc.url;
         }
@@ -203,18 +215,19 @@ RestCallResult RestClient::procDownloadFile(const RestCallCbData &rc) {
         curl_easy_setopt(curl, CURLOPT_URL, rc.url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &RestClient::curlWriteFile);
         curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, &RestClient::progress_callback);
-        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, (void *)this);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, static_cast<void *>(this));
         curl_easy_setopt(curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         curl_easy_setopt(curl, CURLOPT_TIMEOUT, 8L);
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-        FILE *fp = fopen(rc.dstPath.c_str(), "wb");
-        if (fp) {
+        if (FILE *fp = fopen(rc.dstPath.c_str(), "wb")) {
             curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
 
             // Perform the request, res will get the return code
             CURLcode res = curl_easy_perform(curl);
-            if (res != CURLE_OK) LOGE << "Error: Curl request failed \n";
+            if (res != CURLE_OK) {
+                LOGE << "Error: Curl request failed \n";
+            }
 
             fclose(fp);
             int httpCode = 0;
@@ -223,7 +236,9 @@ RestCallResult RestClient::procDownloadFile(const RestCallCbData &rc) {
 
             if (httpCode == 200) {
                 // Response looks good - Try to parse the results
-                if (rc.cb != nullptr && m_run) rc.cb(json());
+                if (rc.cb != nullptr && m_run) {
+                    rc.cb(json());
+                }
             } else {
                 LOGE << "nmsApiCall request failed " << rc.url;
             }
@@ -237,16 +252,18 @@ RestCallResult RestClient::procDownloadFile(const RestCallCbData &rc) {
     return {};
 }
 
-int RestClient::curlWriter(char *data, size_t size, size_t nmemb, std::string *buffer_in) {
-    if (!buffer_in) return 0;
+int RestClient::curlWriter(const char *data, size_t size, size_t nmemb, std::string *buffer_in) {
+    if (!buffer_in) {
+        return 0;
+    }
 
     size_t realsize = size * nmemb;
     buffer_in->append(data, realsize);
 
-    return (int)realsize;
+    return static_cast<int>(realsize);
 }
 
-size_t RestClient::curlWriteFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+size_t RestClient::curlWriteFile(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
     return written;
 }

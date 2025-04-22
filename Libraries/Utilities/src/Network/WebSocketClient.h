@@ -10,6 +10,7 @@
 
 #include "easywsclient.hpp"
 #include <json/json.hpp>
+#include <utility>
 
 namespace ara {
 
@@ -19,10 +20,10 @@ public:
     virtual ~WebSocketClient() = default;
     void init();
     void stop();
-    void send(nlohmann::json jObj) { m_sendQueue.emplace_back(jObj.dump()); }
-    void setUrl(std::string url) { m_url = url; }
-    void setRecvCb(std::function<void(nlohmann::json)> f) { m_recvCb = f; }
-    bool isInited() { return m_inited; }
+    void send(const nlohmann::json &jObj) { m_sendQueue.emplace_back(jObj.dump()); }
+    void setUrl(std::string url) { m_url = std::move(url); }
+    void setRecvCb(std::function<void(nlohmann::json)> f) { m_recvCb = std::move(f); }
+    bool isInited() const { return m_inited; }
 
 protected:
     bool                                m_run    = true;

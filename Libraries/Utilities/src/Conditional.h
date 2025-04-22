@@ -22,7 +22,7 @@ public:
 
     void wait(uint32_t timeOut_ms = 5000) {
         if (!flag) {
-            waitingThreads++;
+            ++waitingThreads;
 
             std::unique_lock<std::mutex> lock(mtx);
 
@@ -35,7 +35,7 @@ public:
                     if (timeOut_ms == 5000) {
                         auto end     = std::chrono::system_clock::now();
                         auto actDifF = std::chrono::duration<double, std::milli>(end - start).count();
-                        if (actDifF > 5000.0) LOGE << " Semphore timed out " << actDifF;
+                        if (actDifF > 5000.0) LOGE << " Semaphore timed out " << actDifF;
                     }
 #endif
                     return flag.load();
@@ -43,10 +43,12 @@ public:
             } else {
                 cv.wait(lock, [&] { return flag.load(); });
             }
-            waitingThreads--;
+            --waitingThreads;
         }
 
-        if (waitingThreads == 0) flag = false;
+        if (waitingThreads == 0) {
+            flag = false;
+        }
     }
 
     bool isNotified() { return flag; }

@@ -33,7 +33,7 @@ private:
     void    setFormat(Color::format& fmt) { m_format = m_colorFunc[static_cast<int>(fmt)]; }
 
     float       *getColor4fv() { return m_color.data(); }
-    glm::vec4   getColorVec4() { return glm::make_vec4(m_color.data()); }
+    glm::vec4   getColorVec4() const { return glm::make_vec4(m_color.data()); }
 
     inline static std::vector<std::string> m_colorFunc = {"rgb", "rgbf", "rgba", "rgbaf", "hsl", "hsla"};
 

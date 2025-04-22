@@ -18,24 +18,20 @@ bool TCPListener::StartListen(int port, std::function<void(SOCKET s, sockaddr_in
 
     if ((m_Socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         cerr << "TCPListener> Cannot create socket" << endl;
-
         m_Socket = 0;
-
         return false;
     }
 
-    sockaddr_in sa;
+    sockaddr_in sa{};
 
     sa.sin_family      = AF_INET;
     sa.sin_addr.s_addr = htonl(INADDR_ANY);
     sa.sin_port        = htons(m_Port);
 
-    if (::bind(m_Socket, (struct sockaddr *)&sa, sizeof(sa))) {
+    if (::bind(m_Socket, reinterpret_cast<struct sockaddr *>(&sa), sizeof(sa))) {
         cerr << "TCPListener> Cannot bind to " << m_Port << endl;
-
         closesocket(m_Socket);
         m_Socket = 0;
-
         return false;
     }
 
@@ -43,10 +39,8 @@ bool TCPListener::StartListen(int port, std::function<void(SOCKET s, sockaddr_in
 
     if (listen(m_Socket, max_conn)) {
         cerr << "TCPListener> Cannot listen on " << m_Port << endl;
-
         closesocket(m_Socket);
         m_Socket = 0;
-
         return false;
     }
 
@@ -54,39 +48,38 @@ bool TCPListener::StartListen(int port, std::function<void(SOCKET s, sockaddr_in
 }
 
 bool TCPListener::OnCycleStop() {
-    if (!m_Socket) return false;
+    if (!m_Socket) {
+        return false;
+    }
 
     closesocket(m_Socket);
-
     return true;
 }
 
 bool TCPListener::OnCycle() {
-    sockaddr_in sf;
-    int         sfsize = sizeof(sf);
+    [[maybe_unused]] sockaddr_in sf{};
     SOCKET      ns;
-    sockaddr_in addr;
+    sockaddr_in addr{};
     int         addr_size = sizeof(sockaddr_in);
 
     do {
-        if ((ns = accept(m_Socket, (sockaddr *)&addr, (socklen_t *)&addr_size)) != INVALID_SOCKET) {
+        if ((ns = accept(m_Socket, reinterpret_cast<sockaddr *>(&addr), (socklen_t *)&addr_size)) != INVALID_SOCKET) {
             std::thread(&TCPListener::ProcessConnection, this, ns, addr).detach();
         }
-
     } while (ns != INVALID_SOCKET && (m_CycleState == CycleState::running));
 
     closesocket(m_Socket);
-
     m_Socket = 0;
 
     return true;
 }
 
 void TCPListener::ProcessConnection(SOCKET s, sockaddr_in sa) {
-    if (m_OnConnect) m_OnConnect(s, &sa);
+    if (m_OnConnect) {
+        m_OnConnect(s, &sa);
+    }
 
     OnConnect(s, &sa);
-
     closesocket(s);
 }
 

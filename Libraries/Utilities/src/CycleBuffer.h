@@ -81,10 +81,10 @@ public:
 
     CIBufferArray<T> *getWriteBuff() { return &m_buffer[m_buffPos]; }
     bool              isFilled() { return m_fillAmt >= m_buffer.size(); }
-    size_t            getLastBuffPos() { return m_buffLastPos; }
+    size_t            getLastBuffPos() const { return m_buffLastPos; }
     size_t            size() { return m_buffer.size(); }
     bool              empty() { return m_buffer.empty(); }
-    size_t            getWritePos() { return m_buffPos; }
+    size_t            getWritePos() const { return m_buffPos; }
     size_t            getFillAmt() { return m_fillAmt; }
     size_t            getFreeSpace() { return m_buffer.size() - m_fillAmt; }
 

@@ -50,92 +50,17 @@ void DemoView_Resources::init() {
 }
 
 bool DemoView_Resources::draw(uint32_t* objId) {
-    float pos[2]={200.f,100.f};
-    float ss[2]={300.f,100.f};
-
     DemoView::draw(objId);
-    glm::mat4 imat = *getMvp();
+
     int i=0;
     auto node = getStyleResNode();
-    if (node) {
-        // Colors
-        for (ResNode::Ptr& p : node->m_Node) {
-            auto& deref = *p; // silence warning with clang
-            if (typeid(deref) == typeid(ResColor)) {
-                ResColor* rc=dynamic_cast<ResColor*>(p.get());
+    drawColors(node, i);
 
-                util_FillRect(10, 100+i*40, 28, 28, rc->getColor4fv());
-//				util_Print(60,float(100+i*40+22),"regular",22,nullptr,rc->m_Name.c_str());
+    node = m_sharedRes->res->findNode("prestyle");
+    drawColors(node, i);
 
-                i++;
-            }
-        }
-    }
-
-    node=m_sharedRes->res->findNode("prestyle");
-
-    if (node != nullptr) {
-        // Colors
-        for (ResNode::Ptr& p : node->m_Node) {
-            auto& deref = *p; // silence warning with clang
-            if (typeid(deref) == typeid(ResColor)) {
-                ResColor* rc=dynamic_cast<ResColor*>(p.get());
-                util_FillRect(10,100+i*40,28,28,rc->getColor4fv());
-                //util_Print(60,float(100+i*40+22),"regular",22,nullptr,rc->m_Name.c_str());
-
-                i++;
-            }
-        }
-    }
-
-    node=m_sharedRes->res->findNode("poststyle");
-
-    if (node != nullptr) {
-        // Colors
-        for (ResNode::Ptr& p : node->m_Node) {
-            auto& deref = *p; // silence warning with clang
-            if (typeid(deref) == typeid(ResColor)) {
-                ResColor* rc=dynamic_cast<ResColor*>(p.get());
-                util_FillRect(10,100+i*40,28,28,rc->getColor4fv());
-                //util_Print(60,float(100+i*40+22),"regular",22,nullptr,rc->m_Name.c_str());
-                i++;
-            }
-        }
-    }
-
-    if (1) {
-        string style = "\n"
-                       "sven:rgb(255,0,0)\n"
-                       "\n";
-
-        SrcFile s(m_glbase);
-
-        vector<uint8_t> vp;
-        vp.insert(vp.end(), style.begin(), style.end());
-
-        ResNode::Ptr n = std::make_unique<ResNode>("ms", m_glbase);
-
-        if (s.Process(n.get(), vp)) {
-            n->Preprocess();
-            n->Process();
-
-            if (n->errList.empty()) {
-                if (n->Load()) {
-                    if (n->errList.empty()) {
-                        for (ResNode::Ptr& p : n->m_Node) {
-                            auto& deref = *p; // silence warning with clang
-                            if (typeid(deref) == typeid(ResColor)) {
-                                auto rc = dynamic_cast<ResColor*>(p.get());
-                                util_FillRect(10,100+i*40,28,28,rc->getColor4fv());
-
-                                i++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    node = m_sharedRes->res->findNode("poststyle");
+    drawColors(node, i);
 
     {
         Font* f = fontList.addFromFilePath("resdata/Fonts/verdana.ttf", 22, getWindow()->getPixelRatio());
@@ -172,4 +97,17 @@ bool DemoView_Resources::draw(uint32_t* objId) {
     }
 
     return false;
+}
+
+void DemoView_Resources::drawColors(ResNode* node, int& it) {
+    if (node != nullptr) {
+        for (ResNode::Ptr& p : node->m_Node) {
+            auto& deref = *p; // silence warning with clang
+            if (typeid(deref) == typeid(ResColor)) {
+                auto rc=dynamic_cast<ResColor*>(p.get());
+                util_FillRect(10,100+it*40,28,28,rc->getColor4fv());
+                ++it;
+            }
+        }
+    }
 }

@@ -48,7 +48,7 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
-std::vector<std::string> split(const std::string &s, std::string delim) {
+std::vector<std::string> split(const std::string &s, const std::string& delim) {
     std::string              strCpy = s;
     std::vector<std::string> elems;
     size_t                   fPos = strCpy.find(delim);
@@ -95,7 +95,7 @@ std::string ConvertWCSToStdString(const wchar_t *wideStr) {
 }
 
 LPCWSTR StringToLPCWSTR(const std::string& utf8String) {
-    auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, &utf8String[0], (int)utf8String.size(), nullptr, 0);
+    auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, &utf8String[0], static_cast<int>(utf8String.size()), nullptr, 0);
     std::wstring wstrTo(sizeNeeded, 0);
     MultiByteToWideChar(CP_UTF8, 0, &utf8String[0], static_cast<int>(utf8String.size()), &wstrTo[0], sizeNeeded);
     return wstrTo.c_str();

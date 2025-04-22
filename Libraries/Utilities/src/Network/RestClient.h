@@ -31,7 +31,7 @@ public:
 
 class RestCallCbData {
 public:
-    RestCallCbData(RestCall &rc) {
+    explicit RestCallCbData(RestCall &rc) {
         done      = &rc.done;
         callType  = rc.callType;
         cb        = std::move(rc.cb);
@@ -68,8 +68,8 @@ public:
     RestCallResult procDownloadBuffer(const RestCallCbData &rc);
     RestCallResult procDownloadFile(const RestCallCbData &rc);
 
-    static int    curlWriter(char *data, size_t size, size_t nmemb, std::string *buffer_in);
-    static size_t curlWriteFile(void *ptr, size_t size, size_t nmemb, FILE *stream);
+    static int    curlWriter(const char *data, size_t size, size_t nmemb, std::string *buffer_in);
+    static size_t curlWriteFile(const void *ptr, size_t size, size_t nmemb, FILE *stream);
     static int    progress_callback(void *clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal,
                                     curl_off_t ulnow);
 
@@ -86,7 +86,7 @@ public:
     void call(std::string url, std::string dstPath, restCallType callType, std::function<void(nlohmann::json)> cb);
 
     void         pause() { m_run = false; }
-    bool         isInited() { return m_inited; }
+    bool         isInited() const { return m_inited; }
     void         setAuthToken(std::string str) { m_authToken = std::move(str); }
     std::string &getAuthToken() { return m_authToken; }
     void         setDownFolder(std::filesystem::path &p) { m_downPath = p; }

@@ -34,7 +34,7 @@ public:
         return back();
     }
 
-    int Calc(int orientation, int align, e_align_attr &attr);  // returns the total size for the orientation axis
+    int Calc(int orientation, int align, const e_align_attr &attr);  // returns the total size for the orientation axis
 };
 
 }  // namespace ara

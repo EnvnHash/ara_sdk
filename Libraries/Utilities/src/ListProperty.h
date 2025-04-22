@@ -56,7 +56,7 @@ public:
         for (auto it = m_valChgChecking.begin(); it != m_valChgChecking.end();)
             if (auto p = it->lock()) {
                 p->operator()(std::any(&m_list));
-                it++;
+                ++it;
             } else {
                 it = m_valChgChecking.erase(it);
             }
@@ -82,14 +82,14 @@ public:
     // std::ostream& operator << (std::ostream& out) { out << m_list; return
     // out; }
 
-    /** add an callback which will be called when the property changes it's
+    /** add a callback which will be called when the property changes it's
      * value. The shared_ptr is store as a weak_ptr and remove from the list,
      * when it can't be locked, which means that it's owner was deleted */
     void onChanged(std::shared_ptr<std::function<void(std::any)>> funcPtr) {
         m_valChgChecking.emplace_back(funcPtr);
     }
 
-    /** add an callback which will be called when the property changes it's
+    /** add a callback which will be called when the property changes it's
      * value. no checking is done if the class instance passing this callback
      * still exists. It has to be removed when the caller is destroyed with
      * removeOnPreChange() This is meant to be used when the property is part of

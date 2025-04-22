@@ -40,7 +40,7 @@ public:
         m_children.back()->m_itemFactory = m_itemFactory;
         m_children.back()->onItemChanged(this, [this] { signalItemChanged(); });
         signalItemChanged();
-        return (T *)m_children.back().get();
+        return static_cast<T *>(m_children.back().get());
     }
 
     // add item return a raw pointer to Object
@@ -61,7 +61,7 @@ public:
         m_children.back()->m_itemFactory = m_itemFactory;
         m_children.back()->onItemChanged(this, [this] { signalItemChanged(); });
         signalItemChanged();
-        return (T *)m_children.back().get();
+        return static_cast<T *>(m_children.back().get());
     }
 
     template <class T>
@@ -145,7 +145,7 @@ public:
         std::list<T *> outList;
         for (auto &it : m_children) {
             if (it && it->itemType() == typeStr) {
-                outList.emplace_back((T *)it.get());
+                outList.emplace_back(static_cast<T *>(it.get()));
             }
         }
 
@@ -159,7 +159,7 @@ public:
         std::list<T *> outList;
         for (auto &it : m_children) {
             if (it->itemType() == typeStr) {
-                outList.emplace_back((T *)it.get());
+                outList.emplace_back(static_cast<T *>(it.get()));
             }
             outList.splice(outList.end(), it->findChildren<T>());
         }
@@ -172,8 +172,8 @@ public:
         // std::unique_lock<std::mutex> l(m_mtx);
         auto currentParent = parent();
         while (currentParent != nullptr) {
-            if (std::is_same<T*, decltype(currentParent)>::value) {
-                return (T *)currentParent;
+            if (std::is_same_v<T*, decltype(currentParent)>) {
+                return static_cast<T *>(currentParent);
             }
             currentParent = currentParent->parent();
         }
@@ -194,7 +194,7 @@ public:
         return currentParent;
     }
 
-    size_t size() {
+    size_t size() const {
         // std::unique_lock<std::mutex> l(m_mtx);
         return m_children.size();
     }
@@ -220,7 +220,9 @@ public:
 
     /** utility function for recursive updates after an item is loaded */
     virtual void onLoaded() {
-        for (auto &it : m_children) it->onLoaded();
+        for (auto &it : m_children) {
+            it->onLoaded();
+        }
     }
 
     void removeAboutAddItemCb(void *ptr) {
@@ -258,7 +260,7 @@ public:
         }
     }
 
-    void signalItemChanged() {
+    void signalItemChanged() const {
         for (auto &it : m_itemChanged) {
             it.second();
         }
@@ -318,7 +320,7 @@ public:
             it->displayName = dpName;
         }
         it->visible  = isVisible;
-        it->itemType = it->itemType() + "_" + std::to_string((int)it->m_typeId);  // attach PropertyItem m_typeId
+        it->itemType = it->itemType() + "_" + std::to_string(static_cast<int>(it->m_typeId));  // attach PropertyItem m_typeId
         signalItemChanged();
         return it->getPtr();
     }

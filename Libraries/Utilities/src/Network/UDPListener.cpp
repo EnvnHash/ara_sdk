@@ -17,16 +17,16 @@ bool UDPListener::StartListen(int port, std::function<void(char *, int, sockaddr
         return false;
     }
 
-    sockaddr_in sa;
+    sockaddr_in sa{};
     int         reuseaddr = 1;
 
     sa.sin_family      = AF_INET;
     sa.sin_addr.s_addr = htonl(INADDR_ANY);
     sa.sin_port        = htons(m_Port);
 
-    setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, (char *)&reuseaddr, sizeof(reuseaddr));
+    setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&reuseaddr), sizeof(reuseaddr));
 
-    if (bind(m_Socket, (struct sockaddr *)&sa, sizeof(sa))) {
+    if (bind(m_Socket, reinterpret_cast<struct sockaddr *>(&sa), sizeof(sa))) {
         closesocket(m_Socket);
         m_Socket = 0;
         return false;
@@ -36,24 +36,27 @@ bool UDPListener::StartListen(int port, std::function<void(char *, int, sockaddr
 }
 
 bool UDPListener::OnCycleStop() {
-    if (!m_Socket) return false;
+    if (!m_Socket) {
+        return false;
+    }
 
     closesocket(m_Socket);
-
     return true;
 }
 
 bool UDPListener::OnCycle() {
     int         ret;
     char        buff[520];
-    sockaddr_in sf;
+    sockaddr_in sf{};
     int         sfsize = sizeof(sf);
 
     do {
-        if ((ret = recvfrom(m_Socket, (char *)buff, 512, 0, (sockaddr *)&sf, (socklen_t *)&sfsize)) > 0) {
+        if ((ret = recvfrom(m_Socket, (char *)buff, 512, 0, reinterpret_cast<sockaddr *>(&sf), (socklen_t *)&sfsize)) > 0) {
             buff[ret] = 0;
 
-            if (m_OnReceive) m_OnReceive(buff, ret, &sf);
+            if (m_OnReceive) {
+                m_OnReceive(buff, ret, &sf);
+            }
 
             OnReceive(buff, ret, &sf);
         }

@@ -92,8 +92,7 @@ void Item::parseFromJson(json &root) {
                 // if we are at the end, create a new entry in the Item tree and
                 // parse the node
                 if (m_itemFactory) {
-                    auto fact_child = m_itemFactory->Create(jsonChild.key());
-                    if (fact_child) {
+                    if (auto fact_child = m_itemFactory->Create(jsonChild.key())) {
                         m_children.emplace_back(std::move(fact_child));
                     }
                 } else {

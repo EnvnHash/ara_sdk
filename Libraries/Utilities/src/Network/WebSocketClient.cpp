@@ -14,11 +14,8 @@ void WebSocketClient::init() {
     m_thread = thread([this] {
 
 #ifdef _WIN32
-        int     rc;
         WSADATA wsaData;
-
-        rc = WSAStartup(MAKEWORD(2, 2), &wsaData);
-        if (rc) {
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData)) {
             printf("WSAStartup Failed.\n");
             return 1;
         }

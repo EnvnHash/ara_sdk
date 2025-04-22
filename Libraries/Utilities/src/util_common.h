@@ -89,7 +89,7 @@ static float getRandF(float min, float max) {
 static float interpolVal(float inInd, int arraySize, const float *array) {
     float outVal   = 0.0f;
     auto lowerInd = static_cast<int>(std::floor(inInd));
-    auto upperInd = static_cast<int>(std::min((float)(lowerInd + 1), static_cast<float>(arraySize - 1)));
+    auto upperInd = static_cast<int>(std::min(static_cast<float>(lowerInd + 1), static_cast<float>(arraySize - 1)));
     auto weight   = inInd - static_cast<float>(lowerInd);
 
     if (weight == 0.0) {
@@ -101,7 +101,7 @@ static float interpolVal(float inInd, int arraySize, const float *array) {
 }
 
 // calculates value in between the indices of an array
-// index ranges from 0-1 eingeben
+// index ranges from 0-1
 static float interpolVal2(float inInd, int arraySize, const float *array) {
     float outVal     = 0.0f;
     auto  fArraySize = static_cast<float>(arraySize);
@@ -121,7 +121,7 @@ static float interpolVal2(float inInd, int arraySize, const float *array) {
 
 // calculates value in between the indices of an array
 // enter index ranges from 0-1
-static float interpolVal(float inInd, int arraySize, std::vector<float> *array) {
+static float interpolVal(float inInd, int arraySize, const std::vector<float> *array) {
     float outVal     = 0.0f;
     auto  fArraySize = static_cast<float>(arraySize);
     float fInd       = std::fmod(inInd, 1.0f) * (fArraySize - 1.0f);

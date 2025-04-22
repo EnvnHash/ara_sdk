@@ -61,7 +61,7 @@ void Workspace::load(const fs::path& filename) {
     }
 }
 
-void Workspace::saveAs(fs::path filename, bool showInfo) {
+void Workspace::saveAs(const fs::path& filename, bool showInfo) {
     m_activeProject->name = filename.stem().string();
     m_activeProject->setFileName(filename);
     save(showInfo);
