@@ -2,7 +2,7 @@
 #include <GeoPrimitives/Quad.h>
 #include <Meshes/Mesh.h>
 #include <Utils/CoordGridGen.h>
-#include <Utils/TypoGlyphMap.h>
+#include <Utils/Typo/TypoGlyphMap.h>
 
 using namespace glm;
 using namespace std;

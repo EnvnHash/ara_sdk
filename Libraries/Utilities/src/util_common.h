@@ -152,5 +152,4 @@ static float interpolVal(float inInd, int arraySize, const std::vector<float> *a
     return outVal;
 }
 
-
 }  // namespace ara

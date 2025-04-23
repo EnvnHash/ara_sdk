@@ -4,6 +4,8 @@
 
 namespace ara {
 
+class AssetImageBase;
+
 class Spinner : public Div {
 public:
     Spinner();
@@ -12,7 +14,7 @@ public:
 
     void init() override;
     void updateStyleIt(ResNode* node, state st, std::string& styleClass) override;
-    void setImgBase(ImageBase* imgBase);
+    void setImgBase(AssetImageBase* imgBase);
     bool draw(uint32_t* objId) override;
     bool drawIndirect(uint32_t* objId) override;
     bool drawFunc(const uint32_t* objId);
@@ -24,9 +26,9 @@ public:
     }
 
 private:
-    Shaders*   m_shader  = nullptr;
-    Texture*   m_tex     = nullptr;
-    ImageBase* m_imgBase = nullptr;
+    Shaders*        m_shader  = nullptr;
+    Texture*        m_tex     = nullptr;
+    AssetImageBase* m_imgBase = nullptr;
 
     float    m_refTime   = 0.f;
     float    m_speed     = .1f;

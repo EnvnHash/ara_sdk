@@ -27,9 +27,19 @@ bool GLRenderer::init(std::string name, glm::ivec2 pos, glm::ivec2 dimension, bo
     m_fontHeight = 45;
 
     // add a new window through the GWindowManager
-    m_winHandle = m_glbase->getWinMan()->addWin((int)m_dim.x, (int)m_dim.y, 60, false, true, (int)m_pos.x, (int)m_pos.y,
-                                                0, false, false, 2, hidden, true, (void *)m_glbase->getGlfwHnd());
-    if (!m_winHandle) return false;
+    glWinPar wp;
+    wp.width = static_cast<int>(m_dim.x);
+    wp.height = static_cast<int>(m_dim.y);
+    wp.shiftX = static_cast<int>(m_pos.x);
+    wp.shiftY = static_cast<int>(m_pos.y);
+    wp.createHidden = hidden;
+    wp.scaleToMonitor = true;
+    wp.shareCont = static_cast<void *>(m_glbase->getGlfwHnd());
+
+    m_winHandle = m_glbase->getWinMan()->addWin(wp);
+    if (!m_winHandle) {
+        return false;
+    }
 
     m_winHandle->makeCurrent();
 

@@ -46,7 +46,9 @@ public:
     UINode* getContent() { return ui_content; }
     float   getInitZoomPropVal() { return m_initZoomPropVal; }
     void    hideContent() {
-        if (ui_content) ui_content->setVisibility(false);
+        if (ui_content) {
+            ui_content->setVisibility(false);
+        }
     }
     void initContent(std::function<void(UINode*)> f) { m_initContFunc = std::move(f); }
     void addChangeCb(std::function<void()> f) { m_onChangedCb.emplace_back(f); }

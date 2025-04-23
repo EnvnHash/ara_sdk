@@ -7,6 +7,7 @@ include(GeneralSettings)
 include(VisualStudioSettings)
 include(UtilitiesDepInclude)
 include(UnitTestDependencies)
+include(ResCompInclude)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
@@ -15,6 +16,7 @@ include_directories(
 # add test source files
 file(GLOB UTILITIES_UT_SRC 
     AnimValTest.cpp
+    AssetLoaderTest.cpp
     CommonTest.cpp
     ConditionalTest.cpp
     ConditionalTest2.cpp

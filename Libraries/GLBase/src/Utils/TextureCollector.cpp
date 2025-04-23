@@ -2,8 +2,9 @@
 // Created by user on 17.03.2021.
 //
 
+#include <GLBase.h>
 #include <RwBinFile.h>
-#include <Res/ResInstance.h>
+#include <Asset/AssetManager.h>
 #include <Utils/TextureCollector.h>
 
 namespace fs = std::filesystem;
@@ -28,6 +29,10 @@ Texture *TextureCollector::add(const std::filesystem::path &fileName) {
 
 Texture *TextureCollector::addFromMem(const std::filesystem::path &fileName, const std::filesystem::path &dataPath,
                                       int32_t mipMapLevel) {
+    if (!m_glBase) {
+        return nullptr;
+    }
+
     if (fileName.empty()) {
         LOGE << "TextureCollector::addFromMem Error: emtpy filename";
         return  nullptr;
@@ -35,13 +40,15 @@ Texture *TextureCollector::addFromMem(const std::filesystem::path &fileName, con
 
     auto fn = fileName.string();
     return checkForExistence(fn, &dataPath,[&]  {
+       // ReadBinFile(vp, dataPath / fn);
         std::vector<uint8_t> vp;
-        ReadBinFile(vp, dataPath / fn);
+        auto al = m_glBase->getAssetManager()->getAssetLoader();
+        al.loadAssetToMem(vp, fileName);
         return add(vp, fn, &dataPath, mipMapLevel);
     });
 }
 
-Texture *TextureCollector::addFromRes(Instance *res, const std::string &fn, int mipMapLevel) {
+Texture *TextureCollector::addFromAssetManager(AssetManager *res, const std::string &fn, int mipMapLevel) {
     return checkForExistence(fn, nullptr, [&]  {
         if (res) {
             std::vector<uint8_t> vp;
@@ -107,28 +114,17 @@ void TextureCollector::addRemoveCb(const std::string &fileName, const std::funct
 
 Texture* TextureCollector::checkForExistence(const std::string &fn, const std::filesystem::path *dataPath,
                                              const std::function<Texture*()>& f) {
-    if (!m_texMap.empty()) {
+    if (!m_texMap.empty() && m_glBase) {
         auto it = m_texMap.find(fn);
         if (it != m_texMap.end()) {
-            std::filesystem::path p;
-            if (dataPath) {
-                p = *dataPath / std::filesystem::path(fn);
-            } else {
-                p = std::filesystem::path(fn);
-            }
-
-#ifndef ARA_USE_CMRC
-            // check for file updates
-            auto ft = std::filesystem::last_write_time(p);
+            auto al = m_glBase->getAssetManager()->getAssetLoader();
+            auto ft = al.getLastFileUpdate(fn);
             if (ft != m_texMap[fn].time) {
                 it->second.texture.releaseTexture();
                 return f();
             } else {
-#endif
                 return &it->second.texture;
-#ifndef ARA_USE_CMRC
             }
-#endif
         }
     }
 

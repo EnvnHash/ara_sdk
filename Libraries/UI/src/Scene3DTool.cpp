@@ -7,7 +7,8 @@
 
 using namespace std;
 using namespace glm;
-using namespace pugi;
+
+
 using trm = ara::TrackBallCam::TransMapping;
 using rm  = ara::TrackBallCam::RotateMapping;
 using zm  = ara::TrackBallCam::ZoomMapping;

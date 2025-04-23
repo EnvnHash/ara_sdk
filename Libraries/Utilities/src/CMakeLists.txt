@@ -32,6 +32,7 @@ file(GLOB COMMON_SRC
         ThreadedTasks/Cycler.cpp
         AnimVal.cpp
         Align.cpp
+        AssetLoader.cpp
         RwBinFile.cpp
         string_utils.cpp
         Table.cpp

@@ -2,7 +2,7 @@
 
 #include <GLBase.h>
 #include <StopWatch.h>
-#include <Utils/TypoGlyphMap.h>
+#include <Utils/Typo/TypoGlyphMap.h>
 #include <WindowManagement/WindowBase.h>
 
 namespace ara {

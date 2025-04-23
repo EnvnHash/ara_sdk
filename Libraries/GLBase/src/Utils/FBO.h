@@ -6,16 +6,7 @@
 #pragma once
 
 #include "glb_common/glb_common.h"
-
-#ifdef ARA_USE_FREEIMAGE
-#ifndef __EMSCRIPTEN__
-#include <FreeImage.h>
-#else
-#include <SDL/SDL.h>
-#include <SDL/SDL_image.h>
-#include <emscripten/emscripten.h>
-#endif
-#endif
+#include <GeoPrimitives/Quad.h>
 
 namespace ara {
 

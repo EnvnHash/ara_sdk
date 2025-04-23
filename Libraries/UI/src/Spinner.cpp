@@ -1,5 +1,8 @@
 #include "Spinner.h"
 
+#include <Asset/AssetImageSection.h>
+#include <Asset/AssetImageSource.h>
+
 #include "UIApplication.h"
 
 using namespace glm;
@@ -69,20 +72,20 @@ void Spinner::updateStyleIt(ResNode * node, state st, std::string & styleClass) 
         setImgBase(m_sharedRes->res->img(styleClass));
     }
 
-    if (typeid(*node) == typeid(ImgSrc) || typeid(*node) == typeid(ImgSection)) {
+    if (typeid(*node) == typeid(AssetImageSource) || typeid(*node) == typeid(AssetImageSection)) {
         if (m_sharedRes->res->img(m_baseStyleClass)) {
             setImgBase(m_sharedRes->res->img(m_baseStyleClass));
         }
     } else {
         auto* inode = node->findNode<ResNode>("image");
         if (inode) {
-            std::string name                     = inode->m_Value;
+            std::string name                     = inode->m_value;
             m_setStyleFunc[st][styleInit::image] = [name, this]() { setImgBase(m_sharedRes->res->img(name)); };
         }
     }
 }
 
-void Spinner::setImgBase(ImageBase * imgBase) {
+void Spinner::setImgBase(AssetImageBase * imgBase) {
     if ((m_imgBase = imgBase) == nullptr) {
         return;
     }

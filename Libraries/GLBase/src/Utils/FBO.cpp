@@ -1061,8 +1061,12 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
     switch (m_pixType) {
         case GL_UNSIGNED_SHORT: {
             switch (format) {
-                case GL_RED: bitmap = FreeImage_AllocateT(FIT_UINT16, m_tex_width, m_tex_height); break;
-                default: LOGE << "Texture::saveTexToFile2D Error: unknown m_format"; break;
+                case GL_RED:
+                    bitmap = FreeImage_AllocateT(FIT_UINT16, m_tex_width, m_tex_height);
+                break;
+                default:
+                    LOGE << "Texture::saveTexToFile2D Error: unknown m_format";
+                break;
             }
 
             if (bitmap) {

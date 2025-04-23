@@ -1,8 +1,8 @@
 #include "GLBaseUnitTestCommon.h"
 #include <Utils/Texture.h>
 #include <GeoPrimitives/Quad.h>
-#include <Utils/TypoGlyphMap.h>
-#include "Res/ResInstance.h"
+#include <Utils/Typo/TypoGlyphMap.h>
+#include "Asset/AssetManager.h"
 
 using namespace std;
 using fs = std::filesystem::path;
@@ -82,7 +82,6 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
         // gp.debug = true;
         gp.width = 64;            // set the windows width
         gp.height = 64;            // set the windows height
-        gp.doInit = true;            // GWindow needs GLFW library to be m_inited. GWindow can do this itself. Standard is true
         gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
         gp.createHidden = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
 

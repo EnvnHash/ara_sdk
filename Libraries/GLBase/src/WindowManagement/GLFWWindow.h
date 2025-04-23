@@ -273,7 +273,6 @@ public:
     static glm::vec2 getPrimaryMonitorWindowContentScale();
 
     static void initLibrary() {
-        printf("init Library \n");
         if (!glfwInit()) {
             printf("ERROR: Couldn't init glfw\n");
             exit(EXIT_FAILURE);

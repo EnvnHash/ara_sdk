@@ -1,5 +1,7 @@
 #include "Gizmo.h"
 
+#include <Asset/AssetImageBase.h>
+
 #include "UIWindow.h"
 
 using namespace glm;
@@ -32,7 +34,7 @@ void Gizmo::init() {
 
     // get backgroundcolor
     if (getSharedRes()->res) {
-        m_bkColor = getSharedRes()->res->findNode<ResColor>(getStyleClass() + ".bkcolor");
+        m_bkColor = getSharedRes()->res->findNode<AssetColor>(getStyleClass() + ".bkcolor");
     }
 
     // get width height from stylesheets

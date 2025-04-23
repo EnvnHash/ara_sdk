@@ -1,9 +1,12 @@
 #pragma once
 
-#include "Div.h"
-#include "Utils/TypoGlyphMap.h"
+#include <Utils/Typo/FontGlyphVector.h>
+#include <Div.h>
+#include <Utils/VAO.h>
 
 namespace ara {
+
+class Font;
 
 struct LabelInitData {
     int x=0;
@@ -41,19 +44,8 @@ public:
     ~Label() override = default;
 
     unsigned long getOpt() const { return m_tOpt; }
-
-    unsigned long setOpt(unsigned long f) {
-        m_tOpt |= f;
-        m_glyphsPrepared = false;
-        return m_tOpt;
-    }
-
-    unsigned long removeOpt(unsigned long f) {
-        m_tOpt &= ~f;
-        m_glyphsPrepared = false;
-        return m_tOpt;
-    }
-
+    unsigned long setOpt(unsigned long f);
+    unsigned long removeOpt(unsigned long f);
     bool          hasOpt(unsigned long f) const { return m_tOpt & f; }
     void          setSingleLine() { setOpt(single_line); }
     virtual Font *UpdateDGV(bool *checkFontTexture);
@@ -73,64 +65,17 @@ public:
     virtual void  setProp(Property<std::string> *prop);
     virtual void  setProp(Property<std::filesystem::path> *prop);
 
-    void setFont(std::string fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor,
-                 state st = state::m_state) {
-        setFontType(std::move(fontType), st);
-        setFontSize((int)fontSize, st);
-        setTextAlign(ax, ay, st);
-        setColor(fontColor, st);
-    }
+    void setFont(std::string fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st = state::m_state);
+    void setColor(float r, float g, float b, float a, state st = state::m_state) override;
+    void setColor(glm::vec4 &col, state st = state::m_state) override;
+    void setTextAlign(align ax, valign ay, state st = state::m_state);
+    void setTextAlignX(align ax, state st = state::m_state);
+    void setTextAlignY(valign ay, state st = state::m_state);
+    void setText(const std::string &val, state st = state::m_state);
+    void setFontSize(int fontSize, state st = state::m_state);
+    void setFontType(std::string fontType, state st = state::m_state);
 
-    void setColor(float r, float g, float b, float a, state st = state::m_state) override {
-        UINode::setColor(r, g, b, a, st);
-    }
-
-    void setColor(glm::vec4 &col, state st = state::m_state) override { UINode::setColor(col, st); }
-
-    void setTextAlign(align ax, valign ay, state st = state::m_state) {
-        setTextAlignX(ax, st);
-        setTextAlignY(ay, st);
-    }
-
-    void setTextAlignX(align ax, state st = state::m_state) {
-        m_tAlign_X       = ax;
-        m_glyphsPrepared = false;
-        setStyleInitVal("text-align", ax == align::center ? "center" : (ax == align::left ? "left" : "right"), st);
-    }
-
-    void setTextAlignY(valign ay, state st = state::m_state) {
-        m_tAlign_Y       = ay;
-        m_glyphsPrepared = false;
-        setStyleInitVal("text-valign", ay == valign::center ? "center" : (ay == valign::top ? "top" : "bottom"), st);
-    }
-
-    void setText(const std::string &val, state st = state::m_state) {
-        bool updt = val.size() != m_Text.size();
-        m_Text    = val;
-        reqUpdtGlyphs(updt);
-        setStyleInitVal("text", val, st);
-    }
-
-    void setFontSize(int fontSize, state st = state::m_state) {
-        if (st == state::m_state || st == m_state) {
-            m_fontSize       = fontSize;
-            m_glyphsPrepared = false;
-        }
-    }
-
-    void setFontType(std::string fontType, state st = state::m_state) {
-        if (st == state::m_state || st == m_state) {
-            m_fontType       = std::move(fontType);
-            m_glyphsPrepared = false;
-        }
-    }
-
-    glm::vec2 &getTextBoundSize() {
-        if (m_textBounds.x == 0.f || m_textBounds.y == 0.f) {
-            UpdateDGV(nullptr);
-        }
-        return m_textBounds;
-    }
+    glm::vec2 &getTextBoundSize();
 
 protected:
     void setEditPixSpace(float width, float height, bool set_flag = true);
@@ -157,7 +102,7 @@ protected:
     float     m_TabSize      = 50.f;  // Tab size in pixels
     float     m_adaptScaling = 1.f;   // matrix scaling when using adaptive flag
 
-    bool m_glyphsPrepared = false;
+    bool      m_glyphsPrepared = false;
 
     std::string m_Text;
 

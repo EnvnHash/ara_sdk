@@ -3,6 +3,7 @@
 #include <Conditional.h>
 #include <Utils/GLStateManager.h>
 #include <Utils/TextureCollector.h>
+#include <Utils/Typo/TypoGlyphMap.h>
 #include <Shaders/ShaderCollector.h>
 #include <WindowManagement/WindowManager.h>
 
@@ -11,7 +12,6 @@
 namespace ara {
 
 class Quad;
-class TypoGlyphMap;
 
 class GLNativeCtxHnd {
 public:
@@ -131,7 +131,7 @@ public:
     std::string         getShaderHeader() { return g_shaderCollector.getShaderHeader(); }
     bool                isInited() const { return g_inited; }
     bool                isRunning() { return g_loopRunning; }
-    Instance            *getResInstance() { return g_resInstance.get(); }
+    AssetManager        *getAssetManager() { return g_assetManager.get(); }
     Conditional         &getLoopExitSema() { return g_loopExit; }
 
     std::unordered_map<void *, std::shared_ptr<Quad>>   &perCtxQuads() { return g_perCtxQuad; }
@@ -139,8 +139,7 @@ public:
 #if !defined(ARA_USE_GLFW) && defined(_WIN32)
     static LRESULT CALLBACK WGLMessageHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 #endif
-    std::string g_resRootPath = "resdata";  // note: was private with inline getter and setters, but
-                                            // assigning didn't work on android
+    std::string g_resRootPath    = "resdata";
     std::string g_resFile        = "res.txt";
     int32_t     g_hwDpi          = 96;
     float       g_androidDensity = 1.f;
@@ -173,7 +172,7 @@ protected:
     std::unique_ptr<TypoGlyphMap>   g_typoGlyphMap;
     ShaderCollector                 g_shaderCollector;
     TextureCollector                g_textureCollector;
-    std::unique_ptr<Instance>       g_resInstance;
+    std::unique_ptr<AssetManager>   g_assetManager;
     std::list<void *>               g_contexts;
     std::vector<std::string>        g_appMessages;
     std::vector<std::string>        g_appMsgStatic;

@@ -1,6 +1,6 @@
 #include "ImageButton.h"
-
 #include "UIWindow.h"
+#include <Asset/AssetColor.h>
 
 using namespace glm;
 using namespace std;
@@ -69,7 +69,7 @@ void ImageButton::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::imgFlag] = [this] {
         for (auto &it : m_tex) {
             if (it) {
-                it->m_ImgFlags = 0;
+                it->m_imgFlags = 0;
             }
         }
     };
@@ -77,7 +77,7 @@ void ImageButton::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::imgScale] = [this] {
         for (auto &it : m_tex) {
             if (it) {
-                it->m_ImgScale = 1.f;
+                it->m_imgScale = 1.f;
             }
         }
     };
@@ -91,7 +91,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, std::string &styleClass
 
     auto *inode = node->findNode<ResNode>("image");
     if (inode) {
-        std::string name                     = inode->m_Value;
+        std::string name                     = inode->m_value;
         m_setStyleFunc[st][styleInit::image] = [name, this]() {
             if (!m_tex.empty() && m_tex[0]) {
                 m_tex[0]->setImgBase(m_sharedRes->res->img(name));
@@ -113,7 +113,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, std::string &styleClass
 
     inode = node->findNode<ResNode>("imageOnState");
     if (inode) {
-        std::string name                            = inode->m_Value;
+        std::string name                            = inode->m_value;
         m_setStyleFunc[st][styleInit::imageOnState] = [name, this]() {
             if (m_tex.size() < 2) {
                 m_tex.emplace_back(addChild<Image>());
@@ -141,13 +141,13 @@ void ImageButton::updateStyleIt(ResNode *node, state st, std::string &styleClass
                 m_tex.back()->setLod(m_lod);
             }
 
-            m_ibl.emplace_back(make_pair((int)i, m_sharedRes->res->img(inode->m_Value)));
+            m_ibl.emplace_back(make_pair((int)i, m_sharedRes->res->img(inode->m_value)));
         }
     }
 
     inode = node->findNode<ResNode>("imageOnStateBack");
     if (inode) {
-        std::string name                                = inode->m_Value;
+        std::string name                                = inode->m_value;
         m_setStyleFunc[st][styleInit::imageOnStateBack] = [name, this]() {
             if (m_onstate_back_tex) {
                 m_onstate_back_tex->setImgBase(m_sharedRes->res->img(name));
@@ -185,7 +185,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, std::string &styleClass
         m_setStyleFunc[st][styleInit::imgFlag] = [iflags, this]() {
             for (auto &it : m_tex) {
                 if (it) {
-                    it->m_ImgFlags = iflags;
+                    it->m_imgFlags = iflags;
                 }
             }
         };
@@ -209,8 +209,8 @@ void ImageButton::updateStyleIt(ResNode *node, state st, std::string &styleClass
         m_setStyleFunc[st][styleInit::imgAlign] = [a, this]() {
             for (auto &it : m_tex) {
                 if (it) {
-                    it->m_ImgAlign[0] = a[0];
-                    it->m_ImgAlign[1] = a[1];
+                    it->m_imgAlign[0] = a[0];
+                    it->m_imgAlign[1] = a[1];
                 }
             }
         };
@@ -221,14 +221,14 @@ void ImageButton::updateStyleIt(ResNode *node, state st, std::string &styleClass
         m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() {
             for (auto &it : m_tex) {
                 if (it) {
-                    it->m_ImgScale = scale;
+                    it->m_imgScale = scale;
                 }
             }
         };
     }
 
-    ResColor *color;
-    if ((color = node->findNode<ResColor>("color")) != nullptr) {
+    AssetColor *color;
+    if ((color = node->findNode<AssetColor>("color")) != nullptr) {
         vec4 col                             = color->getColorvec4();
         m_setStyleFunc[st][styleInit::color] = [this, col]() {
             for (auto &it : m_tex) {
@@ -491,6 +491,10 @@ void ImageButton::setStateImg(const std::string& file, imgType tp, int mipMapLev
     if (m_secPos.x != 0 || m_secPos.y != 0) {
         m_tex[static_cast<size_t>(tp)]->setSectionPos(m_secPos);
     }
+}
+
+void ImageButton::setOnStateBackImg(const std::string& file, int mipMapLevel) {
+    m_onstate_back_tex->setImg(file, mipMapLevel);
 }
 
 void ImageButton::setObjUsesTexAlpha(bool val) {

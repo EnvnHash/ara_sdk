@@ -46,7 +46,7 @@ public:
             // this is called from GLBase resource update thread, in order to not update Resource while they are used,
             // only a flag is set and a redraw forced. Styles will be updated during UINode::draw iteration this is only
             // needed in debug mode, when the resources can change during runtime
-            if (m_glbase.getResInstance() && !m_glbase.getResInstance()->usingComp()) {
+            if (m_glbase.getAssetManager() && !m_glbase.getAssetManager()->usingComp()) {
                 m_glbase.setUpdtResCb([this] {
                     for (auto& it : m_uiWindows) {
                         it->setResChanged(true);

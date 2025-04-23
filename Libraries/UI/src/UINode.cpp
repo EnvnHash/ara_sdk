@@ -1,5 +1,6 @@
-#include <Res/ResSrcFile.h>
-#include <Res/ResInstance.h>
+#include <Asset/ResSrcFile.h>
+#include <Asset/AssetColor.h>
+#include <Asset/AssetManager.h>
 #include <string_utils.h>
 
 #include "UIApplication.h"
@@ -979,7 +980,7 @@ void UINode::clearStyles() {
 }
 
 void UINode::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
-    ResColor* color;
+    AssetColor* color;
 
     auto x = node->findNumericNode("x");
     if (get<ResNode*>(x)) {
@@ -1027,38 +1028,38 @@ void UINode::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
 
     auto align = node->findNode("align");
     if (align) {
-        if (align->m_Value == "center") {
+        if (align->m_value == "center") {
             m_setStyleFunc[st][styleInit::align] = [this, st]() { setAlignX(align::center, st); };
-        } else if (align->m_Value == "left") {
+        } else if (align->m_value == "left") {
             m_setStyleFunc[st][styleInit::align] = [this, st]() { setAlignX(align::left, st); };
-        } else if (align->m_Value == "right") {
+        } else if (align->m_value == "right") {
             m_setStyleFunc[st][styleInit::align] = [this, st]() { setAlignX(align::right, st); };
         }
     }
 
     auto v_align = node->findNode("v-align");
     if (v_align) {
-        if (v_align->m_Value == "center")
+        if (v_align->m_value == "center")
             m_setStyleFunc[st][styleInit::valign] = [this, st]() { setAlignY(valign::center, st); };
-        else if (v_align->m_Value == "top")
+        else if (v_align->m_value == "top")
             m_setStyleFunc[st][styleInit::valign] = [this, st]() { setAlignY(valign::top, st); };
-        else if (v_align->m_Value == "bottom")
+        else if (v_align->m_value == "bottom")
             m_setStyleFunc[st][styleInit::valign] = [this, st]() { setAlignY(valign::bottom, st); };
     }
 
-    if ((color = node->findNode<ResColor>("color")) != nullptr) {
+    if ((color = node->findNode<AssetColor>("color")) != nullptr) {
         vec4 col                             = color->getColorvec4();
         m_setStyleFunc[st][styleInit::color] = [this, st, col]() { setColor(col.r, col.g, col.b, col.a, st); };
     }
 
-    if ((color = node->findNode<ResColor>("bkcolor")) != nullptr) {
+    if ((color = node->findNode<AssetColor>("bkcolor")) != nullptr) {
         vec4 col                               = color->getColorvec4();
         m_setStyleFunc[st][styleInit::bkcolor] = [this, st, col]() {
             setBackgroundColor(col.r, col.g, col.b, col.a, st);
         };
     }
 
-    if ((color = node->findNode<ResColor>("border-color")) != nullptr) {
+    if ((color = node->findNode<AssetColor>("border-color")) != nullptr) {
         vec4 col                                = color->getColorvec4();
         m_setStyleFunc[st][styleInit::brdColor] = [this, st, col]() { setBorderColor(col.r, col.g, col.b, col.a, st); };
     }
@@ -1095,7 +1096,7 @@ void UINode::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
 
     auto vis = node->findNode("visible");
     if (vis) {
-        bool val                               = vis->m_Value == "true";
+        bool val                               = vis->m_value == "true";
         m_setStyleFunc[st][styleInit::visible] = [this, val, st]() { setVisibility(val, st); };
     }
 }
@@ -1126,7 +1127,7 @@ void UINode::updateStyle() {
 
         // if there are subdefinitions and the corresponding flags are set,
         // return those definitions
-        if (!resNode->m_Node.empty()) {
+        if (!resNode->m_node.empty()) {
             ResNode* auxResNode = nullptr;
             if ((auxResNode = resNode->findNode("selected"))) {
                 updateStyleIt(auxResNode, state::selected, it);
@@ -1234,11 +1235,11 @@ void UINode::rebuildCustomStyle() {
         std::vector<uint8_t> vp(m_custDefStyleSheet.begin(), m_custDefStyleSheet.end());
         ResNode::Ptr         n = std::make_unique<ResNode>(getCustomDefName(), m_glbase);
 
-        if (s.Process(n.get(), vp)) {
-            n->Preprocess();
-            n->Process();
+        if (s.process(n.get(), vp)) {
+            n->preprocess();
+            n->process();
 
-            if (n->errList.empty() && n->Load() && n->errList.empty()) {
+            if (n->errList.empty() && n->load() && n->errList.empty()) {
                 m_customStyleNode = std::move(n);
             }
         }

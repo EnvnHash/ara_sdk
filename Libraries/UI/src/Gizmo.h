@@ -1,7 +1,7 @@
 #pragma once
 
 #include <CameraSets/CsPerspFbo.h>
-#include <Res/ResColor.h>
+#include <Asset/AssetColor.h>
 #include <SceneNodes/SNGizmo.h>
 #include "DrawManagers/DrawManagerGizmo.h"
 #include <GizmoAxisLabel.h>
@@ -18,47 +18,33 @@ namespace ara {
 class Gizmo : public Image {
 public:
     Gizmo();
-
     explicit Gizmo(std::string &&styleClass);
-
     ~Gizmo() override { delete m_crossVao; };
 
     void init() override;
 
     Shaders *initLineShdr();
-
     Shaders *initLineShdr2();
-
     Shaders *initTexDepthShdr();
-
     Shaders *initObjMapTexShdr();
 
     void setModelCam(TrackBallCam *cam);
     void cbUpdt(TrackBallCam *cam, TbModData &data, bool mapByMouseRot);
 
     bool draw(uint32_t *objId) override;
-
     bool drawIndirect(uint32_t *objId) override;
-
     bool drawToFbo(uint32_t *objId);
     bool drawToFbo2(uint32_t *objId);
 
     glm::vec3 getAxisEnd(glm::mat4 &pvm, float yVal);
 
     void mouseDrag(hidData *data) override;
-
     void drag(hidData *data);
-
     void mouseUp(hidData *data) override;
-
     void mouseDownRight(hidData *data) override;
-
     void mouseUpRight(hidData *data) override;
-
     void mouseDown(hidData *data) override;
-
     void mouseMove(hidData *data) override;
-
     void excludeLabelsFromStyles(bool val);
 
     void keyDown(hidData *data) override {
@@ -94,7 +80,7 @@ protected:
     VAO        *m_crossVao = nullptr;
     FBO        *m_sceneFbo = nullptr;
     UISharedRes m_auxSharedRes;
-    ResColor   *m_bkColor = nullptr;
+    AssetColor   *m_bkColor = nullptr;
     sceneData   m_sd;
 
     UINode                        m_auxUIRoot;

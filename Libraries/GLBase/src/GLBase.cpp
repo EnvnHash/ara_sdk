@@ -5,8 +5,8 @@
 #include <Utils/TextureCollector.h>
 
 #include "GeoPrimitives/Quad.h"
-#include "Res/ResInstance.h"
-#include "Utils/TypoGlyphMap.h"
+#include "Asset/AssetManager.h"
+#include "Utils/Typo/TypoGlyphMap.h"
 #include "WindowManagement/GLWindow.h"
 
 using namespace glm;
@@ -25,23 +25,22 @@ GLBase::GLBase() {
 /// init a GL context with standard resources
 /// </summary>
 bool GLBase::m_init(bool doInitResources, void *winHnd) {
-    if (g_inited) return true;
+    if (g_inited) {
+        return true;
+    }
 
     g_mainThreadId = this_thread::get_id();
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     g_winMan->setMainThreadId(g_mainThreadId);
     if (m_selfManagedCtx) {
-        glWinPar gp;
-        gp.createHidden = true;
-        gp.doInit       = true;
-        gp.hidInput     = false;
-        gp.width        = 5;
-        gp.height       = 5;
-        gp.shiftX       = 0;
-        gp.shiftY       = 0;
-        gp.shareCont    = winHnd;
-        g_win           = g_winMan->addWin(&gp);
+        glWinPar wp;
+        wp.createHidden = true;
+        wp.hidInput     = false;
+        wp.width        = 5;
+        wp.height       = 5;
+        wp.shareCont    = winHnd;
+        g_win = g_winMan->addWin(wp);
     }
 #elif _WIN32
     // create an invisible window with a valid gl context which will contain the
@@ -160,18 +159,17 @@ void GLBase::initToThisCtx() {
 }
 
 /// <summary>
-/// load common resources form disk (fonts, icons, etc.) Done file by file in
-/// debug mode and from res_comp in Release mode
+/// load common resources form disk (fonts, icons, etc.) Done file by file in debug mode and from res_comp in Release mode
 /// </summary>
 void GLBase::initResources() {
-    if (!g_resInstance) {
-        g_resInstance = make_unique<Instance>(g_resRootPath, "res_comp", this);
+    if (!g_assetManager) {
+        g_assetManager = make_unique<AssetManager>(g_resRootPath, "res_comp", this);
 
-        if (g_resInstance->Load(g_resFile, false)) {
-            LOG << "[OK] GLBase Resource file " << g_resRootPath + "/" + g_resFile << " loaded. Using compilation file "
-                << (g_resInstance->usingComp() ? "true" : "false");
+        if (g_assetManager->Load(g_resFile)) {
+            LOG << "[OK] GLBase Resource file " << g_resRootPath + "/" + g_resFile << " loaded. "
+              << (g_assetManager->usingComp() ? " Used compiled binary asset file" : "");
         } else {
-            for (ResNode::e_error &err : g_resInstance->getRoot()->errList) {
+            for (ResNode::e_error &err : g_assetManager->getRoot()->errList) {
                 LOGE << "Line " << err.lineIndex + 1 << " err:" << err.errorString;
             }
         }
@@ -179,14 +177,14 @@ void GLBase::initResources() {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
 #if defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
 #else
-        getWinMan()->setRes(g_resInstance.get());
+        getWinMan()->setAssetManager(g_assetManager.get());
 #endif
 #ifdef ARA_USE_GLFW
         getWinMan()->loadMouseCursors();
 #endif
 
 #ifndef __ANDROID__
-        if (!g_resInstance->usingComp()) {
+        if (!g_assetManager->usingComp()) {
             m_resUpdtRun = true;
 
             // start resources files update loop
@@ -208,8 +206,8 @@ void GLBase::initResources() {
 }
 
 void GLBase::checkResourceChanges() {
-    bool changed = g_resInstance->checkForResSourceChange();
-    changed      = changed || g_resInstance->checkForChangesInFolderFiles();
+    bool changed = g_assetManager->checkForResSourceChange();
+    changed      = changed || g_assetManager->checkForChangesInFolderFiles();
 
     if (changed) {
 #ifdef ARA_USE_GLFW
@@ -221,8 +219,8 @@ void GLBase::checkResourceChanges() {
                 // Resources reside inside GLBase to not consume more memory
                 // than necessary threaded access to the resources is provided
                 // via an internal mutex
-                g_resInstance->CallResSourceChange();
-                g_resInstance->CallForChangesInFolderFiles();
+                g_assetManager->callResSourceChange();
+                g_assetManager->callForChangesInFolderFiles();
 
                 // update all
                 if (g_updtResCb) {
@@ -265,8 +263,8 @@ void GLBase::destroy(bool terminateGLFW) {
         m_resUpdtRun = false;
         m_resUpdtSema.notify();
         m_resUpdtExited.wait();
-        g_resInstance.reset();
-        g_resInstance = nullptr;
+        g_assetManager.reset();
+        g_assetManager = nullptr;
     }
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)

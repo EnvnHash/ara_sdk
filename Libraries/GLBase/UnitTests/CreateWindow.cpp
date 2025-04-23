@@ -18,7 +18,6 @@ namespace ara::GLBaseUnitTest::CreateWindowTest {
         glWinPar gp;             // define Parameters for windows instanciating
         gp.width = 1920;        // set the windows width
         gp.height = 1080;       // set the windows height
-        gp.doInit = true;       // GWindow needs GLFW library to be m_inited. GWindow can do this itself. Standard is true
         gp.shiftX = 100;        // x offset relative to OS screen canvas
         gp.shiftY = 100;        // y offset relative to OS screen canvas
 

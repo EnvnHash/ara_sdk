@@ -32,8 +32,6 @@ Texture::Texture(GLBase *glbase) : m_glbase(glbase) {
 #endif
 }
 
-//-----------------------------------------------------------------------------
-
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
 FIBITMAP *Texture::ImageLoader(const char *path, int flag) {
     FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
@@ -123,7 +121,7 @@ std::array<float, 2> Texture::getFileImageSize(const std::string &filename) {
 }
 
 GLuint Texture::loadFromFile(const std::string &filename, GLenum _textTarget, int nrMipMaps, bool flipH) {
-#ifdef ARA_USE_CMRC
+/*#ifdef ARA_USE_CMRC
     auto fs = cmrc::ara::get_filesystem();
 
     if (fs.exists(filename)) {
@@ -140,9 +138,9 @@ GLuint Texture::loadFromFile(const std::string &filename, GLenum _textTarget, in
             std::copy(file.begin(), file.end(), vp.begin());
             return loadFromMemPtr(vp.data(), size, _textTarget, nrMipMaps, flipH);
         }
-
-#elif !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
-    if (fs::exists(fs::path(filename))) {
+*/
+#if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
+    if (std::filesystem::exists(std::filesystem::path(filename))) {
         m_filename        = filename;
         LOG << "Texture::loadFromFile " << filename;
         FIBITMAP *pBitmap = ImageLoader(filename.c_str(), 0);
@@ -609,7 +607,7 @@ GLuint Texture::allocate3D(uint w, uint h, uint d, GLenum internalGlDataType, GL
                    m_texData.depth);
 
     glTexSubImage3D(m_texData.target, 0, 0, 0, 0, m_texData.width, m_texData.height, m_texData.depth, m_texData.format,
-                    m_texData.pixelType, (void *)&nullImg[0]);
+                    m_texData.pixelType, static_cast<void *>(&nullImg[0]));
 
     glTexParameterf(m_texData.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(m_texData.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -639,8 +637,6 @@ GLuint Texture::allocate2D(uint w, uint h, GLenum internalGlDataType, GLenum ext
     glGenTextures(1, (GLuint *)&m_texData.textureID);  // could be more then one, but for now, just one
     glBindTexture(m_texData.target, (GLuint)m_texData.textureID);
 
-    // define immutable storage space. best practise since opengl hereby stops
-    // tracking certain features  use levels = 1
 #ifndef __EMSCRIPTEN__
     if (m_texData.target != GL_TEXTURE_2D_MULTISAMPLE)
         glTexStorage2D(m_texData.target, 1, m_texData.internalFormat, m_texData.width, m_texData.height);
@@ -848,7 +844,7 @@ void Texture::setSamplerFiltering(int a_tfMagnification, int a_tfMinification) {
     m_tfMagnification = a_tfMagnification;
 }
 
-void Texture::setFiltering(GLenum magFilter, GLenum minFilter) {
+void Texture::setFiltering(GLenum magFilter, GLenum minFilter) const {
     if (m_texData.target != GL_TEXTURE_2D_MULTISAMPLE) {
         GLint val;
         switch (m_texData.target) {
@@ -868,12 +864,47 @@ void Texture::setFiltering(GLenum magFilter, GLenum minFilter) {
     }
 }
 
-void Texture::setWraping(GLenum _wrap) {
+void Texture::setWraping(GLenum _wrap) const {
     // Set magnification filter
     glBindTexture(m_texData.target, m_texData.textureID);
 
     glTexParameterf(m_texData.target, GL_TEXTURE_WRAP_S, (float)_wrap);
     glTexParameterf(m_texData.target, GL_TEXTURE_WRAP_T, (float)_wrap);
+}
+
+void Texture::bind() const {
+    glBindTexture(m_texData.target, m_texData.textureID);
+}
+
+void Texture::bind(GLuint texUnit) const {
+    glActiveTexture(GL_TEXTURE0 + texUnit);
+    glBindTexture(m_texData.target, m_texData.textureID);
+}
+
+void Texture::bind(GLuint su, GLuint si, GLuint tu) {
+    m_samplerUnit = static_cast<GLint>(su);
+    glActiveTexture(GL_TEXTURE0 + tu);
+    glBindTexture(m_texData.target, m_texData.textureID);
+    glBindSampler(m_samplerUnit, si);
+}
+
+void Texture::unbind() const {
+    glBindTexture(m_texData.target, 0);
+}
+
+void Texture::releaseTexture() {
+    glDeleteTextures(1, &m_texData.textureID);
+    m_texData.textureID = 0;
+#ifdef ARA_USE_FREEIMAGE
+    if (m_keepBitmap) {
+        FreeImage_Unload(m_texData.pBitmap);
+    }
+#endif
+}
+
+void Texture::generateSampler() {
+    glGenSamplers(1, &m_samplerID);
+    glBindSampler(m_samplerUnit, m_samplerID);
 }
 
 void Texture::getGlFormatAndType(GLenum glInternalFormat, GLenum &glFormat, GLenum &type) {

@@ -5,85 +5,86 @@
 #pragma once
 
 #include <Utils/PBO.h>
-#include <Utils/PingPongFbo.h>
 #include <Utils/Texture.h>
+#include <Utils/PingPongFbo.h>
 
-#include "Res/ImgSection.h"
 #include "Div.h"
 
 namespace ara {
+
+class AssetImageBase;
 
 class Image : public Div {
 public:
     Image();
     Image(std::string &&styleClass);
     Image(const std::string& file, int mipMapLevel, bool keep_aspect, align ax = align::center, valign ay = valign::center);
-    virtual ~Image() = default;
+    ~Image() override = default;
 
-    void         init() override;
-    virtual void initDefaults();
-    void         loadStyleDefaults() override;
-    void         updateStyleIt(ResNode *node, state st, std::string &styleClass) override;
-    virtual void setImgFlag(ResNode *node, state st);
-    virtual void setImgAlign(ResNode *node, state st);
-    virtual void setImgScale(ResNode *node, state st);
-    virtual void setImgBase(ImageBase *imgBase);
-    void         updateDrawData() override;
-    void         initUnitBlock();
-    bool         draw(uint32_t *objId) override;
-    bool         drawIndirect(uint32_t *objId) override;
-    void         pushTexture(DrawSet *ds);
-    void         pushVaoUpdtOffsets() override;
-    virtual void loadImg();
-    virtual void reload();
-    virtual bool setTexId(GLuint inTexId, int width, int height, int bitCount);
-    virtual void setFillToNodeSize(bool val, state st = state::m_state);
-    virtual void setObjUsesTexAlpha(bool val);
-    void         clearDs() override;
-    bool         isInBounds(glm::vec2& pos) override;
+    void            init() override;
+    virtual void    initDefaults();
+    void            loadStyleDefaults() override;
+    void            updateStyleIt(ResNode *node, state st, std::string &styleClass) override;
+    virtual void    setImgFlag(ResNode *node, state st);
+    virtual void    setImgAlign(ResNode *node, state st);
+    virtual void    setImgScale(ResNode *node, state st);
+    virtual void    setImgBase(AssetImageBase *imgBase);
+    void            updateDrawData() override;
+    void            initUnitBlock();
+    bool            draw(uint32_t *objId) override;
+    bool            drawIndirect(uint32_t *objId) override;
+    void            pushTexture(DrawSet *ds);
+    void            pushVaoUpdtOffsets() override;
+    virtual void    loadImg();
+    virtual void    reload();
+    virtual bool    setTexId(GLuint inTexId, int width, int height, int bitCount);
+    virtual void    setFillToNodeSize(bool val, state st = state::m_state);
+    virtual void    setObjUsesTexAlpha(bool val);
+    void            clearDs() override;
+    bool            isInBounds(glm::vec2& pos) override;
 
-    virtual void setImg(const std::string& file, int mipMapLevel = 1) ;
-    unsigned     setImgFlags(unsigned flags);
-    void         setImgScale(float scale);
+    virtual void    setImg(const std::string& file, int mipMapLevel = 1) ;
+    unsigned        setImgFlags(unsigned flags);
+    void            setImgScale(float scale);
 
-    virtual void setSizeToAspect(bool val) { m_sizeToAspect = val; }
-    virtual void selectSection(int idx) { m_sectIndex = idx; }
-    void         setSizeChangeCb(std::function<void(int, int)> f) { m_sizeChangeCb = std::move(f); }
-    void         setSrcBlendFunc(GLenum bf) { m_srcBlendFunc = bf; }
-    void         setDstBlendFunc(GLenum bf) { m_dstBlendFunc = bf; }
-    void         setSrcBlendAlphaFunc(GLenum bf) { m_srcBlendAlphaFunc = bf; }
-    void         setDstBlendAlphaFunc(GLenum bf) { m_dstBlendAlphaFunc = bf; }
-    void         setSepBlendFunc(bool val) { m_sepBlendFunc = val; }
-    void         setLod(float val);
-    void         setSectionSize(const glm::ivec2& sz) { m_secSize = sz; }
-    void         setSectionSep(const glm::ivec2& sp) { m_secSep = sp; }
-    void         setSectionPos(const glm::ivec2& pos) { m_secPos = pos; }
-    void         setTextureSize(const glm::ivec2& tsz) { m_texSize = tsz; }
-    void         setZOffsPos(float z) { m_offsZPos = z; }
+    virtual void    setSizeToAspect(bool val) { m_sizeToAspect = val; }
+    virtual void    selectSection(int idx) { m_sectIndex = idx; }
+    void            setSizeChangeCb(std::function<void(int, int)> f) { m_sizeChangeCb = std::move(f); }
+    void            setSrcBlendFunc(GLenum bf) { m_srcBlendFunc = bf; }
+    void            setDstBlendFunc(GLenum bf) { m_dstBlendFunc = bf; }
+    void            setSrcBlendAlphaFunc(GLenum bf) { m_srcBlendAlphaFunc = bf; }
+    void            setDstBlendAlphaFunc(GLenum bf) { m_dstBlendAlphaFunc = bf; }
+    void            setSepBlendFunc(bool val) { m_sepBlendFunc = val; }
+    void            setLod(float val);
+    void            setSectionSize(const glm::ivec2& sz) { m_secSize = sz; }
+    void            setSectionSep(const glm::ivec2& sp) { m_secSep = sp; }
+    void            setSectionPos(const glm::ivec2& pos) { m_secPos = pos; }
+    void            setTextureSize(const glm::ivec2& tsz) { m_texSize = tsz; }
+    void            setZOffsPos(float z) { m_offsZPos = z; }
 
-    ImageBase   *getImgBase() { return m_imgBase; }
-    Texture     *getTexture() { return tex; }
-    GLuint       getTexID() { return !m_imgBase ? 0 : m_imgBase->getTexID(); }
-    unsigned     getImgFlags() const { return m_ImgFlags; }
-    GLuint       getExtTexId() const { return m_texId; }
-    glm::ivec2   getExtTexSize() const { return {m_extTexWidth, m_extTexHeight}; }
-    int          getExtTexBitCount() const { return m_extTexBitCount; }
-    bool         isLoaded() { return m_loaded; }
-    int         *getImgBasePos() { return m_ppos; }
-    int          getSectIdx() { return m_sectIndex; }
-    PBO         *getUplPbo() { return &m_uplPbo; }
+    AssetImageBase *getImgBase() { return m_imgBase; }
+    Texture        *getTexture() { return tex; }
+    GLuint          getTexID();
+    unsigned        getImgFlags() const { return m_imgFlags; }
+    GLuint          getExtTexId() const { return m_texId; }
+    glm::ivec2      getExtTexSize() const { return {m_extTexWidth, m_extTexHeight}; }
+    int             getExtTexBitCount() const { return m_extTexBitCount; }
+    bool            isLoaded() { return m_loaded; }
+    int            *getImgBasePos() { return m_ppos; }
+    int             getSectIdx() { return m_sectIndex; }
+    PBO            *getUplPbo() { return &m_uplPbo; }
 
-    void        resizeUplPbo(int w, int h, GLenum format) { m_uplPbo.resize(w, h, format); }
-    PingPongFbo *getUplFbo();
-    void        initUplPbo(int w, int h, GLenum format);
-    void        initUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-                           int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
-    void        rebuildUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-                              int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
+    void            resizeUplPbo(int w, int h, GLenum format) { m_uplPbo.resize(w, h, format); }
+    PingPongFbo    *getUplFbo();
+    void            initUplPbo(int w, int h, GLenum format);
+    void            initUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
+                               int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
+    void            rebuildUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
+                                  int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
 
-    unsigned     m_ImgFlags    = 0;
-    float        m_ImgScale    = 1;
-    unsigned     m_ImgAlign[2] = {1, 1};  // center,vcenter
+    unsigned     m_imgFlags    = 0;
+    float        m_imgScale    = 1;
+    unsigned     m_imgAlign[2] = {1, 1};  // center,vcenter
     IndDrawBlock m_imgDB;
     float        m_texUnit = -1.f;
 
@@ -93,7 +94,7 @@ protected:
     std::unique_ptr<PingPongFbo> m_uplFbo;
     PBO                          m_uplPbo;
     UniformBlock                 m_texUniBlock;
-    ImageBase                   *m_imgBase = nullptr;
+    AssetImageBase              *m_imgBase = nullptr;
 
     bool m_loaded          = false;
     bool m_useTexId        = false;

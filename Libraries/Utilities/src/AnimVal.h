@@ -113,7 +113,7 @@ public:
     }
 
     T &getVal() {
-        m_blendVal = (m_startVal * (1.f - m_calcPerc)) + m_endVal * m_calcPerc;
+        m_blendVal = static_cast<T>(m_startVal * (1.f - m_calcPerc)) + static_cast<T>(m_endVal * m_calcPerc);
         return m_blendVal;
     }
 

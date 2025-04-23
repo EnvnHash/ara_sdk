@@ -1,10 +1,10 @@
 #include "DemoView.h"
 #include <Image.h>
 #include <Log.h>
-#include <Res/ResColor.h>
-#include <Res/ResInstance.h>
-#include <Res/ResNode.h>
-#include <Res/ResSrcFile.h>
+#include <Asset/AssetColor.h>
+#include <Asset/AssetManager.h>
+#include <Asset/ResNode.h>
+#include <Asset/ResSrcFile.h>
 
 using namespace ara;
 using namespace glm;
@@ -101,10 +101,10 @@ bool DemoView_Resources::draw(uint32_t* objId) {
 
 void DemoView_Resources::drawColors(ResNode* node, int& it) {
     if (node != nullptr) {
-        for (ResNode::Ptr& p : node->m_Node) {
+        for (ResNode::Ptr& p : node->m_node) {
             auto& deref = *p; // silence warning with clang
-            if (typeid(deref) == typeid(ResColor)) {
-                auto rc=dynamic_cast<ResColor*>(p.get());
+            if (typeid(deref) == typeid(AssetColor)) {
+                auto rc=dynamic_cast<AssetColor*>(p.get());
                 util_FillRect(10,100+it*40,28,28,rc->getColor4fv());
                 ++it;
             }

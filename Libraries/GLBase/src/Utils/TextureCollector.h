@@ -11,7 +11,7 @@ namespace ara {
 
 class GLBase;
 class Texture;
-class Instance;
+class AssetManager;
 
 class TextureCollectorElement {
 public:
@@ -26,7 +26,7 @@ public:
     Texture *add(const std::filesystem::path &fileName);
     Texture *add(std::vector<uint8_t>& vp, const std::string &fileName, const std::filesystem::path *dataPath, int32_t mipMapLevel);
     Texture *addFromMem(const std::filesystem::path &fileName, const std::filesystem::path &dataPath, int32_t mipMapLevel);
-    Texture *addFromRes(Instance *res, const std::string &fn, int mipMapLevel);
+    Texture *addFromAssetManager(AssetManager *res, const std::string &fn, int mipMapLevel);
     void addRemoveCb(const std::string &fileName, const std::function<void()>& f);
     void remove(const std::filesystem::path &fileName);
     Texture *checkForExistence(const std::string &fileName, const std::filesystem::path *dataPath,

@@ -1,6 +1,6 @@
 #include "Label.h"
 
-#include "Res/ResColor.h"
+#include "Asset/AssetColor.h"
 #include "UIWindow.h"
 
 using namespace glm;
@@ -52,7 +52,7 @@ void Label::loadStyleDefaults() {
 void Label::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
-    auto color = node->findNode<ResColor>("text-color");
+    auto color = node->findNode<AssetColor>("text-color");
     if (color) {
         vec4 col                                 = color->getColorvec4();
         m_setStyleFunc[st][styleInit::textColor] = [col, this, st]() { setColor(col.r, col.g, col.b, col.a, st); };
@@ -60,7 +60,7 @@ void Label::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
 
     auto text = node->findNode("text");
     if (text) {
-        std::string tv                      = text->m_Value;
+        std::string tv                      = text->m_value;
         m_setStyleFunc[st][styleInit::text] = [tv, this]() { m_Text = tv; };
     }
 
@@ -143,7 +143,7 @@ void Label::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
         m_setStyleFunc[st][styleInit::textValign] = [this, aux]() { m_tAlign_Y = aux; };
     }
 
-    auto f = node->findNode<ResFont>("font");
+    auto f = node->findNode<AssetFont>("font");
     if (f) {
         int         size = ((ResNode*)f)->value1i("size", 0);
         std::string font = ((ResNode*)f)->getValue("font");
@@ -548,6 +548,78 @@ void Label::reqUpdtGlyphs(bool updateTree) {
 void Label::clearDs() {
     Div::clearDs();
     m_lblDB.drawSet = nullptr;
+}
+
+unsigned long Label::setOpt(unsigned long f) {
+    m_tOpt |= f;
+    m_glyphsPrepared = false;
+    return m_tOpt;
+}
+
+unsigned long Label::removeOpt(unsigned long f) {
+    m_tOpt &= ~f;
+    m_glyphsPrepared = false;
+    return m_tOpt;
+}
+
+void Label::setFont(std::string fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st) {
+    setFontType(std::move(fontType), st);
+    setFontSize((int)fontSize, st);
+    setTextAlign(ax, ay, st);
+    setColor(fontColor, st);
+}
+
+void Label::setColor(float r, float g, float b, float a, state st)  {
+    UINode::setColor(r, g, b, a, st);
+}
+
+void Label::setColor(glm::vec4 &col, state st)  {
+    UINode::setColor(col, st);
+}
+
+void Label::setTextAlign(align ax, valign ay, state st) {
+    setTextAlignX(ax, st);
+    setTextAlignY(ay, st);
+}
+
+void Label::setTextAlignX(align ax, state st) {
+    m_tAlign_X       = ax;
+    m_glyphsPrepared = false;
+    setStyleInitVal("text-align", ax == align::center ? "center" : (ax == align::left ? "left" : "right"), st);
+}
+
+void Label::setTextAlignY(valign ay, state st) {
+    m_tAlign_Y       = ay;
+    m_glyphsPrepared = false;
+    setStyleInitVal("text-valign", ay == valign::center ? "center" : (ay == valign::top ? "top" : "bottom"), st);
+}
+
+void Label::setText(const std::string &val, state st) {
+    bool updt = val.size() != m_Text.size();
+    m_Text    = val;
+    reqUpdtGlyphs(updt);
+    setStyleInitVal("text", val, st);
+}
+
+void Label::setFontSize(int fontSize, state st) {
+    if (st == state::m_state || st == m_state) {
+        m_fontSize       = fontSize;
+        m_glyphsPrepared = false;
+    }
+}
+
+void Label::setFontType(std::string fontType, state st) {
+    if (st == state::m_state || st == m_state) {
+        m_fontType       = std::move(fontType);
+        m_glyphsPrepared = false;
+    }
+}
+
+vec2& Label::getTextBoundSize() {
+    if (m_textBounds.x == 0.f || m_textBounds.y == 0.f) {
+        UpdateDGV(nullptr);
+    }
+    return m_textBounds;
 }
 
 }  // namespace ara

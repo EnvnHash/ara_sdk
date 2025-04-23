@@ -11,7 +11,6 @@
 #include "Windows/DisplayScaling.h"
 
 using namespace glm;
-using namespace pugi;
 using namespace std;
 
 namespace fs = std::filesystem;
@@ -47,9 +46,20 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
 
 #endif
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-        m_winHandle = m_glbase->getWinMan()->addWin(width, height, 60, false, true, shiftX, shiftY, 0, osDecoration,
-                                                    floating, 2, false, scaleToMonitor, (void *)m_glbase->getGlfwHnd(),
-                                                    transparentFB, extWinHandle, m_debugGLFWwin);
+        glWinPar wp;
+        wp.width = width;
+        wp.height = height;
+        wp.shiftX = shiftX;
+        wp.shiftY = shiftY;
+        wp.decorated = osDecoration;
+        wp.floating = floating;
+        wp.scaleToMonitor = scaleToMonitor;
+        wp.shareCont = static_cast<void *>(m_glbase->getGlfwHnd());
+        wp.transparentFramebuffer = transparentFB;
+        wp.extWinHandle = extWinHandle;
+        wp.debug = m_debugGLFWwin;
+
+        m_winHandle = m_glbase->getWinMan()->addWin(wp);
         if (!m_winHandle) {
             return;
         }
@@ -72,10 +82,10 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         m_winHandle->setWindowRefreshCb([this] { window_refresh_callback(); });
 
         // double check if the requested size was accepted
-        vWidth             = (uint32_t)m_winHandle->getWidth();
-        vHeight            = (uint32_t)m_winHandle->getHeight();
-        rWidth             = (uint32_t)m_winHandle->getWidthReal();
-        rHeight            = (uint32_t)m_winHandle->getHeightReal();
+        vWidth             = m_winHandle->getWidth();
+        vHeight            = m_winHandle->getHeight();
+        rWidth             = m_winHandle->getWidthReal();
+        rHeight            = m_winHandle->getHeightReal();
         s_devicePixelRatio = m_winHandle->getContentScale().x;
 #endif
 #ifndef ARA_USE_EGL
@@ -88,9 +98,9 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         // resources updating must be done this way in case of non-window managed setup
         m_glbase->setUpdtResCb([this] {
             addGlCb(this, "resUpt", [this] {
-                if (m_glbase->getResInstance()) {
-                    m_glbase->getResInstance()->CallResSourceChange();
-                    m_glbase->getResInstance()->CallForChangesInFolderFiles();
+                if (m_glbase->getAssetManager()) {
+                    m_glbase->getAssetManager()->callResSourceChange();
+                    m_glbase->getAssetManager()->callForChangesInFolderFiles();
                     setResChanged(true);
                     update();
                 }
@@ -175,7 +185,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
                                   glm::ivec2(60, 30),
                                   m_stdPadding,
                                   &m_minWinSize,
-                                  m_glbase->getResInstance(),
+                                  m_glbase->getAssetManager(),
                                   &m_nullVao,
                                   m_drawMan.get(),
                                   glbase};
@@ -1248,7 +1258,7 @@ void UIWindow::setAppIcon(std::string &path) {
 #if defined(ARA_USE_GLFW) && defined(ARA_USE_FREEIMAGE)
     // set app icon
     std::vector<uint8_t> vp;
-    m_glbase->getResInstance()->loadResource(nullptr, vp, "precision/vioso6_48x48.png");
+    m_glbase->getAssetManager()->loadResource(nullptr, vp, "precision/vioso6_48x48.png");
 
     if (vp.empty()) return;
 

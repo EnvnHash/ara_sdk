@@ -3,8 +3,8 @@
 #include <Utils/FBO.h>
 #include <Utils/Texture.h>
 #include <GeoPrimitives/Quad.h>
-#include <Utils/TypoGlyphMap.h>
-#include "Res/ResInstance.h"
+#include <Utils/Typo/TypoGlyphMap.h>
+#include "Res/AssetManager.h"
 
 using namespace std;
 

@@ -4,23 +4,19 @@
 
 #pragma once
 
-#include <GeoPrimitives/Quad.h>
-#include <Shaders/ShaderCollector.h>
-#include <Utils/Texture.h>
-#include <Utils/TypoGlyphMap.h>
-#include <WindowManagement/GLFWWindow.h>
-#include <WindowManagement/WindowBase.h>
-
-#include <pugixml/pugixml.hpp>
-
-#include "Res/ResFont.h"
-#include "DrawManagers/DrawManager.h"
-#include "ObjectMapInteraction.h"
 #include "glsg_common/glsg_common.h"
 
 namespace ara {
 
 enum class uiColors : int { background = 0, darkBackground, font, sepLine, highlight, black, blue, darkBlue, white };
+
+class AssetManager;
+class DrawManager;
+class GLFWWindow;
+class ObjectMapInteraction;
+class ShaderCollector;
+class Quad;
+class WindowBase;
 
 class scissorStack {
 public:
@@ -49,7 +45,7 @@ public:
     glm::ivec2                                                 gridSize;
     float                                                      padding;
     glm::ivec2*                                                minWinSize = nullptr;
-    Instance*                                                  res        = nullptr;
+    AssetManager*                                              res        = nullptr;
     GLuint*                                                    nullVao    = nullptr;
     DrawManager*                                               drawMan    = nullptr;
     GLBase*                                                    glbase     = nullptr;

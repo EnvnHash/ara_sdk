@@ -167,6 +167,7 @@ public:
     void                                    deserialize(const nlohmann::json& j);
     void                                    load(const std::filesystem::path& filePath);
     virtual void                            load();
+    void                                    loadFromString(const std::string& str);
     void                                    saveAs(const std::filesystem::path& filePath);
     void                                    save();
     void                                    saveState();

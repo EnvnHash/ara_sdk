@@ -1,13 +1,11 @@
 #pragma once
 
-#include "Res/ResColor.h"
-#include "Res/ResNode.h"
-#include "Utils/Texture.h"
-
-#include "Image.h"
-#include "Utils/TypoGlyphMap.h"
+#include "Div.h"
 
 namespace ara {
+
+class Image;
+class AssetImageBase;
 
 class ImageButton : public Div {
 public:
@@ -52,7 +50,7 @@ public:
     void setToggleCb(std::function<void(bool)> cbFunc) { m_toggleCbFunc = std::move(cbFunc); }
     void setClickedCb(std::function<void()> cbFunc) { m_clickedFunc = std::move(cbFunc); }
     void setOnStateImg(const std::string& file, int mipMapLevel) { setStateImg(file, imgType::On, mipMapLevel); }
-    void setOnStateBackImg(const std::string& file, int mipMapLevel = 8) { m_onstate_back_tex->setImg(file, mipMapLevel); }
+    void setOnStateBackImg(const std::string& file, int mipMapLevel = 8);
 
     Image* getImg();
 
@@ -87,6 +85,6 @@ protected:
     Image*              m_onstate_back_tex = nullptr;
 
     // temporary local variables made member variables for performance reasons
-    std::list<std::pair<int, ImageBase*>> m_ibl;
+    std::list<std::pair<int, AssetImageBase*>> m_ibl;
 };
 }  // namespace ara

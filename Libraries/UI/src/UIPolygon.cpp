@@ -4,6 +4,8 @@
 
 #include "UIPolygon.h"
 
+#include <GeoPrimitives/Quad.h>
+
 using namespace glm;
 using namespace std;
 

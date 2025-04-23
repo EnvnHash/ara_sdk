@@ -23,7 +23,9 @@ public:
 
     void hideButtons(bool val) {
         m_showButtons = !val;
-        for (auto& it : m_menButtons) it.second->setVisibility(!val);
+        for (auto& it : m_menButtons) {
+            it.second->setVisibility(!val);
+        }
     }
 #ifdef ARA_USE_GLFW
     void setWindowHandle(GLFWWindow* win) { m_win = win; }

@@ -1,7 +1,7 @@
 #include "GLBaseUnitTestCommon.h"
 #include <GLRenderer.h>
 #include <GeoPrimitives/Quad.h>
-#include "Res/ResInstance.h"
+#include "Asset/AssetManager.h"
 
 using namespace std;
 

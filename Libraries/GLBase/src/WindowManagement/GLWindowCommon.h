@@ -41,15 +41,13 @@ public:
     unsigned int bits      = 32;  // RGBA 8 bit
     int          shiftX    = 0;   // offset relative to desktop origin
     int          shiftY    = 0;   // offset relative to desktop origin
-    int          monitorNr = 0;   // assign to specific monitor index, only relevant for
-                                  // fullscreen windows
+    int          monitorNr = 0;   // assign to specific monitor index, only relevant for fullscreen windows
     int  width          = 1;
     int  height         = 1;
     int  refreshRate    = 60;     // irrelevant for non-fullscreen windows
-    bool scaleToMonitor = false;  // specified whether the window content area should be resized
-                                  // based on the monitor content scale of any monitor it is
-                                  // placed on. This includes the initial placement when the
-                                  // window is created
+    bool scaleToMonitor = false;  // specified whether the window content area should be resized based on the monitor
+                                  // content scale of any monitor it is placed on. This includes the initial placement
+                                  // when the window is created
     void *shareCont              = nullptr;
     bool  transparentFramebuffer = false;
     void *extWinHandle           = nullptr;

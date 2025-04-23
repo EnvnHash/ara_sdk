@@ -2,10 +2,10 @@
 
 #include <GLBase.h>
 #include <Property.h>
+#include <ui_common.h>
 #include <Utils/UniformBlock.h>
 
 #include "ListProperty.h"
-#include "Res/ResInstance.h"
 #include "ObjectMapInteraction.h"
 #include "UISharedRes.h"
 #include "glsg_common/glsg_common.h"

@@ -1,8 +1,8 @@
 #include "GLBaseUnitTestCommon.h"
 
 #include <GeoPrimitives/Quad.h>
-#include <Utils/TypoGlyphMap.h>
-#include "Res/ResInstance.h"
+#include <Utils/Typo/TypoGlyphMap.h>
+#include <Asset/AssetManager.h>
 
 using namespace std;
 using namespace std::chrono;
@@ -14,11 +14,9 @@ TEST(GLBaseTest, GLBaseStopStartResources) {
     int nrIterations = 50;
     for (int i = 0; i < nrIterations; i++) {
         GLBase m_glbase;
-
-        // create a GLBase instance
         EXPECT_EQ(m_glbase.init(), true);
 
-        m_glbase.startRenderLoop();                                      // blocks until the loop is really running
+        m_glbase.startRenderLoop(); // blocks until the loop is really running
 
         // push something into the queue to process
         Conditional sema;

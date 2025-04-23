@@ -26,17 +26,14 @@ file(GLOB GLBASE_UT_SRC
         GLBaseStopStart.cpp
         GLBaseStopStartResources.cpp
         GLRendererTest.cpp
-        #GLRendDispPartTest.cpp # not working TODO: fixme
         LoadTextureMipMap.cpp
         LoadTexture.cpp
-
         NativeWindow.cpp
         PolygonTest.cpp
         PolygonSerializationHps.cpp
         PolygonSerialization.cpp
         ThreadedWindow.cpp
 )
-
 
 add_executable(${PROJECT_NAME} ${GLBASE_UT_SRC})
 

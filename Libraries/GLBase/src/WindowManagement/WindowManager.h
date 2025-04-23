@@ -7,7 +7,6 @@
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
 
 #include <Conditional.h>
-
 #include "GLWindow.h"
 
 #ifdef __linux__
@@ -15,7 +14,7 @@
 #endif
 
 namespace ara {
-class Instance;
+class AssetManager;
 
 class GLBase;
 
@@ -25,20 +24,20 @@ public:
     // instance
     explicit WindowManager(GLBase *glbase);
 
-    /** starts a infinte drawing loop, destroys all windows on stop */
+    /** starts an infinite drawing loop, destroys all windows on stop */
     [[maybe_unused]] void runMainLoop(std::function<void(double time, double dt, unsigned int ctxNr)> f);
 
     /**
      * there are several ways to manage multi window rendering. iterate() is for
-     * single thread non-eventbased rendering. This method iterates through all
+     * single thread non event based rendering. This method iterates through all
      * windows, calls the draw callback function set for them, polls the events
-     * and calls a frambuffer swap -> execute the gl command queue
+     * and calls a framebuffer swap -> execute the gl command queue
      */
     void iterate(bool only_open_windows);
 
     /**
-     * iterate through all windows and call the windows startDrawThread()
-     * method, thus starting a new thred with the windows draw loop
+     * iterate through all windows and call the windows startDrawThread() method, thus starting a new thread with the
+     * windows draw loop
      */
     void startThreadedRendering() const;
 
@@ -49,25 +48,25 @@ public:
     std::thread getOutOfBoundsHIDLoop();
 #endif
 
-    /** drawing and event thread can run separately. use this for starting an draw-loop independent event loop */
-    void startEventLoop();
-    [[maybe_unused]] void procEventQueue();
-    void stopEventLoop();
+    /** drawing and event thread can run separately. use this for starting a draw-loop independent event loop */
+    void                    startEventLoop();
+    [[maybe_unused]] void   procEventQueue();
+    void                    stopEventLoop();
 
     [[maybe_unused]] Conditional *getStopEventLoopSema() { return &m_stopEventLoopSema; }
     [[maybe_unused]] Conditional *getStartEventLoopSema() { return &m_startEventLoopSema; }
 
     /** add a new window (using the GWindow glfw-wrapper class) */
-    GLWindow *addWin(int width, int height, int refreshRate, bool fullScreen, bool useGL32p, int shiftX = 0,
+/*    GLWindow *addWin(int width, int height, int refreshRate, bool fullScreen, bool useGL32p, int shiftX = 0,
                      int shiftY = 0, int monitorNr = 0, bool decorated = true, bool floating = false,
                      unsigned int nrSamples = 2, bool hidden = false, bool scaleToMonitor = false,
                      void *sharedCtx = nullptr, bool transparentFB = false, void *extWinHandle = nullptr,
                      bool debug = false);
-
+*/
     /**
      * add a new Window using the GWindow Wrapper class parameters are set via pre filled gWinPar struct
      */
-    GLWindow *addWin(glWinPar *gp);
+    GLWindow *addWin(const glWinPar& gp);
 
     void removeWin(GLWindow *win, bool terminateGLFW = true);
 
@@ -91,11 +90,11 @@ public:
     void getHwInfo();
 
 #ifdef ARA_USE_GLFW
-    std::vector<GLFWvidmode> getVideoModes();
-    std::vector<std::pair<int, int>> getMonitorOffsets();
-    [[maybe_unused]] GLFWvidmode const &getDispMode(unsigned int idx) const;
-    GLFWcursor *createMouseCursor(std::string &file, float xHot, float yHot) const;
-    void loadMouseCursors();
+    std::vector<GLFWvidmode>            getVideoModes();
+    std::vector<std::pair<int, int>>    getMonitorOffsets();
+    [[maybe_unused]] GLFWvidmode const& getDispMode(unsigned int idx) const;
+    GLFWcursor*                         createMouseCursor(std::string &file, float xHot, float yHot) const;
+    void                                loadMouseCursors();
 #endif
 
     [[maybe_unused]] unsigned int getMonitorWidth(unsigned int winNr) const;
@@ -103,50 +102,57 @@ public:
 
     /** make a specific context visible */
     void open(unsigned int nr) {
-        if (m_windows.size() > nr) m_windows[nr]->open();
+        if (m_windows.size() > nr) {
+            m_windows[nr]->open();
+        }
     }
 
     /** make a specific context inVisible */
     void hide(unsigned int nr) {
-        if (m_windows.size() > nr) m_windows[nr]->hide();
+        if (m_windows.size() > nr) {
+            m_windows[nr]->hide();
+        }
     }
 
-    /** close all glfw windows that have been added through this WindowManager
-     * instance before */
+    /** close all glfw windows that have been added through this WindowManager instance before */
     [[maybe_unused]] void closeAll() {
         m_run = false;
-        for (auto &it : m_windows) it->close();
+        for (auto &it : m_windows) {
+            it->close();
+        }
     }
 
     void stop() { m_run = false; }
     bool isRunning() const { return m_run; }
 
     [[maybe_unused]] int getDispOffsetX(unsigned int idx) {
-        if (m_dispOffsets.size() > idx)
+        if (m_dispOffsets.size() > idx) {
             return m_dispOffsets[idx].first;
-        else
+        } else {
             return 0;
+        }
     }
 
     [[maybe_unused]] int getDispOffsetY(unsigned int idx) {
-        if (m_dispOffsets.size() > idx)
+        if (m_dispOffsets.size() > idx) {
             return m_dispOffsets[idx].second;
-        else
+        } else {
             return 0;
+        }
     }
 
     [[maybe_unused]] GLWindow *getFirstWin() { return m_windows.empty() ? nullptr : m_windows.front().get(); }
     [[maybe_unused]] GLWindow *getBack() { return m_windows.back().get(); }
     std::vector<std::unique_ptr<GLWindow>>        *getWindows() { return &m_windows; }
     GLWindow                                      *getFocusedWin() { return m_focusedWin; }
-    [[maybe_unused]] uint32_t                      getNrWindows() { return (uint32_t)m_windows.size(); }
+    [[maybe_unused]] uint32_t                      getNrWindows() { return static_cast<uint32_t>(m_windows.size()); }
     [[maybe_unused]] unsigned int                  getNrDisplays() const { return m_dispCount; }
     [[maybe_unused]] std::vector<DisplayBasicInfo> getDisplays() { return m_displayInfo; }
     [[maybe_unused]] void                          setPrintFps(bool _val) { m_showFps = _val; }
     void                                           setFixFocus(GLWindow *win) { m_fixFocusWin = win; }
     GLWindow                                      *getFixFocus() { return m_fixFocusWin; }
-    void                                           setRes(Instance *res) { m_res = res; }
-    Instance                                      *getRes() { return m_res; }
+    void                                           setAssetManager(AssetManager *res) { m_assetManager = res; }
+    AssetManager                                   *getAssetManager() { return m_assetManager; }
     [[maybe_unused]] std::thread::id               getMainThreadId() { return m_mainThreadId; }
     void                                           setMainThreadId(std::thread::id inId) { m_mainThreadId = inId; }
     void                                           setBreakEvtLoop(bool val) { m_breakEvtLoop = val; }
@@ -295,22 +301,17 @@ private:
     double m_lastMouseX   = 0.0;
     double m_lastMouseY   = 0.0;
 
-    void     *m_shareCtx    = nullptr;
-    GLWindow *m_fixFocusWin = nullptr;
-    GLWindow *m_focusedWin  = nullptr;
-
-    GLBase *m_glbase = nullptr;
-
-    Conditional m_stopEventLoopSema;
-    Conditional m_startEventLoopSema;
-    // Conditional m_globalMouseClickExited;
+    void            *m_shareCtx    = nullptr;
+    GLWindow        *m_fixFocusWin = nullptr;
+    GLWindow        *m_focusedWin  = nullptr;
+    GLBase          *m_glbase = nullptr;
+    Conditional     m_stopEventLoopSema;
+    Conditional     m_startEventLoopSema;
     std::thread::id m_mainThreadId;
-
-    std::mutex m_evtLoopCbMtx;
-    std::mutex m_globMouseLoopMtx;
-
-    int       m_dispCount = 0;
-    Instance *m_res       = nullptr;
+    std::mutex      m_evtLoopCbMtx;
+    std::mutex      m_globMouseLoopMtx;
+    int             m_dispCount = 0;
+    AssetManager    *m_assetManager = nullptr;
 
     std::chrono::system_clock::time_point m_now;
     std::chrono::system_clock::time_point m_startTime;

@@ -13,13 +13,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <GLBase.h>
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
 
-#include "WindowManagement/WindowManager.h"
-
+#include <WindowManagement/WindowManager.h>
 #include <Utils/Texture.h>
-
-#include "Res/ResInstance.h"
+#include <Asset/AssetManager.h>
 
 using namespace std;
 using namespace std::chrono;
@@ -102,7 +101,7 @@ void WindowManager::iterate(bool only_open_windows) {
 
     // check if new windows were requested
     for (auto &it : m_addWindows) {
-        addWin(&it);
+        addWin(it);
     }
 
     GLWindow::makeNoneCurrent();
@@ -255,47 +254,67 @@ void WindowManager::stopThreadedRendering() const {
     }
 }
 
-
+/*
 GLWindow *WindowManager::addWin(int width, int height, int refreshRate, bool fullScreen, bool useGL32p, int shiftX,
                                 int shiftY, int monitorNr, bool decorated, bool floating, unsigned int nrSamples,
                                 bool hidden, bool scaleToMonitor, void *sharedCtx, bool transparentFB,
                                 void *extWinHandle, bool debug) {
-    glWinPar gp;
-    gp.width                  = width;
-    gp.height                 = height;
-    gp.refreshRate            = refreshRate;
-    gp.fullScreen             = fullScreen;
-    gp.useGL32p               = useGL32p;
-    gp.shiftX                 = shiftX;
-    gp.shiftY                 = shiftY;
-    gp.monitorNr              = monitorNr;
-    gp.decorated              = decorated;
-    gp.floating               = floating;
-    gp.nrSamples              = nrSamples;
-    gp.debug                  = debug;
-    gp.createHidden           = hidden;
-    gp.doInit                 = false;
-    gp.resizeable             = true;
-    gp.scaleToMonitor         = scaleToMonitor;
-    gp.shareCont              = sharedCtx;
-    gp.transparentFramebuffer = transparentFB;
-    gp.extWinHandle           = extWinHandle;
-    gp.glbase                 = m_glbase;
-    return addWin(&gp);
-}
+    return addWin({
+        .doInit                 = false,
+        .fullScreen             = fullScreen,
+        .useGL32p               = useGL32p,
+        .decorated              = decorated,
+        .floating               = floating,
+        .createHidden           = hidden,
+        .openGlDebug            = false,
+        .debug                  = debug,
+        .resizeable             = true,
+        .transparent            = false,
+        .hidInput     = true;
+        .hidExtern    = false;
+        .nrSamples = 2;
+        .bits      = 32;
+        .shiftX    = 0;
+        .shiftY    = 0;
+        .monitorNr = 0;
+        .width          = 1;
+        .height         = 1;
+        .refreshRate    = 60;
+        .scaleToMonitor = false;
+        .shareCont              = nullptr;
+        .transparentFramebuffer = false;
+        .extWinHandle           = nullptr;
+        .glbase                 = nullptr;
 
-GLWindow *WindowManager::addWin(glWinPar *gp) {
+
+        .width                  = width,
+        .height                 = height,
+        .refreshRate            = refreshRate,
+        .shiftX                 = shiftX,
+        .shiftY                 = shiftY,
+        .monitorNr              = monitorNr,
+        .transparentFramebuffer = transparentFB,
+        .nrSamples              = nrSamples,
+        .scaleToMonitor         = scaleToMonitor,
+        .shareCont              = sharedCtx,
+        .extWinHandle           = extWinHandle,
+        .glbase                 = m_glbase
+    });
+}*/
+
+GLWindow *WindowManager::addWin(const glWinPar& gp) {
 #ifdef _WIN32
     {
         unique_lock<mutex> lock(m_globMouseLoopMtx);
 #endif
-        m_windows.push_back(std::make_unique<GLWindow>());
+        m_windows.emplace_back(std::make_unique<GLWindow>());
 
         // if there is no explicit request to share a specific content, and we already got another context to share,
         // take the first added window as a shared context
-        gp->shareCont = gp->shareCont ? gp->shareCont : m_shareCtx;
-        gp->hidExtern = true;  // HID input must be managed by WindowManager
-        m_windows.back()->init(*gp);
+        auto wp = gp;
+        wp.shareCont = gp.shareCont ? gp.shareCont : m_shareCtx;
+        wp.hidExtern = true;  // HID input must be managed by WindowManager
+        m_windows.back()->init(wp);
         if (!m_windows.back()->getCtx()) {
             return nullptr;
         }
@@ -305,8 +324,7 @@ GLWindow *WindowManager::addWin(glWinPar *gp) {
 #endif
 
 #ifdef ARA_USE_GLFW
-    // pass a pointer to this WindowManager instance to glfw, to be used inside
-    // the HID callback functions
+    // pass a pointer to this WindowManager instance to glfw, to be used inside the HID callback functions
     glfwSetWindowUserPointer(m_windows.back()->getCtx(), reinterpret_cast<void *>(this));
 #endif
 
@@ -316,7 +334,7 @@ GLWindow *WindowManager::addWin(glWinPar *gp) {
 
     auto win = m_windows.back().get();
 
-    if (gp->hidInput) {
+    if (gp.hidInput) {
         // bind window HID callbacks to globalCallbacks by adding them to the
         // callback maps
         m_keyCbMap[win->getCtx()]      = [win](int p1, int p2, int p3, int p4) { win->onKey(p1, p2, p3, p4); };
@@ -771,39 +789,32 @@ GLFWcursor *WindowManager::createMouseCursor(std::string &file, float xHot, floa
     Texture   tex(m_glbase);
 
 #ifdef ARA_USE_FREEIMAGE
-    FIBITMAP *pBitmap = nullptr;
-
-#ifdef ARA_DEBUG
-    if (fs::exists(fs::path("resdata") / fs::path(file))) {
-        pBitmap = Texture::ImageLoader((fs::path("resdata") / fs::path(file)).string().c_str(), 0);
-#else
-    if (m_res) {
-        std::vector<uint8_t> vp;
-        m_res->loadResource(nullptr, vp, file);
-        if (!vp.size()) {
-            return nullptr;
-        }
-
-        FreeImg_MemHandler mh(&vp[0], vp.size());
-        FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
-        if ((pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0)) == nullptr) {
-            return nullptr;
-        }
-#endif
-        GLFWimage image;
-        image.pixels    = FreeImage_GetBits(pBitmap);
-        image.width     = static_cast<int>(FreeImage_GetWidth(pBitmap));
-        image.height    = static_cast<int>(FreeImage_GetHeight(pBitmap));
-
-        auto c = glfwCreateCursor(&image, static_cast<int>(static_cast<float>(image.width) * xHot), static_cast<int>(static_cast<float>(image.height) * yHot));
-        FreeImage_Unload(pBitmap);
-        return c;
+    std::vector<uint8_t> vp;
+    auto& al = m_glbase->getAssetManager()->getAssetLoader();
+    al.loadAssetToMem(vp, file);
+    if (vp.empty()) {
+        return nullptr;
     }
+
+    FreeImg_MemHandler mh(&vp[0], vp.size());
+    FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
+    FIBITMAP *pBitmap = nullptr;
+    if ((pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0)) == nullptr) {
+        return nullptr;
+    }
+
+    GLFWimage image;
+    image.pixels    = FreeImage_GetBits(pBitmap);
+    image.width     = static_cast<int>(FreeImage_GetWidth(pBitmap));
+    image.height    = static_cast<int>(FreeImage_GetHeight(pBitmap));
+
+    auto c = glfwCreateCursor(&image, static_cast<int>(static_cast<float>(image.width) * xHot), static_cast<int>(static_cast<float>(image.height) * yHot));
+    FreeImage_Unload(pBitmap);
+    return c;
 #endif
-    return nullptr;
 }
 
-void WindowManager::loadMouseCursors() {
+void ara::WindowManager::loadMouseCursors() {
     // glfw is missing standard mouse cursors for diagonal resizing ...
     // so we have to load them manually. In order to keep this class general,
     // but compact in use, we try once to load those image by standard names and

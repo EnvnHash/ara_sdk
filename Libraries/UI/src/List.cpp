@@ -4,6 +4,8 @@
 
 #include "List.h"
 
+#include <Asset/ResNode.h>
+
 using namespace std;
 
 namespace ara {

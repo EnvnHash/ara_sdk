@@ -1,5 +1,7 @@
 #include "UIEdit.h"
 
+#include <Asset/AssetColor.h>
+
 #include "DataModel/Item.h"
 #include "UIWindow.h"
 
@@ -954,7 +956,7 @@ void UIEdit::updateStyleIt(ResNode *node, state st, std::string &styleClass) {
 
     }*/
 
-    auto f = node->findNode<ResFont>("font");
+    auto f = node->findNode<AssetFont>("font");
     if (f) {
         int         size = ((ResNode *)f)->value1i("size", 0);
         std::string font = ((ResNode *)f)->getValue("font");
@@ -963,7 +965,7 @@ void UIEdit::updateStyleIt(ResNode *node, state st, std::string &styleClass) {
         m_setStyleFunc[st][styleInit::fontFontFamily] = [this, font]() { setFontType(font); };
     }
 
-    auto cc = node->findNode<ResColor>("caret-color");
+    auto cc = node->findNode<AssetColor>("caret-color");
     if (cc) {
         vec4 col                                  = cc->getColorvec4();
         m_setStyleFunc[st][styleInit::caretColor] = [this, col]() { setCaretColor(col.r, col.g, col.b, col.a); };
@@ -971,12 +973,14 @@ void UIEdit::updateStyleIt(ResNode *node, state st, std::string &styleClass) {
 }
 
 void UIEdit::changeValType(unsigned long t) {
-    if (t != num_int && t != num_fp) return;
+    if (t != num_int && t != num_fp) {
+        return;
+    }
     // remove any numeric type
     m_tOpt &= ~num_int;
     m_tOpt &= ~num_fp;
-    // set type
-    m_tOpt |= t;
+
+    m_tOpt |= t; // set type
 }
 
 void UIEdit::clearProp() {

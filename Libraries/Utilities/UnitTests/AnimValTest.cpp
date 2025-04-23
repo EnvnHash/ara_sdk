@@ -2,7 +2,7 @@
 // Created by sven on 02-04-25.
 //
 
-#include <utility_unit_test_common.h>
+#include <UtilityUnitTestCommon.h>
 #include "AnimVal.h"
 #ifdef _WIN32
 #include "Windows.h"

@@ -4,6 +4,8 @@
 
 #include "Grid.h"
 
+#include <DrawManagers/DrawManager.h>
+
 using namespace std;
 using namespace glm;
 

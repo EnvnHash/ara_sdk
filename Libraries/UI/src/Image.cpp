@@ -4,6 +4,12 @@
 
 #include "Image.h"
 
+#include <Asset/AssetImageSection.h>
+#include <Asset/AssetImageSource.h>
+#include <Asset/AssetImageBase.h>
+#include <Asset/AssetManager.h>
+#include <DrawManagers/DrawManager.h>
+
 using namespace std;
 using namespace glm;
 
@@ -12,7 +18,7 @@ namespace ara {
 Image::Image() : Div() {
     setName(getTypeName<Image>());
     setFocusAllowed(false);
-    initDefaults();
+    Image::initDefaults();
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_imgDB.stdInit();
     m_drawImmediate = false;
@@ -22,7 +28,7 @@ Image::Image() : Div() {
 Image::Image(std::string&& styleClass) : Div(std::move(styleClass)) {
     setName(getTypeName<Image>());
     setFocusAllowed(false);
-    initDefaults();
+    Image::initDefaults();
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_imgDB.stdInit();
     m_drawImmediate = false;
@@ -32,7 +38,7 @@ Image::Image(std::string&& styleClass) : Div(std::move(styleClass)) {
 Image::Image(const std::string& file, int mipMapLevel, bool keep_aspect, align ax, valign ay) : Div() {
     setName(getTypeName<Image>());
     setFocusAllowed(false);
-    initDefaults();
+    Image::initDefaults();
     m_imageFile   = file;
     m_mipMapLevel = mipMapLevel;
     setAlign(ax, ay);
@@ -43,9 +49,9 @@ Image::Image(const std::string& file, int mipMapLevel, bool keep_aspect, align a
 }
 
 void Image::initDefaults() {
-    m_ImgFlags    = 0;
-    m_ImgScale    = 1.f;
-    m_ImgAlign[0] = m_ImgAlign[1] = 1;
+    m_imgFlags    = 0;
+    m_imgScale    = 1.f;
+    m_imgAlign[0] = m_imgAlign[1] = 1;
     m_mipMapLevel                 = 8;
 
     setStyleInitVal("img-align", "center,vcenter");
@@ -57,8 +63,8 @@ void Image::loadStyleDefaults() {
     setStyleInitVal("img-align", "center,vcenter");
 
     m_setStyleFunc[state::none][styleInit::color]    = [this]() { setColor(1.f, 1.f, 1.f, 1.f); };
-    m_setStyleFunc[state::none][styleInit::imgFlag]  = [this]() { m_ImgFlags = 0; };
-    m_setStyleFunc[state::none][styleInit::imgScale] = [this]() { m_ImgScale = 1.f; };
+    m_setStyleFunc[state::none][styleInit::imgFlag]  = [this]() { m_imgFlags = 0; };
+    m_setStyleFunc[state::none][styleInit::imgScale] = [this]() { m_imgScale = 1.f; };
 }
 
 void Image::init() {
@@ -81,18 +87,18 @@ void Image::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
         setImgBase(m_sharedRes->res->img(styleClass));
     }
 
-    m_ImgFlags    = 0;
-    m_ImgAlign[0] = m_ImgAlign[1] = 1;
-    m_ImgScale    = 1;
+    m_imgFlags    = 0;
+    m_imgAlign[0] = m_imgAlign[1] = 1;
+    m_imgScale    = 1;
 
-    if (typeid(*node) == typeid(ImgSrc) || typeid(*node) == typeid(ImgSection)) {
+    if (typeid(*node) == typeid(AssetImageSource) || typeid(*node) == typeid(AssetImageSection)) {
         if (m_sharedRes->res->img(m_baseStyleClass)) {
             setImgBase(m_sharedRes->res->img(m_baseStyleClass));
         }
     } else {
         auto* inode = node->findNode<ResNode>("image");
         if (inode) {
-            std::string name                     = inode->m_Value;
+            std::string name                     = inode->m_value;
             m_setStyleFunc[st][styleInit::image] = [name, this]() { setImgBase(m_sharedRes->res->img(name)); };
         }
     }
@@ -135,7 +141,7 @@ void Image::setImgFlag(ResNode* node, state st) {
         }
     }
 
-    m_setStyleFunc[st][styleInit::imgFlag] = [iflags, this]() { m_ImgFlags = iflags; };
+    m_setStyleFunc[st][styleInit::imgFlag] = [iflags, this]() { m_imgFlags = iflags; };
 }
 
 void Image::setImgAlign(ResNode* node, state st) {
@@ -165,15 +171,15 @@ void Image::setImgAlign(ResNode* node, state st) {
     }
 
     m_setStyleFunc[st][styleInit::imgAlign] = [a, this]() {
-        m_ImgAlign[0] = a[0];
-        m_ImgAlign[1] = a[1];
+        m_imgAlign[0] = a[0];
+        m_imgAlign[1] = a[1];
     };
 }
 
 void Image::setImgScale(ResNode* node, state st) {
     float scale                             = node->value1f("img-scale", 1.f);
-    m_ImgScale                              = scale;
-    m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() { m_ImgScale = scale; };
+    m_imgScale                              = scale;
+    m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() { m_imgScale = scale; };
 }
 
 void Image::setImg(const std::string& file, int mipMapLevel) {
@@ -185,8 +191,8 @@ void Image::setImg(const std::string& file, int mipMapLevel) {
 }
 
 unsigned Image::setImgFlags(unsigned flags) {
-    m_ImgFlags                                  = flags;
-    m_setStyleFunc[m_state][styleInit::imgFlag] = [flags, this]() { m_ImgFlags = flags; };
+    m_imgFlags                                  = flags;
+    m_setStyleFunc[m_state][styleInit::imgFlag] = [flags, this]() { m_imgFlags = flags; };
 
     if (flags & 1) {
         setStyleInitVal("img-flags", "fill");
@@ -207,19 +213,19 @@ unsigned Image::setImgFlags(unsigned flags) {
         setStyleInitVal("img-flags", "no-aspect");
     }
 
-    return m_ImgFlags;
+    return m_imgFlags;
 }
 
 void Image::setImgScale(float scale) {
-    m_setStyleFunc[m_state][styleInit::imgScale] = [this, scale]() { m_ImgScale = scale; };
+    m_setStyleFunc[m_state][styleInit::imgScale] = [this, scale]() { m_imgScale = scale; };
     setStyleInitVal("img-scale", std::to_string(scale));
 }
 
-void Image::setImgBase(ImageBase* imgBase) {
+void Image::setImgBase(AssetImageBase* imgBase) {
     if ((m_imgBase = imgBase) == nullptr) return;
 
     if (m_sharedRes) {
-        if (m_imgBase->getType() == ImageBase::Type::frame) {
+        if (m_imgBase->getType() == AssetImageBase::Type::frame) {
             m_texShdr = m_sharedRes->shCol->getUIGridTexFrame();
         } else {
             m_texShdr = m_sharedRes->shCol->getUIGridTexSimple();
@@ -231,7 +237,7 @@ void Image::setImgBase(ImageBase* imgBase) {
 
 void Image::setFillToNodeSize(bool val, state st) {
     if (st == state::m_state || st == m_state) {
-        m_ImgFlags |= 32;
+        m_imgFlags |= 32;
     }
     setStyleInitVal("img-flags", "no-aspect", st);
 }
@@ -287,10 +293,10 @@ void Image::updateDrawData() {
 
         tso = m_secSize.x <= 0 ? m_texSize : m_secSize;
         if (tso.x != 0.f && tso.y != 0.f) {
-            ts = tso * ((m_ImgFlags & 1) != 0 ? std::max<float>(m_nSize.x / tso.x, m_nSize.y / tso.y)
+            ts = tso * ((m_imgFlags & 1) != 0 ? std::max<float>(m_nSize.x / tso.x, m_nSize.y / tso.y)
                                               : std::min<float>(m_nSize.x / tso.x, m_nSize.y / tso.y));
-            if ((m_ImgFlags & 2) != 0) {
-                ts = tso * m_ImgScale;
+            if ((m_imgFlags & 2) != 0) {
+                ts = tso * m_imgScale;
             }
         } else {
             ts.x = 1.f;
@@ -301,32 +307,32 @@ void Image::updateDrawData() {
 
         // pre calculate texture coordinates
         for (auto& it : stdQuadVertices) {
-            if (m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) {
+            if (m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) {
                 v = it * (m_size - static_cast<float>(m_borderWidth) * 2.f);
             } else {
                 v  = it * m_nSize;
-                uv = vec2(v.x - (m_ImgAlign[0] == 1   ? (m_nSize.x * 0.5f - ts.x * 0.5f)
-                                 : m_ImgAlign[0] == 2 ? m_nSize.x - ts.x
+                uv = vec2(v.x - (m_imgAlign[0] == 1   ? (m_nSize.x * 0.5f - ts.x * 0.5f)
+                                 : m_imgAlign[0] == 2 ? m_nSize.x - ts.x
                                                       : 0.f),
-                          v.y - (m_ImgAlign[1] == 1   ? (m_nSize.y * 0.5f - ts.y * 0.5f)
-                                 : m_ImgAlign[1] == 2 ? m_nSize.y - ts.y
+                          v.y - (m_imgAlign[1] == 1   ? (m_nSize.y * 0.5f - ts.y * 0.5f)
+                                 : m_imgAlign[1] == 2 ? m_nSize.y - ts.y
                                                       : 0.f)) / ts;
 
-                uv.x = ((m_ImgFlags & 4) != 0) ? 1.f - uv.x : uv.x;
-                uv.y = ((m_ImgFlags & 8) != 0) ? 1.f - uv.y : uv.y;
+                uv.x = ((m_imgFlags & 4) != 0) ? 1.f - uv.x : uv.x;
+                uv.y = ((m_imgFlags & 8) != 0) ? 1.f - uv.y : uv.y;
 
                 tuv = m_secSize.x <= 0 ? uv : (vec2(m_secPos) + vec2(m_secSize) * uv) / vec2(m_texSize);
 
                 // no-aspect ratio
-                if ((m_ImgFlags & 32) != 0) {
+                if ((m_imgFlags & 32) != 0) {
                     uv = tuv = it;
-                    tuv.x    = ((m_ImgFlags & 4) != 0) ? 1.f - tuv.x : tuv.x;
-                    tuv.y    = ((m_ImgFlags & 8) != 0) ? 1.f - tuv.y : tuv.y;
+                    tuv.x    = ((m_imgFlags & 4) != 0) ? 1.f - tuv.x : tuv.x;
+                    tuv.y    = ((m_imgFlags & 8) != 0) ? 1.f - tuv.y : tuv.y;
                 }
             }
 
             // calculate position in normalized screen coordinates
-            if (m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) {
+            if (m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) {
                 dIt->pos = m_mvp * vec4(m_nPos - vec2(m_padding) + v, 0.f, 1.f);
 
                 dIt->aux0.x = m_size.x - static_cast<float>(m_borderWidth) * 2.f;
@@ -377,7 +383,7 @@ void Image::updateDrawData() {
             //dIt->color = m_color; // color doesn't make any sense in the context of images
             dIt->color = m_borderColor;
 
-            if (m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) {
+            if (m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) {
                 dIt->aux1.x = static_cast<float>(m_secPos.x);
                 dIt->aux1.y = static_cast<float>(m_secPos.y);
                 dIt->aux1.z = static_cast<float>(m_secSize.x);
@@ -395,10 +401,10 @@ void Image::updateDrawData() {
                 dIt->aux2.x = getBorderAliasRel().x;
                 dIt->aux2.y = getBorderAliasRel().y;
                 dIt->aux2.z = m_texUnit;       // texture unit
-                dIt->aux2.w = static_cast<float>(m_ImgFlags);
+                dIt->aux2.w = static_cast<float>(m_imgFlags);
             }
 
-            dIt->aux3.x = (m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) ? 3.f : 2.f;          // type indicator (2=Image simple, 3=Image frame)
+            dIt->aux3.x = (m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) ? 3.f : 2.f;          // type indicator (2=Image simple, 3=Image frame)
             dIt->aux3.y = static_cast<float>(m_extTexBitCount);  // bitcount
             dIt->aux3.z = m_lod;                    // mipmap lod
             dIt->aux3.w = m_absoluteAlpha;
@@ -415,10 +421,10 @@ void Image::initUnitBlock() {
         m_texUniBlock.addVarName("pos", &getContentOffset()[0], GL_FLOAT_VEC2);
         m_texUniBlock.addVarName("zPos", &m_offsZPos, GL_FLOAT);
         m_texUniBlock.addVarName("size", &getContentSize()[0], GL_FLOAT_VEC2);
-        m_texUniBlock.addVarName("scale", &m_ImgScale, GL_FLOAT);
-        m_texUniBlock.addVarName("align", &m_ImgAlign[0], GL_INT_VEC2);
+        m_texUniBlock.addVarName("scale", &m_imgScale, GL_FLOAT);
+        m_texUniBlock.addVarName("align", &m_imgAlign[0], GL_INT_VEC2);
         m_texUniBlock.addVarName("color", &m_color[0], GL_FLOAT_VEC4);
-        m_texUniBlock.addVarName("flags", &m_ImgFlags, GL_INT);
+        m_texUniBlock.addVarName("flags", &m_imgFlags, GL_INT);
         m_texUniBlock.addVarName("section_pos", &m_secPos[0], GL_INT_VEC2);
         m_texUniBlock.addVarName("section_size", &m_secSize[0], GL_INT_VEC2);
         m_texUniBlock.addVarName("section_sep", &m_secSep[0], GL_INT_VEC2);
@@ -446,10 +452,8 @@ bool Image::draw(uint32_t* objId) {
 
     m_objIdMax = ++(*objId);
 
-    // auto sr = getSharedRes();
-
     if (m_sharedRes) {
-        if (m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) {
+        if (m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) {
             m_texShdr = m_sharedRes->shCol->getUIGridTexFrame();
         } else {
             m_texShdr = m_sharedRes->shCol->getUIGridTexSimple();
@@ -606,10 +610,10 @@ bool Image::setTexId(GLuint inTexId, int width, int height, int bitCount) {
 
     unsigned iflags = 0;
     iflags |= 8;
-    m_ImgFlags = iflags;
+    m_imgFlags = iflags;
 
     // change shader if necessary
-    if (m_sharedRes && ((m_imgBase && m_imgBase->getType() == ImageBase::Type::frame) || !m_texShdr)) {
+    if (m_sharedRes && ((m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) || !m_texShdr)) {
         m_texShdr = m_sharedRes->shCol->getUIGridTexSimple();
     }
 
@@ -698,6 +702,10 @@ void Image::initUplPbo(int w, int h, GLenum format) {
     m_uplPbo.setSize(w, h);
     m_uplPbo.setFormat(format);
     m_uplPbo.init();
+}
+
+GLuint Image::getTexID() {
+    return !m_imgBase ? 0 : m_imgBase->getTexID();
 }
 
 

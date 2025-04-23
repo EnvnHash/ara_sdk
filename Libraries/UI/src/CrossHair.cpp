@@ -4,6 +4,8 @@
 
 #include "CrossHair.h"
 
+#include <DrawManagers/DrawManager.h>
+
 using namespace std;
 using namespace glm;
 

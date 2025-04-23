@@ -7,8 +7,8 @@
 #include <List.h>
 #include <ComboBox.h>
 #include <Dialoges/FloatingMenuDialog.h>
-#include <Res/ResFont.h>
-#include <Res/ResGlFont.h>
+#include <Asset/AssetFont.h>
+#include <Asset/ResGlFont.h>
 
 namespace ara {
 

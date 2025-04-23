@@ -2,8 +2,8 @@
 #include <GeoPrimitives/Quad.h>
 #include <Utils/FBO.h>
 #include <Utils/Texture.h>
-#include <Utils/TypoGlyphMap.h>
-#include "Res/ResInstance.h"
+#include <Utils/Typo/TypoGlyphMap.h>
+#include "Asset/AssetManager.h"
 #include <chrono>
 
 using namespace std;
@@ -72,7 +72,6 @@ namespace ara::GLBaseUnitTest::TypoGlyphMapTest {
         // direct window creation
         gp.width = 168;        // set the windows width
         gp.height = 25;       // set the windows height
-        gp.doInit = true;       // GWindow needs GLFW library to be m_inited. GWindow can do this itself. Standard is true
         gp.shiftX = 100;        // x offset relative to OS screen canvas
         gp.shiftY = 100;        // y offset relative to OS screen canvas
 

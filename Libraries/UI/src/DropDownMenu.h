@@ -2,8 +2,8 @@
 
 #include <Utils/Texture.h>
 
-#include "Button/Button.h"
-#include "Utils/TypoGlyphMap.h"
+#include <Button/Button.h>
+#include <Utils/Typo/TypoGlyphMap.h>
 
 namespace ara {
 
@@ -21,7 +21,9 @@ public:
     virtual void mouseDown(hidData* data) override;
     virtual void globalMouseDown(hidData* data);
 
-    void         addEntry(std::string name, std::function<void()> f) { m_entries.push_back(std::make_pair(name, f)); }
+    void         addEntry(const std::string& name, const std::function<void()>& f) {
+        m_entries.emplace_back(name, f);
+    }
     virtual void setMenuName(std::string str);
 
 protected:

@@ -1,4 +1,3 @@
-
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,13 +13,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "Node.h"
-#include "string_utils.h"
-
-#ifdef ARA_USE_CMRC
-#include <cmrc/cmrc.hpp>
-CMRC_DECLARE(ara);
-#endif
+#include <DataModel/Node.h>
+#include <string_utils.h>
 
 using json = nlohmann::json;
 using namespace std::chrono_literals;
@@ -220,23 +214,12 @@ void Node::load() {
         saveState();
     }
 
-#ifdef ARA_USE_CMRC
-    auto fs = cmrc::ara::get_filesystem();
-    if (fs.exists(m_fileName.string())) {
-        auto file = fs.open(m_fileName.string());
-        std::stringstream ss;
-        ss.write(file.begin(), static_cast<long>(file.size()));
-        json j = json::parse(ss);
-        deserialize(j);
-    }
-#else
     if (std::filesystem::exists(m_fileName)) {
         json j;
         std::ifstream i(m_fileName);
         i >> j;
         deserialize(j);
     }
-#endif
 
     if (m_watchFile && m_watchFile->time == std::filesystem::file_time_type{}) {
         m_watchFile->time = std::filesystem::last_write_time(m_watchFile->path);
@@ -245,6 +228,17 @@ void Node::load() {
     // update file watching
     if (m_watch) {
         setWatch(true);
+    }
+}
+
+void Node::loadFromString(const std::string& str) {
+    if (m_undoBufRoot) {
+        saveState();
+    }
+
+    if (!str.empty()) {
+        json j = json::parse(str);
+        deserialize(j);
     }
 }
 
@@ -356,13 +350,16 @@ void Node::changeVal(const std::function<void()>& f) {
     if (m_undoBufRoot) {
         m_undoBufRoot->saveState();
     }
+
     for (auto & it: m_changeCb[cbType::preChange]) {
         it.second();
     }
+
     {
         std::unique_lock<std::mutex> l(m_mtx);
         f();
     }
+
     for (auto & it: m_changeCb[cbType::postChange]) {
         it.second();
     }

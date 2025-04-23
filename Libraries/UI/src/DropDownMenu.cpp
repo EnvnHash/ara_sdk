@@ -147,9 +147,11 @@ void DropDownMenu::mouseDown(hidData* data) {
 
 void DropDownMenu::globalMouseDown(hidData* data) {
     // close the menu if it is open and the user clicked somewhere outside the menu
-    bool isChild          = (uint32_t)data->objId >= getId() && (uint32_t)data->objId <= getMaxChildId();
-    bool isEntryListChild = m_entryList && (uint32_t)data->objId >= m_entryList->getId() &&
-                            (uint32_t)data->objId <= m_entryList->getMaxChildId();
+    bool isChild          = static_cast<uint32_t>(data->objId) >= getId() &&
+                            static_cast<uint32_t>(data->objId) <= getMaxChildId();
+    bool isEntryListChild = m_entryList
+                            && static_cast<uint32_t>(data->objId) >= m_entryList->getId()
+                            && static_cast<uint32_t>(data->objId) <= m_entryList->getMaxChildId();
 
     if (isInited() && m_open && !isChild && !isEntryListChild) {
         close();

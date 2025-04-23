@@ -1,4 +1,3 @@
-
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,31 +15,12 @@
 
 #include "RwBinFile.h"
 
-#ifdef ARA_USE_CMRC
-#include <cmrc/cmrc.hpp>
-CMRC_DECLARE(ara);
-#endif
-
 using namespace std;
 
 namespace ara {
 std::size_t ReadBinFile(std::vector<uint8_t> &vp, const std::filesystem::path& filepath) {
     vp.clear();
 
-#ifdef ARA_USE_CMRC
-    auto fs = cmrc::ara::get_filesystem();
-    if (!fs.exists(filepath.string())) return false;
-
-    auto file = fs.open(filepath.string());
-    if (!file.size()) return 0;
-
-    size_t size = file.size();
-    if (size > 0) {
-        vp.resize(size);
-        std::copy(file.begin(), file.end(), vp.begin());
-    }
-
-#else
     if (!std::filesystem::exists(filepath)) {
         return false;
     }
@@ -57,7 +37,6 @@ std::size_t ReadBinFile(std::vector<uint8_t> &vp, const std::filesystem::path& f
         file.seekg(0, ios::beg);
         file.read(reinterpret_cast<char *>(&vp[0]), static_cast<streamsize>(size));
     }
-#endif
 
     return vp.size();
 }

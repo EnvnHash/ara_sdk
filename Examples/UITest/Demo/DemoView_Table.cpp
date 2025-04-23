@@ -15,11 +15,11 @@ void DemoView_Table::init() {
 
     for (int i = 0; i < ui_Table->getRowCount(); i++) {
         for (int j = 0; j < ui_Table->getColumnCount(); j++) {
-            auto l = ui_Table->setCell<Label>(i, j);
-            l->setFont("regular", 22, align::left, valign::top, m_textColor);
-            l->setBackgroundColor(.3f, .3f, .4f, 1.0f);
-            l->setText("(" + std::to_string(i) + "," + std::to_string(j) + ")");
-            l->setPadding(10);
+            auto label = ui_Table->setCell<Label>(i, j);
+            label->setFont("regular", 22, align::left, valign::top, m_textColor);
+            label->setBackgroundColor(.2f, .2f, .3f, 1.0f);
+            label->setText("(" + std::to_string(i) + "," + std::to_string(j) + ")");
+            label->setPadding(12);
         }
     }
 }

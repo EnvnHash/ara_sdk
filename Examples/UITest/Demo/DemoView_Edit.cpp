@@ -1,10 +1,10 @@
 #include "DemoView.h"
 #include <Image.h>
 #include <Log.h>
-#include <Res/ResColor.h>
-#include <Res/ResInstance.h>
-#include <Res/ResNode.h>
-#include <Res/ResSrcFile.h>
+#include <Asset/AssetColor.h>
+#include <Asset/AssetManager.h>
+#include <Asset/ResNode.h>
+#include <Asset/ResSrcFile.h>
 #include <UIEdit.h>
 #include <Label.h>
 

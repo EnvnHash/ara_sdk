@@ -12,7 +12,6 @@ SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
 
     const uint cylNrPointsCircle = 15;
 
-    float x, z, fInd;
     float cylRadius = 0.03f;
     float capRadius = 0.25f;
     float cubeScale = 0.1f;
@@ -76,13 +75,18 @@ SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
     GLuint upDownTemp[6]  = {0, 1, 0, 0, 1, 1};  // 0 = bottom, 1 ==top
 
     ind = 0;
-    for (uint i = 0; i < cylNrPointsCircle; i++)
-        for (uint j = 0; j < 6; j++)
+    for (uint i = 0; i < cylNrPointsCircle; i++) {
+        for (uint j = 0; j < 6; j++) {
             cyl_indices[ind++] = ((oneQuadTemp[j] + i) % cylNrPointsCircle) + (cylNrPointsCircle * upDownTemp[j]);
+        }
+    }
 
     // cylinder
-    for (uint i = 0; i < 6; i++)
-        for (uint j = 0; j < 6; j++) cyl_indices[ind++] = cube_faces[i][j] + (cylNrPointsCircle * 2);
+    for (auto & cube_face : cube_faces) {
+        for (unsigned int j : cube_face) {
+            cyl_indices[ind++] = j + (cylNrPointsCircle * 2);
+        }
+    }
 
     gizVao = make_unique<VAO>("position:3f,normal:3f", GL_STATIC_DRAW);
     gizVao->upload(CoordType::Position, &positions[0], cylNrPointsCircle * 2 + 8);
@@ -92,22 +96,22 @@ SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
     totNrPoints = cylNrPointsCircle * 6 + 36;
 }
 
-void SNGizmoScaleAxis::draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo) {
+void SNGizmoScaleAxis::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo) {
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    if (_pass == GLSG_GIZMO_PASS || _pass == GLSG_OBJECT_MAP_PASS) {
+    if (pass == GLSG_GIZMO_PASS || pass == GLSG_OBJECT_MAP_PASS) {
         // material
-        _shader->setUniform1i("hasTexture", 0);
-        _shader->setUniform1i("lightMode", 0);
-        _shader->setUniform4f("ambient", 0.f, 0.f, 0.f, 0.f);
-        _shader->setUniform4f("emissive", gColor.r * emisBright, gColor.g * emisBright, gColor.b * emisBright,
+        shader->setUniform1i("hasTexture", 0);
+        shader->setUniform1i("lightMode", 0);
+        shader->setUniform4f("ambient", 0.f, 0.f, 0.f, 0.f);
+        shader->setUniform4f("emissive", gColor.r * emisBright, gColor.g * emisBright, gColor.b * emisBright,
                               gColor.a * emisBright);
-        _shader->setUniform4fv("diffuse", glm::value_ptr(gColor));
-        _shader->setUniform4f("specular", 1.f, 1.f, 1.f, 1.f);
-        _shader->setUniform1i("drawGridTexture", 0);
+        shader->setUniform4fv("diffuse", glm::value_ptr(gColor));
+        shader->setUniform4f("specular", 1.f, 1.f, 1.f, 1.f);
+        shader->setUniform1i("drawGridTexture", 0);
 
-        gizVao->drawElements(GL_TRIANGLES, NULL, GL_TRIANGLES, totNrPoints);
+        gizVao->drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, totNrPoints);
     }
 }
 

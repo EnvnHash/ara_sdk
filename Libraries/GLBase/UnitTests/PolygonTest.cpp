@@ -89,7 +89,6 @@ namespace ara::GLBaseUnitTest::PolygonTest {
         // gp.debug = true;
         gp.width = 1024;            // set the windows width
         gp.height = 768;            // set the windows height
-        gp.doInit = true;            // GWindow needs GLFW library to be m_inited. GWindow can do this itself. Standard is true
         gp.shiftX = 100;            // x offset relative to OS screen canvas
         gp.shiftY = 100;            // y offset relative to OS screen canvas
         gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
