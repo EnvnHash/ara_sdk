@@ -88,9 +88,12 @@ void Gizmo::init() {
     // m_objMapTexShdr=initObjMapTexShdr();
 
     for (auto& it : m_fbo) {
-        it = make_unique<FBO>(m_glbase, (int)(viewWidth * getWindow()->getPixelRatio()),
-                              (int)(viewHeight * getWindow()->getPixelRatio()), GL_RGBA8, GL_TEXTURE_2D, true, 2, 1, 1,
-                              GL_REPEAT, false);
+        it = make_unique<FBO>(FboInitParams{m_glbase,
+                                            (int)(viewWidth * getWindow()->getPixelRatio()),
+                                            (int)(viewHeight * getWindow()->getPixelRatio()),
+                                            1,
+                                            GL_RGBA8, GL_TEXTURE_2D, true, 2, 1, 1,
+                                            GL_REPEAT, false});
         it->setMinFilter(GL_NEAREST, 1);
         it->setMagFilter(GL_NEAREST, 1);
     }

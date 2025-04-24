@@ -14,51 +14,47 @@ using namespace std;
 
 namespace ara {
 
-Noise3DTexGen::Noise3DTexGen(sceneData* _scd, bool color, int nrOctaves, int _width, int _height, int _depth,
-                             float _scaleX, float _scaleY, float _scaleZ)
-    : m_glbase(static_cast<GLBase*>(_scd->glbase)), shCol(&static_cast<GLBase*>(_scd->glbase)->shaderCollector()),
-      width(_width), height(_height), scaleX(_scaleX), scaleY(_scaleY), scaleZ(_scaleZ) {
-    depth   = _depth;
-    nrLoops = _depth;
+Noise3DTexGen::Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, int width, int height, int depth,
+                             float scaleX, float scaleY, float scaleZ)
+    : m_glbase(static_cast<GLBase*>(scd->glbase)), m_shCol(&static_cast<GLBase*>(scd->glbase)->shaderCollector()),
+      m_width(width), m_height(height), m_scaleX(scaleX), m_scaleY(scaleY), m_scaleZ(scaleZ) {
+    depth   = depth;
+    m_nrLoops = depth;
 
-    GLfloat* zPos = new GLfloat[1];
-
-    fbo = new FBO(m_glbase, width, height, depth, GL_RGBA8, GL_TEXTURE_3D, false, 1, 1, 1, GL_REPEAT, false);
-    FBO* xBlendFboH = new FBO(m_glbase, width, height, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_REPEAT, false);
-    FBO* xBlendFboV = new FBO(m_glbase, width, height, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_REPEAT, false);
+    fbo = make_unique<FBO>(FboInitParams{m_glbase, width, height, depth, GL_RGBA8, GL_TEXTURE_3D, false, 1, 1, 1, GL_REPEAT, false});
+    auto xBlendFboH = make_unique<FBO>(FboInitParams{m_glbase, width, height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_REPEAT, false});
+    auto xBlendFboV = make_unique<FBO>(FboInitParams{m_glbase, width, height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_REPEAT, false});
 
     unique_ptr<Quad> quad    = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
     unique_ptr<Quad> fboQuad = make_unique<Quad>(QuadInitData{0.f, 0.f, 1.f, 1.f, vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
 
     initShdr();
-    ara::Shaders* xBlendShaderH = initBlendShdrH();
-    ara::Shaders* xBlendShaderV = initBlendShdrV();
+    auto xBlendShaderH = initBlendShdrH();
+    auto xBlendShaderV = initBlendShdrV();
 
-    stdTexShdr = shCol->getStdTex();
+    m_stdTexShdr = m_shCol->getStdTex();
 
     glEnable(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // rendern mit mehreren attachments geht irgendwie noch nicht...
     // bind the s_fbo and render one layer of perlin noise
-    for (short i = 0; i < nrLoops; i++) {
-        zPos[0] = float(i) / float(nrLoops - 1);
+    for (short i = 0; i < m_nrLoops; i++) {
+        auto zPos = float(i) / float(m_nrLoops - 1);
 
         // generate perlin noise texture
         fbo->set3DLayer(0, i);
         fbo->bind();
 
-        noiseShdr->begin();
-        noiseShdr->setIdentMatrix4fv("m_pvm");
-        noiseShdr->setUniform1i("useColor", 1);
-        noiseShdr->setUniform1f("zPos", (zPos[0] * scaleZ));
-        noiseShdr->setUniform1f("scaleX", scaleX);
-        noiseShdr->setUniform1f("scaleY", scaleY);
-        noiseShdr->setUniform1i("nrOctaves", std::max<int>(nrOctaves, 1));
+        m_noiseShdr->begin();
+        m_noiseShdr->setIdentMatrix4fv("m_pvm");
+        m_noiseShdr->setUniform1i("useColor", 1);
+        m_noiseShdr->setUniform1f("zPos", (zPos * m_scaleZ));
+        m_noiseShdr->setUniform1f("m_scaleX", m_scaleX);
+        m_noiseShdr->setUniform1f("m_scaleY", m_scaleY);
+        m_noiseShdr->setUniform1i("nrOctaves", std::max<int>(nrOctaves, 1));
 
         quad->draw();
-
         fbo->unbind();
 
         // ---- blend texture perlin noise pattern to be used borderless
@@ -72,7 +68,7 @@ Noise3DTexGen::Noise3DTexGen(sceneData* _scd, bool color, int nrOctaves, int _wi
         xBlendShaderH->setIdentMatrix4fv("m_pvm");
         xBlendShaderH->setUniform1i("tex", 0);
         xBlendShaderH->setUniform1i("width", width);
-        xBlendShaderH->setUniform1f("zPos", zPos[0] + 0.5f / float(nrLoops - 1));
+        xBlendShaderH->setUniform1f("zPos", zPos + 0.5f / float(m_nrLoops - 1));
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_3D, fbo->getColorImg());
@@ -103,9 +99,9 @@ Noise3DTexGen::Noise3DTexGen(sceneData* _scd, bool color, int nrOctaves, int _wi
         fbo->set3DLayer(0, i);
         fbo->bind();
 
-        stdTexShdr->begin();
-        stdTexShdr->setIdentMatrix4fv("m_pvm");
-        stdTexShdr->setUniform1i("tex", 0);
+        m_stdTexShdr->begin();
+        m_stdTexShdr->setIdentMatrix4fv("m_pvm");
+        m_stdTexShdr->setUniform1i("tex", 0);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, xBlendFboV->getColorImg());
@@ -113,12 +109,6 @@ Noise3DTexGen::Noise3DTexGen(sceneData* _scd, bool color, int nrOctaves, int _wi
 
         fbo->unbind();
     }
-
-    delete xBlendShaderH;
-    delete xBlendShaderV;
-    delete xBlendFboH;
-    delete xBlendFboV;
-    delete[] zPos;
 }
 
 void Noise3DTexGen::initShdr() {
@@ -126,29 +116,38 @@ void Noise3DTexGen::initShdr() {
 
     std::string shdr_Header = "#version 410 core\n#pragma optimize(on)\n";
     std::string vert        = STRINGIFY(
-        layout(location = 0) in vec4 position;\n layout(location = 1) in vec3 normal;\n layout(location = 2) in vec2 texCoord;\n layout(location = 3) in vec4 color;\n
-		\n uniform mat4 m_pvm;\n out vec4 pos;\n out vec2 texCo;\n
-		\n void main() {
-            \n pos         = position;
-            \n texCo       = texCoord;
-            \n gl_Position = m_pvm * position;
-            \n
+        layout(location = 0) in vec4 position;\n
+        layout(location = 1) in vec3 normal;\n
+        layout(location = 2) in vec2 texCoord;\n
+        layout(location = 3) in vec4 color;\n
+		\n uniform mat4 m_pvm;\n
+        out vec4 pos;\n
+        out vec2 texCo;\n
+		void main() { \n
+            pos         = position;\n
+            texCo       = texCoord;\n
+            gl_Position = m_pvm * position; \n
         });
     vert = "// Noise3DTexGen pos tex vertex shader\n" + shdr_Header + vert;
 
     std::string frag = STRINGIFY(
         layout(location = 0) out vec4 fragColor;
 
-        in vec4 pos; in vec2 texCo; uniform float scaleX; uniform float scaleY; uniform float zPos;
-        uniform int nrOctaves; uniform int useColor; float pi = 3.1415926535897932384626433832795; int i; int col;
+        in vec4 pos;
+        in vec2 texCo;
+        uniform float scaleX;
+        uniform float scaleY;
+        uniform float zPos;
+        uniform int nrOctaves;
+        uniform int useColor;
+        float pi = 3.1415926535897932384626433832795;
+        int i;
+        int col;
+
         vec2 modTexCoord;
-
         vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-
         vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-
         vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
-
         vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
 
         vec3 fade(vec3 t) { return t * t * t * (t * (t * 6.0 - 15.0) + 10.0); }
@@ -223,7 +222,7 @@ void Noise3DTexGen::initShdr() {
         }
 
         void main() {
-            modTexCoord = vec2(scaleX * texCo.x, scaleY * texCo.y);
+            modTexCoord = vec2(m_scaleX * texCo.x, m_scaleY * texCo.y);
             if (useColor == 1) {
                 vec3 noise = vec3(0.0);
                 for (col = 0; col < 3; col++)
@@ -240,7 +239,7 @@ void Noise3DTexGen::initShdr() {
         });
     frag = "// Noise3DTexGen pos tex shader\n" + shdr_Header + frag;
 
-    noiseShdr = shCol->add("noise3DTexGen", vert.c_str(), frag.c_str());
+    m_noiseShdr = m_shCol->add("noise3DTexGen", vert.c_str(), frag.c_str());
 }
 
 ara::Shaders* Noise3DTexGen::initBlendShdrH() {
@@ -260,10 +259,9 @@ ara::Shaders* Noise3DTexGen::initBlendShdrH() {
                                      tex_coordRight = vec3(texCoord.x * 0.5 + 1.0, texCoord.y + 0.5, zPos);
                                      gl_Position    = m_pvm * position;
                                         });
-    vert                    = "// Noise3DTexGen blendH vertex Shader\n" + shdr_Header + vert;
+    vert = "// Noise3DTexGen blendH vertex Shader\n" + shdr_Header + vert;
 
-    std::string frag =
-        STRINGIFY(uniform sampler3D tex; uniform int width;
+    std::string frag = STRINGIFY(uniform sampler3D tex; uniform int width;
 
                   in vec3 tex_coordLeft; in vec3 tex_coordRight; in vec4 col; layout(location = 0) out vec4 color;
 
@@ -273,7 +271,6 @@ ara::Shaders* Noise3DTexGen::initBlendShdrH() {
                       vec4  right    = texture(tex, tex_coordRight);
 
                       color = mix(left, right, blendPos);
-                      // color = vec4(1.0, 0.0, 0.0, 1.0);
                       color.a = 1.0;
                   });
     frag = "// Noise3DTexGen blendH tex shader\n" + shdr_Header + frag;
@@ -317,7 +314,8 @@ ara::Shaders* Noise3DTexGen::initBlendShdrV() {
     return new ara::Shaders(vert.c_str(), frag.c_str(), false);
 }
 
-GLuint Noise3DTexGen::getTex() { return fbo->getColorImg(); }
+GLuint Noise3DTexGen::getTex() {
+    return fbo->getColorImg();
+}
 
-Noise3DTexGen::~Noise3DTexGen() { delete fbo; }
 }  // namespace ara

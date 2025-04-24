@@ -15,16 +15,16 @@ using namespace std;
 namespace ara {
 
 GLSLOpticalFlow::GLSLOpticalFlow(GLBase* glbase, int _width, int _height)
-    : m_glbase(glbase), shCol(&glbase->shaderCollector()), width(_width), height(_height), srcId(0), lambda(0.1f),
+    : m_glbase(glbase), m_shCol(&glbase->shaderCollector()), width(_width), height(_height), srcId(0), lambda(0.1f),
       median(3.f), bright(4.f) {
-    initShader(shCol);
-    texShader = shCol->getStdTex();
+    initShader(m_shCol);
+    m_texShader = m_shCol->getStdTex();
 
-    texture = new PingPongFbo(glbase, width, height, GL_RGBA16F, GL_TEXTURE_2D, false, 1, 1, 1, GL_CLAMP_TO_EDGE);
-    quad    = new Quad(-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f);
+    m_texture = make_unique<PingPongFbo>(FboInitParams{glbase, width, height, 1, GL_RGBA16F, GL_TEXTURE_2D, false, 1, 1, 1, GL_CLAMP_TO_EDGE});
+    m_quad    = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
 }
 
-void GLSLOpticalFlow::initShader(ShaderCollector* _shCol) {
+void GLSLOpticalFlow::initShader(ShaderCollector* shCol) {
     //------ Position Shader -----------------------------------------
 
     std::string shdr_Header = "#version 410 core\n#pragma optimize(on)\n";
@@ -101,36 +101,36 @@ void GLSLOpticalFlow::initShader(ShaderCollector* _shCol) {
 
     frag = "// Optical Flow Shader pos tex shader\n" + shdr_Header + frag;
 
-    flowShader = _shCol->add("StandardOpticalFlow", vert.c_str(), frag.c_str());
+    m_flowShader = shCol->add("StandardOpticalFlow", vert.c_str(), frag.c_str());
 }
 
 void GLSLOpticalFlow::update(GLint tex1, GLint tex2, float fdbk) {
     glEnable(GL_BLEND);
 
-    texture->dst->bind();
+    m_texture->dst->bind();
     if (isInited < 2) {
-        texture->dst->clear();
-        isInited++;
+        m_texture->dst->clear();
+        ++isInited;
     } else {
-        texture->dst->clearAlpha(fdbk, 0.f);
+        m_texture->dst->clearAlpha(fdbk, 0.f);
     }
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-    flowShader->begin();
+    m_flowShader->begin();
 
     if (pvm_ptr == 0)
-        flowShader->setIdentMatrix4fv("m_pvm");
+        m_flowShader->setIdentMatrix4fv("m_pvm");
     else
-        flowShader->setUniformMatrix4fv("m_pvm", pvm_ptr);
+        m_flowShader->setUniformMatrix4fv("m_pvm", pvm_ptr);
 
-    flowShader->setUniform2f("scale", 1.f, 2.f);
-    flowShader->setUniform2f("offset", 1.f / static_cast<float>(width), 1.f / static_cast<float>(height));
-    flowShader->setUniform1f("amp", bright);
-    flowShader->setUniform1f("lambda", lambda);
-    flowShader->setUniform1i("tex0", 0);
-    flowShader->setUniform1i("tex1", 1);
-    flowShader->setUniform1f("median", median);
+    m_flowShader->setUniform2f("scale", 1.f, 2.f);
+    m_flowShader->setUniform2f("offset", 1.f / static_cast<float>(width), 1.f / static_cast<float>(height));
+    m_flowShader->setUniform1f("amp", bright);
+    m_flowShader->setUniform1f("lambda", lambda);
+    m_flowShader->setUniform1i("tex0", 0);
+    m_flowShader->setUniform1i("tex1", 1);
+    m_flowShader->setUniform1f("median", median);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex1);
@@ -138,17 +138,10 @@ void GLSLOpticalFlow::update(GLint tex1, GLint tex2, float fdbk) {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, tex2);
 
-    quad->draw();
+    m_quad->draw();
 
-    texture->dst->unbind();
-    texture->swap();
+    m_texture->dst->unbind();
+    m_texture->swap();
 }
-
-GLSLOpticalFlow::~GLSLOpticalFlow() {
-    delete flowShader;
-    delete quad;
-    delete texture;
-}
-
 
 }  // namespace ara

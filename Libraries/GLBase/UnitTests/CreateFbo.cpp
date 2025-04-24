@@ -19,7 +19,7 @@ TEST(GLBaseTest, CreateFbo) {
     double sum = 0.0;
 
     for (int i = 0; i < nrIterations; i++) {
-        FBO fbo(&m_glbase, 3840, 2160, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_CLAMP_TO_EDGE, false);
+        FBO fbo(FboInitParams{&m_glbase, 3840, 2160, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
         EXPECT_EQ(postGLError(), GL_NO_ERROR);
         glFinish();
     }

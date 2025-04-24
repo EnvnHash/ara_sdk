@@ -26,9 +26,7 @@ public:
     GLSLHistogram(GLBase* glbase, int width, int height, GLenum type, unsigned int downSample,
                   unsigned int histWidth = 512, bool getBounds = true, bool normalize = true,
                   float maxValPerChan = 1.f);
-    ~GLSLHistogram();
 
-    static void procMinMax(GLint texId);
     void proc(GLint texId);
     void getMinMax(GLuint texId);
     void getSpectrum(GLuint texId) const;
@@ -39,36 +37,36 @@ public:
 
     float getMaximum(unsigned int chan = 0) {
         downloadMinMax();
-        return minMaxSpectr[chan * 4];
+        return m_minMaxSpectr[chan * 4];
     }
     float getMinimum(unsigned int chan = 0) {
         downloadMinMax();
-        return maxValSum - minMaxSpectr[chan * 4 + 1];
+        return m_maxValSum - m_minMaxSpectr[chan * 4 + 1];
     }
     float getMaxInd(unsigned int chan = 0) {
         downloadMinMax();
-        return minMaxSpectr[chan * 4 + 2] / static_cast<float>(histoTexSize.x);
+        return m_minMaxSpectr[chan * 4 + 2] / static_cast<float>(m_histoTexSize.x);
     }
     float getMinInd(unsigned int chan = 0) {
         downloadMinMax();
-        return (static_cast<float>(histoTexSize.x - 1) - minMaxSpectr[chan * 4 + 3]) / static_cast<float>(histoTexSize.x);
+        return (static_cast<float>(m_histoTexSize.x - 1) - m_minMaxSpectr[chan * 4 + 3]) / static_cast<float>(m_histoTexSize.x);
     }
     float getHistoPeakInd(unsigned int chan = 0) {
-        getEnergyCenter = true;
+        m_getEnergyCenter = true;
         downloadEnergyCenter();
-        return energyMed[chan] / static_cast<float>(histoTexSize.x);
+        return m_energyMed[chan] / static_cast<float>(m_histoTexSize.x);
     }
     float getEnergySum(float lowThresh) {
-        energySumLowThresh = lowThresh;
-        b_getEnergySum     = true;
-        return energySum;
+        m_energySumLowThresh = lowThresh;
+        m_getEnergySum     = true;
+        return m_energySum;
     }
-    [[nodiscard]] GLint getResult() const { return histoFbo->src->getColorImg(); }
-    [[nodiscard]] GLint getMinMaxTex() const { return minMaxFbo->getColorImg(); }
-    [[nodiscard]] float getSubtrMax() const { return maxValOfType; }
-    void  setSmoothing(float val) { smoothing = val; }
-    void  setValThres(float val) { valThres = val; }
-    void  setIndValThres(float val) { indValThres = val; }
+    [[nodiscard]] GLint getResult() const { return m_histoFbo->src->getColorImg(); }
+    [[nodiscard]] GLint getMinMaxTex() const { return m_minMaxFbo->getColorImg(); }
+    [[nodiscard]] float getSubtrMax() const { return m_maxValOfType; }
+    void  setSmoothing(float val) { m_smoothing = val; }
+    void  setValThres(float val) { m_valThres = val; }
+    void  setIndValThres(float val) { m_indValThres = val; }
 
     void initShader();
     void initNormShader();
@@ -77,69 +75,64 @@ public:
     void initEnergyMedShader();
 
 private:
-    GLBase*          m_glbase           = nullptr;
-    ShaderCollector* shCol              = nullptr;
-    Shaders*         histoShader        = nullptr;
-    Shaders*         minMaxShader       = nullptr;
-    Shaders*         minMaxSpectrShader = nullptr;
-    Shaders*         energyMedShader    = nullptr;
-    Shaders*         normShader         = nullptr;
+    GLBase*                 m_glbase           = nullptr;
+    ShaderCollector*        m_shCol              = nullptr;
+    Shaders*                m_histoShader        = nullptr;
+    Shaders*                m_minMaxShader       = nullptr;
+    Shaders*                m_minMaxSpectrShader = nullptr;
+    Shaders*                m_energyMedShader    = nullptr;
+    Shaders*                m_normShader         = nullptr;
 
-    FBO*         minMaxFbo       = nullptr;
-    FBO*         minMaxSpectrFbo = nullptr;
-    FBO*         energyMedFbo    = nullptr;
-    PingPongFbo* histoFbo        = nullptr;
+    std::unique_ptr<Quad>           m_quad;
+    std::unique_ptr<PingPongFbo>    m_histoFbo;
+    std::unique_ptr<FBO>            m_energyMedFbo;
+    std::unique_ptr<FBO>            m_minMaxFbo;
+    std::unique_ptr<FBO>            m_minMaxSpectrFbo;
+    std::unique_ptr<VAO>            m_trigVao;
+    std::unique_ptr<VAO>            m_trigSpectrVao;
 
-    VAO*  trigVao       = nullptr;
-    VAO*  trigSpectrVao = nullptr;
-    Quad* quad          = nullptr;
+    GLenum      m_minMaxFormat{};
+    GLenum      m_texType{};
+    GLenum      m_format{};
+    GLenum      m_texFormat{};
+    GLint       m_geoAmp{};
 
-    GLenum minMaxFormat;
-    GLenum texType;
-    GLenum format;
-    GLenum texFormat;
+    std::array<GLfloat, 8>  m_minMax{};
+    std::vector<GLfloat>    m_minMaxSpectr;
+    std::vector<GLfloat>    m_energyMed;
+    std::vector<GLfloat>    m_histoDownload;
 
-    GLint    geoAmp;
-    GLfloat* minMax        = nullptr;
-    GLfloat* minMaxSpectr  = nullptr;
-    GLfloat* energyMed     = nullptr;
-    GLfloat* histoDownload = nullptr;
+    int          m_width                 = 0;
+    int          m_height                = 0;
+    int          m_totNrCells            = 0;
+    int          m_maxHistoWidth         = 0;
+    int          m_nrChan                = 0;
+    int          m_spectrNrEmitTrig      = 0;
+    int          m_spectrGeoAmp          = 0;
+    unsigned int m_downSample            = 0;
+    int          m_procFrame             = 0;
+    int          m_lastDownloadFrame     = 0;
+    int          m_lastEnerDownloadFrame = 0;
+    int          m_procEnerFrame         = 0;
 
-    int          width                 = 0;
-    int          height                = 0;
-    int          totNrCells            = 0;
-    int          maxHistoWidth         = 0;
-    int          nrChan                = 0;
-    int          spectrNrEmitTrig      = 0;
-    int          spectrGeoAmp          = 0;
-    unsigned int downSample            = 0;
-    int          procFrame             = 0;
-    int          lastDownloadFrame     = 0;
-    int          lastEnerDownloadFrame = 0;
-    int          procEnerFrame         = 0;
+    bool m_normalize       = false;
+    bool m_getBounds       = false;
+    bool m_getEnergyCenter = false;
+    bool m_getEnergySum  = false;
 
-    bool normalize       = false;
-    bool getBounds       = false;
-    bool getEnergyCenter = false;
-    bool b_getEnergySum  = false;
+    float m_valThres           = 0.f;
+    float m_indValThres        = 0.f;
+    float m_maxValOfType       = 0.f;
+    float m_maxValPerChan      = 0.f;
+    float m_maxValSum          = 0.f;
+    float m_maximum            = 0.f;
+    float m_minimum            = 0.f;
+    float m_energySum          = 0.f;
+    float m_energySumLowThresh = 0.1f;
 
-    float valThres           = 0.f;
-    float indValThres        = 0.f;
-    float maxValOfType       = 0.f;
-    float maxValPerChan      = 0.f;
-    float maxValSum          = 0.f;
-    float maximum            = 0.f;
-    float minimum            = 0.f;
-    float spectrMax          = 0.f;
-    float spectrMin          = 0.f;
-    float energySum          = 0.f;
-    float energySumLowThresh = 0.1f;
-    int   spectrMaxInd       = 0;
-    int   spectrMinInd       = 0;
-
-    float      smoothing = 0.f;
-    glm::ivec2 cellSize{0};
-    glm::ivec2 nrCells{0};
-    glm::ivec2 histoTexSize{0};
+    float      m_smoothing = 0.f;
+    glm::ivec2 m_cellSize{0};
+    glm::ivec2 m_nrCells{0};
+    glm::ivec2 m_histoTexSize{0};
 };
 }  // namespace ara

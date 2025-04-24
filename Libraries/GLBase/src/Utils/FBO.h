@@ -13,17 +13,13 @@ namespace ara {
 class GLBase;
 class Shaders;
 class Texture;
+class ShaderCollector;
 class Quad;
 
 class FBO {
 public:
-    FBO();
-    FBO(GLBase *glbase, int width, int height, int _mipMapLevels = 0);
-    FBO(GLBase *glbase, int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-        int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
-    FBO(GLBase *glbase, int width, int height, int depth, GLenum _type, GLenum _target, bool _depthBuf,
-        int _nrAttachments, int _mipMapLevels, int _nrSamples, GLenum _wrapMode, bool _layered);
-
+    FBO() = default;
+    FBO(const FboInitParams&);
     virtual ~FBO();
 
     void remove();
@@ -77,12 +73,7 @@ public:
             return 0;
     }
 
-    [[nodiscard]] GLuint getDepthImg() const {
-        if (m_hasDepthBuf)
-            return m_depthBuf;
-        else
-            return 0;
-    }
+    [[nodiscard]] GLuint       getDepthImg() const { return  m_hasDepthBuf ? m_depthBuf : 0; }
     [[nodiscard]] GLuint       getWidth() const { return m_tex_width; }
     [[nodiscard]] GLuint       getHeight() const { return m_tex_height; }
     [[nodiscard]] GLuint       getDepth() const { return m_tex_depth; }
@@ -132,48 +123,14 @@ public:
     void setLayered(bool val) { m_layered = val; }
     void setSharedDrawMtx(std::mutex *mtx) { m_sharedDrawMtx = mtx; }
     void setGlbase(GLBase *glbase) { m_glbase = glbase; }
-
     static void checkFbo();
-
-    void getActStates() {
-        // if there is any FBO bound, remember it now, and rebind it later again
-        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_lastBoundFbo);
-#ifndef ARA_USE_GLES31
-        glGetBooleanv(GL_MULTISAMPLE, &m_lastMultiSample);
-#endif
-        for (GLuint i = 0; i < m_maxNrDrawBuffers; i++) glGetIntegerv(GL_DRAW_BUFFER0 + i, &m_lastDrawBuffers[i]);
-    }
-
-    void restoreStates() {
-        // rebind last s_fbo
-        glBindFramebuffer(GL_FRAMEBUFFER, m_lastBoundFbo);
-
-        if (m_lastBoundFbo != 0) {
-            m_restAttachments.clear();
-
-            m_restNrValidBuffers = 0;
-            for (GLuint i = 0; i < m_maxNrDrawBuffers; i++) {
-                if (m_lastDrawBuffers[i]) {
-                    m_restAttachments.emplace_back(GL_COLOR_ATTACHMENT0 + i);
-                    m_restNrValidBuffers++;
-                }
-            }
-            glDrawBuffers(m_restNrValidBuffers, &m_restAttachments[0]);
-        }
-
-#ifndef ARA_USE_GLES31
-        if (!m_lastMultiSample)
-            glDisable(GL_MULTISAMPLE);
-        else
-            glEnable(GL_MULTISAMPLE);
-#endif
-    }
+    void getActStates();
+    void restoreStates();
 
 private:
-    bool m_hasDepthBuf;
-    bool m_layered;
+    bool m_hasDepthBuf = false;
+    bool m_layered = false;
     bool m_inited = false;
-    // bool m_hasBeenInited = false;
     bool m_isShared      = false;
     bool m_isMultiSample = false;
     bool m_hasTexViews   = false;
@@ -193,7 +150,7 @@ private:
 
     GLuint  m_tex_width    = 0;
     GLuint  m_tex_height   = 0;
-    GLuint  m_tex_depth    = 0;
+    GLuint  m_tex_depth    = 1;
     GLfloat m_f_tex_width  = 0;
     GLfloat m_f_tex_height = 0;
     GLfloat m_f_tex_depth  = 0;
@@ -202,14 +159,14 @@ private:
 
     std::vector<GLuint> m_textures;
     GLuint              m_depthBuf      = 0;
-    GLenum              m_type          = 0;
-    GLenum              m_extType       = 0;
-    GLenum              m_pixType       = 0;
+    GLenum              m_type          = GL_RGBA8;
+    GLenum              m_extType       = GL_RGBA;
+    GLenum              m_pixType       = GL_UNSIGNED_BYTE;
     GLenum              m_depthType     = 0;
     GLenum              m_target        = 0;
-    GLenum              m_wrapMode      = 0;
-    GLenum              m_magFilterType = 0;
-    GLenum              m_minFilterType = 0;
+    GLenum              m_wrapMode      = GL_REPEAT;
+    GLenum              m_magFilterType = GL_LINEAR;
+    GLenum              m_minFilterType = GL_LINEAR;
 
     std::unique_ptr<Quad> m_quad;
 
@@ -219,9 +176,9 @@ private:
     Shaders         *m_toAlphaShader = nullptr;
     Shaders         *m_clearShader   = nullptr;
 
-    int m_mipMapLevels  = 0;
-    int m_nrAttachments = 0;
-    int m_nrSamples     = 0;
+    int m_mipMapLevels  = 1;
+    int m_nrAttachments = 1;
+    int m_nrSamples     = 1;
     int m_sharedLayer   = -1;
 
     std::vector<GLenum> m_bufModes;

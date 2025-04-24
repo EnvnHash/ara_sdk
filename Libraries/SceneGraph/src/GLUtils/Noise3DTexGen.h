@@ -23,22 +23,22 @@ public:
     ara::Shaders* initBlendShdrV();
     GLuint        getTex();
 
-    FBO* fbo;
+    std::unique_ptr<FBO> fbo;
 
 private:
-    Shaders*         noiseShdr;
-    Shaders*         stdTexShdr;
-    ShaderCollector* shCol;
+    Shaders*         m_noiseShdr = nullptr;
+    Shaders*         m_stdTexShdr = nullptr;
+    ShaderCollector* m_shCol = nullptr;
     GLBase*          m_glbase = nullptr;
 
-    float scaleX;
-    float scaleY;
-    float scaleZ;
+    float m_scaleX{};
+    float m_scaleY{};
+    float m_scaleZ{};
 
-    int   width;
-    int   height;
-    int   depth;
-    int   nrLoops;
-    short nrParallelTex;
+    int   m_width = 0;
+    int   m_height = 0;
+    int   m_depth = 0;
+    int   m_nrLoops = 0;
+    short m_nrParallelTex = 0;
 };
 }  // namespace ara

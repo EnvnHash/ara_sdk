@@ -125,11 +125,11 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
 
         // create the FBO to draw the SceneGraph and it's object map
         if (m_multisample) {
-            m_sceneFbo = make_unique<FBO>(m_glbase, rWidth, rHeight, GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1, 2,
-                                          GL_CLAMP_TO_EDGE, false);
+            m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(rWidth), static_cast<int>(rHeight), 1,
+                                                        GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1, 2, GL_CLAMP_TO_EDGE, false});
         } else {
-            m_sceneFbo = make_unique<FBO>(m_glbase, rWidth, rHeight, GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1,
-                                          GL_CLAMP_TO_EDGE, false);
+            m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(rWidth), static_cast<int>(rHeight), 1,
+                                                        GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
         }
         s_shCol.setShaderHeader(m_glbase->getShaderHeader());
 

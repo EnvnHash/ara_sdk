@@ -15,27 +15,21 @@ class GLBase;
 
 class PingPongFbo {
 public:
-    PingPongFbo(GLBase *glbase, int width, int height, GLenum type, GLenum target, bool depthBuf = false,
-                int nrAttachments = 1, int mipMapLevels = 1, int nrSamples = 1, GLenum wrapMode = GL_REPEAT,
-                bool layered = false);
-
-    PingPongFbo(GLBase *glbase, int width, int height, int depth, GLenum type, GLenum target, bool depthBuf,
-                int nrAttachments, int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
-
-    virtual ~PingPongFbo();
+    explicit PingPongFbo(const FboInitParams&);
+    virtual ~PingPongFbo() = default;
 
     void swap();
     void clear(float _alpha = 1.f);
     void clearWhite();
     void clearAlpha(float _alpha, float _col);
 
-    FBO *operator[](int n) { return FBOs[n]; }
+    FBO* operator[](int n) { return fbos[n].get(); }
 
-    GLuint getWidth() const;
-    GLuint getHeight() const;
-    GLuint getDepth() const;
-    GLuint getBitCount() const;
-    GLenum getTarget() const;
+    [[nodiscard]] GLuint getWidth() const;
+    [[nodiscard]] GLuint getHeight() const;
+    [[nodiscard]] GLuint getDepth() const;
+    [[nodiscard]] GLuint getBitCount() const;
+    [[nodiscard]] GLenum getTarget() const;
 
     void setMinFilter(GLenum type);
     void setMagFilter(GLenum type);
@@ -49,8 +43,8 @@ public:
     FBO *dst = nullptr;  // Destination  ->  Pong
 
 private:
-    FBO **FBOs   = nullptr;  // Real addresses of ping/pong FBOs
-    int   flag   = 0;        // Integer for making a quick swap
-    bool  inited = false;
+    std::array<std::unique_ptr<FBO>, 2> fbos;
+    int                                 flag   = 0;        // Integer for making a quick swap
+    bool                                inited = false;
 };
 }  // namespace ara

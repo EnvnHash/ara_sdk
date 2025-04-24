@@ -13,14 +13,14 @@ bool GLSLChromaKey::init(GLBase* glbase, Property<GLSLChromaKeyPar*>* par) {
     if (!par) return false;
     m_par = par;
 
-    m_rgbFbo  = make_unique<FBO>(m_glbase, (*par)()->width, (*par)()->height, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
-                                 GL_CLAMP_TO_BORDER, false);
-    m_procFbo = make_unique<FBO>(m_glbase, (*par)()->width, (*par)()->height, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
-                                 GL_CLAMP_TO_BORDER, false);
-    m_maskFbo = make_unique<FBO>(m_glbase, (*par)()->width, (*par)()->height, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
-                                 GL_CLAMP_TO_BORDER, false);
-    m_histo   = make_unique<GLSLHistogram>(m_glbase, (*par)()->width, (*par)()->height, GL_RGBA8, 4,
-                                           256);  // maxValPerChan, values not stable ... some bug
+    m_rgbFbo  = make_unique<FBO>(FboInitParams{m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
+                                 GL_CLAMP_TO_BORDER, false});
+    m_procFbo = make_unique<FBO>(FboInitParams{m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
+                                 GL_CLAMP_TO_BORDER, false});
+    m_maskFbo = make_unique<FBO>(FboInitParams{m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
+                                 GL_CLAMP_TO_BORDER, false});
+    m_histo   = make_unique<GLSLHistogram>(m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, 4,
+                                           256);  // m_maxValPerChan, values not stable ... some bug
     m_fastBlurMem = make_unique<FastBlurMem>(m_glbase, 0.3f, (*par)()->width, (*par)()->height);
 
     m_downBuf = std::vector<uint8_t>((*par)()->width * (*par)()->height * 4);

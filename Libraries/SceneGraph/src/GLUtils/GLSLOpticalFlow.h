@@ -19,7 +19,6 @@ namespace ara {
 class GLSLOpticalFlow {
 public:
     GLSLOpticalFlow(GLBase* glbase, int width, int height);
-    virtual ~GLSLOpticalFlow();
 
     void initShader(ShaderCollector* shCol);
     void update(GLint tex1, GLint tex2, float fdbk = 0.f);
@@ -27,15 +26,16 @@ public:
     void   setMedian(float median) { median = median; }
     void   setBright(float val) { bright = val; }
     void   setPVM(GLfloat* pvm_ptr) { pvm_ptr = pvm_ptr; }
-    GLuint getResTexId() { return texture->getSrcTexId(); }
+    GLuint getResTexId() { return m_texture->getSrcTexId(); }
 
 private:
     GLBase*          m_glbase   = nullptr;
-    ShaderCollector* shCol      = nullptr;
-    Shaders*         flowShader = nullptr;
-    Shaders*         texShader  = nullptr;
-    Quad*            quad       = nullptr;
-    PingPongFbo*     texture    = nullptr;
+    ShaderCollector* m_shCol      = nullptr;
+    Shaders*         m_flowShader = nullptr;
+    Shaders*         m_texShader  = nullptr;
+
+    std::unique_ptr<Quad>            m_quad;
+    std::unique_ptr<PingPongFbo>     m_texture;
 
     int          width    = 0;
     int          height   = 0;

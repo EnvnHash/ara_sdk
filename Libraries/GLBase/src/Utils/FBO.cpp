@@ -9,35 +9,21 @@ using namespace std;
 
 namespace ara {
 
-FBO::FBO()
-    : m_tex_depth(1), m_type(GL_RGBA8), m_extType(GL_RGBA), m_pixType(GL_UNSIGNED_BYTE), m_target(GL_TEXTURE_2D),
-      m_nrAttachments(1), m_hasDepthBuf(false), m_mipMapLevels(1), m_depthBuf(0), m_wrapMode(GL_REPEAT),
-      m_layered(false), m_nrSamples(1), m_magFilterType(GL_LINEAR), m_minFilterType(GL_LINEAR) {}
-
-FBO::FBO(GLBase *glbase, int width, int height, int mipMapLevels)
-    : m_glbase(glbase), m_tex_width(width), m_tex_height(height), m_tex_depth(1), m_type(GL_RGBA8), m_extType(GL_RGBA),
-      m_pixType(GL_UNSIGNED_BYTE), m_target(GL_TEXTURE_2D), m_nrAttachments(1), m_hasDepthBuf(false), m_mipMapLevels(1),
-      m_depthBuf(0), m_wrapMode(GL_REPEAT), m_layered(false), m_nrSamples(1), m_magFilterType(GL_LINEAR),
-      m_minFilterType(GL_LINEAR) {
-    init();
-}
-
-FBO::FBO(GLBase *glbase, int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-         int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered)
-    : m_glbase(glbase), m_tex_width(width), m_tex_height(height), m_tex_depth(1), m_type(type),
-      m_extType(ara::getExtType(type)), m_pixType(ara::getPixelType(type)), m_target(target), m_hasDepthBuf(depthBuf),
-      m_nrAttachments(nrAttachments), m_mipMapLevels(mipMapLevels), m_nrSamples(nrSamples), m_depthBuf(0),
-      m_wrapMode(wrapMode), m_layered(layered), m_magFilterType(GL_LINEAR), m_minFilterType(GL_LINEAR) {
-    init();
-}
-
-FBO::FBO(GLBase *glbase, int width, int height, int depth, GLenum _type, GLenum _target, bool _depthBuf,
-         int _nrAttachments, int _mipMapLevels, int _nrSamples, GLenum _wrapMode, bool _layered)
-    : m_glbase(glbase), m_tex_width(width), m_tex_height(height), m_tex_depth(depth), m_type(_type),
-      m_extType(ara::getExtType(_type)), m_pixType(ara::getPixelType(_type)), m_target(_target),
-      m_hasDepthBuf(_depthBuf), m_nrAttachments(_nrAttachments), m_mipMapLevels(_mipMapLevels), m_nrSamples(_nrSamples),
-      m_depthBuf(0), m_wrapMode(_wrapMode), m_layered(_layered), m_magFilterType(GL_LINEAR),
-      m_minFilterType(GL_LINEAR) {
+FBO::FBO(const FboInitParams& ip)
+    : m_glbase(ip.glbase),
+    m_tex_width(ip.width),
+    m_tex_height(ip.height),
+    m_tex_depth(ip.depth),
+    m_type(ip.type),
+    m_extType(ara::getExtType(ip.type)),
+    m_pixType(ara::getPixelType(ip.type)),
+    m_target(ip.target),
+    m_hasDepthBuf(ip.depthBuf),
+    m_nrAttachments(ip.nrAttachments),
+    m_mipMapLevels(ip.mipMapLevels),
+    m_nrSamples(ip.nrSamples),
+    m_wrapMode(ip.wrapMode),
+    m_layered(ip.layered)  {
     init();
 }
 
@@ -54,7 +40,9 @@ void FBO::remove() {
             }
         }
 
-        if (m_fbo) glDeleteFramebuffers(1, &m_fbo);
+        if (m_fbo) {
+            glDeleteFramebuffers(1, &m_fbo);
+        }
         m_textures.clear();
         m_bufModes.clear();
         m_inited      = false;
@@ -140,7 +128,9 @@ void FBO::fromTexMan(Texture *texMan) {
     if (texMan) {
         getActStates();
 
-        if (m_inited) remove();
+        if (m_inited) {
+            remove();
+        }
 
         m_textures.resize(1);
         m_bufModes.resize(1);
@@ -152,8 +142,8 @@ void FBO::fromTexMan(Texture *texMan) {
         m_tex_height    = texMan->getHeight();
         m_tex_depth     = 1;
         m_f_tex_depth   = 1;
-        m_f_tex_width   = (float)m_tex_width;
-        m_f_tex_height  = (float)m_tex_height;
+        m_f_tex_width   = static_cast<float>(m_tex_width);
+        m_f_tex_height  = static_cast<float>(m_tex_height);
         m_isShared      = false;
         m_type          = texMan->getInternalFormat();
         m_extType       = ara::getExtType(m_type);
@@ -161,9 +151,9 @@ void FBO::fromTexMan(Texture *texMan) {
         m_hasDepthBuf   = false;
         m_layered       = false;
         m_nrAttachments = 1;
-        m_mipMapLevels  = (int)texMan->getMipMapLevels();
+        m_mipMapLevels  = static_cast<int>(texMan->getMipMapLevels());
         m_nrSamples     = 1;
-        m_wrapMode      = texMan->getWrapMode();
+        m_wrapMode      = ara::Texture::getWrapMode();
         m_magFilterType = texMan->getMagnificationFilter();
         m_minFilterType = texMan->getMinificationFilter();
 
@@ -181,10 +171,7 @@ void FBO::fromTexMan(Texture *texMan) {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_target, m_textures[0], 0);
 
         checkFbo();
-
         m_inited = true;
-        // m_hasBeenInited = true;
-
         restoreStates();
     }
 }
@@ -374,10 +361,10 @@ void FBO::init() {
     if (m_target == GL_TEXTURE_RECTANGLE) m_mipMapLevels = 1;
 #endif
 
-    if (m_nrAttachments > m_glbase->maxNrAttachments())
-        LOGE << "FBO Error: trying to attach more textures to FBO than "
-                "possible by hardware. Max: "
+    if (m_nrAttachments > m_glbase->maxNrAttachments()) {
+        LOGE << "FBO Error: trying to attach more textures to FBO than possible by hardware. Max: "
              << m_glbase->maxNrAttachments();
+    }
 
     m_nrAttachments = std::min<int>(m_nrAttachments, m_glbase->maxNrAttachments());
 
@@ -389,7 +376,9 @@ void FBO::init() {
     m_f_tex_depth  = static_cast<float>(m_tex_depth);
 
     allocColorTexture();
-    if (m_hasDepthBuf) allocDepthTexture();
+    if (m_hasDepthBuf) {
+        allocDepthTexture();
+    }
 
     glGenFramebuffers(1, &m_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -401,9 +390,7 @@ void FBO::init() {
     m_clearShader   = m_shCol->getStdClear(m_layered, m_tex_depth);
     m_toAlphaShader = m_shCol->getStdTex();
 
-    // m_hasBeenInited = true;
     m_inited = true;
-
     restoreStates();
 }
 
@@ -420,7 +407,7 @@ void FBO::allocColorTexture() {
         glBindTexture(m_target, m_textures[i]);
 
 #ifndef __APPLE__
-        // NOTE:: Using glTexStorage* is generally considered best practice in
+        // NOTE: Using glTexStorage* is generally considered best practice in
         // OpenGL as once defined, the OpenGL implementation can make
         // assumptions that the dimensions and m_format of the texture object
         // will not change over its lifetime and thus can stop tracking certain
@@ -766,12 +753,13 @@ void FBO::blitTo(FBO *dst) const {
 }
 
 /**
- * Best practise is to use OpenGL immutable storage (glTexStorage*) which can't
- * be resized. So for resizing all textures get destroyed and reallocated with
- * the same parameters
+ * Best practise is to use OpenGL immutable storage (glTexStorage*) which can't be resized. So for resizing all textures
+ * get destroyed and reallocated with the same parameters
  */
 void FBO::resize(uint _width, uint _height, uint _depth, bool checkStates) {
-    if (!_width) return;
+    if (!_width) {
+        return;
+    }
 
     m_tex_width    = _width;
     m_tex_height   = _height;
@@ -803,6 +791,43 @@ void FBO::resize(uint _width, uint _height, uint _depth, bool checkStates) {
     }
 }
 
+void FBO::getActStates() {
+    // if there is any FBO bound, remember it now, and rebind it later again
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &m_lastBoundFbo);
+#ifndef ARA_USE_GLES31
+    glGetBooleanv(GL_MULTISAMPLE, &m_lastMultiSample);
+#endif
+    for (GLuint i = 0; i < m_maxNrDrawBuffers; i++) {
+        glGetIntegerv(GL_DRAW_BUFFER0 + i, &m_lastDrawBuffers[i]);
+    }
+}
+
+
+void FBO::restoreStates() {
+    // rebind last s_fbo
+    glBindFramebuffer(GL_FRAMEBUFFER, m_lastBoundFbo);
+
+    if (m_lastBoundFbo != 0) {
+        m_restAttachments.clear();
+        m_restNrValidBuffers = 0;
+        for (GLuint i = 0; i < m_maxNrDrawBuffers; i++) {
+            if (m_lastDrawBuffers[i]) {
+                m_restAttachments.emplace_back(GL_COLOR_ATTACHMENT0 + i);
+                m_restNrValidBuffers++;
+            }
+        }
+        glDrawBuffers(m_restNrValidBuffers, &m_restAttachments[0]);
+    }
+
+#ifndef ARA_USE_GLES31
+    if (!m_lastMultiSample) {
+        glDisable(GL_MULTISAMPLE);
+    } else {
+        glEnable(GL_MULTISAMPLE);
+    }
+#endif
+}
+
 void FBO::deleteColorTextures() {
     if (m_inited) {
         glDeleteTextures(m_nrAttachments, &m_textures[0]);
@@ -816,12 +841,6 @@ void FBO::deleteDepthTextures() {
 }
 
 void FBO::clearAlpha(float alpha, float col) const {
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // glEnable(GL_BLEND);
-    // glDisable(GL_DEPTH_TEST);
-    // glDisable(GL_CULL_FACE);
-
     glClearColor(col, col, col, 1.f - alpha);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -841,9 +860,6 @@ void FBO::clearToAlpha(float alpha) {
 
     // don't use the VAO itself since it's not gl context save
     m_quad->draw();
-    /*m_quad->m_vao->enableVertexAttribs();
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    m_quad->m_vao->disableVertexAttribs();*/
 
     ara::Shaders::end();
 
@@ -856,9 +872,6 @@ void FBO::clearToAlpha(float alpha) {
 void FBO::clearToColor(float _r, float _g, float _b, float _a) {
     if (m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8) {
         glDrawBuffers(m_nrAttachments, &m_bufModes[0]);
-        // static const float col[] = { _r, _g, _b, _a };
-        // for (int i=0; i<m_nrAttachments; i++)
-        //    glClearBufferfv(GL_COLOR, i, &col[0]);
         glClearColor(_r, _g, _b, _a);
         glClear(GL_COLOR_BUFFER_BIT);
     }
@@ -912,35 +925,35 @@ void FBO::clearWhite() const {
     }
 }
 
-void FBO::setMinFilter(GLenum _type) {
-    m_minFilterType = _type;
+void FBO::setMinFilter(GLenum type) {
+    m_minFilterType = type;
 
     for (short i = 0; i < m_nrAttachments; i++) {
         glBindTexture(m_target, m_textures[i]);
-        glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, _type);
+        glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, type);
     }
 }
 
-void FBO::setMagFilter(GLenum _type) {
-    m_magFilterType = _type;
+void FBO::setMagFilter(GLenum type) {
+    m_magFilterType = type;
 
     for (short i = 0; i < m_nrAttachments; i++) {
         glBindTexture(m_target, m_textures[i]);
-        glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, _type);
+        glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, type);
     }
 }
 
-void FBO::setMinFilter(GLenum _type, int attNr) {
+void FBO::setMinFilter(GLenum type, int attNr) {
     if (attNr < m_nrAttachments) {
         glBindTexture(m_target, m_textures[attNr]);
-        glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, _type);
+        glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, type);
     }
 }
 
-void FBO::setMagFilter(GLenum _type, int attNr) {
+void FBO::setMagFilter(GLenum type, int attNr) {
     if (attNr < m_nrAttachments) {
         glBindTexture(m_target, m_textures[attNr]);
-        glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, _type);
+        glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, type);
     }
 }
 
@@ -1027,12 +1040,18 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
     GLuint texId      = m_textures[attachNr];
     GLenum saveTarget = m_target;
 
-    // in case we are dealing with a multisample texture, first
-    // render it into a temporary single sample texture, than download
+    // in case we are dealing with a multisample texture, first render it into a temporary single sample texture,
+    // then download
     if (m_isMultiSample) {
         saveTarget = GL_TEXTURE_2D;
-        tempFbo    = make_unique<FBO>(m_glbase, m_tex_width, m_tex_height, intFormat, saveTarget, false, 1, 1, 1,
-                                      GL_REPEAT, false);
+        tempFbo    = make_unique<FBO>(FboInitParams{m_glbase,
+                                                    static_cast<int>(m_tex_width),
+                                                    static_cast<int>(m_tex_height),
+                                                    1,
+                                                    intFormat,
+                                                    saveTarget,
+                                                    false, 1, 1, 1,
+                                                    GL_REPEAT, false});
 
         Shaders *copyShader = m_shCol->getStdTexAlpha(true);
 
@@ -1144,8 +1163,7 @@ void FBO::download(void *ptr, GLenum intFormat, GLenum extFormat) {
                         m_tex_width, m_tex_height, (GLubyte *)ptr);
 #else
     if (ptr)
-        glGetTexImage(m_target, 0, extFormat ? extFormat : ara::getExtType(intFormat), ara::getPixelType(intFormat),
-                      ptr);
+        glGetTexImage(m_target, 0, extFormat ? extFormat : ara::getExtType(intFormat), ara::getPixelType(intFormat), ptr);
 #endif
 }
 

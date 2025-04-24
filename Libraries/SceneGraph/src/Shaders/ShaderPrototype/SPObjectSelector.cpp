@@ -19,9 +19,9 @@ SPObjectSelector::SPObjectSelector(sceneData* sd) : ShaderProto(sd) {
     s_scrHeight = (int)s_sd->winViewport.w;
 
 #ifdef ARA_USE_GLES31
-    m_resFbo = make_unique<FBO>(sd->glbase, 1, 1, GL_R32F, GL_TEXTURE_2D, false, 1, 1, 1, GL_CLAMP_TO_EDGE, false);
+    m_resFbo = make_unique<FBO>(FboInitParams{sd->glbase, 1, 1, 1, GL_R32F, GL_TEXTURE_2D, false, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
 #else
-    m_resFbo = make_unique<FBO>(sd->glbase, 1, 1, GL_R32F, GL_TEXTURE_1D, false, 1, 1, 1, GL_CLAMP_TO_EDGE, false);
+    m_resFbo = make_unique<FBO>(FboInitParams{sd->glbase, 1, 1, 1, GL_R32F, GL_TEXTURE_1D, false, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
 #endif
     m_resFbo->setMinFilter(GL_NEAREST);
     m_resFbo->setMagFilter(GL_NEAREST);
@@ -41,8 +41,12 @@ void SPObjectSelector::buildFbo(uint nrCameras) {
             m_fbo.reset();
         }
 
-        m_fbo = make_unique<FBO>(s_glbase, s_scrWidth, s_scrHeight, nrCameras, GL_R32F, GL_TEXTURE_2D_ARRAY, true, 1, 1,
-                                 1, GL_CLAMP_TO_EDGE, false);
+        m_fbo = make_unique<FBO>(FboInitParams{s_glbase,
+                                               static_cast<int>(s_scrWidth),
+                                               static_cast<int>(s_scrHeight),
+                                               static_cast<int>(nrCameras),
+                                               GL_R32F, GL_TEXTURE_2D_ARRAY, true, 1, 1,
+                                               1, GL_CLAMP_TO_EDGE, false});
         m_fbo->setMinFilter(GL_NEAREST);
         m_fbo->setMagFilter(GL_NEAREST);
     }

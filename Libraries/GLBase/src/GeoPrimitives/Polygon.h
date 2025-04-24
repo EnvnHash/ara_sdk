@@ -24,6 +24,7 @@
 namespace ara {
 
 class Shaders;
+class ShaderCollector;
 
 class CoordVariantAr {
 public:

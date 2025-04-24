@@ -10,6 +10,7 @@
 #include <GLBase.h>
 #include <GeoPrimitives/Quad.h>
 #include <Utils/FBO.h>
+#include <Shaders/ShaderCollector.h>
 #include <Utils/PingPongFbo.h>
 #include <Utils/Texture.h>
 #include <Utils/UniformBlock.h>
@@ -19,49 +20,55 @@ using namespace std;
 
 namespace ara {
 
-GLSLOpticalFlowDepth::GLSLOpticalFlowDepth(GLBase* glbase, int _width, int _height)
-    : m_glbase(glbase), shCol(&glbase->shaderCollector()), width(_width), height(_height), srcId(0), lambda(0.1f),
-      median(3.f), bright(4.f) {
-    texShader = shCol->getStdTex();
-    texture   = new PingPongFbo(glbase, width, height, GL_RGBA16F, GL_TEXTURE_2D, false, 2, 1, GL_CLAMP_TO_EDGE);
-    texture->clear();
-    quad = new Quad(-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f);
+GLSLOpticalFlowDepth::GLSLOpticalFlowDepth(GLBase* glbase, int width, int height)
+    : m_glbase(glbase),
+        m_shCol(&glbase->shaderCollector()),
+        m_width(width),
+        m_height(height),
+        m_srcId(0),
+        m_lambda(0.1f),
+        m_median(3.f),
+        m_bright(4.f) {
+    m_texShader = m_shCol->getStdTex();
+    m_texture   = make_unique<PingPongFbo>(FboInitParams{glbase, m_width, m_height, 1, GL_RGBA16F, GL_TEXTURE_2D, false, 2, 1, GL_CLAMP_TO_EDGE});
+    m_texture->clear();
+    m_quad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
 
     initShaders();
 }
 
 void GLSLOpticalFlowDepth::update() {
-    texture->dst->bind();
-    texture->dst->clear();
+    m_texture->dst->bind();
+    m_texture->dst->clear();
 
-    flowShader->begin();
-    flowShader->setIdentMatrix4fv("m_pvm");
+    m_flowShader->begin();
+    m_flowShader->setIdentMatrix4fv("m_pvm");
 
-    flowShader->setUniform2f("scale", 1.f, 2.f);
-    flowShader->setUniform2f("offset", 1.f / static_cast<float>(width), 1.f / static_cast<float>(height));
-    flowShader->setUniform1f("amp", bright);
-    flowShader->setUniform1f("lambda", lambda);
-    flowShader->setUniform1i("tex0", 0);
-    flowShader->setUniform1i("tex1", 1);
-    flowShader->setUniform1i("last", 2);
-    flowShader->setUniform1f("median", median);
-    flowShader->setUniform1f("maxDepth", 1.f);
-    flowShader->setUniform1f("maxDist", maxDist);
-    flowShader->setUniform1f("diffAmp", diffAmp);
+    m_flowShader->setUniform2f("scale", 1.f, 2.f);
+    m_flowShader->setUniform2f("offset", 1.f / static_cast<float>(m_width), 1.f / static_cast<float>(m_height));
+    m_flowShader->setUniform1f("amp", m_bright);
+    m_flowShader->setUniform1f("lambda", m_lambda);
+    m_flowShader->setUniform1i("tex0", 0);
+    m_flowShader->setUniform1i("tex1", 1);
+    m_flowShader->setUniform1i("last", 2);
+    m_flowShader->setUniform1f("median", m_median);
+    m_flowShader->setUniform1f("maxDepth", 1.f);
+    m_flowShader->setUniform1f("maxDist", m_maxDist);
+    m_flowShader->setUniform1f("diffAmp", m_diffAmp);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, srcId);
+    glBindTexture(GL_TEXTURE_2D, m_srcId);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, lastSrcId);
+    glBindTexture(GL_TEXTURE_2D, m_lastSrcId);
 
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, texture->getSrcTexId());
+    glBindTexture(GL_TEXTURE_2D, m_texture->getSrcTexId());
 
-    quad->draw();
+    m_quad->draw();
 
-    texture->dst->unbind();
-    texture->swap();
+    m_texture->dst->unbind();
+    m_texture->swap();
 }
 
 void GLSLOpticalFlowDepth::initShaders() {
@@ -97,8 +104,6 @@ void GLSLOpticalFlowDepth::initShaders() {
         }
 
         vec4 getGrayScale(vec4 col) {
-            // float gray = dot(vec3(col.x, col.y, col.z), vec3(0.3, 0.59,
-            // 0.11));
             float gray = col.r / maxDepth;
             return vec4(gray, gray, gray, 1.0);
         }
@@ -131,39 +136,25 @@ void GLSLOpticalFlowDepth::initShaders() {
             vec4 vx = curdif * (gradx / gradmag);
             vec4 vy = curdif * (grady / gradmag);
 
-            // vec4 lastFrame = texture(last, tex_coord);
 
-            //    color = vec4(vx.r, vy.r, 0.0, 1.0) * 3.0;
             color = vec4(pow(abs(vx.r) * 6.0, 1.7) * sign(vx.r) * amp, pow(abs(vy.r) * 6.0, 1.7) * sign(vy.r) * amp,
                          (srcDepth - lastDepth) * amp, 1.0);
-            //	color = srcDepth > maxDist ? vec4(0.0, 0.0, 0.0, 1.0) : color;
 
             float diffV = pow(abs(srcDepth - lastDepth) * diffAmp, 2.0);
-            // diffV = srcDepth > maxDist ? 0.0 : diffV;
-            // diffV = diffV  ? 1.0 : 0.0;
             diff = vec4(diffV, diffV, diffV, 1.0);
         });
 
     frag = shdr_Header + frag;
 
-    flowShader = shCol->add("GLSLOpticalFlowDepth", vert.c_str(), frag.c_str());
-
-    //        uBlock = new UniformBlock(flowShader->getProgram(), "data");
-    //        uBlock->addVarName("scale", &corners[i][0], GL_FLOAT_VEC2);
+    m_flowShader = m_shCol->add("GLSLOpticalFlowDepth", vert.c_str(), frag.c_str());
 }
 
 GLuint GLSLOpticalFlowDepth::getResTexId() {
-    return texture->getSrcTexId();
+    return m_texture->getSrcTexId();
 }
 
 GLuint GLSLOpticalFlowDepth::getDiffTexId() {
-    return texture->src->getColorImg(1);
-}
-
-GLSLOpticalFlowDepth::~GLSLOpticalFlowDepth() {
-    delete flowShader;
-    delete quad;
-    delete texture;
+    return m_texture->src->getColorImg(1);
 }
 
 }  // namespace ara

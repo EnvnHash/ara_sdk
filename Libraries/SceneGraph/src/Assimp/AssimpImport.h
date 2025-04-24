@@ -26,6 +26,7 @@ class GLBase;
 class sceneData;
 class Scene3DBase;
 class SceneNode;
+class ShaderCollector;
 class SNIdGroup;
 class WindowBase;
 

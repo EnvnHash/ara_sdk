@@ -51,7 +51,8 @@ ShadowMapVsm::ShadowMapVsm(Camera* _gCam, int _scrWidth, int _scrHeight, sceneDa
 
     // s_fbo for saving the depth information
     s_fbo =
-        make_unique<FBO>(s_glbase, s_scrWidth, s_scrHeight, GL_RGB16F, GL_TEXTURE_2D, true, 1, 1, 1, GL_REPEAT, false);
+        make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, 1, GL_RGB16F, GL_TEXTURE_2D, true, 1, 1, 1,
+                                       GL_REPEAT, false});
 
     light_position = vec3(-0.5f, 1.0f, 2.0f);
     lookAtPoint    = vec3(0.0f, 0.0f, 0.0f);
@@ -60,36 +61,6 @@ ShadowMapVsm::ShadowMapVsm(Camera* _gCam, int _scrWidth, int _scrHeight, sceneDa
 ShadowMapVsm::~ShadowMapVsm() {}
 
 void ShadowMapVsm::begin() {
-    /*
-// Matrices for rendering the scene
-scene_model_matrix = gCam->getModelMatr();
-
-// Matrices used when rendering from the light’s position
-light_view_matrix = s_lookAt(light_position, lookAtPoint, vec3(0,1,0));
-light_projection_matrix = frustum(-1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 10.0f);
-//n_mvp = light_projection_matrix * light_view_matrix * scene_model_matrix;
-
-s_shadowShader->begin();
-//s_shadowShader->setUniformMatrix4fv("m_pvm", &n_mvp[0][0], 1);
-s_shadowShader->setUniformMatrix4fv("model_matrix", &scene_model_matrix[0][0],
-1); s_shadowShader->setUniformMatrix4fv("view_matrix", &light_view_matrix[0][0],
-1); s_shadowShader->setUniformMatrix4fv("projection_matrix",
-&light_projection_matrix[0][0], 1);
-
-s_fbo->bind();
-s_fbo->clearWhite();   // s_fbo must clear on white, for rendering depth values
-
-glEnable(GL_CULL_FACE);
-glCullFace(GL_BACK);    // render only backface, for avoiding self shadowing
-
-// scene needs to be rendered here
-_scene->draw(time, dt, cp, s_shadowShader);
-
-glDisable(GL_CULL_FACE);
-
-s_fbo->unbind();
-s_shadowShader->end();
-*/
 }
 
 void ShadowMapVsm::end() {}

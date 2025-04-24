@@ -96,15 +96,11 @@ void ShadowMapVsmArray::rebuildFbo(uint _nrLights) {
         if (s_fbo) {
             s_fbo.reset();
             fboBlur.reset();
-
-            // delete textures views
-            // for (uint i = 0; i < (uint)depthTexViews.size(); i++)
-            //	glDeleteTextures(1, &depthTexViews[i]);
         }
 
         // s_fbo for saving the depth information
-        s_fbo = make_unique<FBO>(s_glbase, s_scrWidth, s_scrHeight, std::max<uint>(_nrLights, 1), GL_RG32F,
-                                 GL_TEXTURE_2D_ARRAY, true, 1, 1, 1, GL_CLAMP_TO_BORDER, true);
+        s_fbo = make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, std::max<int>(_nrLights, 1), GL_RG32F,
+                                 GL_TEXTURE_2D_ARRAY, true, 1, 1, 1, GL_CLAMP_TO_BORDER, true});
 
         fboBlur = make_unique<FastBlurMem>(s_glbase, blurAlpha, s_scrWidth, s_scrHeight, GL_TEXTURE_2D_ARRAY, GL_RG32F,
                                            std::max<uint>(_nrLights, 1), false, FastBlurMem::KERNEL_3, true);
@@ -120,26 +116,6 @@ void ShadowMapVsmArray::rebuildFbo(uint _nrLights) {
 
         // bind last bound again
         glBindTexture(GL_TEXTURE_2D_ARRAY, lastBound);
-
-        /*
-        // build textures views
-        depthTexViews.resize(_nrLights);
-        for (uint i = 0; i < _nrLights; i++)
-        {
-            glGenTextures(1, &depthTexViews[i]);
-
-            // Now, create a view of the depth textures
-            glTextureView(depthTexViews[i],		// New texture view
-                GL_TEXTURE_2D,					// Target for
-        the new view fboBlur->getLastResult(),		// Original texture
-                GL_RG32F,						// two
-        component 32F texture with moments 0, 1,
-        // All mipmaps, but it's only one i, 1);
-        // the specific layer, only one layer
-
-            glBindTexture(GL_TEXTURE_2D, depthTexViews[i]);
-            setShadowTexPar(GL_TEXTURE_2D);
-        }*/
     }
     nrLights = _nrLights;
 }
@@ -147,11 +123,6 @@ void ShadowMapVsmArray::rebuildFbo(uint _nrLights) {
 void ShadowMapVsmArray::setShadowTexPar(GLenum type) {
     glTexParameteri(type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // setup depth comparison
-    // glTexParameteri(type, GL_TEXTURE_COMPARE_MODE,
-    // GL_COMPARE_REF_TO_TEXTURE); glTexParameteri(type,
-    // GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 
     // setup wrapping
     glTexParameteri(type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);

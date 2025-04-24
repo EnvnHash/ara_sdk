@@ -474,15 +474,29 @@ public:
     std::function<void()> func   = nullptr;
 };
 
-// forward declarations
-class ShaderCollector;
+struct DrawArraysIndirectCommand {
+    uint count = 0;
+    uint primCount = 0;
+    uint first = 0;
+    uint baseInstance = 0;
+};
 
-typedef struct {
-    uint count;
-    uint primCount;
-    uint first;
-    uint baseInstance;
-} DrawArraysIndirectCommand;
+class GLBase;
+
+struct FboInitParams {
+    GLBase *glbase = nullptr;
+    int width = 0;
+    int height = 0;
+    int depth = 1;
+    GLenum type = GL_RGBA8;
+    GLenum target = GL_TEXTURE_2D;
+    bool depthBuf{};
+    int nrAttachments = 1;
+    int mipMapLevels = 1;
+    int nrSamples = 1;
+    GLenum wrapMode = GL_REPEAT;
+    bool layered = false;
+};
 
 // -----------------------------------------------
 
@@ -539,7 +553,7 @@ static inline std::vector<std::string> m_stdMatrixNames{"m_model", "m_cam_model"
 static inline std::string m_stdPvmMult{"gl_Position = m_proj * m_view * m_cam_model * m_model * position; \n"};
 static const inline glm::vec2          stdQuadVertices[4]{glm::vec2{0.f}, glm::vec2{1.f, 0.f}, glm::vec2{0.f, 1.f},
                                                               glm::vec2{1.f, 1.f}};
-static const inline int                stdQuadInd[6]{0, 1, 3, 3, 2, 0};  // two triangles defining a quad
+static const inline int                stdQuadInd[6]{0, 1, 3, 3, 2, 0};  // two triangles defining a m_quad
 
 [[maybe_unused]] static const std::vector<std::string> &getStdAttribNames() { return m_stdAttribNames; }
 [[maybe_unused]] static const std::vector<std::string> &getStdRecAttribNames() { return m_stdRecAttribNames; }

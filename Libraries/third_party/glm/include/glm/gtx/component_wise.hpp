@@ -58,7 +58,7 @@ namespace glm
 	template<typename genType>
 	GLM_FUNC_DECL typename genType::value_type compMin(genType const& v);
 
-	/// Find the maximum value between single vector components.
+	/// Find the m_maximum value between single vector components.
 	/// @see gtx_component_wise
 	template<typename genType>
 	GLM_FUNC_DECL typename genType::value_type compMax(genType const& v);

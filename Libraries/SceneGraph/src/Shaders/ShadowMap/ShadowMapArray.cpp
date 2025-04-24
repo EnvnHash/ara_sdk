@@ -86,8 +86,8 @@ void ShadowMapArray::rebuildFbo(uint _nrLights) {
     }
 
     // s_fbo for saving the depth information
-    s_fbo = make_unique<FBO>(s_glbase, s_scrWidth * 2, s_scrHeight * 2, std::max<uint>(_nrLights, 1), GL_RGBA8,
-                             GL_TEXTURE_2D_ARRAY, true, 1, 1, 1, GL_CLAMP_TO_BORDER, true);
+    s_fbo = make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth * 2, s_scrHeight * 2, std::max<int>(_nrLights, 1), GL_RGBA8,
+                             GL_TEXTURE_2D_ARRAY, true, 1, 1, 1, GL_CLAMP_TO_BORDER, true});
 
     // set the necessary texture parameters for the depth textures
     glBindTexture(GL_TEXTURE_2D_ARRAY, s_fbo->getDepthImg());

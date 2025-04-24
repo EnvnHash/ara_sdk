@@ -5,6 +5,7 @@
 namespace ara {
 
 class Shaders;
+class ShaderCollector;
 class VAO;
 
 class SurfaceGenerator {

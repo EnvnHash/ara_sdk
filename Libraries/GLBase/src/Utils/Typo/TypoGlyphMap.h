@@ -11,6 +11,7 @@
 namespace ara {
 
 class Shaders;
+class ShaderCollector;
 class Quad;
 
 class BakedFont {
@@ -35,8 +36,8 @@ public:
 
     // prints in opengl standard normalized coordinates (0,0 center,
     // left/bottom: [-1,-1], right/top: [1,1]
-    void print(float _x, float _y, const std::string &&text, int fontSize, float *col);
-    void print(float _x, float _y, const std::string &text, int fontSize, float *col);
+    void print(float x, float y, const std::string &&text, int fontSize, float *col);
+    void print(float x, float y, const std::string &text, int fontSize, float *col);
 
     // prints in pixel coordinates, origin is left/top
     void      print(int _x, int _y, const std::string &text, int fontSize, float *col);
@@ -45,13 +46,11 @@ public:
     }
     glm::vec2 getTextWidth(const char *text, int fontSize);
     glm::ivec2 getPixTextWidth(const char *text, int fontSize,
-                               int max_count = -1);  // marco.g: Text width for both x,y in pixels,
-                                                     // maxcount==-1 is entire string
+                               int max_count = -1);  // Text width for both x,y in pixels, maxcount==-1 is entire string
     int        m_print(glm::vec2 offset, const char *text, int font_size, float *col, float *pvm, float x_range_lo,
                        float x_range_hi);
     glm::ivec2 m_getPixExtent(const char *text, int font_size, int max_count = -1, glm::mat2 *box = nullptr,
-                              std::vector<float> *ppos = nullptr);  // marco.g: Text width for both x,y in pixels,
-                                                                    // maxcount==-1 is entire string
+                              std::vector<float> *ppos = nullptr);  // Text width for both x,y in pixels, maxcount==-1 is entire string
     void         setScreenSize(uint32_t screenWidth, uint32_t screenHeight);
     unsigned int getScreenWidth() const { return m_screen_width; }
     unsigned int getScreenHeight() const { return m_screen_height; }

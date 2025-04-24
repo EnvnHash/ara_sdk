@@ -23,7 +23,7 @@ ShadowMapEsm::ShadowMapEsm(CameraSet* _cs, int _scrWidth, int _scrHeight, vec3 _
 
     // s_fbo for saving the depth information
     s_fbo =
-        make_unique<FBO>(s_glbase, s_scrWidth, s_scrHeight, colBufType, GL_TEXTURE_2D, true, 1, 1, 1, GL_REPEAT, false);
+        make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, 1, colBufType, GL_TEXTURE_2D, true, 1, 1, 1, GL_REPEAT, false});
 
     string vSmapShader = s_glbase->shaderCollector().getShaderHeader();
     vSmapShader +=

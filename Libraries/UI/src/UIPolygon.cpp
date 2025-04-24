@@ -28,7 +28,7 @@ UIPolygon::UIPolygon() : UINode(), m_ctrlPointSizePix(17) {
 }
 
 void UIPolygon::init() {
-    m_fbo       = make_unique<FBO>(m_glbase, 512, 512, 1);
+    m_fbo       = make_unique<FBO>(FboInitParams{m_glbase, 512, 512});
     m_uiTexShdr = m_shCol->getUITex();
 
     // create a test polygon

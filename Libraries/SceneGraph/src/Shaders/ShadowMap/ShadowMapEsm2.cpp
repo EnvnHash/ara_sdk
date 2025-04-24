@@ -59,37 +59,13 @@ ShadowMapEsm2::ShadowMapEsm2(Camera* _gCam, int _scrWidth, int _scrHeight, vec3 
     depthShader = s_glbase->shaderCollector().add("ShadowMapEsm2", vSmapShader.c_str(), fSmapShader.c_str());
 
     // s_fbo for saving the depth information
-    // s_fbo = new FBO(s_scrWidth, s_scrHeight, FBO::DepthBuf, 0);
-    fbo = make_unique<FBO>(s_glbase, s_scrWidth, s_scrHeight, colBufType, GL_TEXTURE_2D, false, 1, 1, 1, GL_REPEAT,
-                           false);
+    fbo = make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, 1, colBufType, GL_TEXTURE_2D, false, 1, 1, 1,
+                                         GL_REPEAT, false});
 }
 
 ShadowMapEsm2::~ShadowMapEsm2() {}
 
 void ShadowMapEsm2::begin() {
-    /*
-    // Matrices used when rendering from the light’s position
-depthShader->begin();
-depthShader->setUniform1f("u_LinearDepthConstant", linearDepthScalar);
-lightCam->sendModelM(depthShader->getProgram(), (char*) "model_matrix");
-lightCam->sendViewM(depthShader->getProgram(), (char*) "view_matrix");
-lightCam->sendProjM(depthShader->getProgram(), (char*) "projection_matrix");
-
-s_fbo->bind();
-s_fbo->clearWhite(); // clear on white, since we need depth values
-
-glEnable(GL_CULL_FACE); // cull front faces - this helps with artifacts and
-shadows with exponential shadow mapping glCullFace(GL_BACK);
-
-// scene needs to be rendered here
-_scene->draw(time, dt, cp, depthShader);
-
-glDisable(GL_CULL_FACE);
-
-s_fbo->unbind();
-
-depthShader->end();
-*/
 }
 
 void ShadowMapEsm2::end() {}

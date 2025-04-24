@@ -25,8 +25,7 @@ ShadowMapStd::ShadowMapStd(CameraSet* _cs, int _scrWidth, int _scrHeight, sceneD
     s_scrHeight = static_cast<int>((float)_scrHeight);
 
     // s_fbo for saving the depth information
-    s_fbo =
-        make_unique<FBO>(s_glbase, s_scrWidth, s_scrHeight, GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_REPEAT, false);
+    s_fbo = make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, 1, GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_REPEAT, false});
 
     // set the necessary texture parameters for the depth textures
     glBindTexture(GL_TEXTURE_2D, s_fbo->getDepthImg());
@@ -66,7 +65,6 @@ void ShadowMapStd::begin() {
 
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(4.1f, 4.f);
-    //	glPolygonOffset(1.1f, 4.f);
 }
 
 void ShadowMapStd::end() {

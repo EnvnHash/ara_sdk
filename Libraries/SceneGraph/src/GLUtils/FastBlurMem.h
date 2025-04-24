@@ -22,51 +22,48 @@ public:
     FastBlurMem(GLBase* glbase, float _alpha, int _blurW, int _blurH, GLenum _target = GL_TEXTURE_2D,
                 GLenum _intFormat = GL_RGBA8, uint _nrLayers = 1, bool _rot180 = false,
                 blurKernelSize _kSize = KERNEL_3, bool singleFbo = false);
-    ~FastBlurMem();
+
     void proc(GLint texIn);
     void initFbo();
     void initShader();
 
-    GLint getResult() { return pp ? pp->getSrcTexId() : 0; }
-    GLint getLastResult() { return pp ? pp->getDstTexId() : 0; }
-    void  setAlpha(float _alpha) { alpha = _alpha; }
-    void  setOffsScale(float _offsScale) { offsScale = _offsScale; }
-    void  setPVM(GLfloat* _pvm_ptr) { pvm_ptr = _pvm_ptr; }
-    void  setBright(float _bright) { bright = _bright; }
+    GLint getResult() { return m_pp ? m_pp->getSrcTexId() : 0; }
+    GLint getLastResult() { return m_pp ? m_pp->getDstTexId() : 0; }
+    void  setAlpha(float alpha) { m_alpha = alpha; }
+    void  setOffsScale(float offsScale) { m_offsScale = offsScale; }
+    void  setBright(float bright) { m_bright = bright; }
 
 private:
-    std::unique_ptr<Quad> fboQuad;
+    std::unique_ptr<Quad> m_fboQuad;
     GLBase*               m_glbase = nullptr;
-    Shaders*              linearV  = nullptr;
-    Shaders*              linearH  = nullptr;
+    Shaders*              m_linearV  = nullptr;
+    Shaders*              m_linearH  = nullptr;
 
-    FBO*         firstPassFbo = nullptr;
-    PingPongFbo* pp           = nullptr;
+    std::unique_ptr<FBO>         m_firstPassFbo;
+    std::unique_ptr<PingPongFbo> m_pp;
 
-    int blurW;
-    int blurH;
+    int m_blurW = 0;
+    int m_blurH = 0;
 
-    uint actKernelSize;
-    uint nrLayers;
+    uint    m_actKernelSize = 0;
+    int     m_nrLayers = 0;
 
-    std::vector<GLfloat> blurOffs;
-    std::vector<GLfloat> blurOffsScale;
-    GLfloat*             pvm_ptr = 0;
+    std::vector<GLfloat> m_blurOffs;
+    std::vector<GLfloat> m_blurOffsScale;
 
-    GLenum target;
-    GLenum intFormat;
+    GLenum m_target{};
+    GLenum m_intFormat{};
 
-    float fWidth;
-    float fHeight;
-    float alpha;
-    float bright      = 1.f;
-    float offsScale   = 1.f;
-    float weightScale = 1.f;
+    float m_fWidth        = 0.f;
+    float m_fHeight       = 0.f;
+    float m_alpha         = 0.f;
+    float m_bright        = 1.f;
+    float m_offsScale     = 1.f;
+    float m_weightScale   = 1.f;
 
-    bool updateProc = false;
-    bool rot180     = false;
-    bool singleFbo  = false;
+    bool m_rot180     = false;
+    bool m_singleFbo  = false;
 
-    blurKernelSize kSize;
+    blurKernelSize m_kSize{};
 };
 }  // namespace ara

@@ -838,11 +838,11 @@ bool SSAO::initFramebuffers(int width, int height, int samples)
 
 #else
                     if (samples > 1)
-                        sceneFbo = make_unique<FBO>(width, height, GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1,
-                                                    samples, GL_REPEAT, false);
+                        sceneFbo = make_unique<FBO>(FboInitParams{width, height, 1,GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1,
+                                                    samples, GL_REPEAT, false});
                     else
-                        sceneFbo = make_unique<FBO>(width, height, GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, samples,
-                                                    GL_REPEAT, false);
+                        sceneFbo = make_unique<FBO>(FboInitParams{width, height, 1, GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, samples,
+                                                    GL_REPEAT, false});
 
 #endif
 

@@ -685,8 +685,8 @@ PingPongFbo *Image::getUplFbo() {
 
 void Image::initUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
                 int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered) {
-    m_uplFbo = std::make_unique<PingPongFbo>(m_glbase, width, height, type, target, depthBuf, nrAttachments,
-                                             mipMapLevels, nrSamples, wrapMode, layered);
+    m_uplFbo = std::make_unique<PingPongFbo>(FboInitParams{m_glbase, width, height, 1, type, target, depthBuf, nrAttachments,
+                                             mipMapLevels, nrSamples, wrapMode, layered});
 }
 
 void Image::rebuildUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
@@ -694,8 +694,8 @@ void Image::rebuildUplFbo(int width, int height, GLenum type, GLenum target, boo
     if (m_uplFbo) {
         m_uplFbo.reset();
     }
-    m_uplFbo = std::make_unique<PingPongFbo>(m_glbase, width, height, type, target, depthBuf, nrAttachments,
-                                             mipMapLevels, nrSamples, wrapMode, layered);
+    m_uplFbo = std::make_unique<PingPongFbo>(FboInitParams{m_glbase, width, height, 1, type, target, depthBuf, nrAttachments,
+                                             mipMapLevels, nrSamples, wrapMode, layered});
 }
 
 void Image::initUplPbo(int w, int h, GLenum format) {

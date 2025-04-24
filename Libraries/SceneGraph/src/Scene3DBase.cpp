@@ -138,8 +138,11 @@ void Scene3DBase::initSceneTree() {
 
 void Scene3DBase::initGizmos() {
     m_gizmoFbo =
-        make_unique<FBO>(m_glbase, static_cast<int>(getSize().x * s_sd.contentScale.x), static_cast<int>(getSize().y * s_sd.contentScale.y),
-                         GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_CLAMP_TO_EDGE, false);
+        make_unique<FBO>(FboInitParams{m_glbase,
+                                       static_cast<int>(getSize().x * s_sd.contentScale.x),
+                                       static_cast<int>(getSize().y * s_sd.contentScale.y),
+                                       1,
+                                       GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
 
     // add a child that will contain the gizmos
     gizmoTree = m_rootNode->addChild(false);
