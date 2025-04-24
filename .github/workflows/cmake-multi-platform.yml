@@ -40,8 +40,12 @@ jobs:
         exclude:
           - os: macos-latest
             c_compiler: cl
+          - os: macos-latest
+            c_compiler: gcc
           - os: macos-13
             c_compiler: cl
+          - os: macos-13
+            c_compiler: gcc
           - os: windows-latest
             c_compiler: gcc
           - os: windows-latest
@@ -60,32 +64,32 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
     - name: Make dependencies installation script executable
+      shell: bash
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           chmod +x ./scripts/install_dependencies_linux.sh
         fi
-      shell: bash
 
     - name: install dependencies on ubuntu
+      shell: bash
       run: |
         if [ "$RUNNER_OS" == "Linux" ]; then
           ./scripts/install_dependencies_linux.sh
         fi
-      shell: bash
 
     - name: Make dependencies installation script executable (macos)
+      shell: bash
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then
           chmod +x ./scripts/install_dependencies_macos.sh
         fi
-      shell: bash
 
     - name: install dependencies on macos
+      shell: bash
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then
           ./scripts/install_dependencies_macos.sh
         fi
-        shell: bash
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
