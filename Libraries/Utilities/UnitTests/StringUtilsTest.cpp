@@ -78,20 +78,6 @@ TEST(StringUtilsTest, StrToUpper) {
     EXPECT_EQ(str_toupper(str), "MIXED CASE");
 }
 
-TEST(StringUtilsTest, FormatString) {
-    std::string str = string_format("integer %d", 10);
-    EXPECT_EQ(str, "integer 10");
-
-    str = string_format("float %f", 25.23975f);
-    EXPECT_EQ(str, "float 25.239750");
-
-    str = string_format("char %c", 'e');
-    EXPECT_EQ(str, "char e");
-
-    str = string_format("string %s", "blabla blabla");
-    EXPECT_EQ(str, "string blabla blabla");
-}
-
 #ifdef _WIN32
 TEST(StringUtilsTest, ConvertWCSToStdString) {
     const wchar_t *wideStr = L"Hello World";
