@@ -620,50 +620,6 @@ void GLBase::initAppMsg(const char *fontFile, int fontHeight, int screenWidth, i
     g_typoFontHeight = fontHeight;
 }
 
-void GLBase::appmsg(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    auto str = string_format(format, args);
-    va_end(args);
-
-    if (g_appMessages.size() >= g_appMessagesNumLines) {
-        g_appMessages.erase(g_appMessages.begin());
-    }
-
-    g_appMessages.emplace_back(str);
-    LOG << str;
-}
-
-void GLBase::appMsgStatic(size_t lineIdx, const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    auto str = string_format(format, args);
-    va_end(args);
-
-    if (g_appMsgStatic.size() > lineIdx) {
-        g_appMsgStatic[lineIdx] = str;
-    }
-}
-
-void GLBase::renderAppMsgs() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // JUST FOR DEMO: should be done only when needed
-    float lineHeight = g_typoGlyphMap->getRelativeLineHeight() * 1.5f;  // add a bit of space
-
-    for (size_t i = 0; i < g_appMsgStatic.size(); i++) {
-        if (!g_appMsgStatic[i].empty()) {
-            g_typoGlyphMap->print(-0.95f, 0.95f - (i + 1) * lineHeight, g_appMsgStatic[i], g_typoFontHeight,
-                                  &g_appMsgCol[0]);
-        }
-    }
-
-    for (size_t i = 0; i < g_appMessages.size(); i++) {
-        if (!g_appMessages[i].empty()) {
-            g_typoGlyphMap->print(-0.95f, 0.95f - (i + 1 + g_appMsgStaticNumLines) * lineHeight, g_appMessages[i],
-                                  g_typoFontHeight, &g_appMsgCol[0]);
-        }
-    }
-};
-
 void GLBase::clearGlCbQueue() {
     std::unique_lock<std::mutex> lock(g_mtx);
     g_openGlCbs.clear();

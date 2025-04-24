@@ -185,15 +185,6 @@ int Font::write(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float 
     return 0;
 }
 
-int Font::writeFormat(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float x, float y, char *f, ...) {
-    va_list p;
-    va_start(p, f);
-    auto se = string_format(f, p);
-    va_end(p);
-
-    return write(mvp, shdr, vao, tcolor, x, y, se);
-}
-
 void Font::setTexLayer(GLuint texId, GLuint layerId, GLuint layerSize) {
     m_layerTexId         = texId;
     m_layerTexLayerId    = layerId;
