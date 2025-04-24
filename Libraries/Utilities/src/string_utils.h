@@ -39,7 +39,14 @@ std::string string_format( const std::string& format, Args ... args) {
     }
     auto size = static_cast<size_t>( size_s );
     auto buf = std::make_unique<char[]>( size );
-    std::snprintf( buf.get(), size, format.c_str(), args ... );
+
+    int result = std::snprintf(buf.get(), size, format.c_str(), args ... );
+    if (result < 0) {  // Check for errors during snprintf
+        throw std::runtime_error("Error during formatting.");
+    }
+
+    buf[size - 1] = '\0';
+
     return { buf.get(), buf.get() + size - 1 };
 }
 
