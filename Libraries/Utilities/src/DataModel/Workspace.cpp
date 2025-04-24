@@ -45,15 +45,15 @@ void Workspace::init() {
     // create the standard folder for projects in the users Documents Folder
     std::error_code ec;
 #ifdef _WIN32
-    m_homeDirectory = (std::filesystem::path(getenv("USERPROFILE")) / std::filesystem::path("Documents") /
-                       std::filesystem::path(m_appName))
-                          .string();
+    const char* homeDirName = "USERPROFILE";
 #else
-    auto sanitizedHomeDir = std::getenv("HOME")
-                            ? std::filesystem::path(std::getenv("HOME")) / std::filesystem::path("Documents")
+    const char* homeDirName = "HOME";
+#endif
+    auto sanitizedHomeDir = std::getenv(homeDirName)
+                            ? std::filesystem::path(std::getenv(homeDirName))
                             : std::filesystem::current_path();
     m_homeDirectory = (sanitizedHomeDir / std::filesystem::path("Documents") / std::filesystem::path(m_appName)).string();
-#endif
+
     if (!std::filesystem::create_directory(m_homeDirectory, ec)) {
         if (0 != ec.value())  // already exist
         {

@@ -119,15 +119,16 @@ The UI graph is simple standard node structure with parent-child relations.
   - iterate through the nodes children and calculate a bounding box around them
 - clear scissor stack
 - recursive draw iteration
-  - set gl scissoring if requested, depending on the parents viewport
+  - set gl scissoring if requested, depending on the parent's viewport
   - call the UINode's draw function
   - call the UINode's objectmap draw function
   - push the actual viewport to the scissor stack
   - recursively iterate through all children
 
-**Optimizations**
-- recursive tree iteration is slower then parsing a flat list. During the first matrix iteration a flat list with all active nodes in the correct drawing can be created and used during the drawing step
-- drawing of visible parts and drawing of object map can be done in one step, since they use the same matrices. Rendering is already done into an FBO with 2 attachments. The only thing missing is to integrate the objmap drawing part into all drawing shaders
+# Optimizations
+
+- recursive tree iteration is slower than parsing a flat list. During the first matrix iteration a flat list with all active nodes in the correct drawing can be created and used during the drawing step
+- drawing of visible parts and drawing of an object map can be done in one step, since they use the same matrices. Rendering is already done into an FBO with 2 attachments. The only thing missing is to integrate the objmap drawing part into all drawing shaders
 
 ### HID Processing
 
@@ -137,10 +138,10 @@ The UI graph is simple standard node structure with parent-child relations.
 
 - OS HID Events are received from glfw
 - glfw calls global HID callbacks in GLFWWindowManger
-- glfw calls window specific HID callbacks in GLFWWindowManager
+- glfw calls window-specific HID callbacks in GLFWWindowManager
 - the UIWindows specific HID function is called
 - inside the HID function, _UIWindow::getObjAtPos()_ is called using the actual mouse position. Here, the nodetree is recursively iterated from top to bottom. In case the mouse position is inside the bounds of the actual node, it is marked as found. in case it has more children, those are iterated and the process is repeated until the end of the tree is reached
-- when a Node is found, a flat will be generated containing the node and all its parent elements. This list will then be iterated from bottom (lowest level) to top. Any node in this list can "consume" the hid event and prevent further propagation up the tree
+- when a Node is found, a flat will be generated containing the node and all its parent elements. This list will then be iterated from bottom (the lowest level) to top. Any node in this list can "consume" the hid event and prevent further propagation up the tree
 - UINodes can be excluded from HID processing using the _excludeFromObjectMap(bool)_ method. Excluding a UINode implicitly excludes all its children
 - each UINode is identified by a single or range of object IDs (depending on its content). in case the UINode is excluded from the object map, the ID will be -1
 - UINode Ids are assigned once after changes in the tree during the drawing step

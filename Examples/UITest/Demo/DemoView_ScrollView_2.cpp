@@ -13,11 +13,11 @@ DemoView_ScrollView_2::DemoView_ScrollView_2() : DemoView("Scroll View demo",glm
 UITable* DemoView_ScrollView_2::addTable(UINode* rootNode) {
     auto taux = rootNode->addChild<UITable>();
     taux->setAlignY(valign::bottom);
-    taux->t_setSpacing(10, 10);
     taux->setColor(.1f, .1f, .2f, 1.f);
     taux->setBackgroundColor(.0f, .0f, .0f, 1.0f);
+    taux->t_setSpacing(10, 10);
 
-    taux->insertRow(-1,1,40,false,true);						// fixed row
+    taux->insertRow(-1,1,45,false,true);
     taux->insertRow(-1,1,0,false,false);
 
     taux->insertColumn(-1,1,100,false,false,50,150);			// column with size limits [50..150]
@@ -45,13 +45,13 @@ void DemoView_ScrollView_2::addLabels(UITable* nt) {
     glm::vec4 color_text(1.f);
 
     for (i = 0; i < 20; i++) {
+        nt->insertRow(-1, 1, 100, false, false);
+
         std::stringstream ss;
         ss << std::setw(2) << std::setfill('0') << i;
-
-        nt->insertRow(-1, 1, 100, false, false);						// fixed row
-        Label* l = nt->setCell(i, 0, make_unique<Label>() );
-        l->setFont("regular", 22,  align::center, valign::center, color_text);
+        auto l = nt->setCell(i, 0, make_unique<Label>() );
         l->setText(ss.str());
+        l->setFont("regular", 22,  align::center, valign::center, color_text);
     }
 }
 
