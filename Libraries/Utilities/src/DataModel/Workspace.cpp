@@ -65,7 +65,7 @@ void Workspace::init() {
 
 void Workspace::load(const fs::path& filename) {
     try {
-        // clear actual project before loading
+        // clear the actual project before loading
         // clear the item tree
         m_activeProject->clearChildren();  // this should kill all active rendering
         m_activeProject->setFileName(filename);

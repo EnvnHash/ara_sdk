@@ -111,10 +111,17 @@ std::string ConvertWCSToStdString(const wchar_t *wideStr) {
 }
 
 LPCWSTR StringToLPCWSTR(const std::string& utf8String) {
-    auto sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, &utf8String[0], static_cast<int>(utf8String.size()), nullptr, 0);
-    std::wstring wstrTo(sizeNeeded, 0);
-    MultiByteToWideChar(CP_UTF8, 0, &utf8String[0], static_cast<int>(utf8String.size()), &wstrTo[0], sizeNeeded);
-    return wstrTo.c_str();
+    int sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), static_cast<int>(utf8String.size()), nullptr, 0);
+    if (sizeNeeded == 0) {
+        return nullptr;
+    }
+
+    std::vector<wchar_t> wideString(sizeNeeded);
+    int result = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), static_cast<int>(utf8String.size()), wideString.data(), sizeNeeded);
+    if (result == 0) {
+        return nullptr;
+    }
+    return reinterpret_cast<LPCWSTR>(wideString);
 }
 #endif
 
