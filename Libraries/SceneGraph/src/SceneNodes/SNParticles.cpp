@@ -90,78 +90,72 @@ SNParticles::SNParticles(sceneData* sd)
 
 void SNParticles::initShdr() {
     std::string shdr_Header = "#version 430\n#define WORK_GROUP_SIZE 128\n";
-    //	std::string shdr_Header = "#version 430\n#extension
-    // GL_EXT_shader_io_blocks : enable\n#define WORK_GROUP_SIZE 128\n";
+    auto vert = shdr_Header + mParticles->getShaderParUBlock() + getVertShader();
 
-    std::string vert = STRINGIFY(
-	layout( std140, binding=1 ) buffer Pos { vec4 pos[]; };\n
-	\n
-	uniform vec4[6] colors;\n
-	uniform sampler3D noiseCube;\n
-	\n
-	out gl_PerVertex {\n
-		vec4 gl_Position;\n
-	};\n
-	\n
-	out block {\n
-		vec4 color;\n
-		vec2 texCoord;\n
-	} Out;\n
-	\n
-	void main() {\n
-		// expand points to quads without using GS
-		int particleID = gl_VertexID >> 2;\n // 4 vertices per particle
-		vec4 particlePos = pos[particleID];\n
-		particlePos.x *= 3.0;\n
-		particlePos.z *= 3.0;\n
-		//particlePos.z -= 0.5;\n
-		\n
-		//Out.color = mix(colors[1], colors[2], 1.0 );
-		Out.color = mix(colors[1], colors[2], min ( max( texture(noiseCube, particlePos.xyz * 0.1) + 0.3, 0.0), 1.0));\n
-		Out.color.a *= 0.2;\n
-		\n
-		//map vertex ID to quad vertex\n
-		vec2 quadPos = vec2( float(((gl_VertexID - 1) & 2) >> 1), float((gl_VertexID & 2) >> 1));\n
-		Out.texCoord = quadPos;\n
-		\n
-		quadPos = quadPos * 2.0 - 1.0;
-		\n
-		vec4 particlePosEye = ModelView * particlePos;\n
-		vec4 vertexPosEye = particlePosEye + vec4(quadPos * spriteSize, 0, 0);\n
-		\n
-		gl_Position = ProjectionMatrix * vertexPosEye;\n
-	});
-
-    vert = shdr_Header + mParticles->getShaderParUBlock() + vert;
-
-    //
-
-    //	shdr_Header = "#version 430\nextension GL_EXT_shader_io_blocks :
-    // enable\n";
     shdr_Header = "#version 430\n";
-
-    std::string frag = STRINGIFY(
-	in block {\n
-		vec4 color;\n
-		vec2 texCoord;\n
-	} In;\n
-	\n
-	layout(location=0) out vec4 fragColor;\n
-	uniform float alpha;\n
-	\n
-	void main() {\n
-		// Quick fall-off computation
-		float r = length(In.texCoord*2.0-1.0)*3.0;\n
-		float i = exp(-r*r);\n
-		i *= i*i;\n
-		if (i < 0.01) discard;\n
-		\n
-		fragColor = vec4(In.color.rgb * 1.4, i * In.color.a * alpha);\n
-	});
-
+    auto frag = getFragShader();
     frag = shdr_Header + "// SNParticles frag\n" + frag;
 
     mRenderProg = shCol->add("ParticleCSShader3234", vert, frag);
+}
+
+std::string SNParticles::getVertShader() {
+    return STRINGIFY(
+        layout( std140, binding=1 ) buffer Pos { vec4 pos[]; }; \n
+                                                                \n
+        uniform vec4[6] colors;                                 \n
+        uniform sampler3D noiseCube;                            \n
+                                                                \n
+        out gl_PerVertex {                                      \n
+            vec4 gl_Position;                                   \n
+        };                                                      \n
+                                                                \n
+        out block {                                             \n
+            vec4 color;                                         \n
+            vec2 texCoord;                                      \n
+        } Out;                                                  \n
+                                                                \n
+        void main() {                                           \n
+            // expand points to quads without using GS
+            int particleID = gl_VertexID >> 2;                  \n // 4 vertices per particle
+            vec4 particlePos = pos[particleID];                 \n
+            particlePos.x *= 3.0;                               \n
+            particlePos.z *= 3.0;                               \n
+                                                                \n
+            Out.color = mix(colors[1], colors[2], min ( max( texture(noiseCube, particlePos.xyz * 0.1) + 0.3, 0.0), 1.0));\n
+            Out.color.a *= 0.2;                                 \n
+                                                                \n
+            //map vertex ID to quad vertex\n
+            vec2 quadPos = vec2( float(((gl_VertexID - 1) & 2) >> 1), float((gl_VertexID & 2) >> 1));\n
+            Out.texCoord = quadPos;                             \n
+                                                                \n
+            quadPos = quadPos * 2.0 - 1.0;                      \n
+            vec4 particlePosEye = ModelView * particlePos;      \n
+            vec4 vertexPosEye = particlePosEye + vec4(quadPos * spriteSize, 0, 0);\n
+                                                                \n
+            gl_Position = ProjectionMatrix * vertexPosEye;      \n
+    });
+}
+
+std::string SNParticles::getFragShader() {
+    return STRINGIFY(
+        in block {                                      \n
+            vec4 color;                                 \n
+            vec2 texCoord;                              \n
+        } In;                                           \n
+                                                        \n
+        layout(location=0) out vec4 fragColor;          \n
+        uniform float alpha;                            \n
+                                                        \n
+        void main() {                                   \n
+            // Quick fall-off computation
+            float r = length(In.texCoord*2.0-1.0)*3.0;  \n
+            float i = exp(-r*r);                        \n
+            i *= i*i;                                   \n
+            if (i < 0.01) discard;                      \n
+                                                        \n
+            fragColor = vec4(In.color.rgb * 1.4, i * In.color.a * alpha);\n
+    });
 }
 
 void SNParticles::draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo) {

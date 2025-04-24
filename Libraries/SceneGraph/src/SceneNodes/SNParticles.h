@@ -23,6 +23,8 @@ public:
 
     void draw(void);
     void initShdr();
+    std::string getVertShader();
+    std::string getFragShader();
     void draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo = nullptr);
     void cleanUp();
     void update(double time, double dt);

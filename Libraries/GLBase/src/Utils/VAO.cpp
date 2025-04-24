@@ -486,53 +486,53 @@ void VAO::drawElements(GLenum mode) {
 #ifndef __EMSCRIPTEN__
 
 void VAO::draw(GLenum mode, TFO *tfo, GLenum recMode) {
-    bind(tfo, recMode);
+    VAO::bind(tfo, recMode);
     glDrawArrays(mode, 0, (GLsizei)m_nrVertices);
     unbind(tfo, m_nrVertices);
 }
 
 void VAO::draw(GLenum mode, GLint offset, GLsizei count, TFO *tfo) {
-    bind(tfo);
+    VAO::bind(tfo);
     glDrawArrays(mode, offset, count);
     unbind(tfo, count);
 }
 
 void VAO::draw(GLenum mode, GLint offset, GLsizei count, TFO *tfo, GLenum recMode) {
-    bind(tfo, recMode);
+    VAO::bind(tfo, recMode);
     glDrawArrays(mode, offset, count);
     unbind(tfo, count);
 }
 
 void VAO::drawInstanced(GLenum mode, GLuint nrInstances, TFO *tfo, float nrVert) {
-    bind(tfo);
+    VAO::bind(tfo);
     m_drawNrVertices = static_cast<int>(static_cast<float>(m_nrVertices) * nrVert);
     glDrawArraysInstanced(mode, 0, m_drawNrVertices, nrInstances);
     unbind(tfo, m_nrVertices * nrInstances);
 }
 
 void VAO::drawElements(GLenum mode, TFO *tfo, GLenum recMode) {
-    bind(tfo, recMode);
+    VAO::bind(tfo, recMode);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBuffer);
     glDrawElements(mode, m_nrElements, m_elementBufferType, nullptr);
     unbind(tfo, m_nrElements);
 }
 
 void VAO::drawElementsInst(GLenum mode, GLuint nrInstances, TFO *tfo, GLenum recMode) {
-    bind(tfo, recMode);
+    VAO::bind(tfo, recMode);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBuffer);
     glDrawElementsInstanced(mode, m_nrElements, m_elementBufferType, nullptr, nrInstances);
     unbind(tfo, m_nrElements * nrInstances);
 }
 
 void VAO::drawElements(GLenum mode, TFO *tfo, GLenum recMode, int nrElements, int offset) {
-    bind(tfo);
+    VAO::bind(tfo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBuffer);
     glDrawElements(mode, nrElements, m_elementBufferType, (const GLvoid *)(offset * sizeof(GLuint)));
     unbind(tfo, nrElements);
 }
 
 void VAO::drawElements(GLenum mode, TFO *tfo, GLenum recMode, int nrElements) {
-    bind(tfo);
+    VAO::bind(tfo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBuffer);
     glDrawElements(mode, nrElements, m_elementBufferType, nullptr);
     unbind(tfo, nrElements);
@@ -609,9 +609,9 @@ void VAO::uploadMesh(Mesh *mesh) {
         if (mesh->usesIndices()) {
             m_nrElements = mesh->getNrIndices();
 
-            if (!m_elementBuffer)
-                glGenBuffers(1, &m_elementBuffer);  // generate one element
-                                                    // buffer for later use
+            if (!m_elementBuffer) {
+                glGenBuffers(1, &m_elementBuffer);  // generate one element buffer for later use
+            }
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBuffer);
             if (mesh->usesUintIndices()) {
@@ -628,7 +628,7 @@ void VAO::uploadMesh(Mesh *mesh) {
         // upload data for mod matr later, will usually only be used for
         // instancing
         for (auto &attr : m_attributes) {
-            int attrIndex = attr.location;
+            int attrIndex = static_cast<int>(attr.location);
 
             if ((attrIndex <= toType(CoordType::ModMatr) || attrIndex > (toType(CoordType::ModMatr) + 3)) &&
                 !attr.isStatic && m_buffers.size() > attrIndex) {
@@ -638,7 +638,7 @@ void VAO::uploadMesh(Mesh *mesh) {
                 if (attr.instDiv == 0) {
                     glBufferData(GL_ARRAY_BUFFER, mesh->getByteSize(attrIndex), mesh->getPtr(attrIndex), m_storeMode);
                 } else {
-                    // if it´s an instanced attribute, make space for the
+                    // if it's an instanced attribute, make space for the
                     // maxNrInstances since for each attrib there´s an extra
                     // buffer pointer
                     glBufferData(GL_ARRAY_BUFFER, attr.getByteSize() * m_maxNrInstances, nullptr, m_storeMode);
@@ -646,22 +646,20 @@ void VAO::uploadMesh(Mesh *mesh) {
                     // m_maxNrInstances, &m_instData[attrIndex][0],
                     // m_storeMode);
                 }
-
-                //                glBufferData(GL_ARRAY_BUFFER,
-                //                mesh->getTotalByteSize(),
-                //                mesh->getPtrInterleaved(), m_storeMode);
             }
         }
 #ifndef STRICT_WEBGL_1
         glBindVertexArray(0);
 #endif
+        if (mesh->usesStaticColor()) {
+            setStaticColor(mesh->getStaticColor());
+        }
 
-        if (mesh->usesStaticColor()) setStaticColor(mesh->getStaticColor());
-
-        if (mesh->usesStaticNormal()) setStaticNormal(mesh->getStaticNormal());
+        if (mesh->usesStaticNormal()) {
+            setStaticNormal(mesh->getStaticNormal());
+        }
     } else {
-        LOGE << "VAO::uploadMesh Error: VertexBufferObject or mesh was not "
-                "generated";
+        LOGE << "VAO::uploadMesh Error: VertexBufferObject or mesh was not generated";
     }
 }
 
@@ -671,12 +669,12 @@ void VAO::uploadMesh(Mesh *mesh) {
 void VAO::setStatic(float r, float g, float b, float a, char *name, char *format) {
     int statCoordInd = 0;
 
-    if (std::strcmp(name, "color") == 0)
+    if (std::strcmp(name, "color") == 0) {
         statCoordInd = toType(CoordType::Color);
-    else if (std::strcmp(name, "normal") == 0)
+    } else if (std::strcmp(name, "normal") == 0) {
         statCoordInd = toType(CoordType::Normal);
+    }
 
-    GLint  size                = getCoTypeStdSize()[statCoordInd];
     GLuint index               = static_cast<int>(statCoordInd);
     m_statCoords[statCoordInd] = glm::vec4{r, g, b, a};
 
@@ -730,7 +728,7 @@ void *VAO::getMapBuffer(CoordType attrIndex) {
     return glMapBufferRange(GL_ARRAY_BUFFER, 0, m_nrVertices, GL_MAP_WRITE_BIT);
 }
 
-void *VAO::mapElementBuffer() {
+void *VAO::mapElementBuffer() const {
     if (m_elementBuffer == 0) {
         LOGE << "VAO::mapElementBuffer Error, m_elementBuffer does not exist";
         return nullptr;
@@ -747,16 +745,19 @@ void VAO::enableVertexAttribs() {
         if (m_buffers.size() > m_attributes[i].location)
             glBindBuffer(GL_ARRAY_BUFFER, m_buffers[m_attributes[i].location]);
 
-        if (!m_attributes[i].isStatic)
+        if (!m_attributes[i].isStatic) {
             m_attributes[i].enable();
-        else
+        } else {
             glVertexAttrib4fv(i, &m_statCoords[i][0]);
+        }
     }
 }
 
 void VAO::disableVertexAttribs() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    for (auto &m_attribute : m_attributes) m_attribute.disable();
+    for (auto &m_attribute : m_attributes) {
+        m_attribute.disable();
+    }
 }
 
 VAO::~VAO() {

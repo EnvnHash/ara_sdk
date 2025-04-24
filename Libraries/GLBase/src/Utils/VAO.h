@@ -75,7 +75,7 @@ public:
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
-    void       *mapElementBuffer();
+    void       *mapElementBuffer() const;
     static void unMapElementBuffer() {
         glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
