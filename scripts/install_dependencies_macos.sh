@@ -28,4 +28,6 @@ brew install curl  # Homebrew's 'curl' provides libcurl4 functionality. No separ
 echo "Installing OpenSSL..."
 brew install openssl
 
+brew install pugixml
+
 echo "Dependencies installed successfully!"
