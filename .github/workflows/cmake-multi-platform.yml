@@ -73,6 +73,13 @@ jobs:
         fi
       shell: bash
 
+    - name: Make dependencies installation script executable (macos)
+      run: |
+        if [ "$RUNNER_OS" == "macOS" ]; then
+          chmod +x ./scripts/install_dependencies_macos.sh
+        fi
+      shell: bash
+
     - name: install dependencies on macos
       run: |
         if [ "$RUNNER_OS" == "macOS" ]; then
