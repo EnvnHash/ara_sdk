@@ -24,17 +24,17 @@ Contains a Parser for the ara sdk custom json-like Style format (UI Elements)
 
 - Wrapper class for OpenGL Shaders
 - ShaderCollector
-  * Container class for shaders for global management (resource optimization)
-  * Contains standard shaders (simple color, texture shaders, or shaders for clearing the screen - possibly faster than glClear).
-  * Management in the form of a map<string, Shaders>
-  * A name must be assigned to new shaders; if it already exists, it will be aborted.
+  -Container class for shaders for global management (resource optimization)
+  - Contains standard shaders (simple color, texture shaders, or shaders for clearing the screen - possibly faster than glClear).
+  - Management in the form of a map<string, Shaders>
+  - A name must be assigned to new shaders; if it already exists, it will be aborted.
 - ShaderProperties and MaterialProperties
 
 ## Utils
 
 - Wrappers for OpenGL Vertexes, FBOs, VAOs, TFOs, PBOs
 - Font Management
-- Texture Managemnent
+- Texture Management
 - TrackBall
  
 ## WindowManagement

@@ -149,19 +149,20 @@ pair<bool, vec2> projPointToLine(glm::vec2 point, glm::vec2 l1Start, glm::vec2 l
 
 pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2Start, glm::vec2 l2End) {
     double m1 = 0, c1 = 0, m2 = 0, c2 = 0;
-    double dx1 = 0.0, dx2 = 0.0;
     vec2   intersection     = vec2(0.f, 0.f);
-    vec2   linePoints[2][2] = {{l1Start, l1End}, {l2Start, l2End}};
+    std::array<std::array<vec2, 2>, 2> linePoints{};
+    linePoints[0] = {l1Start, l1End};
+    linePoints[1] = {l2Start, l2End};
     bool   isOnLine         = false;
 
-    dx1 = static_cast<double>(l1End.x) - static_cast<double>(l1Start.x);
+    double dx1 = static_cast<double>(l1End.x) - static_cast<double>(l1Start.x);
     double dy1 = static_cast<double>(l1End.y) - static_cast<double>(l1Start.y);
     if (dx1 != 0.0) {
         m1 = dy1 / dx1;
         c1 = static_cast<double>(l1Start.y) - (double)m1 * static_cast<double>(l1Start.x);  // which is same as y2 - slope * x2
     }
 
-    dx2 = static_cast<double>(l2End.x) - static_cast<double>(l2Start.x);
+    double dx2 = static_cast<double>(l2End.x) - static_cast<double>(l2Start.x);
     double dy2 = static_cast<double>(l2End.y) - static_cast<double>(l2Start.y);
     if (dx2 != 0.0) {  // line2 is parallel to y-axis
         m2 = dy2 / dx2;
@@ -177,7 +178,7 @@ pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2S
     } else {
         // line1 parallel to y-axis
         if (dx1 == 0.0 && dx2 != 0.0) {
-            intersection.x = (float)l1Start.x;
+            intersection.x = static_cast<float>(l1Start.x);
             intersection.y = static_cast<float>(m2 * l1Start.x + c2);
         }
         // line2 parallel to y-axis
@@ -190,29 +191,35 @@ pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2S
             intersection.y = static_cast<float>(m1 * intersection.x + c1);
         }
 
-        bool onLine[2] = {false, false};
-        // check if the intersection point lies outside the line end points
-        for (size_t i = 0; i < 2; i++) {
-            onLine[i] = true;
-            for (auto j = 0; j < 2; j++) {
-                double roundingError    = 0.00002f;
-                bool smallerThanRoundingError = (std::abs(linePoints[i][0][j] - intersection[j]) < roundingError) ||
-                                                (std::abs(linePoints[i][1][j] - intersection[j]) < roundingError);
-
-                if (linePoints[i][0][j] < linePoints[i][1][j])
-                    onLine[i] = onLine[i] &&
-                                ((linePoints[i][0][j] <= intersection[j] && intersection[j] <= linePoints[i][1][j]) ||
-                                 smallerThanRoundingError);
-                else
-                    onLine[i] = onLine[i] &&
-                                ((linePoints[i][1][j] <= intersection[j] && intersection[j] <= linePoints[i][0][j]) ||
-                                 smallerThanRoundingError);
-            }
-        }
-
-        isOnLine = onLine[0] && onLine[1];
+        isOnLine = lineIntersectCheckOutlier(linePoints, intersection);
     }
     return make_pair(isOnLine, intersection);
+}
+
+bool lineIntersectCheckOutlier(std::array<std::array<vec2, 2>, 2>& linePoints, vec2& intersection) {
+    bool onLine[2] = {false, false};
+
+    // check if the intersection point lies outside the line end points
+    for (size_t i = 0; i < 2; i++) {
+        onLine[i] = true;
+        for (auto j = 0; j < 2; j++) {
+            double roundingError    = 0.00002f;
+            bool smallerThanRoundingError = (std::abs(linePoints[i][0][j] - intersection[j]) < roundingError) ||
+                                            (std::abs(linePoints[i][1][j] - intersection[j]) < roundingError);
+
+            if (linePoints[i][0][j] < linePoints[i][1][j]) {
+                onLine[i] = onLine[i] &&
+                            ((linePoints[i][0][j] <= intersection[j] && intersection[j] <= linePoints[i][1][j]) ||
+                             smallerThanRoundingError);
+            } else {
+                onLine[i] = onLine[i] &&
+                            ((linePoints[i][1][j] <= intersection[j] && intersection[j] <= linePoints[i][0][j]) ||
+                             smallerThanRoundingError);
+            }
+        }
+    }
+
+    return onLine[0] && onLine[1];
 }
 
 inline double Det2D(const glm::vec2 &p1, const glm::vec2 &p2, const glm::vec2 &p3) {

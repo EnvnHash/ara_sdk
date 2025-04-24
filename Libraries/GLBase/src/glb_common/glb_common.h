@@ -495,6 +495,7 @@ glm::vec4 linInterpolVec4(float inInd, std::vector<glm::vec4> *array);
 std::pair<bool, glm::vec2> projPointToLine(glm::vec2 point, glm::vec2 l1Start, glm::vec2 l1End);
 
 std::pair<bool, glm::vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2Start, glm::vec2 l2End);
+bool lineIntersectCheckOutlier(std::array<std::array<glm::vec2, 2>, 2>& linePoints, glm::vec2& intersection);
 
 void catmullRom(std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &outPoints, uint32_t dstNrPoints);
 
