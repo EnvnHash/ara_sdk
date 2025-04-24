@@ -119,7 +119,7 @@ string AssetLoader::getSanitizedAssetPath(const filesystem::path& p) {
     // CMRC uses linux separators, using filesystem::path separators on windows will fail here
     return ReplaceString(p.string(), "\\", "/");
 #else
-    return path.string();
+    return p.string();
 #endif
 }
 
