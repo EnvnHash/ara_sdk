@@ -18,14 +18,13 @@ UITable::UITable(std::string&& styleClass) : Div(std::move(styleClass)) {
     m_canReceiveDrag = true;
 }
 
-UITable::UITable(float x, float y, float width, float height, int rows, int columns, float h_margin, float v_margin,
-                 float h_padding, float v_padding, const float* fg_color, const float* bg_color) {
+UITable::UITable(vec2 pos, vec2 size, ivec2 topology, vec2 margin, vec2 padding, const float* fg_color, const float* bg_color) {
     setName(getTypeName<UITable>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;
 
-    setPos(static_cast<int>(x), static_cast<int>(y));
-    setSize(static_cast<int>(width), static_cast<int>(height));
+    setPos(static_cast<int>(pos.x), static_cast<int>(pos.y));
+    setSize(static_cast<int>(size.x), static_cast<int>(size.y));
     UITable::setColor(.1f, .1f, .1f, 1.f);
 
     if (fg_color) {
@@ -35,11 +34,11 @@ UITable::UITable(float x, float y, float width, float height, int rows, int colu
         UINode::setBackgroundColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
     }
 
-    UITable::t_setMargins(h_margin, v_margin);
-    UITable::t_setSpacing(h_padding, v_padding);
+    UITable::t_setMargins(margin.x, margin.y);
+    UITable::t_setSpacing(padding.x, padding.y);
 
-    m_Cells(0).add(rows);
-    m_Cells(1).add(columns);
+    m_Cells(0).add(topology.y);
+    m_Cells(1).add(topology.x);
 
     UITable::initNewCellNode();
     UITable::geo_Update();

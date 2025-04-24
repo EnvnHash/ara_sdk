@@ -69,7 +69,7 @@ bool DemoView_Resources::draw(uint32_t* objId) {
         vec2 sep{0.f,0.f};
         vec2 scale{1.f,1.f};
 
-        util_FillRect((int) pos[0],(int) pos[1],(int) size[0],(int) size[1],&glm::vec4(1.f,1.f,1.f,0.1f)[0]);
+        util_FillRect(pos, size, &glm::vec4(1.f,1.f,1.f,0.1f)[0]);
 
         if (f) {
             std::string teststring="In nuclear fission the nucleus of an atom breaks up into two lighter nuclei. The process may take place spontaneously in some cases or may be induced by the excitation of the nucleus with a variety of particles (e.g., neutrons, protons, deuterons, or alpha particles) or with electromagnetic radiation in the form of gamma rays.";
@@ -105,7 +105,7 @@ void DemoView_Resources::drawColors(ResNode* node, int& it) {
             auto& deref = *p; // silence warning with clang
             if (typeid(deref) == typeid(AssetColor)) {
                 auto rc=dynamic_cast<AssetColor*>(p.get());
-                util_FillRect(10,100+it*40,28,28,rc->getColor4fv());
+                util_FillRect({10,100+it*40}, {28,28}, rc->getColor4fv());
                 ++it;
             }
         }

@@ -8,6 +8,8 @@
 #include <ScrollView.h>
 #include <Div.h>
 
+
+using namespace glm;
 using namespace std;
 
 namespace ara::SceneGraphUnitTest::ScrollViewTest{
@@ -32,7 +34,7 @@ UITable* addTable(UINode* rootNode) {
 }
 
 UITable* addNestedTable(UINode* node) {
-    auto nt = dynamic_cast<UITable *>(node->addChild(make_unique<UITable>(0.f, 0.f, 600.f, 200.f, 0, 0)));
+    auto nt = dynamic_cast<UITable *>(node->addChild(make_unique<UITable>(vec2{}, vec2{600.f, 200.f}, vec2{})));
     nt->t_setSpacing(8, 8);
     nt->t_setMargins(2, 2);
     nt->setColor(.2f, .2f, .2f, 1.f);

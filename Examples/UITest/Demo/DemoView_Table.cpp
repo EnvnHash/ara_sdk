@@ -9,7 +9,7 @@ DemoView_Table::DemoView_Table() : DemoView("Table demo",glm::vec4(.1f,.1f,.1f,1
 }
 
 void DemoView_Table::init() {
-    ui_Table = dynamic_cast<UITable*>(addChild(make_unique<UITable>(0.f, 100.f, getContentSize().x, getContentSize().y - 100.f, 4, 3)));
+    ui_Table = dynamic_cast<UITable*>(addChild(make_unique<UITable>(vec2{0.f, 100.f}, vec2{getContentSize().x, getContentSize().y - 100.f}, ivec2{4, 3})));
     ui_Table->t_setSpacing(8, 8);
     ui_Table->t_setMargins(5, 5);
 
