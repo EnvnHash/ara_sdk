@@ -10,8 +10,8 @@
 namespace ara {
 NoiseTexNV::NoiseTexNV(int w, int h, int d, GLint _internalFormat)
     : width(w), height(h), depth(d), internalFormat(_internalFormat) {
-    auto    *data = new uint8_t[w * h * d * 4];
-    uint8_t *ptr  = data;
+    std::vector<uint8_t> data(w * h * d * 4);
+    auto ptr  = data.begin();
     for (int z = 0; z < d; z++) {
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
@@ -32,11 +32,7 @@ NoiseTexNV::NoiseTexNV(int w, int h, int d, GLint _internalFormat)
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 
-    //    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, w, h, d, 0, GL_RGBA, GL_BYTE, data);
-
-    delete[] data;
-    // return tex;
+    glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, w, h, d, 0, GL_RGBA, GL_BYTE, data.data());
 }
 
 GLuint NoiseTexNV::getTex() { return tex; }
