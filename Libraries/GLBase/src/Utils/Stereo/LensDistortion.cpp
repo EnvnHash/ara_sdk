@@ -161,9 +161,9 @@ std::unique_ptr<DistortionMesh> LensDistortion::createDistortionMesh(StereoEye  
 
     calculateViewportParameters(eye, fov, &screen_params, &texture_params);
 
-    return make_unique<DistortionMesh>(distortion, screen_params.width, screen_params.height,
-                                       screen_params.x_eye_offset, screen_params.y_eye_offset, texture_params.width,
-                                       texture_params.height, texture_params.x_eye_offset, texture_params.y_eye_offset);
+    return make_unique<DistortionMesh>(distortion, vec2{screen_params.width, screen_params.height},
+                                       vec2{screen_params.x_eye_offset, screen_params.y_eye_offset}, vec2{texture_params.width,
+                                       texture_params.height}, vec2{texture_params.x_eye_offset, texture_params.y_eye_offset});
 }
 
 void LensDistortion::calculateViewportParameters(StereoEye eye, const std::array<float, 4> &fov,

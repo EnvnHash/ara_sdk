@@ -9,11 +9,10 @@ using namespace std;
 
 namespace ara {
 
+// Units of the following parameters are tan-angle units.
 DistortionMesh::DistortionMesh(const PolynomialRadialDistortion &distortion,
-                               // Units of the following parameters are tan-angle units.
-                               float screen_width, float screen_height, float x_eye_offset_screen,
-                               float y_eye_offset_screen, float texture_width, float texture_height,
-                               float x_eye_offset_texture, float y_eye_offset_texture) {
+                               glm::vec2 screen_size, glm::vec2 eye_offset_screen,
+                               glm::vec2 texture_size, glm::vec2 eye_offset_texture) {
     m_mesh.init("position:2f,texCoord:2f");
 
     std::array<float, 2> p_texture{};
@@ -34,13 +33,13 @@ DistortionMesh::DistortionMesh(const PolynomialRadialDistortion &distortion,
 
             // texture position & radius relative to eye center in meters - I
             // believe this is tanangle
-            p_texture[0] = u_texture * texture_width - x_eye_offset_texture;
-            p_texture[1] = v_texture * texture_height - y_eye_offset_texture;
+            p_texture[0] = u_texture * texture_size.x - eye_offset_texture.x;
+            p_texture[1] = v_texture * texture_size.y - eye_offset_texture.y;
 
             p_screen = distortion.DistortInverse(p_texture);
 
-            float u_screen = (p_screen[0] + x_eye_offset_screen) / screen_width;
-            float v_screen = (p_screen[1] + y_eye_offset_screen) / screen_height;
+            float u_screen = (p_screen[0] + eye_offset_screen.x) / screen_size.x;
+            float v_screen = (p_screen[1] + eye_offset_screen.y) / screen_size.y;
 
             m_vertex_data.emplace_back(2.f * u_screen - 1.f, 2.f * v_screen - 1.f);
 

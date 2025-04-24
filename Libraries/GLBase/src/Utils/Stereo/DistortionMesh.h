@@ -24,9 +24,8 @@ namespace ara {
 class DistortionMesh {
 public:
     DistortionMesh(const PolynomialRadialDistortion &distortion,
-                   // Units of the following parameters are tan-angle units.
-                   float screen_width, float screen_height, float x_eye_offset_screen, float y_eye_offset_screen,
-                   float texture_width, float texture_height, float x_eye_offset_texture, float y_eye_offset_texture);
+                   glm::vec2 screen_size, glm::vec2 eye_offset_screen,
+                   glm::vec2 texture_size, glm::vec2 eye_offset_texture);
 
     virtual ~DistortionMesh() = default;
 
