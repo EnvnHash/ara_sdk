@@ -51,7 +51,11 @@ public:
 class DemoView_ScrollView_2 : public DemoView {
 public:
     DemoView_ScrollView_2();
-    void                init() override;
+
+    UITable*    addTable(UINode* rootNode);
+    UITable*    addNestedTable(UINode* node);
+    void        addLabels(UITable* nt);
+    void        init() override;
     ScrollView*	ui_SV=nullptr;
 };
 

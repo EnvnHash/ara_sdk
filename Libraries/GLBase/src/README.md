@@ -4,7 +4,7 @@ OpenGL Utilities and wrapper classes / Window Management
 
 ## Assimp
 
-Wrapper class for https://github.com/assimp/assimp swiss army knife library for 3d model import / export
+Wrapper class for <https://github.com/assimp/assimp> swiss army knife library for 3d model import / export
 
 ## GeoPrimitives
 

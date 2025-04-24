@@ -48,5 +48,5 @@ void UI_Test_App::createBaseUIElements() {
     ui_TabView->addTab<DemoView_FloatingMenu>("Floating Menu");
     ui_TabView->addTab<DemoView_Edit>("Edit");
 
-    ui_TabView->setActivateTab(0);
+    ui_TabView->setActivateTab(4);
 }
