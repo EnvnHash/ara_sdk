@@ -125,7 +125,7 @@ The UI graph is simple standard node structure with parent-child relations.
   - push the actual viewport to the scissor stack
   - recursively iterate through all children
 
-# Optimizations
+#### Optimizations
 
 - recursive tree iteration is slower than parsing a flat list. During the first matrix iteration a flat list with all active nodes in the correct drawing can be created and used during the drawing step
 - drawing of visible parts and drawing of an object map can be done in one step, since they use the same matrices. Rendering is already done into an FBO with 2 attachments. The only thing missing is to integrate the objmap drawing part into all drawing shaders

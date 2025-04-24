@@ -110,30 +110,12 @@ std::string ConvertWCSToStdString(const wchar_t *wideStr) {
     return outStr;
 }
 
-LPCWSTR StringToLPCWSTR(const std::string& utf8String) {
-    int sizeNeeded = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), static_cast<int>(utf8String.size()), nullptr, 0);
-    if (sizeNeeded == 0) {
-        return nullptr;
-    }
+LPCWSTR StringToLPCWSTR(const std::string& ansiString) {
+    std::wstring wideString = std::wstring(ansiString.begin(), ansiString.end());
+    return wideString.c_str();
+}
 
-    std::vector<wchar_t> wideString(sizeNeeded);
-    int result = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), static_cast<int>(utf8String.size()), wideString.data(), sizeNeeded);
-    if (result == 0) {
-        return nullptr;
-    }
-    return reinterpret_cast<LPCWSTR>(wideString);
 }
 #endif
-
-/*
-//std-string stuff to add save current device settings to .cfg file.
-//Used for robust string comparison and display.
-//DO NOT assign converted string to any device variables - use original BSTR
-type instead. std::string ConvertBSTRToMBS(BSTR bstr)
-{
-    int wslen = ::SysStringLen(bstr);
-    return ConvertWCSToMBS((wchar_t*)bstr, wslen);
-}
-*/
 
 }  // namespace ara
