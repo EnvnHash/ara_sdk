@@ -8,7 +8,7 @@ echo "Updating Homebrew..."
 brew update
 
 echo "Installing libfreeimage..."
-brew install libfreeimage
+brew install freeimage
 
 echo "Installing GLEW..."
 brew install glew
