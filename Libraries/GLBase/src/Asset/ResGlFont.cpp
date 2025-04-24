@@ -15,6 +15,7 @@
 
 #include <Asset/ResGlFont.h>
 #include <Utils/Typo/Font.h>
+#include <GLBase.h>
 #include <Utils/Texture.h>
 
 #include <RwBinFile.h>
