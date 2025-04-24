@@ -16,6 +16,7 @@
 ## UI System
 
 ### User Interaction
+
 - The SceneGraph UIWindow class, provides the following virtual methods which need to be bound to the underlying OS-specific HID managing library (like GLFW, QT or native OS calls):
   - `onKeyDown(int keyNum, bool shiftPressed, bool _ctrlPressed, bool _altPressed)`
   - `onLeftMouseButtonDown(float _xPos, float _yPos)`
@@ -30,6 +31,7 @@
 - normally user interaction on UINode should either have an effect on the parameters/data of the UINode itself, or on other data which is part of the Scene. To resolve the first case UINode has the virtual methods `mouseIn()`, `mouseCursor()`, `mouseDown()`, `mouseOut()` which simply can be overloaded. To solve the latter case, there mouseClick, mouseIn, mouseOut and mouseCursor callback functions in form of std::functions member variables of UINode which can be set from outside and thus manipulate the data, which the std::functions capture.
 
 ### Drawing
+
 - Processing Steps: A UI System basically should be event-based and render only when there has been user interaction which causes changes in the visible elements. For this reason there is the concept of ProcSteps or processing steps, which are nothing more than a std::function which an active/inactive flag, arranged in form of a std::map<procStepType, ProcStep>. Typically a Scene setup for UI cases consists of a continuous event-loop which iterates through the ProcSteps and executes them in case they are active and sets them inactive afterwards. So a procSteps map would at least contain something like:
   procSteps[Draw] = ProcStep{true, std::bind(&UIApp::drawNodeTree, this) };
 - There may be animated elements or other elements that may need to be updated apart from user changes. Typically these are organized either as a separate list of std::functions which are called on every loop iteration or as a ProcStep which is always set to active.
@@ -63,6 +65,7 @@
 > running an UIApplication in multithreaded mode is meant for cases where high draw performance is needed. No gl context switching is needed and data synchronisation is done via queues, BUT extreme care has to be taken in which context commands are executed. E.g. opening a window outside the main thread is prohibited and may cause a crash. Calling gl commands without a bound gl context will have no effect and may lead to undefined behaviour.
  
 ### UIApplication in single thread mode
+
 - glfwWaitEvents()
 - on event, global event callbacks are executed
 - window specific gl context is bound
@@ -143,7 +146,6 @@ The UI graph is simple standard node structure with parent-child relations.
 - UINode Ids are assigned once after changes in the tree during the drawing step
 - An UINode must be visible, not in any _disabled*_ state and not excluded from object map in order to receive HID events
 - it is also possible to set global HID callbacks not related to any specific Node using _UIWindow::addGlobalMouseDownLeftCb(...)_
-
 
 ### Styles
 

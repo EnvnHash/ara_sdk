@@ -8,6 +8,7 @@ Cross-platform opengl based graphics engine for 2D UI and 3D graphics, written i
 ## Building
 
 ### Linux, MacOS and Windows
+
 Build using cmake or any IDE that supports it.
 
 ``` 
@@ -20,6 +21,7 @@ make -j
 All dependencies are checked out and unzipped automatically. 
 
 ### Android
+
 Since Android needs a set of building files, which can be generated through cmake macros. Just add these two lines to your ara sdks application root folders CMakeLists.txt
 
 ```
@@ -35,7 +37,6 @@ This will generate a folder called ${PROJECT_NAME}_Android in the root folder of
 > [!IMPORTANT]
 >- all resources such as images, fonts, etc. are expected to be in a folder called _Assets_ in the root folder of the project
 >- inside the _Assets_ folder, a folder called _SplashScreen_ with a bitmap icon, a background image and a splash screen xml layout file is expected
-
 
 The _GenerateAndroidProject_ macro involves a few automatically executed steps
 - check for the NDK version installed on your system (ANDROID_NDK and ANDROID_NDK_HOME environment variables must be set)
