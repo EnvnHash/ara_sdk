@@ -56,7 +56,7 @@ public:
 
     // separate space for the slices of a cubemap
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
-    std::array<BYTE *, 6> faceData{};
+    std::array<uint8_t*, 6> faceData{};
 #else
     unsigned char **faceData{};
 #endif
