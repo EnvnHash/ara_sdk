@@ -43,10 +43,10 @@ namespace ara::GLBaseUnitTest::ThreadedWindow {
                 unique_ptr<Quad> quad;
                 Shaders *colShader;
 
-                quad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f,
-                                         glm::vec3(0.f, 0.f, 1.f),
-                                         1.f, 0.f, 0.f,
-                                         1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+                quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
+                                                        glm::vec3(0.f, 0.f, 1.f),
+                                                        1.f, 0.f, 0.f,
+                                                        1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
                 colShader = shCol.getStdCol(); // get a simple standard color shader
 
                 // set some OpenGL parameters

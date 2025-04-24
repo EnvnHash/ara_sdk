@@ -94,9 +94,9 @@ void GLRenderer::initGL() {
     m_stdTex = s_shCol.getStdTex();
     // s_testPicShdr = initTestPicShdr();
 
-    m_stdQuad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f});
+    m_stdQuad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f});
     m_flipQuad =
-        make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f, nullptr, 1, true});
+        make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f, nullptr, 1, true});
     // s_dataPath = dataPath;
     glGenVertexArrays(1, &m_nullVao);
 

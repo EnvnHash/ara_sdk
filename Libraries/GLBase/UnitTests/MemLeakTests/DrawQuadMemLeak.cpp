@@ -36,10 +36,10 @@ namespace ara::GLBaseUnitTest::DrawQuadMemLeak {
 #endif
 
         for (int i = 0; i < 10; i++) {
-            auto quad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f,
-                                          glm::vec3(0.f, 0.f, 1.f),
-                                          1.f, 0.f, 0.f,
-                                          1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+            auto quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
+                                                         glm::vec3(0.f, 0.f, 1.f),
+                                                         1.f, 0.f, 0.f,
+                                                         1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
             gwin.swap();
             quad.reset();
 

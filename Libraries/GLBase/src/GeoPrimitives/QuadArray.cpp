@@ -26,25 +26,17 @@ using namespace std;
 using namespace glm;
 
 namespace ara {
-QuadArray::QuadArray(int nrSegsX, int nrSegsY, float x, float y, float w, float h, float r, float g, float b, float a,
-                     std::vector<CoordType> *instAttribs, int nrInstances, GLenum usage)
-    : GeoPrimitive(), m_nrSegsX(nrSegsX), m_nrSegsY(nrSegsY), m_x(x), m_y(y), m_instAttribs(instAttribs),
-      m_maxNrInstances(nrInstances), m_usage(usage) {
-    m_r = r;
-    m_g = g;
-    m_b = b;
-    m_a = a;
+QuadArray::QuadArray(const QuadArrayInitParams& ip)
+    : GeoPrimitive(), m_nrSegsX(ip.nrSegsX), m_nrSegsY(ip.nrSegsY), m_x(ip.x), m_y(ip.y), m_instAttribs(ip.instAttribs),
+      m_maxNrInstances(ip.nrInstances), m_usage(ip.usage) {
+    m_r = ip.r;
+    m_g = ip.g;
+    m_b = ip.b;
+    m_a = ip.a;
 
     QuadArray::init();
 }
 
-QuadArray::QuadArray(int nrSegsX, int nrSegsY, float x, float y, float w, float h, glm::vec3 inNormal,
-                     std::vector<CoordType> *instAttribs, int nrInstances, GLenum usage)
-    : GeoPrimitive(), m_nrSegsX(nrSegsX), m_nrSegsY(nrSegsY), m_x(x), m_y(y), m_instAttribs(instAttribs),
-      m_maxNrInstances(nrInstances), m_usage(usage) {
-    m_qaNormal = inNormal;
-    QuadArray::init();
-}
 
 void QuadArray::init() {
     GLfloat quadPos[18] = {0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f};

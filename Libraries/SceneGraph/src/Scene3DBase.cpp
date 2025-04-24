@@ -48,7 +48,7 @@ bool Scene3DBase::initScene() {
     loadTypo();
     loadBasicSceneModels();
 
-    m_normQuad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false});
+    m_normQuad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false});
     m_inited   = true;
     m_colShdr  = m_shCol->getStdCol();
 

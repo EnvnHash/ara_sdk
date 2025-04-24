@@ -21,7 +21,7 @@ GLSLOpticalFlow::GLSLOpticalFlow(GLBase* glbase, int _width, int _height)
     m_texShader = m_shCol->getStdTex();
 
     m_texture = make_unique<PingPongFbo>(FboInitParams{glbase, width, height, 1, GL_RGBA16F, GL_TEXTURE_2D, false, 1, 1, 1, GL_CLAMP_TO_EDGE});
-    m_quad    = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
+    m_quad    = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
 }
 
 void GLSLOpticalFlow::initShader(ShaderCollector* shCol) {

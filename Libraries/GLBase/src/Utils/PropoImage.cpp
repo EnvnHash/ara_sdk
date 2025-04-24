@@ -46,8 +46,8 @@ void PropoImage::setupQuad() {
     if (imgQuad) {
         imgQuad->scale(imgWidth / oldImgWidth, imgHeight / oldImgHeight, 1.f);
     } else {
-        imgQuad = std::make_unique<Quad>(QuadInitData{imgLowerLeftCorner.x, imgLowerLeftCorner.y, imgWidth, imgHeight,
-                                         glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
+        imgQuad = std::make_unique<Quad>(QuadInitParams{imgLowerLeftCorner.x, imgLowerLeftCorner.y, imgWidth, imgHeight,
+                                                        glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
     }
 }
 

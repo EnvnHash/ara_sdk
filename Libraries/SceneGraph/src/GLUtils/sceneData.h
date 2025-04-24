@@ -37,15 +37,15 @@ public:
         void *ctxName = getCtxName();
         if (!stdQuad[ctxName])
             stdQuad[ctxName] =
-                std::make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
+                std::make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
         return stdQuad[ctxName].get();
     }
 
     Quad *getStdHFlipQuad() {
         void *ctxName = getCtxName();
         if (!stdHFlipQuad[ctxName])
-            stdHFlipQuad[ctxName] = std::make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f,
-                                                           0.f, 0.f, nullptr, 1, true});
+            stdHFlipQuad[ctxName] = std::make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f,
+                                                                          0.f, 0.f, nullptr, 1, true});
         return stdHFlipQuad[ctxName].get();
     }
 
@@ -53,7 +53,7 @@ public:
         void *ctxName = getCtxName();
         if (!stdHalfQuad[ctxName])
             stdHalfQuad[ctxName] =
-                std::make_unique<Quad>(QuadInitData{-0.5f, -0.5f, 1.f, 1.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
+                std::make_unique<Quad>(QuadInitParams{-0.5f, -0.5f, 1.f, 1.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
         return stdHalfQuad[ctxName].get();
     }
 

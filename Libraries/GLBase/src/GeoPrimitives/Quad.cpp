@@ -70,7 +70,7 @@ Quad::Quad() : GeoPrimitive() {
     init();
 }
 
-Quad::Quad(const QuadInitData& qd)
+Quad::Quad(const QuadInitParams& qd)
     : GeoPrimitive() {
     width  = qd.w;
     height = qd.h;

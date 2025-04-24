@@ -20,7 +20,7 @@
 
 namespace ara {
 
-struct QuadInitData {
+struct QuadInitParams {
     float x{};
     float y{};
     float w{};
@@ -38,7 +38,7 @@ struct QuadInitData {
 class Quad : public GeoPrimitive {
 public:
     Quad();
-    Quad(const QuadInitData&);
+    Quad(const QuadInitParams&);
 
     virtual ~Quad() = default;
 

@@ -2172,7 +2172,7 @@ ResNode* UINode::getStyleResNode() {
 
 // ---------------------------------- UTIL -------------------------------------------------
 
-void UINode::util_FillRect(int x, int y, int cx, int cy, float cr, float cg, float cb, float ca, Shaders* shdr, Quad* quad) {
+void UINode::util_FillRect(ivec2 pos, ivec2 size, vec4 col, Shaders* shdr, Quad* quad) {
     if (shdr == nullptr) {
         shdr = m_shdr;
     }
@@ -2181,16 +2181,16 @@ void UINode::util_FillRect(int x, int y, int cx, int cy, float cr, float cg, flo
         quad = m_quad;
     }
 
-    if (shdr == nullptr || quad == nullptr || cx <= 0 || cy <= 0) {
+    if (shdr == nullptr || quad == nullptr || size.x <= 0 || size.y <= 0) {
         return;
     }
 
-    glm::mat4 m = *m_orthoMat * m_parentMatLocCpy * translate(vec3((float)x + getPos().x, (float)y + getPos().y, 0.f));
+    auto m = *m_orthoMat * m_parentMatLocCpy * translate(vec3(static_cast<float>(pos.x) + getPos().x, static_cast<float>(pos.y) + getPos().y, 0.f));
 
     shdr->begin();
     shdr->setUniformMatrix4fv("m_pvm", &m[0][0]);
-    shdr->setUniform2f("size", (float)cx, (float)cy);
-    shdr->setUniform4f("color", cr, cg, cb, ca);
+    shdr->setUniform2f("size", static_cast<float>(size.x), static_cast<float>(size.y));
+    shdr->setUniform4f("color", col.r, col.g, col.b, col.a);
     shdr->setUniform2f("borderWidth", 0.f, 0.f);
     shdr->setUniform2f("borderRadius", 0.f, 0.f);
 
@@ -2199,12 +2199,12 @@ void UINode::util_FillRect(int x, int y, int cx, int cy, float cr, float cg, flo
     glBindVertexArray(0);
 }
 
-void UINode::util_FillRect(int x, int y, int cx, int cy, float* color, Shaders* shdr, Quad* quad) {
-    return util_FillRect(x, y, cx, cy, color[0], color[1], color[2], color[3], shdr, quad);
+void UINode::util_FillRect(ivec2 pos, ivec2 size, float* color, Shaders* shdr, Quad* quad) {
+    return util_FillRect(pos, size, {color[0], color[1], color[2], color[3]}, shdr, quad);
 }
 
 void UINode::util_FillRect(glm::ivec4& r, float* color, Shaders* shdr, Quad* quad) {
-    return util_FillRect(r.x, r.y, r.z, r.w, color[0], color[1], color[2], color[3], shdr, quad);
+    return util_FillRect({r.x, r.y}, {r.z, r.w}, {color[0], color[1], color[2], color[3]}, shdr, quad);
 }
 
 // node argument refers to a child node

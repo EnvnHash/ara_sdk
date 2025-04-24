@@ -620,9 +620,8 @@ public:
 
     // util ------------------------------------------------------------------
 
-    void util_FillRect(int32_t x, int32_t y, int32_t cx, int32_t cy, float cr = 1.f, float cg = 1.f, float cb = 1.f, float ca = 1.f,
-                       Shaders* shdr = nullptr, Quad* quad = nullptr);
-    void util_FillRect(int32_t x, int32_t y, int32_t cx, int32_t cy, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
+    void util_FillRect(glm::ivec2 pos, glm::ivec2 size, glm::vec4 col = {1.f, 1.f, 1.f, 1.f}, Shaders* shdr=nullptr, Quad* quad=nullptr);
+    void util_FillRect(glm::ivec2 pos, glm::ivec2 size, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
     void util_FillRect(glm::ivec4& r, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
 
     static std::string& getCustomDefName() { return m_customDefName; }

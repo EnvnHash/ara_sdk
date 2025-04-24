@@ -20,15 +20,25 @@
 
 namespace ara {
 
+struct QuadArrayInitParams {
+    int nrSegsX=0;
+    int nrSegsY=0;
+    float x = -1.f;
+    float y = -1.f;
+    float w = 2.f;
+    float h = 2.f;
+    std::vector<CoordType> *instAttribs = nullptr;
+    int nrInstances = 1;
+    GLenum usage = GL_STATIC_DRAW;
+    float r = 1.f;
+    float g = 1.f;
+    float b = 1.f;
+    float a = 1.f;
+};
+
 class QuadArray : public GeoPrimitive {
 public:
-    QuadArray(int nrSegsX, int nrSegsY, float x = -1.f, float y = -1.f, float w = 2.f, float h = 2.f, float r = 1.f,
-              float g = 1.f, float b = 1.f, float a = 1.f, std::vector<CoordType> *instAttribs = nullptr,
-              int nrInstances = 1, GLenum usage = GL_STATIC_DRAW);
-
-    QuadArray(int nrSegsX, int nrSegsY, float x, float y, float w, float h, glm::vec3 inNormal,
-              std::vector<CoordType> *instAttribs = nullptr, int nrInstances = 1, GLenum usage = GL_STATIC_DRAW);
-
+    QuadArray(const QuadArrayInitParams& ip);
     virtual ~QuadArray() = default;
 
     void init();

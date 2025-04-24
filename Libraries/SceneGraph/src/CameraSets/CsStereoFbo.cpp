@@ -24,7 +24,7 @@ namespace ara {
 CsStereoFbo::CsStereoFbo(sceneData* sd) : CameraSet(sd), m_layerTexShdr(nullptr), m_clearShdr(nullptr) {
     if (!s_sd) return;
 
-    m_quad    = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 1.f, 0.f, 1.f, 1.f});
+    m_quad    = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 1.f, 0.f, 1.f, 1.f});
     m_plane   = make_unique<VAO>("position:3f", GL_DYNAMIC_DRAW);
     m_colShdr = s_shCol->getStdCol();
 
