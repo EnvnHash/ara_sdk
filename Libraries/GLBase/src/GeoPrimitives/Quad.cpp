@@ -38,56 +38,55 @@ Quad::Quad() : GeoPrimitive() {
     m_b = 1.0f;
     m_a = 1.0f;
 
-    // first triangle, lower left, starting in the upper left corner,
-    // counterclockwise
+    // first triangle, lower left, starting in the upper left corner,/ counterclockwise
     position.reserve(6);
     texCoords.reserve(6);
     normal.reserve(6);
 
-    position.push_back(glm::vec3(-0.5f, 0.5f, 0.f));
-    texCoords.push_back(glm::vec2(0.f, 1.f));
+    position.emplace_back(-0.5f, 0.5f, 0.f);
+    texCoords.emplace_back(0.f, 1.f);
 
-    position.push_back(glm::vec3(-0.5f, -0.5f, 0.f));
-    texCoords.push_back(glm::vec2(0.f, 0.f));
+    position.emplace_back(-0.5f, -0.5f, 0.f);
+    texCoords.emplace_back(0.f, 0.f);
 
-    position.push_back(glm::vec3(0.5f, -0.5f, 0.f));
-    texCoords.push_back(glm::vec2(1.f, 0.f));
+    position.emplace_back(0.5f, -0.5f, 0.f);
+    texCoords.emplace_back(1.f, 0.f);
 
-    // second triangle, right upper, starting in the lower right corner,
-    // counterclockwise
-    position.push_back(glm::vec3(0.5f, -0.5f, 0.f));
-    texCoords.push_back(glm::vec2(0.f, 0.f));
+    // second triangle, right upper, starting in the lower right corner, counterclockwise
+    position.emplace_back(0.5f, -0.5f, 0.f);
+    texCoords.emplace_back(0.f, 0.f);
 
-    position.push_back(glm::vec3(0.5f, 0.5f, 0.f));
-    texCoords.push_back(glm::vec2(1.f, 1.f));
+    position.emplace_back(0.5f, 0.5f, 0.f);
+    texCoords.emplace_back(1.f, 1.f);
 
-    position.push_back(glm::vec3(-0.5f, 0.5f, 0.f));
-    texCoords.push_back(glm::vec2(0.f, 1.f));
+    position.emplace_back(-0.5f, 0.5f, 0.f);
+    texCoords.emplace_back(0.f, 1.f);
 
     // set normal facing outwards of the screen
-    for (auto i = 0; i < 6; i++) normal.push_back(glm::vec3(0.f, 0.f, 1.f));
+    for (auto i = 0; i < 6; i++) {
+        normal.emplace_back(0.f, 0.f, 1.f);
+    }
 
     init();
 }
 
-Quad::Quad(float x, float y, float w, float h, glm::vec3 inNormal, float _r, float _g, float _b, float _a,
-           std::vector<CoordType> *_instAttribs, int _nrInstances, bool _flipHori)
+Quad::Quad(const QuadInitData& qd)
     : GeoPrimitive() {
-    width  = w;
-    height = h;
+    width  = qd.w;
+    height = qd.h;
 
-    instAttribs    = _instAttribs;
-    maxNrInstances = _nrInstances;
+    instAttribs    = qd.instAttribs;
+    maxNrInstances = qd.nrInstances;
 
-    m_r = _r;
-    m_g = _g;
-    m_b = _b;
-    m_a = _a;
+    m_r = qd.r;
+    m_g = qd.g;
+    m_b = qd.b;
+    m_a = qd.a;
 
-    glm::vec3 upperLeft  = glm::vec3(x, y + h, 0.f);
-    glm::vec3 lowerLeft  = glm::vec3(x, y, 0.f);
-    glm::vec3 lowerRight = glm::vec3(x + w, y, 0.f);
-    glm::vec3 upperRight = glm::vec3(x + w, y + h, 0.f);
+    glm::vec3 upperLeft{qd.x, qd.y + qd.h, 0.f};
+    glm::vec3 lowerLeft{qd.x, qd.y, 0.f};
+    glm::vec3 lowerRight{qd.x + qd.w, qd.y, 0.f};
+    glm::vec3 upperRight{qd.x + qd.w, qd.y + qd.h, 0.f};
 
     // first triangle, lower left, starting in the upper left corner,
     // counterclockwise
@@ -95,28 +94,30 @@ Quad::Quad(float x, float y, float w, float h, glm::vec3 inNormal, float _r, flo
     texCoords.reserve(6);
     normal.reserve(6);
 
-    position.push_back(upperLeft);
-    texCoords.push_back(glm::vec2(0.f, !_flipHori ? 1.f : 0.f));
+    position.emplace_back(upperLeft);
+    texCoords.emplace_back(0.f, !qd.flipHori ? 1.f : 0.f);
 
-    position.push_back(lowerLeft);
-    texCoords.push_back(glm::vec2(0.f, !_flipHori ? 0.f : 1.f));
+    position.emplace_back(lowerLeft);
+    texCoords.emplace_back(0.f, !qd.flipHori ? 0.f : 1.f);
 
-    position.push_back(lowerRight);
-    texCoords.push_back(glm::vec2(1.f, !_flipHori ? 0.f : 1.f));
+    position.emplace_back(lowerRight);
+    texCoords.emplace_back(1.f, !qd.flipHori ? 0.f : 1.f);
 
     // second triangle, right upper, starting in the lower right corner,
     // counterclockwise
-    position.push_back(lowerRight);
-    texCoords.push_back(glm::vec2(1.f, !_flipHori ? 0.f : 1.f));
+    position.emplace_back(lowerRight);
+    texCoords.emplace_back(1.f, !qd.flipHori ? 0.f : 1.f);
 
-    position.push_back(upperRight);
-    texCoords.push_back(glm::vec2(1.f, !_flipHori ? 1.f : 0.f));
+    position.emplace_back(upperRight);
+    texCoords.emplace_back(1.f, !qd.flipHori ? 1.f : 0.f);
 
-    position.push_back(upperLeft);
-    texCoords.push_back(glm::vec2(0.f, !_flipHori ? 1.f : 0.f));
+    position.emplace_back(upperLeft);
+    texCoords.emplace_back(0.f, !qd.flipHori ? 1.f : 0.f);
 
     // set normal facing outwards of the screen
-    for (auto i = 0; i < 6; i++) normal.push_back(inNormal);
+    for (auto i = 0; i < 6; i++) {
+        normal.push_back(qd.inNormal);
+    }
 
     init();
 }
@@ -137,17 +138,25 @@ void Quad::init() {
     }
 
     GLenum usage = GL_DYNAMIC_DRAW;
-    if (instAttribs) usage = GL_DYNAMIC_DRAW;
+    if (instAttribs) {
+        usage = GL_DYNAMIC_DRAW;
+    }
 
     m_vao = make_unique<VAO>("position:3f,normal:3f,texCoord:2f,color:4f", usage, instAttribs, maxNrInstances);
     m_vao->setStaticColor(m_r, m_g, m_b, m_a);
     m_vao->uploadMesh(&m);
 }
 
-std::vector<glm::vec3> *Quad::getPositions() { return &position; }
+std::vector<glm::vec3> *Quad::getPositions() {
+    return &position;
+}
 
-std::vector<glm::vec3> *Quad::getNormals() { return &normal; }
+std::vector<glm::vec3> *Quad::getNormals() {
+    return &normal;
+}
 
-std::vector<glm::vec2> *Quad::getTexCoords() { return &texCoords; }
+std::vector<glm::vec2> *Quad::getTexCoords() {
+    return &texCoords;
+}
 
 }  // namespace ara

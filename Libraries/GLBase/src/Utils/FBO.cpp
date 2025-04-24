@@ -167,7 +167,7 @@ void FBO::fromTexMan(Texture *texMan) {
         m_magFilterType = texMan->getMagnificationFilter();
         m_minFilterType = texMan->getMinificationFilter();
 
-        m_quad = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f);
+        m_quad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f});
 
         // get standard shaders for clearing the FBO
         m_colShader     = m_shCol->getStdCol();
@@ -348,7 +348,7 @@ void FBO::initFromShared(FBO *sharedFbo) {
     m_minFilterType = sharedFbo->getMinFilterType();
 
     m_shCol = &m_glbase->shaderCollector();
-    m_quad  = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f);
+    m_quad  = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f});
 
     // get standard shaders for clearing the FBO
     m_colShader     = m_shCol->getStdCol();
@@ -366,7 +366,7 @@ void FBO::init() {
     getActStates();
 
     m_shCol         = &m_glbase->shaderCollector();
-    m_quad          = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f);
+    m_quad          = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f});
     m_mipMapLevels  = std::min(std::max<int>(1, m_mipMapLevels), m_glbase->maxTexMipMapLevels());
     m_isMultiSample = (m_target == GL_TEXTURE_2D_MULTISAMPLE) || (m_target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY);
 

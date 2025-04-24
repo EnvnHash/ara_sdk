@@ -16,7 +16,7 @@ TEST(GLBaseTest, ContextSharingFbo) {
     ASSERT_TRUE(m_glbase.init(false));
     m_glbase.makeCurrent();
 
-    auto quad = std::make_unique<Quad>(-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f);
+    auto quad = std::make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
 
     // load a test texture
     Texture texMan(&m_glbase);
@@ -87,10 +87,10 @@ TEST(GLBaseTest, ContextSharingFbo) {
             ASSERT_EQ(GL_NO_ERROR, postGLError());
 
             // unfortunately VAOs can't be shared since they are just a set of states, but don't contain actual data
-            unique_ptr<Quad> quad = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f,
+            unique_ptr<Quad> quad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f,
                                                       glm::vec3(0.f, 0.f, 1.f),
                                                       1.f, 0.f, 0.f,
-                                                      1.f);  // create a Quad, standard width and height (normalized into -1|1), static red
+                                                      1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
             // set some OpenGL parameters
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                    // clear the screen
             glViewport(0, 0, (GLsizei) windows[i].getWidth(),

@@ -133,8 +133,8 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         }
         s_shCol.setShaderHeader(m_glbase->getShaderHeader());
 
-        m_quad = make_unique<Quad>(0.f, 0.f, 1.f, 1.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false);
-        m_normQuad = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false);
+        m_quad = make_unique<Quad>(QuadInitData{0.f, 0.f, 1.f, 1.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false});
+        m_normQuad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false});
         glGenVertexArrays(1, &m_nullVao);
 
         m_objSel = make_unique<ObjectMapInteraction>(&s_shCol, rWidth, rHeight, m_sceneFbo.get(), m_multisample);

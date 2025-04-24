@@ -25,13 +25,11 @@ bool GLSLChromaKey::init(GLBase* glbase, Property<GLSLChromaKeyPar*>* par) {
 
     m_downBuf = std::vector<uint8_t>((*par)()->width * (*par)()->height * 4);
 
-    m_hFlipQuad = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f, nullptr, 1,
-                                    true);  // create a Quad, standard width and height
-                                            // (normalized into -1|1), static red
+    m_hFlipQuad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f, nullptr, 1,
+                                    true});  // create a Quad, standard width and height (normalized into -1|1), static red
 
-    m_quad = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f, nullptr, 1,
-                               false);  // create a Quad, standard width and height
-                                        // (normalized into -1|1), static red
+    m_quad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f, nullptr, 1,
+                               false});  // create a Quad, standard width and height (normalized into -1|1), static red
 
     m_stdTex = m_glbase->shaderCollector().getStdTex();
 

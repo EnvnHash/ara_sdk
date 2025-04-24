@@ -42,13 +42,12 @@ void PropoImage::setupQuad() {
         default: imgLowerLeftCorner = glm::vec2(1.f - imgWidth - border, 1.f - imgHeight - border); break;
     }
 
-    // position to right upper corner for fullscreen
+    // position to the right upper corner for fullscreen
     if (imgQuad) {
         imgQuad->scale(imgWidth / oldImgWidth, imgHeight / oldImgHeight, 1.f);
-
     } else {
-        imgQuad = std::make_unique<Quad>(imgLowerLeftCorner.x, imgLowerLeftCorner.y, imgWidth, imgHeight,
-                                         glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f);
+        imgQuad = std::make_unique<Quad>(QuadInitData{imgLowerLeftCorner.x, imgLowerLeftCorner.y, imgWidth, imgHeight,
+                                         glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
     }
 }
 

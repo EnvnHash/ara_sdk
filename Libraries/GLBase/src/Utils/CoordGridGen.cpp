@@ -19,7 +19,7 @@ CoordGridGen::CoordGridGen(ivec2 texSize) {
     typo->loadFont("data/open-sans/OpenSans-Light.ttf", &m_shCol);
 
     // init a quad to draw
-    unique_ptr<Quad> quad = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f);
+    unique_ptr<Quad> quad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f});
 
     coordShdr->begin();
     coordShdr->setUniform2f("resolution", static_cast<float>(texSize.x), static_cast<float>(texSize.y));

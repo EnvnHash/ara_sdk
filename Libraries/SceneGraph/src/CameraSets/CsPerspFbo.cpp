@@ -20,7 +20,7 @@ CsPerspFbo::CsPerspFbo(sceneData* sd)
 
     m_camPos     = vec3{0.f, 0.f, 1.f};
     float aspect = s_sd->winViewport.z / s_sd->winViewport.w;
-    m_quad       = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 1.f, 1.f, 1.f, 1.f);
+    m_quad       = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 1.f, 1.f, 1.f, 1.f});
     s_viewport   = s_sd->winViewport;
     s_iViewport  = s_sd->winViewport;
 

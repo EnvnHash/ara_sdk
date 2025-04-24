@@ -115,7 +115,6 @@ LPCWSTR StringToLPCWSTR(const std::string& ansiString) {
     return wideString.c_str();
 }
 
-}
 #endif
 
 }  // namespace ara

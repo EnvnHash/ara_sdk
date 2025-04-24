@@ -57,7 +57,7 @@ void GLSplashScreen::open() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_shCol  = std::make_unique<ShaderCollector>();
-    m_quad   = std::make_unique<Quad>(-1.f, -1.f, 2.f, 2.f);
+    m_quad   = std::make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f});
     m_stdTex = m_shCol->getStdTex();
     m_tex.loadTexture2D("data/precision_splash.jpg", 1);
 

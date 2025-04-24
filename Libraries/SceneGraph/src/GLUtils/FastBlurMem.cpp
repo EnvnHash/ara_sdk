@@ -16,7 +16,7 @@ FastBlurMem::FastBlurMem(GLBase* glbase, float _alpha, int _blurW, int _blurH, G
                          uint _nrLayers, bool _rot180, blurKernelSize _kSize, bool _singleFbo)
     : m_glbase(glbase), alpha(_alpha), blurW(_blurW), blurH(_blurH), bright(1.f), intFormat(_intFormat), kSize(_kSize),
       nrLayers(_nrLayers), rot180(_rot180), pp(nullptr), firstPassFbo(nullptr), singleFbo(_singleFbo), target(_target) {
-    fboQuad = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f);
+    fboQuad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f});
 
     if (_nrLayers > 0) {
         initShader();

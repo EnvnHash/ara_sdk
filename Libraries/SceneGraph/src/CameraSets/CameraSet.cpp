@@ -19,7 +19,7 @@ CameraSet::CameraSet(sceneData* sc)
         s_viewport = sc->winViewport;
     }
 
-    s_maskQuad = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 0.f, 0.f, 0.f, 1.f);
+    s_maskQuad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 0.f, 0.f, 0.f, 1.f});
     // standard shader for the background clearing
     s_clearShader = s_shCol->getStdClear();
 }

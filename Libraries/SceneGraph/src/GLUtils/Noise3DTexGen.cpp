@@ -27,8 +27,8 @@ Noise3DTexGen::Noise3DTexGen(sceneData* _scd, bool color, int nrOctaves, int _wi
     FBO* xBlendFboH = new FBO(m_glbase, width, height, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_REPEAT, false);
     FBO* xBlendFboV = new FBO(m_glbase, width, height, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_REPEAT, false);
 
-    unique_ptr<Quad> quad    = make_unique<Quad>(-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f);
-    unique_ptr<Quad> fboQuad = make_unique<Quad>(0.f, 0.f, 1.f, 1.f, vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f);
+    unique_ptr<Quad> quad    = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
+    unique_ptr<Quad> fboQuad = make_unique<Quad>(QuadInitData{0.f, 0.f, 1.f, 1.f, vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
 
     initShdr();
     ara::Shaders* xBlendShaderH = initBlendShdrH();

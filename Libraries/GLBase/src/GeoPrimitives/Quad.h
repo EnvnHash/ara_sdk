@@ -20,15 +20,27 @@
 
 namespace ara {
 
+struct QuadInitData {
+    float x{};
+    float y{};
+    float w{};
+    float h{};
+    glm::vec3 inNormal{0.f, 0.f, 1.f};
+    float r = 1.f;
+    float g = 1.f;
+    float b = 1.f;
+    float a = 1.f;
+    std::vector<CoordType>* instAttribs = nullptr;
+    int nrInstances = 1;
+    bool flipHori = false;
+};
+
 class Quad : public GeoPrimitive {
 public:
     Quad();
+    Quad(const QuadInitData&);
 
-    Quad(float x, float y, float w, float h, glm::vec3 inNormal = glm::vec3(0.f, 0.f, 1.f), float _r = 1.f,
-         float _g = 1.f, float _b = 1.f, float _a = 1.f, std::vector<CoordType> *_instAttribs = nullptr,
-         int _nrInstances = 1, bool _flipHori = false);
-
-    virtual ~Quad() {}
+    virtual ~Quad() = default;
 
     void init();
 
