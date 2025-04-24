@@ -40,10 +40,8 @@ Texture *TextureCollector::addFromMem(const std::filesystem::path &fileName, con
 
     auto fn = fileName.string();
     return checkForExistence(fn, &dataPath,[&]  {
-       // ReadBinFile(vp, dataPath / fn);
         std::vector<uint8_t> vp;
-        auto al = m_glBase->getAssetManager()->getAssetLoader();
-        al.loadAssetToMem(vp, fileName);
+        ReadBinFile(vp, dataPath / fn);
         return add(vp, fn, &dataPath, mipMapLevel);
     });
 }
@@ -52,7 +50,9 @@ Texture *TextureCollector::addFromAssetManager(AssetManager *res, const std::str
     return checkForExistence(fn, nullptr, [&]  {
         if (res) {
             std::vector<uint8_t> vp;
-            res->loadResource(nullptr, vp, fn);
+            //res->loadResource(nullptr, vp, fn);
+            auto al = m_glBase->getAssetManager()->getAssetLoader();
+            al.loadAssetToMem(vp, fn);
             return add(vp, fn, nullptr, mipMapLevel);
         } else {
             return static_cast<Texture *>(nullptr);

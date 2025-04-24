@@ -27,6 +27,15 @@ bool SrcFile::process(ResNode *root, std::vector<uint8_t> &vp) {
     return process(root);
 }
 
+void SrcFile::skipNewline(std::vector<uint8_t>::iterator& it, std::vector<uint8_t> &vp) {
+    if (it < vp.end() && (*it == '\n' || *it == '\r')) {
+        ++it;
+        if (it < vp.end() && (*it == '\n' || *it == '\r')) {
+            ++it;
+        }
+    }
+}
+
 bool SrcFile::extractLines(std::vector<uint8_t> &vp) {
     m_line.clear();
 
@@ -34,31 +43,22 @@ bool SrcFile::extractLines(std::vector<uint8_t> &vp) {
         return false;
     }
 
-    auto e    = vp.begin();
-    int  lidx = 0;
-    auto b    = e;
+    auto e = vp.begin();
+    int lidx = 0;
+    auto b = e;
 
     while (e < vp.end()) {
         if (e[0] == '\n' || e[0] == '\r') {
             m_line.emplace_back(SrcLine{lidx++, string(b, e)});
-            ++e;
-
-            if (e < vp.end()) {
-                if (e[-1] == '\n' && e[0] == '\r') {
-                    ++e;
-                } else if (e[-1] == '\r' && e[0] == '\n') {
-                    ++e;
-                }
-            }
-
+            skipNewline(e, vp); // Use the helper function
             b = e;
         } else {
             ++e;
         }
     }
-
     return true;
 }
+
 
 bool SrcFile::process(ResNode *root) {
     if (!root) {

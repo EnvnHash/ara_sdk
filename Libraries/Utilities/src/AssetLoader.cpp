@@ -47,29 +47,15 @@ string AssetLoader::loadAssetAsString(const string& path) {
             throw runtime_error("AssetLoader::loadAssetAsString: Could not open file " + compPath.string());
         }
 #else
-        string content;
         if (filesystem::exists(compPath)) {
             ifstream file(compPath);
             if (!file.is_open()) {
                 throw runtime_error("AssetLoader::getAssetAsString: Could not open file " + compPath.string());
             }
 
-            file.seekg(0, ios::end);
-            size_t fileSize = static_cast<size_t>(file.tellg());
-            if (fileSize == 0) {
-                content.clear();
-                throw runtime_error("AssetLoader::getAssetAsString: file " + compPath.string() + " is empty");
-            }
-
-            file.seekg(0, ios::beg);
-            content.resize(fileSize);
-            file.read(&content[0], fileSize);
-            if (content.empty()) {
-                throw runtime_error("AssetLoader::getAssetAsString: Error reading from file " + compPath.string());
-            }
-
-            file.close();
-            return content;
+            std::stringstream ss;
+            ss << file.rdbuf();
+            return ss.str();
         } else {
             throw runtime_error("AssetLoader::getAssetAsString: Could not open file");
         }

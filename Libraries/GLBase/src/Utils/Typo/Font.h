@@ -32,7 +32,7 @@ public:
     bool createFromMem(const std::vector<uint8_t>& vp, const std::string &name, int font_size, float pixRatio);
     bool create(const std::string &font_path, int size, float pixRatio);
     bool create(const std::vector<uint8_t> &vp, const std::string &font_path, int size, float pixRatio);
-
+    void pushGlyph(int ch_count, int ch_off, int wh, std::vector<uint8_t>& bmp);
     int drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float off_x,
                     float off_y, float mask_x, float mask_y, float mask_w, float mask_h) const;
 

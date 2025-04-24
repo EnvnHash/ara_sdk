@@ -35,7 +35,7 @@ void FreeImg_MemHandler::fillFreeImageIO(FreeImageIO &io) {
     io.tell_proc  = FreeImg_MemHandler::tell;
 }
 
-unsigned _stdcall FreeImg_MemHandler::read(void *buffer, unsigned size, unsigned count, fi_handle handle) {
+unsigned FreeImg_MemHandler::read(void *buffer, unsigned size, unsigned count, fi_handle handle) {
     auto h = static_cast<FreeImg_MemHandler *>(handle);
     auto dest = static_cast<uint8_t *>(buffer);
     auto src  = h->getPos();
@@ -50,11 +50,11 @@ unsigned _stdcall FreeImg_MemHandler::read(void *buffer, unsigned size, unsigned
     return count;
 }
 
-unsigned _stdcall FreeImg_MemHandler::write(void *buffer, unsigned size, unsigned count, fi_handle handle) {
+unsigned FreeImg_MemHandler::write(void *buffer, unsigned size, unsigned count, fi_handle handle) {
     return size;
 }
 
-int _stdcall FreeImg_MemHandler::seek(fi_handle handle, long offset, int origin) {
+int FreeImg_MemHandler::seek(fi_handle handle, long offset, int origin) {
     auto h = static_cast<FreeImg_MemHandler *>(handle);
 
     if (origin == SEEK_SET) {
@@ -66,7 +66,7 @@ int _stdcall FreeImg_MemHandler::seek(fi_handle handle, long offset, int origin)
     return 0;
 }
 
-long _stdcall FreeImg_MemHandler::tell(fi_handle handle) {
+long FreeImg_MemHandler::tell(fi_handle handle) {
     auto h = static_cast<FreeImg_MemHandler *>(handle);
     return static_cast<long>(h->memPos);
 }

@@ -1,6 +1,6 @@
 # ARA SDK
 
-Cross-platform opengl bases graphics engine for 2D UI and 3D graphics, written in C++17.
+Cross-platform opengl based graphics engine for 2D UI and 3D graphics, written in C++17.
 
 [![CMake build on ubuntu, windows, macos](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/7b84863e25bf46ada4a2ee5e28273207)](https://app.codacy.com/gh/EnvnHash/ara_sdk/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)

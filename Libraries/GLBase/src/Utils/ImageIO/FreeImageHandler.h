@@ -19,10 +19,6 @@
 
 #if defined(ARA_USE_FREEIMAGE) && !defined(__EMSCRIPTEN__)
 
-#ifndef _WIN32
-#define _stdcall
-#endif
-
 #include <glb_common/glb_common.h>
 #include <FreeImage.h>
 
@@ -44,10 +40,10 @@ public:
     static void fillFreeImageIO(FreeImageIO &io);
     FreeImageIO *io() { return &fIO; }
 
-    static unsigned _stdcall read(void *buffer, unsigned size, unsigned count, fi_handle handle);
-    static unsigned _stdcall write(void *buffer, unsigned size, unsigned count, fi_handle handle);
-    static int _stdcall seek(fi_handle handle, long offset, int origin);
-    static long _stdcall tell(fi_handle handle);
+    static unsigned read(void *buffer, unsigned size, unsigned count, fi_handle handle);
+    static unsigned write(void *buffer, unsigned size, unsigned count, fi_handle handle);
+    static int seek(fi_handle handle, long offset, int origin);
+    static long tell(fi_handle handle);
 };
 
 }

@@ -29,6 +29,7 @@ public:
     std::vector<SrcLine> m_line;
 
 private:
+    static void                skipNewline(std::vector<uint8_t>::iterator& it, std::vector<uint8_t> &vp);
     bool                extractLines(std::vector<uint8_t> &vp);
     bool                process(ResNode *root);
     static const char*  readStr(std::string &dest, const char *e, std::vector<SrcLine>::iterator &line,

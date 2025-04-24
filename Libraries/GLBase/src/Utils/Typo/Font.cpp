@@ -16,10 +16,10 @@
 #include <Utils/Typo/Font.h>
 #include <Shaders/Shaders.h>
 #include <string_utils.h>
+#include <RwBinFile.h>
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #define STBTT_STATIC
-#include <RwBinFile.h>
 #include <stb_truetype.h>  // http://nothings.org/stb/stb_truetype.h
 
 using namespace glm;
@@ -76,21 +76,20 @@ bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, int f
     }
 
     if (rerr) {
-        int   wh     = 0;
-        int   ch_off = m_CodePoint_Range[0], ch_count = m_CodePoint_Range[1] - m_CodePoint_Range[0] + 1;
-        auto *bchar = new stbtt_bakedchar[ch_count];
-        int   tret;
+        int wh     = 0;
+        int ch_off = m_CodePoint_Range[0], ch_count = m_CodePoint_Range[1] - m_CodePoint_Range[0] + 1;
+        int tret;
+        std::vector<stbtt_bakedchar> bchar(ch_count);
 
         for (int bi = 7; bi <= 12 && !ret; bi++) { // try from 128x128 up to 4096x4096
             wh   = 1 << bi;
             auto cdiv = 1.f / static_cast<float>(wh);
-            auto bmp = new unsigned char[wh * wh];
+            std::vector<uint8_t> bmp(wh * wh);
+            std::fill_n(bchar.begin(), ch_count, stbtt_bakedchar{});
 
-            memset(bchar, 0, ch_count * sizeof(stbtt_bakedchar));
-
-            if ((tret = stbtt_BakeFontBitmap(buff, 0, m_hwFontSize, bmp, wh, wh, ch_off, ch_count, bchar)) >= 0) {
-                for (int i = 0; i < ch_count; i++)
-                    m_Glyphs.push_back(e_fontglyph{
+            if ((tret = stbtt_BakeFontBitmap(buff, 0, m_hwFontSize, bmp.data(), wh, wh, ch_off, ch_count, bchar.data())) >= 0) {
+                for (int i = 0; i < ch_count; i++) {
+                    m_Glyphs.emplace_back(e_fontglyph{
                         i + ch_off,                                                                 // codepoint
                         bchar[i].x0,                                                                // ppos[2][2]
                         bchar[i].y0, bchar[i].x1, bchar[i].y1, vec2{bchar[i].xoff, bchar[i].yoff},  // off
@@ -98,33 +97,37 @@ bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, int f
                         bchar[i].xadvance, vec2{static_cast<float>(bchar[i].x1 - bchar[i].x0), static_cast<float>(bchar[i].y1 - bchar[i].y0)},
                         vec2{static_cast<float>(bchar[i].x0) * cdiv, static_cast<float>(bchar[i].y0) * cdiv},
                         vec2{static_cast<float>(bchar[i].x1 - bchar[i].x0) * cdiv, static_cast<float>(bchar[i].y1 - bchar[i].y0) * cdiv}});
+                }
 
-                glGenTextures(1, &gl_TexID);
-                glBindTexture(GL_TEXTURE_2D, gl_TexID);
-                glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, wh, wh);
-                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, wh, wh, GL_RED, GL_UNSIGNED_BYTE, bmp);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glBindTexture(GL_TEXTURE_2D, 0);
+                pushGlyph(ch_count, ch_off, wh, bmp);
 
-                m_GlyphTexSize[0] = m_GlyphTexSize[1] = wh;
-                m_FontType                            = "";
                 m_FontScale                           = stbtt_ScaleForPixelHeight(&info, m_hwFontSize);
                 stbtt_GetFontVMetrics(&info, &m_FontVMetrics[0], &m_FontVMetrics[1], &m_FontVMetrics[2]);
-                m_glCreated = true;
-
-                ret = true;
-
                 setFontType(font_path);
+                ret = true;
             }
-            delete[] bmp;
         }
 
-        if (!ret) LOGE << "[ERROR] NO SUITABLE SIZE FOR FONT";
-        delete[] bchar;
+        if (!ret) {
+            LOGE << "[ERROR] NO SUITABLE SIZE FOR FONT";
+        }
     }
 
     return ret;
+}
+
+void Font::pushGlyph(int ch_count, int ch_off, int wh, std::vector<uint8_t>& bmp) {
+    glGenTextures(1, &gl_TexID);
+    glBindTexture(GL_TEXTURE_2D, gl_TexID);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, wh, wh);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, wh, wh, GL_RED, GL_UNSIGNED_BYTE, bmp.data());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    m_GlyphTexSize[0] = m_GlyphTexSize[1] = wh;
+    m_FontType                            = "";
+    m_glCreated                           = true;
 }
 
 // all input values are in virtual pixels and must be converted to hw pixels
