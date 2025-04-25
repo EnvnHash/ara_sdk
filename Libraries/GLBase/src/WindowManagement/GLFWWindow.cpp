@@ -542,7 +542,7 @@ glm::vec2 GLFWWindow::getPrimaryMonitorWindowContentScale() {
 }
 
 /// returns virtual coordinates
-glm::ivec2 GLFWWindow::getSize() {
+glm::ivec2 GLFWWindow::getSize()  {
     glm::ivec2 size;
     glfwGetWindowSize(m_window, &size.x, &size.y);
 #ifdef __APPLE__
@@ -564,10 +564,10 @@ glm::ivec2 GLFWWindow::getPosition() {
     glm::ivec2 pos;
     glfwGetWindowPos(m_window, &pos.x, &pos.y);
 #ifdef __APPLE__
-    m_posXreal = (float)pos.x * m_contentScale.x;
-    m_posYreal = (float)pos.y * m_contentScale.y;
-    m_posXvirt = (float)pos.x;
-    m_posYvirt = (float)pos.y;
+    m_posXreal = static_cast<float>(pos.x * m_contentScale.x);
+    m_posYreal = static_cast<float>(pos.y * m_contentScale.y);
+    m_posXvirt = static_cast<float>(pos.x);
+    m_posYvirt = static_cast<float>(pos.y);
 #else
     m_posXreal = static_cast<float>(pos.x);
     m_posYreal = static_cast<float>(pos.y);

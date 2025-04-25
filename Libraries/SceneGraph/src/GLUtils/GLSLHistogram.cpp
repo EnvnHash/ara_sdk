@@ -59,11 +59,11 @@ using namespace std;
 
 namespace ara {
 
-GLSLHistogram::GLSLHistogram(GLBase* glbase, int _width, int _height, GLenum _type, unsigned int _downSample,
-                             unsigned int _histWidth, bool _getBounds, bool _normalize, float _maxValPerChan)
-    : m_glbase(glbase), m_shCol(&glbase->shaderCollector()), m_texType(_type), m_geoAmp(32), m_width(_width), m_height(_height),
-      m_maxHistoWidth(static_cast<int>(_histWidth)), m_downSample(_downSample), m_normalize(_normalize), m_getBounds(_getBounds),
-      m_valThres(0.f), m_indValThres(0.05f), m_maxValPerChan(_maxValPerChan) {
+GLSLHistogram::GLSLHistogram(GLBase* glbase, ivec2 size, GLenum type, unsigned int downSample,
+                             unsigned int histWidth, bool getBounds, bool normalize, float maxValPerChan)
+    : m_glbase(glbase), m_shCol(&glbase->shaderCollector()), m_texType(type), m_geoAmp(32), m_width(size.x), m_height(size.y),
+      m_maxHistoWidth(static_cast<int>(histWidth)), m_downSample(downSample), m_normalize(normalize), m_getBounds(getBounds),
+      m_valThres(0.f), m_indValThres(0.05f), m_maxValPerChan(maxValPerChan) {
     m_quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f,
                                               0.f});  // color will be replaced when rendering with blending on
 
@@ -72,32 +72,32 @@ GLSLHistogram::GLSLHistogram(GLBase* glbase, int _width, int _height, GLenum _ty
     m_maxValSum = static_cast<float>(m_width) * static_cast<float>(m_height);
 
     // get nr channels
-    if (_type == GL_R8
+    if (type == GL_R8
 #ifndef ARA_USE_GLES31
-        || _type == GL_R16
+        || type == GL_R16
 #endif
-        || _type == GL_R16F || _type == GL_R32F) {
+        || type == GL_R16F || type == GL_R32F) {
         m_nrChan    = 1;
         m_texFormat = GL_RED;
-    } else if (_type == GL_RG8
+    } else if (type == GL_RG8
 #ifndef ARA_USE_GLES31
-               || _type == GL_RG16
+               || type == GL_RG16
 #endif
-               || _type == GL_RG16F || _type == GL_RG32F) {
+               || type == GL_RG16F || type == GL_RG32F) {
         m_nrChan    = 2;
         m_texFormat = GL_RG;
-    } else if (_type == GL_RGB8
+    } else if (type == GL_RGB8
 #ifndef ARA_USE_GLES31
-               || _type == GL_RGB16
+               || type == GL_RGB16
 #endif
-               || _type == GL_RGB16F || _type == GL_RGB32F) {
+               || type == GL_RGB16F || type == GL_RGB32F) {
         m_nrChan    = 3;
         m_texFormat = GL_RGB;
-    } else if (_type == GL_RGBA8
+    } else if (type == GL_RGBA8
 #ifndef ARA_USE_GLES31
-               || _type == GL_RGBA16
+               || type == GL_RGBA16
 #endif
-               || _type == GL_RGBA16F || _type == GL_RGBA32F) {
+               || type == GL_RGBA16F || type == GL_RGBA32F) {
         m_nrChan    = 4;
         m_texFormat = GL_RGBA;
     }
@@ -114,23 +114,23 @@ GLSLHistogram::GLSLHistogram(GLBase* glbase, int _width, int _height, GLenum _ty
     }
 
     // get pixel m_format
-    if (_type == GL_R8 || _type == GL_RG8 || _type == GL_RGB8 || _type == GL_RGBA8) {
+    if (type == GL_R8 || type == GL_RG8 || type == GL_RGB8 || type == GL_RGBA8) {
         m_maxHistoWidth = std::min(m_maxHistoWidth, 256);
         m_maxValOfType  = 256.f;
         m_maximum       = 1.f;
         m_format        = GL_BYTE;
     }
 #ifndef ARA_USE_GLES31
-    else if (_type == GL_R16 || _type == GL_RG16 || _type == GL_RGB16 || _type == GL_RGBA16) {
+    else if (type == GL_R16 || type == GL_RG16 || type == GL_RGB16 || type == GL_RGBA16) {
         m_format       = GL_SHORT;
         m_maxValOfType = 65504.f;
     }
 #endif
-    else if (_type == GL_R16F || _type == GL_RG16F || _type == GL_RGB16F || _type == GL_RGBA16F) {
+    else if (type == GL_R16F || type == GL_RG16F || type == GL_RGB16F || type == GL_RGBA16F) {
         m_format       = GL_FLOAT;
         m_maxValOfType = 65504.f;
         m_minMaxFormat = GL_R16F;
-    } else if (_type == GL_R32F || _type == GL_RG32F || _type == GL_RGB32F || _type == GL_RGBA32F) {
+    } else if (type == GL_R32F || type == GL_RG32F || type == GL_RGB32F || type == GL_RGBA32F) {
         m_format       = GL_FLOAT;
         m_minMaxFormat = GL_R32F;
         m_maxValOfType = 10000000.f;

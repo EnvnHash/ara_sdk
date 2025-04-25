@@ -39,7 +39,6 @@ if (UNIX AND NOT ANDROID AND NOT APPLE)
 	string(APPEND CMAKE_CXX_FLAGS " -Wno-nonnull")
 
 	set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0" CACHE STRING "" FORCE)
-	#set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wno-class-conversion")
 	# supress deprecated warnings
 	add_definitions(${GXX_COVERAGE_COMPILE_FLAGS})
 
@@ -60,22 +59,27 @@ endif()
 if (APPLE)
 	include(CheckCCompilerFlag)
 
-	#include_directories(/opt/local/include/libomp)
+	set(SUPPORTED_ARCHITECTURES "")
+
+	execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE MACHINE)
 
 	#try to build universal binary. on an intel mac x86_64 should be supported, on an m1 both should be supported
-	set(CMAKE_REQUIRED_LINK_OPTIONS "-arch x86_64")
-	check_c_compiler_flag("-arch x86_64" x86_64Supported)
-	#message("x86_64Supported=${x86_64Supported}")
+	if(${MACHINE} MATCHES "arm64-*" OR ${MACHINE} MATCHES "aarch64-*")
+		list(APPEND SUPPORTED_ARCHITECTURES "arm64")
+		message(STATUS "arm64 is supported")
+	endif ()
 
-	set(CMAKE_REQUIRED_LINK_OPTIONS "-arch arm64")
-	check_c_compiler_flag("-arch arm64" arm64Supported)
-	#message("arm64Supported=${arm64Supported}")
+	if(${MACHINE} MATCHES "x86_64")
+		list(APPEND SUPPORTED_ARCHITECTURES "x86_64")
+		message(STATUS "x86_64 is supported")
+	endif ()
+	#check_c_compiler_flag("-arch arm64" arm64Supported)
+	#if (${x86_64Supported})
+#		list(APPEND SUPPORTED_ARCHITECTURES ";arm64")
+#		message(STATUS "arm 64 is supported")
+	#endif ()
 
-	if (${arm64Supported})
-		SET(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
-	else()
-		SET(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Build architectures for Mac OS X" FORCE)
-	endif()
+	SET(CMAKE_OSX_ARCHITECTURES ${SUPPORTED_ARCHITECTURES} CACHE STRING "Build architectures for Mac OS X" FORCE)
 endif()
 
 # virtual filesystem

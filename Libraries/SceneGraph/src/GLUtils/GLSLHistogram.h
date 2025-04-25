@@ -23,7 +23,7 @@
 namespace ara {
 class GLSLHistogram {
 public:
-    GLSLHistogram(GLBase* glbase, int width, int height, GLenum type, unsigned int downSample,
+    GLSLHistogram(GLBase* glbase, glm::ivec2 size, GLenum type, unsigned int downSample,
                   unsigned int histWidth = 512, bool getBounds = true, bool normalize = true,
                   float maxValPerChan = 1.f);
 

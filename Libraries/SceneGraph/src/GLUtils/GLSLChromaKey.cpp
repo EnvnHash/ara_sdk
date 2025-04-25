@@ -5,12 +5,15 @@
 #include "GLUtils/GLSLChromaKey.h"
 
 using namespace std;
+using namespace glm;
 
 namespace ara {
 
 bool GLSLChromaKey::init(GLBase* glbase, Property<GLSLChromaKeyPar*>* par) {
     m_glbase = glbase;
-    if (!par) return false;
+    if (!par) {
+        return false;
+    }
     m_par = par;
 
     m_rgbFbo  = make_unique<FBO>(FboInitParams{m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
@@ -19,8 +22,7 @@ bool GLSLChromaKey::init(GLBase* glbase, Property<GLSLChromaKeyPar*>* par) {
                                  GL_CLAMP_TO_BORDER, false});
     m_maskFbo = make_unique<FBO>(FboInitParams{m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
                                  GL_CLAMP_TO_BORDER, false});
-    m_histo   = make_unique<GLSLHistogram>(m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, 4,
-                                           256);  // m_maxValPerChan, values not stable ... some bug
+    m_histo   = make_unique<GLSLHistogram>(m_glbase, vec2{(*par)()->width, (*par)()->height}, 1, GL_RGBA8, 4, 256);  // m_maxValPerChan, values not stable ... some bug
     m_fastBlurMem = make_unique<FastBlurMem>(m_glbase, 0.3f, (*par)()->width, (*par)()->height);
 
     m_downBuf = std::vector<uint8_t>((*par)()->width * (*par)()->height * 4);
@@ -274,7 +276,9 @@ GLuint GLSLChromaKey::proc(GLuint tex) {
     m_fastBlurMem->setOffsScale((*m_par)()->maskBlurSize());
     m_fastBlurMem->proc(m_maskFbo->getColorImg());
 
-    for (int i = 0; i < (int)(*m_par)()->blurIt(); i++) m_fastBlurMem->proc(m_fastBlurMem->getResult());
+    for (int i = 0; i < (int)(*m_par)()->blurIt(); i++) {
+        m_fastBlurMem->proc(m_fastBlurMem->getResult());
+    }
 
     //----------------------------------------------------------------------------------
 
@@ -303,26 +307,8 @@ GLuint GLSLChromaKey::proc(GLuint tex) {
     glBindTexture(GL_TEXTURE_2D, m_fastBlurMem->getResult());
 
     m_hFlipQuad->draw();
-
     m_procFbo->unbind();
-
-    // readHistoVal();
-
-    /*
-    if (m_keyCol.r != 0.f && m_keyCol.g != 0.f && m_keyCol.y != 0.f)
-    {
-        if (!gotFirstm_histo){
-            gotFirstm_histo = true;
-            m_startTime = chrono::system_clock::now();
-        } else {
-            procm_histo = std::chrono::duration<double,
-    std::milli>(chrono::system_clock::now() - m_startTime).count() < 10.0;
-        }
-    }*/
-
     return m_procFbo->getColorImg();
-
-    // LOG << "maxi : " <<  glm::to_string(m_keyCol);
 }
 
 void GLSLChromaKey::pickMask2Color(glm::vec2& pos) { m_pickMask2Color = pos; }
@@ -339,11 +325,17 @@ void GLSLChromaKey::readHistoVal() {
                 }
         }
 
-        for (int i = 0; i < 3; i++)
-            if (m_keyCol[i]) m_keyColTmp[i] = (*m_keyCol[i])() / 255.f;
+        for (int i = 0; i < 3; i++){
+            if (m_keyCol[i]) {
+                m_keyColTmp[i] = (*m_keyCol[i])() / 255.f;
+            }
+        }
 
-        for (int i = 0; i < 3; i++)
-            if (m_keyCol[i]) m_keyColTmp2[i] = (*m_keyCol2[i])() / 255.f;
+        for (int i = 0; i < 3; i++) {
+            if (m_keyCol[i]) {
+                m_keyColTmp2[i] = (*m_keyCol2[i])() / 255.f;
+            }
+        }
 
         m_keyCC.x = RGBAToCC(m_keyColTmp).x;
         m_keyCC.y = RGBAToCC(m_keyColTmp).y;
