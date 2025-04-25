@@ -59,10 +59,10 @@ public:
     void setBlendMode(GLenum srcMode, GLenum dstMode);
     void setSceneNodeColors(glm::vec4 *cols);
     void setVaryingsNames(std::vector<std::string> &names);
-    void setRecVertOffs(int nr) { m_recVertOffs = _nr; }
+    void setRecVertOffs(int nr) { m_recVertOffs = nr; }
     void setObjOffset();
     void resetObjOffset() { m_objOffset.clear(); }
-    void incRecVertOffs(int nr) { m_recVertOffs += _nr; }
+    void incRecVertOffs(int nr) { m_recVertOffs += nr; }
     void addTexture(int unit, int texInd, GLenum target, const std::string &_name);
     void enableDepthTest() { m_depthTest = true; }
     void disableDepthTest() { m_depthTest = false;}
