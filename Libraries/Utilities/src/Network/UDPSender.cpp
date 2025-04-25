@@ -13,20 +13,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <Network/UDPSignaler.h>
+#include <Network/UDPSender.h>
 #include <Network/NetworkCommon.h>
 
 namespace ara {
-bool UDPSignaler::StartBroadcast(int port, int period_ms, std::function<int(void *, int)> const &f) {
-    if (m_Socket) {
-        return false;
-    }
-
-    if (port < 0) {
-        return false;
-    }
-
-    if (period_ms <= 0) {
+bool UDPSender::StartBroadcast(int port, int period_ms, std::function<int(void *, int)> const &f) {
+    if (m_Socket || port < 0 || period_ms <= 0) {
         return false;
     }
 
@@ -44,13 +36,12 @@ bool UDPSignaler::StartBroadcast(int port, int period_ms, std::function<int(void
     m_SockAddr.sin_port        = htons(m_Port);
 
     int broadcast = 1;
-
     setsockopt(m_Socket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char *>(&broadcast), sizeof(broadcast));
 
     return Start();
 }
 
-bool UDPSignaler::OnCycleStop() {
+bool UDPSender::OnCycleStop() {
     if (!m_Socket) {
         return false;
     }
@@ -59,7 +50,7 @@ bool UDPSignaler::OnCycleStop() {
     return true;
 }
 
-bool UDPSignaler::OnCycle() {
+bool UDPSender::OnCycle() {
     int  ret = 0;
     int  data_size;
     char buff[512];

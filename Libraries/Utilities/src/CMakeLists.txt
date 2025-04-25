@@ -20,9 +20,9 @@ file(GLOB COMMON_SRC
         Network/RestClient.cpp
         Network/TCPCmdListener.cpp
         Network/TCPLineCmdRequest.cpp
-        Network/UDPListener.cpp
-        Network/UDPListener.cpp
-        Network/UDPSignaler.cpp
+        Network/UDPReceiver.cpp
+        Network/UDPReceiver.cpp
+        Network/UDPSender.cpp
         Network/TCPListener.cpp
         Network/MicroHttpConnection.cpp
         Network/MicroHttpContent.cpp

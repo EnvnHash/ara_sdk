@@ -28,6 +28,7 @@ file(GLOB UTILITIES_UT_SRC
     PropertyTest.cpp
     RwBinFileTest.cpp
     StringUtilsTest.cpp
+    UdpSignalTest.cpp
     TableTest.cpp
 )
 

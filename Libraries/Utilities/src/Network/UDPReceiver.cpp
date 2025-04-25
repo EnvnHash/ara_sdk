@@ -13,17 +13,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <Network/UDPListener.h>
+#include <Network/UDPReceiver.h>
 #include <Network/NetworkCommon.h>
 
 namespace ara {
 
-bool UDPListener::StartListen(int port, std::function<void(char *, int, sockaddr_in *)> const &f) {
-    if (m_Socket) {
-        return false;
-    }
-
-    if (port < 0) {
+bool UDPReceiver::StartListen(int port, std::function<void(char *, int, sockaddr_in *)> const &f) {
+    if (m_Socket || port < 0) {
         return false;
     }
 
@@ -53,7 +49,7 @@ bool UDPListener::StartListen(int port, std::function<void(char *, int, sockaddr
     return Start();
 }
 
-bool UDPListener::OnCycleStop() {
+bool UDPReceiver::OnCycleStop() {
     if (!m_Socket) {
         return false;
     }
@@ -62,7 +58,7 @@ bool UDPListener::OnCycleStop() {
     return true;
 }
 
-bool UDPListener::OnCycle() {
+bool UDPReceiver::OnCycle() {
     int         ret;
     char        buff[520];
     sockaddr_in sf{};

@@ -20,7 +20,7 @@
 
 namespace ara {
 
-class UDPListener : public Cycler {
+class UDPReceiver : public Cycler {
 public:
     bool StartListen(int port, std::function<void(char *, int, sockaddr_in *)> const &f);
 

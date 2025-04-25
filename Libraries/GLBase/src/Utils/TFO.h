@@ -14,10 +14,8 @@
 namespace ara {
 class TFO {
 public:
-    TFO(int _bufSize, std::vector<std::string> &_parNames);
-
     TFO();
-
+    TFO(int _bufSize, std::vector<std::string> &_parNames);
     ~TFO();
 
     void init();
