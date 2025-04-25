@@ -108,7 +108,9 @@ public:
     uint32_t                getTotalNrPoints();
 
     void deleteHole(size_t idx) {
-        if (m_polygon.size() > idx) m_polygon.erase(m_polygon.begin() + idx);
+        if (m_polygon.size() > idx) {
+            m_polygon.erase(m_polygon.begin() + idx);
+        }
     }
     std::vector<CtrlPoint>::iterator begin(size_t level) { return m_polygon[level].begin(); }
     std::vector<CtrlPoint>::iterator end(size_t level) { return m_polygon[level].end(); }
@@ -122,7 +124,9 @@ public:
         g = _g;
         b = _b;
         a = _a;
-        if (m_vaoFilled.isInited()) m_vaoFilled.setStaticColor(r, g, b, a);
+        if (m_vaoFilled.isInited()) {
+            m_vaoFilled.setStaticColor(r, g, b, a);
+        }
     }
 
     void serializeToXml(pugi::xml_node &parent);

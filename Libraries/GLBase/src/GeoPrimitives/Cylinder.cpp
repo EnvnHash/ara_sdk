@@ -55,7 +55,7 @@ void Cylinder::init() {
     // create Indices
     // for the cylinder we need one quad of two triangles per ringPoint = nrSegs *6 Vertices for each cap we
     // need nrSegs * 3 Vertices, since we have two caps nrSegs *6 so in total we need nrSegs *12
-    auto cyl_indices = new GLuint[m_nrSegs * 12];
+    std::vector<GLuint> cyl_indices(m_nrSegs * 12);
 
     //  clockwise (viewed from the camera)
     GLuint oneQuadTemp[6] = {0, 0, 1, 1, 0, 1};
@@ -105,7 +105,6 @@ void Cylinder::init() {
     m_vao->setElemIndices(m_nrSegs * 12, &cyl_indices[0]);
 
     m_totNrPoints = totNrVert;
-    delete[] cyl_indices;
 }
 
 void Cylinder::createTopRings(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, const vector<GLfloat>& ringPos,

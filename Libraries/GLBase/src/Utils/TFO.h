@@ -27,80 +27,76 @@ public:
     void pauseAndOffsetBuf(GLenum _mode);
     void incCounters(int nrVertices);
     void decCounters(int nrVertices);
-    void draw(GLenum _mode, TFO *_tfo, GLenum _recToMode, int geoAmpAmt) const;
-    void draw(GLenum _mode, GLuint offset, GLuint count, TFO *_tfo, GLenum _recToMode, int geoAmpAmt) const;
-    void setIndices(GLuint _count, GLenum _type, GLvoid *_indices);
-    void drawElements(GLenum _mode, GLuint _count, GLenum _type, TFO *_tfo, GLenum _recToMode, int geoAmpAmt);
+    void draw(GLenum mode, TFO *tfo, GLenum recToMode, int geoAmpAmt) const;
+    void draw(GLenum mode, GLuint offset, GLuint count, TFO *tfo, GLenum recToMode, int geoAmpAmt) const;
+    void setIndices(GLuint count, GLenum type, GLvoid *indices);
+    void drawElements(GLenum mode, GLuint count, GLenum type, TFO *tfo, GLenum recToMode, int geoAmpAmt);
 
-    void drawElementsBaseVertex(GLenum _mode, GLuint _count, GLenum _type, GLint basevertex, TFO *_tfo,
-                                GLenum _recToMode, int geoAmpAmt);
+    void drawElementsBaseVertex(GLenum mode, GLuint count, GLenum type, GLint basevertex, TFO *tfo,
+                                GLenum recToMode, int geoAmpAmt);
 
     static void unbind();
     static void setVaryingsToRecord(std::vector<std::string> *names, GLuint _prog);
-    static void pause();
-    static void resume();
-    static void end();
+    static void pause() { glPauseTransformFeedback(); }
+    static void resume() { glResumeTransformFeedback(); }
+    static void end() { glEndTransformFeedback(); }
 
     void                                         setVaryingsToRecordInternNames(GLuint _prog);
-    void                                         resizeTFOBuf(CoordType _nr, uint32_t size);
-    GLuint                                       getTFOBuf(CoordType _nr);
-    uint32_t                                     getTFOBufFragSize(CoordType _nr);
-    GLuint                                       getTFOBufSize(CoordType _nr);
-    [[nodiscard]] GLuint                         getId() const;
-    GLuint                                       getTbo(CoordType _coord);
-    [[nodiscard]] GLuint                         getRecVertOffs() const;
-    [[nodiscard]] GLuint                         getTotalPrimWritten() const;
-    [[nodiscard]] GLuint                         getBufSize() const;
-    [[nodiscard]] GLuint                         getVao() const;
-    glm::vec4                                    getColor(int ind);
-    [[nodiscard]] GLenum                         getLastMode() const;
-    std::vector<std::pair<uint32_t, uint32_t> > *getObjOffsets();
+    void                                         resizeTFOBuf(CoordType nr, uint32_t size);
+    GLuint                                       getTFOBuf(CoordType nr);
+    uint32_t                                     getTFOBufFragSize(CoordType nr);
+    GLuint                                       getTFOBufSize(CoordType nr);
+    [[nodiscard]] GLuint                         getId() const { return m_tfo; }
+    GLuint                                       getTbo(CoordType coord) { return m_tbos[toType(coord)]; }
+    [[nodiscard]] GLuint                         getRecVertOffs() const { return m_recVertOffs; }
+    [[nodiscard]] GLuint                         getTotalPrimWritten() const { return m_totalPrimsWritten; }
+    [[nodiscard]] GLuint                         getBufSize() const { return m_bufSize; }
+    [[nodiscard]] GLuint                         getVao() const { return m_resVAO; }
+    glm::vec4                                    getColor(int ind) { return m_recColors[ind]; }
+    [[nodiscard]] GLenum                         getLastMode() const { return m_lastMode; }
+    std::vector<std::pair<uint32_t, uint32_t> > *getObjOffsets() { return &m_objOffset; }
 
-    void setBlendMode(GLenum _srcMode, GLenum _dstMode);
-    void setSceneNodeColors(glm::vec4 *_cols);
-    void setSceneProtoName(std::string *_protoName);
-    void setVaryingsNames(std::vector<std::string> &_names);
-    void setRecNrVert(int _nr);
-    void setRecVertOffs(int _nr);
+    void setBlendMode(GLenum srcMode, GLenum dstMode);
+    void setSceneNodeColors(glm::vec4 *cols);
+    void setVaryingsNames(std::vector<std::string> &names);
+    void setRecVertOffs(int nr) { m_recVertOffs = _nr; }
     void setObjOffset();
-    void resetObjOffset();
-    void incRecVertOffs(int _nr);
-    void addTexture(int _unit, int _texInd, GLenum _target, const std::string &_name);
-    void enableDepthTest();
-    void disableDepthTest();
+    void resetObjOffset() { m_objOffset.clear(); }
+    void incRecVertOffs(int nr) { m_recVertOffs += _nr; }
+    void addTexture(int unit, int texInd, GLenum target, const std::string &_name);
+    void enableDepthTest() { m_depthTest = true; }
+    void disableDepthTest() { m_depthTest = false;}
     void recallDepthTestState() const;
-    void recallBlendMode() const;
+    void recallBlendMode() const { glBlendFunc(m_srcMode, m_dstMode); }
 
-    GLuint                 primitivesWritten{};
-    GLuint                 totalPrimsWritten{};
-    GLuint                 bufSize;
-    std::vector<auxTexPar> textures;
+    GLuint                 m_primitivesWritten{};
+    GLuint                 m_totalPrimsWritten{};
+    GLuint                 m_bufSize;
+    std::vector<auxTexPar> m_textures;
 
 private:
-    GLuint                   tfo{};
-    GLuint                  *buffers{};
-    GLuint                  *bufferSizes{};
-    GLuint                  *tbos{};
-    GLuint                   resVAO{};
-    GLuint                   resElementBuffer{};
-    GLuint                   resElementBufferNrIndices{};
-    GLuint                   resElementBufferSize{};
-    GLfloat                 *statColor{};
-    int                      recNrVert{};
-    int                      recVertOffs{};
-    uint32_t                 nrPar{};
-    std::vector<std::string> parNames;
-    std::vector<std::string> varyingsNames;
-    std::vector<uint32_t>    fragSizes;
-    std::vector<uint32_t>    locations;
+    GLuint                   m_tfo{};
+    GLuint                   m_resVAO{};
+    GLuint                   m_resElementBuffer{};
+    GLuint                   m_resElementBufferSize{};
+    std::vector<GLuint>      m_buffers;
+    std::vector<GLuint>      m_bufferSizes;
+    std::vector<GLuint>      m_tbos;
+    glm::vec4                m_statColor{};
+    std::vector<glm::vec4>   m_recColors;
 
-    std::vector<std::pair<uint32_t, uint32_t> > objOffset;
+    int                      m_recVertOffs{};
+    uint32_t                 m_nrPar{};
+    std::vector<std::string> m_parNames;
+    std::vector<std::string> m_varyingsNames;
+    std::vector<uint32_t>    m_fragSizes;
+    std::vector<uint32_t>    m_locations;
 
-    bool         depthTest{};
-    GLenum       srcMode{};
-    GLenum       dstMode{};
-    glm::vec4   *recColors{};
-    std::string *recProtoName{};
-    GLenum       lastMode{};
+    std::vector<std::pair<uint32_t, uint32_t> > m_objOffset;
+
+    bool         m_depthTest{};
+    GLenum       m_srcMode{};
+    GLenum       m_dstMode{};
+    GLenum       m_lastMode{};
 };
 }  // namespace ara

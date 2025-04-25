@@ -13,61 +13,71 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <vector>
+
 namespace ara {
 
 template <typename T>
 class Median {
 public:
-    Median(float _medAmt, unsigned int _bufferSize = 2) {
-        bufferSize = _bufferSize;
-        medAmt     = _medAmt;
-        medDiv     = 1.f / (medAmt + 1.f);
-        ptr        = 0;
-        filled     = false;
-        values     = new T[_bufferSize];
-    }
+    Median(float _medAmt, unsigned int bufferSize = 2) {
+        m_bufferSize = bufferSize;
+        m_medAmt     = _medAmt;
+        m_medDiv     = 1.f / (m_medAmt + 1.f);
+        m_ptr        = 0;
+        m_filled     = false;
 
-    ~Median() = default;
+        m_values.resize(bufferSize);
+    }
 
     void update(T newVal) {
-        if (filled)
-            values[ptr] = (newVal + values[(ptr - 1 + bufferSize) % bufferSize] * medAmt) * medDiv;
-        else
-            values[ptr] = newVal;
+        if (m_filled) {
+            m_values[m_ptr] = (newVal + m_values[(m_ptr - 1 + m_bufferSize) % m_bufferSize] * m_medAmt) * m_medDiv;
+        } else {
+            m_values[m_ptr] = newVal;
+        }
 
-        ptr++;
-        if (!filled && ptr == 2) filled = true;
-        ptr %= bufferSize;
+        ++m_ptr;
+        if (!m_filled && m_ptr == 2) {
+            m_filled = true;
+        }
+        m_ptr %= m_bufferSize;
     }
 
-    void add(T _newVal) {
-        values[ptr % bufferSize] = _newVal;
-        ptr++;
+    void add(T newVal) {
+        m_values[m_ptr % m_bufferSize] = newVal;
+        ++m_ptr;
     }
 
     void calcMed() {
         T tmp;
-        for (int i = 0; i < bufferSize; i++) tmp += values[i];
-        tmp /= static_cast<float>(bufferSize);
-        medValue = tmp;
+        for (int i = 0; i < m_bufferSize; i++) {
+            tmp += m_values[i];
+        }
+        tmp /= static_cast<float>(m_bufferSize);
+        m_medValue = tmp;
     }
 
-    T get() { return values[(ptr - 1 + bufferSize) % bufferSize]; }
-    T getMed() { return medValue; }
+    T get() {
+        return m_values[(m_ptr - 1 + m_bufferSize) % m_bufferSize];
+    }
+
+    T getMed() {
+        return m_medValue;
+    }
 
     void clear() {
-        delete[] values;
-        values = new T[bufferSize];
-        filled = false;
+        std::fill(m_values.begin(), m_values.end(), {});
+        m_filled = false;
     }
 
 private:
-    T             *values = nullptr;
-    T              medValue;
-    float          medAmt     = 0.f;
-    float          medDiv     = 0.f;
-    bool           filled     = false;
-    unsigned short ptr        = 0;
-    unsigned int   bufferSize = 0;
+    std::vector<T> m_values;
+    T              m_medValue;
+    float          m_medAmt     = 0.f;
+    float          m_medDiv     = 0.f;
+    bool           m_filled     = false;
+    unsigned short m_ptr        = 0;
+    unsigned int   m_bufferSize = 0;
 };
 }  // namespace ara

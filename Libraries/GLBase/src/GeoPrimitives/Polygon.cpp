@@ -205,42 +205,6 @@ void Polygon::initTessShader() {
     m_tessShdr = m_shCol->add("PolygonTessShader", vert, cont, eval, std::string(), frag);
 }
 
-/*
-void Polygon::initTessShader() {
-
-   string vert = STRINGIFY(precise layout(location = 0) in vec4 position;\n
-       layout(location = 2) in vec2 texCoord;\n
-       out VS_FS { \n
-           vec2 rawPos; \n
-           vec2 texCoord; \n
-       } vertOut; \n
-       uniform mat4 m_pvm;
-       void main() { \n
-            vertOut.rawPos = position.xy; \n
-            vertOut.texCoord = texCoord; \n
-            gl_Position = m_pvm * position; \n
-       });
-   vert = "// polygon tesselation shader, vert\n" + m_shCol->getShaderHeader() +
-vert;
-
-   string frag = STRINGIFY(layout(location = 0) out vec4 fragColor;\n
-        in VS_FS { \n
-            vec2 rawPos; \n
-            vec2 texCoord; \n
-        } vertIn; \n  // access to all patches vertices from the TC stage,
-although TE is invocated per Vertex uniform sampler2D tex;\n uniform vec4
-color;\n void main() { \n fragColor = texture(tex, vertIn.texCoord);
-        });
-   frag = "// polygon tesselation shader, vert\n" + m_shCol->getShaderHeader() +
-frag;
-
-   if (m_shCol->hasShader("PolygonTessShader"))
-       m_shCol->deleteShader("PolygonTessShader");
-
-   m_tessShdr = m_shCol->add("PolygonTessShader", vert, frag);
-}
- */
-
 // Returns array of indices that refer to the vertices of the input polygon.
 // e.g: the index 6 would refer to {25, 75} in this example.
 // Three subsequent indices form a triangle. Output triangles are clockwise.

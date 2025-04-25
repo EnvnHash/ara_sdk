@@ -82,7 +82,9 @@ matrix *matrix_multiple(matrix *a, matrix *b) {
     int     col, row, iter;
     int     i, j, k;
 
-    if (a->col != b->row) return NULL;
+    if (a->col != b->row) {
+        return nullptr;
+    }
 
     row = a->row;
     col = b->col;
@@ -103,31 +105,38 @@ matrix *matrix_multiple(matrix *a, matrix *b) {
 matrix *matrix_inv(matrix *m) {
     matrix *inv, *n;
     int     iter, i, j, k;
-
     double v;
-
     double tmp;
     int    max_key;
 
-    if (m->col != m->row) return NULL;
+    if (m->col != m->row) {
+        return nullptr;
+    }
 
     iter = m->row;
     inv  = matrix_new(m->row, m->col);
     n    = matrix_new(m->row, m->col * 2);
 
     // copy it
-    for (j = 0; j < iter; j++)
-        for (i = 0; i < iter; i++) n->var[j][i] = m->var[j][i];
+    for (j = 0; j < iter; j++) {
+        for (i = 0; i < iter; i++) {
+            n->var[j][i] = m->var[j][i];
+        }
+    }
 
     // insert identity matrix
-    for (i = 0; i < iter; i++) n->var[i][i + iter] = 1.0;
+    for (i = 0; i < iter; i++) {
+        n->var[i][i + iter] = 1.0;
+    }
 
     // start gauss elimination
     for (i = 0; i < iter; i++) {
         // find max
         max_key = i;
         for (j = i + 1; j < iter; j++)
-            if (n->var[j][i] > n->var[max_key][i]) max_key = j;
+            if (n->var[j][i] > n->var[max_key][i]) {
+                max_key = j;
+            }
 
         // swap with current row
         if (max_key != i) {
@@ -140,9 +149,13 @@ matrix *matrix_inv(matrix *m) {
 
         // normalize
         v = n->var[i][i];
-        if (v == 0.0) break;
+        if (v == 0.0) {
+            break;
+        }
 
-        for (j = i + 1; j < iter * 2; j++) n->var[i][j] /= v;
+        for (j = i + 1; j < iter * 2; j++) {
+            n->var[i][j] /= v;
+        }
 
         for (j = i + 1; j < iter; j++) {
             v            = n->var[j][i];
@@ -163,7 +176,9 @@ matrix *matrix_inv(matrix *m) {
 
     // copy it
     for (j = 0; j < iter; j++)
-        for (i = 0; i < iter; i++) inv->var[j][i] = n->var[j][i + iter];
+        for (i = 0; i < iter; i++) {
+            inv->var[j][i] = n->var[j][i + iter];
+        }
 
     matrix_free(n);
 

@@ -53,10 +53,10 @@ GLuint Shaders::create() {
         GLint logLength;
         glGetProgramiv(m_program, GL_INFO_LOG_LENGTH, &logLength);
         if (logLength > 0) {
-            char *log = new char[logLength];
-            glGetProgramInfoLog(m_program, logLength, nullptr, log);
+            std::string log;
+            log.reserve(logLength);
+            glGetProgramInfoLog(m_program, logLength, nullptr, log.data());
             LOGE << "Shaders: ComputeShader Program didn't compile: " << log;
-            delete[] log;
         }
 
         glGenProgramPipelines(1, &m_progPipe);
@@ -71,10 +71,10 @@ GLuint Shaders::create() {
         if (status != GL_TRUE) {
             glGetProgramPipelineiv(m_progPipe, GL_INFO_LOG_LENGTH, &logLength);
             if (logLength > 0) {
-                char *log = new char[logLength];
-                glGetProgramPipelineInfoLog(m_progPipe, logLength, nullptr, log);
+                std::string log;
+                log.reserve(logLength);
+                glGetProgramPipelineInfoLog(m_progPipe, logLength, nullptr, log.data());
                 LOGE << "Shader pipeline not valid:\n" << log;
-                delete[] log;
             }
         }
 
@@ -223,13 +223,8 @@ std::string Shaders::textFileRead(const std::string &filename) {
 }
 
 void Shaders::getGlVersions() {
-    const char *verstr = (const char *)glGetString(GL_VERSION);
-    LOG << "OpenGL Version: " << verstr;
-    delete verstr;
-
-    const char *slVerstr = (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
-    LOG << "Glsl Version: " << slVerstr;
-    delete slVerstr;
+    LOG << "OpenGL Version: " << glGetString(GL_VERSION);
+    LOG << "Glsl Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION);
 }
 
 inline GLint Shaders::getUniformLocation(const std::string &name) {
