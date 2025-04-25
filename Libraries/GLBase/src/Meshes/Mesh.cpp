@@ -28,7 +28,9 @@ void Mesh::init(const char *format) {
     m_entr_types[toType(CoordType::Color)]    = "color";
 
     m_bUsing.resize(toType(CoordType::Count));
-    for (int i = 0; i < toType(CoordType::Count); i++) m_bUsing[i] = false;
+    for (int i = 0; i < toType(CoordType::Count); i++) {
+        m_bUsing[i] = false;
+    }
 
     m_allCoords.push_back(&m_positions);
     m_allCoords.push_back(&m_normals);

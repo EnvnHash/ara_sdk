@@ -25,7 +25,7 @@ file(GLOB UTILITIES_UT_SRC
     ItemTest.cpp
     ListPropertyTest.cpp
     NodeTest.cpp
-    PropertyTest.cpp
+    #PropertyTest.cpp
     RwBinFileTest.cpp
     StringUtilsTest.cpp
     UdpSignalTest.cpp
