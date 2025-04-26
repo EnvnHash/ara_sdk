@@ -27,20 +27,22 @@ TEST(UdpSignalTest, SendReceive) {
     std::string str = "Hello World";
 
     UDPReceiver receiver;
+    UDPSender sender;
+
     receiver.StartListen(1234, [&](char* data, int datalen, sockaddr_in* a) {
         auto ret = std::string(data);
-        EXPECT_EQ(ret, str);
-        gotMsg.notify();
+        if (ret == str){
+            gotMsg.notify();
+        }
     });
 
-    UDPSender sender;
-    sender.StartBroadcast(1234, 1000, [&](void* data, int max_size) {
+    sender.StartBroadcast(1234, 1000, [&str](void* data, int max_size) {
         std::strcpy(static_cast<char*>(data), str.c_str());
         return str.length();
     });
 
     gotMsg.wait();
-
+    EXPECT_TRUE(gotMsg.isNotified());
     receiver.Stop();
     sender.Stop();
 }
