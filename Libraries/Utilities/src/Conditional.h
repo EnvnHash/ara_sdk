@@ -62,6 +62,10 @@ public:
             }
             --m_waitingThreads;
         }
+
+        if (m_waitingThreads == 0) {
+            m_flag = false;
+        }
     }
 
     bool isNotified() { return m_flag; }
