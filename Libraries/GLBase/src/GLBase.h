@@ -214,7 +214,6 @@ protected:
     Conditional              g_loopRunningSem;
     Conditional              g_loopExit;
     Conditional              m_resUpdtExited;
-    Conditional              m_resUpdtSema;
     std::list<Conditional *> m_semaqueue;
 
     std::function<void()> g_updtResCb;

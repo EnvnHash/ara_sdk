@@ -47,10 +47,10 @@ public:
             if (timeOut_ms) {
                 m_cv.wait_for(lock, std::chrono::milliseconds(timeOut_ms), [&] {
 #ifdef SEMA_CHECK_TIMEOUT
-                    if (timeOut_ms == 5000) {
-                        auto end     = std::chrono::system_clock::now();
-                        auto actDifF = std::chrono::duration<double, std::milli>(end - start).count();
-                        if (actDifF > 5000.0) LOGE << " Semaphore timed out " << actDifF;
+                    auto end     = std::chrono::system_clock::now();
+                    auto actDifF = std::chrono::duration<double, std::milli>(end - start).count();
+                    if (actDifF > timeOut_ms) {
+                        LOGE << " Semaphore timed out " << actDifF;
                     }
 #endif
                     return m_flag.load();
