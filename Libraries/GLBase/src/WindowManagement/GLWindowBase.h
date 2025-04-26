@@ -13,7 +13,7 @@ class GLWindowBase {
 public:
     GLWindowBase() = default;
     virtual ~GLWindowBase() {}
-    virtual bool  create(glWinPar &gp)                  = 0;
+    virtual bool  create(const glWinPar &gp)            = 0;
     virtual void  open()                                = 0;
     virtual void  close()                               = 0;
     virtual void  swap()                                = 0;

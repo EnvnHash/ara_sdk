@@ -8,7 +8,7 @@
 
 namespace ara {
 
-bool X11Window::create(glWinPar &gp) {
+bool X11Window::create(const glWinPar &gp) {
     return create((char *)"", gp.width, gp.height, gp.shiftX, gp.shiftY, gp.bits, gp.fullScreen, gp.createHidden,
                   gp.decorated, gp.resizeable, gp.floating, gp.transparent, gp.shareCont);
 }
@@ -19,7 +19,9 @@ bool X11Window::create(char *title, uint32_t width, uint32_t height, uint32_t m_
     XrmInitialize();
 
     m_display = XOpenDisplay(nullptr);
-    if (!m_display) return false;
+    if (!m_display) {
+        return false;
+    }
 
     createKeyTables();
     initAtoms();

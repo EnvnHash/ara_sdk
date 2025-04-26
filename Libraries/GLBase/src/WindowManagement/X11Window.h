@@ -58,7 +58,7 @@ public:
                 uint32_t nrSamples, bool fullscreenflag, bool hidden = false, bool decorated = true,
                 bool resizable = true, bool floating = false, bool transparent = false, void *shareCtx = nullptr);
 
-    bool        create(glWinPar &gp) override;
+    bool        create(const glWinPar &gp) override;
     void        open() override {}
     void        close() override;
     void        swap() override {}

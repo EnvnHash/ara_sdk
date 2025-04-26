@@ -13,14 +13,11 @@ using namespace std;
 
 namespace ara {
 
-int GLFWWindow::init(glWinPar &gp) {
+int GLFWWindow::init(const glWinPar &gp) {
     m_widthVirt  = gp.width;
     m_heightVirt = gp.height;
     m_monWidth   = 0;
     m_monHeight  = 0;
-#ifdef ARA_DEBUG
-    gp.debug = true;
-#endif
 
     glfwSetErrorCallback(error_callback);
 
