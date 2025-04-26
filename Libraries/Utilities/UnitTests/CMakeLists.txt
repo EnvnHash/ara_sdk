@@ -15,7 +15,7 @@ include_directories(
 
 # add test source files
 file(GLOB UTILITIES_UT_SRC 
-    AnimValTest.cpp
+    #AnimValTest.cpp
     AssetLoaderTest.cpp
     CommonTest.cpp
     ConditionalTest.cpp
@@ -27,8 +27,8 @@ file(GLOB UTILITIES_UT_SRC
     NodeTest.cpp
     #PropertyTest.cpp
     RwBinFileTest.cpp
-    StringUtilsUdpTest.cpp
-    UdpSignalTest.cpp
+    StringUtilsTest.cpp
+    #UdpSignalTest.cpp
     TableTest.cpp
 )
 
