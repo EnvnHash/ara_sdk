@@ -10,7 +10,7 @@ namespace ara {
 /** init the gl context, create a new window, disable the context after
    creation. return true if the context was created and false if it already
    existed */
-bool GLRenderer::init(std::string name, glm::ivec2 pos, glm::ivec2 dimension, bool hidden) {
+bool GLRenderer::init(const std::string& name, glm::ivec2 pos, glm::ivec2 dimension, bool hidden) {
 #ifdef ARA_USE_GLFW
     bool restartGlBaseLoop = false;
 
@@ -27,16 +27,16 @@ bool GLRenderer::init(std::string name, glm::ivec2 pos, glm::ivec2 dimension, bo
     m_fontHeight = 45;
 
     // add a new window through the GWindowManager
-    glWinPar wp;
-    wp.width = static_cast<int>(m_dim.x);
-    wp.height = static_cast<int>(m_dim.y);
-    wp.shiftX = static_cast<int>(m_pos.x);
-    wp.shiftY = static_cast<int>(m_pos.y);
-    wp.createHidden = hidden;
-    wp.scaleToMonitor = true;
-    wp.shareCont = static_cast<void *>(m_glbase->getGlfwHnd());
+    m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{
+        .createHidden = hidden,
+        .shiftX = static_cast<int>(m_pos.x),
+        .shiftY = static_cast<int>(m_pos.y),
+        .width = static_cast<int>(m_dim.x),
+        .height = static_cast<int>(m_dim.y),
+        .scaleToMonitor = true,
+        .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
+    });
 
-    m_winHandle = m_glbase->getWinMan()->addWin(wp);
     if (!m_winHandle) {
         return false;
     }
@@ -50,8 +50,7 @@ bool GLRenderer::init(std::string name, glm::ivec2 pos, glm::ivec2 dimension, bo
         initGL();
 
         glfwMakeContextCurrent(nullptr);
-        m_winHandle->startDrawThread(std::bind(&GLRenderer::draw, this, std::placeholders::_1, std::placeholders::_2,
-                                               std::placeholders::_3));  // window context will be made current
+        m_winHandle->startDrawThread(std::bind(&GLRenderer::draw, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));  // window context will be made current
                                                                          // within the thread, so release it before
         s_inited = true;
     }
@@ -67,7 +66,7 @@ bool GLRenderer::init(std::string name, glm::ivec2 pos, glm::ivec2 dimension, bo
 
 #ifdef ARA_USE_GLFW
 
-void GLRenderer::initFromWinMan(std::string name, GLFWWindow *win) {
+void GLRenderer::initFromWinMan(const std::string& name, GLFWWindow *win) {
     m_dim       = glm::vec2(win->getWidth(), win->getHeight());
     m_pos       = glm::vec2(win->getPosition());
     m_winHandle = win;
@@ -78,10 +77,6 @@ void GLRenderer::initFromWinMan(std::string name, GLFWWindow *win) {
 #endif
 
 void GLRenderer::initGL() {
-    // m_watch.setStart();
-    // LOG << "  GLRenderer::initGL " << this << " glCtx.ctx " << (void*)
-    // wglGetCurrentContext();
-
     glLineWidth(1.f);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_LINE_SMOOTH);  // bei der implementation von nvidia gibt es nur
@@ -92,12 +87,11 @@ void GLRenderer::initGL() {
 
     m_stdCol = s_shCol.getStdCol();
     m_stdTex = s_shCol.getStdTex();
-    // s_testPicShdr = initTestPicShdr();
 
     m_stdQuad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f});
     m_flipQuad =
         make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f, nullptr, 1, true});
-    // s_dataPath = dataPath;
+
     glGenVertexArrays(1, &m_nullVao);
 
     m_vwfShader         = initVwfRenderShdr();
@@ -107,9 +101,6 @@ void GLRenderer::initGL() {
 
     glFinish();  // glbase renderloop may not be running, so be sure the command
                  // queue is executed
-
-    // m_watch.setEnd();
-    // m_watch.print("GLRenderer init ", true);
 
     s_inited = true;
 }

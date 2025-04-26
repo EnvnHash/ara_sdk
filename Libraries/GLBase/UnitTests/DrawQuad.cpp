@@ -47,7 +47,6 @@ namespace ara::GLBaseUnitTest::DrawQuad {
 
     TEST(GLBaseTest, DrawQuad) {
         // direct window creation
-        // gp.debug = true;
         gp.width = 1920;            // set the windows width
         gp.height = 1080;            // set the windows height
         gp.shiftX = 100;            // x offset relative to OS screen canvas

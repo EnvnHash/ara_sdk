@@ -12,7 +12,7 @@ namespace ara {
 class GLWindowBase {
 public:
     GLWindowBase() = default;
-    virtual ~GLWindowBase() {}
+    virtual ~GLWindowBase() = default;
     virtual bool  create(const glWinPar &gp)            = 0;
     virtual void  open()                                = 0;
     virtual void  close()                               = 0;

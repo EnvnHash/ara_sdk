@@ -82,23 +82,6 @@ public:
      * multCtx is true, since not sure if other apps are using this
      */
     void iterate(bool only_open_windows) {
-        /*
-        // update time counter, get dt and smooth it
-        if (m_medDt == 0.066)
-        {
-            if (m_lastTime != 0.0)
-                m_medDt = glfwGetTime() - m_lastTime;
-        } else
-            m_medDt = ((glfwGetTime() - m_lastTime) + (m_medDt * 30.0)) / 31.0;
-
-        m_lastTime = glfwGetTime();
-
-        if (showFps && (m_lastTime - lastPrintFps) > printFpsIntv)
-        {
-            printf("FPS: %f dt: %f\n", 1.0 / m_medDt, m_medDt);
-            lastPrintFps = m_lastTime;
-        }*/
-
         drawMtx.lock();
 
         // proc open / close request
@@ -163,23 +146,24 @@ public:
                          int shiftY = 0, int monitorNr = 0, bool decorated = true, bool floating = false,
                          unsigned int nrSamples = 2, bool hidden = false, bool scaleToMonitor = false,
                          GLWindowBase *sharedCtx = nullptr, bool debug = false) {
-        addWindows.push_back(new glWinPar());
-        addWindows.back()->width          = width;
-        addWindows.back()->height         = height;
-        addWindows.back()->refreshRate    = refreshRate;
-        addWindows.back()->fullScreen     = fullScreen;
-        addWindows.back()->useGL32p       = useGL32p;
-        addWindows.back()->shiftX         = shiftX;
-        addWindows.back()->shiftY         = shiftY;
-        addWindows.back()->monitorNr      = monitorNr;
-        addWindows.back()->decorated      = decorated;
-        addWindows.back()->floating       = floating;
-        addWindows.back()->nrSamples      = nrSamples;
-        addWindows.back()->debug          = debug;
-        addWindows.back()->createHidden   = hidden;
-        addWindows.back()->doInit         = false;
-        addWindows.back()->scaleToMonitor = scaleToMonitor;
-        addWindows.back()->shareCont      = sharedCtx;
+        addWindows.emplace_back(glWinPar{
+            .doInit         = false,
+            .fullScreen     = fullScreen,
+            .useGL32p       = useGL32p,
+            .decorated      = decorated,
+            .floating       = floating,
+            .createHidden   = hidden,
+            .debug          = debug,
+            .nrSamples      = nrSamples,
+            .shiftX         = shiftX,
+            .shiftY         = shiftY,
+            .monitorNr      = monitorNr,
+            .width          = width,
+            .height         = height,
+            .refreshRate    = refreshRate,
+            .scaleToMonitor = scaleToMonitor,
+            .shareCont      = sharedCtx,
+        });
         return addWin(addWindows.back());
     }
 
@@ -187,15 +171,15 @@ public:
      * add a new Window using the Window Wrapper class
      * parameters are set via pre filled gWinPar struct
      */
-    GLWindowBase *addWin(glWinPar *gp) {
+    GLWindowBase *addWin(glWinPar& gp) {
         windows.push_back(std::make_unique<GLWindow>());
 
         // if there is no explicit request to share a specific content, and we
         // already got another context to share, take the first added window as
         // a shared context
-        gp->shareCont = gp->shareCont ? gp->shareCont : shareCtx;
-        gp->doInit    = false;
-        if (!windows.back()->create(*gp)) {
+        gp.shareCont = gp.shareCont ? gp.shareCont : shareCtx;
+        gp.doInit    = false;
+        if (!windows.back()->create(gp)) {
             std::cerr << "GWindowManager addWin windows.back().create failed " << std::endl;
             return nullptr;
         }
@@ -392,7 +376,7 @@ public:
 
     void IterateAll(bool                                                            only_open_windows,
                     std::function<void(double time, double dt, unsigned int ctxNr)> render_function) {
-        if (m_dispFunc = render_function) {
+        if ((m_dispFunc = render_function)) {
             iterate(only_open_windows);
         }
     }
@@ -409,7 +393,7 @@ public:
 
 private:
     std::mutex              drawMtx;
-    std::vector<glWinPar *> addWindows;
+    std::vector<glWinPar>   addWindows;
     // a vector may rearrange it element and thus change their pointer addresses
     std::map<GLWindow *, std::vector<std::function<void(int, int, int, int)>>>            keyCbMap;
     std::map<GLWindow *, std::vector<std::function<void(int, int, int, double, double)>>> mouseButCbMap;

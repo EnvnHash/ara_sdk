@@ -11,10 +11,10 @@ public:
     GLRenderer()           = default;
     ~GLRenderer() override = default;
 
-    virtual bool init(std::string name, glm::ivec2 pos, glm::ivec2 dimension, bool hidden = false);
+    virtual bool init(const std::string& name, glm::ivec2 pos, glm::ivec2 dimension, bool hidden = false);
 
 #ifdef ARA_USE_GLFW
-    virtual void initFromWinMan(std::string name, GLFWWindow *win);
+    virtual void initFromWinMan(const std::string& name, GLFWWindow *win);
 #endif
 
     virtual void     initGL();
