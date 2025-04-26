@@ -24,6 +24,7 @@ namespace ara {
 
 TEST(UdpSignalTest, SendReceive) {
     Conditional gotMsg;
+    bool check = false;
     std::string str = "Hello World";
 
     UDPReceiver receiver;
@@ -32,6 +33,7 @@ TEST(UdpSignalTest, SendReceive) {
     receiver.StartListen(1234, [&](char* data, int datalen, sockaddr_in* a) {
         auto ret = std::string(data);
         if (ret == str){
+            check = true;
             gotMsg.notify();
         }
     });
@@ -42,7 +44,7 @@ TEST(UdpSignalTest, SendReceive) {
     });
 
     gotMsg.wait();
-    EXPECT_TRUE(gotMsg.isNotified());
+    EXPECT_TRUE(check);
     receiver.Stop();
     sender.Stop();
 }
