@@ -12,8 +12,6 @@ namespace ara {
 
 class ubBlockVar {
 public:
-    ubBlockVar() = default;
-
     std::string name;
     GLenum      inType  = 0;
     float      *fVal    = nullptr;
@@ -39,7 +37,7 @@ public:
         glBindBufferBase(GL_UNIFORM_BUFFER, m_uboIndex, m_ubo);
     }
     static void              unbind() { glBindBuffer(GL_UNIFORM_BUFFER, 0); }
-    void                     addVarName(std::string name, void *inVal, GLenum type);
+    void                     addVarName(const std::string& name, void *inVal, GLenum type);
     void                     changeVarName(const std::string &name, void *inVal, GLenum type);
     void                     update();
     static std::size_t       TypeSize(GLenum type);

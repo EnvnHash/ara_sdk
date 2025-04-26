@@ -1,6 +1,6 @@
 # ARA SDK
 
-Cross-platform application framework for 2D User Interfaces (similar to QT) and 3D graphics based on OpenGL, written in C++17.
+Cross-platform application framework for 2D User Interfaces (similar to QT) and 3D graphics based on OpenGL, written in C++20.
 
 [![CMake build on ubuntu, windows, macos](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/7b84863e25bf46ada4a2ee5e28273207)](https://app.codacy.com/gh/EnvnHash/ara_sdk/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
@@ -28,11 +28,21 @@ Since Android needs a set of building files, which can be generated through cmak
 include(GenerateAndroidProject)
 gen_android_proj(${PROJECT_NAME} 0 icon)
 ```
+
 The first argument refers to the cmake project name, the second to the type of Android Project (0 = pure native NDK application, 1 = Java NDI application) and the third argument refers to an icon in png format which will be included into the AndroidManifest file
 
 (**Note:** depending on your setup you may need to add an explicit path to the ara sdk modules: e.g.: `include(${ara_sdk_SOURCE_DIR}/Libraries/cmake/Modules/Android/GenerateAndroidProject.cmake)`)
 
 This will generate a folder called ${PROJECT_NAME}_Android in the root folder of your project. Open this folder with Android Studio and build it as a usual NDK project.
+
+As a demo, check the example project in Examples/UITest and uncommnent the lines:
+
+```
+include(Android/GenerateAndroidProject)
+gen_android_proj(${PROJECT_NAME} 0 icon)
+```
+
+This will generate the folder Examples/UITest/UITest_Android. Open and build it as a regular project in android studio.
 
 > [!IMPORTANT]
 >- all resources such as images, fonts, etc. are expected to be in a folder called _Assets_ in the root folder of the project

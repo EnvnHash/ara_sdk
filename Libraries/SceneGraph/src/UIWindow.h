@@ -9,11 +9,11 @@
 #include <Asset/AssetFont.h>
 #include <Asset/AssetManager.h>
 #include <StopWatch.h>
-#include "WindowElements/MenuBar.h"
+#include <WindowElements/MenuBar.h>
 #include <ObjectMapInteraction.h>
 #include <UINodeFact.h>
 #include <DrawManagers/DrawManager.h>
-#include "WindowElements/WindowResizeAreas.h"
+#include <WindowElements/WindowResizeAreas.h>
 #include <WindowManagement/GLFWWindow.h>
 #include <WindowManagement/GLWindow.h>
 #include <WindowManagement/WindowBase.h>

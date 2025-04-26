@@ -12,8 +12,6 @@
 #include <Utils/BoundingBoxer.h>
 #include <Utils/Texture.h>
 
-#include <utility>
-
 #define aisgl_min(x, y) (x < y ? x : y)
 #define aisgl_max(x, y) (y > x ? y : x)
 
@@ -97,12 +95,9 @@ void AssimpImport::loadFromOsFileSys(string& filePath, SceneNode* root, function
         root->setGLBase(m_glbase);
 
         loadThread(root, std::move(cb), idGroup, false);
-        // m_loadThread = std::thread(&AssimpImport::loadThread, this, root, cb,
-        // false); m_loadThread.detach();
 
-        // be sure the opengl callback is set - if a updateWindow is called
-        // after calling this method, it for sure will be called
-        // m_threadRunning.wait();
+        // be sure the opengl callback is set - if a updateWindow is called after calling this method, it for sure will
+        // be called m_threadRunning.wait();
     }
 }
 
@@ -160,8 +155,7 @@ void AssimpImport::loadThread(SceneNode* root, function<void(SceneNode*)> cb, SN
             LOG << " AssimpImport::loadThread: loadModel " << m_filePath.c_str() << " \n fileAbsolutePath "
                 << m_sd.fileAbsolutePath.c_str();
 
-        // aiProcess_FlipUVs is for VAR code. Not needed otherwise. Not sure
-        // why.
+        // aiProcess_FlipUVs is for VAR code. Not needed otherwise.
         unsigned int flags = aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType |
                              aiProcess_CalcTangentSpace | aiProcess_GenUVCoords | aiProcess_GenNormals | 0;
 
@@ -198,14 +192,6 @@ void AssimpImport::loadThread(SceneNode* root, function<void(SceneNode*)> cb, SN
         }
 
         if (m_sd.scene) {
-            /*			if(optimize)
-                                            aiApplyPostProcessing(m_sd.scene,
-                                                    aiProcess_ImproveCacheLocality
-                                                    | aiProcess_OptimizeGraph
-                                                    | aiProcess_OptimizeMeshes
-                                                    |
-               aiProcess_JoinIdenticalVertices | aiProcess_TransformUVCoords |
-               aiProcess_GenUVCoords | aiProcess_RemoveRedundantMaterials);*/
             get_bounding_box();
 
             if (s_sd && s_sd->debug) {
@@ -244,9 +230,6 @@ void AssimpImport::loadThread(SceneNode* root, function<void(SceneNode*)> cb, SN
                     uploadToGL();
                     return true;
                 });
-
-            // m_threadRunning.notify();
-
         } else {
             LOGE << this << "ERROR::ASSIMP " << m_sd.import.GetErrorString();
         }
@@ -265,8 +248,7 @@ bool AssimpImport::uploadToGL() {
 }
 
 bool AssimpImport::loadGLResources() {
-    // copy the scenes bounding box, the imported scene as a node will have
-    // transVec(0)
+    // copy the scenes bounding box, the imported scene as a node will have transVec(0)
     m_sd.sceneRoot->setBoundingBox(m_sd.scene_min.x * m_rootScaleFact.x, m_sd.scene_max.x * m_rootScaleFact.x,
                                    m_sd.scene_min.y * m_rootScaleFact.y, m_sd.scene_max.y * m_rootScaleFact.y,
                                    m_sd.scene_min.z * m_rootScaleFact.z, m_sd.scene_max.z * m_rootScaleFact.z);
@@ -314,8 +296,7 @@ void AssimpImport::loadSubMeshes(aiScene const* scene, aiNode* node, SceneNode* 
 
     // if this is the scene root
     if (scene->mRootNode == node) {
-        // initial root transformation matrix for optional transformations
-        // coming from outside the class
+        // initial root transformation matrix for optional transformations coming from outside the class
         glm::mat4 rootTransMat(1.f);
 
         // optional rotation
@@ -332,8 +313,7 @@ void AssimpImport::loadSubMeshes(aiScene const* scene, aiNode* node, SceneNode* 
             rootTransMat[i][i] = m_rootScaleFact[i];  // optional scaling offset
         }
 
-        // start off with the rootTransMat as is, or multiply it with the scene
-        // root Matrix coming from the file to load
+        // start off with the rootTransMat as is, or multiply it with the scene root Matrix coming from the file to load
         glm::mat4 transMat;
 
         if (!m_suppressRootTransform && !m_preTransformVertices) {
@@ -348,10 +328,7 @@ void AssimpImport::loadSubMeshes(aiScene const* scene, aiNode* node, SceneNode* 
                                                                                           // mRootNode->mTransformation
                                                                                           // identity
         } else {
-            transMat = rootTransMat;  // m_suppressRootTransform &&
-                                      // !m_preTransformVertices ||
-                                      // !m_suppressRootTransform &&
-                                      // m_preTransformVertices
+            transMat = rootTransMat;
         }
 
         newNode->m_usefixedModelMat = true;
@@ -496,10 +473,6 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
             }
         }
 
-        // meshHelper->animatedPos.resize(mesh->mNumVertices);
-        // if (mesh->HasNormals())
-        // meshHelper->animatedNorm.resize(mesh->mNumVertices);
-
         int usage = GL_STREAM_DRAW;
 
         if (m_sd.getAnimationCount())
@@ -545,25 +518,29 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
         }
 
         if (!mesh->HasVertexColors(0)) {
-            if (mesh->mTextureCoords[0] && loadedTextures)
+            if (mesh->mTextureCoords[0] && loadedTextures) {
                 meshSN->m_vao->setStaticColor(0.f, 0.f, 0.f, 1.f);
-            else
+            } else {
                 meshSN->m_vao->setStaticColor(1.f, 1.f, 1.f, 1.f);
-        } else
+            }
+        } else {
             meshSN->m_vao->upload(CoordType::Color, &mesh->mColors[0][0].r, mesh->mNumVertices);
+        }
 
         if (mesh->mNumFaces != 0) {
-            for (uint k = 0; k < mesh->mNumFaces; k++)
-                for (uint j = 0; j < mesh->mFaces[k].mNumIndices; j++)
+            for (uint k = 0; k < mesh->mNumFaces; k++) {
+                for (uint j = 0; j < mesh->mFaces[k].mNumIndices; j++) {
                     meshSN->m_indices.push_back(mesh->mFaces[k].mIndices[j]);
-        } else
+                }
+            }
+        } else {
             continue;
+        }
 
         meshSN->m_vao->setElemIndices((int)meshSN->m_indices.size(), (GLuint*)&meshSN->m_indices[0]);
 
-        // Assimp only calculates the bounding box of the whole scene, but not
-        // of the separate meshs do this here per Mesh via the BoundingBox on
-        // the GPU
+        // Assimp only calculates the bounding box of the whole scene, but not of the separate meshs do this here per
+        // Mesh via the BoundingBox on the GPU
         bbox->begin();
         meshSN->m_vao->draw(GL_TRIANGLES);
         bbox->end();
@@ -573,34 +550,9 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
         meshSN->setBoundingBox(&bbox->getBoundMin(), &bbox->getBoundMax());
     }
 
-    /*
-    int numOfAnimations = m_sd.scene->mNumAnimations;
-    for (int i=0; i<numOfAnimations; i++)
-    {
-        aiAnimation * animation = m_sd.scene->mAnimations[i];
-        m_sd.animations.push_back(AssimpAnimation(m_sd.scene, animation));
-    }*/
 }
 
 void AssimpImport::createLightsFromAiModel() {
-    /*
-     lights.clear();
-     lights.resize(scene->mNumLights);
-     for(int i=0; i<(int)scene->mNumLights; i++){
-     lights[i].enable();
-     if(scene->mLights[i]->mType==aiLightSource_DIRECTIONAL){
-     lights[i].setDirectional();
-     lights[i].setOrientation(aiVecToOfVec(scene->mLights[i]->mDirection));
-     }
-     if(scene->mLights[i]->mType!=aiLightSource_POINT){
-     lights[i].setSpotlight();
-     lights[i].setPosition(aiVecToOfVec(scene->mLights[i]->mPosition));
-     }
-     lights[i].setAmbientColor(aiColorToOfColor(scene->mLights[i]->mColorAmbient));
-     lights[i].setDiffuseColor(aiColorToOfColor(scene->mLights[i]->mColorDiffuse));
-     lights[i].setSpecularColor(aiColorToOfColor(scene->mLights[i]->mColorSpecular));
-     }
-     */
 }
 
 string AssimpImport::GetDirectory(string& filePath) {

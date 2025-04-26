@@ -35,7 +35,6 @@ TEST(Functional_Property, PropertyTest) {
     ara::Property<float> prop2;
     EXPECT_CALL(mock, doThing).Times(1);
     prop2.onPreChange([&mock](const float &val) {
-        //printf("val %f \n", val);
         mock.doThing();
     }, (void *) this);
     prop2 = 2.f;

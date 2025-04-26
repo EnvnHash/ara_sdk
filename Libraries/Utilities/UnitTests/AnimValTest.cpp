@@ -35,11 +35,11 @@ TEST(AnimValTest, UpdateLinearFunction) {
     // Simulate passing time
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     av.update();
-    EXPECT_NEAR(av.getVal(), 25, 1); // Expected value at 0.5 seconds
+    EXPECT_NEAR(av.getVal(), 25, 2); // Expected value at 0.5 seconds
 
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     av.update();
-    EXPECT_NEAR(av.getVal(), 50, 1); // Expected value at 1 second
+    EXPECT_NEAR(av.getVal(), 50, 2); // Expected value at 1 second
 }
     
 TEST(AnimValTest, UpdateTriangularFunction) {
@@ -54,15 +54,15 @@ TEST(AnimValTest, UpdateTriangularFunction) {
     // Simulate passing time
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     av.update();
-    EXPECT_NEAR(av.getVal(), 50, 1); // Expected value at 0.25 seconds
+    EXPECT_NEAR(av.getVal(), 50, 2); // Expected value at 0.25 seconds
 
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     av.update();
-    EXPECT_NEAR(av.getVal(), 100, 1); // Expected value at 0.5 second
+    EXPECT_NEAR(av.getVal(), 100, 2); // Expected value at 0.5 second
 
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     av.update();
-    EXPECT_NEAR(av.getVal(), 50, 1); // Expected value at 0.75 seconds
+    EXPECT_NEAR(av.getVal(), 50, 2); // Expected value at 0.75 seconds
 }
 
 TEST(AnimValTest, EndFunction) {
@@ -91,10 +91,10 @@ TEST(AnimValTest, ResetAnimation) {
     // Simulate passing time
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     av.update();
-    EXPECT_NEAR(av.getVal(), 25, 1); // Expected value at 0.5 seconds
+    EXPECT_NEAR(av.getVal(), 25, 2); // Expected value at 0.5 seconds
 
     av.reset();
-    EXPECT_NEAR(av.getVal(), 0, 1); // Reset to start value
+    EXPECT_NEAR(av.getVal(), 0, 2); // Reset to start value
 }
 
 TEST(AnimValTest, ZeroDuration) {

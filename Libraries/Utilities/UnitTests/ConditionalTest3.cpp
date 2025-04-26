@@ -31,11 +31,9 @@ TEST(Utilities_UnitTests, ConditionalTest3) {
     std::atomic<bool> threadRunning = false;
 
     for (int i = 0; i < 5; i++) {
-
         EXPECT_CALL(mock, doThing).Times(2);
 
         // check if the notify should only unblock the first wait
-
         int nrNotifies = 100;
         for (int j = 0; j < nrNotifies; j++)
             sema.notify();
@@ -62,7 +60,7 @@ TEST(Utilities_UnitTests, ConditionalTest3) {
 
         auto end = std::chrono::system_clock::now();
         auto actDifF = std::chrono::duration<double, std::milli>(end - start).count();
-        EXPECT_GT(actDifF, 100); // due to rouding error diff may be 249 or something, put a lower val to be sure
+        EXPECT_GT(actDifF, 100); // due to routing error diff may be 249 or something, put a lower val to be sure
 
     }
 

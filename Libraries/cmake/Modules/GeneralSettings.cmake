@@ -1,5 +1,5 @@
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(OpenGL_GL_PREFERENCE "LEGACY")
 CMAKE_POLICY(SET CMP0071 NEW) 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
@@ -30,7 +30,7 @@ if(WIN32)
 endif(WIN32)
 
 if (UNIX AND NOT ANDROID)
-	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wno-deprecated-declarations -Wno-unused-function")
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-Wno-deprecated-declarations -Wno-unused-function -Wno-deprecated-volatile")
 endif()
 
 # gcc debug flags

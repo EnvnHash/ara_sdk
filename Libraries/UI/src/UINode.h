@@ -10,6 +10,7 @@
 #include "UISharedRes.h"
 #include "glsg_common/glsg_common.h"
 
+
 namespace ara {
 
 class ResNode;
@@ -368,51 +369,170 @@ public:
 
     // matrix operations - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    /** set x-position in pixels (Values can be negative this means extreme
-     * right minus nr of pixels) **/
-    void setX(int32_t x, state st = state::m_state);
+    template <typename T>
+    requires std::integral<T> || std::floating_point<T>
+    void setCoord(T coord, coordComp comp, state st) {
+        if (st == state::m_state || st == m_state) {
+            if (comp == coordComp::x) {
+                if constexpr (std::is_same_v<T, int>) {
+                    m_posXInt = coord;
+                    m_posXType = unitType::Pixels;
+                } else if constexpr (std::is_same_v<T, float>) {
+                    m_posXFloat = coord;
+                    m_posXType = unitType::Percent;
+                }
+            } else {
+                if constexpr (std::is_same_v<T, int>) {
+                    m_posYInt = coord;
+                    m_posYType = unitType::Pixels;
+                } else if constexpr (std::is_same_v<T, float>) {
+                    m_posYFloat = coord;
+                    m_posYType = unitType::Percent;
+                }
+            }
+            setChanged(true);
+        }
+
+        std::string valueStr;
+        if constexpr (std::is_same_v<T, int>) {
+            valueStr = std::to_string(coord) + "px";
+        } else if constexpr (std::is_same_v<T, float>) {
+            valueStr = std::to_string(coord * 100) + "%";
+        }
+
+        setStyleInitVal(comp == coordComp::x ? "x" : "y", valueStr, st);
+    }
+
+    template <typename T>
+    requires std::integral<T> || std::floating_point<T>
+    void setSizeComp(T val, coordComp comp, state st) {
+        if (st == state::m_state || st == m_state) {
+            if (comp == coordComp::x) {
+                if constexpr (std::is_same_v<T, int>) {
+                    m_widthInt = val;
+                    m_widthType = unitType::Pixels;
+                } else if constexpr (std::is_same_v<T, float>) {
+                    m_posXFloat = val;
+                    m_widthType = unitType::Percent;
+                }
+            } else {
+                if constexpr (std::is_same_v<T, int>) {
+                    m_heightInt = val;
+                    m_heightType = unitType::Pixels;
+                } else if constexpr (std::is_same_v<T, float>) {
+                    m_heightFloat = val;
+                    m_heightType = unitType::Percent;
+                }
+            }
+            setChanged(true);
+        }
+
+        std::string valueStr;
+        if constexpr (std::is_same_v<T, int>) {
+            valueStr = std::to_string(val) + "px";
+        } else if constexpr (std::is_same_v<T, float>) {
+            valueStr = std::to_string(val * 100) + "%";
+        }
+
+        setStyleInitVal(comp == coordComp::x ? "width" : "height", valueStr, st);
+    }
+
+    /** set x-position in pixels (Values can be negative this means extreme right minus nr of pixels) **/
+    void setX(int32_t x, state st = state::m_state) {
+        setCoord(x, coordComp::x, st);
+    }
+
     /** set x-position in percentage 0 - 1, 0 = left, 1 = right **/
-    void setX(float x, state st = state::m_state);
+    void setX(float x, state st = state::m_state) {
+        setCoord(x, coordComp::x, st);
+    }
+
     /** set y-position in absolute pixels. +y means towards the bottom **/
-    void setY(int32_t y, state st = state::m_state);
+    void setY(int32_t y, state st = state::m_state) {
+        setCoord(y, coordComp::y, st);
+    }
+
     /** set y-position in percentage 0 - 1, 0 = top, 1 = bottom **/
-    void setY(float y, state st = state::m_state);
+    void setY(float y, state st = state::m_state) {
+        setCoord(y, coordComp::y, st);
+    }
 
     /** set position in absolute pixels. -y means towards the top Values can be
      * negative this means extreme right/top minus nr of pixels **/
-    void setPos(int32_t posX, int32_t posY, state st = state::m_state);
+    void setPos(int32_t posX, int32_t posY, state st = state::m_state) {
+        setCoord(posX, coordComp::x, st);
+        setCoord(posY, coordComp::y, st);
+    }
+
     /** set x-position in absolute pixels (Values can be negative this means
      * extreme right minus nr of pixels) and y-position relative from -0.5 to
      * 0.5. +y means towards the bottom **/
-    void setPos(int32_t posX, float posY, state st = state::m_state);
+    void setPos(int32_t posX, float posY, state st = state::m_state) {
+        setCoord(posX, coordComp::x, st);
+        setCoord(posY, coordComp::y, st);
+    }
+
     /** set x-position relative from 0 to 1 (if PIVOT and ALIGN is top left) and
      * y-position in absolute pixels (Values can be negative this means extreme
      * top minus nr of pixels) **/
-    void setPos(float posX, int32_t posY, state st = state::m_state);
+    void setPos(float posX, int32_t posY, state st = state::m_state) {
+        setCoord(posX, coordComp::x, st);
+        setCoord(posY, coordComp::y, st);
+    }
+
     /** set position relative from 0 to 1 (if PIVOT and ALIGN is top left). +y
      * means towards the bottom **/
-    void setPos(float posX, float posY, state st = state::m_state);
+    void setPos(float posX, float posY, state st = state::m_state){
+        setCoord(posX, coordComp::x, st);
+        setCoord(posY, coordComp::y, st);
+    }
 
     /** set width in absolute pixels **/
-    void setWidth(int32_t width, state st = state::m_state);
+    void setWidth(int32_t width, state st = state::m_state) {
+        setSizeComp(width, coordComp::x, st);
+    }
+
     /** set width in relative percentage 0-1  **/
-    void setWidth(float width, state st = state::m_state);
+    void setWidth(float width, state st = state::m_state) {
+        setSizeComp(width, coordComp::x, st);
+    }
+
     /** set height in absolute pixels **/
-    void setHeight(int32_t height, state st = state::m_state);
+    void setHeight(int32_t height, state st = state::m_state) {
+        setSizeComp(height, coordComp::y, st);
+    }
+
     /** set height in relative percentage 0-1  **/
-    void setHeight(float height, state st = state::m_state);
+    void setHeight(float height, state st = state::m_state) {
+        setSizeComp(height, coordComp::y, st);
+    }
 
     /** set width and height in absolute pixels. Values can be negative this
      * means full width/height minus nr of pixels **/
-    void setSize(int32_t width, int32_t height, state st = state::m_state);
+    void setSize(int32_t width, int32_t height, state st = state::m_state) {
+        setSizeComp(width, coordComp::x, st);
+        setSizeComp(height, coordComp::y, st);
+    }
+
     /** set width in absolute pixels (Values can be negative this means full
      * width minus nr of pixels) and height in percentage 0-1 **/
-    void setSize(int32_t width, float height, state st = state::m_state);
+    void setSize(int32_t width, float height, state st = state::m_state) {
+        setSizeComp(width, coordComp::x, st);
+        setSizeComp(height, coordComp::y, st);
+    }
+
     /** set width relative percentage 0-1 and height in absolute pixels (Values
      * can be negative this means full height minus nr of pixels ) **/
-    void setSize(float width, int32_t height, state st = state::m_state);
+    void setSize(float width, int32_t height, state st = state::m_state) {
+        setSizeComp(width, coordComp::x, st);
+        setSizeComp(height, coordComp::y, st);
+    }
+
     /** set width and height relative percentage 0-1 **/
-    void setSize(float width, float height, state st = state::m_state);
+    void setSize(float width, float height, state st = state::m_state) {
+        setSizeComp(width, coordComp::x, st);
+        setSizeComp(height, coordComp::y, st);
+    }
 
     /** implicitly sets pivot to same value  */
     void setAlignX(align type, state st = state::m_state);

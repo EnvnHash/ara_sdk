@@ -37,15 +37,32 @@ include(Android/CreatePureNativeAppSources)
 include(Android/CreateSettingsFiles)
 include(Android/CreateAppKey)
 
+macro (extract_class_name deri)
+    if (NOT deri STREQUAL "")
+        string(REGEX MATCH "class.[(A-z)|(a-z)|(0-9)]*" cn ${line})
+        string(LENGTH ${cn} var_length)
+        string(SUBSTRING ${cn} 6 ${var_length} UIAPP_DERIVATE_CLASS)
+        if (UIAPP_DERIVATE_CLASS STREQUAL "")
+            message("Error!! No derivate of UIApplication found in the present header files")
+        elseif (NOT CURRENT_NAMESPACE STREQUAL "")
+            string(CONCAT UIAPP_DERIVATE_CLASS "::" "${UIAPP_DERIVATE_CLASS}")
+            string(CONCAT UIAPP_DERIVATE_CLASS ${CURRENT_NAMESPACE} "${UIAPP_DERIVATE_CLASS}")
+        endif()
+
+        # get the relative header name
+        get_filename_component(UIAPP_DERIVATE_CLASS_FILE_NAME_WE ${headerFile} NAME_WE)
+    endif()
+endmacro()
+
 # APP_TYPE 0 = Pure native app without JAVA, APPTYPE = 1 Java MainActivity and JNI
-macro (gen_android_proj APP_NAME APP_TYPE APP_ICON_NAME)
+macro (gen_android_proj APP_NAME DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER)
     message(STATUS "Generating Android Project")
     if (NOT DEFINED ENV{ANDROID_NDK_HOME})
         message("GenerateAndroidProject.cmake Error!! Environmental variable ANDROID_NDK_HOME not set!! Aborting Android Studio project generation")
     else()
         # CONFIGURATION VARIABLES
-        set(DEST_PLATFORMS "'armeabi-v7a', 'arm64-v8a'")
-        
+        set(DEST_PLATFORMS ${DEST_PLATF})
+
         # try to use the android studios cmake version
         if (EXISTS "$ENV{ANDROID_NDK_HOME}/../../cmake")
             set(HIGHEST_CMAKE_VERSION "0" "0" "0")
@@ -97,7 +114,7 @@ macro (gen_android_proj APP_NAME APP_TYPE APP_ICON_NAME)
             message(ERROR "Could not read NDK version from ENV{ANDROID_NDK_HOME}/source.properties")
         endif()
 
-        # check for a derivate of UIApplication in the current source folder
+        # check for a derivative of UIApplication in the current source folder
         FILE(GLOB PROJ_HEADERS *.h src/*.h)
         foreach(headerFile ${PROJ_HEADERS})
             file(READ ${headerFile} headerText)
@@ -114,22 +131,10 @@ macro (gen_android_proj APP_NAME APP_TYPE APP_ICON_NAME)
                     endif ()
 
                     string(REGEX MATCH "::UIApplication.[(A-z)|(a-z)|(0-9)]*" deri ${line})
+                    extract_class_name(deri)
 
-                    # if the pattern "::UIApplication" was found, get the class name
-                    if (NOT deri STREQUAL "")
-                        string(REGEX MATCH "class.[(A-z)|(a-z)|(0-9)]*" cn ${line})
-                        string(LENGTH ${cn} var_length)
-                        string(SUBSTRING ${cn} 6 ${var_length} UIAPP_DERIVATE_CLASS)
-                        if (UIAPP_DERIVATE_CLASS STREQUAL "")
-                            message("Error!! No derivate of UIApplication found in the present header files")
-                        elseif (NOT CURRENT_NAMESPACE STREQUAL "")
-                            string(CONCAT UIAPP_DERIVATE_CLASS "::" "${UIAPP_DERIVATE_CLASS}")
-                            string(CONCAT UIAPP_DERIVATE_CLASS ${CURRENT_NAMESPACE} "${UIAPP_DERIVATE_CLASS}")
-                        endif()
-
-                        # get the relative header name
-                        get_filename_component(UIAPP_DERIVATE_CLASS_FILE_NAME_WE ${headerFile} NAME_WE)
-                    endif()
+                    string(REGEX MATCH "public UIApplication*" deri ${line})
+                    extract_class_name(deri)
                 endif()
             endforeach()
         endforeach()
@@ -139,7 +144,7 @@ macro (gen_android_proj APP_NAME APP_TYPE APP_ICON_NAME)
 
         create_android_manifest(${APP_TYPE} ${APP_ICON_NAME}) # AndroidManifest.xml
         create_app_build_gradle(${APP_NAME})
-        create_android_cmakelists(${APP_TYPE})
+        create_android_cmakelists(${APP_TYPE} ${ASSETS_FOLDER})
         create_app_key(${APP_NAME})
 
         if (${APP_TYPE} EQUAL 0)

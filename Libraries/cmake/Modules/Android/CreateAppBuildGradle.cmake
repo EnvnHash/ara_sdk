@@ -30,7 +30,7 @@ configurations { natives }\n\n")
         versionName \"1.0\"
         externalNativeBuild {
             cmake {
-                cppFlags \"-std=c++17 -frtti \"
+                cppFlags \"-std=c++20 -frtti \"
                 arguments \"-DANDROID_STL=c++_shared\", \"-DCMAKE_VERBOSE_MAKEFILE=1\"")
 
     if(ARA_USE_ARCORE)

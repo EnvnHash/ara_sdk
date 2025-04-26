@@ -360,6 +360,7 @@ typedef uint32_t uint;
 
 #define GLSG_DONT_CARE (-1)
 
+
 // -------------------- ENUMS ----------------------------
 
 namespace ara {
@@ -404,6 +405,7 @@ enum class ShaderType : int { Vertex = 0, Geometry, Fragment, Count };
 enum class StdMatNameInd : int { ModelMat = 0, CamModelMat, ViewMat, ProjectionMat, NormalMat };
 enum class TexCordGenType : int { PlaneProjection = 0 };
 enum class unitType : int { Pixels = 0, Percent };
+enum class coordComp : int { x = 0, y };
 enum class extrapolM : int { Mirror = 0, Circle };
 enum class interpolM : int { Bilinear = 0, CatmullRomCentri, Bezier };
 enum class maskType : int { Vector = 0, Bitmap, Count };
