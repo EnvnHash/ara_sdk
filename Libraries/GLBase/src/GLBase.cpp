@@ -191,7 +191,7 @@ void GLBase::initResources() {
             m_resUpdt = std::thread([this] {
                 while (m_resUpdtRun) {
                     checkResourceChanges();
-                    m_resUpdtSema.wait(800);
+                    std::this_thread::sleep_for(std::chrono::milliseconds(800));
                 }
 
                 clearGlCbQueue();
@@ -261,7 +261,6 @@ void GLBase::destroy(bool terminateGLFW) {
 
     if (m_resUpdtRun) {
         m_resUpdtRun = false;
-        m_resUpdtSema.notify();
         m_resUpdtExited.wait();
         g_assetManager.reset();
         g_assetManager = nullptr;

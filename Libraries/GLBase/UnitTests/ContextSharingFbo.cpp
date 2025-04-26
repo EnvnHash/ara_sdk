@@ -16,7 +16,7 @@ TEST(GLBaseTest, ContextSharingFbo) {
     ASSERT_TRUE(m_glbase.init(false));
     m_glbase.makeCurrent();
 
-    auto quad = std::make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
+    auto quad = std::make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
 
     // load a test texture
     Texture texMan(&m_glbase);
@@ -46,31 +46,29 @@ TEST(GLBaseTest, ContextSharingFbo) {
 
     // -----------------------------------------------------------
 
-    // prepare separater rendering threads
+    // prepare separate rendering threads
     int nrThreads = 4;
     vector<thread> threads;
     vector<GLFWWindow> windows = vector<GLFWWindow>(nrThreads);
 
     // create windows, must be not threaded
     for (int i = 0; i < nrThreads; i++) {
-        // direct window creation
-        glWinPar gp;                        // define Parameters for windows instanciating
-        gp.width = 200;                     // set the windows width
-        gp.height = 200;                    // set the windows height
-        gp.doInit = false;                  // don't init glfw, this needs to be done on the main thread only once
-        gp.shiftX = 300 * i;                // x offset relative to OS screen canvas
-        gp.shiftY = 100;                    // y offset relative to OS screen canvas
-        gp.scaleToMonitor = false;          // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
-        gp.shareCont = m_glbase.getGlfwHnd();    // share the GLBase context
-        ASSERT_TRUE(windows[i].init(
-                gp));   // now pass the arguments and create the window, this make the windows gl context current
+        ASSERT_TRUE(windows[i].init(glWinPar{
+                .doInit = false,                  // don't init glfw, this needs to be done on the main thread only once
+                .shiftX = 300 * i,                // x offset relative to OS screen canvas
+                .shiftY = 100,                    // y offset relative to OS screen canvas
+                .width = 200,                     // set the window's width
+                .height = 200,                    // set the window's height
+                .scaleToMonitor = false,          // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
+                .shareCont = m_glbase.getGlfwHnd()
+            }));   // now pass the arguments and create the window, this make the windows gl context current
         ASSERT_EQ(true, initGLEW());
     }
 
     // make no context current
     glfwMakeContextCurrent(nullptr);
 
-    // create drawing threads for each windows
+    // create drawing threads for each window
     for (int i = 0; i < nrThreads; i++)
         threads.emplace_back([&windows, &m_glbase, &sharedFBO, &texMan, i]() {
 
@@ -86,11 +84,11 @@ TEST(GLBaseTest, ContextSharingFbo) {
             localFBO.fromShared(&sharedFBO);
             ASSERT_EQ(GL_NO_ERROR, postGLError());
 
-            // unfortunately VAOs can't be shared since they are just a set of states, but don't contain actual data
-            unique_ptr<Quad> quad = make_unique<Quad>(QuadInitData{-1.f, -1.f, 2.f, 2.f,
-                                                      glm::vec3(0.f, 0.f, 1.f),
-                                                      1.f, 0.f, 0.f,
-                                                      1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+            // unfortunately, VAOs can't be shared since they are just a set of states, but don't contain actual data
+            // create a Quad, standard width and height (normalized into -1|1), static red
+            unique_ptr<Quad> quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
+                                                                    glm::vec3(0.f, 0.f, 1.f),
+                                                                    1.f, 0.f, 0.f, 1.f});
             // set some OpenGL parameters
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                    // clear the screen
             glViewport(0, 0, (GLsizei) windows[i].getWidth(),
@@ -119,7 +117,6 @@ TEST(GLBaseTest, ContextSharingFbo) {
                          &data[0]);    // synchronous, blocking command, no swap() needed
 
             int offs = (windows[i].getWidth() * 19 + windows[i].getWidth() / 2) * 4;
-            // LOG << (int)data[offs] << ", " << (int)data[offs+1] << ", " << (int)data[offs+2] << ", " << (int)data[offs+3];
 
             // check that it's really red
             ASSERT_EQ(postGLError(), GL_NO_ERROR);
@@ -136,11 +133,10 @@ TEST(GLBaseTest, ContextSharingFbo) {
     sharedFBO.remove();
     glfwMakeContextCurrent(nullptr);
 
-    // std::this_thread::sleep_for(4s);
-
-    for (int i = 0; i < nrThreads; i++)
+    for (int i = 0; i < nrThreads; i++) {
         windows[i].destroy(false);
-
+    }
 }
+
 }
 

@@ -16,16 +16,16 @@ namespace ara::GLBaseUnitTest::NativeWindow {
 
         // create the window
         gwin.create(glWinPar{
+            .decorated = true,
+            .createHidden = false,
             .debug = false,
-            .width = 1920,      // set the windows width
-            .height = 1080,     // set the windows height
             .shiftX = 100,      // x offset relative to OS screen canvas
             .shiftY = 100,      // y offset relative to OS screen canvas
-            .createHidden = false,
-            .decorated = true
+            .width = 1920,
+            .height = 1080
         });
 
-        gwin.draw();                    // execute the draw function (normally the startDrawThread method would be used)
+        gwin.draw();    // execute the draw function (normally the startDrawThread method would be used)
         gwin.destroy();
 
         EXPECT_TRUE(true);

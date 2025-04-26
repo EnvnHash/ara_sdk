@@ -22,17 +22,17 @@ TEST(UITest, GetPixelPosition_ParentRealtive) {
         auto rootNode = app.getRootNode();
 
         // create a Div, standard alignment is top, left (align::left, valign::top, with Pivot: pivotX::left, pivotY::top
-        glm::ivec2 div0_pos(20, 20);
-        glm::ivec2 div0_size(600, 500);
+        glm::ivec2 div0_pos{20, 20};
+        glm::ivec2 div0_size{600, 500};
         auto div0 = rootNode->addChild<Div>(div0_pos.x, div0_pos.y, div0_size.x, div0_size.y, &bgColor[0], nullptr);
 
         // create a Div inside the first div (same left / top alignment)
-        glm::ivec2 div1_pos(25, 25);
-        glm::ivec2 div1_size(100, 100);
+        glm::ivec2 div1_pos{25, 25};
+        glm::ivec2 div1_size{100, 100};
         auto div1 = div0->addChild<Div>(div1_pos.x, div1_pos.y, div1_size.x, div1_size.y, &fgColor[0], nullptr);
 
         // create a Div inside the first div (same left / top alignment) position in RELATIVE coords
-        glm::vec2 div2_pos(0.3f, 0.2f);
+        glm::vec2 div2_pos{0.3f, 0.2f};
         auto div2 = div0->addChild<Div>(div2_pos.x, div2_pos.y, 0.2f, 0.2f);
         div2->setBackgroundColor(fgColor);
 
@@ -43,7 +43,7 @@ TEST(UITest, GetPixelPosition_ParentRealtive) {
         // ----------------------------------------------------------------------------------
 
         // read back the x and y position in relation to its parent.
-        // if alignment von align::left, valign::top, this is in relation to the parents top left corner
+        // if alignment align::left, valign::top, this is in relation to the parents top left corner
         ASSERT_EQ(div0->getPos().x, (float)div0_pos.x);
         ASSERT_EQ(div0->getPos().y, (float)div0_pos.y);
 

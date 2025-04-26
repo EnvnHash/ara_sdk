@@ -199,7 +199,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         if (!initToCurrentCtx) {
             m_contentRoot = m_uiRoot->addChild<UINode>();
             m_contentRoot->setName("ContentRoot");
-            m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + (int)m_stdPadding * 2));
+            m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2));
             m_contentRoot->setAlignY(valign::bottom);
 
 #if defined(ARA_USE_GLFW)

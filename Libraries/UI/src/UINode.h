@@ -184,8 +184,12 @@ public:
         auto* n  = static_cast<UINode*>(nc);
         n->setPos(x, y);
         n->setSize(w, h);
-        if (fgcolor != nullptr) n->setColor(fgcolor[0], fgcolor[1], fgcolor[2], fgcolor[3]);
-        if (bkcolor != nullptr) n->setBackgroundColor(bkcolor[0], bkcolor[1], bkcolor[2], bkcolor[3]);
+        if (fgcolor != nullptr) {
+            n->setColor(fgcolor[0], fgcolor[1], fgcolor[2], fgcolor[3]);
+        }
+        if (bkcolor != nullptr) {
+            n->setBackgroundColor(bkcolor[0], bkcolor[1], bkcolor[2], bkcolor[3]);
+        }
         return nc;
     }
 
@@ -412,7 +416,7 @@ public:
                     m_widthInt = val;
                     m_widthType = unitType::Pixels;
                 } else if constexpr (std::is_same_v<T, float>) {
-                    m_posXFloat = val;
+                    m_widthFloat = val;
                     m_widthType = unitType::Percent;
                 }
             } else {
@@ -499,7 +503,7 @@ public:
 
     /** set height in absolute pixels **/
     void setHeight(int32_t height, state st = state::m_state) {
-        setSizeComp(height, coordComp::y, st);
+       setSizeComp(height, coordComp::y, st);
     }
 
     /** set height in relative percentage 0-1  **/

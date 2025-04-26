@@ -72,23 +72,24 @@ TEST(GLBaseTest, ContextSharing) {
 
     // create windows, must be not threaded
     for (int i = 0; i < nrThreads; i++) {
-        // direct window creation
-        glWinPar gp;                                            // define Parameters for windows instanciating
-        gp.width = 200;                                         // set the windows width
-        gp.height = 200;                                        // set the windows height
-        gp.doInit = false;                                      // don't init glfw, this needs to be done on the main thread only once
-        gp.shiftX = 300 * i;                                    // x offset relative to OS screen canvas
-        gp.shiftY = 100;                                        // y offset relative to OS screen canvas
-        gp.scaleToMonitor = false;                              // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
-        gp.shareCont = (void *) m_glbase.getGlfwHnd();          // share the GLBase context
         ASSERT_TRUE(windows[i].init(
-                gp));               // now pass the arguments and create the window, this make the windows gl context current
+            glWinPar{
+                .doInit = false,            // don't init glfw, this needs to be done on the main thread only once
+                .shiftX = 300 * i,          // x offset relative to OS screen canvas
+                .shiftY = 100,              // y offset relative to OS screen canvas
+                .width = 200,               // set the window's width
+                .height = 200,              // set the window's height
+                .scaleToMonitor = false,    // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
+                .shareCont = (void *) m_glbase.getGlfwHnd(),          // share the GLBase context
+            })
+        );
     }
 
     // make no context current
     glfwMakeContextCurrent(nullptr);
 
-    // create drawing threads for each windows
+    // create drawing threads for each window
+    threads.reserve(nrThreads);
     for (int i = 0; i < nrThreads; i++) {
         threads.emplace_back(renderLambda(windows, m_glbase, i));
     }
