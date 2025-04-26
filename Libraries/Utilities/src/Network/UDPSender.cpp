@@ -79,6 +79,7 @@ bool UDPSender::OnCycle() {
 
     closesocket(m_Socket);
     m_Socket = 0;
+
     return true;
 }
 }  // namespace ara
