@@ -36,7 +36,7 @@ TEST(UdpSignalTest, SendReceive) {
     UDPSender sender;
     sender.StartBroadcast(1234, 1000, [&](void* data, int max_size) {
         std::strcpy(static_cast<char*>(data), str.c_str());
-        return static_cast<int>(strlen(static_cast<char*>(data)));
+        return str.length();
     });
 
     gotMsg.wait();
