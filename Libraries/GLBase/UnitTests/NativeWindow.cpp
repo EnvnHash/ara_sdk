@@ -6,16 +6,6 @@ using namespace std;
 namespace ara::GLBaseUnitTest::NativeWindow {
     TEST(GLBaseTest, NativeWindow) {
         GLWindow gwin;                  // create an instance, this will do nothing
-        glWinPar gp;                    // define Parameters for windows instanciating
-
-        // direct window creation
-        gp.debug = false;
-        gp.width = 1920;                // set the windows width
-        gp.height = 1080;                // set the windows height
-        gp.shiftX = 100;                // x offset relative to OS screen canvas
-        gp.shiftY = 100;                // y offset relative to OS screen canvas
-        gp.createHidden = false;
-        gp.decorated = true;
 
         // set a draw function otherwise the window will be transparent
         gwin.setDrawFunc([](double time, double dt, int ctxNr) {
@@ -24,8 +14,18 @@ namespace ara::GLBaseUnitTest::NativeWindow {
             return true;
         });
 
-        gwin.create(gp);             // now pass the arguments and create the window
-        gwin.draw();                    // execute the draw function (normally the startDrawThread method would be used)
+        // create the window
+        gwin.create(glWinPar{
+            .decorated = true,
+            .createHidden = false,
+            .debug = false,
+            .shiftX = 100,      // x offset relative to OS screen canvas
+            .shiftY = 100,      // y offset relative to OS screen canvas
+            .width = 1920,
+            .height = 1080
+        });
+
+        gwin.draw();    // execute the draw function (normally the startDrawThread method would be used)
         gwin.destroy();
 
         EXPECT_TRUE(true);

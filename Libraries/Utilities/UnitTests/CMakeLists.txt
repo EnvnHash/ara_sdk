@@ -19,13 +19,11 @@ file(GLOB UTILITIES_UT_SRC
     AssetLoaderTest.cpp
     CommonTest.cpp
     ConditionalTest.cpp
-    ConditionalTest2.cpp
-    ConditionalTest3.cpp
     CycleBufferTest.cpp
     ItemTest.cpp
     ListPropertyTest.cpp
     NodeTest.cpp
-    #PropertyTest.cpp
+    PropertyTest.cpp
     RwBinFileTest.cpp
     StringUtilsTest.cpp
     UdpSignalTest.cpp

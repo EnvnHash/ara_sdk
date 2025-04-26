@@ -30,22 +30,22 @@ namespace ara {
 class Conditional {
 public:
     void notify() {
-        std::unique_lock<std::mutex> lock(mtx);
-        flag = true;
-        cv.notify_all();
+        std::unique_lock<std::mutex> lock(m_mtx);
+        m_flag = true;
+        m_cv.notify_all();
     }
 
     void wait(uint32_t timeOut_ms = 5000) {
-        if (!flag) {
-            ++waitingThreads;
+        if (!m_flag) {
+            ++m_waitingThreads;
 
-            std::unique_lock<std::mutex> lock(mtx);
+            std::unique_lock<std::mutex> lock(m_mtx);
 
 #ifdef SEMA_CHECK_TIMEOUT
             start = std::chrono::system_clock::now();
 #endif
             if (timeOut_ms) {
-                cv.wait_for(lock, std::chrono::milliseconds(timeOut_ms), [&] {
+                m_cv.wait_for(lock, std::chrono::milliseconds(timeOut_ms), [&] {
 #ifdef SEMA_CHECK_TIMEOUT
                     if (timeOut_ms == 5000) {
                         auto end     = std::chrono::system_clock::now();
@@ -53,27 +53,30 @@ public:
                         if (actDifF > 5000.0) LOGE << " Semaphore timed out " << actDifF;
                     }
 #endif
-                    return flag.load();
+                    return m_flag.load();
                 });
             } else {
-                cv.wait(lock, [&] { return flag.load(); });
+                m_cv.wait(lock, [&] {
+                    return m_flag.load();
+                });
             }
-            --waitingThreads;
+            --m_waitingThreads;
         }
 
-        if (waitingThreads == 0) {
-            flag = false;
+        if (m_waitingThreads == 0) {
+            m_flag = false;
         }
     }
 
-    bool isNotified() { return flag; }
-    void reset() { flag = false; }
+    bool isNotified() { return m_flag; }
+    void reset() { m_flag = false; m_waitingThreads = 0; }
+    bool hasWaitingThreads() { return !m_waitingThreads; }
 
 private:
-    std::mutex              mtx;
-    std::condition_variable cv;
-    std::atomic<bool>       flag           = {false};
-    std::atomic<int>        waitingThreads = {0};
+    std::mutex              m_mtx;
+    std::condition_variable m_cv;
+    std::atomic<bool>       m_flag           = {false};
+    std::atomic<int>        m_waitingThreads = {0};
 
 #ifdef SEMA_CHECK_TIMEOUT
     std::chrono::time_point<std::chrono::system_clock> start;

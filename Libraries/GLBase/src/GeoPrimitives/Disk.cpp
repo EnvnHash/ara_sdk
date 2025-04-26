@@ -23,13 +23,12 @@ using namespace glm;
 
 namespace ara {
 
-Disk::Disk(float width, float height, int nrSubDiv, std::vector<CoordType> *instAttribs, int maxNrInstances, float r,
-           float g, float b, float a)
-    : GeoPrimitive(), m_width(width), m_height(height), m_nrSubDiv(nrSubDiv) {
-    m_r = r;
-    m_g = g;
-    m_b = b;
-    m_a = a;
+Disk::Disk(vec2 size, int nrSubDiv, std::vector<CoordType> *instAttribs, int maxNrInstances, vec4 col)
+    : GeoPrimitive(), m_width(size.x), m_height(size.y), m_nrSubDiv(nrSubDiv) {
+    m_r = col.r;
+    m_g = col.g;
+    m_b = col.b;
+    m_a = col.a;
     Disk::init();
 }
 

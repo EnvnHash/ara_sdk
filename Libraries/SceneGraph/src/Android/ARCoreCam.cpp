@@ -47,7 +47,7 @@ void ARCoreCam::initGLRes(int nrLayers) {
 
     m_bgQuad = make_unique<VAO>("position:2f,texCoord:2f", GL_DYNAMIC_DRAW);
     m_plane  = make_unique<VAO>("position:3f", GL_DYNAMIC_DRAW);
-    m_quad   = make_unique<Quad>(QuadInitData{-0.05f, -0.05f, 0.1f, 0.1f});
+    m_quad   = make_unique<Quad>(QuadInitParams{-0.05f, -0.05f, 0.1f, 0.1f});
 
     m_triTex = std::make_unique<Texture>(m_glbase);
     m_triTex->loadTexture2D(m_dataPath + "/trigrid.png");

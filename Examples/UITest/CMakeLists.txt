@@ -4,7 +4,7 @@ set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 CMAKE_POLICY(SET CMP0071 NEW)
 set(OpenGL_GL_PREFERENCE "LEGACY")
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 include(GeneralSettings)
 include(VisualStudioSettings)
@@ -65,7 +65,9 @@ include(PugiXMLInclude)
 include(UtilitiesDepInclude)
 include(UtilitiesDependencies)
 
-#gen_android_proj(${PROJECT_NAME})
+# uncomment for generating android project
+#include(Android/GenerateAndroidProject)
+#gen_android_proj(${PROJECT_NAME} "'armeabi-v7a', 'arm64-v8a'" 0 icon ${CMAKE_SOURCE_DIR}/Assets)
 
 INSTALL(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR} COMPONENT ${PROJECT_NAME} OPTIONAL)

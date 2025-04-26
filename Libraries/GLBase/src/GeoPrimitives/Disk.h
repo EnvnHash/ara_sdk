@@ -21,9 +21,8 @@ namespace ara {
 
 class Disk : public GeoPrimitive {
 public:
-    explicit Disk(float width = 2.f, float height = 2.f, int nrSubDiv = 1,
-                  std::vector<CoordType> *instAttribs = nullptr, int maxNrInstances = 1, float r = 1.f, float g = 1.f,
-                  float b = 1.f, float a = 1.f);
+    explicit Disk(glm::vec2 size={2.f, 2.f}, int nrSubDiv = 1,
+                  std::vector<CoordType> *instAttribs = nullptr, int maxNrInstances = 1, glm::vec4 col = {1.f, 1.f, 1.f, 1.f});
 
     ~Disk() = default;
 

@@ -41,7 +41,6 @@ macro (create_android_manifest APP_TYPE APP_ICON_NAME)
     list(APPEND manifest "
             android:label=\"${PROJECT_NAME}\"
             android:exported=\"true\"
-            android:screenOrientation=\"landscape\"
             android:configChanges=\"screenSize\">\n\n")
 
     if (${APP_TYPE} EQUAL 0)

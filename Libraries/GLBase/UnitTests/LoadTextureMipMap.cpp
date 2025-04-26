@@ -13,8 +13,12 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
     Shaders *texShader;
     GLBase m_glbase;
     Texture tex(&m_glbase);
-    glWinPar gp;             // define Parameters for windows instanciating
-
+    glWinPar gp{
+        .createHidden = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
+        .width = 64,            // set the windows width
+        .height = 64,            // set the windows height
+        .scaleToMonitor = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
+    };
     bool didRun = false;
 
     void staticDrawFunc() {
@@ -38,8 +42,7 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
         glReadBuffer(GL_FRONT);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glReadPixels(0, 0, gp.width, gp.height, GL_RGBA, GL_UNSIGNED_BYTE,
-                     &data[0]);    // synchronous, blocking command, no swap() needed
+        glReadPixels(0, 0, gp.width, gp.height, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);    // synchronous, blocking command, no swap() needed
         ASSERT_EQ(postGLError(), GL_NO_ERROR);
 
         int segStep = gp.width / 4;
@@ -78,12 +81,6 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
     }
 
     TEST(GLBaseTest, LoadTextureMipMap) {
-        // direct window creation
-        // gp.debug = true;
-        gp.width = 64;            // set the windows width
-        gp.height = 64;            // set the windows height
-        gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
-        gp.createHidden = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
 
         ASSERT_TRUE(gwin.create(gp));    // now pass the arguments and create the window
         ASSERT_EQ(true, initGLEW());
@@ -94,7 +91,7 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
                                                 1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
         texShader = m_glbase.shaderCollector().getStdTex(); // get a simple standard color shader
 
-        // load with mimmaps set
+        // load with mipmaps set
         tex.loadTexture2D("loadTexTest.png", 8);
         ASSERT_EQ(postGLError(), GL_NO_ERROR);
 

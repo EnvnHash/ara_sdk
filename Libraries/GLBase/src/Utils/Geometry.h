@@ -72,7 +72,7 @@ public:
         int ydim = h;
         int width = (xdim + 1);
 
-        std::vector<Vertex> vertices( (ydim + 1) * (xdim + 1));
+        std::vector<Vertex> vertices((ydim + 1) * (xdim + 1));
         createVertices(geo, mat, xdim, ydim, width, vertices);
         createTriangles(geo, xdim, ydim, width);
 
@@ -80,16 +80,16 @@ public:
         auto vertOffset = static_cast<uint>(geo.m_vertices.size());
         std::vector<glm::uvec2> outlineIndices;
         for (int y = 0; y < ydim; ++y) {
-            outlineIndices.emplace_back((y)*width + vertOffset, (y + 1) * width + vertOffset);
+            outlineIndices.emplace_back(y*width + vertOffset, (y + 1) * width + vertOffset);
         }
         for (int y = 0; y < ydim; ++y) {
-            outlineIndices.emplace_back((y)*width + xdim + vertOffset, (y + 1) * width + xdim + vertOffset);
+            outlineIndices.emplace_back(y*width + xdim + vertOffset, (y + 1) * width + xdim + vertOffset);
         }
         for (int x = 0; x < xdim; ++x) {
-            outlineIndices.emplace_back((x) + vertOffset, (x + 1) + vertOffset);
+            outlineIndices.emplace_back(x + vertOffset, (x + 1) + vertOffset);
         }
         for (int x = 0; x < xdim; ++x) {
-            outlineIndices.emplace_back((x) + ydim * width + vertOffset, (x + 1) + ydim * width + vertOffset);
+            outlineIndices.emplace_back(x + ydim * width + vertOffset, (x + 1) + ydim * width + vertOffset);
         }
 
         geo.m_indicesOutline.insert(geo.m_indicesOutline.end(), outlineIndices.begin(), outlineIndices.end());

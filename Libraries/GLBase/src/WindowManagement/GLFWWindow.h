@@ -32,8 +32,8 @@ namespace ara {
 class GLFWWindow : public GLWindowBase {
 public:
     ~GLFWWindow() override = default;
-    bool create(glWinPar &gp) override { return init(gp); }
-    int  init(glWinPar &gp);
+    bool create(const glWinPar &gp) override { return init(gp); }
+    int  init(const glWinPar &gp);
 
     /**
      * @param f the drawing function which will be executed or every iteration

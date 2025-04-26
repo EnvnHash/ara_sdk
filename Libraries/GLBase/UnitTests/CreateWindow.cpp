@@ -14,14 +14,13 @@ namespace ara::GLBaseUnitTest::CreateWindowTest {
     }
 
     TEST(GLBaseTest, CreateWindowTest) {
-        // direct window creation
-        glWinPar gp;             // define Parameters for windows instanciating
-        gp.width = 1920;        // set the windows width
-        gp.height = 1080;       // set the windows height
-        gp.shiftX = 100;        // x offset relative to OS screen canvas
-        gp.shiftY = 100;        // y offset relative to OS screen canvas
+        ASSERT_TRUE(gwin.init(glWinPar{
+            .shiftX = 100,        // x offset relative to OS screen canvas
+            .shiftY = 100,        // y offset relative to OS screen canvas
+            .width = 1920,        // set the windows width
+            .height = 1080,       // set the windows height
+        }));
 
-        ASSERT_TRUE(gwin.init(gp));    // now pass the arguments and create the window
         ASSERT_EQ(true, initGLEW());
 
         // start a draw loop

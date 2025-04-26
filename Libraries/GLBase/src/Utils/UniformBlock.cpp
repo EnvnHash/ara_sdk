@@ -29,14 +29,14 @@ void UniformBlock::init(GLuint program, const std::string &blockName) {
     }
 }
 
-void UniformBlock::addVarName(std::string name, void *inVal, GLenum type) {
+void UniformBlock::addVarName(const std::string& name, void *inVal, GLenum type) {
     auto it =
         std::find_if(m_valPairs.begin(), m_valPairs.end(), [name](const ubBlockVar &ub) { return ub.name == name; });
     if (it != m_valPairs.end()) {
         return;
     }
 
-    m_valPairs.emplace_back(ubBlockVar{std::move(name), type});
+    m_valPairs.emplace_back(ubBlockVar{name, type});
 
     switch (type) {
         case GL_INT: m_valPairs.back().iVal = static_cast<int *>(inVal); break;

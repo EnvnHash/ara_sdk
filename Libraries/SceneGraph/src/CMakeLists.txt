@@ -31,8 +31,12 @@ file(GLOB_RECURSE GLSG_LIGHTS_SRC "Lights/*.cpp")
 file(GLOB_RECURSE GLSG_SCENENODES_SRC "SceneNodes/*.cpp")
 file(GLOB_RECURSE GLSG_SHADERS_SRC "Shaders/*.cpp")
 file(GLOB_RECURSE GLSG_UI_SRC "UI/*.cpp")
-#header files this is just to have them m_show up in the visual studio project
-file(GLOB_RECURSE GLSG_HEADERS "src/*.h")
+
+if (WIN32)
+    #header files this is just to have them m_show up in the visual studio project
+    file(GLOB_RECURSE GLSG_HEADERS "src/*.h")
+endif()
+
 if (ANDROID)
     file(GLOB_RECURSE GLSG_ANDROID_SRC "Android/*.cpp")
 endif ()

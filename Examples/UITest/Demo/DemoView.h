@@ -109,18 +109,6 @@ private:
     Shaders*       m_glyphShader=nullptr;
 };
 
-class DemoView_ContentTrans : public DemoView {
-public:
-    DemoView_ContentTrans();
-    void                init() override;
-    bool                draw(uint32_t* objId) override;
-    bool                drawIndirect(uint32_t *objId) override;
-
-private:
-    Div*                  m_viewCtr=nullptr;
-    bool                        m_updt=true;
-};
-
 class DemoView_Edit : public DemoView {
 public:
     DemoView_Edit();

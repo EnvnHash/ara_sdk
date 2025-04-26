@@ -13,7 +13,7 @@ public:
     Div();
     Div(std::string *styleClass);
     Div(std::string &&styleClass);
-    virtual ~Div() = default;
+    ~Div() override = default;
 
     bool draw(uint32_t *objId) override;
     bool drawIndirect(uint32_t *objId) override;

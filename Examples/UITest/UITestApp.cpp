@@ -45,7 +45,9 @@ void UI_Test_App::createBaseUIElements() {
     ui_TabView->addTab<DemoView_ScrollView_3>("Scroll View 3");
     ui_TabView->addTab<DemoView_ComboBox>("ComboBoxes");
     ui_TabView->addTab<DemoView_Resources>("Resources");
+#ifndef __ANDROID__
     ui_TabView->addTab<DemoView_FloatingMenu>("Floating Menu");
+#endif
     ui_TabView->addTab<DemoView_Edit>("Edit");
 
     ui_TabView->setActivateTab(0);

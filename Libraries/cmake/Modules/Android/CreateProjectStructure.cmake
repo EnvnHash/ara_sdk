@@ -76,12 +76,6 @@ macro(create_proj_structure APP_TYPE)
         endif()
     endforeach()
 
-    # copy the sdk to the project as a symbolic link
-#   if(NOT EXISTS ${ANDROID_STUDIO_PROJ}/app/src/main/cpp/sdk)
-#        create_symlink(${CMAKE_SOURCE_DIR} ${ANDROID_STUDIO_PROJ}/app/src/main/cpp/sdk)
-#    endif()
-    # copy resources
-
     file(COPY ${CMAKE_SOURCE_DIR}/Assets/android/mipmap-hdpi DESTINATION ${ANDROID_STUDIO_PROJ}/app/src/main/res/)
     file(COPY ${CMAKE_SOURCE_DIR}/Assets/android/mipmap-mdpi DESTINATION ${ANDROID_STUDIO_PROJ}/app/src/main/res/)
     file(COPY ${CMAKE_SOURCE_DIR}/Assets/android/mipmap-xhdpi DESTINATION ${ANDROID_STUDIO_PROJ}/app/src/main/res/)

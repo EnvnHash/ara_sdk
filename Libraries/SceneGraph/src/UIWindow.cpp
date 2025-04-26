@@ -46,20 +46,20 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
 
 #endif
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-        glWinPar wp;
-        wp.width = width;
-        wp.height = height;
-        wp.shiftX = shiftX;
-        wp.shiftY = shiftY;
-        wp.decorated = osDecoration;
-        wp.floating = floating;
-        wp.scaleToMonitor = scaleToMonitor;
-        wp.shareCont = static_cast<void *>(m_glbase->getGlfwHnd());
-        wp.transparentFramebuffer = transparentFB;
-        wp.extWinHandle = extWinHandle;
-        wp.debug = m_debugGLFWwin;
+        m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{
+            .decorated = osDecoration,
+            .floating = floating,
+            .debug = m_debugGLFWwin,
+            .shiftX = shiftX,
+            .shiftY = shiftY,
+            .width = width,
+            .height = height,
+            .scaleToMonitor = scaleToMonitor,
+            .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
+            .transparentFramebuffer = transparentFB,
+            .extWinHandle = extWinHandle,
+        });
 
-        m_winHandle = m_glbase->getWinMan()->addWin(wp);
         if (!m_winHandle) {
             return;
         }
@@ -199,7 +199,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         if (!initToCurrentCtx) {
             m_contentRoot = m_uiRoot->addChild<UINode>();
             m_contentRoot->setName("ContentRoot");
-            m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + (int)m_stdPadding * 2));
+            m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2));
             m_contentRoot->setAlignY(valign::bottom);
 
 #if defined(ARA_USE_GLFW)

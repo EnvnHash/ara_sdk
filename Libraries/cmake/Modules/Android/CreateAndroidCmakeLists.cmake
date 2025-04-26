@@ -1,11 +1,11 @@
-macro (create_android_cmakelists APP_TYPE)
+macro (create_android_cmakelists APP_TYPE ASSETS_FOLDER)
 
     # create the CMakeList.txt
     list(APPEND ANDROID_CMAKELIST "cmake_minimum_required(VERSION ${CMAKE_VERSION})
 
 project(\"${PACKAGE_NAME}\")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ")
 
@@ -86,16 +86,23 @@ set(CMAKE_SHARED_LINKER_FLAGS \"\${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity
     LIST(APPEND ANDROID_CMAKELIST "
 include(\${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/AraConfigure.cmake)
 include(\${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/GLBaseDepInclude.cmake)
-include(\${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/VideoInputDepInclude.cmake)
 include(\${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/UtilitiesDepInclude.cmake)
+include(\${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/CreateSymLink.cmake)
 
-add_subdirectory(Assets)
+#add_subdirectory(Assets)
+# copy the sdk to the project as a symbolic link
+create_symlink(${ASSETS_FOLDER} \${CMAKE_SOURCE_DIR}/Assets)
+include(CMakeRC)
+
+file(GLOB_RECURSE RESOURCES \${CMAKE_SOURCE_DIR}/Assets/resdata/* )
+cmrc_add_resource_library(resources ALIAS ara::rc NAMESPACE ara \${RESOURCES})
+
 
 file(GLOB_RECURSE ARA_SDK_SOURCES
     \${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/*.cpp
     \${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/*.cpp
+    \${ARA_SDK_SOURCE_DIR}/Libraries/UI/src/*.cpp
     \${ARA_SDK_SOURCE_DIR}/Libraries/Utilities/src/*.cpp
-    \${ARA_SDK_SOURCE_DIR}/Libraries/VideoInput/src/*.cpp
     )
 
 # IMPORTANT NOTE: linking other libs via cmake add_library(.. OBJECT) causes the library to contain double defined method variables !!!!, so adding .cpp files directly here
@@ -111,7 +118,6 @@ add_library(\${PROJECT_NAME} SHARED \${ARA_SDK_SOURCES} ")
     list(APPEND ANDROID_CMAKELIST ")
 
 include(GLBaseDependencies)
-include(VideoInputDependencies)
 include(UtilitiesDependencies)
 
 ")
