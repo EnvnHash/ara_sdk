@@ -99,11 +99,27 @@ void ShadowMapVsmArray::rebuildFbo(uint _nrLights) {
         }
 
         // s_fbo for saving the depth information
-        s_fbo = make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, std::max<int>(_nrLights, 1), GL_RG32F,
-                                 GL_TEXTURE_2D_ARRAY, true, 1, 1, 1, GL_CLAMP_TO_BORDER, true});
+        s_fbo = make_unique<FBO>(FboInitParams{
+            .glbase = s_glbase,
+            .width = s_scrWidth,
+            .height = s_scrHeight,
+            .depth = std::max<int>(_nrLights, 1),
+            .type = GL_RG32F,
+            .target = GL_TEXTURE_2D_ARRAY,
+            .depthBuf = true,
+            .wrapMode =  GL_CLAMP_TO_BORDER,
+            .layered = true
+        });
 
-        fboBlur = make_unique<FastBlurMem>(s_glbase, blurAlpha, s_scrWidth, s_scrHeight, GL_TEXTURE_2D_ARRAY, GL_RG32F,
-                                           std::max<uint>(_nrLights, 1), false, FastBlurMem::KERNEL_3, true);
+        fboBlur = make_unique<FastBlurMem>(FastBlurMemParams{
+            .glbase = s_glbase,
+            .alpha = blurAlpha,
+            .blurSize = {s_scrWidth, s_scrHeight},
+            .target = GL_TEXTURE_2D_ARRAY, GL_RG32F,
+            .nrLayers = std::max<uint>(_nrLights, 1),
+            .kSize = KERNEL_3,
+            .singleFbo = true
+        });
         fboBlur->setOffsScale(0.8f);
 
         // set the necessary texture parameters for the depth textures

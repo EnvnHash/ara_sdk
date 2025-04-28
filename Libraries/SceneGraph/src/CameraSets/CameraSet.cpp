@@ -13,13 +13,16 @@ using namespace std;
 namespace ara {
 
 CameraSet::CameraSet(sceneData* sc)
-    : m_glbase(sc->glbase), s_shCol(&sc->glbase->shaderCollector()), s_viewport(vec4{0.f, 0.f, 0.f, 0.f}), s_sd(sc) {
+    : m_glbase(sc->glbase),
+    s_shCol(&sc->glbase->shaderCollector()),
+    s_viewport(vec4{0.f, 0.f, 0.f, 0.f}),
+    s_sd(sc) {
     if (sc) {
         s_quad     = sc->getStdQuad();
         s_viewport = sc->winViewport;
     }
 
-    s_maskQuad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 0.f, 0.f, 0.f, 1.f});
+    s_maskQuad = make_unique<Quad>(QuadInitParams{ .color = { 0.f, 0.f, 0.f, 1.f} });
     // standard shader for the background clearing
     s_clearShader = s_shCol->getStdClear();
 }
@@ -244,9 +247,9 @@ void CameraSet::mask() {
     ara::Shaders::end();
 }
 
-inline void CameraSet::setMask(vec3 _scale, vec3 _trans) {
-    s_maskQuad->scale(_scale.x, _scale.y, _scale.z);
-    s_maskQuad->translate(_trans.x, _trans.y, _trans.z);
+inline void CameraSet::setMask(vec3 scale, vec3 trans) {
+    s_maskQuad->scale(scale);
+    s_maskQuad->translate(trans);
 }
 
 void CameraSet::setViewport(uint x, uint y, uint width, uint height, bool resizeProto) {
@@ -259,11 +262,17 @@ void CameraSet::setViewport(uint x, uint y, uint width, uint height, bool resize
     s_fScrWidth  = static_cast<float>(width);
     s_fScrHeight = static_cast<float>(height);
 
-    for (auto& it : s_cam)
-        if (it.first) it.first->setScreenSize(width, height);
+    for (auto& it : s_cam) {
+        if (it.first) {
+            it.first->setScreenSize(width, height);
+        }
+    }
 
-    if (resizeProto)
-        for (auto& it : s_shaderProto) it.second->setScreenSize(width, height);
+    if (resizeProto) {
+        for (auto& it : s_shaderProto) {
+            it.second->setScreenSize(width, height);
+        }
+    }
 }
 
 }  // namespace ara

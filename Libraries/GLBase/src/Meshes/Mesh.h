@@ -11,9 +11,9 @@ public:
     virtual ~Mesh() = default;
 
     void init(const char *format);
-    void scale(float scaleX, float scaleY, float scaleZ);
+    void scale(glm::vec3 scale);
     void rotate(float angle, float rotX, float rotY, float rotZ);
-    void translate(float x, float y, float z);
+    void translate(glm::vec3 trans);
     void doTransform(bool transfNormals);
     void invertNormals();
     void calcNormals();
@@ -112,7 +112,7 @@ public:
     std::vector<GLfloat> *getStaticNormal() { return &m_statNormal; }
 
     void setStaticColor(float r, float g, float b, float a);
-    void setStaticNormal(float x, float y, float z);
+    void setStaticNormal(glm::vec3 norm);
     bool usesStaticColor() { return !m_statColor.empty(); }
     bool usesStaticNormal() { return !m_statNormal.empty(); }
     void dumpInterleaved();

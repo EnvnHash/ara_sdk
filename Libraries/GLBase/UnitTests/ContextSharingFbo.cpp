@@ -101,21 +101,14 @@ TEST(GLBaseTest, ContextSharingFbo) {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, localFBO.getColorImg());
 
-            quad->draw();                                    // draw the quad, the quad will be white which is the standard color of a Quad
+            quad->draw();   // draw the quad, the quad will be white which is the standard color of a Quad
 
             ASSERT_EQ(GL_NO_ERROR, postGLError());
 
             windows[i].swap();                            // execute the opengl command queue by swapping the framebuffers, runLoop() does this automatically, but we want to quit immediately so do the swap manually here
 
             // that's all to draw a quad, now we are reading back the framebuffer and check that everything was drawn correctly
-            // read back
-            vector<GLubyte> data(windows[i].getWidth() * 20 * 4);    // make some space to download
-            glReadBuffer(GL_FRONT);
-            glPixelStorei(GL_PACK_ALIGNMENT, 1);
-            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-            glReadPixels(0, 0, windows[i].getWidth(), 20, GL_RGBA, GL_UNSIGNED_BYTE,
-                         &data[0]);    // synchronous, blocking command, no swap() needed
-
+            auto data = readBack({windows[i].getWidth(), 20});
             int offs = (windows[i].getWidth() * 19 + windows[i].getWidth() / 2) * 4;
 
             // check that it's really red
@@ -126,8 +119,9 @@ TEST(GLBaseTest, ContextSharingFbo) {
             ASSERT_EQ((int) data[offs + 3], 255);
         });
 
-    for (int i = 0; i < nrThreads; i++)
+    for (int i = 0; i < nrThreads; i++) {
         threads[i].join();
+    }
 
     m_glbase.makeCurrent();
     sharedFBO.remove();

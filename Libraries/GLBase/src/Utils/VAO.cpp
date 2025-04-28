@@ -666,22 +666,22 @@ void VAO::uploadMesh(Mesh *mesh) {
 /// if a VertexAttribute is not enabled a default value is taken
 /// instead of reading from a VBO, this default value is set with
 /// glVertexAttrib{1234}{fds}
-void VAO::setStatic(float r, float g, float b, float a, char *name, char *format) {
+void VAO::setStatic(glm::vec4 col, const std::string& name, const std::string& format) {
     int statCoordInd = 0;
 
-    if (std::strcmp(name, "color") == 0) {
+    if (name == "color") {
         statCoordInd = toType(CoordType::Color);
-    } else if (std::strcmp(name, "normal") == 0) {
+    } else if (name == "normal") {
         statCoordInd = toType(CoordType::Normal);
     }
 
     GLuint index               = static_cast<int>(statCoordInd);
-    m_statCoords[statCoordInd] = glm::vec4{r, g, b, a};
+    m_statCoords[statCoordInd] = col;
 
     // look if there is already an attribute for color
     bool found = false;
     for (auto &it : m_attributes)
-        if (!std::strcmp(it.getName(), name)) {
+        if (it.getName() == name) {
             found = true;
             index = it.location;
         }

@@ -15,13 +15,25 @@ using namespace std;
 namespace ara {
 
 GLSLOpticalFlow::GLSLOpticalFlow(GLBase* glbase, int _width, int _height)
-    : m_glbase(glbase), m_shCol(&glbase->shaderCollector()), width(_width), height(_height), srcId(0), lambda(0.1f),
-      median(3.f), bright(4.f) {
+    : m_glbase(glbase),
+        m_shCol(&glbase->shaderCollector()),
+        width(_width),
+        height(_height),
+        srcId(0),
+        lambda(0.1f),
+        median(3.f),
+        bright(4.f) {
     initShader(m_shCol);
     m_texShader = m_shCol->getStdTex();
 
-    m_texture = make_unique<PingPongFbo>(FboInitParams{glbase, width, height, 1, GL_RGBA16F, GL_TEXTURE_2D, false, 1, 1, 1, GL_CLAMP_TO_EDGE});
-    m_quad    = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
+    m_texture = make_unique<PingPongFbo>(FboInitParams{
+        .glbase = glbase,
+        .width = width,
+        .height = height,
+        .type = GL_RGBA16F,
+        .wrapMode = GL_CLAMP_TO_EDGE
+    });
+    m_quad    = make_unique<Quad>(QuadInitParams{ .color = {0.f, 0.f, 0.f, 0.f} });
 }
 
 void GLSLOpticalFlow::initShader(ShaderCollector* shCol) {

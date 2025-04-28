@@ -131,8 +131,8 @@ void Font::pushGlyph(int ch_count, int ch_off, int wh, std::vector<uint8_t>& bmp
 }
 
 // all input values are in virtual pixels and must be converted to hw pixels
-int Font::drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float off_x,
-                      float off_y, float mask_x, float mask_y, float mask_w, float mask_h) const {
+int Font::drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, vec2 off,
+                      vec2 maskPos, vec2 maskSize) const {
     if (!isOK()) {
         return 0;
     }
@@ -149,9 +149,9 @@ int Font::drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuin
         shdr->setUniform1i("stex", 0);
         shdr->setUniformMatrix4fv("mvp", &((*mvp)[0][0]));
         shdr->setUniform4fv("tcolor", tcolor);
-        shdr->setUniform2f("off", off_x * m_pixRatio, off_y * m_pixRatio);
-        shdr->setUniform2f("mask_pos", mask_x * m_pixRatio, mask_y * m_pixRatio);
-        shdr->setUniform2f("mask_size", mask_w * m_pixRatio, mask_h * m_pixRatio);
+        shdr->setUniform2f("off", off.x * m_pixRatio, off.y * m_pixRatio);
+        shdr->setUniform2f("mask_pos", maskPos.x * m_pixRatio, maskPos.y * m_pixRatio);
+        shdr->setUniform2f("mask_size", maskSize.x * m_pixRatio, maskSize.y * m_pixRatio);
         shdr->setUniform1f("pixRatio", m_pixRatio);
 
         for (e_fontdglyph &g : dgv.v) {
@@ -180,7 +180,7 @@ int Font::write(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float 
     glm::vec2       size{1e10, 1e10};
     glm::vec2       pos{0, 0};
     dgv.Process(this, size, pos, align::left, str, true);
-    drawDGlyphs(dgv, mvp, shdr, vao, tcolor, x, y + getPixAscent(), 0, 0, 1e10, 1e10);
+    drawDGlyphs(dgv, mvp, shdr, vao, tcolor, {x, y + getPixAscent()}, {0.f, 0.f}, {1e10, 1e10});
 
     return 0;
 }

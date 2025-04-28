@@ -100,7 +100,7 @@ void Quad_P::init() {
     GLenum usage = GL_DYNAMIC_DRAW;
 
     m_vao = make_unique<VAO>("position:3f,normal:3f,texCoord:2f,color:4f", usage, nullptr, 1);
-    m_vao->setStaticColor(m_Color[0], m_Color[1], m_Color[2], m_Color[3]);
+    m_vao->setStaticColor(m_color);
     m_vao->uploadMesh(m_mesh.get());
 }
 

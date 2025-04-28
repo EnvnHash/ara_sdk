@@ -16,22 +16,27 @@ bool GLSLChromaKey::init(GLBase* glbase, Property<GLSLChromaKeyPar*>* par) {
     }
     m_par = par;
 
-    m_rgbFbo  = make_unique<FBO>(FboInitParams{m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
-                                 GL_CLAMP_TO_BORDER, false});
-    m_procFbo = make_unique<FBO>(FboInitParams{m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
-                                 GL_CLAMP_TO_BORDER, false});
-    m_maskFbo = make_unique<FBO>(FboInitParams{m_glbase, (*par)()->width, (*par)()->height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 2,
-                                 GL_CLAMP_TO_BORDER, false});
+    FboInitParams params = {
+            .glbase = m_glbase,
+            .width = (*par)()->width,
+            .height = (*par)()->height,
+            .nrSamples = 2,
+            .wrapMode = GL_CLAMP_TO_BORDER
+    };
+
+    m_rgbFbo  = make_unique<FBO>(params);
+    m_procFbo = make_unique<FBO>(params);
+    m_maskFbo = make_unique<FBO>(params);
     m_histo   = make_unique<GLSLHistogram>(m_glbase, vec2{(*par)()->width, (*par)()->height}, 1, GL_RGBA8, 4, 256);  // m_maxValPerChan, values not stable ... some bug
-    m_fastBlurMem = make_unique<FastBlurMem>(m_glbase, 0.3f, (*par)()->width, (*par)()->height);
+    m_fastBlurMem = make_unique<FastBlurMem>(FastBlurMemParams{m_glbase, 0.3f, { (*par)()->width, (*par)()->height }});
 
     m_downBuf = std::vector<uint8_t>((*par)()->width * (*par)()->height * 4);
 
-    m_hFlipQuad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f, nullptr, 1,
-                                                   true});  // create a Quad, standard width and height (normalized into -1|1), static red
+    QuadInitParams qip{ .color = { 0.f, 0.f, 0.f, 1.f }, .flipHori = true };
+    m_quad = make_unique<Quad>(qip);  // create a Quad, standard width and height (normalized into -1|1), static red
 
-    m_quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f, nullptr, 1,
-                                              false});  // create a Quad, standard width and height (normalized into -1|1), static red
+    qip.flipHori = true;
+    m_hFlipQuad = make_unique<Quad>(qip);  // create a Quad, standard width and height (normalized into -1|1), static red
 
     m_stdTex = m_glbase->shaderCollector().getStdTex();
 

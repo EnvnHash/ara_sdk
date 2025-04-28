@@ -519,9 +519,9 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
 
         if (!mesh->HasVertexColors(0)) {
             if (mesh->mTextureCoords[0] && loadedTextures) {
-                meshSN->m_vao->setStaticColor(0.f, 0.f, 0.f, 1.f);
+                meshSN->m_vao->setStaticColor({ 0.f, 0.f, 0.f, 1.f });
             } else {
-                meshSN->m_vao->setStaticColor(1.f, 1.f, 1.f, 1.f);
+                meshSN->m_vao->setStaticColor({ 1.f, 1.f, 1.f, 1.f });
             }
         } else {
             meshSN->m_vao->upload(CoordType::Color, &mesh->mColors[0][0].r, mesh->mNumVertices);

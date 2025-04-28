@@ -19,12 +19,12 @@ TEST(GLBaseTest, GLBaseStopStart) {
     for (int i = 0; i < nrIterations; i++) {
         m_glbase.startRenderLoop();                                      // blocks until the loop is really running
 
-        // push something into the the queue to process
+        // push something into the queue to process
         Conditional sema;
         m_glbase.addGlCb([&] {
 
             Shaders *colShader = m_glbase.shaderCollector().getStdCol(); // get the shared color shader
-            auto quad = std::make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
+            auto quad = std::make_unique<Quad>(QuadInitParams{});
 
             // set some OpenGL parameters
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

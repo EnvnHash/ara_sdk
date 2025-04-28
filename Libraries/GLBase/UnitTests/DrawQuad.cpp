@@ -46,21 +46,17 @@ namespace ara::GLBaseUnitTest::DrawQuad {
     }
 
     TEST(GLBaseTest, DrawQuad) {
-        // direct window creation
-        gp.size = { 1920, 1080 };   // set the windows size
-        gp.shift = { 100, 100 };    // offset relative to OS screen canvas
-        gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
-        gp.createHidden = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
-
-        ASSERT_TRUE(gwin.create(gp));    // now pass the arguments and create the window
+        ASSERT_TRUE(gwin.create(glWinPar{
+            .createHidden = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
+            .shift = { 100, 100 },    // offset relative to OS screen canvas
+            .size = { 1920, 1080 },   // set the windows size
+            .scaleToMonitor = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
+        }));
 
         // init glew
         initGLEW();
 
-        quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
-                                                glm::vec3(0.f, 0.f, 1.f),
-                                                1.f, 0.f, 0.f,
-                                                1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+        quad = make_unique<Quad>(QuadInitParams{.color = {1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
         colShader = shCol.getStdCol(); // get a simple standard color shader
 
         // start a draw loop

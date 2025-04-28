@@ -44,10 +44,11 @@ void PropoImage::setupQuad() {
 
     // position to the right upper corner for fullscreen
     if (imgQuad) {
-        imgQuad->scale(imgWidth / oldImgWidth, imgHeight / oldImgHeight, 1.f);
+        imgQuad->scale({imgWidth / oldImgWidth, imgHeight / oldImgHeight, 1.f});
     } else {
-        imgQuad = std::make_unique<Quad>(QuadInitParams{imgLowerLeftCorner.x, imgLowerLeftCorner.y, imgWidth, imgHeight,
-                                                        glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
+        imgQuad = std::make_unique<Quad>(QuadInitParams{.pos = imgLowerLeftCorner,
+                                                        .size = {imgWidth, imgHeight},
+                                                        .color = {0.f, 0.f, 0.f, 0.f} });
     }
 }
 
@@ -57,11 +58,10 @@ void PropoImage::draw() {
     imgQuad->draw();
 }
 
-void PropoImage::setWidth(float _newWidth) {
-    oldImgWidth  = imgWidth;
-    oldImgHeight = imgHeight;
-
-    imgWidth = _newWidth;
+void PropoImage::setWidth(float newWidth) {
+    oldImgWidth     = imgWidth;
+    oldImgHeight    = imgHeight;
+    imgWidth        = newWidth;
     setupQuad();
 }
 

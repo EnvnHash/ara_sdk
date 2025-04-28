@@ -20,7 +20,7 @@ CsPerspFbo::CsPerspFbo(sceneData* sd)
 
     m_camPos     = vec3{0.f, 0.f, 1.f};
     float aspect = s_sd->winViewport.z / s_sd->winViewport.w;
-    m_quad       = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 1.f, 1.f, 1.f, 1.f});
+    m_quad       = make_unique<Quad>(QuadInitParams{});
     s_viewport   = s_sd->winViewport;
     s_iViewport  = s_sd->winViewport;
 
@@ -47,12 +47,16 @@ void CsPerspFbo::initLayerTexShdr() {
     if (m_layerTexShdr) s_shCol->deleteShader("CsPerspFbo");
 
     string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 1) in vec4 normal; \n layout(location = 2) in vec2 texCoord; \n layout(location = 3) in vec4 color; \n out vec2 tex_coord; \n uniform mat4 m_pvm; \n void
-            main() {
-                \n tex_coord   = texCoord;
-                \n gl_Position = m_pvm * position;
-                \n
-            });
+        layout(location = 0) in vec4 position; \n
+        layout(location = 1) in vec4 normal; \n
+        layout(location = 2) in vec2 texCoord; \n
+        layout(location = 3) in vec4 color; \n
+        out vec2 tex_coord; \n
+        uniform mat4 m_pvm; \n
+        void main() { \n
+            tex_coord   = texCoord;\n
+            gl_Position = m_pvm * position;\n
+        });
 
     vert = s_shCol->getShaderHeader() + "// CsPerspFbo layer texture shader, vert\n" + vert;
 
@@ -101,24 +105,22 @@ void CsPerspFbo::initClearShader(int nrLayers) {
                                 "clearCol[" +
                                 std::to_string(nrLayers) + "];\n";
 
-    std::string geom = STRINGIFY(uniform mat4 m_pvm; out vec4 o_col; void main() {
-        \n for (int i = 0; i < gl_in.length(); i++)\n {
-            \n gl_Layer = gl_InvocationID;
-            o_col       = clearCol[gl_InvocationID];
-            gl_Position = m_pvm * gl_in[i].gl_Position;
-            \n EmitVertex();
-            \n
-        }
-        \n EndPrimitive();
-        \n
+    std::string geom = STRINGIFY(uniform mat4 m_pvm; out vec4 o_col;
+        void main() {\n
+            for (int i = 0; i < gl_in.length(); i++) {\n
+                gl_Layer = gl_InvocationID;
+                o_col       = clearCol[gl_InvocationID];
+                gl_Position = m_pvm * gl_in[i].gl_Position;\n
+                EmitVertex();\n
+            }\n
+            EndPrimitive();\n
     });
 
     geom = shdr_Header_g + "// CsPerspFbo clear shader, geom\n" + geom;
 
     //---------------------------------------------------------
 
-    std::string frag =
-        "layout (location = 0) out vec4 color; in vec4 o_col;\n void main() { "
+    std::string frag = "layout (location = 0) out vec4 color; in vec4 o_col;\n void main() { "
         "color = o_col; }";
     frag = s_shCol->getShaderHeader() + "// CsPerspFbo clear color shader, frag\n" + frag;
 
@@ -128,15 +130,23 @@ void CsPerspFbo::initClearShader(int nrLayers) {
 void CsPerspFbo::rebuildFbo() {
     bool nrCamsChanged = m_fbo.getDepth() != (int)s_cam.size();
 
-    if (m_fbo.getWidth() != (int)s_viewport.z || m_fbo.getHeight() != (int)s_viewport.w || nrCamsChanged ||
-        m_fbo.getNrSamples() != m_glbase->getNrSamples() || m_fbo.getType() != GL_RGBA8 ||
-        m_fbo.getTarget() != GL_TEXTURE_2D_ARRAY || !m_fbo.isInited()) {
+    if (m_fbo.getWidth() != (int)s_viewport.z
+        || m_fbo.getHeight() != (int)s_viewport.w
+        || nrCamsChanged
+        || m_fbo.getNrSamples() != m_glbase->getNrSamples()
+        || m_fbo.getType() != GL_RGBA8
+        || m_fbo.getTarget() != GL_TEXTURE_2D_ARRAY
+        || !m_fbo.isInited()) {
         if (nrCamsChanged || !m_fbo.isInited()) {
-            if (m_clearShdr) s_shCol->deleteShader("CsPerspFbo_ClearShader");
+            if (m_clearShdr) {
+                s_shCol->deleteShader("CsPerspFbo_ClearShader");
+            }
             initClearShader((int)s_cam.size());
         }
 
-        if (m_fbo.isInited()) m_fbo.remove();
+        if (m_fbo.isInited()) {
+            m_fbo.remove();
+        }
 
         m_fbo.setWidth((int)s_viewport.z);
         m_fbo.setHeight((int)s_viewport.w);
@@ -150,9 +160,13 @@ void CsPerspFbo::rebuildFbo() {
         m_fbo.setGlbase(m_glbase);
         m_fbo.init();
 
-        if (!s_updtCb.empty())
-            for (auto& cbList : s_updtCb)
-                for (auto& cb : cbList.second) cb();
+        if (!s_updtCb.empty()) {
+            for (auto& cbList : s_updtCb) {
+                for (auto& cb : cbList.second) {
+                    cb();
+                }
+            }
+        }
     }
 }
 
@@ -180,7 +194,9 @@ void CsPerspFbo::clearScreen(renderPass pass) {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     } else if (pass == GLSG_SHADOW_MAP_PASS || pass == GLSG_OBJECT_MAP_PASS) {
-        for (auto& it : s_shaderProto) it.second->clear(pass);
+        for (auto& it : s_shaderProto) {
+            it.second->clear(pass);
+        }
     }
 }
 

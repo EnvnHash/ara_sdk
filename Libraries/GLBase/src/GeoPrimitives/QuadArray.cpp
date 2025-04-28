@@ -27,13 +27,15 @@ using namespace glm;
 
 namespace ara {
 QuadArray::QuadArray(const QuadArrayInitParams& ip)
-    : GeoPrimitive(), m_nrSegsX(ip.nrSegsX), m_nrSegsY(ip.nrSegsY), m_x(ip.x), m_y(ip.y), m_instAttribs(ip.instAttribs),
-      m_maxNrInstances(ip.nrInstances), m_usage(ip.usage) {
-    m_r = ip.r;
-    m_g = ip.g;
-    m_b = ip.b;
-    m_a = ip.a;
-
+    : GeoPrimitive(),
+        m_nrSegsX(ip.nrSegsX),
+        m_nrSegsY(ip.nrSegsY),
+        m_x(ip.x),
+        m_y(ip.y),
+        m_instAttribs(ip.instAttribs),
+        m_maxNrInstances(ip.nrInstances),
+        m_usage(ip.usage) {
+    m_color = ip.color;
     QuadArray::init();
 }
 
@@ -42,11 +44,11 @@ void QuadArray::init() {
     GLfloat quadPos[18] = {0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f};
     GLfloat norm[3]     = {0.f, 0.f, 1.f};
 
-    float quadWidth  = m_totalWidth / static_cast<float>(m_nrSegsX);
-    float quadHeight = m_totalHeight / static_cast<float>(m_nrSegsY);
+    auto quadWidth  = m_totalWidth / static_cast<float>(m_nrSegsX);
+    auto quadHeight = m_totalHeight / static_cast<float>(m_nrSegsY);
 
-    float texWidth  = 1.f / static_cast<float>(m_nrSegsX);
-    float texHeight = 1.f / static_cast<float>(m_nrSegsY);
+    auto texWidth  = 1.f / static_cast<float>(m_nrSegsX);
+    auto texHeight = 1.f / static_cast<float>(m_nrSegsY);
 
     m_mesh = make_unique<Mesh>("position:3f,normal:3f,texCoord:2f,color:4f");
 
@@ -66,10 +68,12 @@ void QuadArray::init() {
         }
     }
 
-    if (m_instAttribs) m_usage = GL_DYNAMIC_DRAW;
+    if (m_instAttribs) {
+        m_usage = GL_DYNAMIC_DRAW;
+    }
 
     m_vao = make_unique<VAO>(m_format, m_usage, m_instAttribs, m_maxNrInstances);
-    m_vao->setStaticColor(m_r, m_g, m_b, m_a);
+    m_vao->setStaticColor(m_color);
     m_vao->uploadMesh(m_mesh.get());
 }
 

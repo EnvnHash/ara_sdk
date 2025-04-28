@@ -37,7 +37,7 @@ public:
     }
 
     void        disable() { glDisableVertexAttribArray(location); }
-    void        setName(std::string inName) { name = inName; }
+    void        setName(const std::string& inName) { name = inName; }
     const char *getName() { return name.c_str(); }
     GLsizeiptr  getByteSize() { return size * sizeof(type) * nrConsecLocs; }
 

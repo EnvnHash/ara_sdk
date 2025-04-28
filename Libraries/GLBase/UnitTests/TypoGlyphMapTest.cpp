@@ -41,13 +41,7 @@ namespace ara::GLBaseUnitTest::TypoGlyphMapTest {
                   GL_NO_ERROR);    // be sure that there are no GL errors, just for testing, normally not needed
 
         // read back
-        vector<GLubyte> data(gp.size.x * gp.size.y * 4);    // make some space to download
-        glReadBuffer(GL_FRONT);
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glReadPixels(0, 0, gp.size.x, gp.size.y, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);    // synchronous, blocking command, no swap() needed
-
-        EXPECT_EQ(postGLError(), GL_NO_ERROR);
+        auto data = readBack(gp.size);
 
         // compare generated and reference image pixel by pixel
         uint8_t *texData = &data[0];

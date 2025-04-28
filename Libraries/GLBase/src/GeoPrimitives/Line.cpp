@@ -24,35 +24,23 @@ using namespace glm;
 namespace ara {
 
 Line::Line() : GeoPrimitive(), m_nrSegments(100) {
-    m_r = 1.0f;
-    m_g = 1.0f;
-    m_b = 1.0f;
-    m_a = 1.0f;
+    m_color = { 1.f, 1.f, 1.f, 1.f };
     init();
 }
 
 Line::Line(int _nrSegments) : GeoPrimitive(), m_nrSegments(_nrSegments) {
-    m_r = 1.0f;
-    m_g = 1.0f;
-    m_b = 1.0f;
-    m_a = 1.0f;
+    m_color = { 1.f, 1.f, 1.f, 1.f };
     Line::init();
 }
 
 Line::Line(int nrSegments, float r, float g, float b, float a) : GeoPrimitive(), m_nrSegments(nrSegments) {
-    m_r = r;
-    m_g = g;
-    m_b = b;
-    m_a = a;
+    m_color = { r, g, b, a };
     Line::init();
 }
 
 Line::Line(int nrSegments, float r, float g, float b, float a, std::vector<CoordType> *instAttribs, int nrInstance)
     : GeoPrimitive(), m_nrSegments(nrSegments), m_instAttribs(instAttribs), m_maxNrInstances(nrInstance) {
-    m_r = r;
-    m_g = g;
-    m_b = b;
-    m_a = a;
+    m_color = { r, g, b, a };
     Line::init();
 }
 
@@ -72,7 +60,7 @@ void Line::init() {
     if (m_instAttribs) usage = GL_DYNAMIC_DRAW;
 
     m_vao = make_unique<VAO>(m_format, usage, m_instAttribs, m_maxNrInstances);
-    m_vao->setStaticColor(m_r, m_g, m_b, m_a);
+    m_vao->setStaticColor(m_color);
     m_vao->uploadMesh(m_mesh.get());
 }
 

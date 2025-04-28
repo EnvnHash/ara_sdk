@@ -37,13 +37,7 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
         // that's all to draw a quad, now we are reading back the framebuffer and check that everything was drawn correctly
 
         // read back
-        vector<GLubyte> data(gp.size.x * gp.size.y * 4);    // make some space to download
-        glReadBuffer(GL_FRONT);
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glReadPixels(0, 0, gp.size.x, gp.size.y, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);    // synchronous, blocking command, no swap() needed
-        ASSERT_EQ(postGLError(), GL_NO_ERROR);
-
+        auto data = readBack(gp.size);
         int segStep = gp.size.x / 4;
         int segStepHalf = segStep / 2;
 
@@ -71,8 +65,9 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
 
         for (auto &it: checkColors) {
             size_t ptr = (std::get<0>(it) + std::get<1>(it) * gp.size.x) * 4;
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++) {
                 ASSERT_EQ((int) data[ptr + i], std::get<2>(it)[i]);
+            }
         }
 
         didRun = true;
@@ -84,10 +79,7 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
         ASSERT_TRUE(gwin.create(gp));    // now pass the arguments and create the window
         ASSERT_EQ(true, initGLEW());
 
-        quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
-                                                glm::vec3(0.f, 0.f, 1.f),
-                                                1.f, 0.f, 0.f,
-                                                1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+        quad = make_unique<Quad>(QuadInitParams{.color = { 1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
         texShader = m_glbase.shaderCollector().getStdTex(); // get a simple standard color shader
 
         // load with mipmaps set

@@ -64,8 +64,7 @@ GLSLHistogram::GLSLHistogram(GLBase* glbase, ivec2 size, GLenum type, unsigned i
     : m_glbase(glbase), m_shCol(&glbase->shaderCollector()), m_texType(type), m_geoAmp(32), m_width(size.x), m_height(size.y),
       m_maxHistoWidth(static_cast<int>(histWidth)), m_downSample(downSample), m_normalize(normalize), m_getBounds(getBounds),
       m_valThres(0.f), m_indValThres(0.05f), m_maxValPerChan(maxValPerChan) {
-    m_quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f,
-                                              0.f});  // color will be replaced when rendering with blending on
+    m_quad = make_unique<Quad>(QuadInitParams{.color = {0.f, 0.f, 0.f, 0.f} });  // color will be replaced when rendering with blending on
 
     m_minMax[0] = 0;
     m_minMax[1] = 0;

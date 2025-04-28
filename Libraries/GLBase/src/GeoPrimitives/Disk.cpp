@@ -25,18 +25,13 @@ namespace ara {
 
 Disk::Disk(vec2 size, int nrSubDiv, std::vector<CoordType> *instAttribs, int maxNrInstances, vec4 col)
     : GeoPrimitive(), m_width(size.x), m_height(size.y), m_nrSubDiv(nrSubDiv) {
-    m_r = col.r;
-    m_g = col.g;
-    m_b = col.b;
-    m_a = col.a;
+    m_color = col;
     Disk::init();
 }
 
 void Disk::init() {
     m_format     = "position:3f,normal:3f,texCoord:2f,color:4f";
-    GLenum usage = GL_STATIC_DRAW;
-    if (m_instAttribs) usage = GL_DYNAMIC_DRAW;
-
+    auto usage = m_instAttribs ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
     m_vao = make_unique<VAO>(m_format, usage, m_instAttribs, m_maxNrInstances);
 
     // positions and texcoords
@@ -44,8 +39,13 @@ void Disk::init() {
     std::deque<GLfloat> texCoords((m_nrSubDiv + 2) * 2);
 
     // center
-    for (int i = 0; i < 3; i++) positions[i] = 0.f;
-    for (int i = 0; i < 2; i++) texCoords[i] = 0.5f;
+    for (int i = 0; i < 3; i++) {
+        positions[i] = 0.f;
+    }
+
+    for (int i = 0; i < 2; i++) {
+        texCoords[i] = 0.5f;
+    }
 
     for (int i = 0; i < (m_nrSubDiv + 1); i++) {
         double alpha               = static_cast<double>(i) / static_cast<double>(m_nrSubDiv) * M_PI * 2.0;

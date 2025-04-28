@@ -17,7 +17,7 @@ namespace ara::GLBaseUnitTest::PolygonTest {
 
         colShader = shCol.getStdCol(); // get a simple standard color shader
         poly = make_unique<Polygon>(&shCol);
-        poly->setColor(1.f, 0.f, 0.f, 1.f);
+        poly->setColor({1.f, 0.f, 0.f, 1.f});
 
         // create a test polygon
         poly->addPoint(0, -0.7f, -0.7f);

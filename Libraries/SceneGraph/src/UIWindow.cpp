@@ -132,8 +132,12 @@ UIWindow::UIWindow(const UIWindowParams& par)
         }
         s_shCol.setShaderHeader(m_glbase->getShaderHeader());
 
-        m_quad = make_unique<Quad>(QuadInitParams{0.f, 0.f, 1.f, 1.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false});
-        m_normQuad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false});
+        m_quad = make_unique<Quad>(QuadInitParams{
+            .pos = {0.f, 0.f},
+            .size = {1.f, 1.f},
+            .color = { 1.f, 0.f, 0.f, 1.f }
+        });
+        m_normQuad = make_unique<Quad>(QuadInitParams{ .color = {1.f, 0.f, 0.f, 1.f} });
         glGenVertexArrays(1, &m_nullVao);
 
         m_objSel = make_unique<ObjectMapInteraction>(&s_shCol, rWidth, rHeight, m_sceneFbo.get(), m_multisample);

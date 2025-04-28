@@ -46,7 +46,7 @@ SSAO::SSAO(GLBase* glbase, uint inFboWidth, uint inFboHeight, AlgorithmType _alg
 
     initFramebuffers(inFboWidth, inFboHeight, samples);
 
-    quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
+    quad = make_unique<Quad>(QuadInitParams{});
 }
 
 void SSAO::initShaders() {

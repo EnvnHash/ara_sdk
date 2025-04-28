@@ -30,10 +30,7 @@ namespace ara {
 QuadArrayAdj::QuadArrayAdj()
     : GeoPrimitive(), m_x(-1.f), m_y(-1.f), m_width(1.f), m_height(1.f), m_nrSegsX(4), m_nrSegsY(4), m_totalWidth(2.f),
       m_totalHeight(2.f), m_instAttribs(nullptr), m_maxNrInstances(1), m_usage(GL_STATIC_DRAW) {
-    m_r        = 1.f;
-    m_g        = 1.f;
-    m_b        = 1.f;
-    m_a        = 1.f;
+    m_color = { 1.f, 1.f, 1.f, 1.f };
     QuadArrayAdj::init();
 }
 
@@ -41,10 +38,7 @@ QuadArrayAdj::QuadArrayAdj(ivec2 nrSegs, vec2 pos, vec2 size, glm::vec4 col, std
                            int nrInstances, GLenum usage)
     : GeoPrimitive(), m_x(pos.x), m_y(pos.y), m_width(size.x), m_height(size.y), m_nrSegsX(nrSegs.x), m_nrSegsY(nrSegs.y),
       m_totalWidth(2.f), m_totalHeight(2.f), m_instAttribs(instAttribs), m_maxNrInstances(nrInstances), m_usage(usage) {
-    m_r        = col.r;
-    m_g        = col.g;
-    m_b        = col.b;
-    m_a        = col.a;
+    m_color = col;
     QuadArrayAdj::init();
 }
 
@@ -52,10 +46,7 @@ QuadArrayAdj::QuadArrayAdj(ivec2 nrSegs, vec2 pos, vec2 size, vec3 inNormal, std
                            int nrInstances, GLenum usage)
     : GeoPrimitive(), m_x(pos.x), m_y(pos.y), m_width(size.x), m_height(size.y), m_nrSegsX(nrSegs.x), m_nrSegsY(nrSegs.y),
       m_totalWidth(2.f), m_totalHeight(2.f), m_instAttribs(instAttribs), m_maxNrInstances(nrInstances), m_usage(usage), m_qaNormal(inNormal) {
-    m_r        = 0.f;
-    m_g        = 0.f;
-    m_b        = 0.f;
-    m_a        = 1.f;
+    m_color = { 0.f, 0.f, 0.f, 1.f };
     QuadArrayAdj::init();
 }
 
@@ -111,7 +102,7 @@ void QuadArrayAdj::init() {
     }
 
     m_vao = std::make_unique<VAO>(m_format, m_usage, m_instAttribs, m_maxNrInstances);
-    m_vao->setStaticColor(m_r, m_g, m_b, m_a);
+    m_vao->setStaticColor(m_color);
     m_vao->uploadMesh(m_mesh.get());
 }
 

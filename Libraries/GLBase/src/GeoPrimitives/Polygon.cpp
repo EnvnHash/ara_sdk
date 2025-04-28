@@ -24,12 +24,12 @@ using namespace std;
 using namespace glm;
 
 namespace ara {
-Polygon::Polygon() : GeoPrimitive(), r(1.f), g(1.f), b(1.f), a(1.f), m_subDivFact(0.01f) {
+Polygon::Polygon() : GeoPrimitive(), m_color({1.f, 1.f, 1.f, 1.f}), m_subDivFact(0.01f) {
     m_polygon.emplace_back();  // we need at least one main polygon
 }
 
 Polygon::Polygon(ShaderCollector *shCol)
-    : GeoPrimitive(), m_shCol(shCol), r(1.f), g(1.f), b(1.f), a(1.f), m_subDivFact(0.01f) {
+    : GeoPrimitive(), m_shCol(shCol), m_color({1.f, 1.f, 1.f, 1.f}), m_subDivFact(0.01f) {
     m_polygon.emplace_back();  // we need at least one main polygon
 }
 
@@ -357,7 +357,7 @@ void Polygon::tesselate() {
         }
 
         m_vaoFilled.init(attribs.c_str());
-        m_vaoFilled.setStaticColor(r, g, b, a);
+        m_vaoFilled.setStaticColor(m_color);
     }
 
     uint32_t nrVert = getTotalNrPoints();

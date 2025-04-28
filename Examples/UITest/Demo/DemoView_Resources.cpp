@@ -91,8 +91,13 @@ bool DemoView_Resources::draw(uint32_t* objId) {
                 m_glyphShader = getSharedRes()->shCol->getStdGlyphShdr();
             }
 
-            f->drawDGlyphs(dgv, getMvp(), m_glyphShader, *getSharedRes()->nullVao, &glm::vec4(1.f)[0],
-                           pos[0]+tp[0], pos[1]+tp[1]-bb[1], pos[0], pos[1], size[0], size[1]);
+            f->drawDGlyphs(dgv,
+                           getMvp(),
+                           m_glyphShader, *getSharedRes()->nullVao,
+                           &glm::vec4(1.f)[0],
+                           {pos[0]+tp[0], pos[1]+tp[1]-bb[1]},
+                           pos,
+                           size);
         }
     }
 

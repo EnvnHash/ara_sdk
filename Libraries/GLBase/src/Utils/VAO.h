@@ -91,17 +91,17 @@ public:
 
 #endif
     void uploadMesh(Mesh *mesh);
-    void setStaticNormal(float x, float y, float z) { setStatic(x, y, z, 0, (char *)"normal", (char *)"normal:3f"); }
+    void setStaticNormal(float x, float y, float z) { setStatic({x, y, z, 0}, "normal", "normal:3f"); }
     void setStaticNormal(std::vector<GLfloat> *norm) {
-        setStatic(norm->at(0), norm->at(1), norm->at(2), 0, (char *)"normal", (char *)"normal:3f");
+        setStatic({norm->at(0), norm->at(1), norm->at(2), 0}, "normal", "normal:3f");
     }
-    void setStaticColor(float r, float g, float b, float a) {
-        setStatic(r, g, b, a, (char *)"color", (char *)"color:4f");
+    void setStaticColor(glm::vec4 color) {
+        setStatic(color, (char *)"color", (char *)"color:4f");
     }
     void setStaticColor(std::vector<GLfloat> *col) {
-        setStatic(col->at(0), col->at(1), col->at(2), col->at(3), (char *)"color", (char *)"color:4f");
+        setStatic({col->at(0), col->at(1), col->at(2), col->at(3)}, (char *)"color", (char *)"color:4f");
     }
-    void setStatic(float r, float g, float b, float a, char *name, char *format);
+    void setStatic(glm::vec4 color, const std::string& name, const std::string& format);
     void enableVertexAttribs();
     void disableVertexAttribs();
 

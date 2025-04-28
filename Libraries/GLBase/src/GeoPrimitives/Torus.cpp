@@ -38,10 +38,7 @@ Torus::Torus() : GeoPrimitive() {
     m_instAttribs    = nullptr;
     m_maxNrInstances = 1;
 
-    m_r        = 1.f;
-    m_g        = 1.f;
-    m_b        = 1.f;
-    m_a        = 1.f;
+    m_color = { 1.f, 1.f, 1.f, 1.f };
 
     Torus::init();
 }
@@ -90,7 +87,7 @@ void Torus::init() {
     }
 
     m_vao = make_unique<VAO>(m_format, usage, m_instAttribs, m_maxNrInstances);
-    m_vao->setStaticColor(m_r, m_g, m_b, m_a);
+    m_vao->setStaticColor(m_color);
     m_vao->uploadMesh(m_mesh.get());
 }
 

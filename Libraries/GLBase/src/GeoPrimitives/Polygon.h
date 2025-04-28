@@ -119,13 +119,10 @@ public:
     VAO                             &getVao() { return m_vaoFilled; }
     void                             setShaderCollector(ShaderCollector *shCol) { m_shCol = shCol; }
 
-    void setColor(float _r, float _g, float _b, float _a) override {
-        r = _r;
-        g = _g;
-        b = _b;
-        a = _a;
+    void setColor(glm::vec4 col) override {
+        m_color = col;
         if (m_vaoFilled.isInited()) {
-            m_vaoFilled.setStaticColor(r, g, b, a);
+            m_vaoFilled.setStaticColor(col);
         }
     }
 
@@ -135,19 +132,19 @@ public:
     template <class B>
     void serialize(B &buf) const {
         buf << m_polygon;
-        buf << r;
-        buf << g;
-        buf << b;
-        buf << a;
+        buf << m_color.r;
+        buf << m_color.g;
+        buf << m_color.b;
+        buf << m_color.a;
     }
 
     template <class B>
     void parse(B &buf) {
         buf >> m_polygon;
-        buf >> r;
-        buf >> g;
-        buf >> b;
-        buf >> a;
+        buf >> m_color.r;
+        buf >> m_color.g;
+        buf >> m_color.b;
+        buf >> m_color.a;
     }
 
 private:
@@ -163,14 +160,10 @@ private:
     std::vector<CoordType> m_flatVertCoordTypes{CoordType::Position, CoordType::Normal, CoordType::TexCoord};
     std::vector<GLuint>    m_indices;
 
-    float r            = 1.f;
-    float g            = 1.f;
-    float b            = 1.f;
-    float a            = 1.f;
-    float m_subDivFact = 0.01f;
-
-    bool m_inited        = false;
-    bool m_mixedInterpol = false;
+    glm::vec4 m_color       = { 1.f, 1.f, 1.f, 1.f };
+    float m_subDivFact      = 0.01f;
+    bool m_inited           = false;
+    bool m_mixedInterpol    = false;
 
     // temporary variables made local for performance reasons
     std::vector<std::vector<CtrlPoint>>::iterator m_polyIntrIt;
