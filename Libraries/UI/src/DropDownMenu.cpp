@@ -171,7 +171,7 @@ void DropDownMenu::rebuildEntryList() {
     int i = 0;
     for (auto& entry : m_entries) {
         auto butt = m_entryList->addChild<Button>();
-        m_entryButts.push_back(butt);  // maintain a separate list of entry button since m_entries
+        m_entryButts.emplace_back(butt);  // maintain a separate list of entry button since m_entries
                                        // may contain other elements
 
         // default

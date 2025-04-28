@@ -399,7 +399,7 @@ void VAO::addExtBuffer(CoordType _type, GLuint buffer) {
 
 #ifdef __EMSCRIPTEN__
 GLint VAO::addBufferFloat(uint32_t location, uint32_t size, const char *name) {
-    m_attributes.push_back(new VertexAttribute());
+    m_attributes.emplace_back(new VertexAttribute());
     m_attributes.back().setName((GLchar *)name);
     m_attributes.back().location = location;
     m_attributes.back().size     = size;

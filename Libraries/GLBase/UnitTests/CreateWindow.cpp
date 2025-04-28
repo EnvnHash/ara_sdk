@@ -15,10 +15,8 @@ namespace ara::GLBaseUnitTest::CreateWindowTest {
 
     TEST(GLBaseTest, CreateWindowTest) {
         ASSERT_TRUE(gwin.init(glWinPar{
-            .shiftX = 100,        // x offset relative to OS screen canvas
-            .shiftY = 100,        // y offset relative to OS screen canvas
-            .width = 1920,        // set the windows width
-            .height = 1080,       // set the windows height
+            .shift = { 100, 100 },  //  offset relative to OS screen canvas
+            .size = { 1920, 1080 }  // set the windows size
         }));
 
         ASSERT_EQ(true, initGLEW());

@@ -14,16 +14,20 @@ using namespace std;
 
 namespace ara {
 
-Noise3DTexGen::Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, int width, int height, int depth,
-                             float scaleX, float scaleY, float scaleZ)
+Noise3DTexGen::Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, ivec3 size, vec3 scale)
     : m_glbase(static_cast<GLBase*>(scd->glbase)), m_shCol(&static_cast<GLBase*>(scd->glbase)->shaderCollector()),
-      m_width(width), m_height(height), m_scaleX(scaleX), m_scaleY(scaleY), m_scaleZ(scaleZ) {
-    depth   = depth;
-    m_nrLoops = depth;
+      m_width(size.x), m_height(size.y), m_scaleX(scale.x), m_scaleY(scale.y), m_scaleZ(scale.z), m_depth(size.z),    m_nrLoops(size.z) {
 
-    fbo = make_unique<FBO>(FboInitParams{m_glbase, width, height, depth, GL_RGBA8, GL_TEXTURE_3D, false, 1, 1, 1, GL_REPEAT, false});
-    auto xBlendFboH = make_unique<FBO>(FboInitParams{m_glbase, width, height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_REPEAT, false});
-    auto xBlendFboV = make_unique<FBO>(FboInitParams{m_glbase, width, height, 1, GL_RGBA8, GL_TEXTURE_2D, false, 1, 1, 1, GL_REPEAT, false});
+    FboInitParams fbi{
+        .glbase = static_cast<GLBase*>(scd->glbase),
+        .width = size.x,
+        .height = size.y,
+        .depth = size.z
+    };
+
+    fbo = make_unique<FBO>(fbi);
+    auto xBlendFboH = make_unique<FBO>(fbi);
+    auto xBlendFboV = make_unique<FBO>(fbi);
 
     unique_ptr<Quad> quad    = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
     unique_ptr<Quad> fboQuad = make_unique<Quad>(QuadInitParams{0.f, 0.f, 1.f, 1.f, vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
@@ -67,7 +71,7 @@ Noise3DTexGen::Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, int widt
         xBlendShaderH->begin();
         xBlendShaderH->setIdentMatrix4fv("m_pvm");
         xBlendShaderH->setUniform1i("tex", 0);
-        xBlendShaderH->setUniform1i("width", width);
+        xBlendShaderH->setUniform1i("width", size.x);
         xBlendShaderH->setUniform1f("zPos", zPos + 0.5f / float(m_nrLoops - 1));
 
         glActiveTexture(GL_TEXTURE0);
@@ -85,7 +89,7 @@ Noise3DTexGen::Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, int widt
         xBlendShaderV->begin();
         xBlendShaderV->setIdentMatrix4fv("m_pvm");
         xBlendShaderV->setUniform1i("tex", 0);
-        xBlendShaderV->setUniform1i("height", height);
+        xBlendShaderV->setUniform1i("height", size.y);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, xBlendFboH->getColorImg());

@@ -14,8 +14,8 @@ using namespace std;
 namespace ara {
 
 int GLFWWindow::init(const glWinPar &gp) {
-    m_widthVirt  = gp.width;
-    m_heightVirt = gp.height;
+    m_widthVirt  = gp.size.x;
+    m_heightVirt = gp.size.y;
     m_monWidth   = 0;
     m_monHeight  = 0;
 
@@ -90,7 +90,7 @@ int GLFWWindow::init(const glWinPar &gp) {
         }
 
         for (auto i = 0; i < countVm; i++) {
-            if (modes[i].width == gp.width && modes[i].height == gp.height && modes[i].refreshRate == gp.refreshRate &&
+            if (modes[i].width == gp.size.x && modes[i].height == gp.size.y && modes[i].refreshRate == gp.refreshRate &&
                 modes[i].redBits == 8) {
                 found       = true;
                 useThisMode = &modes[i];
@@ -237,13 +237,13 @@ int GLFWWindow::init(const glWinPar &gp) {
     // if there is content scaling on this display, adjust size and position
     m_widthReal  = fbWidth;
     m_heightReal = fbHeight;
-    m_posXreal   = gp.shiftX * m_contentScale.x;
-    m_posYreal   = gp.shiftY * m_contentScale.y;
+    m_posXreal   = gp.shift.x * m_contentScale.x;
+    m_posYreal   = gp.shift.y * m_contentScale.y;
 #else
     m_widthReal  = (int)((float)m_widthVirt * m_contentScale.x);
     m_heightReal = (int)((float)m_heightVirt * m_contentScale.y);
-    m_posXreal   = (int)(gp.shiftX * m_contentScale.x);
-    m_posYreal   = (int)(gp.shiftY * m_contentScale.y);
+    m_posXreal   = (int)(gp.shift.x * m_contentScale.x);
+    m_posYreal   = (int)(gp.shift.y * m_contentScale.y);
 #endif
 
     glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));

@@ -39,7 +39,7 @@ public:
                 OutputDebugStringA("Store default failed\n");
 
             if (DisplayDevice.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) {
-                m_displays.push_back(NativeDisplay());
+                m_displays.emplace_back(NativeDisplay());
                 m_displays.back().width  = defaultMode.dmPelsWidth;
                 m_displays.back().height = defaultMode.dmPelsHeight;
                 m_displays.back().offsX  = defaultMode.dmPosition.x;
@@ -149,7 +149,6 @@ public:
         addWindows.emplace_back(glWinPar{
             .doInit         = false,
             .fullScreen     = fullScreen,
-            .useGL32p       = useGL32p,
             .decorated      = decorated,
             .floating       = floating,
             .createHidden   = hidden,
@@ -172,7 +171,7 @@ public:
      * parameters are set via pre filled gWinPar struct
      */
     GLWindowBase *addWin(glWinPar& gp) {
-        windows.push_back(std::make_unique<GLWindow>());
+        windows.emplace_back(std::make_unique<GLWindow>());
 
         // if there is no explicit request to share a specific content, and we
         // already got another context to share, take the first added window as
@@ -257,7 +256,7 @@ public:
 
     void addKeyCallback(unsigned int winInd, std::function<void(int, int, int, int)> _func) {
         if (static_cast<unsigned int>(windows.size()) >= (winInd + 1)) {
-            keyCbMap[windows[winInd].get()].push_back(_func);
+            keyCbMap[windows[winInd].get()].emplace_back(_func);
         } else {
            printf("tav::GLWindowManager::setKeyCallback Error: m_window doesn´t exist. \n");
         }

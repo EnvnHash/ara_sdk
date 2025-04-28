@@ -48,7 +48,7 @@ void TFO::init() {
         std::vector<std::string> v        = getStdRecAttribNames();
         uint32_t                 fragSize = static_cast<uint32_t>(std::find(v.begin(), v.end(), parName) - v.begin());
 
-        m_locations.push_back(fragSize);
+        m_locations.emplace_back(fragSize);
         fragSize = getRecCoTypeFragSize()[fragSize];
 
         // Bind it to the TRANSFORM_FEEDBACK binding to create it

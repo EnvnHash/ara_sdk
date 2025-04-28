@@ -28,7 +28,7 @@ public:
 
     bool create(glWinPar& gp) {
         LPCWSTR lpszClass = L"WGLWindow";
-        return create(lpszClass, gp.width, gp.height, gp.shiftX, gp.shiftY, gp.bits, gp.fullScreen, gp.createHidden,
+        return create(lpszClass, gp.size.x, gp.size.y, gp.shift.x, gp.shift.y, gp.bits, gp.fullScreen, gp.createHidden,
                       gp.decorated, gp.resizeable, gp.floating, gp.transparent, (HGLRC)gp.shareCont);
     }
 

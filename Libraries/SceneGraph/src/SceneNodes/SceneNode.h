@@ -124,7 +124,7 @@ public:
     void addRemoveCb(void* ptr, const std::string& name, std::function<void()> cb) {
         s_removeCb[ptr][name] = std::move(cb);
     }
-    void addTexture(std::unique_ptr<Texture> newTex) { m_textures.push_back(std::move(newTex)); }
+    void addTexture(std::unique_ptr<Texture> newTex) { m_textures.emplace_back(std::move(newTex)); }
     void setVisibility(bool val) { m_visible = val; }
     void setBlendMode(GLenum src, GLenum dst) {
         m_blendSrc = src;

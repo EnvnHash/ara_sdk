@@ -15,11 +15,8 @@ using namespace std::chrono;
 
 namespace ara {
 
-InfoDialog::InfoDialog(GLBase *glbase, int width, int height, int shiftX, int shiftY, bool osDecoration,
-                       bool transparentFB, bool floating, bool initToCurrentCtx, bool multisample, void *extWinHandle,
-                       bool scaleToMonitor)
-    : UIWindow(glbase, width, height, shiftX, shiftY, osDecoration, transparentFB, floating, initToCurrentCtx,
-               multisample, extWinHandle, scaleToMonitor) {
+InfoDialog::InfoDialog(const UIWindowParams& params)
+    : UIWindow(params) {
     setEnableWindowResizeHandles(false);
     setEnableMenuBar(false);
 

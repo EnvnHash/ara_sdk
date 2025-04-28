@@ -530,7 +530,7 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
         if (mesh->mNumFaces != 0) {
             for (uint k = 0; k < mesh->mNumFaces; k++) {
                 for (uint j = 0; j < mesh->mFaces[k].mNumIndices; j++) {
-                    meshSN->m_indices.push_back(mesh->mFaces[k].mIndices[j]);
+                    meshSN->m_indices.emplace_back(mesh->mFaces[k].mIndices[j]);
                 }
             }
         } else {

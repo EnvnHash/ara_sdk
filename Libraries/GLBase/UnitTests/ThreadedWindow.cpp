@@ -17,16 +17,12 @@ namespace ara::GLBaseUnitTest::ThreadedWindow {
         // create windows, must be not threaded
         for (int i = 0; i < nrThreads; i++) {
             // direct window creation
-            glWinPar gp;                // define Parameters for windows instanciating
-            gp.width = 200;                // set the windows width
-            gp.height = 200;            // set the windows height
-            gp.doInit = false;            // don't init glfw, this needs to be done on the main thread only once
-            gp.shiftX = 300 * i;        // x offset relative to OS screen canvas
-            gp.shiftY = 100;            // y offset relative to OS screen canvas
-            gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
-
-            ASSERT_TRUE(windows[i].init(
-                    gp));    // now pass the arguments and create the window, this make the windows gl context current
+            ASSERT_TRUE(windows[i].init(glWinPar{
+                .doInit = false,            // don't init glfw, this needs to be done on the main thread only once
+                .shift = { 300 * i, 100},   // offset relative to OS screen canvas
+                .size = { 200, 200 },
+                .scaleToMonitor = false,    // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
+            }));    // now pass the arguments and create the window, this make the windows gl context current
             ASSERT_EQ(true, initGLEW());
         }
 

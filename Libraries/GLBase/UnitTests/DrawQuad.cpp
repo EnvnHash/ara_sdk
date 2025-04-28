@@ -15,7 +15,7 @@ namespace ara::GLBaseUnitTest::DrawQuad {
     void staticDrawFunc() {
         // set some OpenGL parameters
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                    // clear the screen
-        glViewport(0, 0, (GLsizei) gp.width, (GLsizei) gp.height);        // set the drawable arean
+        glViewport(0, 0, static_cast<GLsizei>(gp.size.x), static_cast<GLsizei>(gp.size.y));        // set the drawable arean
 
         colShader->begin();                        // bind the shader
         colShader->setIdentMatrix4fv("m_pvm");  // set the model-view-projection matrix to an indent matrix
@@ -47,10 +47,8 @@ namespace ara::GLBaseUnitTest::DrawQuad {
 
     TEST(GLBaseTest, DrawQuad) {
         // direct window creation
-        gp.width = 1920;            // set the windows width
-        gp.height = 1080;            // set the windows height
-        gp.shiftX = 100;            // x offset relative to OS screen canvas
-        gp.shiftY = 100;            // y offset relative to OS screen canvas
+        gp.size = { 1920, 1080 };   // set the windows size
+        gp.shift = { 100, 100 };    // offset relative to OS screen canvas
         gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
         gp.createHidden = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
 

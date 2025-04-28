@@ -177,7 +177,7 @@ void SceneNode::setParentNode(SceneNode* _parent) {
     list<list<SceneNode*>::iterator> toKill;
     for (auto it = m_parents.begin(); it != m_parents.end(); ++it) {
         auto foundSelf = std::find((*it)->m_children.begin(), (*it)->m_children.end(), this);
-        if (foundSelf == (*it)->m_children.end()) toKill.push_back(it);
+        if (foundSelf == (*it)->m_children.end()) toKill.emplace_back(it);
     }
 
     for (auto& it : toKill) m_parents.erase(it);

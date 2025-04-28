@@ -77,10 +77,8 @@ public:
     void            resizeUplPbo(int w, int h, GLenum format) { m_uplPbo.resize(w, h, format); }
     PingPongFbo    *getUplFbo();
     void            initUplPbo(int w, int h, GLenum format);
-    void            initUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-                               int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
-    void            rebuildUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-                                  int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
+    void            initUplFbo(const FboInitParams& params);
+    void            rebuildUplFbo(const FboInitParams& params);
 
     unsigned     m_imgFlags    = 0;
     float        m_imgScale    = 1;

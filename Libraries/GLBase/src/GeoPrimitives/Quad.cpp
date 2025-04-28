@@ -116,7 +116,7 @@ Quad::Quad(const QuadInitParams& qd)
 
     // set normal facing outwards of the screen
     for (auto i = 0; i < 6; i++) {
-        normal.push_back(qd.inNormal);
+        normal.emplace_back(qd.inNormal);
     }
 
     init();

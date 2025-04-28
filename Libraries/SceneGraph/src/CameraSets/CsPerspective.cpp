@@ -10,7 +10,7 @@ CsPerspective::CsPerspective(sceneData* sc) : CameraSet(sc) {
         float aspect = s_sd->winViewport.z / s_sd->winViewport.w;
 
         if (s_sd->winViewport.z > 0.f && s_sd->winViewport.w > 0.f) {
-            s_intern_cam.push_back(make_unique<TrackBallCam>(Camera::camType::perspective, static_cast<float>(s_sd->winViewport.z),
+            s_intern_cam.emplace_back(make_unique<TrackBallCam>(Camera::camType::perspective, static_cast<float>(s_sd->winViewport.z),
                                                              static_cast<float>(s_sd->winViewport.w), -aspect, aspect, -1.0f,
                                                              1.0f,                          // left, right, bottom, top
                                                              camPos.x, camPos.y, camPos.z,  // camPos

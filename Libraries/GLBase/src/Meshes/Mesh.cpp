@@ -32,10 +32,10 @@ void Mesh::init(const char *format) {
         m_bUsing[i] = false;
     }
 
-    m_allCoords.push_back(&m_positions);
-    m_allCoords.push_back(&m_normals);
-    m_allCoords.push_back(&m_texCoords);
-    m_allCoords.push_back(&m_colors);
+    m_allCoords.emplace_back(&m_positions);
+    m_allCoords.emplace_back(&m_normals);
+    m_allCoords.emplace_back(&m_texCoords);
+    m_allCoords.emplace_back(&m_colors);
 
     // init coord sizes
     m_coordTypeSize.resize(toType(CoordType::Count));
@@ -137,7 +137,7 @@ void Mesh::calcNormals() {
             for (int j = 0; j < 3; j++) {
                 if (static_cast<uint>(m_normals.size()) <
                     (((i * 3) + j + 1) * m_coordTypeSize[toType(CoordType::Normal)])) {
-                    m_normals.push_back(normal.x);
+                    m_normals.emplace_back(normal.x);
                     m_normals.push_back(normal.y);
                     m_normals.push_back(normal.z);
                 } else {

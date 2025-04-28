@@ -29,10 +29,8 @@ bool GLRenderer::init(const std::string& name, glm::ivec2 pos, glm::ivec2 dimens
     // add a new window through the GWindowManager
     m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{
         .createHidden = hidden,
-        .shiftX = static_cast<int>(m_pos.x),
-        .shiftY = static_cast<int>(m_pos.y),
-        .width = static_cast<int>(m_dim.x),
-        .height = static_cast<int>(m_dim.y),
+        .shift = static_cast<ivec2>(m_pos),
+        .size = static_cast<ivec2>(m_dim),
         .scaleToMonitor = true,
         .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
     });

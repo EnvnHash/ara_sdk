@@ -19,10 +19,8 @@ namespace ara::GLBaseUnitTest::NativeWindow {
             .decorated = true,
             .createHidden = false,
             .debug = false,
-            .shiftX = 100,      // x offset relative to OS screen canvas
-            .shiftY = 100,      // y offset relative to OS screen canvas
-            .width = 1920,
-            .height = 1080
+            .shift = { 100, 100 },
+            .size = { 1920, 1080 }
         });
 
         gwin.draw();    // execute the draw function (normally the startDrawThread method would be used)

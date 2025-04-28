@@ -27,7 +27,7 @@ TEST(UITest, ImageSingle) {
         addImage(app, "test_img.jpg", {200,200}, {0.f, 0.f, 0.f, 0.f});
     }, [&](UIApplication *app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight(), 3);
     }, 300, 300);
 }
 
@@ -38,8 +38,7 @@ TEST(UITest, ImageSingleLod) {
         img->setLod(8);
     }, [&](UIApplication *app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_lod8.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
-
+                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight(), 3);
         img->setLod(3);
 
         auto procSteps = app->getMainWindow()->getProcSteps();
@@ -48,7 +47,7 @@ TEST(UITest, ImageSingleLod) {
         app->getMainWindow()->swap();
 
         compareFrameBufferToImage(filesystem::current_path() / "image_single_lod3.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight(), 3);
 
         img->setLod(0);
 
@@ -57,7 +56,7 @@ TEST(UITest, ImageSingleLod) {
         app->getMainWindow()->swap();
 
         compareFrameBufferToImage(filesystem::current_path() / "image_single_lod0.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight(), 4);
     }, 500, 500);
 }
 

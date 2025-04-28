@@ -23,11 +23,22 @@ namespace ara {
 class UIApplication;
 class ShaderProto;
 
+struct UIWindowParams {
+    GLBase* glbase = nullptr;
+    glm::ivec2 size{};
+    glm::ivec2 shift{};
+    bool osDecoration=  false;
+    bool transparentFB = false;
+    bool floating = false;
+    bool initToCurrentCtx = false;
+    bool multisample = true;
+    void* extWinHandle = nullptr;
+    bool scaleToMonitor = false;
+};
+
 class UIWindow : public WindowBase {
 public:
-    UIWindow(GLBase* glbase, int width, int height, int shiftX, int shiftY, bool osDecoration,
-             bool transparentFB = false, bool floating = false, bool initToCurrentCtx = false, bool multisample = true,
-             void* extWinHandle = nullptr, bool scaleToMonitor = false);
+    UIWindow(const UIWindowParams& par);
     ~UIWindow() override = default;
 
     // opengl drawing
@@ -207,7 +218,7 @@ public:
     void setCloseFunc(std::function<void(UIWindow*)> f) { m_closeFunc = std::move(f); }
     std::function<void(UIWindow*)>& getCloseFunc() { return m_closeFunc; }
 
-    void         addWinCb(const std::function<void()>& f) { m_winProcCb.push_back(f); }
+    void         addWinCb(const std::function<void()>& f) { m_winProcCb.emplace_back(f); }
     virtual void open();
     virtual void close(bool direct = false);
     virtual bool closeEvtLoopCb();

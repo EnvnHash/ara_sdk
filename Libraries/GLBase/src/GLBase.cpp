@@ -37,8 +37,7 @@ bool GLBase::m_init(bool doInitResources, void *winHnd) {
         glWinPar wp;
         wp.createHidden = true;
         wp.hidInput     = false;
-        wp.width        = 5;
-        wp.height       = 5;
+        wp.size         = { 5, 5 };
         wp.shareCont    = winHnd;
         g_win = g_winMan->addWin(wp);
     }

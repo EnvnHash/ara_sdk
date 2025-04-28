@@ -34,7 +34,7 @@ public:
         auto offset = static_cast<glm::uint>(m_vertices.size());
 
         for (size_t i = 0; i < geo.m_vertices.size(); i++) {
-            m_vertices.push_back(geo.m_vertices[i]);
+            m_vertices.emplace_back(geo.m_vertices[i]);
         }
 
         for (auto m_indicesTriangle : geo.m_indicesTriangles) {

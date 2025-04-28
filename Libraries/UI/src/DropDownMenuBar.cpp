@@ -25,7 +25,7 @@ DropDownMenu* DropDownMenuBar::addDropDownMenu(std::string name) {
     ddm->setPos(m_menuButtSize * (int)m_menuEntries.size(), 0);
     ddm->setSize(m_menuButtSize, 1.f);
 
-    m_menuEntries.push_back(ddm);
+    m_menuEntries.emplace_back(ddm);
     return ddm;
 }
 

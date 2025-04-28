@@ -150,7 +150,7 @@ void Node::serialize(json& j)  {
     if (!m_children.empty()) {
         j["children"] = json::array();
         for (const auto& child : m_children) {
-            j["children"].push_back(json{});
+            j["children"].emplace_back(json{});
             child->serialize(j["children"].back());
         }
     }

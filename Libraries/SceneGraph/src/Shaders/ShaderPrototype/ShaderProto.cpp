@@ -123,7 +123,7 @@ std::string ShaderProto::getUbPar(uint32_t nrCameras) {
 
 void ShaderProto::addLight(Light* light) {
     light->setup();
-    s_lights.push_back(light);
+    s_lights.emplace_back(light);
     s_reqCalcLights = true;
 }
 

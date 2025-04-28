@@ -24,7 +24,10 @@ void DemoView_FloatingMenu::init() {
 
     div->addMouseClickRightCb([this](hidData* data) {
         runOnMainThread([this, data] {
-           auto rightClickMen = getApp()->addWindow<FloatingMenuDialog>(200, 96, data->screenMousePos.x, data->screenMousePos.y, false);
+            auto rightClickMen = getApp()->addWindow<FloatingMenuDialog>(UIWindowParams{
+                .size = {200, 96},
+                .shift = data->screenMousePos
+            });
 
             rightClickMen->addGlCb(this, "add", [rightClickMen]{
                 auto but = rightClickMen->addItem<Button>("Value1");

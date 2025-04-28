@@ -12,11 +12,8 @@ using namespace ara::mouse;
 
 namespace ara {
 
-FloatingMenuDialog::FloatingMenuDialog(GLBase* glbase, int width, int height, int shiftX, int shiftY, bool osDecoration,
-                                       bool transparentFB, bool floating, bool initToCurrentCtx, bool multisample,
-                                       void* extWinHandle, bool scaleToMonitor)
-    : UIWindow(glbase, width, height, shiftX, shiftY, osDecoration, transparentFB, floating, initToCurrentCtx,
-               multisample, extWinHandle, scaleToMonitor) {
+FloatingMenuDialog::FloatingMenuDialog(const UIWindowParams& params)
+    : UIWindow(params) {
 #ifdef ARA_USE_GLFW
     setEnableWindowResizeHandles(false);
     setEnableMenuBar(false);

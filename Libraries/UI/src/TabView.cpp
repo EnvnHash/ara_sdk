@@ -67,7 +67,7 @@ UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode
         underline->setVisibility(false);
 
         // create a Tab Object, with the title, the content node and the Tab-Button
-        m_Tab.push_back(e_tab{title, pushedNode, tab, underline, m_Tab.empty()});
+        m_Tab.emplace_back(e_tab{title, pushedNode, tab, underline, m_Tab.empty()});
 
         arrangeTabs();
         m_geoChanged = true;

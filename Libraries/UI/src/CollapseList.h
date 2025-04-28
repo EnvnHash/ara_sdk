@@ -26,7 +26,7 @@ public:
 
     inline std::vector<ListItem>::iterator addItem(std::string name,
 std::function<void(hidData*)> cb, bool rebuild=true) {
-        m_items.push_back(CollapseListItem{name, cb});
+        m_items.emplace_back(CollapseListItem{name, cb});
         if (rebuild) rebuildList();
         return m_items.end()-1;
     }

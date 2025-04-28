@@ -150,7 +150,7 @@ void Scene3DBase::initGizmos() {
 
     // construct all 3 possible gizmos for translation, rotation and scaling
     for (uint i = 0; i < 3; i++)
-        m_gizmos.push_back(dynamic_cast<SNGizmo *>(gizmoTree->addChild(make_unique<SNGizmo>(static_cast<transMode>(i), &s_sd), false)));
+        m_gizmos.emplace_back(dynamic_cast<SNGizmo *>(gizmoTree->addChild(make_unique<SNGizmo>(static_cast<transMode>(i), &s_sd), false)));
 }
 
 void Scene3DBase::initSsao() {

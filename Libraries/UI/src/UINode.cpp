@@ -790,7 +790,7 @@ void UINode::addStyleClass(std::string&& styleClass) {
     // in case there was a previous (not default) style definition, delete it
     if (!m_styleTree.empty()) {
         auto it = find_if(m_styleTree.begin(), m_styleTree.end(), [sc](const std::string& st) { return st == sc; });
-        if (it == m_styleTree.end()) m_styleTree.push_back(sc);
+        if (it == m_styleTree.end()) m_styleTree.emplace_back(sc);
     } else {
         m_styleTree.emplace_back(sc);
     }

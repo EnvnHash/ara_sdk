@@ -104,7 +104,7 @@ public:
     void onDrop(int count, const char **paths) {}
 
     /** setters for HID callbacks */
-    void addKeyCb(const std::function<void(int, int, int, int)>& f) { m_keyCb.push_back(f); }
+    void addKeyCb(const std::function<void(int, int, int, int)>& f) { m_keyCb.emplace_back(f); }
     void setCharCb(const std::function<void(int)>& f) { m_charCb = f; }
     void setMouseButtonCb(const std::function<void(int, int, int)>& f) { m_mouseButtonCb = f; }
     void setMouseCursorCb(const std::function<void(double, double)>& f) { m_mouseCursorCb = f; }

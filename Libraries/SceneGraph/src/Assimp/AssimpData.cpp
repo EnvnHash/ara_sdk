@@ -342,7 +342,7 @@ VAO* AssimpData::getVao(int num) {
              vector<vec3> pos =
              aiVecVecToGlmVecVec(modelMeshes[i]->animatedPos); for(short
              j=0;j<(int)pos.size();j++)
-             modelMeshes[i]->cachedMesh.push_back_positions(&pos[j][0], 3);
+             modelMeshes[i]->cachedMesh.emplace_back_positions(&pos[j][0], 3);
 
              vector<vec3> norm =
              aiVecVecToGlmVecVec(modelMeshes[i]->animatedNorm); for(short

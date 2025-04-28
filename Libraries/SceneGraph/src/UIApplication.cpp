@@ -29,7 +29,15 @@ void UIApplication::init(std::function<void()> initCb) {
 #endif
 
     // create the main UI-Window
-    m_mainWindow = addWindow(winWidth, winHeight, 100, 100, m_osWinDecoration, false, m_multisample, m_scaleToMonitor);
+    m_mainWindow = addWindow(UIWindowParams{
+        .size = {winWidth, winHeight},
+        .shift = {100, 100},
+        .osDecoration = m_osWinDecoration,
+        .transparentFB = false,
+        .multisample = m_multisample,
+        .scaleToMonitor = m_scaleToMonitor
+    });
+
     m_mainWindow->setApplicationHandle(this);
     m_mainWindow->setEnableWindowResizeHandles(m_windowResizeHandlesEnabled);
     m_mainWindow->setEnableMenuBar(m_menuBarEnabled);
@@ -106,7 +114,7 @@ void UIApplication::openInfoDiag(int x, int y, int width, int height, infoDiagTy
         }
 
         // create an info dialog window center above the main Window
-        m_infoDiag = addWindow<InfoDialog>(width, height, x, y, false);
+        m_infoDiag = addWindow<InfoDialog>(UIWindowParams{.size = {width, height}, .shift = {x, y}});
         m_infoDiag->setApplicationHandle(this);
         m_infoDiag->setModal(isModal);
         m_infoDiag->setInfoMsg(msg);

@@ -70,7 +70,7 @@ public:
         prePush();
         {
             std::unique_lock<std::mutex> l(m_mtx);
-            m_children.push_back(std::make_shared<T>());
+            m_children.emplace_back(std::make_shared<T>());
             setDefault(m_children.back());
         }
         signalChange(cbType::postAddChild);
@@ -82,7 +82,7 @@ public:
         prePush();
         {
             std::unique_lock<std::mutex> l(m_mtx);
-            m_children.push_back(ptr);
+            m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
         signalChange(cbType::postAddChild);
@@ -94,7 +94,7 @@ public:
         prePush();
         {
             std::unique_lock<std::mutex> l(m_mtx);
-            m_children.push_back(ptr);
+            m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
         signalChange(cbType::postAddChild);

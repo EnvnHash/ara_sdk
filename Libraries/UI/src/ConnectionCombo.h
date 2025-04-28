@@ -83,7 +83,7 @@ public:
         m_menuEntryButt->setText(str);
     }
 
-    void addEntry(Property<std::string> name, std::function<void()> f) { m_entries.push_back(std::make_pair(name, f)); }
+    void addEntry(Property<std::string> name, std::function<void()> f) { m_entries.emplace_back(std::make_pair(name, f)); }
 
     void open() {
         if (m_open) {
@@ -122,7 +122,7 @@ public:
         int i = 0;
         for (auto &entry : m_entries) {
             auto butt = m_entryList->addChild<Button>(getStyleClass() + ".entries");
-            m_entryButts.push_back(butt);  // maintain a separate list of entry button since
+            m_entryButts.emplace_back(butt);  // maintain a separate list of entry button since
                                            // m_entries may contain other elements
 
             butt->setName("Button_" + entry.first());

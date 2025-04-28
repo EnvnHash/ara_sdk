@@ -61,10 +61,10 @@ namespace ara::SceneGraphUnitTest::NestedAlignment{
 
             // x=left, y=top, z=right, w=bottom
             vector<glm::vec4> padding;
-            for(int i=0; i<10;i++) padding.push_back(glm::vec4{0});
+            for(int i=0; i<10;i++) padding.emplace_back(glm::vec4{0});
 
-            padding.push_back(glm::vec4(0.f,0.f,0.f,0.f));
-            padding.push_back(glm::vec4(10.f,10.f,0.f,0.f));
+            padding.emplace_back(glm::vec4(0.f,0.f,0.f,0.f));
+            padding.emplace_back(glm::vec4(10.f,10.f,0.f,0.f));
             padding.push_back(glm::vec4(0.f,10.f,10.f,0.f));
             padding.push_back(glm::vec4(0.f,0.f,10.f,10.f));
             padding.push_back(glm::vec4(10.f,0.f,0.f,10.f));

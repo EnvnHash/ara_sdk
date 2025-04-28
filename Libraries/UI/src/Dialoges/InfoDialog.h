@@ -12,11 +12,8 @@ namespace ara {
 
 class InfoDialog : public UIWindow {
 public:
-    InfoDialog(GLBase *glbase, int width, int height, int shiftX, int shiftY, bool osDecoration,
-               bool transparentFB = false, bool floating = false, bool initToCurrentCtx = false,
-               bool multisample = true, void *extWinHandle = nullptr, bool scaleToMonitor=true);
-
-    virtual ~InfoDialog() {}
+    InfoDialog(const UIWindowParams& params);
+    ~InfoDialog() override = default;
 
     void open(bool isModal);
     void close(std::function<bool()> cb = nullptr);

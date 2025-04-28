@@ -484,7 +484,7 @@ void WindowManager::removeWin(GLWindow *win, bool terminateGLFW) {
 
 void WindowManager::addEvtLoopCb(const std::function<bool()> &f) {
     std::unique_lock<std::mutex> l(m_evtLoopCbMtx);
-    m_evtLoopCbs.push_back(f);
+    m_evtLoopCbs.emplace_back(f);
 }
 
 // Note: all global...Cb are called on the main thread (same as startEventLoop()
@@ -770,7 +770,7 @@ std::vector<std::pair<int, int>> WindowManager::getMonitorOffsets() {
             glfwGetMonitorPos(m_monitors[i], &monOffsX, &monOffsY);
 
             m_dispOffsets.emplace_back(monOffsX, monOffsY);
-            m_displayInfo.push_back(DisplayBasicInfo{static_cast<uint32_t>(monOffsX), static_cast<uint32_t>(monOffsY),
+            m_displayInfo.emplace_back(DisplayBasicInfo{static_cast<uint32_t>(monOffsX), static_cast<uint32_t>(monOffsY),
                                                      static_cast<uint32_t>(m_dispModes[i].width), static_cast<uint32_t>(m_dispModes[i].height)});
         }
     }

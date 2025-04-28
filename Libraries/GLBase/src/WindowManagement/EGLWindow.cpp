@@ -20,10 +20,10 @@ std::unique_ptr<GLWindowBase> EGLWindow::m_osWin;        // EGL display connecti
 EGLDisplay                    EGLWindow::m_display = 0;  // EGL display connection
 
 int EGLWindow::init(glWinPar& gp) {
-    m_widthVirt   = gp.width;
-    m_heightVirt  = gp.height;
-    m_widthReal   = gp.width;
-    m_heightReal  = gp.height;
+    m_widthVirt   = gp.size.x;
+    m_heightVirt  = gp.size.y;
+    m_widthReal   = gp.size.x;
+    m_heightReal  = gp.size.y;
     m_orientation = orientation::default_ori;
     m_glbase      = (GLBase*)gp.glbase;
 

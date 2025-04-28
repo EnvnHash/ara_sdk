@@ -26,7 +26,7 @@ SNGizmo::SNGizmo(transMode _mode, sceneData* sd)
     // init Gizmo Planes
     if (tMode != transMode::rotate && tMode != transMode::rotate_axis && tMode != transMode::passive) {
         for (uint i = 0; i < 3; i++) {
-            gizmoPlanes.push_back((SNGizmoPlane*)addChild(make_unique<SNGizmoPlane>()));
+            gizmoPlanes.emplace_back((SNGizmoPlane*)addChild(make_unique<SNGizmoPlane>()));
             gizmoPlanes.back()->setVisibility(true);
             gizmoPlanes.back()->setName(gizmoPlaneNames[i]);
             gizmoPlanes.back()->setPlaneType(gizmoPlaneTypes[i]);

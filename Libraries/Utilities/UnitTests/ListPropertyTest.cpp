@@ -49,7 +49,7 @@ TEST_F(ListPropertyTest, AssignmentFromStdList) {
 }
 
 TEST_F(ListPropertyTest, PushBack) {
-    lp.push_back(10);
+    lp.emplace_back(10);
     lp.push_back(20);
     lp.push_back(30);
     EXPECT_EQ(lp.size(), 3);

@@ -18,24 +18,25 @@ namespace ph = std::placeholders;
 
 namespace ara {
 
-UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY, bool osDecoration, bool transparentFB,
-                   bool floating, bool initToCurrentCtx, bool multisample, void *extWinHandle, bool scaleToMonitor)
-    : WindowBase(), m_glbase(glbase), m_drawMan(make_unique<DrawManager>(glbase)),
+UIWindow::UIWindow(const UIWindowParams& par)
+    : WindowBase(),
+    m_glbase(par.glbase),
+    m_drawMan{make_unique<DrawManager>(par.glbase)},
 #ifdef ARA_USE_GLES31
     m_multisample(false),
 #else
-    m_multisample(multisample),
+    m_multisample(par.multisample),
 #endif
-    m_selfManagedCtx(!initToCurrentCtx) {
-    uint32_t rWidth  = width;
-    uint32_t rHeight = height;
-    uint32_t vWidth  = width;
-    uint32_t vHeight = height;
+    m_selfManagedCtx(!par.initToCurrentCtx) {
+    uint32_t rWidth  = par.size.x;
+    uint32_t rHeight = par.size.y;
+    uint32_t vWidth  = par.size.x;
+    uint32_t vHeight = par.size.y;
 
     bool restartGlBaseLoop = false;
 
     // init a UIWindow, using the GLFWWindowManager and GLbase in a separate thread
-    if (!initToCurrentCtx) {
+    if (!par.initToCurrentCtx) {
 #ifndef ARA_USE_EGL
         // check if GLBase render loop is running, if this is the case, stop it and start it later again. Otherwise,
         // context sharing will fail
@@ -47,17 +48,15 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
 #endif
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
         m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{
-            .decorated = osDecoration,
-            .floating = floating,
+            .decorated = par.osDecoration,
+            .floating = par.floating,
             .debug = m_debugGLFWwin,
-            .shiftX = shiftX,
-            .shiftY = shiftY,
-            .width = width,
-            .height = height,
-            .scaleToMonitor = scaleToMonitor,
+            .shift = par.shift,
+            .size = par.size,
+            .scaleToMonitor = par.scaleToMonitor,
             .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
-            .transparentFramebuffer = transparentFB,
-            .extWinHandle = extWinHandle,
+            .transparentFramebuffer = par.transparentFB,
+            .extWinHandle = par.extWinHandle,
         });
 
         if (!m_winHandle) {
@@ -144,7 +143,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         //-------------------------------------------------------------------------------------------
 
 #ifdef ARA_USE_GLFW
-        if (!initToCurrentCtx) {
+        if (!par.initToCurrentCtx) {
             // pass the newly created cursors to the GLFWWindow handle
             m_winHandle->setMouseCursorIcon(m_glbase->getWinMan()->m_diagResizeAscCursor, WinMouseIcon::lbtrResize);
             m_winHandle->setMouseCursorIcon(m_glbase->getWinMan()->m_diagResizeDescCursor, WinMouseIcon::ltbrResize);
@@ -188,7 +187,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
                                   m_glbase->getAssetManager(),
                                   &m_nullVao,
                                   m_drawMan.get(),
-                                  glbase};
+                                  m_glbase};
 
         //-------------------------------------------------------------------------------------------
         // UI ELEMENTS
@@ -196,7 +195,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         m_uiRoot->setSharedRes(&m_sharedRes);
         m_uiRoot->setName("root");  // set the name of this UINode
 
-        if (!initToCurrentCtx) {
+        if (!par.initToCurrentCtx) {
             m_contentRoot = m_uiRoot->addChild<UINode>();
             m_contentRoot->setName("ContentRoot");
             m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2));
@@ -270,7 +269,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
     }
 
 #ifdef ARA_USE_GLFW
-    if (!initToCurrentCtx && restartGlBaseLoop) {
+    if (!par.initToCurrentCtx && restartGlBaseLoop) {
         GLWindow::makeNoneCurrent();
         m_glbase->startRenderLoop();
         // no context bound at this point
@@ -416,7 +415,7 @@ bool UIWindow::draw(double time, double dt, int ctxNr) {
         }
         s_isDrawing = true;
 
-        // process all steps which have the first and second bool set to true
+        // process all steps that have the first and second bool set to true
         for (auto &it : m_procSteps) {
             if (it.second.active) {
                 if (it.second.func) {

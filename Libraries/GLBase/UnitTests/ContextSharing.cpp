@@ -75,10 +75,8 @@ TEST(GLBaseTest, ContextSharing) {
         ASSERT_TRUE(windows[i].init(
             glWinPar{
                 .doInit = false,            // don't init glfw, this needs to be done on the main thread only once
-                .shiftX = 300 * i,          // x offset relative to OS screen canvas
-                .shiftY = 100,              // y offset relative to OS screen canvas
-                .width = 200,               // set the window's width
-                .height = 200,              // set the window's height
+                .shift = { 300 * i, 100 },  //  offset relative to OS screen canvas
+                .size = { 200, 200 },        // set the window's size
                 .scaleToMonitor = false,    // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
                 .shareCont = (void *) m_glbase.getGlfwHnd(),          // share the GLBase context
             })

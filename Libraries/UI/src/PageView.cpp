@@ -15,7 +15,7 @@ PageView::PageView() : Div() {
 
 UINode* PageView::addPage(std::unique_ptr<UINode> child) {
     auto newNode = m_content->addChild(std::move(child));
-    m_pages.push_back(newNode);
+    m_pages.emplace_back(newNode);
     return newNode;
 }
 

@@ -37,8 +37,7 @@ public:
     virtual void initThread(const std::function<void()>& initCb);
 
     template <class T>
-    T* addWindow(int width, int height, int posX, int posY, bool osDecoration, bool transparentFB = false,
-                 bool multisample = true, bool scaleToMonitor = false) {
+    T* addWindow(const UIWindowParams& params) {
 #ifndef ARA_USE_EGL
         if (!m_glbase.isInited()) {
             m_glbase.init(m_initRes);
@@ -58,22 +57,18 @@ public:
 #endif
         // no context bound at this point
 
-        // create a unique_ptr and push it to the ui_Windows array in the UIWindow ctor
-        // "m_glbase.getWinMan().addWin(..." is called, so the UIWindow's GLFWWindow is part of the GLFWWindowManager's
-        // m_windows vector
+        UIWindowParams p = params;
+        p.glbase        = &m_glbase;
 #if defined(__ANDROID__) && defined(ARA_ANDROID_PURE_NATIVE_APP)
-        m_uiWindows.push_back(std::make_unique<T>(&m_glbase, width, height, posX, posY, osDecoration, transparentFB,
-                                                  false, false, multisample, (void*)m_androidNativeWin));
+        p.extWinHandle = static_cast<void*>(m_androidNativeWin);
+        m_uiWindows.emplace_back(std::make_unique<T>(p));
 #elif defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
-        m_uiWindows.push_back(std::make_unique<T>(&m_glbase, width, height, posX, posY, osDecoration, transparentFB,
-                                                  false, true, multisample, nullptr));
+        m_uiWindows.emplace_back(std::make_unique<T>(p));
 #else
-        m_uiWindows.emplace_back(std::make_unique<T>(&m_glbase, width, height, posX, posY, osDecoration, transparentFB,
-                                                     false, false, multisample, nullptr, scaleToMonitor));
+        m_uiWindows.emplace_back(std::make_unique<T>(p));
 #endif
 
         auto newWindow = m_uiWindows.back().get();
-
         if (newWindow->getProcSteps()) {
             newWindow->getProcSteps()->at(Draw).active = true;
         }
@@ -84,12 +79,11 @@ public:
             m_mainWindow = newWindow;
         }
 
-        return (T*)m_uiWindows.back().get();
+        return dynamic_cast<T*>(m_uiWindows.back().get());
     }
 
-    UIWindow* addWindow(int width, int height, int posX, int posY, bool osDecoration, bool transparentFB = false,
-                        bool multisample = true, bool scaleToMonitor = false) {
-        return addWindow<UIWindow>(width, height, posX, posY, osDecoration, transparentFB, multisample, scaleToMonitor);
+    UIWindow* addWindow(const UIWindowParams& params) {
+        return addWindow<UIWindow>(params);
     }
 
     // called from UIWindow::close() when the removeFromApp bool is set

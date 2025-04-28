@@ -98,7 +98,7 @@ void Workspace::save(bool showInfo) {
 
         // update the values in case of an existing entry or create a new one
         if (p == m_recentProjects.end()) {
-            m_recentProjects.push_back(
+            m_recentProjects.emplace_back(
                 RecentProject{to_time_t(ftime), m_activeProject->getFileName(), m_activeProject->name()});
         } else {
             p->mod_time = to_time_t(ftime);

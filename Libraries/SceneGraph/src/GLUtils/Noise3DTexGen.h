@@ -15,9 +15,8 @@
 namespace ara {
 class Noise3DTexGen {
 public:
-    Noise3DTexGen(sceneData* _scd, bool color, int nrOctaves, int _width, int _height, int _depth, float _scaleX,
-                  float _scaleY, float _scaleZ);
-    ~Noise3DTexGen();
+    Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, glm::ivec3 size, glm::vec3 scale);
+
     void          initShdr();
     ara::Shaders* initBlendShdrH();
     ara::Shaders* initBlendShdrV();
