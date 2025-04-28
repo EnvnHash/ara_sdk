@@ -52,8 +52,8 @@ void Gizmo::init() {
         m_axisLabelSize.y = m_axisLabelSize.x;
     }
 
-    m_cam.setType(Camera::camType::perspective);
-    m_cam.setFov((float)M_PI * 0.3f);
+    m_cam.setType(camType::perspective);
+    m_cam.setFov(static_cast<float>(M_PI * 0.3f));
     m_cam.setScreenWidth(viewWidth);
     m_cam.setScreenHeight(viewHeight);
     m_cam.setCamPos(0.f, 0.f, 3.f); // gizmo size is [2,2,2], camPos.z = 2.f would result in the gizmo fitting
@@ -71,7 +71,9 @@ void Gizmo::init() {
     // register a function to unblock HID events, on camera fade end
     m_cam.getAnimTrans().setEndFunc([this] {
         m_blockHID = false;
-        for (auto& it : m_axisLabels) it->setHIDBlocked(false);
+        for (auto& it : m_axisLabels) {
+            it->setHIDBlocked(false);
+        }
     });
 
     // if there was a model camera set, sync now

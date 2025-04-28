@@ -14,12 +14,11 @@ LICamera::LICamera(sceneData* sd) : Light() {
     s_near       = 0.1f;
     s_far        = 1000.f;
 
-    m_camDef = make_unique<TrackBallCam>(Camera::camType::perspective, 200.f, 200.f, -m_aspect, m_aspect, -1.0f,
-                                         1.0f,           // left, right, bottom, top
-                                         0.f, 0.f, 1.f,  // s_camPos
-                                         0.f, 0.f, 0.f,  // s_lookAt
-                                         0.f, 1.f, 0.f,  // upVec
-                                         0.1f, 100.f);
+    m_camDef = make_unique<TrackBallCam>(CameraInitParams{
+        .cTyp = camType::perspective,
+        .screenSize = {200.f, 200.f},
+        .rect = {-m_aspect, m_aspect, -1.0f, 1.0f},    // left, right, bottom, top
+    });
 }
 
 void LICamera::setup(bool callSetupCb) {

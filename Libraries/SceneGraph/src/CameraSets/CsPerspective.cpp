@@ -10,13 +10,11 @@ CsPerspective::CsPerspective(sceneData* sc) : CameraSet(sc) {
         float aspect = s_sd->winViewport.z / s_sd->winViewport.w;
 
         if (s_sd->winViewport.z > 0.f && s_sd->winViewport.w > 0.f) {
-            s_intern_cam.emplace_back(make_unique<TrackBallCam>(Camera::camType::perspective, static_cast<float>(s_sd->winViewport.z),
-                                                             static_cast<float>(s_sd->winViewport.w), -aspect, aspect, -1.0f,
-                                                             1.0f,                          // left, right, bottom, top
-                                                             camPos.x, camPos.y, camPos.z,  // camPos
-                                                             0.f, 0.f, 0.f,                 // lookAt
-                                                             0.f, 1.f, 0.f,                 // upVec
-                                                             0.1f, 100.f));
+            s_intern_cam.emplace_back(make_unique<TrackBallCam>(CameraInitParams{
+                .cTyp = camType::perspective,
+                .screenSize = {s_sd->winViewport.z, s_sd->winViewport.w},
+                .rect = {-aspect, aspect, -1.f, 1.f },  // left, right, bottom, top
+                .cp = camPos}));
 
             s_intern_cam.back()->setUseTrackBall(true);
             s_cam.emplace_back(s_intern_cam.back().get(), this);
@@ -33,8 +31,6 @@ void CsPerspective::clearScreen(renderPass _pass) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glScissor(s_iViewport.x, s_iViewport.y, s_iViewport.z, s_iViewport.w);
-        // glViewportIndexedf(0, s_viewport.x, s_viewport.y, s_viewport.z,
-        // s_viewport.w);
         glViewport(s_iViewport.x, s_iViewport.y, s_iViewport.z, s_iViewport.w);
 
     } else if (_pass == GLSG_SHADOW_MAP_PASS || _pass == GLSG_OBJECT_MAP_PASS) {

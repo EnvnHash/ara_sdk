@@ -21,10 +21,19 @@ using namespace std;
 
 namespace ara {
 
-Camera::Camera(camType cTyp, const vec2& screenSize, const vec4& rect, vec3 cp, vec3 la, vec3 up, vec2 depthRange,
-               float fov)
-    : m_type(cTyp), m_screenSize(screenSize), m_left(rect.x), m_right(rect.y), m_bottom(rect.z), m_top(rect.w),
-    m_near(depthRange.x), m_far(depthRange.y), m_camPos(cp), m_camLookAt(la), m_camUpVec(up), m_fov(glm::radians(fov)) {
+Camera::Camera(const CameraInitParams& params)
+    : m_type(params.cTyp),
+    m_screenSize(params.screenSize),
+    m_left(params.rect.x),
+    m_right(params.rect.y),
+    m_bottom(params.rect.z),
+    m_top(params.rect.w),
+    m_near(params.near),
+    m_far(params.far),
+    m_camPos(params.cp),
+    m_camLookAt(params.la),
+    m_camUpVec(params.up),
+    m_fov(glm::radians(params.fov)) {
     buildMatrices();
 }
 

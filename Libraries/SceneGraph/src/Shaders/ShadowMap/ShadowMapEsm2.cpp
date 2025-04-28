@@ -33,11 +33,10 @@ ShadowMapEsm2::ShadowMapEsm2(Camera* _gCam, int _scrWidth, int _scrHeight, vec3 
     lightCam->setupPerspective(45.0f, f_near, f_far, s_scrWidth, s_scrHeight);
     lightCam->setCamPos(light_position);
     lightCam->setLookAt(lookAtPoint);
-    lightCam->setType(Camera::camType::frustum);
+    lightCam->setType(camType::frustum);
     lightCam->buildMatrices();
     lightCam->setModelMatr(gCam->getModelMatr());
-    linearDepthScalar = 1.0f / (f_far - f_near);  // this helps us remap depth values to be
-                                                  // linear, problem hier!!!
+    linearDepthScalar = 1.0f / (f_far - f_near);  // this helps us remap depth values to be linear
 
     string vSmapShader = s_glbase->shaderCollector().getShaderHeader();
     vSmapShader +=
@@ -89,7 +88,7 @@ void ShadowMapEsm2::setLightPos(vec3 _pos) {
     lightCam->setupPerspective(45.0f, f_near, f_far, s_scrWidth, s_scrHeight);
     lightCam->setCamPos(light_position);
     lightCam->setLookAt(lookAtPoint);
-    lightCam->setType(Camera::camType::frustum);
+    lightCam->setType(camType::frustum);
     lightCam->buildMatrices();
     lightCam->setModelMatr(gCam->getModelMatr());
 }

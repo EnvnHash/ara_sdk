@@ -27,16 +27,25 @@
 
 namespace ara {
 
+enum class camType : int { perspective = 0, frustum, ortho };
+enum class camUpt : int { ModelTrans = 0, ModelRot, ModelMat, ViewMat, ProjMat, FrustMult };
+
+struct CameraInitParams {
+    camType cTyp{};
+    glm::vec2 screenSize{};
+    glm::vec4 rect{}; // left, right, bottom, top
+    glm::vec3 cp={0.f, 0.f, 1.f};
+    glm::vec3 la={0.f, 0.f, 0.f};
+    glm::vec3 up = {0.f, 1.f, 0.f};
+    float near = 1.f;
+    float far = 1000.f;
+    float fov = 45.f;
+};
+
 class Camera {
 public:
-    enum class camType : int { perspective = 0, frustum, ortho };
-    enum class camUpt : int { ModelTrans = 0, ModelRot, ModelMat, ViewMat, ProjMat, FrustMult };
     Camera() { init(); }
-
-    Camera(camType cTyp, const glm::vec2& screenSize, const glm::vec4& rect, // left, right, bottom, top
-            glm::vec3 cp={0.f, 0.f, 1.f}, glm::vec3 la={0.f, 0.f, 0.f}, glm::vec3 up = {0.f, 1.f, 0.f},
-            glm::vec2 depthRange={1.f, 1000.f}, float fov = 45.f);
-
+    Camera(const CameraInitParams& params);
     virtual ~Camera() = default;
 
     void init(bool fromChangedScreenSize = false);

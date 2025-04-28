@@ -25,13 +25,12 @@ CsPerspFbo::CsPerspFbo(sceneData* sd)
     s_iViewport  = s_sd->winViewport;
 
     if (s_sd->winViewport.z > 0.f && s_sd->winViewport.w > 0.f) {
-        s_intern_cam.emplace_back(make_unique<TrackBallCam>(Camera::camType::perspective,
-                                                            static_cast<float>(s_sd->winViewport.z), static_cast<float>(s_sd->winViewport.w),
-                                                            -aspect, aspect, -1.0f, 1.0f,  // left, right, bottom, top
-                                                            m_camPos.x, m_camPos.y, m_camPos.z,  // s_camPos
-                                                            0.f, 0.f, 0.f,                       // s_lookAt
-                                                            0.f, 1.f, 0.f,                       // upVec
-                                                            0.1f, 1000.f));
+        s_intern_cam.emplace_back(make_unique<TrackBallCam>(CameraInitParams{
+            .cTyp = camType::perspective,
+            .screenSize { s_sd->winViewport.z, s_sd->winViewport.w},
+            .rect = { -aspect, aspect, -1.0f, 1.0f },  // left, right, bottom, top
+            .cp = m_camPos
+        }));
 
         s_intern_cam.back()->setUseTrackBall(true);
         s_cam.emplace_back(s_intern_cam.back().get(), this);

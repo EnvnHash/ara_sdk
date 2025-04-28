@@ -358,30 +358,6 @@ float map(float value, float inputMin, float inputMax, float outputMin, float ou
     }
 }
 
-void makeMatr(glm::mat4 *_matr, bool *_inited, float xOffs, float yOffs, float zOffs, float rotX, float rotY,
-              float rotZ, float scaleX, float scaleY, float scaleZ) {
-    /*
-     glm::mat4 rotM, transScaleM, matrix;
-
-     rotM = rotM.createRotationAroundAxis(
-     rotX / 360.0f * TWO_PI,
-     rotY / 360.0f * TWO_PI,
-     rotZ / 360.0f * TWO_PI
-     );
-     transScaleM.setTranslation(xOffs, yOffs, zOffs);
-     transScaleM.setScaling(scaleX, scaleY, scaleZ);
-     rotM = rotM * transScaleM;
-
-     *_matr = vmath::Matrix4f(rotM);
-
-     if ( xOffs != 0.0f || yOffs != 0.0f || zOffs != 0.0f
-     || rotX != 0.0f || rotY != 0.0f || rotZ != 0.0f
-     || scaleX != 1.0f || scaleY != 1.0f || scaleZ != 1.0f
-     )
-     *_inited = true;
-     */
-}
-
 // Function to generate a random point within a plane defined by three points
 glm::vec3 getRandomPointOnPlane(const glm::vec3& base, const glm::vec3& v0, const glm::vec3& v1) {
     return base + v0 * getRandF(0.05f, 0.95f) + v1 * getRandF(0.05f, 0.95f);

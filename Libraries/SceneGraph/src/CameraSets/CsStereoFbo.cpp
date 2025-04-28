@@ -39,17 +39,15 @@ CsStereoFbo::CsStereoFbo(sceneData* sd) : CameraSet(sd), m_layerTexShdr(nullptr)
         for (int i = 0; i < 2; i++) {
             auto f = m_stereoRenderer.getFov((StereoEye)i);
 
-            s_intern_cam.push_back(make_unique<TrackBallCam>(
-                Camera::camType::perspective,
-                static_cast<float>(m_stereoRenderer.getFov((StereoEye)i)[0]),
-                static_cast<float>(m_stereoRenderer.getFov((StereoEye)i)[2]),
-                -0.5f, 0.5f, -0.5f, 0.5f,  // left, right, bottom, top
-                m_camPos.x + m_stereoRenderer.getViewEyeOffs((StereoEye)i), m_camPos.y, m_camPos.z,  // s_camPos
-                m_stereoRenderer.getViewEyeOffs((StereoEye)i), 0.f, 0.f,            // s_lookAt
-                0.f, 1.f, 0.f,  // upVec
-                0.1f, 100.f,
-                glm::degrees(m_stereoRenderer.getFov((StereoEye)i)[3] +
-                             m_stereoRenderer.getFov((StereoEye)i)[2])));  // fov
+            s_intern_cam.push_back(make_unique<TrackBallCam>(CameraInitParams{
+                .cTyp = camType::perspective,
+                .screenSize = { m_stereoRenderer.getFov((StereoEye)i)[0], m_stereoRenderer.getFov((StereoEye)i)[2] },
+                .rect = { -0.5f, 0.5f, -0.5f, 0.5f },  // left, right, bottom, top
+                .cp = { m_camPos.x + m_stereoRenderer.getViewEyeOffs((StereoEye)i), m_camPos.y, m_camPos.z },
+                .la = { m_stereoRenderer.getViewEyeOffs((StereoEye)i), 0.f, 0.f},
+                .fov = glm::degrees(m_stereoRenderer.getFov((StereoEye)i)[3] +
+                             m_stereoRenderer.getFov((StereoEye)i)[2])
+            }));  // fov
 
             s_intern_cam.back()->setUseTrackBall(true);
             s_cam.push_back(make_pair(s_intern_cam.back().get(), this));

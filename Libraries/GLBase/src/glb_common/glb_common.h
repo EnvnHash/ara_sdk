@@ -524,9 +524,6 @@ bool  pointInTriangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3);
 float angleBetweenVectors(const glm::vec3& a, const glm::vec3& b);
 glm::vec3 getRandomPointOnPlane(const glm::vec3&, const glm::vec3&, const glm::vec3&);
 
-void makeMatr(glm::mat4 *_matr, bool *_inited, float xOffs, float yOffs, float zOffs, float rotX, float rotY,
-              float rotZ, float scaleX, float scaleY, float scaleZ);
-
 double matrix_get_var(matrix* m, int row, int col);
 void matrix_set_var(matrix* m, int row, int col, double value);
 void fill_matrix_a(matrix* a, const double *x, const double *y, const double *_x, const double *_y);
