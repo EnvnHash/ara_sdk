@@ -27,19 +27,16 @@ public:
         int GetIndexByObjId(int objid);  // -1 means NOT FOUND, array starts from 0 (zero)
     };
 
-    Quad_P(glm::vec3 center, float w, float h, float dist, glm::vec3 euler, float tx0, float ty0, float tx1, float ty1,
+    Quad_P(glm::vec3 center, glm::vec2 size, float dist, glm::vec3 euler, glm::vec2 t0, glm::vec2 t1,
            bool _flipHori = true, glm::vec4 color = glm::vec4(1.f, 1.f, 1.f, 1.f));
 
     ~Quad_P() = default;
 
-    static Quad_P::Set &CreateCubeMap(
-        Set &dest, glm::vec3 center, float cube_size,
-        glm::vec4 color = glm::vec4(1.f, 1.f, 1.f,
-                                    1.f));  // order of elements : {top 'Z+',bottom 'Z-',left
-                                            // 'X-',front 'Y+' ,right 'X+' ,back 'Y-'}
+    static Quad_P::Set &CreateCubeMap(Set &dest, glm::vec3 center, float cube_size,
+                                      glm::vec4 color = glm::vec4(1.f, 1.f, 1.f, 1.f));
 
     void init();
-    int  getObjId();
+    int  getObjId() const;
     int  setObjId(int id);
 
 private:

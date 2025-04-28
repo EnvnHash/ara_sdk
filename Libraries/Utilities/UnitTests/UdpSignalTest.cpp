@@ -39,7 +39,7 @@ TEST(UdpSignalTest, SendReceive) {
     });
 
     sender.StartBroadcast(1234, 1000, [&str](void* data, int max_size) {
-        std::strcpy(static_cast<char*>(data), str.c_str());
+        std::copy(str.begin(), str.end(), static_cast<char*>(data));
         return str.length();
     });
 

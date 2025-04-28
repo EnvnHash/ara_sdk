@@ -21,12 +21,10 @@ using namespace std;
 
 namespace ara {
 
-Camera::Camera(camType cTyp, float screenWidth, float screenHeight, float left, float right, float bottom, float top,
-               float cpX, float cpY, float cpZ, float laX, float laY, float laZ, float upX, float upY, float upZ,
-               float inNear, float inFar, float fov)
-    : m_type(cTyp), m_screenWidth(screenWidth), m_screenHeight(screenHeight), m_left(left), m_right(right),
-      m_bottom(bottom), m_top(top), m_near(inNear), m_far(inFar), m_camPos(vec3(cpX, cpY, cpZ)),
-      m_camLookAt(vec3(laX, laY, laZ)), m_camUpVec(vec3(upX, upY, upZ)), m_fov(glm::radians(fov)) {
+Camera::Camera(camType cTyp, const vec2& screenSize, const vec4& rect, vec3 cp, vec3 la, vec3 up, vec2 depthRange,
+               float fov)
+    : m_type(cTyp), m_screenSize(screenSize), m_left(rect.x), m_right(rect.y), m_bottom(rect.z), m_top(rect.w),
+    m_near(depthRange.x), m_far(depthRange.y), m_camPos(cp), m_camLookAt(la), m_camUpVec(up), m_fov(glm::radians(fov)) {
     buildMatrices();
 }
 
@@ -52,8 +50,12 @@ void Camera::buildMatrices(bool fromChangedScreenSize) {
     switch (m_type) {
         case camType::perspective:
             // m_fov in radians
-            if (m_screenHeight != 0) m_aspectRatio = m_screenWidth / m_screenHeight;
-            if (m_fixAspectRatio != 0.f) m_aspectRatio = m_fixAspectRatio;
+            if (m_screenSize.y != 0) {
+                m_aspectRatio = m_screenSize.x / m_screenSize.y;
+            }
+            if (m_fixAspectRatio != 0.f) {
+                m_aspectRatio = m_fixAspectRatio;
+            }
             m_projection = perspective(m_fov, m_aspectRatio, m_near, m_far);
             break;
         case camType::frustum:
@@ -94,8 +96,7 @@ void Camera::setupPerspective(float _fov, float nearDist, float farDist, int _sc
     if (m_near == 0) m_near = dist / 10.0f;
     if (m_far == 0) m_far = dist * 10.0f;
 
-    m_aspectRatio =
-        m_fixAspectRatio != 0.f ? m_fixAspectRatio : static_cast<float>(_scrWidth) / static_cast<float>(_scrHeight);
+    m_aspectRatio = m_fixAspectRatio != 0.f ? m_fixAspectRatio : static_cast<float>(_scrWidth) / static_cast<float>(_scrHeight);
 
     m_right  = tan_fovy * m_aspectRatio * m_near;
     m_left   = -m_right;
@@ -107,8 +108,8 @@ void Camera::setupPerspective(float _fov, float nearDist, float farDist, int _sc
 }
 
 void Camera::setScreenSize(uint width, uint height) {
-    m_screenWidth  = (float)width;
-    m_screenHeight = (float)height;
+    m_screenSize.x  = (float)width;
+    m_screenSize.y = (float)height;
     init(true);
 }
 
@@ -156,7 +157,7 @@ void Camera::setFrustMult(const float *_multVal) {
 bool Camera::setFishEyeParam() {
     double c_MinNumber = 1.e-7;
     double c_PIH       = M_PI / 2.0;
-    double camW        = m_screenWidth;
+    double camW        = m_screenSize.x;
 
     if (!((camW > c_MinNumber) && (m_feAspect > c_MinNumber) && (m_feAspect > c_MinNumber))) {
         m_fishEyeParam0[0] = 1.0f;

@@ -9,10 +9,8 @@ namespace ara {
 class Font;
 
 struct LabelInitData {
-    int x=0;
-    int y=0;
-    int w=0;
-    int h=0;
+    glm::ivec2 pos{};
+    glm::ivec2 size{};
     glm::vec4 text_color{};
     glm::vec4 bg_color{};
     const std::string& text;

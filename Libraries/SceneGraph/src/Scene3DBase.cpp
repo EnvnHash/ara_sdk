@@ -930,8 +930,8 @@ bool Scene3DBase::addCamToSet(LICamera* netCam) {
     }
 
     // set the scenefbo size
-    netCam->getCamDef()->m_screenWidth  = m_sceneRenderCam->getViewport()->z;
-    netCam->getCamDef()->m_screenHeight = m_sceneRenderCam->getViewport()->w;
+    netCam->getCamDef()->m_screenSize.x  = m_sceneRenderCam->getViewport()->z;
+    netCam->getCamDef()->m_screenSize.y = m_sceneRenderCam->getViewport()->w;
 
     // add the camera, remember the iterator position for later deletion
     auto camIt = m_sceneRenderCam->addCamera(netCam->getCamDef(), (void*)netCam);

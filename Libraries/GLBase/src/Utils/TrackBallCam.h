@@ -40,8 +40,7 @@ public:
                  float cpX = 0.f, float cpY = 0.f, float cpZ = 1.f, float laX = 0.f, float laY = 0.f, float laZ = 0.f,
                  float upX = 0.f, float upY = 1.f, float upZ = 0.f, float inNear = 1.f, float inFar = 1000.f,
                  float fov = 45.f)
-        : Camera(setup, screenWidth, screenHeight, left, right, bottom, top, cpX, cpY, cpZ, laX, laY, laZ, upX, upY,
-                 upZ, inNear, inFar, fov) {
+        : Camera(setup, {screenWidth, screenHeight}, {left, right, bottom, top}, {cpX, cpY, cpZ}, {laX, laY, laZ}, {upX, upY, upZ}, {inNear, inFar}, fov) {
         m_camera = reinterpret_cast<Camera *>(this);
     }
 

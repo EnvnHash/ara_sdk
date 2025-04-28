@@ -30,8 +30,8 @@ Label::Label(LabelInitData initData) {
 #endif
     setFocusAllowed(false);
     setName(getTypeName<Label>());
-    setPos(initData.x, initData.y);
-    setSize(initData.w, initData.h);
+    setPos(initData.pos.x, initData.pos.y);
+    setSize(initData.size.x, initData.size.y);
     Div::setBackgroundColor(initData.bg_color);
     Div::setColor(initData.text_color);
     setText(initData.text);

@@ -33,10 +33,9 @@ public:
     enum class camUpt : int { ModelTrans = 0, ModelRot, ModelMat, ViewMat, ProjMat, FrustMult };
     Camera() { init(); }
 
-    Camera(camType setup, float screenWidth, float screenHeight, float left, float right, float bottom, float top,
-           float cpX = 0.f, float cpY = 0.f, float cpZ = 1.f, float laX = 0.f, float laY = 0.f, float laZ = 0.f,
-           float upX = 0.f, float upY = 1.f, float upZ = 0.f, float inNear = 1.f, float inFar = 1000.f,
-           float fov = 45.f);
+    Camera(camType cTyp, const glm::vec2& screenSize, const glm::vec4& rect, // left, right, bottom, top
+            glm::vec3 cp={0.f, 0.f, 1.f}, glm::vec3 la={0.f, 0.f, 0.f}, glm::vec3 up = {0.f, 1.f, 0.f},
+            glm::vec2 depthRange={1.f, 1000.f}, float fov = 45.f);
 
     virtual ~Camera() = default;
 
@@ -107,8 +106,8 @@ public:
         if (m_useFisheye) setFishEyeParam();
     }
 
-    void setScreenWidth(int width) { m_screenWidth = (float)width; }
-    void setScreenHeight(int height) { m_screenHeight = (float)height; }
+    void setScreenWidth(int width) { m_screenSize.x = static_cast<float>(width); }
+    void setScreenHeight(int height) { m_screenSize.y = static_cast<float>(height); }
     void setForceUpdtProjMat(bool val) { m_forceUpdtProjMat = val; }
     void setForceUpdtCb(bool val) { m_forceUpdtCb = val; }
     void setFixAspectRatio(float val) { m_fixAspectRatio = val; }
@@ -153,8 +152,7 @@ public:
     void debug();
 
     float     m_floorSwitch  = 1.f;
-    float     m_screenWidth  = 0.f;
-    float     m_screenHeight = 0.f;
+    glm::vec2 m_screenSize{};
     int       m_borderPix    = 0;
     glm::vec4 m_clearColor{0.f, 0.f, 0.f, 0.f};
 

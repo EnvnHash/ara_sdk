@@ -19,10 +19,19 @@ Button::Button(std::string&& styleClass) : Label(std::move(styleClass)) {
     Label::setScissorChildren(true);
 }
 
-Button::Button(int x, int y, int w, int h, glm::vec4 text_color, glm::vec4 bg_color, const std::string& _text, align ax,
-               valign ay, const std::string& font_type, int font_height)
-    : Label(LabelInitData{x, y, w, h, text_color, bg_color, _text, ax, ay, font_type, font_height}),
-      m_typoColor(glm::vec4(0.f, 0.f, 0.f, 1.f)), m_altTextFontSize(22) {
+Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::string& text,
+               pair<align, valign> align, const std::string& font_type, int font_height)
+    : Label(LabelInitData{
+        .pos = static_cast<glm::ivec2>(pos),
+        .size = static_cast<glm::ivec2>(size),
+        .text_color = text_color,
+        .bg_color = bg_color,
+        .text = text,
+        .ax = align.first,
+        .ay = align.second,
+        .font_type = font_type,
+        .font_height=0
+    }), m_typoColor(glm::vec4(0.f, 0.f, 0.f, 1.f)), m_altTextFontSize(22) {
     setName(getTypeName<Button>());
     setFocusAllowed(false);
     Label::setScissorChildren(true);
