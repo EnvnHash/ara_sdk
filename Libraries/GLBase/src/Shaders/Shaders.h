@@ -138,7 +138,7 @@ public:
 #endif
 
     int getLoc(const std::string &name) {
-        if (m_locations.empty() || m_locations.find(name) == m_locations.end())
+        if (m_locations.empty() || !m_locations.contains(name))
             m_locations[name] = glGetUniformLocation(m_program, name.c_str());
         return m_locations[name];
     }
@@ -263,52 +263,72 @@ public:
     // set an array of uniform values
     void setUniform1iv(const std::string &name, int *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniform1iv(m_loc, count, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniform1iv(m_loc, count, v);
+        }
     }
 
     void setUniform2iv(const std::string &name, int *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniform2iv(m_loc, count, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniform2iv(m_loc, count, v);
+        }
     }
 
     void setUniform3iv(const std::string &name, int *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniform3iv(m_loc, count, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniform3iv(m_loc, count, v);
+        }
     }
 
     void setUniform4iv(const std::string &name, int *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniform4iv(m_loc, count, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniform4iv(m_loc, count, v);
+        }
     }
 
     void setUniform1fv(const std::string &name, float *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniform1fv(m_loc, count, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniform1fv(m_loc, count, v);
+        }
     }
 
     void setUniform2fv(const std::string &name, float *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniform2fv(m_loc, count, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniform2fv(m_loc, count, v);
+        }
     }
 
     void setUniform3fv(const std::string &name, float *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniform3fv(m_loc, count, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniform3fv(m_loc, count, v);
+        }
     }
 
     void setUniform4fv(const std::string &name, float *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniform4fv(m_loc, count, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniform4fv(m_loc, count, v);
+        }
     }
 
     void setUniformMatrix3fv(const std::string &name, float *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniformMatrix3fv(m_loc, count, GL_FALSE, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniformMatrix3fv(m_loc, count, GL_FALSE, v);
+        }
     }
 
     void setUniformMatrix4fv(const std::string &name, float *v, int count = 1) {
         m_loc = getLoc(name);
-        if (m_loc != -1 && checkStateV(name, v)) glUniformMatrix4fv(m_loc, count, GL_FALSE, v);
+        if (m_loc != -1 && checkStateV(name, v)) {
+            glUniformMatrix4fv(m_loc, count, GL_FALSE, v);
+        }
     }
 
     void setIdentMatrix4fv(const std::string &name) { setUniformMatrix4fv(name, &m_identMat[0][0]); }
@@ -316,9 +336,9 @@ public:
     bool debug = false;
 
 private:
-    void               attachShader(GLuint program, GLenum type, const std::string &src);
+    void               attachShader(GLuint program, GLenum type, const std::string &src) const;
     void               checkStatusLink(GLuint obj);
-    void               checkStatusCompile(GLuint obj);
+    void               checkStatusCompile(GLuint obj) const;
     static std::string textFileRead(const std::string &filename);
     static void        getGlVersions();
     void               pathToResources();

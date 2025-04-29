@@ -6,6 +6,8 @@
 
 #include "ShaderCollector.h"
 
+#include <ranges>
+
 using namespace std;
 
 namespace ara {
@@ -22,9 +24,6 @@ ShaderCollector::ShaderCollector() {
         "objMap = vec4(mod(floor(objId * 1.52587890625e-5), 256.0) / 255.0, "
         "mod(floor(objId * 0.00390625), 256.0) / 255.0, mod(objId, 256.0) / "
         "255.0, 1.0);\n";
-}
-
-ShaderCollector::~ShaderCollector() {
 }
 
 Shaders *ShaderCollector::add(const std::string &name, const std::string &vert, const std::string &frag) {
@@ -80,7 +79,7 @@ void ShaderCollector::deleteShader(const std::string &name) {
     }
 }
 
-void ShaderCollector::deleteShader(Shaders *ptr) {
+void ShaderCollector::deleteShader(const Shaders *ptr) {
     for (auto it = shaderCollection.begin(); it != shaderCollection.end(); ++it) {
         if (it->second.get() == ptr) {
             shaderCollection.erase(it);
@@ -90,14 +89,14 @@ void ShaderCollector::deleteShader(Shaders *ptr) {
 }
 
 Shaders *ShaderCollector::get(const std::string &name) {
-    if (shaderCollection.find(name) != shaderCollection.end())
+    if (shaderCollection.contains(name))
         return shaderCollection[name].get();
     else
         return nullptr;
 }
 
-bool ShaderCollector::hasShader(const std::string &name) {
-    return (!shaderCollection.empty() && (shaderCollection.find(name) != shaderCollection.end()));
+bool ShaderCollector::hasShader(const std::string &name) const {
+    return (!shaderCollection.empty() && (shaderCollection.contains(name)));
 }
 
 Shaders *ShaderCollector::getStdClear(bool layered, int nrLayers) {
@@ -467,7 +466,7 @@ Shaders *ShaderCollector::getStdTexBorder() {
                   });
 #endif
 
-    if (shaderCollection.find("std_tex_border") == shaderCollection.end()) {
+    if (!shaderCollection.contains("std_tex_border")) {
         shaderCollection["std_tex_border"] = make_unique<Shaders>(vert, frag, false);
 #ifdef __EMSCRIPTEN__
         // for GLES and WEBGL bind the standard attribute locations
@@ -1759,7 +1758,9 @@ std::string ShaderCollector::getFisheyeVertSnippet(size_t nrCameras) {
 }
 
 void ShaderCollector::clear() {
-    for (auto &it : shaderCollection) it.second.reset();
+    for (auto &val: shaderCollection | views::values) {
+        val.reset();
+    }
 
     shaderCollection.clear();
 }

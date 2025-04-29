@@ -9,8 +9,13 @@ using namespace std;
 
 namespace ara {
 
+    /**
+ *
+ * @param ip
+ */
 FBO::FBO(const FboInitParams& ip)
-    : m_glbase(ip.glbase),
+    : m_hasDepthBuf(ip.depthBuf),
+    m_layered(ip.layered),
     m_tex_width(ip.width),
     m_tex_height(ip.height),
     m_tex_depth(ip.depth),
@@ -18,12 +23,11 @@ FBO::FBO(const FboInitParams& ip)
     m_extType(ara::getExtType(ip.type)),
     m_pixType(ara::getPixelType(ip.type)),
     m_target(ip.target),
-    m_hasDepthBuf(ip.depthBuf),
-    m_nrAttachments(ip.nrAttachments),
-    m_mipMapLevels(ip.mipMapLevels),
-    m_nrSamples(ip.nrSamples),
     m_wrapMode(ip.wrapMode),
-    m_layered(ip.layered)  {
+    m_glbase(ip.glbase),
+    m_mipMapLevels(ip.mipMapLevels),
+    m_nrAttachments(ip.nrAttachments),
+    m_nrSamples(ip.nrSamples)  {
     init();
 }
 
@@ -56,9 +60,9 @@ void FBO::fromShared(FBO *sharedFbo) {
         initFromShared(sharedFbo);
 
         m_textures.resize(sharedFbo->getTextures()->size());
-        std::copy(sharedFbo->getTextures()->begin(), sharedFbo->getTextures()->end(), m_textures.begin());
+        ranges::copy(*sharedFbo->getTextures(), m_textures.begin());
         m_bufModes.resize(sharedFbo->getBufModes()->size());
-        std::copy(sharedFbo->getBufModes()->begin(), sharedFbo->getBufModes()->end(), m_bufModes.begin());
+        ranges::copy(*sharedFbo->getBufModes(), m_bufModes.begin());
 
         glGenFramebuffers(1, &m_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -124,7 +128,7 @@ void FBO::fromShared(FBO *sharedFbo) {
     }
 }
 
-void FBO::fromTexMan(Texture *texMan) {
+void FBO::fromTexMan(const Texture *texMan) {
     if (texMan) {
         getActStates();
 
@@ -161,7 +165,7 @@ void FBO::fromTexMan(Texture *texMan) {
 
         // get standard shaders for clearing the FBO
         m_colShader     = m_shCol->getStdCol();
-        m_clearShader   = m_shCol->getStdClear(m_layered, (int)m_tex_depth);
+        m_clearShader   = m_shCol->getStdClear(m_layered, static_cast<int>(m_tex_depth));
         m_toAlphaShader = m_shCol->getStdTex();
 
         glGenFramebuffers(1, &m_fbo);
@@ -249,7 +253,7 @@ void FBO::fromSharedExtractLayer(FBO *sharedFbo, int layerNr) {
 
         m_textures.resize(1);
         m_bufModes.resize(sharedFbo->getBufModes()->size());
-        std::copy(sharedFbo->getBufModes()->begin(), sharedFbo->getBufModes()->end(), m_bufModes.begin());
+        ranges::copy(*sharedFbo->getBufModes(), m_bufModes.begin());
 
         // generate a textureview onto the s_fbo's layered color texture
         glGenTextures(1, &m_textures[0]);
@@ -339,7 +343,7 @@ void FBO::initFromShared(FBO *sharedFbo) {
 
     // get standard shaders for clearing the FBO
     m_colShader     = m_shCol->getStdCol();
-    m_clearShader   = m_shCol->getStdClear(m_layered, (int)m_tex_depth);
+    m_clearShader   = m_shCol->getStdClear(m_layered, static_cast<int>(m_tex_depth));
     m_toAlphaShader = m_shCol->getStdTex();
 
     // this FBO may be shared, in this case to FBO holding a reference can be
@@ -604,16 +608,12 @@ void FBO::allocDepthTexture() {
         default: break;
     }
 #endif
-
-    // glTexParameteri(target, GL_TEXTURE_COMPARE_MODE,
-    // GL_COMPARE_REF_TO_TEXTURE); // with this depth m_buffer doesnt work
-    // glTexParameteri(target, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 }
 
 /**
  * attach color and depth textures to the FrameBufferObject
  */
-void FBO::attachTextures(bool doCheckFbo) {
+void FBO::attachTextures(bool doCheckFbo) const {
     // Attach the texture to the s_fbo,  iterate through the different types
     for (auto i = 0; i < m_nrAttachments; i++) {
         switch (m_target) {
@@ -740,16 +740,19 @@ void FBO::blit(uint scrWidth, uint scrHeight, GLenum interp) const {
         glBlitFramebuffer(0, 0, m_tex_width, m_tex_height, 0, 0, scrWidth, scrHeight, GL_DEPTH_BUFFER_BIT, interp);
 }
 
-void FBO::blitTo(FBO *dst) const {
-    if (!dst) return;
+void FBO::blitTo(const FBO *dst) const {
+    if (!dst) {
+        return;
+    }
 
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst->getFbo());
     glBlitFramebuffer(0, 0, m_tex_width, m_tex_height, 0, 0, dst->getWidth(), dst->getHeight(), GL_COLOR_BUFFER_BIT,
                       GL_NEAREST);
-    if (m_hasDepthBuf)
+    if (m_hasDepthBuf) {
         glBlitFramebuffer(0, 0, m_tex_width, m_tex_height, 0, 0, dst->getWidth(), dst->getHeight(), GL_DEPTH_BUFFER_BIT,
                           GL_NEAREST);
+    }
 }
 
 void FBO::resize(float width, float height, float depth, bool checkStates) {
@@ -774,7 +777,9 @@ void FBO::resize(uint width, uint height, uint depth, bool checkStates) {
     if ((m_tex_width != 0 || m_tex_height != 0) && !m_inited) {
         init();
     } else if (!m_isShared) {
-        if (checkStates) getActStates();
+        if (checkStates) {
+            getActStates();
+        }
 
         // destroy and recreate textures
         deleteColorTextures();
@@ -791,7 +796,9 @@ void FBO::resize(uint width, uint height, uint depth, bool checkStates) {
         attachTextures(false);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        if (checkStates) restoreStates();
+        if (checkStates) {
+            restoreStates();
+        }
     }
 }
 
@@ -832,13 +839,13 @@ void FBO::restoreStates() {
 #endif
 }
 
-void FBO::deleteColorTextures() {
+void FBO::deleteColorTextures() const {
     if (m_inited) {
         glDeleteTextures(m_nrAttachments, &m_textures[0]);
     }
 }
 
-void FBO::deleteDepthTextures() {
+void FBO::deleteDepthTextures() const {
     if (m_inited && m_hasDepthBuf) {
         glDeleteTextures(1, &m_depthBuf);
     }
@@ -854,7 +861,7 @@ void FBO::clearAlpha(float alpha, float col) const {
     }
 }
 
-void FBO::clearToAlpha(float alpha) {
+void FBO::clearToAlpha(float alpha) const {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST);
 
@@ -873,10 +880,10 @@ void FBO::clearToAlpha(float alpha) {
     }
 }
 
-void FBO::clearToColor(float _r, float _g, float _b, float _a) {
+void FBO::clearToColor(float r, float g, float b, float a) const {
     if (m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8) {
         glDrawBuffers(m_nrAttachments, &m_bufModes[0]);
-        glClearColor(_r, _g, _b, _a);
+        glClearColor(r, g, b, a);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
@@ -887,13 +894,13 @@ void FBO::clearToColor(float _r, float _g, float _b, float _a) {
 }
 
 void FBO::clearToColor(float r, float g, float b, float a, size_t bufIndx) const {
-    if (m_nrAttachments >= (int)bufIndx && m_type != GL_DEPTH24_STENCIL8) {
-        std::array<float, 4> col = {r, g, b, a};
-        glClearBufferfv(GL_COLOR, (GLint)bufIndx, &col[0]);
+    if (m_nrAttachments >= static_cast<int>(bufIndx) && m_type != GL_DEPTH24_STENCIL8) {
+        std::array col = {r, g, b, a};
+        glClearBufferfv(GL_COLOR, static_cast<GLint>(bufIndx), &col[0]);
     }
 }
 
-void FBO::clear() {
+void FBO::clear() const {
     if (m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8) {
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -901,7 +908,9 @@ void FBO::clear() {
 
     if (m_nrAttachments > 1 && m_type != GL_DEPTH24_STENCIL8) {
         glDrawBuffers(m_nrAttachments, &m_bufModes[0]);
-        for (int i = 1; i < m_nrAttachments; i++) glClearBufferfv(GL_COLOR, i, m_transparent);
+        for (int i = 1; i < m_nrAttachments; i++) {
+            glClearBufferfv(GL_COLOR, i, m_transparent);
+        }
     }
 
     if (m_hasDepthBuf) {
@@ -929,41 +938,41 @@ void FBO::clearWhite() const {
     }
 }
 
-void FBO::setMinFilter(GLenum type) {
+void FBO::setMinFilter(GLint type) {
     m_minFilterType = type;
 
-    for (short i = 0; i < m_nrAttachments; i++) {
+    for (int i = 0; i < m_nrAttachments; i++) {
         glBindTexture(m_target, m_textures[i]);
         glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, type);
     }
 }
 
-void FBO::setMagFilter(GLenum type) {
+void FBO::setMagFilter(GLint type) {
     m_magFilterType = type;
 
-    for (short i = 0; i < m_nrAttachments; i++) {
+    for (int i = 0; i < m_nrAttachments; i++) {
         glBindTexture(m_target, m_textures[i]);
         glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, type);
     }
 }
 
-void FBO::setMinFilter(GLenum type, int attNr) {
+void FBO::setMinFilter(GLint type, int attNr) const {
     if (attNr < m_nrAttachments) {
         glBindTexture(m_target, m_textures[attNr]);
         glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, type);
     }
 }
 
-void FBO::setMagFilter(GLenum type, int attNr) {
+void FBO::setMagFilter(GLint type, int attNr) const {
     if (attNr < m_nrAttachments) {
         glBindTexture(m_target, m_textures[attNr]);
         glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, type);
     }
 }
 
-void FBO::set3DLayer(int attachment, int offset) {
+void FBO::set3DLayer(int attachment, int offset) const {
 #ifndef ARA_USE_GLES31
-    if (m_target == GL_TEXTURE_3D && (GLuint)offset < m_tex_depth) {
+    if (m_target == GL_TEXTURE_3D && static_cast<GLuint>(offset) < m_tex_depth) {
         // glFramebufferTextureLayer(GL_FRAMEBUFFER,
         // GL_COLOR_ATTACHMENT0+attachment, textures[attachment], 0, offset);
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -1015,11 +1024,10 @@ void FBO::checkFbo() {
 
 bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum intFormat) {
 #ifdef ARA_USE_FREEIMAGE
-    if (!m_inited || (int)attachNr >= m_nrAttachments) return false;
+    if (!m_inited || static_cast<int>(attachNr) >= m_nrAttachments) return false;
 
-    FREE_IMAGE_FORMAT fileFormat;
+    FREE_IMAGE_FORMAT fileFormat = {};
     FIBITMAP         *bitmap = nullptr;
-    unique_ptr<FBO>   tempFbo;
     int               flags = 0;
 
     if (!filename.extension().compare(".gif")) {
@@ -1048,16 +1056,18 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
     // then download
     if (m_isMultiSample) {
         saveTarget = GL_TEXTURE_2D;
-        tempFbo    = make_unique<FBO>(FboInitParams{m_glbase,
-                                                    static_cast<int>(m_tex_width),
-                                                    static_cast<int>(m_tex_height),
-                                                    1,
-                                                    intFormat,
-                                                    saveTarget,
-                                                    false, 1, 1, 1,
-                                                    GL_REPEAT, false});
+        auto tempFbo = make_unique<FBO>(FboInitParams{
+            m_glbase,
+            static_cast<int>(m_tex_width),
+            static_cast<int>(m_tex_height),
+            1,
+            intFormat,
+            saveTarget,
+            false, 1, 1, 1,
+            GL_REPEAT, false
+        });
 
-        Shaders *copyShader = m_shCol->getStdTexAlpha(true);
+        auto copyShader = m_shCol->getStdTexAlpha(true);
 
         glDisable(GL_BLEND);
         tempFbo->bind();

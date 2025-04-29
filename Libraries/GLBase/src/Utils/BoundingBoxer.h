@@ -26,15 +26,16 @@ public:
     explicit BoundingBoxer(GLBase *glbase);
 
     void initShader();
-    void begin();
+    void begin() const;
     void end();
 
-    void       sendModelMat(GLfloat *matPtr) { boxCalcShader->setUniformMatrix4fv("m_model", matPtr); }
-    void       draw() {}
-    glm::vec3 &getBoundMin() { return boundMin; }
-    glm::vec3 &getBoundMax() { return boundMax; }
-    glm::vec3 &getCenter() { return center; }
-    Shaders   *getShader() { return boxCalcShader ? boxCalcShader : nullptr; }
+    void        sendModelMat(GLfloat *matPtr) const { boxCalcShader->setUniformMatrix4fv("m_model", matPtr); }
+    static void draw() {}
+    glm::vec3  &getBoundMin() { return boundMin; }
+    glm::vec3  &getBoundMax() { return boundMax; }
+    glm::vec3  &getCenter() { return center; }
+
+    [[nodiscard]] Shaders *getShader() const { return boxCalcShader ? boxCalcShader : nullptr; }
 
 private:
     std::unique_ptr<FBO> fbo;

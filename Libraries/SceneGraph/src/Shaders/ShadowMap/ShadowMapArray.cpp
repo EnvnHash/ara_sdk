@@ -72,7 +72,7 @@ void ShadowMapArray::rebuildShader(uint _nrLights) {
 
     if (s_shadowShader) shCol->deleteShader("ShadowMapArray");
 
-    s_shadowShader = shCol->add("ShadowMapArray", vert.c_str(), geom.c_str(), frag.c_str());
+    s_shadowShader = shCol->add("ShadowMapArray", vert, geom, frag);
 }
 
 void ShadowMapArray::rebuildFbo(uint _nrLights) {

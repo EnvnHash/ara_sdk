@@ -24,43 +24,42 @@ public:
         float y_eye_offset;
     };
 
-    LensDistortion(StereoDeviceParams &device_params, StereoScreenParams &screen_params);
+    LensDistortion(const StereoDeviceParams &device_params, const StereoScreenParams &screen_params);
 
     std::unique_ptr<DistortionMesh> createDistortionMesh(StereoEye eye, const PolynomialRadialDistortion &distortion,
-                                                         const std::array<float, 4> &fov);
+                                                         const std::array<float, 4> &fov) const;
 
-    // Tan angle units. "DistortedUvForUndistoredUv" goes through the forward
-    // distort function. I.e. the lens. UndistortedUvForDistortedUv uses the
-    // inverse distort function.
-    std::array<float, 2> distortedUvForUndistortedUv(const std::array<float, 2> &in, StereoEye eye);
-    std::array<float, 2> undistortedUvForDistortedUv(const std::array<float, 2> &in, StereoEye eye);
-    glm::mat4            getEyeProjectionMatrix(StereoEye eye, float z_near, float z_far);
+    // Tan angle units. "DistortedUvForUndistoredUv" goes through the forward distort function. I.e. the lens.
+    // UndistortedUvForDistortedUv uses the inverse distort function.
+    [[nodiscard]] std::array<float, 2> distortedUvForUndistortedUv(const std::array<float, 2> &in, StereoEye eye) const;
+    [[nodiscard]] std::array<float, 2> undistortedUvForDistortedUv(const std::array<float, 2> &in, StereoEye eye) const;
+    [[nodiscard]] glm::mat4            getEyeProjectionMatrix(StereoEye eye, float z_near, float z_far) const;
+    [[nodiscard]] Mesh                &getDistortionMesh(StereoEye eye) const;
+    [[nodiscard]] glm::vec2            getLensOffs(StereoEye eye) const;
+    [[nodiscard]] glm::vec2            getLensSize(StereoEye eye) const;
+
     void                 getEyeFieldOfView(StereoEye eye, float *field_of_view) const;
-    Mesh                &getDistortionMesh(StereoEye eye) const;
-    glm::vec2            getLensOffs(StereoEye eye);
-    glm::vec2            getLensSize(StereoEye eye);
-
     glm::mat4            &getEyeFromHeadMatrix(StereoEye eye) { return m_eye_from_head_matrix[(int)eye]; }
     std::array<float, 4> &getFov(StereoEye eye) { return m_fov[(int)eye]; }
 
-    float getViewEyeOffs(StereoEye eye) {
-        return m_device_params.inter_lens_distance() * (eye == StereoEye::left ? 0.5f : -0.5f);
+    static float getViewEyeOffs(StereoEye eye) {
+        return StereoDeviceParams::inter_lens_distance() * (eye == StereoEye::left ? 0.5f : -0.5f);
     }
 
 private:
-    float getYEyeOffsetMeters(float screen_height_meters);
+    static float getYEyeOffsetMeters(float screen_height_meters);
 
-    std::array<float, 4> calculateFov(const PolynomialRadialDistortion &distortion, float screen_width_meters,
+    static std::array<float, 4> calculateFov(const PolynomialRadialDistortion &distortion, float screen_width_meters,
                                       float screen_height_meters);
 
     void calculateViewportParameters(StereoEye eye, const std::array<float, 4> &fov, ViewportParams *screen_params,
-                                     ViewportParams *texture_params);
+                                     ViewportParams *texture_params) const;
 
     StereoDeviceParams m_device_params;
     StereoScreenParams m_screen_params;
 
     std::array<std::array<float, 4>, 2>         m_fov{0.f};  // L, R, B, T
-    std::array<glm::mat4, 2>                    m_eye_from_head_matrix;
+    std::array<glm::mat4, 2>                    m_eye_from_head_matrix{};
     std::unique_ptr<DistortionMesh>             m_left_mesh;
     std::unique_ptr<DistortionMesh>             m_right_mesh;
     std::unique_ptr<PolynomialRadialDistortion> m_distortion;

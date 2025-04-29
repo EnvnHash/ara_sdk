@@ -98,7 +98,7 @@ public:
     ~SSAO();
 
     void bind();
-    void clear(glm::vec4 clearCol = glm::vec4(0.f));
+    static void clear(glm::vec4 clearCol = glm::vec4(0.f));
     void unbind();
     void copyFbo(CameraSet* cs);
     void proc(CameraSet* cs);

@@ -15,9 +15,10 @@ public:
     void   init(void *extData = nullptr);
     float *getEyeLensTrans(StereoEye eye);
 
-    VAO                  &getVao(int i) { return m_vao[i]; }
-    std::array<float, 4> &getFov(StereoEye i) { return m_lensDist->getFov(i); }
-    [[nodiscard]] float   getViewEyeOffs(StereoEye eye) const { return m_lensDist->getViewEyeOffs(eye); }
+    VAO& getVao(int i) { return m_vao[i]; }
+
+    [[nodiscard]] std::array<float, 4> &getFov(StereoEye i) const { return m_lensDist->getFov(i); }
+    [[nodiscard]] static float          getViewEyeOffs(StereoEye eye) { return LensDistortion::getViewEyeOffs(eye); }
 
     void setScreenParam(glm::vec2 dpi, glm::vec2 screen_size) {
         m_scrPar.m_xdpi        = dpi.x;
@@ -26,8 +27,8 @@ public:
     }
 
 private:
-    StereoDeviceParams              m_devPar;
-    StereoScreenParams              m_scrPar;
+    StereoDeviceParams              m_devPar{};
+    StereoScreenParams              m_scrPar{};
     std::unique_ptr<LensDistortion> m_lensDist;
     std::array<VAO, 2>              m_vao;
     std::array<glm::mat4, 2>        m_perspMat = {glm::mat4(1.f), glm::mat4(1.f)};

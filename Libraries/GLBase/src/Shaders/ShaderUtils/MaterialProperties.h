@@ -20,11 +20,11 @@ public:
 
     float getShininess() { return parameters["shininess"].fVal; }
     float getStrength() { return parameters["strength"].fVal; }
-    void  setAmbient(GLfloat _r, GLfloat _g, GLfloat _b, GLfloat _a) { setFloat4("ambient", _r, _g, _b, _a); }
-    void  setDiffuse(GLfloat _r, GLfloat _g, GLfloat _b, GLfloat _a) { setFloat4("diffuse", _r, _g, _b, _a); }
-    void  setEmissive(GLfloat _r, GLfloat _g, GLfloat _b, GLfloat _a) { setFloat4("emissive", _r, _g, _b, _a); }
-    void  setSpecular(GLfloat _r, GLfloat _g, GLfloat _b, GLfloat _a) { setFloat4("specular", _r, _g, _b, _a); }
-    void  setShininess(float _val) { setFloat("shininess", _val); }
-    void  setStrength(float _val) { setFloat("strength", _val); }
+    void  setAmbient(GLfloat r, GLfloat g, GLfloat b, GLfloat a) { setFloat4("ambient", r, g, b, a); }
+    void  setDiffuse(GLfloat r, GLfloat g, GLfloat b, GLfloat a) { setFloat4("diffuse", r, g, b, a); }
+    void  setEmissive(GLfloat r, GLfloat g, GLfloat b, GLfloat a) { setFloat4("emissive", r, g, b, a); }
+    void  setSpecular(GLfloat r, GLfloat g, GLfloat b, GLfloat a) { setFloat4("specular", r, g, b, a); }
+    void  setShininess(float val) { setFloat("shininess", val); }
+    void  setStrength(float val) { setFloat("strength", val); }
 };
 }  // namespace ara

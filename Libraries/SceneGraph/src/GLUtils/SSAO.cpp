@@ -73,46 +73,46 @@ void SSAO::initShaders() {
     initBilateralblur();
 
     std::string frag = initDepthLinearize(0);
-    depth_linearize  = shCol->add("SSAODepth_linearize", fullScrQuad.c_str(), frag.c_str());
+    depth_linearize  = shCol->add("SSAODepth_linearize", fullScrQuad, frag);
 
     frag                 = initDepthLinearize(1);
-    depth_linearize_msaa = shCol->add("SSAODepth_linearize_msaa", fullScrQuad.c_str(), frag.c_str());
+    depth_linearize_msaa = shCol->add("SSAODepth_linearize_msaa", fullScrQuad, frag);
 
     initViewNormal();
 
     frag      = initHbaoCalc(0, 0);
-    hbao_calc = shCol->add("SSAOHBAO_Calc", fullScrQuad.c_str(), frag.c_str());
+    hbao_calc = shCol->add("SSAOHBAO_Calc", fullScrQuad, frag);
 
     frag           = initHbaoCalc(1, 0);
-    hbao_calc_blur = shCol->add("SSAOHBAO_Calc_Blur", fullScrQuad.c_str(), frag.c_str());
+    hbao_calc_blur = shCol->add("SSAOHBAO_Calc_Blur", fullScrQuad, frag);
 
     frag      = initHbaoBlur(0);
-    hbao_blur = shCol->add("SSAOHBAO_Blur", fullScrQuad.c_str(), frag.c_str());
+    hbao_blur = shCol->add("SSAOHBAO_Blur", fullScrQuad, frag);
 
     frag       = initHbaoBlur(1);
-    hbao_blur2 = shCol->add("SSAOHBAO_BlurMsaa", fullScrQuad.c_str(), frag.c_str());
+    hbao_blur2 = shCol->add("SSAOHBAO_BlurMsaa", fullScrQuad, frag);
 
     frag = initHbaoCalc(0, 1);
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_GS
-    hbao2_calc = shCol->add("SSAOHBAO2_Calc", fullScrQuad.c_str(), fullScrQuadGeo.c_str(), frag.c_str());
+    hbao2_calc = shCol->add("SSAOHBAO2_Calc", fullScrQuad, fullScrQuadGeo, frag);
 #else
-    hbao2_calc = m_shCol->add("SSAOHBAO2_Calc", fullScrQuad.c_str(), frag.c_str());
+    hbao2_calc = m_shCol->add("SSAOHBAO2_Calc", fullScrQuad, frag);
 #endif
 
     frag = initHbaoCalc(1, 1);
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_GS
-    hbao2_calc_blur = shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad.c_str(), fullScrQuadGeo.c_str(), frag.c_str());
+    hbao2_calc_blur = shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad, fullScrQuadGeo, frag);
 #else
-    hbao2_calc_blur = m_shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad.c_str(), frag.c_str());
+    hbao2_calc_blur = m_shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad, frag);
 #endif
 
     initDeinterleave();
 
     frag               = initReinterleave(0);
-    hbao2_reinterleave = shCol->add("SSAOHBAO2_Reinterleave", fullScrQuad.c_str(), frag.c_str());
+    hbao2_reinterleave = shCol->add("SSAOHBAO2_Reinterleave", fullScrQuad, frag);
 
     frag                    = initReinterleave(1);
-    hbao2_reinterleave_blur = shCol->add("SSAOHBAO2_ReinterleaveBlur", fullScrQuad.c_str(), frag.c_str());
+    hbao2_reinterleave_blur = shCol->add("SSAOHBAO2_ReinterleaveBlur", fullScrQuad, frag);
 
     debugDepth = initDebugDepth();
 }
@@ -132,7 +132,7 @@ ara::Shaders* SSAO::initDebugDepth() {
                                  in vec2 tex_coord; void main() { color = texture(tex, tex_coord) * 0.1; });
     frag             = "// debug depth shader, frag\n" + shdr_Header + frag;
 
-    return shCol->add("SSaoDebugDepth", vert.c_str(), frag.c_str());
+    return shCol->add("SSaoDebugDepth", vert, frag);
 }
 
 void SSAO::initFullScrQuad() {
@@ -228,7 +228,7 @@ void SSAO::initBilateralblur() {
 
     frag = "// SSAO Bilateralblur Shader vertex shader\n" + shdr_Header + frag;
 
-    bilateralblur = shCol->add("SSAOBilateralblur", fullScrQuad.c_str(), frag.c_str());
+    bilateralblur = shCol->add("SSAOBilateralblur", fullScrQuad, frag);
 }
 
 std::string SSAO::initDepthLinearize(int msaa) {
@@ -315,7 +315,7 @@ void SSAO::initViewNormal()
 
         frag = "// SSAO View Normal vertex shader\n" + shdr_Header + frag;
 
-        viewnormal = shCol->add("SSAOViewNormal", fullScrQuad.c_str(), frag.c_str());
+        viewnormal = shCol->add("SSAOViewNormal", fullScrQuad, frag);
 }
 
 std::string SSAO::initHbaoCalc(int _blur, int deinterl)
@@ -678,7 +678,7 @@ void SSAO::initDeinterleave()
 
     frag = "// SSAO Deinterleave shader\n" + shdr_Header + frag;
 
-    hbao2_deinterleave = shCol->add("SSAO_HBAO2_deinterleave", fullScrQuad.c_str(), frag.c_str());
+    hbao2_deinterleave = shCol->add("SSAO_HBAO2_deinterleave", fullScrQuad, frag);
 }
 
 std::string SSAO::initReinterleave(int _blur) {
@@ -691,10 +691,10 @@ std::string SSAO::initReinterleave(int _blur) {
         layout(binding=0) uniform sampler2DArray texResultsArray;\n
         layout(location=0,index=0) out vec4 out_Color;\n
 
-        void main() {
-            \n ivec2 FullResPos    = ivec2(gl_FragCoord.xy);
-            \n ivec2 Offset        = FullResPos & 3;
-            \n int   SliceId       = Offset.y * 4 + Offset.x;
+        void main() {\n
+            ivec2 FullResPos    = ivec2(gl_FragCoord.xy);\n
+            ivec2 Offset        = FullResPos & 3;\n
+            int   SliceId       = Offset.y * 4 + Offset.x;
             \n ivec2 QuarterResPos = FullResPos >> 2;\n
     );
 
@@ -1335,8 +1335,8 @@ void SSAO::bind()
     glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
 
     glGetIntegerv(GL_VIEWPORT, &csVp[0]);
-    glViewport(0, 0, fboWidth, fboHeight);
-    glScissor(0, 0, fboWidth, fboHeight);  // wichtig!!!
+    glViewport(0, 0, static_cast<GLsizei>(fboWidth), static_cast<GLsizei>(fboHeight));
+    glScissor(0, 0, static_cast<GLsizei>(fboWidth), static_cast<GLsizei>(fboHeight));
 
 #else
     sceneFbo->bind();
@@ -1437,28 +1437,6 @@ void SSAO::drawAlpha(CameraSet* cs, float alpha)
     else
         glBindTexture(GL_TEXTURE_2D, sceneFbo->getColorImg());
 #endif
-
-    /*
-    texNoAlpha->begin();
-    texNoAlpha->setIdentMatrix4fv("m_pvm");
-    texNoAlpha->setUniform1i("tex", 0);
-    //glBindTexture(GL_TEXTURE_2D, textures.scene_depthlinear);
-
-    if (samples > 1)
-    {
-            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE,
-    textures.scene_color); } else { glBindTexture(GL_TEXTURE_2D,
-    textures.scene_color);
-    }
-    //glBindTexture(GL_TEXTURE_2D, textures.scene_viewnormal);
-    //glBindTexture(GL_TEXTURE_2D, textures.hbao2_depthview[0]);
-    //glBindTexture(GL_TEXTURE_2D, textures.hbao2_resultarray);
-    // schwarz -> GL_RG16F
-    //glBindTexture(GL_TEXTURE_2D, textures.hbao_result);
-    // schwarz -> GL_RG16F
-    //glBindTexture(GL_TEXTURE_2D, textures.hbao_blur);
-
-    */
 
     quad->draw();
     texShdr->end();

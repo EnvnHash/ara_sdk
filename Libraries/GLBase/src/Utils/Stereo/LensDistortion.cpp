@@ -23,44 +23,44 @@ using namespace glm;
 
 namespace ara {
 
-LensDistortion::LensDistortion(StereoDeviceParams &device_params, StereoScreenParams &screen_params) {
+LensDistortion::LensDistortion(const StereoDeviceParams &device_params, const StereoScreenParams &screen_params) {
     m_device_params = device_params;
     m_screen_params = screen_params;
 
-    m_eye_from_head_matrix[(int)StereoEye::left] =
-        glm::translate(glm::vec3{m_device_params.inter_lens_distance() * 0.5f, 0.f, 0.f});
-    m_eye_from_head_matrix[(int)StereoEye::right] =
-        glm::translate(glm::vec3{-m_device_params.inter_lens_distance() * 0.5f, 0.f, 0.f});
+    m_eye_from_head_matrix[static_cast<int>(StereoEye::left)] = translate(vec3{StereoDeviceParams::inter_lens_distance() * 0.5f, 0.f, 0.f});
+    m_eye_from_head_matrix[static_cast<int>(StereoEye::right)] =
+        translate(vec3{-StereoDeviceParams::inter_lens_distance() * 0.5f, 0.f, 0.f});
 
-    std::vector<float> distortion_coefficients(m_device_params.distortion_coefficients_size(), 0.0f);
+    std::vector distortion_coefficients(StereoDeviceParams::distortion_coefficients_size(), 0.0f);
 
-    for (int i = 0; i < m_device_params.distortion_coefficients_size(); i++)
-        distortion_coefficients.at(i) = m_device_params.distortion_coefficients(i);
+    for (int i = 0; i < StereoDeviceParams::distortion_coefficients_size(); i++) {
+        distortion_coefficients.at(i) = StereoDeviceParams::distortion_coefficients(i);
+    }
 
     m_distortion    = std::make_unique<PolynomialRadialDistortion>(distortion_coefficients);
     m_screen_meters = m_screen_params.getScreenSizeInMeters();
 
-    m_fov[(int)StereoEye::left] = calculateFov(*m_distortion, m_screen_meters.x, m_screen_meters.y);
+    m_fov[static_cast<int>(StereoEye::left)] = calculateFov(*m_distortion, m_screen_meters.x, m_screen_meters.y);
 
     // Mirror fov for right eye.
-    m_fov[(int)StereoEye::right]    = m_fov[(int)StereoEye::left];
-    m_fov[(int)StereoEye::right][0] = m_fov[(int)StereoEye::left][1];
-    m_fov[(int)StereoEye::right][1] = m_fov[(int)StereoEye::left][0];
+    m_fov[static_cast<int>(StereoEye::right)]    = m_fov[static_cast<int>(StereoEye::left)];
+    m_fov[static_cast<int>(StereoEye::right)][0] = m_fov[static_cast<int>(StereoEye::left)][1];
+    m_fov[static_cast<int>(StereoEye::right)][1] = m_fov[static_cast<int>(StereoEye::left)][0];
 
-    m_left_mesh  = createDistortionMesh(StereoEye::left, *m_distortion, m_fov[(int)StereoEye::left]);
-    m_right_mesh = createDistortionMesh(StereoEye::right, *m_distortion, m_fov[(int)StereoEye::right]);
+    m_left_mesh  = createDistortionMesh(StereoEye::left, *m_distortion, m_fov[static_cast<int>(StereoEye::left)]);
+    m_right_mesh = createDistortionMesh(StereoEye::right, *m_distortion, m_fov[static_cast<int>(StereoEye::right)]);
 }
 
-glm::mat4 LensDistortion::getEyeProjectionMatrix(StereoEye eye, float z_near, float z_far) {
-    return glm::perspective(m_fov[(int)eye][3] + m_fov[(int)eye][2], m_fov[(int)eye][0] / m_fov[(int)eye][2], z_near,
+mat4 LensDistortion::getEyeProjectionMatrix(StereoEye eye, float z_near, float z_far) const {
+    return perspective(m_fov[static_cast<int>(eye)][3] + m_fov[static_cast<int>(eye)][2], m_fov[static_cast<int>(eye)][0] / m_fov[static_cast<int>(eye)][2], z_near,
                             z_far);
 }
 
 void LensDistortion::getEyeFieldOfView(StereoEye eye, float *field_of_view) const {
-    std::copy(m_fov[static_cast<int>(eye)].data(), m_fov[static_cast<int>(eye)].data() + 4, field_of_view);
+    std::copy_n(m_fov[static_cast<int>(eye)].data(), 4, field_of_view);
 }
 
-glm::vec2 LensDistortion::getLensOffs(StereoEye eye) {
+vec2 LensDistortion::getLensOffs(StereoEye eye) const {
     if (eye == StereoEye::left) {
         return (m_left_mesh->m_max - m_left_mesh->m_min) * 0.5f + m_left_mesh->m_min;
     } else {
@@ -68,7 +68,7 @@ glm::vec2 LensDistortion::getLensOffs(StereoEye eye) {
     }
 }
 
-glm::vec2 LensDistortion::getLensSize(StereoEye eye) {
+vec2 LensDistortion::getLensSize(StereoEye eye) const {
     if (eye == StereoEye::left) {
         return (m_left_mesh->m_max - m_left_mesh->m_min) * 0.5f;
     } else {
@@ -80,7 +80,7 @@ Mesh &LensDistortion::getDistortionMesh(StereoEye eye) const {
     return eye == StereoEye::left ? m_left_mesh->getMesh() : m_right_mesh->getMesh();
 }
 
-std::array<float, 2> LensDistortion::distortedUvForUndistortedUv(const std::array<float, 2> &in, StereoEye eye) {
+std::array<float, 2> LensDistortion::distortedUvForUndistortedUv(const std::array<float, 2> &in, StereoEye eye) const {
     if (m_screen_meters.x == 0 || m_screen_meters.y == 0) {
         return {0, 0};
     }
@@ -100,16 +100,18 @@ std::array<float, 2> LensDistortion::distortedUvForUndistortedUv(const std::arra
             (distorted_uv_tanangle[1] + texture_params.y_eye_offset) / texture_params.height};
 }
 
-std::array<float, 2> LensDistortion::undistortedUvForDistortedUv(const std::array<float, 2> &in, StereoEye eye) {
-    if (m_screen_meters.x == 0 || m_screen_meters.y == 0) return {0, 0};
+std::array<float, 2> LensDistortion::undistortedUvForDistortedUv(const std::array<float, 2> &in, StereoEye eye) const {
+    if (m_screen_meters.x == 0 || m_screen_meters.y == 0) {
+        return {0, 0};
+    }
 
     ViewportParams screen_params{}, texture_params{};
 
     calculateViewportParameters(eye, m_fov[static_cast<int>(eye)], &screen_params, &texture_params);
 
     // Convert input from normalized [0, 1] pre distort texture space to eye-centered tan angle units.
-    std::array<float, 2> distorted_uv_tanangle = {in[0] * texture_params.width - texture_params.x_eye_offset,
-                                                  in[1] * texture_params.height - texture_params.y_eye_offset};
+    std::array distorted_uv_tanangle = {in[0] * texture_params.width - texture_params.x_eye_offset,
+                                        in[1] * texture_params.height - texture_params.y_eye_offset};
 
     std::array<float, 2> undistorted_uv_tanangle = m_distortion->DistortInverse(distorted_uv_tanangle);
 
@@ -123,15 +125,15 @@ std::array<float, 4> LensDistortion::calculateFov(const PolynomialRadialDistorti
                                                   float screen_width_meters, float screen_height_meters) {
     // FOV angles in device parameters are in degrees so they are converted to radians for posterior use.
     std::array<float, 4> device_fov = {
-        glm::radians(m_device_params.left_eye_field_of_view_angles(0)),
-        glm::radians(m_device_params.left_eye_field_of_view_angles(1)),
-        glm::radians(m_device_params.left_eye_field_of_view_angles(2)),
-        glm::radians(m_device_params.left_eye_field_of_view_angles(3)),
+        radians(StereoDeviceParams::left_eye_field_of_view_angles(0)),
+        radians(StereoDeviceParams::left_eye_field_of_view_angles(1)),
+        radians(StereoDeviceParams::left_eye_field_of_view_angles(2)),
+        radians(StereoDeviceParams::left_eye_field_of_view_angles(3)),
     };
 
-    const float eye_to_screen_distance = m_device_params.screen_to_lens_distance();
-    const float outer_distance         = (screen_width_meters - m_device_params.inter_lens_distance()) / 2.0f;
-    const float inner_distance         = m_device_params.inter_lens_distance() / 2.0f;
+    const float eye_to_screen_distance = StereoDeviceParams::screen_to_lens_distance();
+    const float outer_distance         = (screen_width_meters - StereoDeviceParams::inter_lens_distance()) / 2.0f;
+    const float inner_distance         = StereoDeviceParams::inter_lens_distance() / 2.0f;
     const float bottom_distance        = getYEyeOffsetMeters(screen_height_meters);
     const float top_distance           = screen_height_meters - bottom_distance;
 
@@ -145,18 +147,18 @@ std::array<float, 4> LensDistortion::calculateFov(const PolynomialRadialDistorti
 }
 
 float LensDistortion::getYEyeOffsetMeters(float screen_height_meters) {
-    switch (m_device_params.vertical_alignment()) {
+    switch (StereoDeviceParams::vertical_alignment()) {
         case StereoDeviceParams::CENTER:
         default: return screen_height_meters / 2.0f;
-        case StereoDeviceParams::BOTTOM: return m_device_params.tray_to_lens_distance() - kDefaultBorderSizeMeters;
+        case StereoDeviceParams::BOTTOM: return StereoDeviceParams::tray_to_lens_distance() - kDefaultBorderSizeMeters;
         case StereoDeviceParams::TOP:
-            return screen_height_meters - m_device_params.tray_to_lens_distance() - kDefaultBorderSizeMeters;
+            return screen_height_meters - StereoDeviceParams::tray_to_lens_distance() - kDefaultBorderSizeMeters;
     }
 }
 
 std::unique_ptr<DistortionMesh> LensDistortion::createDistortionMesh(StereoEye                         eye,
                                                                      const PolynomialRadialDistortion &distortion,
-                                                                     const std::array<float, 4>       &fov) {
+                                                                     const std::array<float, 4>       &fov) const {
     ViewportParams screen_params{}, texture_params{};
 
     calculateViewportParameters(eye, fov, &screen_params, &texture_params);
@@ -167,17 +169,17 @@ std::unique_ptr<DistortionMesh> LensDistortion::createDistortionMesh(StereoEye  
 }
 
 void LensDistortion::calculateViewportParameters(StereoEye eye, const std::array<float, 4> &fov,
-                                                 ViewportParams *screen_params, ViewportParams *texture_params) {
-    screen_params->width  = m_screen_meters.x / m_device_params.screen_to_lens_distance();
-    screen_params->height = m_screen_meters.y / m_device_params.screen_to_lens_distance();
+                                                 ViewportParams *screen_params, ViewportParams *texture_params) const {
+    screen_params->width  = m_screen_meters.x / StereoDeviceParams::screen_to_lens_distance();
+    screen_params->height = m_screen_meters.y / StereoDeviceParams::screen_to_lens_distance();
 
     screen_params->x_eye_offset = eye == StereoEye::left
-                                      ? ((m_screen_meters.x - m_device_params.inter_lens_distance()) * 0.5f) /
-                                            m_device_params.screen_to_lens_distance()
-                                      : ((m_screen_meters.x + m_device_params.inter_lens_distance()) * 0.5f) /
-                                            m_device_params.screen_to_lens_distance();
+                                      ? ((m_screen_meters.x - StereoDeviceParams::inter_lens_distance()) * 0.5f) /
+                                            StereoDeviceParams::screen_to_lens_distance()
+                                      : ((m_screen_meters.x + StereoDeviceParams::inter_lens_distance()) * 0.5f) /
+                                            StereoDeviceParams::screen_to_lens_distance();
 
-    screen_params->y_eye_offset = getYEyeOffsetMeters(m_screen_meters.y) / m_device_params.screen_to_lens_distance();
+    screen_params->y_eye_offset = getYEyeOffsetMeters(m_screen_meters.y) / StereoDeviceParams::screen_to_lens_distance();
 
     texture_params->width  = tan(fov[0]) + tan(fov[1]);
     texture_params->height = tan(fov[2]) + tan(fov[3]);

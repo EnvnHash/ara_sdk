@@ -27,13 +27,13 @@ public:
         // if function not yet used, or state different, store the value
         auto it     = enumStates.find(f);
         bool exists = it != enumStates.end();
-        if (!exists || (exists && arg != it->second)) {
+        if (!exists || arg != it->second) {
             enumStates[f] = arg;
             procEnum(f, enumStates[f]);
         }
     }
 
-    static void procEnum(glFun f, std::deque<GLenum> &arg) {
+    static void procEnum(glFun f, const std::deque<GLenum> &arg) {
         switch (f) {
             case glFun::Enable: glEnable(arg[0]); break;
             case glFun::Disable: glDisable(arg[0]); break;

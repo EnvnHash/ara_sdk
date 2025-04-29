@@ -87,7 +87,7 @@ void ShadowMapVsmArray::rebuildShader(uint _nrLights) {
 
         if (s_shadowShader) shCol->deleteShader("ShadowMapVsmArray");
 
-        s_shadowShader = shCol->add("ShadowMapVsmArray", vert.c_str(), geom.c_str(), frag.c_str());
+        s_shadowShader = shCol->add("ShadowMapVsmArray", vert, geom, frag);
     }
 }
 

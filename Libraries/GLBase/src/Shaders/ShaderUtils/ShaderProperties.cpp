@@ -174,42 +174,42 @@ vec4 ShaderProperties::getFloat4(const std::string &name) {
     }
 }
 
-void ShaderProperties::setBool(const std::string &name, GLboolean _b) {
+void ShaderProperties::setBool(const std::string &name, GLboolean b) {
     if (!parameters[name].isSet) parameters[name].isSet = true;
-    parameters[name].bVal   = _b;
+    parameters[name].bVal   = b;
     parameters[name].valPtr = &parameters[name].bVal;
 }
 
-void ShaderProperties::setInt(const std::string &name, GLint _x) {
+void ShaderProperties::setInt(const std::string &name, GLint x) {
     if (!parameters[name].isSet) parameters[name].isSet = true;
-    parameters[name].iVal   = _x;
+    parameters[name].iVal   = x;
     parameters[name].valPtr = &parameters[name].iVal;
 }
 
-void ShaderProperties::setInt2(const std::string &name, GLint _x, GLint _y) {
+void ShaderProperties::setInt2(const std::string &name, GLint x, GLint y) {
     if (!parameters[name].isSet) parameters[name].isSet = true;
 
-    parameters[name].i2Val[0] = _x;
-    parameters[name].i2Val[1] = _y;
+    parameters[name].i2Val[0] = x;
+    parameters[name].i2Val[1] = y;
     parameters[name].valPtr   = &parameters[name].i2Val[0];
 }
 
-void ShaderProperties::setInt3(const std::string &name, GLint _x, GLint _y, GLint _z) {
+void ShaderProperties::setInt3(const std::string &name, GLint x, GLint y, GLint z) {
     if (!parameters[name].isSet) parameters[name].isSet = true;
 
-    parameters[name].i3Val[0] = _x;
-    parameters[name].i3Val[1] = _y;
-    parameters[name].i3Val[2] = _z;
+    parameters[name].i3Val[0] = x;
+    parameters[name].i3Val[1] = y;
+    parameters[name].i3Val[2] = z;
     parameters[name].valPtr   = &parameters[name].i3Val[0];
 }
 
-void ShaderProperties::setInt4(const std::string &name, GLint _x, GLint _y, GLint _z, GLint _w) {
+void ShaderProperties::setInt4(const std::string &name, GLint x, GLint y, GLint z, GLint w) {
     if (!parameters[name].isSet) parameters[name].isSet = true;
 
-    parameters[name].i4Val[0] = _x;
-    parameters[name].i4Val[1] = _y;
-    parameters[name].i4Val[2] = _z;
-    parameters[name].i4Val[3] = _w;
+    parameters[name].i4Val[0] = x;
+    parameters[name].i4Val[1] = y;
+    parameters[name].i4Val[2] = z;
+    parameters[name].i4Val[3] = w;
     parameters[name].valPtr   = &parameters[name].i4Val[0];
 }
 
@@ -219,30 +219,30 @@ void ShaderProperties::setFloat(const std::string &name, GLfloat _f) {
     parameters[name].valPtr = &parameters[name].fVal;
 }
 
-void ShaderProperties::setFloat2(const std::string &name, GLfloat _r, GLfloat _g) {
+void ShaderProperties::setFloat2(const std::string &name, GLfloat r, GLfloat g) {
     if (!parameters[name].isSet) parameters[name].isSet = true;
 
-    parameters[name].f2Val[0] = _r;
-    parameters[name].f2Val[1] = _g;
+    parameters[name].f2Val[0] = r;
+    parameters[name].f2Val[1] = g;
     parameters[name].valPtr   = &parameters[name].f2Val[0];
 }
 
-void ShaderProperties::setFloat3(const std::string &name, GLfloat _r, GLfloat _g, GLfloat _b) {
+void ShaderProperties::setFloat3(const std::string &name, GLfloat r, GLfloat g, GLfloat b) {
     if (!parameters[name].isSet) parameters[name].isSet = true;
 
-    parameters[name].f3Val[0] = _r;
-    parameters[name].f3Val[1] = _g;
-    parameters[name].f3Val[2] = _b;
+    parameters[name].f3Val[0] = r;
+    parameters[name].f3Val[1] = g;
+    parameters[name].f3Val[2] = b;
     parameters[name].valPtr   = &parameters[name].f3Val[0];
 }
 
-void ShaderProperties::setFloat4(const std::string &name, GLfloat _r, GLfloat _g, GLfloat _b, GLfloat _a) {
+void ShaderProperties::setFloat4(const std::string &name, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
     if (!parameters[name].isSet) parameters[name].isSet = true;
 
-    parameters[name].f4Val[0] = _r;
-    parameters[name].f4Val[1] = _g;
-    parameters[name].f4Val[2] = _b;
-    parameters[name].f4Val[3] = _a;
+    parameters[name].f4Val[0] = r;
+    parameters[name].f4Val[1] = g;
+    parameters[name].f4Val[2] = b;
+    parameters[name].f4Val[3] = a;
     parameters[name].valPtr   = &parameters[name].f4Val[0];
 }
 

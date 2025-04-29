@@ -15,12 +15,12 @@ public:
 
     void init();
     void resizePBOArray(int nrBufs);
-    void upload(GLuint textureId, void *dataPtr);
+    void upload(GLuint textureId, const void *dataPtr);
     void resize(uint32_t width, uint32_t height, GLenum format);
 
     void setSize(uint32_t width, uint32_t height) {
-        m_width  = width;
-        m_height = height;
+        m_width  = static_cast<GLsizei>(width);
+        m_height = static_cast<GLsizei>(height);
         getDataSize();
     }
 
@@ -36,9 +36,9 @@ public:
 
 private:
     bool     m_inited    = false;
-    uint32_t m_width     = 0;
-    uint32_t m_height    = 0;
-    uint32_t m_nrPboBufs = 3;
+    GLsizei  m_width     = 0;
+    GLsizei  m_height    = 0;
+    GLsizei  m_nrPboBufs = 3;
     uint32_t m_uplIdx    = 0;
     uint32_t m_nextIndex = 0;
     uint32_t m_bitCount  = 0;

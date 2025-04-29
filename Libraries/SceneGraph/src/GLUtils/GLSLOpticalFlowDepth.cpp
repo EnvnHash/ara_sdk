@@ -38,8 +38,8 @@ GLSLOpticalFlowDepth::GLSLOpticalFlowDepth(GLBase* glbase, int width, int height
 }
 
 void GLSLOpticalFlowDepth::update() {
-    m_texture->dst->bind();
-    m_texture->dst->clear();
+    m_texture->m_dst->bind();
+    m_texture->m_dst->clear();
 
     m_flowShader->begin();
     m_flowShader->setIdentMatrix4fv("m_pvm");
@@ -67,7 +67,7 @@ void GLSLOpticalFlowDepth::update() {
 
     m_quad->draw();
 
-    m_texture->dst->unbind();
+    m_texture->m_dst->unbind();
     m_texture->swap();
 }
 
@@ -146,7 +146,7 @@ void GLSLOpticalFlowDepth::initShaders() {
 
     frag = shdr_Header + frag;
 
-    m_flowShader = m_shCol->add("GLSLOpticalFlowDepth", vert.c_str(), frag.c_str());
+    m_flowShader = m_shCol->add("GLSLOpticalFlowDepth", vert, frag);
 }
 
 GLuint GLSLOpticalFlowDepth::getResTexId() {
@@ -154,7 +154,7 @@ GLuint GLSLOpticalFlowDepth::getResTexId() {
 }
 
 GLuint GLSLOpticalFlowDepth::getDiffTexId() {
-    return m_texture->src->getColorImg(1);
+    return m_texture->m_src->getColorImg(1);
 }
 
 }  // namespace ara

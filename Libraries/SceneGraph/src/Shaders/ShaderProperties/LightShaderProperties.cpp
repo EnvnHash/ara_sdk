@@ -118,92 +118,120 @@ std::string LightShaderProperties::getLightParStruct() {
            "};\n";
 }
 
-glm::vec3 LightShaderProperties::getAmbientColor() { return getFloat4("ambientColor"); }
-
-glm::vec3 LightShaderProperties::getColor() { return getFloat4("LColor"); }
-
-glm::vec3 LightShaderProperties::getSpecular() { return getFloat4("LSpecular"); }
-
-glm::vec3 LightShaderProperties::getPosition() { return getFloat4("LPosition"); }
-
-glm::vec3 LightShaderProperties::getDirection() { return getFloat4("LDirection"); }
-
-glm::vec3 LightShaderProperties::getHalfVector() { return getFloat4("halfVector"); }
-
-glm::vec3 LightShaderProperties::getConeDirection() { return getFloat4("coneDirection"); }
-
-glm::vec3 LightShaderProperties::getEyeDirection() { return getFloat4("eyeDirection"); }
-
-GLfloat LightShaderProperties::getSpotCosCutoff() { return getFloat("spotCosCutoff"); }
-
-GLfloat LightShaderProperties::getSpotExponent() { return getFloat("spotExponent"); }
-
-GLfloat LightShaderProperties::getConstantAttenuation() { return getFloat("constantAttenuation"); }
-
-GLfloat LightShaderProperties::getLinearAttenuation() { return getFloat("linearAttenuation"); }
-
-GLfloat LightShaderProperties::getQuadraticAttenuation() { return getFloat("quadraticAttenuation"); }
-
-GLfloat LightShaderProperties::getScaleFactor() { return getFloat("scaleFactor"); }
-
-/*
-void LightShaderProperties::isLocal(bool _b)
-{
-        if (!parTypes[isLoc].isSet)
-                parTypes[isLoc].isSet = true;
-        parTypes[isLoc].bVal = _b;
+vec3 LightShaderProperties::getAmbientColor() {
+    return getFloat4("ambientColor");
 }
 
--
-void LightShaderProperties::isSpot(bool _b)
-{
-        if (!parTypes[isSpt].isSet)
-                parTypes[isSpt].isSet = true;
-        parTypes[isSpt].bVal = _b;
-}
-*/
-
-void LightShaderProperties::setAmbientColor(GLfloat _r, GLfloat _g, GLfloat _b) {
-    setFloat4("ambientColor", _r, _g, _b, 1.f);
+vec3 LightShaderProperties::getColor() {
+    return getFloat4("LColor");
 }
 
-void LightShaderProperties::setColor(GLfloat _r, GLfloat _g, GLfloat _b) { setFloat4("LColor", _r, _g, _b, 1.f); }
-
-void LightShaderProperties::setPosition(GLfloat _x, GLfloat _y, GLfloat _z) { setFloat4("LPosition", _x, _y, _z, 1.f); }
-
-void LightShaderProperties::setDirection(GLfloat _x, GLfloat _y, GLfloat _z) {
-    setFloat4("LDirection", _x, _y, _z, 0.f);
+vec3 LightShaderProperties::getSpecular() {
+    return getFloat4("LSpecular");
 }
 
-void LightShaderProperties::setHalfVector(GLfloat _x, GLfloat _y, GLfloat _z) {
-    setFloat4("halfVector", _x, _y, _z, 0.f);
+vec3 LightShaderProperties::getPosition() {
+    return getFloat4("LPosition");
 }
 
-void LightShaderProperties::setConeDirection(GLfloat _x, GLfloat _y, GLfloat _z) {
-    setFloat4("coneDirection", _x, _y, _z, 0.f);
+vec3 LightShaderProperties::getDirection() {
+    return getFloat4("LDirection");
 }
 
-void LightShaderProperties::setEyeDirection(GLfloat _x, GLfloat _y, GLfloat _z) {
-    setFloat4("eyeDirection", _x, _y, _z, 0.f);
+vec3 LightShaderProperties::getHalfVector() {
+    return getFloat4("halfVector");
 }
 
-void LightShaderProperties::setSpotCosCutoff(GLfloat _val) { setFloat("spotCosCutoff", _val); }
+vec3 LightShaderProperties::getConeDirection() {
+    return getFloat4("coneDirection");
+}
 
-void LightShaderProperties::setSpotExponent(GLfloat _val) { setFloat("spotExponent", _val); }
+vec3 LightShaderProperties::getEyeDirection() {
+    return getFloat4("eyeDirection");
+}
 
-void LightShaderProperties::setConstantAttenuation(GLfloat _val) { setFloat("constantAttenuation", _val); }
+GLfloat LightShaderProperties::getSpotCosCutoff() {
+    return getFloat("spotCosCutoff");
+}
 
-void LightShaderProperties::setLinearAttenuation(GLfloat _val) { setFloat("linearAttenuation", _val); }
+GLfloat LightShaderProperties::getSpotExponent() {
+    return getFloat("spotExponent");
+}
 
-void LightShaderProperties::setQuadraticAttenuation(GLfloat _val) { setFloat("quadraticAttenuation", _val); }
+GLfloat LightShaderProperties::getConstantAttenuation() {
+return getFloat("constantAttenuation"); }
 
-void LightShaderProperties::setScaleFactor(GLfloat _val) { setFloat("scaleFactor", _val); }
+GLfloat LightShaderProperties::getLinearAttenuation() {
+    return getFloat("linearAttenuation");
+}
 
-void LightShaderProperties::setLightMode(GLfloat _val) { setFloat("lightMode", _val); }
+GLfloat LightShaderProperties::getQuadraticAttenuation() {
+    return getFloat("quadraticAttenuation");
+}
 
-glm::vec4 LightShaderProperties::getLightPosition() {
-    return glm::vec4(parameters["LDirection"].f4Val[0], parameters["LDirection"].f4Val[1],
-                     parameters["LDirection"].f4Val[2], parameters["LDirection"].f4Val[3]);
+GLfloat LightShaderProperties::getScaleFactor() {
+    return getFloat("scaleFactor");
+}
+
+void LightShaderProperties::setAmbientColor(GLfloat r, GLfloat g, GLfloat b) {
+    setFloat4("ambientColor", r, g, b, 1.f);
+}
+
+void LightShaderProperties::setColor(GLfloat r, GLfloat g, GLfloat b) {
+    setFloat4("LColor", r, g, b, 1.f);
+}
+
+void LightShaderProperties::setPosition(GLfloat x, GLfloat y, GLfloat z) {
+    setFloat4("LPosition", x, y, z, 1.f);
+}
+
+void LightShaderProperties::setDirection(GLfloat x, GLfloat y, GLfloat z) {
+    setFloat4("LDirection", x, y, z, 0.f);
+}
+
+void LightShaderProperties::setHalfVector(GLfloat x, GLfloat y, GLfloat z) {
+    setFloat4("halfVector", x, y, z, 0.f);
+}
+
+void LightShaderProperties::setConeDirection(GLfloat x, GLfloat y, GLfloat z) {
+    setFloat4("coneDirection", x, y, z, 0.f);
+}
+
+void LightShaderProperties::setEyeDirection(GLfloat x, GLfloat y, GLfloat z) {
+    setFloat4("eyeDirection", x, y, z, 0.f);
+}
+
+void LightShaderProperties::setSpotCosCutoff(GLfloat val) {
+    setFloat("spotCosCutoff", val);
+}
+
+void LightShaderProperties::setSpotExponent(GLfloat val) {
+    setFloat("spotExponent", val);
+}
+
+void LightShaderProperties::setConstantAttenuation(GLfloat val) {
+    setFloat("constantAttenuation", val);
+}
+
+void LightShaderProperties::setLinearAttenuation(GLfloat val) {
+    setFloat("linearAttenuation", val);
+}
+
+void LightShaderProperties::setQuadraticAttenuation(GLfloat val) {
+    setFloat("quadraticAttenuation", val);
+}
+
+void LightShaderProperties::setScaleFactor(GLfloat val) {
+    setFloat("scaleFactor", val);
+}
+
+void LightShaderProperties::setLightMode(GLfloat val) {
+    setFloat("lightMode", val);
+}
+
+vec4 LightShaderProperties::getLightPosition() {
+    return {parameters["LDirection"].f4Val[0], parameters["LDirection"].f4Val[1],
+              parameters["LDirection"].f4Val[2], parameters["LDirection"].f4Val[3]};
 }
 
 GLfloat* LightShaderProperties::getLightPosFv() { return &parameters["LPosition"].f3Val[0]; }
