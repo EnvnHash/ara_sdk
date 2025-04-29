@@ -46,7 +46,7 @@ Texture *TextureCollector::addFromMem(const std::filesystem::path &fileName, con
     });
 }
 
-Texture *TextureCollector::addFromAssetManager(AssetManager *res, const std::string &fn, int mipMapLevel) {
+Texture *TextureCollector::addFromAssetManager(const AssetManager *res, const std::string &fn, int mipMapLevel) {
     return checkForExistence(fn, nullptr, [&]  {
         if (res) {
             std::vector<uint8_t> vp;

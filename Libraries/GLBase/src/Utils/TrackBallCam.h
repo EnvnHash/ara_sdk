@@ -56,7 +56,7 @@ public:
     glm::quat  screen_to_arcball(const glm::vec2 &p);
     void       snapToAxis(snap axis);
     void       fadeTo(double duration);
-    void       fadeTo(glm::vec3 &dstEuler, glm::vec3 &dstTrans, double duration);
+    void       fadeTo(const glm::vec3 & dstEuler, const glm::vec3 & dstTrans, double duration);
     void       modelMatToTrackBallCam(bool updtEuler = true, bool updtPos = true);
     glm::mat4 &lookAtBlend(float p, glm::vec3 *euler = nullptr, glm::vec3 *trans = nullptr);
 
@@ -66,22 +66,19 @@ public:
 
     // mouse interaction
     void mouseDrag(float x, float y, bool shiftPressed, bool altPressed, bool ctrlPressed, glm::vec2 &rotScale);
-    void mouseDownLeft(float x,
-                       float y);         ///> in normalized coordinates [0,1] relative
+    void mouseDownLeft(float x, float y);         ///> in normalized coordinates [0,1] relative
                                          /// to view, [0,0] is left/top
     void mouseUpLeft(float x, float y);  ///> in normalized coordinates [0,1]
                                          /// relative to view, [0,0] is left/top
     void mouseDownMiddle(float x, float y) {
-        m_mbState[(int)mouseButt::middle].pressed = true;
+        m_mbState[static_cast<int>(mouseButt::middle)].pressed = true;
     }  ///> in normalized coordinates [0,1] relative to view, [0,0] is left/top
     void mouseUpMiddle(float x, float y) {
-        m_mbState[(int)mouseButt::middle].pressed = false;
+        m_mbState[static_cast<int>(mouseButt::middle)].pressed = false;
     }  ///> in normalized coordinates [0,1] relative to view, [0,0] is left/top
-    void mouseDownRight(float x,
-                        float y);  ///> in normalized coordinates [0,1] relative
+    void mouseDownRight(float x, float y);  ///> in normalized coordinates [0,1] relative
                                    /// to view, [0,0] is left/top
-    void mouseUpRight(float x,
-                      float y);  ///> in normalized coordinates [0,1]
+    void mouseUpRight(float x, float y);  ///> in normalized coordinates [0,1]
                                  /// relative to view, [0,0] is left/top
     void mouseWheel(float offset);
     bool updateExt(glm::vec3 *trans, glm::vec3 *rot);
@@ -154,6 +151,7 @@ public:
     void addTrackBallUpdtCb(void *name, std::function<void(TbModData &)> f) { m_trackBallUpdtCb[name] = std::move(f); }
     void removeTrackBallUpdtCb(void *name) { m_trackBallUpdtCb[name] = nullptr; }
     void setCamSetUpdtCb(std::function<void()> f) { m_camSetUpdtCb = std::move(f); }
+
     std::function<void()> *getCamSetUpdtCb() { return &m_camSetUpdtCb; }
     void                   removeCamSetUpdtCb() { m_camSetUpdtCb = nullptr; }
     Camera                *getCamera() { return m_camera; }

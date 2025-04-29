@@ -34,25 +34,29 @@ bool DrawManager::rebuildVaos() {
         }
 
         // divVao is arranged as interleave data, so just run through the DivData and upload
-        auto ptr = (DivVaoData *)ds.vao.getMapBuffer(CoordType::Position);
-        if (ptr) {
-            for (auto &it : ds.divData) {
-                std::copy((*it).begin(), (*it).end(), ptr);
-                ptr += it->size();
+        try {
+            auto ptr = (DivVaoData *)ds.vao.getMapBuffer(CoordType::Position);
+            if (ptr) {
+                for (auto &it : ds.divData) {
+                    std::copy((*it).begin(), (*it).end(), ptr);
+                    ptr += it->size();
+                }
+
+                VAO::unMapBuffer();
             }
 
-            VAO::unMapBuffer();
-        }
+            // build the indices
+            auto ip = (GLuint *)ds.vao.mapElementBuffer();
+            if (ip) {
+                for (auto &it : ds.divIndices) {
+                    std::copy(it->begin(), it->end(), ip);
+                    ip += it->size();
+                }
 
-        // build the indices
-        auto ip = (GLuint *)ds.vao.mapElementBuffer();
-        if (ip) {
-            for (auto &it : ds.divIndices) {
-                std::copy(it->begin(), it->end(), ip);
-                ip += it->size();
+                VAO::unMapElementBuffer();
             }
-
-            VAO::unMapElementBuffer();
+        } catch (std::runtime_error& e) {
+            LOGE << e.what();
         }
     }
 
@@ -66,18 +70,22 @@ void DrawManager::update() {
         }
 
         // update VBO
-        auto ptr = static_cast<DivVaoData*>(ds.vao.getMapBuffer(CoordType::Position));
-        if (ptr) {
-            for (auto &it : ds.updtNodes) {
-                ptr += it.second;
-                if (it.first) {
-                    std::copy(it.first->begin(), it.first->end(), ptr);
+        try {
+            auto ptr = static_cast<DivVaoData*>(ds.vao.getMapBuffer(CoordType::Position));
+            if (ptr) {
+                for (auto &it : ds.updtNodes) {
+                    ptr += it.second;
+                    if (it.first) {
+                        std::copy(it.first->begin(), it.first->end(), ptr);
+                    }
+                    ptr -= it.second;
                 }
-                ptr -= it.second;
+                VAO::unMapBuffer();
             }
-            VAO::unMapBuffer();
+            ds.updtNodes.clear();
+        } catch (std::runtime_error& e) {
+            LOGE << e.what();
         }
-        ds.updtNodes.clear();
     }
 }
 

@@ -63,12 +63,12 @@ public:
     GLuint allocate2D(uint32_t w, uint32_t h, GLenum internalGlDataType, GLenum extGlDataType, GLenum textTarget,
                       GLenum pixelType, uint32_t samples = 1, GLboolean fixedsamplelocations = GL_FALSE);
     GLuint gen(GLenum target);
-    void   upload(void *dataPtr);
-    void   upload(void *dataPtr, int width, int height, int depth, int xOffs, int yOffs, int zOffs, GLenum uplFormat = 0, GLenum uplPixType = 0);
+    void   upload(const void *dataPtr) const;
+    void   upload(const void *dataPtr, int width, int height, int depth, int xOffs, int yOffs, int zOffs, GLenum uplFormat = 0, GLenum uplPixType = 0) const;
 
     void setSamplerFiltering(int a_tfMagnification, int a_tfMinification);
     void setFiltering(GLenum magFilter, GLenum minFilter) const;
-    void setWraping(GLenum _wrap) const;
+    void setWraping(GLfloat wrap) const;
     void bind() const;
     void bind(GLuint texUnit) const;
     void bind(GLuint su, GLuint si, GLuint tu);
@@ -84,7 +84,7 @@ public:
 
     static void getGlFormatAndType(GLenum glInternalFormat, GLenum &glFormat, GLenum &type);
 
-    GLfloat *getCoordFromPercent(float xPct, float yPct);
+    [[nodiscard]] glm::vec2 getCoordFromPercent(float xPct, float yPct) const;
 
     std::string         &getFileName() { return m_filename; }
     [[nodiscard]] uint   getMipMapLevels() const { return m_mipmapLevels; }
@@ -117,7 +117,7 @@ public:
 #else
 #ifdef ARA_USE_FREEIMAGE
 
-    void saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, GLenum internalFormat, GLint texNr);
+    static void saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, GLenum internalFormat, GLint texNr);
     void saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf);
     static void saveFrontBuffer(const std::string &filename, int w, int h, int nrChan);
 

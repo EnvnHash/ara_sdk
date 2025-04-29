@@ -536,13 +536,17 @@ void Polygon::extrpSeg(int i, array<vector<CtrlPoint>::const_iterator, 3>& pOffs
 
 // TODO: check for polygons with holes
 void Polygon::updatePosVao(const map<uint32_t, CtrlPoint *> *pointMap) {
-    if (m_vaoFilled.isInited()) {
-        auto ptr = static_cast<vec4 *>(m_vaoFilled.getMapBuffer(CoordType::Position));
-        for (auto &it : *pointMap) {
-            ptr[it.first].x = it.second->position.x;
-            ptr[it.first].y = it.second->position.y;
+    try {
+        if (m_vaoFilled.isInited()) {
+            auto ptr = static_cast<vec4 *>(m_vaoFilled.getMapBuffer(CoordType::Position));
+            for (auto &it : *pointMap) {
+                ptr[it.first].x = it.second->position.x;
+                ptr[it.first].y = it.second->position.y;
+            }
+            VAO::unMapBuffer();
         }
-        ara::VAO::unMapBuffer();
+    } catch(std::runtime_error& e) {
+        LOGE << e.what();
     }
 }
 
