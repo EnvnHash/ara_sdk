@@ -523,16 +523,14 @@ void Polygon::extrpSeg(int i, array<vector<CtrlPoint>::const_iterator, 3>& pOffs
         || (i == 2 && pOffsIt[1]->intrPolMethod == interpolM::CatmullRomCentri)
         || (i == 0 && p1IsCatM))
     {
-        out->at(outIdx[i]).x = pOffsIt[i]->position.x;
-        out->at(outIdx[i]).y = pOffsIt[i]->position.y;
+        out->at(outIdx[i]) = pOffsIt[i]->position;
     } else {
         // in case we are at P3 and this point doesn't use cattmull-rom,
         // extrapolate a new point by mirroring P1 on P2
         auto p2              = polygon.begin() + pOffsIndx[1];
         vec2 extrPolPoint = i == 2 ? (p2->position - point->position) + p2->position
                                     : (point->position - p2->position) + point->position;
-        out->at(outIdx[i]).x = extrPolPoint.x;
-        out->at(outIdx[i]).y = extrPolPoint.y;
+        out->at(outIdx[i]) = extrPolPoint;
     }
 }
 
