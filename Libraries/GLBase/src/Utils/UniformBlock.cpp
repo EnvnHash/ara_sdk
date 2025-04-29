@@ -31,7 +31,7 @@ void UniformBlock::init(GLuint program, const std::string &blockName) {
 
 void UniformBlock::addVarName(const std::string& name, void *inVal, GLenum type) {
     auto it =
-        std::find_if(m_valPairs.begin(), m_valPairs.end(), [name](const ubBlockVar &ub) { return ub.name == name; });
+        std::ranges::find_if(m_valPairs, [name](const ubBlockVar &ub) { return ub.name == name; });
     if (it != m_valPairs.end()) {
         return;
     }
@@ -49,7 +49,7 @@ void UniformBlock::addVarName(const std::string& name, void *inVal, GLenum type)
 
 void UniformBlock::changeVarName(const std::string &name, void *inVal, GLenum type) {
     auto item =
-        std::find_if(m_valPairs.begin(), m_valPairs.end(), [name](const ubBlockVar &it) { return it.name == name; });
+        std::ranges::find_if(m_valPairs, [name](const ubBlockVar &it) { return it.name == name; });
 
     if (item != m_valPairs.end()) {
         item->name   = name;
@@ -67,8 +67,8 @@ void UniformBlock::changeVarName(const std::string &name, void *inVal, GLenum ty
 }
 
 ubBlockVar* UniformBlock::getVar(const std::string &name) {
-    auto it = std::find_if(m_valPairs.begin(), m_valPairs.end(),
-                          [name](const ubBlockVar &ub) { return ub.name == name; });
+    auto it = std::ranges::find_if(m_valPairs,
+                                   [name](const ubBlockVar &ub) { return ub.name == name; });
     return (it != m_valPairs.end() ? &(*it) : nullptr);
 }
 

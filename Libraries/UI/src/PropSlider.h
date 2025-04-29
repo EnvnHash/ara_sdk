@@ -63,20 +63,26 @@ public:
     void setProp(Property<float>* prop) { setProp<float>(prop); }
     void setProp(Property<double>* prop) { setProp<double>(prop); }
     void setProp(Property<glm::vec2>* prop, int idx);
-    void addStyleClass(std::string&& styleClass);
+    void addStyleClass(std::string&& styleClass) override;
 
-    void setLabel(std::string txt) {
-        if (m_label) m_label->setText(txt);
+    void setLabel(const std::string& txt) const {
+        if (m_label) {
+            m_label->setText(txt);
+        }
     }
-    void setUseWheel(bool val) {
-        if (m_Edit) m_Edit->setUseWheel(val);
+    void setUseWheel(bool val) const {
+        if (m_Edit) {
+            m_Edit->setUseWheel(val);
+        }
     }
-    void setPrecision(int prec) {
-        if (m_Edit) m_Edit->setPrecision(prec);
+    void setPrecision(int prec) const {
+        if (m_Edit) {
+            m_Edit->setPrecision(prec);
+        }
     }
     void setSliderOnMouseUpUpdtMode(bool val) { m_onMouseUpUpdtMode = val; }
     void setValueChgCb(const std::function<void()>& f) { m_valChangeCb = f; }
-    UIEdit* getEdit() { return m_Edit; }
+    UIEdit* getEdit() const { return m_Edit; }
 
 private:
     Label*                m_label             = nullptr;

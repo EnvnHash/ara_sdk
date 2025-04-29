@@ -42,7 +42,7 @@ ShadowMapEsm2::ShadowMapEsm2(Camera* _gCam, int _scrWidth, int _scrHeight, vec3 
     vSmapShader +=
         STRINGIFY(layout(location = 0) in vec4 position; layout(location = 4) in mat4 modMatr;
                   uniform int useInstancing; uniform mat4 model_matrix; uniform mat4 view_matrix;
-                  uniform mat4 projection_matrix; out vec4 v_position; mat4 model_view_matrix; void main(void) {
+                  uniform mat4 projection_matrix; out vec4 v_position; mat4 model_view_matrix; void main() {
                       model_view_matrix = view_matrix * (useInstancing == 0 ? model_matrix : modMatr);
                       v_position        = model_view_matrix * position;
                       gl_Position       = projection_matrix * (model_view_matrix * position);

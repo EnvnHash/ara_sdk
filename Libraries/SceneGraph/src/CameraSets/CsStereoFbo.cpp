@@ -502,9 +502,13 @@ void CsStereoFbo::rebuildFbo() {
         m_fbo.setGlbase(m_glbase);
         m_fbo.init();
 
-        if (!s_updtCb.empty())
-            for (auto& cbList : s_updtCb)
-                for (auto& cb : cbList.second) cb();
+        if (!s_updtCb.empty()) {
+            for (const auto& cbList : s_updtCb | views::values) {
+                for (const auto& cb : cbList) {
+                    cb();
+                }
+            }
+        }
     }
 }
 
@@ -534,7 +538,9 @@ void CsStereoFbo::clearScreen(renderPass pass) {
         m_fbo.unbind();
 
     } else if (pass == GLSG_SHADOW_MAP_PASS || pass == GLSG_OBJECT_MAP_PASS) {
-        for (auto& it : s_shaderProto) it.second->clear(pass);
+        for (const auto& it : s_shaderProto) {
+            it.second->clear(pass);
+        }
     }
 }
 
@@ -820,24 +826,31 @@ glm::vec3 CsStereoFbo::getPlaneNormal(ArSession* ar_session, ArPose* plane_pose)
 
 #endif
 
-void CsStereoFbo::postRender(renderPass _pass, float* extDrawMatr /*, float* extViewport*/) {
-    for (auto& it : s_shaderProto) it.second->postRender(_pass);
+void CsStereoFbo::postRender(renderPass pass, float* extDrawMatr) {
+    for (const auto& it : s_shaderProto | views::values) {
+        it->postRender(pass);
+    }
 
-    if (_pass == GLSG_SCENE_PASS) renderFbos(extDrawMatr /*, extViewport*/);
+    if (pass == GLSG_SCENE_PASS) {
+        renderFbos(extDrawMatr);
+    }
 }
 
-void CsStereoFbo::renderFbos(float* extDrawMatr /*, float* extViewport*/) {
-    if (m_viewMode == CsStereoViewMode::Stereo) glClear(GL_COLOR_BUFFER_BIT);
+void CsStereoFbo::renderFbos(float* extDrawMatr) {
+    if (m_viewMode == CsStereoViewMode::Stereo) {
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
     m_layerTexShdr->begin();
 
-    if (extDrawMatr)
+    if (extDrawMatr) {
         m_layerTexShdr->setUniformMatrix4fv("m_pvm", extDrawMatr);
-    else
+    } else {
         m_layerTexShdr->setIdentMatrix4fv("m_pvm");
+    }
 
     m_layerTexShdr->setUniform1i("tex", 0);
     m_layerTexShdr->setUniform1i("useBorder", 0);
@@ -849,20 +862,17 @@ void CsStereoFbo::renderFbos(float* extDrawMatr /*, float* extViewport*/) {
 #endif
 
     m_layerTexShdr->setUniform1f("stereoAsp", m_stereoViewAspect);
-    m_layerTexShdr->setUniform1i("viewMode", (int)m_viewMode);
+    m_layerTexShdr->setUniform1i("viewMode", static_cast<int>(m_viewMode));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_fbo.getColorImg());
 
     if (m_viewMode == CsStereoViewMode::Stereo) {
         for (GLsizei i = 0; i < s_cam.size(); i++) {
-            m_layerTexShdr->setUniform1f("layerNr", (float)i);
+            m_layerTexShdr->setUniform1f("layerNr", static_cast<float>(i));
             m_layerTexShdr->setUniform2f("centre", !i ? 0.1f : -0.1f, 0.0f);
             m_layerTexShdr->setUniformMatrix4fv("trans", m_stereoRenderer.getEyeLensTrans((StereoEye)i));
             m_quad->draw();
-
-            // m_stereoRenderer.getVao(i).drawElements(GL_TRIANGLE_STRIP);
-            // m_stereoRenderer.getVao(i).drawElements(GL_TRIANGLE_STRIP);
         }
     } else {
         m_layerTexShdr->setUniform1f("layerNr", 0.f);
@@ -875,12 +885,12 @@ void CsStereoFbo::setViewport(uint x, uint y, uint width, uint height, bool resi
     CameraSet::setViewport(x, y, width, height, resizeProto);
 
     int i = 0;
-    for (auto& c : s_cam) {
-        if (c.first) {
-            c.first->setViewport({i * width / 2, 0, width / 2, height});
-            c.first->setScreenSize(width / 2, height);
+    for (const auto& c : s_cam | views::keys) {
+        if (c) {
+            c->setViewport({i * width / 2, 0, width / 2, height});
+            c->setScreenSize(width / 2, height);
         }
-        i++;
+        ++i;
     }
 
     rebuildFbo();

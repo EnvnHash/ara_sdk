@@ -306,7 +306,7 @@ void Image::updateDrawData() {
         auto dIt = m_imgDB.vaoData.begin();
 
         // pre calculate texture coordinates
-        for (auto& it : stdQuadVertices) {
+        for (const auto& it : stdQuadVertices) {
             if (m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) {
                 v = it * (m_size - static_cast<float>(m_borderWidth) * 2.f);
             } else {
@@ -367,7 +367,7 @@ void Image::updateDrawData() {
         m_divRefSize[1] *= -1.f;
 
         int j = 0;
-        for (auto& it : stdQuadVertices) {
+        for (const auto& it : stdQuadVertices) {
             // since scissoring can't be used in indirect draw mode, it has to be done at this point by adjusting
             // positions and texture coordinates
             limitDrawVaoToBounds(dIt, m_divRefSize, m_uvDiff, m_scIndDraw, m_viewPort);  // scissoring

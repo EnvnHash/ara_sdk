@@ -41,10 +41,10 @@ public:
     void                     changeVarName(const std::string &name, void *inVal, GLenum type);
     void                     update();
     static std::size_t       TypeSize(GLenum type);
-    bool                     isInited() { return m_inited; }
+    [[nodiscard]] bool       isInited() const { return m_inited; }
     std::vector<ubBlockVar> *getValPairs() { return &m_valPairs; }
     ubBlockVar              *getVar(const std::string &name);
-    GLuint                   getProgram() { return m_program; }
+    [[nodiscard]] GLuint     getProgram() const { return m_program; }
 
 private:
     std::vector<ubBlockVar> m_valPairs;

@@ -58,29 +58,24 @@ public:
     bool Process(Font *font, const glm::vec2 &size, const glm::vec2 &sep, align text_align_x, const std::string &str,
                  bool word_wrap);  // text_align : see e_fontalign
 
-    unsigned  calculateBoundingBoxHwp(glm::vec4 &bb);  // bb vec4 / [x1,y1,x2,y2]
-    unsigned  calculateBoundingBox(glm::vec4 &bb);     // bb vec4 / [x1,y1,x2,y2]
-    glm::vec4 calculateBoundingBoxHwp();
-
-    glm::vec2 getPixSize();  ///> in virtual pixels
-    glm::vec2 getPixSizeHwp();
-
-    void         reset(const Font *font);
-    e_fontdglyph findByCharIndex(int idx);
-
-    int        getLineIndexByPixPos(float pix_x, float pix_y, float off_x,
-                                    float off_y);      // returns -1 : before, -2 : beyond
-    int        getLineIndexByCharIndex(int ch_index);  // returns -1 if not found
-    int        getCharIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y,
-                                    int &off_bound);  // off_bound==-1 : before, off_bound=1 beyond
-    glm::vec2 &getCaretPos(glm::vec2 &pos, int caret_index);
+    unsigned        calculateBoundingBoxHwp(glm::vec4 &bb);  // bb vec4 / [x1,y1,x2,y2]
+    unsigned        calculateBoundingBox(glm::vec4 &bb);     // bb vec4 / [x1,y1,x2,y2]
+    glm::vec4       calculateBoundingBoxHwp();
+    glm::vec2       getPixSize();  ///> in virtual pixels
+    glm::vec2       getPixSizeHwp();
+    void            reset(const Font *font);
+    e_fontdglyph    findByCharIndex(int idx);
+    int             getLineIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y);      // returns -1 : before, -2 : beyond
+    int             getLineIndexByCharIndex(int ch_index);  // returns -1 if not found
+    int             getCharIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y, int &off_bound);  // off_bound==-1 : before, off_bound=1 beyond
+    glm::vec2      &getCaretPos(glm::vec2 &pos, int caret_index);
 
     int jumpToLine(int caret_index, int line_delta);// returns new caret position, on error returns caret_index
     int jumpToBeginOfLine(int caret_index);         // returns new caret position, on error returns caret_index
     int jumpToEndOfLine(int caret_index);           // returns new caret position, on error returns caret_index
 
     [[nodiscard]] size_t size() const { return v.size(); }
-    e_fontdglyph        &operator[](size_t index) { return v[index]; }
+    e_fontdglyph &operator[](size_t index) { return v[index]; }
 
     std::vector<e_fontdglyph> v;
     std::vector<e_fontline>   vline;
@@ -89,7 +84,7 @@ public:
     void  setPixRatio(float pixRatio) { m_pixRatio = pixRatio; }
     float getRightLimit() { return (v.back().opos[0] + v.back().osize[0]) / m_pixRatio; }
 
-    static int codepoint(std::string u);
+    static int codepoint(const std::string& u);
 
 private:
     float     m_PixVMetrics[3] = {0, 0, 0};  // [0]:ascent,[1]:descent,[2]:lineGap

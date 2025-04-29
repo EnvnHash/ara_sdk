@@ -7,7 +7,6 @@ namespace ara {
 class CoordGridGen {
 public:
     CoordGridGen(glm::ivec2 texSize);
-
     ~CoordGridGen() = default;
 
     Shaders *initCoordGenShader();

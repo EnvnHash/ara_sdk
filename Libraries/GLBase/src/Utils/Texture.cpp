@@ -15,6 +15,7 @@ namespace fs = std::filesystem;
 #endif
 
 using namespace std;
+using namespace glm;
 
 namespace ara {
 
@@ -199,9 +200,8 @@ GLuint Texture::loadFromFib(FIBITMAP *pBitmap, GLenum _textTarget, int nrMipMaps
     width                           = FreeImage_GetWidth(pBitmap);
     height                          = FreeImage_GetHeight(pBitmap);
     BPP                             = FreeImage_GetBPP(pBitmap);
-    FREE_IMAGE_COLOR_TYPE colorType = FreeImage_GetColorType(pBitmap);
 
-    switch (colorType) {
+    switch (FREE_IMAGE_COLOR_TYPE colorType = FreeImage_GetColorType(pBitmap)) {
         case FIC_MINISBLACK:
             m_texData.nrChan         = 1;
             m_texData.format         = GL_RED;
@@ -263,29 +263,31 @@ GLuint Texture::loadFromFib(FIBITMAP *pBitmap, GLenum _textTarget, int nrMipMaps
 
     // mipmap levels may have to limited in order to be not smaller than 1
     if (generateMips) {
-        m_mipmapLevels = std::min(m_mipmapLevels, (uint)std::log2(std::max(m_texData.width, m_texData.height)));
+        m_mipmapLevels = std::min(m_mipmapLevels, static_cast<uint>(std::log2(std::max(m_texData.width, m_texData.height))));
     }
 
     // if the texture is a cube map, cut the input file according to a standard cubemap separation
     if (m_texData.target == GL_TEXTURE_CUBE_MAP) {
         array<FIBITMAP *, 6> faceDataBM{nullptr};
 
-        int stepX     = m_texData.width / 4;
-        int stepY     = m_texData.height / 3;
-        int pos[6][4] = {
-            {stepX * 2, stepY, stepX * 3, stepY * 2},  // 0: positive-x
-            {0, stepY, stepX, stepY * 2},              // 1: negative-x
-            {stepX, 0, stepX * 2, stepY},              // 3: negative-y
-            {stepX, stepY * 2, stepX * 2, stepY * 3},  // 2: positive-y
-            {stepX, stepY, stepX * 2, stepY * 2},      // 4: positive-z
-            {stepX * 3, stepY, stepX * 4, stepY * 2}   // 5: negative-z
+        auto stepX     = m_texData.width / 4;
+        auto stepY     = m_texData.height / 3;
+        std::array pos {
+            ivec4{stepX * 2, stepY, stepX * 3, stepY * 2},  // 0: positive-x
+            ivec4{0, stepY, stepX, stepY * 2},              // 1: negative-x
+            ivec4{stepX, 0, stepX * 2, stepY},              // 3: negative-y
+            ivec4{stepX, stepY * 2, stepX * 2, stepY * 3},  // 2: positive-y
+            ivec4{stepX, stepY, stepX * 2, stepY * 2},      // 4: positive-z
+            ivec4{stepX * 3, stepY, stepX * 4, stepY * 2}   // 5: negative-z
         };
 
         for (auto face = 0; face < 6; face++) {
             faceDataBM[face] = FreeImage_Copy(pBitmap, pos[face][0], pos[face][1], pos[face][2], pos[face][3]);
             FreeImage_FlipVertical(faceDataBM[face]);
 
-            if (!faceDataBM[face]) LOGE << "Texture: cube texture separation failed at nr: " << face;
+            if (!faceDataBM[face]) {
+                LOGE << "Texture: cube texture separation failed at nr: " << face;
+            }
 
             m_texData.faceData[face] = FreeImage_GetBits(faceDataBM[face]);
         }
@@ -533,11 +535,20 @@ GLuint Texture::procTextureData() {
     return m_texData.textureID;
 }
 
+void Texture::genTexture(GLuint& id) {
+    if (id) {
+        glDeleteTextures(1, &id);
+    }
+
+    glGenTextures(1, &id);  // could be more than one, but for now, just one
+    glBindTexture(m_texData.target, id);
+}
+
 #if !defined(__EMSCRIPTEN__) && !defined(ARA_USE_GLES31)
 GLuint Texture::allocate1D(uint w, GLenum internalGlDataType, GLenum extGlDataType, GLenum pixelType) {
     // m_texData.width = std::min<uint>(w, (uint)maxTexSize);
     m_texData.width          = w;
-    m_texData.tex_t          = (float)w / (float)m_texData.width;
+    m_texData.tex_t          = static_cast<float>(w) / static_cast<float>(m_texData.width);
     m_texData.target         = GL_TEXTURE_1D;
     m_texData.internalFormat = internalGlDataType;
     m_texData.format         = extGlDataType;
@@ -547,7 +558,7 @@ GLuint Texture::allocate1D(uint w, GLenum internalGlDataType, GLenum extGlDataTy
         glDeleteTextures(1, (GLuint *)&m_texData.textureID);
     }
 
-    glGenTextures(1, (GLuint *)&m_texData.textureID);  // could be more then one, but for now, just one
+    glGenTextures(1, (GLuint *)&m_texData.textureID);  // could be more than one, but for now, just one
     glBindTexture(m_texData.target, (GLuint)m_texData.textureID);
 
     // define immutable storage space. best practise since opengl hereby stops
@@ -557,8 +568,7 @@ GLuint Texture::allocate1D(uint w, GLenum internalGlDataType, GLenum extGlDataTy
     int nrChans = m_texData.internalFormat == GL_RGBA8  ? 4
                   : m_texData.internalFormat == GL_RGB8 ? 3
                   : m_texData.internalFormat == GL_RG8  ? 2
-                  : m_texData.internalFormat == GL_R8   ? 1
-                                                        : 1;
+                  : m_texData.internalFormat == GL_R8   ? 1 : 1;
 
     vector<float> nullImg(m_texData.width * nrChans);
 
@@ -594,12 +604,7 @@ GLuint Texture::allocate3D(uint w, uint h, uint d, GLenum internalGlDataType, GL
                              4);  // make an array with initial zero data, ...don't care about the
                                   // number of channel, just make it big enough
 
-    if (m_texData.textureID) {
-        glDeleteTextures(1, (GLuint *)&m_texData.textureID);
-    }
-
-    glGenTextures(1, (GLuint *)&m_texData.textureID);  // could be more then one, but for now, just one
-    glBindTexture(m_texData.target, (GLuint)m_texData.textureID);
+    genTexture(m_texData.textureID);
 
     // define immutable storage space. best practise since opengl hereby stops
     // tracking certain features
@@ -621,8 +626,8 @@ GLuint Texture::allocate2D(uint w, uint h, GLenum internalGlDataType, GLenum ext
     m_texData.width  = w;
     m_texData.height = h;
 
-    m_texData.tex_t                = (float)m_texData.width / (float)m_texData.width;
-    m_texData.tex_u                = (float)m_texData.height / (float)m_texData.height;
+    m_texData.tex_t                = static_cast<float>(m_texData.width) / static_cast<float>(m_texData.width);
+    m_texData.tex_u                = static_cast<float>(m_texData.height) / static_cast<float>(m_texData.height);
     m_texData.target               = textTarget;
     m_texData.internalFormat       = internalGlDataType;
     m_texData.format               = extGlDataType;
@@ -634,7 +639,7 @@ GLuint Texture::allocate2D(uint w, uint h, GLenum internalGlDataType, GLenum ext
         glDeleteTextures(1, (GLuint *)&m_texData.textureID);
     }
 
-    glGenTextures(1, (GLuint *)&m_texData.textureID);  // could be more then one, but for now, just one
+    glGenTextures(1, (GLuint *)&m_texData.textureID);  // could be more than one, but for now, just one
     glBindTexture(m_texData.target, (GLuint)m_texData.textureID);
 
 #ifndef __EMSCRIPTEN__
@@ -730,16 +735,13 @@ GLuint Texture::gen(GLenum target) {
         glDeleteTextures(1, &m_texData.textureID);
     }
 
-    glGenTextures(1,
-                  &m_texData.textureID);  // could be more then one, but for now, just one
+    glGenTextures(1, &m_texData.textureID);  // could be more than one, but for now, just one
     glBindTexture(m_texData.target, m_texData.textureID);
 
     return (GLuint)m_texData.textureID;
 }
 
-void Texture::upload(void *dataPtr) {
-    int mimapLevels = 1;
-
+void Texture::upload(const void *dataPtr) const {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
@@ -776,7 +778,7 @@ void Texture::upload(void *dataPtr) {
     glBindTexture(m_texData.target, 0);
 }
 
-void Texture::upload(void *dataPtr, int width, int height, int depth, int xOffs, int yOffs, int zOffs, GLenum uplFormat, GLenum uplPixType) {
+void Texture::upload(const void *dataPtr, int width, int height, int depth, int xOffs, int yOffs, int zOffs, GLenum uplFormat, GLenum uplPixType) const {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
@@ -864,12 +866,12 @@ void Texture::setFiltering(GLenum magFilter, GLenum minFilter) const {
     }
 }
 
-void Texture::setWraping(GLenum _wrap) const {
+void Texture::setWraping(GLfloat wrap) const {
     // Set magnification filter
     glBindTexture(m_texData.target, m_texData.textureID);
 
-    glTexParameterf(m_texData.target, GL_TEXTURE_WRAP_S, (float)_wrap);
-    glTexParameterf(m_texData.target, GL_TEXTURE_WRAP_T, (float)_wrap);
+    glTexParameterf(m_texData.target, GL_TEXTURE_WRAP_S, wrap);
+    glTexParameterf(m_texData.target, GL_TEXTURE_WRAP_T, wrap);
 }
 
 void Texture::bind() const {
@@ -1011,25 +1013,28 @@ void Texture::getGlFormatAndType(GLenum glInternalFormat, GLenum &glFormat, GLen
     }
 }
 
-GLfloat *Texture::getCoordFromPercent(float xPct, float yPct) {
-    auto *temp = new GLfloat[2];
+vec2 Texture::getCoordFromPercent(float xPct, float yPct) const {
+    vec2 temp{};
 
-    if (!m_texData.bAllocated) return temp;
+    if (!m_texData.bAllocated) {
+        return temp;
+    }
 
 #ifndef ARA_USE_GLES31
     if (m_texData.target == GL_TEXTURE_RECTANGLE) {
-        temp[0] = xPct * m_texData.width;
-        temp[1] = yPct * m_texData.height;
+        temp.x = xPct * m_texData.width;
+        temp.y = yPct * m_texData.height;
     } else {
 #endif
         xPct *= m_texData.tex_t;
         yPct *= m_texData.tex_u;
-        temp[0] = xPct;
-        temp[1] = yPct;
+        temp.x = xPct;
+        temp.y = yPct;
 #ifndef ARA_USE_GLES31
     }
 #endif
-    return temp;
+
+        return temp;
 }
 
 #ifdef __EMSCRIPTEN__
@@ -1120,7 +1125,7 @@ void Texture::saveTexToFile2D(const char *_filename, FREE_IMAGE_FORMAT _filetype
             }
 
             if (bitmap) {
-                GLubyte *bits = (GLubyte *)FreeImage_GetBits(bitmap);
+                auto bits = (GLubyte *)FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
                 glesGetTexImage(_texNr, GL_TEXTURE_2D, format, GL_UNSIGNED_SHORT, w, h, bits);
 #else

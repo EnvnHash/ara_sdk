@@ -58,7 +58,7 @@ public:
     bool         draw(double time, double dt, int ctxNr) override;
     virtual void drawNodeTree();
 
-    void copyToScreen();
+    void copyToScreen() const;
     void update();
     void iterate();
 
@@ -68,7 +68,7 @@ public:
     void getActualMonitorMaxArea(int win_xpos, int win_ypos);
 
 #ifdef _WIN32
-    std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC>& allowedSuffix);
+    std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC>& allowedSuffix) const;
     std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes);
 #elif defined(__linux__) && !defined(__ANDROID__)
     std::string OpenFileDialog(std::vector<const char*>& allowedSuffix) {

@@ -222,7 +222,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
                 rightLimit = m_FontDGV.getRightLimit();
 
                 // sum up char until the max bounds is reached
-                for (auto& g : m_FontDGV.v)
+                for (const auto& g : m_FontDGV.v)
                     if (g.gptr) {
                         if (hasOpt(end_ellipsis)) {
                             if (g.getRightLimit() > limit) {
@@ -420,7 +420,7 @@ void Label::prepareVao(bool checkFontTex) {
         size_t elmInd = 0;
         for (e_fontdglyph& g : m_FontDGV.v) {
             if (g.gptr) {
-                for (auto& v : m_vtxPos) {
+                for (const auto& v : m_vtxPos) {
                     tuv                = glm::floor(m_bo + g.opos + v * g.osize);
                     m_positions[ind].x = tuv.x;
                     m_positions[ind].y = tuv.y;
@@ -478,7 +478,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
             continue;
         }
 
-        for (auto& v : stdQuadVertices) {
+        for (const auto& v : stdQuadVertices) {
             if (ld == m_lblDB.vaoData.end()) {
                 break;
             }
@@ -510,7 +510,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
         m_charSizePix = g.osize / getWindow()->getPixelRatio();
 
         int i = 0;
-        for (auto& v : stdQuadVertices) {
+        for (const auto& v : stdQuadVertices) {
             if (ld == m_lblDB.vaoData.end()) {
                 break;
             }

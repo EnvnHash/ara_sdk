@@ -59,8 +59,8 @@ public:
     //	void setUpStd();
     //	void isLocal(bool _b);
     //	void isSpot(bool _b);
-    void setAmbientColor(GLfloat _r, GLfloat _g, GLfloat _b);
-    void setColor(GLfloat _r, GLfloat _g, GLfloat _b);
+    void setAmbientColor(GLfloat r, GLfloat g, GLfloat b);
+    void setColor(GLfloat r, GLfloat g, GLfloat b);
     void setPosition(GLfloat _x, GLfloat _y, GLfloat _z);
     void setDirection(GLfloat _x, GLfloat _y, GLfloat _z);
     void setHalfVector(GLfloat _x, GLfloat _y, GLfloat _z);

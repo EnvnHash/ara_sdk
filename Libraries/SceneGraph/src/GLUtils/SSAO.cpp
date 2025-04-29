@@ -33,11 +33,7 @@ SSAO::SSAO(GLBase* glbase, uint inFboWidth, uint inFboHeight, AlgorithmType _alg
 
     shCol   = &m_glbase->shaderCollector();
     texShdr = m_glbase->shaderCollector().getStdTexAlpha(samples > 1 ? true : false);
-
-    if (samples > 1)
-        texNoAlpha = m_glbase->shaderCollector().getStdTexMulti();
-    else
-        texNoAlpha = m_glbase->shaderCollector().getStdTex();
+    texNoAlpha = samples > 1 ? m_glbase->shaderCollector().getStdTexMulti() : m_glbase->shaderCollector().getStdTex();
 
     initShaders();
     initMisc();
@@ -77,46 +73,46 @@ void SSAO::initShaders() {
     initBilateralblur();
 
     std::string frag = initDepthLinearize(0);
-    depth_linearize  = shCol->add("SSAODepth_linearize", fullScrQuad.c_str(), frag.c_str());
+    depth_linearize  = shCol->add("SSAODepth_linearize", fullScrQuad, frag);
 
     frag                 = initDepthLinearize(1);
-    depth_linearize_msaa = shCol->add("SSAODepth_linearize_msaa", fullScrQuad.c_str(), frag.c_str());
+    depth_linearize_msaa = shCol->add("SSAODepth_linearize_msaa", fullScrQuad, frag);
 
     initViewNormal();
 
     frag      = initHbaoCalc(0, 0);
-    hbao_calc = shCol->add("SSAOHBAO_Calc", fullScrQuad.c_str(), frag.c_str());
+    hbao_calc = shCol->add("SSAOHBAO_Calc", fullScrQuad, frag);
 
     frag           = initHbaoCalc(1, 0);
-    hbao_calc_blur = shCol->add("SSAOHBAO_Calc_Blur", fullScrQuad.c_str(), frag.c_str());
+    hbao_calc_blur = shCol->add("SSAOHBAO_Calc_Blur", fullScrQuad, frag);
 
     frag      = initHbaoBlur(0);
-    hbao_blur = shCol->add("SSAOHBAO_Blur", fullScrQuad.c_str(), frag.c_str());
+    hbao_blur = shCol->add("SSAOHBAO_Blur", fullScrQuad, frag);
 
     frag       = initHbaoBlur(1);
-    hbao_blur2 = shCol->add("SSAOHBAO_BlurMsaa", fullScrQuad.c_str(), frag.c_str());
+    hbao_blur2 = shCol->add("SSAOHBAO_BlurMsaa", fullScrQuad, frag);
 
     frag = initHbaoCalc(0, 1);
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_GS
-    hbao2_calc = shCol->add("SSAOHBAO2_Calc", fullScrQuad.c_str(), fullScrQuadGeo.c_str(), frag.c_str());
+    hbao2_calc = shCol->add("SSAOHBAO2_Calc", fullScrQuad, fullScrQuadGeo, frag);
 #else
-    hbao2_calc = m_shCol->add("SSAOHBAO2_Calc", fullScrQuad.c_str(), frag.c_str());
+    hbao2_calc = m_shCol->add("SSAOHBAO2_Calc", fullScrQuad, frag);
 #endif
 
     frag = initHbaoCalc(1, 1);
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_GS
-    hbao2_calc_blur = shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad.c_str(), fullScrQuadGeo.c_str(), frag.c_str());
+    hbao2_calc_blur = shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad, fullScrQuadGeo, frag);
 #else
-    hbao2_calc_blur = m_shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad.c_str(), frag.c_str());
+    hbao2_calc_blur = m_shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad, frag);
 #endif
 
     initDeinterleave();
 
     frag               = initReinterleave(0);
-    hbao2_reinterleave = shCol->add("SSAOHBAO2_Reinterleave", fullScrQuad.c_str(), frag.c_str());
+    hbao2_reinterleave = shCol->add("SSAOHBAO2_Reinterleave", fullScrQuad, frag);
 
     frag                    = initReinterleave(1);
-    hbao2_reinterleave_blur = shCol->add("SSAOHBAO2_ReinterleaveBlur", fullScrQuad.c_str(), frag.c_str());
+    hbao2_reinterleave_blur = shCol->add("SSAOHBAO2_ReinterleaveBlur", fullScrQuad, frag);
 
     debugDepth = initDebugDepth();
 }
@@ -136,7 +132,7 @@ ara::Shaders* SSAO::initDebugDepth() {
                                  in vec2 tex_coord; void main() { color = texture(tex, tex_coord) * 0.1; });
     frag             = "// debug depth shader, frag\n" + shdr_Header + frag;
 
-    return shCol->add("SSaoDebugDepth", vert.c_str(), frag.c_str());
+    return shCol->add("SSaoDebugDepth", vert, frag);
 }
 
 void SSAO::initFullScrQuad() {
@@ -232,7 +228,7 @@ void SSAO::initBilateralblur() {
 
     frag = "// SSAO Bilateralblur Shader vertex shader\n" + shdr_Header + frag;
 
-    bilateralblur = shCol->add("SSAOBilateralblur", fullScrQuad.c_str(), frag.c_str());
+    bilateralblur = shCol->add("SSAOBilateralblur", fullScrQuad, frag);
 }
 
 std::string SSAO::initDepthLinearize(int msaa) {
@@ -319,7 +315,7 @@ void SSAO::initViewNormal()
 
         frag = "// SSAO View Normal vertex shader\n" + shdr_Header + frag;
 
-        viewnormal = shCol->add("SSAOViewNormal", fullScrQuad.c_str(), frag.c_str());
+        viewnormal = shCol->add("SSAOViewNormal", fullScrQuad, frag);
 }
 
 std::string SSAO::initHbaoCalc(int _blur, int deinterl)
@@ -657,891 +653,861 @@ std::string SSAO::initHbaoBlur(int _blur)
 
 void SSAO::initDeinterleave()
 {
-                std::string frag = STRINGIFY(layout(location = 0) uniform vec4 info;  // xy
-                                             vec2 uvOffset = info.xy; vec2 invResolution = info.zw;
+    std::string frag = STRINGIFY(layout(location = 0) uniform vec4 info;  // xy
+                                 vec2 uvOffset = info.xy; vec2 invResolution = info.zw;
 
-                                             layout(binding = 0) uniform sampler2D     texLinearDepth;
-                                             layout(location = 0, index = 0) out float out_Color[8];\n
+                                 layout(binding = 0) uniform sampler2D     texLinearDepth;
+                                 layout(location = 0, index = 0) out float out_Color[8];\n
 
-                                             void main() {
-                                                 vec2 uv = floor(gl_FragCoord.xy) * 4.0 + uvOffset + 0.5;
-                                                 uv *= invResolution;
+                                 void main() {
+                                     vec2 uv = floor(gl_FragCoord.xy) * 4.0 + uvOffset + 0.5;
+                                     uv *= invResolution;
 
-                                                 vec4 S0 = textureGather(texLinearDepth, uv, 0);
-                                                 vec4 S1 = textureGatherOffset(texLinearDepth, uv, ivec2(2, 0), 0);
+                                     vec4 S0 = textureGather(texLinearDepth, uv, 0);
+                                     vec4 S1 = textureGatherOffset(texLinearDepth, uv, ivec2(2, 0), 0);
 
-                                                 out_Color[0] = S0.w;
-                                                 out_Color[1] = S0.z;
-                                                 out_Color[2] = S1.w;
-                                                 out_Color[3] = S1.z;
-                                                 out_Color[4] = S0.x;
-                                                 out_Color[5] = S0.y;
-                                                 out_Color[6] = S1.x;
-                                                 out_Color[7] = S1.y;
-                                             });
+                                     out_Color[0] = S0.w;
+                                     out_Color[1] = S0.z;
+                                     out_Color[2] = S1.w;
+                                     out_Color[3] = S1.z;
+                                     out_Color[4] = S0.x;
+                                     out_Color[5] = S0.y;
+                                     out_Color[6] = S1.x;
+                                     out_Color[7] = S1.y;
+                                 });
 
-                frag = "// SSAO Deinterleave shader\n" + shdr_Header + frag;
+    frag = "// SSAO Deinterleave shader\n" + shdr_Header + frag;
 
-                hbao2_deinterleave = shCol->add("SSAO_HBAO2_deinterleave", fullScrQuad.c_str(), frag.c_str());
+    hbao2_deinterleave = shCol->add("SSAO_HBAO2_deinterleave", fullScrQuad, frag);
 }
 
-std::string SSAO::initReinterleave(int _blur)
-{
-                std::string add_shdr_Header = "#define AO_BLUR " + std::to_string(_blur) + "\n";
-                std::string frag            = "#ifndef AO_BLUR\n";
-                frag += "#define AO_BLUR 1\n";
-                frag += "#endif\n";
+std::string SSAO::initReinterleave(int _blur) {
+    std::string add_shdr_Header = "#define AO_BLUR " + std::to_string(_blur) + "\n";
+    std::string frag            = "#ifndef AO_BLUR\n";
+    frag += "#define AO_BLUR 1\n";
+    frag += "#endif\n";
 
-        frag += STRINGIFY(
-		layout(binding=0) uniform sampler2DArray texResultsArray;\n
-		layout(location=0,index=0) out vec4 out_Color;\n
+    frag += STRINGIFY(
+        layout(binding=0) uniform sampler2DArray texResultsArray;\n
+        layout(location=0,index=0) out vec4 out_Color;\n
 
-		void main() {
-                    \n ivec2 FullResPos    = ivec2(gl_FragCoord.xy);
-                    \n ivec2 Offset        = FullResPos & 3;
-                    \n int   SliceId       = Offset.y * 4 + Offset.x;
-                    \n ivec2 QuarterResPos = FullResPos >> 2;\n
-	);
+        void main() {\n
+            ivec2 FullResPos    = ivec2(gl_FragCoord.xy);\n
+            ivec2 Offset        = FullResPos & 3;\n
+            int   SliceId       = Offset.y * 4 + Offset.x;
+            \n ivec2 QuarterResPos = FullResPos >> 2;\n
+    );
 
-                    frag += "#if AO_BLUR\n";
-                    frag +=
-                        "out_Color = vec4(texelFetch( texResultsArray, "
-                        "ivec3(QuarterResPos, SliceId), 0).xy,0,0);\n";
-                    frag += "#else\n";
-                    frag +=
-                        "out_Color = vec4(texelFetch( texResultsArray, "
-                        "ivec3(QuarterResPos, SliceId), 0).x);\n";
-                    frag += "#endif\n}";
+    frag += "#if AO_BLUR\n";
+    frag +=
+        "out_Color = vec4(texelFetch( texResultsArray, "
+        "ivec3(QuarterResPos, SliceId), 0).xy,0,0);\n";
+    frag += "#else\n";
+    frag +=
+        "out_Color = vec4(texelFetch( texResultsArray, "
+        "ivec3(QuarterResPos, SliceId), 0).x);\n";
+    frag += "#endif\n}";
 
-                    frag = "// SSAO Reinterleave Shader frag shader\n" + shdr_Header + add_shdr_Header + frag;
+    frag = "// SSAO Reinterleave Shader frag shader\n" + shdr_Header + add_shdr_Header + frag;
 
-                    return frag;
+    return frag;
 }
 
+bool SSAO::initMisc() {
+    MTRand rng;
+    float  numDir = 8;  // keep in sync to glsl
+    rng.seed((unsigned)0);
 
-bool SSAO::initMisc()
-{
-                    MTRand rng;
-                    float  numDir = 8;  // keep in sync to glsl
-                    rng.seed((unsigned)0);
+    signed short hbaoRandomShort[HBAO_RANDOM_ELEMENTS * MAX_SAMPLES * 4];
 
-                    signed short hbaoRandomShort[HBAO_RANDOM_ELEMENTS * MAX_SAMPLES * 4];
+    for (int i = 0; i < HBAO_RANDOM_ELEMENTS * MAX_SAMPLES; i++) {
+        float Rand1 = rng.randExc();
+        float Rand2 = rng.randExc();
 
-                    for (int i = 0; i < HBAO_RANDOM_ELEMENTS * MAX_SAMPLES; i++) {
-                        float Rand1 = rng.randExc();
-                        float Rand2 = rng.randExc();
-
-                        // Use random rotation angles in [0,2PI/NUM_DIRECTIONS)
-                        float Angle     = 2.f * float(M_PI) * Rand1 / numDir;
-                        hbaoRandom[i].x = cosf(Angle);
-                        hbaoRandom[i].y = sinf(Angle);
-                        hbaoRandom[i].z = Rand2;
-                        hbaoRandom[i].w = 0;
+        // Use random rotation angles in [0,2PI/NUM_DIRECTIONS)
+        float Angle     = 2.f * float(M_PI) * Rand1 / numDir;
+        hbaoRandom[i].x = cosf(Angle);
+        hbaoRandom[i].y = sinf(Angle);
+        hbaoRandom[i].z = Rand2;
+        hbaoRandom[i].w = 0;
 #define SCALE ((1 << 15))
-                        hbaoRandomShort[i * 4 + 0] = (signed short)(SCALE * hbaoRandom[i].x);
-                        hbaoRandomShort[i * 4 + 1] = (signed short)(SCALE * hbaoRandom[i].y);
-                        hbaoRandomShort[i * 4 + 2] = (signed short)(SCALE * hbaoRandom[i].z);
-                        hbaoRandomShort[i * 4 + 3] = (signed short)(SCALE * hbaoRandom[i].w);
+        hbaoRandomShort[i * 4 + 0] = (signed short)(SCALE * hbaoRandom[i].x);
+        hbaoRandomShort[i * 4 + 1] = (signed short)(SCALE * hbaoRandom[i].y);
+        hbaoRandomShort[i * 4 + 2] = (signed short)(SCALE * hbaoRandom[i].z);
+        hbaoRandomShort[i * 4 + 3] = (signed short)(SCALE * hbaoRandom[i].w);
 #undef SCALE
-                    }
+    }
 
 #ifdef USE_GLSG_FBO
-                    textures.hbao_random.allocate3D(HBAO_RANDOM_SIZE, HBAO_RANDOM_SIZE, MAX_SAMPLES, GL_RGBA16_SNORM,
-                                                    GL_RGBA, GL_TEXTURE_2D_ARRAY, GL_SHORT);
-                    textures.hbao_random.setFiltering(GL_NEAREST, GL_NEAREST);
+    textures.hbao_random.allocate3D(HBAO_RANDOM_SIZE, HBAO_RANDOM_SIZE, MAX_SAMPLES, GL_RGBA16_SNORM,
+                                    GL_RGBA, GL_TEXTURE_2D_ARRAY, GL_SHORT);
+    textures.hbao_random.setFiltering(GL_NEAREST, GL_NEAREST);
 #else
-                    newTexture(textures.hbao_random);
-                    glBindTexture(GL_TEXTURE_2D_ARRAY, textures.hbao_random);
+    newTexture(textures.hbao_random);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textures.hbao_random);
 #ifndef ARA_USE_GLES31
-                    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA16_SNORM, HBAO_RANDOM_SIZE, HBAO_RANDOM_SIZE,
-                                   MAX_SAMPLES);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA16_SNORM, HBAO_RANDOM_SIZE, HBAO_RANDOM_SIZE,
+                   MAX_SAMPLES);
 #endif
-                    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, HBAO_RANDOM_SIZE, HBAO_RANDOM_SIZE, MAX_SAMPLES,
-                                    GL_RGBA, GL_SHORT, hbaoRandomShort);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, HBAO_RANDOM_SIZE, HBAO_RANDOM_SIZE, MAX_SAMPLES,
+                    GL_RGBA, GL_SHORT, hbaoRandomShort);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 #endif
 
-                    for (int i = 0; i < MAX_SAMPLES; i++) {
-                        newTexture(textures.hbao_randomview[i]);
+    for (int i = 0; i < MAX_SAMPLES; i++) {
+        newTexture(textures.hbao_randomview[i]);
 #ifndef ARA_USE_GLES31
 #ifdef USE_GLSG_FBO
-                        glTextureView(textures.hbao_randomview[i], GL_TEXTURE_2D, textures.hbao_random.getId(),
-                                      GL_RGBA16_SNORM, 0, 1, i, 1);
+        glTextureView(textures.hbao_randomview[i], GL_TEXTURE_2D, textures.hbao_random.getId(),
+                      GL_RGBA16_SNORM, 0, 1, i, 1);
 #else
-                        glTextureView(textures.hbao_randomview[i], GL_TEXTURE_2D, textures.hbao_random, GL_RGBA16_SNORM,
-                                      0, 1, i, 1);
+        glTextureView(textures.hbao_randomview[i], GL_TEXTURE_2D, textures.hbao_random, GL_RGBA16_SNORM,
+                      0, 1, i, 1);
 #endif
 #endif
-                        glBindTexture(GL_TEXTURE_2D, textures.hbao_randomview[i]);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                        glBindTexture(GL_TEXTURE_2D, 0);
-                    }
+        glBindTexture(GL_TEXTURE_2D, textures.hbao_randomview[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
-                    if (hbao_ubo) glDeleteBuffers(1, &hbao_ubo);
+    if (hbao_ubo) glDeleteBuffers(1, &hbao_ubo);
 
-                    glGenBuffers(1, &hbao_ubo);
+    glGenBuffers(1, &hbao_ubo);
 #ifndef ARA_USE_GLES31
-                    glNamedBufferStorageEXT(hbao_ubo, sizeof(HBAOData), NULL, GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorageEXT(hbao_ubo, sizeof(HBAOData), NULL, GL_DYNAMIC_STORAGE_BIT);
 #endif
 
-                    return true;
+    return true;
 }
 
 bool SSAO::initFramebuffers(int width, int height, int samples)
 {
-                    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &lastBoundFbo);
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &lastBoundFbo);
 
 #ifndef USE_GLSG_FBO
-                    if (samples > 1) {
-                        newTexture(textures.scene_color);
-                        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textures.scene_color);
-                        glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height,
-                                                  GL_FALSE);
-                        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+    if (samples > 1) {
+        newTexture(textures.scene_color);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textures.scene_color);
+        glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_RGBA8, width, height,
+                                  GL_FALSE);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 
-                        newTexture(textures.scene_depthstencil);
-                        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textures.scene_depthstencil);
-                        glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH24_STENCIL8, width,
-                                                  height, GL_FALSE);
-                        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-                    } else {
-                        newTexture(textures.scene_color);
-                        glBindTexture(GL_TEXTURE_2D, textures.scene_color);
-                        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
-                        glBindTexture(GL_TEXTURE_2D, 0);
+        newTexture(textures.scene_depthstencil);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textures.scene_depthstencil);
+        glTexStorage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, GL_DEPTH24_STENCIL8, width,
+                                  height, GL_FALSE);
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+    } else {
+        newTexture(textures.scene_color);
+        glBindTexture(GL_TEXTURE_2D, textures.scene_color);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
-                        newTexture(textures.scene_depthstencil);
-                        glBindTexture(GL_TEXTURE_2D, textures.scene_depthstencil);
-                        glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
-                        glBindTexture(GL_TEXTURE_2D, 0);
-                    }
+        newTexture(textures.scene_depthstencil);
+        glBindTexture(GL_TEXTURE_2D, textures.scene_depthstencil);
+        glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH24_STENCIL8, width, height);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
-                    newFramebuffer(fbos.scene);
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
-                    if (samples > 1) {
-                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE,
-                                               textures.scene_color, 0);
-                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE,
-                                               textures.scene_depthstencil, 0);
-                    } else {
-                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                                               textures.scene_color, 0);
-                        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
-                                               textures.scene_depthstencil, 0);
-                    }
+    newFramebuffer(fbos.scene);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
+    if (samples > 1) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE,
+                               textures.scene_color, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE,
+                               textures.scene_depthstencil, 0);
+    } else {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                               textures.scene_color, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+                               textures.scene_depthstencil, 0);
+    }
 
-                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
 
 #else
-                    if (samples > 1)
-                        sceneFbo = make_unique<FBO>(FboInitParams{width, height, 1,GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1,
-                                                    samples, GL_REPEAT, false});
-                    else
-                        sceneFbo = make_unique<FBO>(FboInitParams{width, height, 1, GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, samples,
-                                                    GL_REPEAT, false});
+    if (samples > 1)
+        sceneFbo = make_unique<FBO>(FboInitParams{width, height, 1,GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1,
+                                    samples, GL_REPEAT, false});
+    else
+        sceneFbo = make_unique<FBO>(FboInitParams{width, height, 1, GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, samples,
+                                    GL_REPEAT, false});
 
 #endif
 
-                    newTexture(textures.scene_depthlinear);
-                    glBindTexture(GL_TEXTURE_2D, textures.scene_depthlinear);
-                    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, width, height);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                    glBindTexture(GL_TEXTURE_2D, 0);
+    newTexture(textures.scene_depthlinear);
+    glBindTexture(GL_TEXTURE_2D, textures.scene_depthlinear);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R32F, width, height);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-                    newFramebuffer(fbos.depthlinear);
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.depthlinear);
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                                           textures.scene_depthlinear, 0);
-                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
+    newFramebuffer(fbos.depthlinear);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.depthlinear);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                           textures.scene_depthlinear, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
 
-                    newTexture(textures.scene_viewnormal);
-                    glBindTexture(GL_TEXTURE_2D, textures.scene_viewnormal);
-                    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                    glBindTexture(GL_TEXTURE_2D, 0);
+    newTexture(textures.scene_viewnormal);
+    glBindTexture(GL_TEXTURE_2D, textures.scene_viewnormal);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-                    newFramebuffer(fbos.viewnormal);
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.viewnormal);
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                                           textures.scene_viewnormal, 0);
-                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    newFramebuffer(fbos.viewnormal);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.viewnormal);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                           textures.scene_viewnormal, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                        // hbao
+        // hbao
 #if USE_AO_SPECIALBLUR
-                    GLenum formatAO   = GL_RG16F;
-                    GLint  swizzle[4] = {GL_RED, GL_GREEN, GL_ZERO, GL_ZERO};
+    GLenum formatAO   = GL_RG16F;
+    GLint  swizzle[4] = {GL_RED, GL_GREEN, GL_ZERO, GL_ZERO};
 #else
-                    GLenum formatAO   = GL_R8;
-                    GLint  swizzle[4] = {GL_RED, GL_RED, GL_RED, GL_RED};
+    GLenum formatAO   = GL_R8;
+    GLint  swizzle[4] = {GL_RED, GL_RED, GL_RED, GL_RED};
 #endif
 
-                    newTexture(textures.hbao_result);
-                    glBindTexture(GL_TEXTURE_2D, textures.hbao_result);
-                    glTexStorage2D(GL_TEXTURE_2D, 1, formatAO, width, height);
+    newTexture(textures.hbao_result);
+    glBindTexture(GL_TEXTURE_2D, textures.hbao_result);
+    glTexStorage2D(GL_TEXTURE_2D, 1, formatAO, width, height);
 #ifndef ARA_USE_GLES31
-                    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
 #endif
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    glBindTexture(GL_TEXTURE_2D, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-                    newTexture(textures.hbao_blur);
-                    glBindTexture(GL_TEXTURE_2D, textures.hbao_blur);
-                    glTexStorage2D(GL_TEXTURE_2D, 1, formatAO, width, height);
+    newTexture(textures.hbao_blur);
+    glBindTexture(GL_TEXTURE_2D, textures.hbao_blur);
+    glTexStorage2D(GL_TEXTURE_2D, 1, formatAO, width, height);
 #ifndef ARA_USE_GLES31
-                    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
+    glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle);
 #endif
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    glBindTexture(GL_TEXTURE_2D, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
-                    newFramebuffer(fbos.hbao_calc);
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao_calc);
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures.hbao_result,
-                                           0);
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, textures.hbao_blur, 0);
-                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    newFramebuffer(fbos.hbao_calc);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao_calc);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures.hbao_result,
+                           0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, textures.hbao_blur, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                    // interleaved hbao
-                    int quarterWidth  = ((width + 3) / 4);
-                    int quarterHeight = ((height + 3) / 4);
+    // interleaved hbao
+    int quarterWidth  = ((width + 3) / 4);
+    int quarterHeight = ((height + 3) / 4);
 
-                    newTexture(textures.hbao2_deptharray);
-                    glBindTexture(GL_TEXTURE_2D_ARRAY, textures.hbao2_deptharray);
-                    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_R32F, quarterWidth, quarterHeight, HBAO_RANDOM_ELEMENTS);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    newTexture(textures.hbao2_deptharray);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textures.hbao2_deptharray);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_R32F, quarterWidth, quarterHeight, HBAO_RANDOM_ELEMENTS);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
-                    for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i++) {
-                        newTexture(textures.hbao2_depthview[i]);
+    for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i++) {
+        newTexture(textures.hbao2_depthview[i]);
 #ifndef ARA_USE_GLES31
-                        glTextureView(textures.hbao2_depthview[i], GL_TEXTURE_2D, textures.hbao2_deptharray, GL_R32F, 0,
-                                      1, i, 1);
+        glTextureView(textures.hbao2_depthview[i], GL_TEXTURE_2D, textures.hbao2_deptharray, GL_R32F, 0,
+                      1, i, 1);
 #endif
-                        glBindTexture(GL_TEXTURE_2D, textures.hbao2_depthview[i]);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                        glBindTexture(GL_TEXTURE_2D, 0);
-                    }
+        glBindTexture(GL_TEXTURE_2D, textures.hbao2_depthview[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
-                    newTexture(textures.hbao2_resultarray);
-                    glBindTexture(GL_TEXTURE_2D_ARRAY, textures.hbao2_resultarray);
-                    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, formatAO, quarterWidth, quarterHeight, HBAO_RANDOM_ELEMENTS);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+    newTexture(textures.hbao2_resultarray);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textures.hbao2_resultarray);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, formatAO, quarterWidth, quarterHeight, HBAO_RANDOM_ELEMENTS);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
-                    GLenum drawbuffers[NUM_MRT];
-                    for (int i = 0; i < NUM_MRT; i++) drawbuffers[i] = GL_COLOR_ATTACHMENT0 + i;
+    GLenum drawbuffers[NUM_MRT];
+    for (int i = 0; i < NUM_MRT; i++) drawbuffers[i] = GL_COLOR_ATTACHMENT0 + i;
 
-                    newFramebuffer(fbos.hbao2_deinterleave);
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao2_deinterleave);
-                    glDrawBuffers(NUM_MRT, drawbuffers);
-                    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
+    newFramebuffer(fbos.hbao2_deinterleave);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao2_deinterleave);
+    glDrawBuffers(NUM_MRT, drawbuffers);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
 
-                    newFramebuffer(fbos.hbao2_calc);
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao2_calc);
+    newFramebuffer(fbos.hbao2_calc);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao2_calc);
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_IMAGE
-                    // this s_fbo will not have any attachments and therefore
-                    // requires rasterizer to be configured, through default
-                    // parameters
-                    glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_WIDTH, quarterWidth);
-                    glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_HEIGHT, quarterHeight);
+    // this s_fbo will not have any attachments and therefore
+    // requires rasterizer to be configured, through default
+    // parameters
+    glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_WIDTH, quarterWidth);
+    glFramebufferParameteri(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT_HEIGHT, quarterHeight);
 #endif
 
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_GS
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                                           textures.hbao2_resultarray, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                           textures.hbao2_resultarray, 0);
 #endif
-                    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
 
-                    return true;
+    return true;
 }
 
 void SSAO::prepareHbaoData(CameraSet* cs, int width, int height)
 {
-                    // projection
-                    const float* P = &cs->getProjectionMatr()[0][0];
+    // projection
+    const float* P = &cs->getProjectionMatr()[0][0];
 
-                    hbaoUbo.projOrtho = 0;
-                    hbaoUbo.projInfo  = glm::vec4(2.0f / (P[4 * 0 + 0]),                  // (x) * (R - L)/N
-                                                  2.0f / (P[4 * 1 + 1]),                  // (y) * (T - B)/N
-                                                  -(1.0f - P[4 * 2 + 0]) / P[4 * 0 + 0],  // L/N
-                                                  -(1.0f + P[4 * 2 + 1]) / P[4 * 1 + 1]   // B/N
-                     );
+    hbaoUbo.projOrtho = 0;
+    hbaoUbo.projInfo  = glm::vec4(2.0f / (P[4 * 0 + 0]),                  // (x) * (R - L)/N
+                                  2.0f / (P[4 * 1 + 1]),                  // (y) * (T - B)/N
+                                  -(1.0f - P[4 * 2 + 0]) / P[4 * 0 + 0],  // L/N
+                                  -(1.0f + P[4 * 2 + 1]) / P[4 * 1 + 1]   // B/N
+     );
 
-                    float projScale = float(height) / (tanf(cs->getFov() * 0.5f) * 2.0f);
+    float projScale = float(height) / (tanf(cs->getFov() * 0.5f) * 2.0f);
 
-                    // radius
-                    hbaoUbo.R2             = radius * radius;
-                    hbaoUbo.NegInvR2       = -1.0f / hbaoUbo.R2;
-                    hbaoUbo.RadiusToScreen = radius * 0.5f * projScale;
+    // radius
+    hbaoUbo.R2             = radius * radius;
+    hbaoUbo.NegInvR2       = -1.0f / hbaoUbo.R2;
+    hbaoUbo.RadiusToScreen = radius * 0.5f * projScale;
 
-                    // ao
-                    hbaoUbo.PowExponent  = std::max<float>(intensity, 0.0f);
-                    hbaoUbo.NDotVBias    = std::min<float>(std::max<float>(0.0f, bias), 1.0f);
-                    hbaoUbo.AOMultiplier = 1.0f / (1.0f - hbaoUbo.NDotVBias);
+    // ao
+    hbaoUbo.PowExponent  = std::max<float>(intensity, 0.0f);
+    hbaoUbo.NDotVBias    = std::min<float>(std::max<float>(0.0f, bias), 1.0f);
+    hbaoUbo.AOMultiplier = 1.0f / (1.0f - hbaoUbo.NDotVBias);
 
-                    // resolution
-                    int quarterWidth  = ((width + 3) / 4);
-                    int quarterHeight = ((height + 3) / 4);
+    // resolution
+    int quarterWidth  = ((width + 3) / 4);
+    int quarterHeight = ((height + 3) / 4);
 
-                    hbaoUbo.InvQuarterResolution = glm::vec2(1.0f / float(quarterWidth), 1.0f / float(quarterHeight));
-                    hbaoUbo.InvFullResolution    = glm::vec2(1.0f / float(width), 1.0f / float(height));
+    hbaoUbo.InvQuarterResolution = glm::vec2(1.0f / float(quarterWidth), 1.0f / float(quarterHeight));
+    hbaoUbo.InvFullResolution    = glm::vec2(1.0f / float(width), 1.0f / float(height));
 
 #if USE_AO_LAYERED_SINGLEPASS
-                    for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i++) {
-                        hbaoUbo.float2Offsets[i] = glm::vec4(float(i % 4) + 0.5f, float(i / 4) + 0.5f, 0.f, 0.f);
-                        hbaoUbo.jitters[i]       = hbaoRandom[i];
-                    }
+    for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i++) {
+        hbaoUbo.float2Offsets[i] = glm::vec4(float(i % 4) + 0.5f, float(i / 4) + 0.5f, 0.f, 0.f);
+        hbaoUbo.jitters[i]       = hbaoRandom[i];
+    }
 #endif
 }
 
 void SSAO::drawLinearDepth(CameraSet* cs, int width, int height, int sampleIdx)
 {
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.depthlinear);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.depthlinear);
 
-                    if (samples > 1) {
-                        depth_linearize_msaa->begin();
+    if (samples > 1) {
+        depth_linearize_msaa->begin();
 
-                        glUniform4f(0, cs->getNear() * cs->getFar(), cs->getNear() - cs->getFar(), cs->getFar(), 1.0f);
-                        glUniform1i(1, sampleIdx);
+        glUniform4f(0, cs->getNear() * cs->getFar(), cs->getNear() - cs->getFar(), cs->getFar(), 1.0f);
+        glUniform1i(1, sampleIdx);
 
 #ifndef ARA_USE_GLES31
-                        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_MULTISAMPLE, textures.scene_depthstencil);
-                        glDrawArrays(GL_TRIANGLES, 0, 3);
-                        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_MULTISAMPLE, 0);
+        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_MULTISAMPLE, textures.scene_depthstencil);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_MULTISAMPLE, 0);
 #endif
-                        depth_linearize_msaa->end();
-                    } else {
-                        depth_linearize->begin();
+        depth_linearize_msaa->end();
+    } else {
+        depth_linearize->begin();
 
-                        glUniform4f(0, cs->getNear() * cs->getFar(), cs->getNear() - cs->getFar(), cs->getFar(), 1.0f);
+        glUniform4f(0, cs->getNear() * cs->getFar(), cs->getNear() - cs->getFar(), cs->getFar(), 1.0f);
 #ifndef ARA_USE_GLES31
-                        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.scene_depthstencil);
-                        glDrawArrays(GL_TRIANGLES, 0, 3);
-                        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, 0);
+        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.scene_depthstencil);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, 0);
 #endif
-                        depth_linearize->end();
-                    }
+        depth_linearize->end();
+    }
 
-                    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
 }
 
 void SSAO::drawHbaoBlur(int width, int height, int sampleIdx)
 {
-                    // here the last Fbo must still stayed bound
-                    // if blur is activ, hbao_calc s_fbo is bound, 2 attachments
-                    // 0 > result, 1 > blur
+    // here the last Fbo must still stayed bound
+    // if blur is activ, hbao_calc s_fbo is bound, 2 attachments
+    // 0 > result, 1 > blur
 
-                    if (USE_AO_SPECIALBLUR)
-                        hbao_blur->begin();
-                    else
-                        bilateralblur->begin();
+    if (USE_AO_SPECIALBLUR)
+        hbao_blur->begin();
+    else
+        bilateralblur->begin();
 
-                    glActiveTexture(GL_TEXTURE1);
-                    glBindTexture(GL_TEXTURE_2D, textures.scene_depthlinear);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textures.scene_depthlinear);
 
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, textures.hbao_result);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textures.hbao_result);
 
-                    glUniform2f(1, 1.0f / float(width),
-                                0.f);               // InvResolutionDirection
-                    glUniform1f(0, blurSharpness);  // sharpness
+    glUniform2f(1, 1.0f / float(width),
+                0.f);               // InvResolutionDirection
+    glUniform1f(0, blurSharpness);  // sharpness
 
 #ifndef ARA_USE_GLES31
-                    glDrawBuffer(GL_COLOR_ATTACHMENT1);  // draw to blur result
-                                                         // attachment
+    glDrawBuffer(GL_COLOR_ATTACHMENT1);  // draw to blur result
+                                         // attachment
 #endif
 
-                    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
-                        //--------------------------------------------------------
-                        // final output to main s_fbo
+        //--------------------------------------------------------
+        // final output to main s_fbo
 #ifndef USE_GLSG_FBO
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
 #else
-                    sceneFbo->bind();
+    sceneFbo->bind();
 #endif
 
-                    glDisable(GL_DEPTH_TEST);
-                    glEnable(GL_BLEND);
-                    glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 
-                    if (samples > 1) {
-                        glEnable(GL_SAMPLE_MASK);
-                        glSampleMaski(0, 1 << sampleIdx);
-                    }
+    if (samples > 1) {
+        glEnable(GL_SAMPLE_MASK);
+        glSampleMaski(0, 1 << sampleIdx);
+    }
 
 #if USE_AO_SPECIALBLUR
-                    hbao_blur2->begin();
-                    glUniform1f(0, blurSharpness);  // sharpness
+    hbao_blur2->begin();
+    glUniform1f(0, blurSharpness);  // sharpness
 #endif
 
-                        //	glActiveTexture(GL_TEXTURE0);
-                        //	glBindTexture(GL_TEXTURE_2D,
-                        // textures.hbao_blur);
+        //	glActiveTexture(GL_TEXTURE0);
+        //	glBindTexture(GL_TEXTURE_2D,
+        // textures.hbao_blur);
 
 #ifndef ARA_USE_GLES31
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.hbao_blur);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.hbao_blur);
 #endif
-                    glUniform2f(1, 0.f,
-                                1.0f / float(height));  // InvResolutionDirection
-                    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glUniform2f(1, 0.f,
+                1.0f / float(height));  // InvResolutionDirection
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 }
 
 void SSAO::drawHbaoClassic(CameraSet* cs, int width, int height, int sampleIdx)
 {
-                    prepareHbaoData(cs, width, height);
-                    drawLinearDepth(cs, width, height, sampleIdx);  // linearize
+    prepareHbaoData(cs, width, height);
+    drawLinearDepth(cs, width, height, sampleIdx);  // linearize
 
-                    if (blur) {
-                        glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao_calc);
+    if (blur) {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao_calc);
 #ifndef ARA_USE_GLES31
-                        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
 #endif
-                    } else {
+    } else {
 #ifndef USE_GLSG_FBO
-                        glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
 #else
-                        sceneFbo->bind();
+        sceneFbo->bind();
 #endif
-                        glDisable(GL_DEPTH_TEST);
-                        glEnable(GL_BLEND);
-                        glBlendFunc(GL_ZERO, GL_SRC_COLOR);
-                        if (samples > 1) {
-                            glEnable(GL_SAMPLE_MASK);
-                            glSampleMaski(0, 1 << sampleIdx);
-                        }
-                    }
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+        if (samples > 1) {
+            glEnable(GL_SAMPLE_MASK);
+            glSampleMaski(0, 1 << sampleIdx);
+        }
+    }
 
-                    if (USE_AO_SPECIALBLUR && blur)
-                        hbao_calc_blur->begin();
-                    else
-                        hbao_calc->begin();
+    if (USE_AO_SPECIALBLUR && blur)
+        hbao_calc_blur->begin();
+    else
+        hbao_calc->begin();
 
-                    glBindBufferBase(GL_UNIFORM_BUFFER, 0, hbao_ubo);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, hbao_ubo);
 #ifndef ARA_USE_GLES31
-                    glNamedBufferSubDataEXT(hbao_ubo, 0, sizeof(HBAOData), &hbaoUbo);
+    glNamedBufferSubDataEXT(hbao_ubo, 0, sizeof(HBAOData), &hbaoUbo);
 
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.scene_depthlinear);
-                    glBindMultiTextureEXT(GL_TEXTURE1, GL_TEXTURE_2D, textures.hbao_randomview[sampleIdx]);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.scene_depthlinear);
+    glBindMultiTextureEXT(GL_TEXTURE1, GL_TEXTURE_2D, textures.hbao_randomview[sampleIdx]);
 #endif
-                    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
-                    if (blur) drawHbaoBlur(width, height, sampleIdx);
+    if (blur) drawHbaoBlur(width, height, sampleIdx);
 
-                    glEnable(GL_DEPTH_TEST);
-                    glDisable(GL_BLEND);
-                    glDisable(GL_SAMPLE_MASK);
-                    glSampleMaski(0, ~0);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glDisable(GL_SAMPLE_MASK);
+    glSampleMaski(0, ~0);
 
 #ifndef ARA_USE_GLES31
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, 0);
-                    glBindMultiTextureEXT(GL_TEXTURE1, GL_TEXTURE_2D, 0);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, 0);
+    glBindMultiTextureEXT(GL_TEXTURE1, GL_TEXTURE_2D, 0);
 #endif
-                    glUseProgram(0);
+    glUseProgram(0);
 }
 
 void SSAO::drawHbaoCacheAware(CameraSet* cs, int width, int height, int sampleIdx)
 {
-                    int quarterWidth  = ((width + 3) / 4);
-                    int quarterHeight = ((height + 3) / 4);
+    int quarterWidth  = ((width + 3) / 4);
+    int quarterHeight = ((height + 3) / 4);
 
-                    glEnable(GL_BLEND);
-                    glBlendFunc(GL_ONE, GL_ZERO);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ZERO);
 
-                    prepareHbaoData(cs, width, height);
-                    drawLinearDepth(cs, width, height, sampleIdx);  // linearize
+    prepareHbaoData(cs, width, height);
+    drawLinearDepth(cs, width, height, sampleIdx);  // linearize
 
-                    // ------ calculate the normals and save them into an FBO
+    // ------ calculate the normals and save them into an FBO
 
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.viewnormal);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.viewnormal);
 
-                    viewnormal->begin();
+    viewnormal->begin();
 
-                    glUniform4fv(0, 1, &hbaoUbo.projInfo[0]);
-                    glUniform1i(1, hbaoUbo.projOrtho);
-                    glUniform2fv(2, 1, &hbaoUbo.InvFullResolution[0]);
+    glUniform4fv(0, 1, &hbaoUbo.projInfo[0]);
+    glUniform1i(1, hbaoUbo.projOrtho);
+    glUniform2fv(2, 1, &hbaoUbo.InvFullResolution[0]);
 
 #ifndef ARA_USE_GLES31
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.scene_depthlinear);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.scene_depthlinear);
 #endif
-                    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 #ifndef ARA_USE_GLES31
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, 0);
-#endif
-
-                    // ------ deinterleave ---------------------
-
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao2_deinterleave);
-                    glViewport(0, 0, quarterWidth, quarterHeight);
-
-                    hbao2_deinterleave->begin();
-#ifndef ARA_USE_GLES31
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.scene_depthlinear);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, 0);
 #endif
 
-                    for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i += NUM_MRT) {
-                        glUniform4f(0, float(i % 4) + 0.5f, float(i / 4) + 0.5f, hbaoUbo.InvFullResolution.x,
-                                    hbaoUbo.InvFullResolution.y);
+    // ------ deinterleave ---------------------
 
-                        for (int layer = 0; layer < NUM_MRT; layer++)
-                            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + layer, GL_TEXTURE_2D,
-                                                   textures.hbao2_depthview[i + layer], 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao2_deinterleave);
+    glViewport(0, 0, quarterWidth, quarterHeight);
 
-                        glDrawArrays(GL_TRIANGLES, 0, 3);
-                    }
-
-                    // ------ ssao calc ---------------------
-
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao2_calc);
-                    glViewport(0, 0, quarterWidth, quarterHeight);
-
-                    if (USE_AO_SPECIALBLUR)
-                        hbao2_calc_blur->begin();
-                    else
-                        hbao2_calc->begin();
-
+    hbao2_deinterleave->begin();
 #ifndef ARA_USE_GLES31
-                    glBindMultiTextureEXT(GL_TEXTURE1, GL_TEXTURE_2D, textures.scene_viewnormal);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.scene_depthlinear);
 #endif
-                    glBindBufferBase(GL_UNIFORM_BUFFER, 0, hbao_ubo);
+
+    for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i += NUM_MRT) {
+        glUniform4f(0, float(i % 4) + 0.5f, float(i / 4) + 0.5f, hbaoUbo.InvFullResolution.x,
+                    hbaoUbo.InvFullResolution.y);
+
+        for (int layer = 0; layer < NUM_MRT; layer++)
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + layer, GL_TEXTURE_2D,
+                                   textures.hbao2_depthview[i + layer], 0);
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+
+    // ------ ssao calc ---------------------
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao2_calc);
+    glViewport(0, 0, quarterWidth, quarterHeight);
+
+    if (USE_AO_SPECIALBLUR)
+        hbao2_calc_blur->begin();
+    else
+        hbao2_calc->begin();
+
 #ifndef ARA_USE_GLES31
-                    glNamedBufferSubDataEXT(hbao_ubo, 0, sizeof(HBAOData), &hbaoUbo);
+    glBindMultiTextureEXT(GL_TEXTURE1, GL_TEXTURE_2D, textures.scene_viewnormal);
+#endif
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, hbao_ubo);
+#ifndef ARA_USE_GLES31
+    glNamedBufferSubDataEXT(hbao_ubo, 0, sizeof(HBAOData), &hbaoUbo);
 #endif
 
 #if USE_AO_LAYERED_SINGLEPASS
 
 #ifndef ARA_USE_GLES31
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_ARRAY, textures.hbao2_deptharray);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_ARRAY, textures.hbao2_deptharray);
 #endif
 
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_IMAGE
-                    glBindImageTexture(0, textures.hbao2_resultarray, 0, GL_TRUE, 0, GL_WRITE_ONLY,
-                                       USE_AO_SPECIALBLUR ? GL_RG16F : GL_R8);
+    glBindImageTexture(0, textures.hbao2_resultarray, 0, GL_TRUE, 0, GL_WRITE_ONLY,
+                       USE_AO_SPECIALBLUR ? GL_RG16F : GL_R8);
 #endif
 
-                    glDrawArrays(GL_TRIANGLES, 0, 3 * HBAO_RANDOM_ELEMENTS);
+    glDrawArrays(GL_TRIANGLES, 0, 3 * HBAO_RANDOM_ELEMENTS);
 
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_IMAGE
-                    glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+    glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 #endif
 
 #else
-                    for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i++) {
-                        glUniform2f(0, float(i % 4) + 0.5f, float(i / 4) + 0.5f);
-                        glUniform4fv(1, 1, hbaoRandom[i].get_value());
+    for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i++) {
+        glUniform2f(0, float(i % 4) + 0.5f, float(i / 4) + 0.5f);
+        glUniform4fv(1, 1, hbaoRandom[i].get_value());
 
-                        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.hbao2_depthview[i]);
-                        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textures.hbao2_resultarray, 0,
-                                                  i);
+        glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, textures.hbao2_depthview[i]);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textures.hbao2_resultarray, 0,
+                                  i);
 
-                        glDrawArrays(GL_TRIANGLES, 0, 3);
-                    }
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
 #endif
 
-                    // ------ reinterleave ---------------------
+    // ------ reinterleave ---------------------
 
-                    if (blur) {
-                        glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao_calc);
+    if (blur) {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos.hbao_calc);
 #ifndef ARA_USE_GLES31
-                        glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        glDrawBuffer(GL_COLOR_ATTACHMENT0);
 #endif
 
-                    } else {
+    } else {
 #ifndef USE_GLSG_FBO
-                        glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
 #else
-                        sceneFbo->bind();
+        sceneFbo->bind();
 #endif
-                        glDisable(GL_DEPTH_TEST);
-                        glEnable(GL_BLEND);
-                        glBlendFunc(GL_ZERO, GL_SRC_COLOR);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ZERO, GL_SRC_COLOR);
 
-                        if (samples > 1) {
-                            glEnable(GL_SAMPLE_MASK);
-                            glSampleMaski(0, 1 << sampleIdx);
-                        }
-                    }
+        if (samples > 1) {
+            glEnable(GL_SAMPLE_MASK);
+            glSampleMaski(0, 1 << sampleIdx);
+        }
+    }
 
-                    glViewport(0, 0, width, height);
+    glViewport(0, 0, width, height);
 
-                    if (USE_AO_SPECIALBLUR && blur)
-                        hbao2_reinterleave_blur->begin();
-                    else
-                        hbao2_reinterleave->begin();
+    if (USE_AO_SPECIALBLUR && blur)
+        hbao2_reinterleave_blur->begin();
+    else
+        hbao2_reinterleave->begin();
 
-                        // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 #ifndef ARA_USE_GLES31
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_ARRAY, textures.hbao2_resultarray);
-                    glDrawArrays(GL_TRIANGLES, 0, 3);
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_ARRAY, 0);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_ARRAY, textures.hbao2_resultarray);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D_ARRAY, 0);
 #endif
-                    // --------- blur ---------------------
+    // --------- blur ---------------------
 
-                    if (blur) drawHbaoBlur(width, height, sampleIdx);
+    if (blur) drawHbaoBlur(width, height, sampleIdx);
 
-                    glDisable(GL_BLEND);
-                    glEnable(GL_DEPTH_TEST);
-                    glDisable(GL_SAMPLE_MASK);
-                    glSampleMaski(0, ~0);
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_SAMPLE_MASK);
+    glSampleMaski(0, ~0);
 
 #ifndef ARA_USE_GLES31
-                    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, 0);
-                    glBindMultiTextureEXT(GL_TEXTURE1, GL_TEXTURE_2D, 0);
+    glBindMultiTextureEXT(GL_TEXTURE0, GL_TEXTURE_2D, 0);
+    glBindMultiTextureEXT(GL_TEXTURE1, GL_TEXTURE_2D, 0);
 #endif
 
-                    glUseProgram(0);
+    glUseProgram(0);
 }
 
 void SSAO::copyFbo(CameraSet* cs)
 {
-                    int width  = int(cs->getActFboSize()->x);
-                    int height = int(cs->getActFboSize()->y);
+    int width  = int(cs->getActFboSize()->x);
+    int height = int(cs->getActFboSize()->y);
 
-                    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &lastBoundFbo);
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &lastBoundFbo);
 
 #ifndef USE_GLSG_FBO
-                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos.scene);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos.scene);
 #else
-                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sceneFbo->getFbo());
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, sceneFbo->getFbo());
 #endif
-                    glBindFramebuffer(GL_READ_FRAMEBUFFER, lastBoundFbo);
-                    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-                    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, lastBoundFbo);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
-                    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
 }
 
 void SSAO::bind()
 {
 #ifndef USE_GLSG_FBO
-                    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &lastBoundFbo);
-                    glGetBooleanv(GL_MULTISAMPLE, &lastMultiSample);
-                    glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &lastBoundFbo);
+    glGetBooleanv(GL_MULTISAMPLE, &lastMultiSample);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbos.scene);
 
-                    glGetIntegerv(GL_VIEWPORT, &csVp[0]);
-                    glViewport(0, 0, fboWidth, fboHeight);
-                    glScissor(0, 0, fboWidth, fboHeight);  // wichtig!!!
+    glGetIntegerv(GL_VIEWPORT, &csVp[0]);
+    glViewport(0, 0, static_cast<GLsizei>(fboWidth), static_cast<GLsizei>(fboHeight));
+    glScissor(0, 0, static_cast<GLsizei>(fboWidth), static_cast<GLsizei>(fboHeight));
 
 #else
-                    sceneFbo->bind();
+    sceneFbo->bind();
 #endif
 }
 
-void SSAO::clear(glm::vec4 clearCol)
-{
-                    glClearBufferfv(GL_COLOR, 0, &clearCol.x);
-                    glClearDepthf(1.f);
-                    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+void SSAO::clear(glm::vec4 clearCol) {
+    glClearBufferfv(GL_COLOR, 0, &clearCol.x);
+    glClearDepthf(1.f);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void SSAO::unbind()
-{
+void SSAO::unbind() {
 #ifndef USE_GLSG_FBO
-                    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
-                    lastMultiSample ? glEnable(GL_MULTISAMPLE) : glDisable(GL_MULTISAMPLE);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
+    lastMultiSample ? glEnable(GL_MULTISAMPLE) : glDisable(GL_MULTISAMPLE);
 
-                    glViewport(csVp[0], csVp[1], csVp[2], csVp[3]);
-                    glScissor(csVp[0], csVp[1], csVp[2],
-                              csVp[3]);  // wichtig!!!
+    glViewport(csVp[0], csVp[1], csVp[2], csVp[3]);
+    glScissor(csVp[0], csVp[1], csVp[2], csVp[3]);
 
 #else
-                    sceneFbo->unbind();
+    sceneFbo->unbind();
 #endif
 }
 
-void SSAO::proc(CameraSet* cs)
-{
-                    int width  = int(cs->getActFboSize()->x);
-                    int height = int(cs->getActFboSize()->y);
+void SSAO::proc(CameraSet* cs) {
+    int width  = int(cs->getActFboSize()->x);
+    int height = int(cs->getActFboSize()->y);
 
-                    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-                    glEnable(GL_CULL_FACE);
-                    glEnable(GL_DEPTH_TEST);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
 
-                    glBindVertexArray(defaultVAO);  // create VAO, assign the
-                                                    // name and bind that array
+    glBindVertexArray(defaultVAO);  // create VAO, assign the
+                                    // name and bind that array
 
-                    for (int sample = 0; sample < samples; sample++) {
-                        switch (algorithm) {
-                            case ALGORITHM_HBAO_CLASSIC: drawHbaoClassic(cs, width, height, sample); break;
-                            case ALGORITHM_HBAO_CACHEAWARE: drawHbaoCacheAware(cs, width, height, sample); break;
-                            default: break;
-                        }
-                    }
+    for (int sample = 0; sample < samples; sample++) {
+        switch (algorithm) {
+            case ALGORITHM_HBAO_CLASSIC: drawHbaoClassic(cs, width, height, sample); break;
+            case ALGORITHM_HBAO_CACHEAWARE: drawHbaoCacheAware(cs, width, height, sample); break;
+            default: break;
+        }
+    }
 
-                    glBindVertexArray(0);  // create VAO, assign the name and bind that array
+    glBindVertexArray(0);  // create VAO, assign the name and bind that array
 }
 
 void SSAO::drawBlit(CameraSet* cs, bool copyDepth)
 {
-                    // glBlitFramebuffer not working ????
+    // glBlitFramebuffer not working ????
 #ifndef USE_GLSG_FBO
-                    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos.scene);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos.scene);
 #else
-                    glBindFramebuffer(GL_READ_FRAMEBUFFER, sceneFbo->getFbo());
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, sceneFbo->getFbo());
 #endif
-                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, lastBoundFbo);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, lastBoundFbo);
 
-                    glBlitFramebuffer(0, 0, int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), 0, 0,
-                                      int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), GL_COLOR_BUFFER_BIT,
-                                      GL_NEAREST);
+    glBlitFramebuffer(0, 0, int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), 0, 0,
+                      int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), GL_COLOR_BUFFER_BIT,
+                      GL_NEAREST);
 
-                    // blit depth
-                    if (copyDepth)
-                        glBlitFramebuffer(0, 0, int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), 0, 0,
-                                          int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), GL_DEPTH_BUFFER_BIT,
-                                          GL_NEAREST);
+    // blit depth
+    if (copyDepth)
+        glBlitFramebuffer(0, 0, int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), 0, 0,
+                          int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), GL_DEPTH_BUFFER_BIT,
+                          GL_NEAREST);
 
-                    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
 }
 
 void SSAO::drawAlpha(CameraSet* cs, float alpha)
 {
-                    unbind();
+    unbind();
 
-                    glEnable(GL_BLEND);
-                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    glDisable(GL_DEPTH_TEST);
-                    glDisable(GL_CULL_FACE);
-                    // glDisable(GL_SAMPLE_MASK);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    // glDisable(GL_SAMPLE_MASK);
 
-                    texShdr->begin();
-                    texShdr->setIdentMatrix4fv("m_pvm");
-                    texShdr->setUniform1i("tex", 0);
-                    texShdr->setUniform1f("alpha", 1.f);
-                    texShdr->setUniform2f("scr_size", cs->getActFboSize()->x, cs->getActFboSize()->y);
-                    texShdr->setUniform1i("nrSamples", samples);
+    texShdr->begin();
+    texShdr->setIdentMatrix4fv("m_pvm");
+    texShdr->setUniform1i("tex", 0);
+    texShdr->setUniform1f("alpha", 1.f);
+    texShdr->setUniform2f("scr_size", cs->getActFboSize()->x, cs->getActFboSize()->y);
+    texShdr->setUniform1i("nrSamples", samples);
 
-                    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0);
 
 #ifndef USE_GLSG_FBO
-                    if (samples > 1)
-                        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textures.scene_color);
-                    else
-                        glBindTexture(GL_TEXTURE_2D, textures.scene_color);
+    if (samples > 1)
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textures.scene_color);
+    else
+        glBindTexture(GL_TEXTURE_2D, textures.scene_color);
 #else
-                    if (samples > 1)
-                        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, sceneFbo->getColorImg());
-                    else
-                        glBindTexture(GL_TEXTURE_2D, sceneFbo->getColorImg());
+    if (samples > 1)
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, sceneFbo->getColorImg());
+    else
+        glBindTexture(GL_TEXTURE_2D, sceneFbo->getColorImg());
 #endif
 
-                    /*
-                    texNoAlpha->begin();
-                    texNoAlpha->setIdentMatrix4fv("m_pvm");
-                    texNoAlpha->setUniform1i("tex", 0);
-                    //glBindTexture(GL_TEXTURE_2D, textures.scene_depthlinear);
+    quad->draw();
+    texShdr->end();
 
-                    if (samples > 1)
-                    {
-                            glBindTexture(GL_TEXTURE_2D_MULTISAMPLE,
-                    textures.scene_color); } else { glBindTexture(GL_TEXTURE_2D,
-                    textures.scene_color);
-                    }
-                    //glBindTexture(GL_TEXTURE_2D, textures.scene_viewnormal);
-                    //glBindTexture(GL_TEXTURE_2D, textures.hbao2_depthview[0]);
-                    //glBindTexture(GL_TEXTURE_2D, textures.hbao2_resultarray);
-                    // schwarz -> GL_RG16F
-                    //glBindTexture(GL_TEXTURE_2D, textures.hbao_result);
-                    // schwarz -> GL_RG16F
-                    //glBindTexture(GL_TEXTURE_2D, textures.hbao_blur);
-
-                    */
-
-                    quad->draw();
-                    texShdr->end();
-
-                    glDisable(GL_SAMPLE_MASK);
-                    glSampleMaski(0, ~0);
+    glDisable(GL_SAMPLE_MASK);
+    glSampleMaski(0, ~0);
 }
 
 void SSAO::blitDepthBuffer(CameraSet* cs)
 {
 #ifndef USE_GLSG_FBO
-                    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos.scene);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos.scene);
 #else
-                    glBindFramebuffer(GL_READ_FRAMEBUFFER, sceneFbo->getFbo());
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, sceneFbo->getFbo());
 #endif
-                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, lastBoundFbo);
-                    // does not work with framebuffer name = 0 (default
-                    // framebuffer)
-                    glBlitFramebuffer(0, 0, int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), 0, 0,
-                                      int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), GL_DEPTH_BUFFER_BIT,
-                                      GL_NEAREST);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, lastBoundFbo);
+    // does not work with framebuffer name = 0 (default
+    // framebuffer)
+    glBlitFramebuffer(0, 0, int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), 0, 0,
+                      int(cs->getActFboSize()->x), int(cs->getActFboSize()->y), GL_DEPTH_BUFFER_BIT,
+                      GL_NEAREST);
 
-                    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
 }
 
-GLuint SSAO::getSceneFboColorTex()
-{
+GLuint SSAO::getSceneFboColorTex() {
 #ifndef USE_GLSG_FBO
-                    return textures.scene_color;
+    return textures.scene_color;
 #else
-                    return sceneFbo->getColorImg();
+    return sceneFbo->getColorImg();
 #endif
 }
 
-void SSAO::resize(uint _width, uint _height)
-{
-                    fboWidth  = _width;
-                    fboHeight = _height;
-                    initFramebuffers((int)_width, (int)_height, m_glbase->getNrSamples());
+void SSAO::resize(uint width, uint height) {
+    fboWidth  = width;
+    fboHeight = height;
+    initFramebuffers(static_cast<int>(width), static_cast<int>(height), m_glbase->getNrSamples());
 }
 
-SSAO::~SSAO()
-{
-                    glDeleteVertexArrays(1, &defaultVAO);
-                    if (hbao_ubo) glDeleteBuffers(1, &hbao_ubo);
-                    glDeleteTextures(MAX_SAMPLES, &textures.hbao_randomview[0]);
+SSAO::~SSAO() {
+    glDeleteVertexArrays(1, &defaultVAO);
+    if (hbao_ubo) {
+        glDeleteBuffers(1, &hbao_ubo);
+    }
+    glDeleteTextures(MAX_SAMPLES, &textures.hbao_randomview[0]);
 
 #ifndef USE_GLSG_FBO
-                    if (samples > 1) {
-                        glDeleteTextures(1, &textures.scene_color);
-                        glDeleteTextures(1, &textures.scene_depthstencil);
-                    } else {
-                        glDeleteTextures(1, &textures.scene_color);
-                        glDeleteTextures(1, &textures.scene_depthstencil);
-                    }
+    if (samples > 1) {
+        glDeleteTextures(1, &textures.scene_color);
+        glDeleteTextures(1, &textures.scene_depthstencil);
+    } else {
+        glDeleteTextures(1, &textures.scene_color);
+        glDeleteTextures(1, &textures.scene_depthstencil);
+    }
 
-                    glDeleteFramebuffers(1, &fbos.scene);
+    glDeleteFramebuffers(1, &fbos.scene);
 #endif
 
-                    glDeleteTextures(1, &textures.scene_depthlinear);
-                    glDeleteTextures(1, &textures.scene_viewnormal);
-                    glDeleteTextures(1, &textures.hbao_result);
-                    glDeleteTextures(1, &textures.hbao_blur);
-                    glDeleteTextures(1, &textures.hbao2_deptharray);
-                    glDeleteTextures(HBAO_RANDOM_ELEMENTS, &textures.hbao2_depthview[0]);
-                    glDeleteTextures(1, &textures.hbao2_resultarray);
+    glDeleteTextures(1, &textures.scene_depthlinear);
+    glDeleteTextures(1, &textures.scene_viewnormal);
+    glDeleteTextures(1, &textures.hbao_result);
+    glDeleteTextures(1, &textures.hbao_blur);
+    glDeleteTextures(1, &textures.hbao2_deptharray);
+    glDeleteTextures(HBAO_RANDOM_ELEMENTS, &textures.hbao2_depthview[0]);
+    glDeleteTextures(1, &textures.hbao2_resultarray);
 
-                    glDeleteFramebuffers(1, &fbos.hbao2_deinterleave);
-                    glDeleteFramebuffers(1, &fbos.hbao2_calc);
-                    glDeleteFramebuffers(1, &fbos.hbao_calc);
-                    glDeleteFramebuffers(1, &fbos.depthlinear);
-                    glDeleteFramebuffers(1, &fbos.viewnormal);
+    glDeleteFramebuffers(1, &fbos.hbao2_deinterleave);
+    glDeleteFramebuffers(1, &fbos.hbao2_calc);
+    glDeleteFramebuffers(1, &fbos.hbao_calc);
+    glDeleteFramebuffers(1, &fbos.depthlinear);
+    glDeleteFramebuffers(1, &fbos.viewnormal);
 }
 
 }

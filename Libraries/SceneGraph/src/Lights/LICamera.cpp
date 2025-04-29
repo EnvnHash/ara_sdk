@@ -65,8 +65,9 @@ void LICamera::setup(bool callSetupCb) {
 
         // calls m_sceneCamSet->buildCamMatrixArrays();
         if (callSetupCb || m_camDef->getForceUpdtCb()) {
-            for (auto& it : m_setupCb) it();
-
+            for (const auto& it : m_setupCb) {
+                it();
+            }
             m_camDef->setForceUpdtCb(false);
         }
     }
@@ -75,12 +76,15 @@ void LICamera::setup(bool callSetupCb) {
 /** \brief create a shadered FBO from the pointer received here, create a
  * textureview on the specific layer, if there are more than one */
 void LICamera::setCsFboPtr(FBO* fbo, int layerNr) {
-    if (m_sceneCamFbo.isInited()) m_sceneCamFbo.remove();
+    if (m_sceneCamFbo.isInited()) {
+        m_sceneCamFbo.remove();
+    }
 
-    if (layerNr > -1)
+    if (layerNr > -1) {
         m_sceneCamFbo.fromSharedExtractLayer(fbo, layerNr);
-    else
+    } else {
         m_sceneCamFbo.fromShared(fbo);
+    }
 }
 
 }  // namespace ara

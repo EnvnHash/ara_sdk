@@ -173,7 +173,7 @@ UIWindow::UIWindow(const UIWindowParams& par)
         m_colors[uiColors::white]          = glm::vec4(1.f, 1.f, 1.f, 1.f);
 
         m_minWinSize = ivec2(300, 300);
-        m_sharedRes  = UISharedRes{(void *)this,
+        m_sharedRes  = UISharedRes{static_cast<void *>(this),
                                   &s_shCol,
                                   m_winHandle,
                                   m_objSel.get(),
@@ -377,7 +377,7 @@ bool UIWindow::closeEvtLoopCb() {
     // removes the window from the GLFWWindowsManager's m_windows array, i.e. destroys the Window and its context
     // m_winHandle is invalid afterward
 #ifdef ARA_USE_GLFW
-    if (m_selfManagedCtx) {
+    if (m_selfManagedCtx && m_winHandle) {
         if (m_winHandle->getOnCloseCb()) {
             m_winHandle->getOnCloseCb()();
         }
@@ -387,7 +387,6 @@ bool UIWindow::closeEvtLoopCb() {
 
     m_winHandle = nullptr;
     s_inited    = false;
-
     return true;
 }
 
@@ -426,12 +425,12 @@ bool UIWindow::draw(double time, double dt, int ctxNr) {
         s_isDrawing = true;
 
         // process all steps that have the first and second bool set to true
-        for (auto &it : m_procSteps) {
-            if (it.second.active) {
-                if (it.second.func) {
-                    it.second.func();
+        for (auto &val: m_procSteps | views::values) {
+            if (val.active) {
+                if (val.func) {
+                    val.func();
                 }
-                it.second.active = false;
+                val.active = false;
             }
         }
 
@@ -483,7 +482,7 @@ void UIWindow::drawNodeTree() {
     copyToScreen();  // --- blit the result. Binds draw framebuffer 0 which is the same as m_sceneFbo->unbind()
 }
 
-void UIWindow::copyToScreen() {
+void UIWindow::copyToScreen() const {
     if (m_multisample) {
         if (m_doSwap) {
 #ifdef __APPLE__
@@ -614,8 +613,7 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
                     m_appHandle->exit();
                     return true;
                 },
-                true);  // since we are on the main thread here, force pushing
-                        // to the queue
+                true);  // since we are on the main thread here, force pushing to the queue
 #else
             // this is called from GL HID queue
             ivec2 diagPos{0};
@@ -623,11 +621,15 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
             diagPos.x = (getWidth() - diagSize.x) / 2 + getPosition().x;
             diagPos.y = (getHeight() - diagSize.y) / 2 + getPosition().y;
 
-            m_appHandle->openInfoDiag(diagPos.x, diagPos.y, diagSize.x, diagSize.y, infoDiagType::confirm,
-                                      "Do you really want to quit?", true, 0, [this] {
-                                          m_appHandle->exit();
-                                          return false;
-                                      });
+            m_appHandle->openInfoDiag(InfoDiagParams{
+                .pos = diagPos,
+                .size = diagSize,
+                .tp = infoDiagType::confirm,
+                .msg = "Do you really want to quit?",
+                .minStayTime =  0,
+                .isModal = true,
+                .onClose = [this] { m_appHandle->exit(); return false; }
+            });
 #endif
         }
     }
@@ -699,7 +701,7 @@ void UIWindow::window_pos_callback(int xpos, int ypos) {
         // since there are invalid numbers, we have to filter those calls
 
         // check if the window will be completely invisible
-        int *wa = m_winHandle->getWorkArea();
+        auto wa = m_winHandle->getWorkArea();
         if (wa && wa[2] && wa[3] &&
             !(xpos > wa[2]                                   // outside right bounds
               || xpos > wa[3]                                // outside bottom bounds
@@ -707,7 +709,9 @@ void UIWindow::window_pos_callback(int xpos, int ypos) {
               || (ypos + m_winHandle->getSize().y < wa[1]))  // outside top bounds
         ) {
             getActualMonitorMaxArea(xpos, ypos);
-            for (auto &it : m_globalWinPosCb) it.second(xpos, ypos);
+            for (auto &val: m_globalWinPosCb | views::values) {
+                val(xpos, ypos);
+            }
 
             iterate();  // -> procHID
         }
@@ -1133,17 +1137,17 @@ void UIWindow::onSetViewport(int x, int y, int width, int height) {
     s_windowViewport.w = static_cast<float>(height);
 
     // in hardware pixels
-    s_viewPort = glm::round(s_windowViewport * s_devicePixelRatio);
+    s_viewPort = round(s_windowViewport * s_devicePixelRatio);
 
     // update orthoMat
-    s_orthoMat = glm::ortho(0.f, s_windowViewport.z, s_windowViewport.w, 0.f);
-    m_sceneFbo->resize((uint32_t)s_viewPort.z, (uint32_t)s_viewPort.w);
+    s_orthoMat = ortho(0.f, s_windowViewport.z, s_windowViewport.w, 0.f);
+    m_sceneFbo->resize(s_viewPort.z, s_viewPort.w);
 
     if (m_uiRoot) {
         m_uiRoot->setViewport(0.f, 0.f, s_windowViewport.z, s_windowViewport.w);
     }
 
-    glViewport(0, 0, (GLsizei)s_viewPort.z, (GLsizei)s_viewPort.w);
+    glViewport(0, 0, static_cast<GLsizei>(s_viewPort.z), static_cast<GLsizei>(s_viewPort.w));
 
     if (clearFonts && m_sharedRes.res && m_sharedRes.drawMan) {
         m_sharedRes.res->clearGLFont();
@@ -1153,7 +1157,9 @@ void UIWindow::onSetViewport(int x, int y, int width, int height) {
     update();
 
     // callbacks that are not related to a specific UINode
-    for (auto &it : m_globalSetViewportCb) it.second(x, y, (int)((float)width), (int)((float)height));
+    for (auto &it : m_globalSetViewportCb) {
+        it.second(x, y, width, height);
+    }
 }
 
 void UIWindow::onNodeRemove(UINode *node) {
@@ -1267,14 +1273,16 @@ void UIWindow::setAppIcon(std::string &path) {
 #if defined(ARA_USE_GLFW) && defined(ARA_USE_FREEIMAGE)
     // set app icon
     std::vector<uint8_t> vp;
-    m_glbase->getAssetManager()->loadResource(nullptr, vp, "precision/vioso6_48x48.png");
+    // m_glbase->getAssetManager()->loadResource(nullptr, vp, "precision/vioso6_48x48.png");
 
     if (vp.empty()) return;
 
     FIBITMAP          *pBitmap;
     FreeImg_MemHandler mh(&vp[0], vp.size());
-    FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
-    if (!(pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0))) return;
+    FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), &mh, 0);
+    if (!(pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), &mh, 0))) {
+        return;
+    }
 
     FreeImage_FlipVertical(pBitmap);
 
@@ -1470,7 +1478,7 @@ void UIWindow::addGlCb(void* cbName, const std::string& fName, const std::functi
 // wrapping up the util filedialog, since in combination with MFC this causes
 // issues which have to be addressed
 #ifdef _WIN32
-std::string UIWindow::OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuffix) {
+std::string UIWindow::OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuffix) const {
 #ifdef _WIN32
 #ifdef ARA_USE_GLFW
     HWND owner = getWinHandle()->getHwndHandle();

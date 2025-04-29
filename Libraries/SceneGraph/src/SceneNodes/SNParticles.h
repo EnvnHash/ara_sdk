@@ -21,7 +21,7 @@ public:
     SNParticles(sceneData* sd = nullptr);
     ~SNParticles();
 
-    void draw(void);
+    void draw();
     void initShdr();
     std::string getVertShader();
     std::string getFragShader();

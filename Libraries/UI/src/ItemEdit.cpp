@@ -39,7 +39,7 @@ void ItemEdit::init() {
         head->addStyleClass(getStyleClass() + ".head");
 
         int row = 1;
-        for (auto& it: ui_children) {
+        for (const auto& it: ui_children) {
             if (it->isPropertyItem && it->visible()) {
                 auto lbl = setCell<Label>(row, 0);
                 lbl->setText(!it->displayName().empty() ? it->displayName() : it->name());

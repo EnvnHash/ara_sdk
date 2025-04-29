@@ -27,13 +27,13 @@ using namespace std;
 
 namespace ara {
 
-Font::Font(std::string font_path, int size, float pixRatio) {
+Font::Font(const std::string& font_path, int size, float pixRatio) {
     m_FontSize = size;
     m_pixRatio = pixRatio;
-    setFontType(std::move(font_path));
+    setFontType(font_path);
 }
 
-Font::Font(vector<uint8_t> &vp, const std::string &font_path, int size, float pixRatio) {
+Font::Font(const vector<uint8_t> &vp, const std::string &font_path, int size, float pixRatio) {
     m_pixRatio = pixRatio;
     create(vp, font_path, size, pixRatio);
 }
@@ -116,7 +116,7 @@ bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, int f
     return ret;
 }
 
-void Font::pushGlyph(int ch_count, int ch_off, int wh, std::vector<uint8_t>& bmp) {
+void Font::pushGlyph(int ch_count, int ch_off, int wh, const std::vector<uint8_t>& bmp) {
     glGenTextures(1, &gl_TexID);
     glBindTexture(GL_TEXTURE_2D, gl_TexID);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, wh, wh);

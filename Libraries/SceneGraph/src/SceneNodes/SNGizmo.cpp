@@ -150,15 +150,25 @@ void SNGizmo::selectAxis(size_t idx) {
 }
 
 void SNGizmo::selectNextAxis() {
-    for (auto& it : gizmoAxes) it->setSelected(false);
-    for (auto& it : gizmoPlanes) it->setSelected(false);
+    for (const auto& it : gizmoAxes) {
+        it->setSelected(false);
+    }
+
+    for (const auto& it : gizmoPlanes) {
+        it->setSelected(false);
+    }
 
     selectAxis(tMode == transMode::translate ? (m_selectedAxis + 1) % 6 : (m_selectedAxis + 1) % 3);
 }
 
 void SNGizmo::selectPrevAxis() {
-    for (auto& it : gizmoAxes) it->setSelected(false);
-    for (auto& it : gizmoPlanes) it->setSelected(false);
+    for (const auto& it : gizmoAxes) {
+        it->setSelected(false);
+    }
+
+    for (const auto& it : gizmoPlanes) {
+        it->setSelected(false);
+    }
 
     selectAxis(tMode == transMode::translate ? (m_selectedAxis - 1 + 6) % 6 : (m_selectedAxis - 1 + 3) % 3);
 }

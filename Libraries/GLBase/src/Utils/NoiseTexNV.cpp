@@ -23,10 +23,10 @@ NoiseTexNV::NoiseTexNV(int w, int h, int d, GLint internalFormat)
     for (int z = 0; z < d; z++) {
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
-                *ptr++ = rand() & 0xff;
-                *ptr++ = rand() & 0xff;
-                *ptr++ = rand() & 0xff;
-                *ptr++ = rand() & 0xff;
+                *ptr++ = static_cast<uint8_t>(getRandF(0.f, 255.f)) & 0xff;
+                *ptr++ = static_cast<uint8_t>(getRandF(0.f, 255.f)) & 0xff;
+                *ptr++ = static_cast<uint8_t>(getRandF(0.f, 255.f)) & 0xff;
+                *ptr++ = static_cast<uint8_t>(getRandF(0.f, 255.f)) & 0xff;
             }
         }
     }
@@ -43,8 +43,10 @@ NoiseTexNV::NoiseTexNV(int w, int h, int d, GLint internalFormat)
     glTexImage3D(GL_TEXTURE_3D, 0, internalFormat, w, h, d, 0, GL_RGBA, GL_BYTE, data.data());
 }
 
-GLuint NoiseTexNV::getTex() { return m_tex; }
+GLuint NoiseTexNV::getTex() const {
+    return m_tex;
+}
 
-NoiseTexNV::~NoiseTexNV() {}
+NoiseTexNV::~NoiseTexNV() = default;
 
 }  // namespace ara

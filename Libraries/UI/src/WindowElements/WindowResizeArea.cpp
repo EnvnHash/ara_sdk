@@ -40,7 +40,7 @@ void WindowResizeArea::updateDrawData() {
 
         m_zPos = 0.f;
 
-        for (auto& it : stdQuadVertices) {
+        for (const auto& it : stdQuadVertices) {
             dIt->pos    = *getMvp() * vec4(it * m_size, 0.f, 1.0);
             dIt->aux2.z = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
             dIt->aux2.w = m_zPos;

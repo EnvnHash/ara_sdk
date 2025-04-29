@@ -23,7 +23,7 @@ public:
 
     void hideButtons(bool val) {
         m_showButtons = !val;
-        for (auto& it : m_menButtons) {
+        for (const auto& it : m_menButtons) {
             it.second->setVisibility(!val);
         }
     }

@@ -523,28 +523,30 @@ void Polygon::extrpSeg(int i, array<vector<CtrlPoint>::const_iterator, 3>& pOffs
         || (i == 2 && pOffsIt[1]->intrPolMethod == interpolM::CatmullRomCentri)
         || (i == 0 && p1IsCatM))
     {
-        out->at(outIdx[i]).x = pOffsIt[i]->position.x;
-        out->at(outIdx[i]).y = pOffsIt[i]->position.y;
+        out->at(outIdx[i]) = pOffsIt[i]->position;
     } else {
         // in case we are at P3 and this point doesn't use cattmull-rom,
         // extrapolate a new point by mirroring P1 on P2
         auto p2              = polygon.begin() + pOffsIndx[1];
         vec2 extrPolPoint = i == 2 ? (p2->position - point->position) + p2->position
                                     : (point->position - p2->position) + point->position;
-        out->at(outIdx[i]).x = extrPolPoint.x;
-        out->at(outIdx[i]).y = extrPolPoint.y;
+        out->at(outIdx[i]) = extrPolPoint;
     }
 }
 
 // TODO: check for polygons with holes
 void Polygon::updatePosVao(const map<uint32_t, CtrlPoint *> *pointMap) {
-    if (m_vaoFilled.isInited()) {
-        auto ptr = static_cast<vec4 *>(m_vaoFilled.getMapBuffer(CoordType::Position));
-        for (auto &it : *pointMap) {
-            ptr[it.first].x = it.second->position.x;
-            ptr[it.first].y = it.second->position.y;
+    try {
+        if (m_vaoFilled.isInited()) {
+            auto ptr = static_cast<vec4 *>(m_vaoFilled.getMapBuffer(CoordType::Position));
+            for (auto &it : *pointMap) {
+                ptr[it.first].x = it.second->position.x;
+                ptr[it.first].y = it.second->position.y;
+            }
+            VAO::unMapBuffer();
         }
-        ara::VAO::unMapBuffer();
+    } catch(std::runtime_error& e) {
+        LOGE << e.what();
     }
 }
 

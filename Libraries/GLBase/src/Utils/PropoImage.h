@@ -22,12 +22,12 @@ public:
                propoImagePos _pos = CENTER, float _border = 0.f);
 
     void setupQuad();
-    void draw();
+    void draw() const;
     void setWidth(float _newWidth);
 
-    float getImgHeight() const { return imgHeight; }
-    float getImgAspectRatio() const { return imgAspectRatio; }
-    GLint getTexId() { return imgTex->getId(); }
+    [[nodiscard]] float getImgHeight() const { return imgHeight; }
+    [[nodiscard]] float getImgAspectRatio() const { return imgAspectRatio; }
+    [[nodiscard]] GLint getTexId() const { return static_cast<GLint>(imgTex->getId()); }
 
 private:
     std::unique_ptr<Texture> imgTex;

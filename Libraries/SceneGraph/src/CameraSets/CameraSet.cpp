@@ -32,7 +32,7 @@ ShaderProto* CameraSet::addShaderProto(const string& protoName, const list<rende
     s_shaderProto[protoName] = m_spf.Create(protoName, s_sd);
 
     // sort shaderProtos by renderPasses
-    for (auto& it : protoPasses) {
+    for (const auto& it : protoPasses) {
         s_renderPassShProto[it].emplace_back(s_shaderProto[protoName].get());
     }
 
@@ -50,7 +50,7 @@ void CameraSet::removeShaderProto(const std::string& protoName, const std::list<
     }
 
     auto shdr = s_shaderProto[protoName].get();
-    for (auto& it : protoPasses) {
+    for (const auto& it : protoPasses) {
         auto res = std::find_if(s_renderPassShProto[it].begin(), s_renderPassShProto[it].end(), [shdr](auto& it) {
             return shdr == it;
         });
@@ -102,8 +102,8 @@ void CameraSet::setInteractCam(TrackBallCam* cam) {
 vector<pair<TrackBallCam*, void*>>::iterator CameraSet::addCamera(TrackBallCam* camDef, void* name) {
     s_cam.emplace_back(camDef, name);
     buildCamMatrixArrays();
-    for (auto& it : s_shaderProto) {
-        it.second->setNrCams((int)s_cam.size());
+    for (auto&[fst, snd] : s_shaderProto) {
+        snd->setNrCams(static_cast<int>(s_cam.size()));
     }
     return s_cam.end() - 1;
 }
@@ -112,14 +112,18 @@ void CameraSet::removeCamera(void* name) {
     if (s_cam.empty()) return;
 
     // check if there's callback registered to this camera
-    if (s_updtCb.find(name) != s_updtCb.end()) s_updtCb.erase(name);
-    auto cIt =
-        std::find_if(s_cam.begin(), s_cam.end(), [name](const pair<Camera*, void*>& p) { return p.second == name; });
-    if (cIt != s_cam.end()) s_cam.erase(cIt);
+    if (s_updtCb.contains(name)) s_updtCb.erase(name);
+    const auto cIt =
+        ranges::find_if(s_cam, [name](const pair<Camera*, void*>& p) { return p.second == name; });
+    if (cIt != s_cam.end()) {
+        s_cam.erase(cIt);
+    }
 
     buildCamMatrixArrays();
 
-    for (auto& it : s_shaderProto) it.second->setNrCams((int)s_cam.size());
+    for (auto&[fst, snd] : s_shaderProto) {
+        snd->setNrCams(static_cast<int>(s_cam.size()));
+    }
 }
 
 // Merge all cameras of the set into one array for uniform upload to Shaders
@@ -184,14 +188,16 @@ void CameraSet::iterateNode(SceneNode* node, double time, double dt, uint ctxNr,
     }
 
     if (node) {
-        for (auto& it : *node->getChildren()) {
+        for (const auto& it : *node->getChildren()) {
             // if the node was translated, scaled or rotated since the last loop
             if (calcMatrixStack && it->m_hasNewModelMat) {
                 // since all matrices inside the matrixstack are relative to its
                 // respective parent, we need to multiply them down to get the
                 // actual parent matrix
                 s_sumMat = mat4(1.f);
-                for (auto& mIt : s_matrixStack) s_sumMat *= *mIt;
+                for (const auto& mIt : s_matrixStack) {
+                    s_sumMat *= *mIt;
+                }
 
                 // calculate it's new absolute matrix in respect to its parent
                 // nodes
@@ -202,7 +208,9 @@ void CameraSet::iterateNode(SceneNode* node, double time, double dt, uint ctxNr,
 
                 // all subnodes have to be updated, so set the flag to all
                 // children
-                for (auto& child : *it->getChildren()) child->m_hasNewModelMat = true;
+                for (const auto& child : *it->getChildren()) {
+                    child->m_hasNewModelMat = true;
+                }
             }
 
             // check if the BoundingBox of the SceneNode is calculated, if not
@@ -262,15 +270,15 @@ void CameraSet::setViewport(uint x, uint y, uint width, uint height, bool resize
     s_fScrWidth  = static_cast<float>(width);
     s_fScrHeight = static_cast<float>(height);
 
-    for (auto& it : s_cam) {
-        if (it.first) {
-            it.first->setScreenSize(width, height);
+    for (const auto &key: s_cam | views::keys) {
+        if (key) {
+            key->setScreenSize(width, height);
         }
     }
 
     if (resizeProto) {
-        for (auto& it : s_shaderProto) {
-            it.second->setScreenSize(width, height);
+        for (const auto& proto : s_shaderProto  | views::values) {
+            proto->setScreenSize(width, height);
         }
     }
 }

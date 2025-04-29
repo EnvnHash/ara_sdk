@@ -25,15 +25,24 @@ public:
     AssimpData() = default;
     virtual ~AssimpData() {}
 
-    void drawMeshNoShdr(uint meshNr, GLenum renderType);
+    void drawMeshNoShdr(uint meshNr, GLenum renderType) const;
     void sendMeshMatToShdr(uint meshNr, Shaders* shdr);
+
+    void setTextures(const AssimpMeshHelper& mesh, Shaders *shdr) const;
+    static void setCullFace(const AssimpMeshHelper& mesh);
+    static void setBlendFunc(const AssimpMeshHelper& mesh);
+    void setMaterials(AssimpMeshHelper& mesh, Shaders* shdr) const ;
+    void drawByRenderType(const AssimpMeshHelper& mesh, GLenum renderType, uint nrInst = 0) const;
+    void draw(AssimpMeshHelper& mesh, Shaders* shdr, GLenum renderType, bool useTextures, uint nrInst = 0) const;
+
     void drawMesh(uint meshNr, GLenum renderType, Shaders* shdr);
     void draw(GLenum renderType, Shaders* shdr = nullptr);
     void drawInstanced(GLenum renderType, uint nrInst, Shaders* shdr = nullptr);
     void drawNoText(uint meshNr, GLenum renderType, Shaders* shdr);
+
     void update(double time);
     void updateAnimations(double time);
-    void updateMeshes(aiNode* node, glm::mat4 parentMatrix);
+    void updateMeshes(const aiNode* node, const glm::mat4 &parentMatrix);
     void updateBones();
     void updateGLResources();          ///< updates the *actual GL resources* for the
                                        ///< current animation
@@ -43,76 +52,73 @@ public:
     AssimpAnimation& getAnimation(int animationIndex);
 
     void playAllAnimations() {
-        for (uint i = 0; i < animations.size(); i++) animations[i].play();
+        for (auto & animation : animations) {
+            animation.play();
+        }
     }
     void stopAllAnimations() {
-        for (uint i = 0; i < animations.size(); i++) animations[i].stop();
+        for (auto & animation : animations) {
+            animation.stop();
+        }
     }
     void resetAllAnimations() {
-        for (uint i = 0; i < (int)animations.size(); i++) animations[i].reset();
+        for (auto & animation : animations) {
+            animation.reset();
+        }
     }
     void setPausedForAllAnimations(bool pause) {
-        for (uint i = 0; i < (int)animations.size(); i++) animations[i].setPaused(pause);
+        for (auto & animation : animations) {
+            animation.setPaused(pause);
+        }
     }
     void setLoopStateForAllAnimations(enum AssimpAnimation::loopType state) {
-        for (auto i = 0; i < (int)animations.size(); i++) animations[i].setLoopState(state);
+        for (auto & animation : animations) {
+            animation.setLoopState(state);
+        }
     }
     void setPositionForAllAnimations(float position) {
-        for (uint i = 0; i < (int)animations.size(); i++) animations[i].setPosition(position);
+        for (auto & animation : animations) {
+            animation.setPosition(position);
+        }
     }
 
-    void      enableTextures() { bUsingTextures = true; }
-    void      enableNormals() { bUsingNormals = true; }
-    void      enableColors() { bUsingColors = true; }
-    void      enableMaterials() { bUsingMaterials = true; }
-    void      disableTextures() { bUsingTextures = false; }
-    void      disableNormals() { bUsingNormals = false; }
-    void      disableColors() { bUsingColors = false; }
-    void      disableMaterials() { bUsingMaterials = false; }
-    bool      hasMeshes() { return modelMeshes.size() > 0; }
-    uint      getMeshCount() { return static_cast<uint>(modelMeshes.size()); }
-    int       getNumMeshes() { return scene->mNumMeshes; }
-    glm::vec3 getPosition() { return pos; }
-    glm::vec3 getSceneCenter() { return aiVecToOfVec(scene_center); }
-    glm::vec3 getScale() { return scale; }
-    glm::vec3 getDimensions() const;
-    glm::vec3 getCenter() { return glm::vec3(scene_center.x, scene_center.y, scene_center.z); }
-    glm::vec3 getSceneMin(bool bScaled = false) const;
-    glm::vec3 getSceneMax(bool bScaled = false) const;
-    int       getNumRotations() { return static_cast<int>(rotAngle.size()); }  ///< returns the no. of applied rotations
-    glm::vec3 getRotationAxis(int which);
-    float     getRotationAngle(int which);
-    const aiScene* getAssimpScene() { return scene; }
+    void enableTextures() { bUsingTextures = true; }
+    void enableNormals() { bUsingNormals = true; }
+    void enableColors() { bUsingColors = true; }
+    void enableMaterials() { bUsingMaterials = true; }
+    void disableTextures() { bUsingTextures = false; }
+    void disableNormals() { bUsingNormals = false; }
+    void disableColors() { bUsingColors = false; }
+    void disableMaterials() { bUsingMaterials = false; }
 
-    std::vector<std::string> getMeshNames() const;
-    [[maybe_unused]] Mesh*   getMesh(const std::string& name) const;
-    [[maybe_unused]] Mesh*   getMesh(int num) const;
-    VAO*                     getVao(int num);
-    [[maybe_unused]] Mesh*   getCurrentAnimatedMesh(const std::string& name);
-    [[maybe_unused]] Mesh*   getCurrentAnimatedMesh(int num) const;
-    MaterialProperties*      getMaterialForMesh(const std::string& name);
-    MaterialProperties*      getMaterialForMesh(int num);
-    Texture*                 getTextureForMesh(const std::string& name, int ind);
-    Texture*                 getTextureForMesh(int num, int ind);
+    [[nodiscard]] bool              hasMeshes() const { return !modelMeshes.empty(); }
+    [[nodiscard]] uint              getMeshCount() const { return static_cast<uint>(modelMeshes.size()); }
+    [[nodiscard]] int               getNumMeshes() const { return scene->mNumMeshes; }
+    [[nodiscard]] glm::vec3         getPosition() const { return pos; }
+    [[nodiscard]] glm::vec3         getSceneCenter() const { return aiVecToOfVec(scene_center); }
+    [[nodiscard]] glm::vec3         getScale() const { return scale; }
+    [[nodiscard]] glm::vec3         getDimensions() const;
+    [[nodiscard]] glm::vec3         getCenter() const { return {scene_center.x, scene_center.y, scene_center.z}; }
+    [[nodiscard]] glm::vec3         getSceneMin(bool bScaled = false) const;
+    [[nodiscard]] glm::vec3         getSceneMax(bool bScaled = false) const;
+    [[nodiscard]] int               getNumRotations() const { return static_cast<int>(rotAngle.size()); }  ///< returns the no. of applied rotations
+    [[nodiscard]] glm::vec3         getRotationAxis(int which) const;
+    [[nodiscard]] float             getRotationAngle(int which) const;
+    [[nodiscard]] const aiScene*    getAssimpScene() const { return scene; }
 
-    void clear() {
-        /*
-        // clear out everything.
-        animations.clear();
-        modelMeshes.clear();
-        pos = vec3(0.f, 0.f, 0.f);
-        scale = vec3(1.f, 1.f, 1.f);
-        rotAngle.clear();
-        rotAxis.clear();
-        //lights.clear();
+    [[nodiscard]] std::vector<std::string> getMeshNames() const;
+    [[maybe_unused]] [[nodiscard]] Mesh*   getMesh(const std::string& name) const;
+    [[maybe_unused]] [[nodiscard]] Mesh*   getMesh(int num) const;
+    [[nodiscard]] VAO*                     getVao(int num) const;
+    [[maybe_unused]] Mesh*                 getCurrentAnimatedMesh(const std::string& name);
+    [[maybe_unused]] [[nodiscard]] Mesh*   getCurrentAnimatedMesh(int num) const;
 
-        scale = vec3(1, 1, 1);
-        bUsingMaterials = true;
-        bUsingNormals = true;
-        bUsingTextures = true;
-        bUsingColors = true;
-        */
-    }
+    [[nodiscard]] const MaterialProperties *getMaterialForMesh(const std::string &name) const;
+    MaterialProperties*                     getMaterialForMesh(int num);
+    [[nodiscard]] Texture*                  getTextureForMesh(const std::string& name, int ind) const;
+    [[nodiscard]] Texture*                  getTextureForMesh(int num, int ind) const;
+
+    void clear() {}
 
     SceneNode*                      sceneRoot = nullptr;
     SNIdGroup*                      idGroup   = nullptr;
@@ -141,9 +147,9 @@ public:
     aiVector3D                       scene_min, scene_max, scene_center;
     aiLogStream                      stream;
 
-    std::vector<AssimpTexture>     textures;
-    std::vector<AssimpMeshHelper*> modelMeshes;
-    std::vector<AssimpAnimation>   animations;
+    std::vector<AssimpTexture>      textures;
+    std::vector<AssimpMeshHelper>   modelMeshes;
+    std::vector<AssimpAnimation>    animations;
 
     std::chrono::time_point<std::chrono::system_clock> startTime;
     std::chrono::time_point<std::chrono::system_clock> endTime;

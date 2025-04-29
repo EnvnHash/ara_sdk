@@ -134,24 +134,24 @@ public:
 
     // GLFWcursor* createMouseCursor(const char* file, float xHot, float yHot);
     void          setMouseCursorIcon(GLFWcursor *icon, WinMouseIcon tp) { m_mouseCursors[toType(tp)] = icon; }
-    bool          isOpen() const { return m_isOpen; }
+    bool          isOpen() const override { return m_isOpen; }
     bool          isMinimized() const { return glfwGetWindowAttrib(m_window, GLFW_ICONIFIED); }
     bool          isMaximized() const { return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED); }
     bool          isHidBlocked() const { return m_hidBlocked; }
     int           getMonitorId() const { return useMonitor; }
     unsigned int  getMonitorWidth() const { return m_monWidth; }
     unsigned int  getMonitorHeight() const { return m_monHeight; }
-    unsigned int  getWidth() { return m_widthVirt; }        /// in virtual pixels
-    unsigned int  getHeight() { return m_heightVirt; }      /// in virtual pixels
-    unsigned int  getWidthReal() { return m_widthReal; }    /// in real pixels
-    unsigned int  getHeightReal() { return m_heightReal; }  /// in real pixels
+    unsigned int  getWidth() const override { return m_widthVirt; }        /// in virtual pixels
+    unsigned int  getHeight() const override { return m_heightVirt; }      /// in virtual pixels
+    unsigned int  getWidthReal() const override { return m_widthReal; }    /// in real pixels
+    unsigned int  getHeightReal() const override { return m_heightReal; }  /// in real pixels
     void         *getWin() override { return m_window; }
     GLFWwindow   *getCtx() const { return m_window; }
     GLFWmonitor **getMonitors() const { return m_monitors; }
     GLFWmonitor  *getMonitor(int i) const { return m_monitors[i]; }
     int           getNrMonitors() const { return m_count; }
-    int           getPosX() const { return static_cast<int>(m_posXvirt); }      /// in virtual pixels
-    int           getPosY() const { return static_cast<int>(m_posYvirt); }      /// in virtual pixels
+    uint32_t      getPosX() const override { return static_cast<int>(m_posXvirt); }      /// in virtual pixels
+    uint32_t      getPosY() const override { return static_cast<int>(m_posYvirt); }      /// in virtual pixels
     int           getPosXReal() const { return static_cast<int>(m_posXreal); }  /// in real pixels
     int           getPosYReal() const { return static_cast<int>(m_posYreal); }  /// in real pixels
     int           getFocus() const { return glfwGetWindowAttrib(m_window, GLFW_FOCUSED); }
@@ -187,10 +187,10 @@ public:
     int         *getWorkArea() { return m_workArea; }
     Conditional *getIterateSema() { return &m_iterate; }
     bool         getBlockResizing() const { return m_blockResizing; }
-    bool         getRequestOpen() const { return m_requestOpen; }
-    bool         getRequestClose() const { return m_requestClose; }
-    void         requestOpen(bool val) { m_requestOpen = val; }
-    void         requestClose(bool val) { m_requestClose = val; }
+    bool         getRequestOpen() const override { return m_requestOpen; }
+    bool         getRequestClose() const override { return m_requestClose; }
+    void         requestOpen(bool val) override { m_requestOpen = val; }
+    void         requestClose(bool val) override { m_requestClose = val; }
     std::function<void()>& getOnCloseCb() { return m_onCloseCb; }
 
     static glm::vec2 getDpi() {
@@ -246,7 +246,8 @@ public:
     }
 
     void setBlockHid(bool val) { m_hidBlocked = val; }
-    void setFloating(bool val) { glfwWindowHint(GLFW_FLOATING, val); }
+    static void setFloating(bool val) { glfwWindowHint(GLFW_FLOATING, val); }
+
     // utility methods for unified window handling (GLFWWindow -> GLWindow)
     void setKeyCallback(GLFWkeyfun f) const { glfwSetKeyCallback(m_window, f); }
     void setCharCallback(GLFWcharfun f) const { glfwSetCharCallback(m_window, f); }

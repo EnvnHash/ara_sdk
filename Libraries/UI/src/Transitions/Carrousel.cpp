@@ -108,7 +108,7 @@ void Carrousel::rotate(float pos) {
     float relSlideWidth = 1.f / static_cast<float>(m_slides.size());
     m_selector->setWidth(relSlideWidth);
 
-    for (auto& slid : m_slides) {
+    for (const auto& slid : m_slides) {
         slid->setSize(relSlideWidth, 1.f);
         slid->setX((static_cast<float>(i) - (static_cast<float>(m_slides.size() -1) * pos)) * relSlideWidth);
         i++;

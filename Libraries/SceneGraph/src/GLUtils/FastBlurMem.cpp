@@ -123,8 +123,8 @@ void FastBlurMem::proc(GLint texIn) {
     //-----------------------------------------------------------------
 
     // linear horizontal blur
-    m_pp->dst->bind();
-    m_pp->dst->clear();
+    m_pp->m_dst->bind();
+    m_pp->m_dst->clear();
 
     glBlendFunc(GL_SRC_ALPHA, GL_ZERO);
 
@@ -140,7 +140,7 @@ void FastBlurMem::proc(GLint texIn) {
     m_fboQuad->draw();
     ara::Shaders::end();
 
-    m_pp->dst->unbind();
+    m_pp->m_dst->unbind();
 
     if (!m_singleFbo) {
         m_pp->swap();
@@ -284,7 +284,7 @@ void FastBlurMem::initShader() {
 
     if (m_target == GL_TEXTURE_2D_ARRAY) {
         frag +=
-            "void main(void){\n"
+            "void main(){\n"
             "FragmentColor = texture( image, vec3( tex_coord, float(gl_Layer) "
             ") ) * weight[0] * weightScale;\n";
     } else {

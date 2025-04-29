@@ -47,7 +47,7 @@ public:
             // needed in debug mode, when the resources can change during runtime
             if (m_glbase.getAssetManager() && !m_glbase.getAssetManager()->usingComp()) {
                 m_glbase.setUpdtResCb([this] {
-                    for (auto& it : m_uiWindows) {
+                    for (const auto& it : m_uiWindows) {
                         it->setResChanged(true);
                         it->update();
                     }

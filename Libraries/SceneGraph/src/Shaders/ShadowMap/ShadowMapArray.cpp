@@ -38,7 +38,7 @@ void ShadowMapArray::rebuildShader(uint _nrLights) {
 
     string vert = shCol->getShaderHeader() + "// ShadowMapArray vertex Shader\n";
 
-    vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main(void) {
+    vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main() {
         \n gl_Position = position;
         \n
     });
@@ -68,11 +68,11 @@ void ShadowMapArray::rebuildShader(uint _nrLights) {
 
     std::string frag = shCol->getShaderHeader() + "// ShadowMapArray fragment Shader\n";
 
-    frag += STRINGIFY(layout(location = 0) out vec4 color; \n void main(void) { color = vec4(1.0); });
+    frag += STRINGIFY(layout(location = 0) out vec4 color; \n void main() { color = vec4(1.0); });
 
     if (s_shadowShader) shCol->deleteShader("ShadowMapArray");
 
-    s_shadowShader = shCol->add("ShadowMapArray", vert.c_str(), geom.c_str(), frag.c_str());
+    s_shadowShader = shCol->add("ShadowMapArray", vert, geom, frag);
 }
 
 void ShadowMapArray::rebuildFbo(uint _nrLights) {

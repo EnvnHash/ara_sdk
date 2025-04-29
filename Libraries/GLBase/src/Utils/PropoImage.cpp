@@ -15,9 +15,9 @@ PropoImage::PropoImage(GLBase* glbase) : imgTex(std::make_unique<Texture>(glbase
 
 PropoImage::PropoImage(const std::string& fileName, int _screenW, int _screenH, float _logoWidth, propoImagePos _pos,
                        float _border)
-    : imgWidth(_logoWidth), border(_border), pos(_pos) {
-    screenW = float(_screenW);
-    screenH = float(_screenH);
+    : pos(_pos), imgWidth(_logoWidth), border(_border) {
+    screenW = static_cast<float>(_screenW);
+    screenH = static_cast<float>(_screenH);
 
     imgTex->loadTexture2D(fileName, 1);
 
@@ -52,7 +52,7 @@ void PropoImage::setupQuad() {
     }
 }
 
-void PropoImage::draw() {
+void PropoImage::draw() const {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, imgTex->getId());
     imgQuad->draw();

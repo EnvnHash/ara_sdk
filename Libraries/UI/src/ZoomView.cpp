@@ -58,7 +58,7 @@ void ZoomView::init() {
                 ui_workingArea->setZoomNormMat(std::any_cast<float>(val) * 0.01f);
         }
 
-        for (auto& it : m_onChangedCb) it();
+        for (const auto& it : m_onChangedCb) it();
     });
 
     ui_zoomSlider->addStyleClass("zoom_view.zoom_slider");

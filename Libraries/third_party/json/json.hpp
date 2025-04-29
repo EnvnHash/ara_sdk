@@ -20709,7 +20709,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
         {
             case value_t::array:
             {
-                for (auto& element : *m_data.m_value.array)
+                for (const auto& element : *m_data.m_value.array)
                 {
                     element.m_parent = this;
                 }
@@ -20718,7 +20718,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
 
             case value_t::object:
             {
-                for (auto& element : *m_data.m_value.object)
+                for (const auto& element : *m_data.m_value.object)
                 {
                     element.second.m_parent = this;
                 }
@@ -20943,7 +20943,7 @@ class basic_json // NOLINT(cppcoreguidelines-special-member-functions,hicpp-spec
             m_data.m_type = value_t::object;
             m_data.m_value = value_t::object;
 
-            for (auto& element_ref : init)
+            for (const auto& element_ref : init)
             {
                 auto element = element_ref.moved_or_copied();
                 m_data.m_value.object->emplace(

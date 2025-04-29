@@ -886,7 +886,7 @@ vec4 SPObjectSelector::unProjectMouse(vec4& inPoint, vec3 camPos, vec3& planeOri
 void SPObjectSelector::addGizmo(transMode gMode) {
     if (m_selectedNode) {
         // be sure all gizmos are deselected
-        for (auto& g : *m_gizmos)
+        for (const auto& g : *m_gizmos)
             if (g) g->setSelected(false);
 
         // add a Gizmo to the end of the SceneTree with the position of the

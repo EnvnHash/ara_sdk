@@ -21,7 +21,9 @@ bool SNAssimp::loadMesh() {
                 file, this,
                 [this](SceneNode* rootNode) {
                     rootNode->setVisibility(true);
-                    for (auto& it : *rootNode->getChildren()) it->setVisibility(true);
+                    for (const auto& it : *rootNode->getChildren()) {
+                        it->setVisibility(true);
+                    }
                 },
                 true);
         return true;

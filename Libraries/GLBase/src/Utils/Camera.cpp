@@ -22,18 +22,18 @@ using namespace std;
 namespace ara {
 
 Camera::Camera(const CameraInitParams& params)
-    : m_type(params.cTyp),
-    m_screenSize(params.screenSize),
-    m_left(params.rect.x),
-    m_right(params.rect.y),
-    m_bottom(params.rect.z),
-    m_top(params.rect.w),
-    m_near(params.nearLim),
-    m_far(params.farLim),
+    : m_screenSize(params.screenSize),
+    m_type(params.cTyp),
     m_camPos(params.cp),
     m_camLookAt(params.la),
     m_camUpVec(params.up),
-    m_fov(glm::radians(params.fov)) {
+    m_fov(glm::radians(params.fov)),
+    m_near(params.nearLim),
+    m_far(params.farLim),
+    m_left(params.rect.x),
+    m_right(params.rect.y),
+    m_bottom(params.rect.z),
+    m_top(params.rect.w) {
     buildMatrices();
 }
 
@@ -100,7 +100,7 @@ void Camera::setupPerspective(float _fov, float nearDist, float farDist, int _sc
     float eyeY = static_cast<float>(_scrHeight) * 0.5f;
     // float halfFov = PI * m_fov / 360;
 
-    auto  tan_fovy = (float)tan(radians(m_fov * 0.5));
+    auto  tan_fovy = static_cast<float>(tan(radians(m_fov * 0.5)));
     float dist     = eyeY / tan_fovy;
 
     if (m_near == 0) m_near = dist / 10.0f;
@@ -118,8 +118,8 @@ void Camera::setupPerspective(float _fov, float nearDist, float farDist, int _sc
 }
 
 void Camera::setScreenSize(uint width, uint height) {
-    m_screenSize.x  = (float)width;
-    m_screenSize.y = (float)height;
+    m_screenSize.x  = static_cast<float>(width);
+    m_screenSize.y = static_cast<float>(height);
     init(true);
 }
 
@@ -139,7 +139,7 @@ void Camera::modelRot(float angle, float x, float y, float z) {
     }
 }
 
-void Camera::setModelMatr(mat4 &modelMatr) {
+void Camera::setModelMatr(const mat4 &modelMatr) {
     // only update if it is really a new model mat
     if (!glm::all(glm::equal(modelMatr, m_model))) {
         m_model  = modelMatr;
@@ -151,7 +151,7 @@ void Camera::setModelMatr(mat4 &modelMatr) {
     }
 }
 
-void Camera::setViewMatr(mat4 &viewMatr) {
+void Camera::setViewMatr(const mat4 &viewMatr) {
     m_view = viewMatr;
     m_mvp  = m_projection * m_view * m_model;
     if (m_updtCb) {
@@ -159,7 +159,7 @@ void Camera::setViewMatr(mat4 &viewMatr) {
     }
 }
 
-void Camera::setProjMatr(mat4 &projMatr) {
+void Camera::setProjMatr(const mat4 &projMatr) {
     m_projection = projMatr;
     m_mvp        = m_projection * m_view * m_model;
     if (m_updtCb) {
@@ -186,7 +186,7 @@ bool Camera::setFishEyeParam() {
     if (!((camW > c_MinNumber) && (m_feAspect > c_MinNumber) && (m_feAspect > c_MinNumber))) {
         m_fishEyeParam0[0] = 1.0f;
         m_fishEyeParam0[1] = 1.0f;
-        m_fishEyeParam0[2] = (float)c_PIH;
+        m_fishEyeParam0[2] = static_cast<float>(c_PIH);
         m_fishEyeParam0[3] = 0.0f;
 
         return false;
@@ -197,17 +197,17 @@ bool Camera::setFishEyeParam() {
 
     if (m_feAspect >= 1.0) {
         camH /= 2.0;
-        r                  = (camH - (double)m_borderPix) / camH;
-        m_fishEyeParam0[0] = (float)(r / m_feAspect);
-        m_fishEyeParam0[1] = (float)r;
+        r                  = (camH - static_cast<double>(m_borderPix)) / camH;
+        m_fishEyeParam0[0] = static_cast<float>(r / m_feAspect);
+        m_fishEyeParam0[1] = static_cast<float>(r);
     } else {
         camW /= 2.0;
-        r                  = (camW - (double)m_borderPix) / camW;
-        m_fishEyeParam0[0] = (float)r;
-        m_fishEyeParam0[1] = (float)(r * m_feAspect);
+        r                  = (camW - static_cast<double>(m_borderPix)) / camW;
+        m_fishEyeParam0[0] = static_cast<float>(r);
+        m_fishEyeParam0[1] = static_cast<float>(r * m_feAspect);
     }
 
-    m_fishEyeParam0[2] = (float)(m_openAngle / 2.0);
+    m_fishEyeParam0[2] = static_cast<float>(m_openAngle / 2.0);
     m_fishEyeParam0[3] = 0.0f;
 
     return true;
@@ -222,8 +222,8 @@ void Camera::setFisheyeOpenAngle(float openAngle) {
 }
 
 void Camera::switchFishEye(bool val) {
-    m_forceUpdtProjMat = m_useFisheye != (int)val;
-    m_useFisheye       = (int)val;
+    m_forceUpdtProjMat = m_useFisheye != static_cast<int>(val);
+    m_useFisheye       = static_cast<int>(val);
     if (m_useFisheye) {
         setFishEyeParam();
     }
@@ -261,7 +261,7 @@ void Camera::setClearColor(float r, float g, float b, float a) {
     m_clearColor = { r, g, b, a };
 }
 
-void Camera::debug() {
+void Camera::debug() const {
     LOG << "model Matrix: " << to_string(m_model).c_str();
     LOG << "view Matrix: " << to_string(m_view).c_str();
     LOG << "projection Matrix: " << to_string(m_projection).c_str();

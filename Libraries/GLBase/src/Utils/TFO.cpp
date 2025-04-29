@@ -6,9 +6,11 @@
 
 #include "TFO.h"
 
+using namespace std;
+
 namespace ara {
 
-TFO::TFO(int bufSize, std::vector<std::string> &parNames) : m_bufSize(bufSize), m_parNames(parNames) {
+TFO::TFO(int bufSize, const std::vector<std::string> &parNames) : m_bufSize(bufSize), m_parNames(parNames) {
     init();
 }
 
@@ -38,7 +40,7 @@ void TFO::init() {
 
     m_buffers.resize(m_nrPar);
     m_bufferSizes.resize(m_nrPar);
-    std::fill(m_bufferSizes.begin(), m_bufferSizes.end(), m_bufSize);
+    ranges::fill(m_bufferSizes, m_bufSize);
     m_tbos.resize(m_nrPar);
 
     glGenBuffers(m_nrPar, &m_buffers[0]);  // generate m_buffers for all attributes
@@ -46,7 +48,7 @@ void TFO::init() {
     uint32_t i = 0;
     for (auto &parName : m_parNames) {
         std::vector<std::string> v        = getStdRecAttribNames();
-        uint32_t                 fragSize = static_cast<uint32_t>(std::find(v.begin(), v.end(), parName) - v.begin());
+        uint32_t                 fragSize = static_cast<uint32_t>(ranges::find(v, parName) - v.begin());
 
         m_locations.emplace_back(fragSize);
         fragSize = getRecCoTypeFragSize()[fragSize];
@@ -105,7 +107,7 @@ void TFO::init() {
     m_statColor[3] = 1.f;
 
     m_recColors.resize(MAX_NUM_COL_SCENE);
-    std::fill(m_recColors.begin(), m_recColors.end(), glm::vec4{0.f, 0.f, 0.f, 1.f});
+    ranges::fill(m_recColors, glm::vec4{0.f, 0.f, 0.f, 1.f});
 
     m_srcMode = GL_SRC_ALPHA;
     m_dstMode = GL_ONE_MINUS_SRC_ALPHA;
@@ -127,13 +129,13 @@ void TFO::bind(bool resetCounters) {
 
 void TFO::unbind() { glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0); }
 
-void TFO::setVaryingsToRecord(std::vector<std::string> *names, GLuint prog) {
+void TFO::setVaryingsToRecord(const std::vector<std::string> *names, GLuint prog) {
     glTransformFeedbackVaryings(prog, static_cast<int>(names->size()),
                                 reinterpret_cast<const GLchar *const *>(names->data()), GL_SEPARATE_ATTRIBS);
 }
 
-void TFO::setVaryingsToRecordInternNames(GLuint prog) {
-    glTransformFeedbackVaryings(prog, (int)m_varyingsNames.size(),
+void TFO::setVaryingsToRecordInternNames(GLuint prog) const {
+    glTransformFeedbackVaryings(prog, static_cast<int>(m_varyingsNames.size()),
                                 reinterpret_cast<const GLchar *const *>(m_varyingsNames.data()), GL_SEPARATE_ATTRIBS);
 }
 
@@ -158,7 +160,7 @@ void TFO::pauseAndOffsetBuf(GLenum _mode) {
     begin(_mode);
 }
 
-void TFO::offsetBuf() {
+void TFO::offsetBuf() const {
     for (uint32_t i = 0; i < m_nrPar; i++)
         glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER,                // target
                           i,                                           // index 0
@@ -206,7 +208,7 @@ void TFO::draw(GLenum mode, GLuint offset, GLuint count, TFO *tfo, GLenum recToM
     }
 }
 
-void TFO::setIndices(GLuint count, GLenum type, GLvoid *indices) {
+void TFO::setIndices(GLuint count, GLenum type, const GLvoid *indices) {
     if (m_resElementBuffer == 0) {
         glGenBuffers(1, &m_resElementBuffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_resElementBuffer);
@@ -225,9 +227,9 @@ void TFO::setIndices(GLuint count, GLenum type, GLvoid *indices) {
     }
 }
 
-void TFO::drawElements(GLenum mode, GLuint count, GLenum type, TFO *tfo, GLenum _recToMode, int geoAmpAmt) {
+void TFO::drawElements(GLenum mode, GLuint count, GLenum type, TFO *tfo, GLenum recToMode, int geoAmpAmt) const {
     if (tfo) {
-        tfo->pauseAndOffsetBuf(_recToMode);
+        tfo->pauseAndOffsetBuf(recToMode);
     }
 
     if (m_resElementBuffer) {
@@ -245,10 +247,10 @@ void TFO::drawElements(GLenum mode, GLuint count, GLenum type, TFO *tfo, GLenum 
 }
 
 void TFO::drawElementsBaseVertex(GLenum mode, GLuint count, GLenum type, GLint basevertex, TFO *tfo,
-                                 GLenum _recToMode, int geoAmpAmt) {
+                                 GLenum recToMode, int geoAmpAmt) const {
 #ifndef ARA_USE_GLES31
     if (tfo) {
-        tfo->pauseAndOffsetBuf(_recToMode);
+        tfo->pauseAndOffsetBuf(recToMode);
     }
 
     if (m_resElementBuffer) {
@@ -267,7 +269,7 @@ void TFO::drawElementsBaseVertex(GLenum mode, GLuint count, GLenum type, GLint b
 }
 
 void TFO::resizeTFOBuf(CoordType _nr, uint32_t size) {
-    auto it = std::find(m_parNames.begin(), m_parNames.end(), getStdRecAttribNames()[toType(_nr)]);
+    auto it = ranges::find(m_parNames, getStdRecAttribNames()[toType(_nr)]);
     if (it != m_parNames.end()) {
         uint32_t fragSize = getRecCoTypeFragSize()[toType(_nr)];
         glBindBuffer(GL_ARRAY_BUFFER, m_buffers[it - m_parNames.begin()]);
@@ -284,7 +286,7 @@ void TFO::resizeTFOBuf(CoordType _nr, uint32_t size) {
 
 GLuint TFO::getTFOBufSize(CoordType _nr) {
     GLuint out = 0;
-    auto   it  = std::find(m_parNames.begin(), m_parNames.end(), getStdRecAttribNames()[toType(_nr)]);
+    auto   it  = ranges::find(m_parNames, getStdRecAttribNames()[toType(_nr)]);
     if (it != m_parNames.end()) {
         out = m_bufferSizes[it - m_parNames.begin()];
     } else {
@@ -296,7 +298,7 @@ GLuint TFO::getTFOBufSize(CoordType _nr) {
 
 GLuint TFO::getTFOBuf(CoordType _nr) {
     GLuint out = 0;
-    auto   it  = std::find(m_parNames.begin(), m_parNames.end(), getStdRecAttribNames()[toType(_nr)]);
+    auto   it  = ranges::find(m_parNames, getStdRecAttribNames()[toType(_nr)]);
     if (it != m_parNames.end()) {
         out = m_buffers[it - m_parNames.begin()];
     } else {
@@ -308,7 +310,7 @@ GLuint TFO::getTFOBuf(CoordType _nr) {
 
 uint32_t TFO::getTFOBufFragSize(CoordType nr) {
     uint32_t out = 0;
-    auto     it  = std::find(m_parNames.begin(), m_parNames.end(), getStdRecAttribNames()[toType(nr)]);
+    auto     it  = ranges::find(m_parNames, getStdRecAttribNames()[toType(nr)]);
     if (it != m_parNames.end()) {
         out = getRecCoTypeFragSize()[toType(nr)];
     } else {
@@ -323,7 +325,7 @@ void TFO::setBlendMode(GLenum srcMode, GLenum dstMode) {
     m_dstMode = dstMode;
 }
 
-void TFO::setSceneNodeColors(glm::vec4 *cols) {
+void TFO::setSceneNodeColors(const glm::vec4 *cols) {
     for (int i = 0; i < MAX_NUM_COL_SCENE; i++) {
         m_recColors[i] = cols[i];
     }

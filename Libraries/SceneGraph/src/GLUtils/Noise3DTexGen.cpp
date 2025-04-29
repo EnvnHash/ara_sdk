@@ -243,7 +243,7 @@ void Noise3DTexGen::initShdr() {
         });
     frag = "// Noise3DTexGen pos tex shader\n" + shdr_Header + frag;
 
-    m_noiseShdr = m_shCol->add("noise3DTexGen", vert.c_str(), frag.c_str());
+    m_noiseShdr = m_shCol->add("noise3DTexGen", vert, frag);
 }
 
 ara::Shaders* Noise3DTexGen::initBlendShdrH() {

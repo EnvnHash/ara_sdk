@@ -29,7 +29,7 @@ public:
 
     /**
      * there are several ways to manage multi window rendering. iterate() is for
-     * single thread non event based rendering. This method iterates through all
+     * single thread non-event based rendering. This method iterates through all
      * windows, calls the draw callback function set for them, polls the events
      * and calls a framebuffer swap -> execute the gl command queue
      */
@@ -64,7 +64,7 @@ public:
                      bool debug = false);
 */
     /**
-     * add a new Window using the GWindow Wrapper class parameters are set via pre filled gWinPar struct
+     * add a new Window using the GWindow Wrapper class parameters are set via pre-filled gWinPar struct
      */
     GLWindow *addWin(const glWinPar& gp);
 
@@ -93,7 +93,7 @@ public:
     std::vector<GLFWvidmode>            getVideoModes();
     std::vector<std::pair<int, int>>    getMonitorOffsets();
     [[maybe_unused]] GLFWvidmode const& getDispMode(unsigned int idx) const;
-    GLFWcursor*                         createMouseCursor(std::string &file, float xHot, float yHot) const;
+    GLFWcursor*                         createMouseCursor(const std::string &file, float xHot, float yHot) const;
     void                                loadMouseCursors();
 #endif
 
@@ -101,14 +101,14 @@ public:
     [[maybe_unused]] unsigned int getMonitorHeight(unsigned int winNr) const;
 
     /** make a specific context visible */
-    void open(unsigned int nr) {
+    void open(unsigned int nr) const {
         if (m_windows.size() > nr) {
             m_windows[nr]->open();
         }
     }
 
     /** make a specific context inVisible */
-    void hide(unsigned int nr) {
+    void hide(unsigned int nr) const {
         if (m_windows.size() > nr) {
             m_windows[nr]->hide();
         }
@@ -117,7 +117,7 @@ public:
     /** close all glfw windows that have been added through this WindowManager instance before */
     [[maybe_unused]] void closeAll() {
         m_run = false;
-        for (auto &it : m_windows) {
+        for (const auto &it : m_windows) {
             it->close();
         }
     }
@@ -125,7 +125,7 @@ public:
     void stop() { m_run = false; }
     bool isRunning() const { return m_run; }
 
-    [[maybe_unused]] int getDispOffsetX(unsigned int idx) {
+    [[maybe_unused]] int getDispOffsetX(unsigned int idx) const {
         if (m_dispOffsets.size() > idx) {
             return m_dispOffsets[idx].first;
         } else {
@@ -133,7 +133,7 @@ public:
         }
     }
 
-    [[maybe_unused]] int getDispOffsetY(unsigned int idx) {
+    [[maybe_unused]] int getDispOffsetY(unsigned int idx) const {
         if (m_dispOffsets.size() > idx) {
             return m_dispOffsets[idx].second;
         } else {
@@ -141,16 +141,16 @@ public:
         }
     }
 
-    [[maybe_unused]] GLWindow *getFirstWin() { return m_windows.empty() ? nullptr : m_windows.front().get(); }
-    [[maybe_unused]] GLWindow *getBack() { return m_windows.back().get(); }
+    [[maybe_unused]] GLWindow *getFirstWin() const { return m_windows.empty() ? nullptr : m_windows.front().get(); }
+    [[maybe_unused]] GLWindow *getBack() const  { return m_windows.back().get(); }
     std::vector<std::unique_ptr<GLWindow>>        *getWindows() { return &m_windows; }
-    GLWindow                                      *getFocusedWin() { return m_focusedWin; }
-    [[maybe_unused]] uint32_t                      getNrWindows() { return static_cast<uint32_t>(m_windows.size()); }
+    GLWindow                                      *getFocusedWin() const { return m_focusedWin; }
+    [[maybe_unused]] uint32_t                      getNrWindows() const { return static_cast<uint32_t>(m_windows.size()); }
     [[maybe_unused]] unsigned int                  getNrDisplays() const { return m_dispCount; }
     [[maybe_unused]] std::vector<DisplayBasicInfo> getDisplays() { return m_displayInfo; }
     [[maybe_unused]] void                          setPrintFps(bool _val) { m_showFps = _val; }
     void                                           setFixFocus(GLWindow *win) { m_fixFocusWin = win; }
-    GLWindow                                      *getFixFocus() { return m_fixFocusWin; }
+    GLWindow                                      *getFixFocus() const { return m_fixFocusWin; }
     void                                           setAssetManager(AssetManager *res) { m_assetManager = res; }
     AssetManager                                   *getAssetManager() { return m_assetManager; }
     [[maybe_unused]] std::thread::id               getMainThreadId() { return m_mainThreadId; }
@@ -160,7 +160,7 @@ public:
 
     static WindowManager *getThis(GLContext ctx) {
 #ifdef ARA_USE_GLFW
-        return reinterpret_cast<WindowManager *>(glfwGetWindowUserPointer((GLFWwindow *)ctx));
+        return static_cast<WindowManager *>(glfwGetWindowUserPointer((GLFWwindow *)ctx));
 #else
         return nullptr;
 #endif
@@ -179,8 +179,9 @@ public:
     }
 
     [[maybe_unused]] void removeGlobalMouseButtonCb(void *ptr) {
-        auto it = m_globalButtonCb.find(ptr);
-        if (it != m_globalButtonCb.end()) m_globalButtonCb.erase(it);
+        if (const auto it = m_globalButtonCb.find(ptr); it != m_globalButtonCb.end()) {
+            m_globalButtonCb.erase(it);
+        }
     }
 
     [[maybe_unused]] void addGlobalMouseCursorCb(void *ptr, std::function<void(GLContext, double, double)> f) {
@@ -235,11 +236,15 @@ public:
 
     void IterateAll(bool                                                            only_open_windows,
                     std::function<void(double time, double dt, unsigned int ctxNr)> render_function) {
-        if ((m_globalDrawFunc = std::move(render_function))) iterate(only_open_windows);
+        if ((m_globalDrawFunc = std::move(render_function))) {
+            iterate(only_open_windows);
+        }
     }
 
-    [[maybe_unused]] void EndMainLoop() {
-        for (auto &it : m_windows) it->destroy(false);
+    [[maybe_unused]] void EndMainLoop() const {
+        for (auto &it : m_windows) {
+            it->destroy(false);
+        }
         GLWindow::terminateLibrary();
     }
 

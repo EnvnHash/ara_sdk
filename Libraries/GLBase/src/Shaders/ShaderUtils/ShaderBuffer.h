@@ -23,25 +23,33 @@ public:
         unbind();
     }
 
-    ~ShaderBuffer() { glDeleteBuffers(1, &m_buffer); }
-    void bind() { glBindBuffer(target, m_buffer); }
-    void unbind() { glBindBuffer(target, 0); }
+    ~ShaderBuffer() {
+        glDeleteBuffers(1, &m_buffer);
+    }
+
+    void bind() const {
+        glBindBuffer(target, m_buffer);
+    }
+
+    static void unbind() {
+        glBindBuffer(target, 0);
+    }
 
     T *map(GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT) {
         bind();
-        return (T *)glMapBufferRange(target, 0, m_size * sizeof(T), access);
+        return static_cast<T *>(glMapBufferRange(target, 0, m_size * sizeof(T), access));
     }
 
-    void unmap() {
+    void unmap() const {
         bind();
         glUnmapBuffer(target);
     }
 
-    GLuint               getBuffer() { return m_buffer; }
+    [[nodiscard]] GLuint getBuffer() const { return m_buffer; }
     [[nodiscard]] size_t getSize() const { return m_size; }
 
     void resize(size_t size) {
-        // in opengl its not possible to resize buffers, so create a new one
+        // in opengl it's not possible to resize buffers, so create a new one
         // copy the old contents, destroy the old one, and exchange the ids
         GLuint new_buffer;
         glGenBuffers(1, &new_buffer);
@@ -61,12 +69,14 @@ public:
 
     void dump() {
         T *data = map(GL_MAP_READ_BIT);
-        for (size_t i = 0; i < m_size; i++) LOG << i << ": " << glm::to_string(data[i]);
+        for (size_t i = 0; i < m_size; i++) {
+            LOG << i << ": " << glm::to_string(data[i]);
+        }
         unmap();
     }
 
 private:
-    static const GLenum target   = GL_SHADER_STORAGE_BUFFER;
+    static constexpr GLenum target   = GL_SHADER_STORAGE_BUFFER;
     size_t              m_size   = 0;
     GLuint              m_buffer = 0;
 };

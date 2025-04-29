@@ -34,7 +34,9 @@ void CsPerspective::clearScreen(renderPass _pass) {
         glViewport(s_iViewport.x, s_iViewport.y, s_iViewport.z, s_iViewport.w);
 
     } else if (_pass == GLSG_SHADOW_MAP_PASS || _pass == GLSG_OBJECT_MAP_PASS) {
-        for (auto& it : s_shaderProto) it.second->clear(_pass);
+        for (const auto& proto : s_shaderProto | views::values) {
+            proto->clear(_pass);
+        }
     }
 }
 
@@ -73,7 +75,7 @@ void CsPerspective::render(SceneNode* node, SceneNode* parent, double time, doub
 }
 
 void CsPerspective::postRender(renderPass _pass, float* extDrawMatr /*, float* extViewport*/) {
-    for (auto& it : s_shaderProto) it.second->postRender(_pass);
+    for (const auto& it : s_shaderProto) it.second->postRender(_pass);
 
     if (_pass == GLSG_SCENE_PASS || _pass == GLSG_GIZMO_PASS) {
         glViewport(m_csVp[0], m_csVp[1], m_csVp[2], m_csVp[3]);

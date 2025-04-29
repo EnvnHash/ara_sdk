@@ -49,7 +49,7 @@ public:
     virtual void loadThread(SceneNode* root, std::function<void(SceneNode*)> cb, SNIdGroup* idGroup = nullptr, bool optimize = true);
 
     void        createLightsFromAiModel();
-    std::string GetDirectory(std::string& _path);
+    static std::string GetDirectory(std::string& _path);
 
     bool uploadToGL();
     void initNormShader();

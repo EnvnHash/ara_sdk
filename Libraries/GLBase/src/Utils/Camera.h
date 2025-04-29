@@ -55,9 +55,9 @@ public:
                           int scrHeight = 0.f);
 
     void setScreenSize(uint32_t width, uint32_t height);
-    void setModelMatr(glm::mat4 &modelMatr);
-    void setViewMatr(glm::mat4 &viewMatr);
-    void setProjMatr(glm::mat4 &projMatr);
+    void setModelMatr(const glm::mat4 &modelMatr);
+    void setViewMatr(const glm::mat4 &viewMatr);
+    void setProjMatr(const glm::mat4 &projMatr);
     void setFrustMult(const float *multVal);
     bool setFishEyeParam();
     void setType(camType t) { m_type = t; }
@@ -118,7 +118,7 @@ public:
     [[nodiscard]] bool  getForceUpdtCb() const { return m_forceUpdtCb; }
     glm::vec4          &getViewport() { return m_viewport; }
 
-    void debug();
+    void debug() const;
 
     float     m_floorSwitch  = 1.f;
     glm::vec2 m_screenSize{};

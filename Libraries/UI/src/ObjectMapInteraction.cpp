@@ -159,7 +159,7 @@ void ObjectMapInteraction::initExtFboObjIdTexAlphaShdr() {
         uniform ivec2 section_pos;	\n
         uniform ivec2 section_size;\n		// if section_size!=0 will use sections\n
         uniform float scale;\n
-        void main(void){    \n
+        void main(){    \n
             const vec2[4] vr = vec2[4](vec2(0.,0.),vec2(1.,0.),vec2(0.,1.),vec2(1.,1.));\n
             vec2 v=vr[gl_VertexID]*size;\n
             vec2 tso=section_size.x<=0 ? textureSize(stex,0) : section_size;\n
@@ -190,7 +190,7 @@ void ObjectMapInteraction::initExtFboObjIdTexAlphaShdr() {
 
         layout(location = 1)  out vec4 objmap; \n
 
-        void main(void) {\n
+        void main() {\n
             objmap=vec4(0.0); // explicitly write nothing to objectmap
             if (uv.x>=0.0 && uv.x<1.0 && uv.y>=0.0 && uv.y<1.0)\n
             { \n

@@ -15,47 +15,47 @@ namespace ara {
 class TFO {
 public:
     TFO();
-    TFO(int _bufSize, std::vector<std::string> &_parNames);
+    TFO(int bufSize, const std::vector<std::string> &parNames);
     ~TFO();
 
     void init();
     void bind(bool _resetCounters = true);
     void begin(GLenum _mode);
-    void offsetBuf();
+    void offsetBuf() const;
     void pauseAndOffsetBuf(GLenum _mode);
     void incCounters(int nrVertices);
     void decCounters(int nrVertices);
     void draw(GLenum mode, TFO *tfo, GLenum recToMode, int geoAmpAmt) const;
     void draw(GLenum mode, GLuint offset, GLuint count, TFO *tfo, GLenum recToMode, int geoAmpAmt) const;
-    void setIndices(GLuint count, GLenum type, GLvoid *indices);
-    void drawElements(GLenum mode, GLuint count, GLenum type, TFO *tfo, GLenum recToMode, int geoAmpAmt);
+    void setIndices(GLuint count, GLenum type, const GLvoid *indices);
+    void drawElements(GLenum mode, GLuint count, GLenum type, TFO *tfo, GLenum recToMode, int geoAmpAmt) const;
 
     void drawElementsBaseVertex(GLenum mode, GLuint count, GLenum type, GLint basevertex, TFO *tfo,
-                                GLenum recToMode, int geoAmpAmt);
+                                GLenum recToMode, int geoAmpAmt) const;
 
     static void unbind();
-    static void setVaryingsToRecord(std::vector<std::string> *names, GLuint _prog);
+    static void setVaryingsToRecord(const std::vector<std::string> *names, GLuint prog);
     static void pause() { glPauseTransformFeedback(); }
     static void resume() { glResumeTransformFeedback(); }
     static void end() { glEndTransformFeedback(); }
 
-    void                                         setVaryingsToRecordInternNames(GLuint _prog);
+    void                                         setVaryingsToRecordInternNames(GLuint _prog) const;
     void                                         resizeTFOBuf(CoordType nr, uint32_t size);
     GLuint                                       getTFOBuf(CoordType nr);
     uint32_t                                     getTFOBufFragSize(CoordType nr);
     GLuint                                       getTFOBufSize(CoordType nr);
     [[nodiscard]] GLuint                         getId() const { return m_tfo; }
-    GLuint                                       getTbo(CoordType coord) { return m_tbos[toType(coord)]; }
+    [[nodiscard]] GLuint                         getTbo(CoordType coord) const { return m_tbos[toType(coord)]; }
     [[nodiscard]] GLuint                         getRecVertOffs() const { return m_recVertOffs; }
     [[nodiscard]] GLuint                         getTotalPrimWritten() const { return m_totalPrimsWritten; }
     [[nodiscard]] GLuint                         getBufSize() const { return m_bufSize; }
     [[nodiscard]] GLuint                         getVao() const { return m_resVAO; }
-    glm::vec4                                    getColor(int ind) { return m_recColors[ind]; }
+    [[nodiscard]] glm::vec4                      getColor(int ind) const { return m_recColors[ind]; }
     [[nodiscard]] GLenum                         getLastMode() const { return m_lastMode; }
     std::vector<std::pair<uint32_t, uint32_t> > *getObjOffsets() { return &m_objOffset; }
 
     void setBlendMode(GLenum srcMode, GLenum dstMode);
-    void setSceneNodeColors(glm::vec4 *cols);
+    void setSceneNodeColors(const glm::vec4 *cols);
     void setVaryingsNames(std::vector<std::string> &names);
     void setRecVertOffs(int nr) { m_recVertOffs = nr; }
     void setObjOffset();

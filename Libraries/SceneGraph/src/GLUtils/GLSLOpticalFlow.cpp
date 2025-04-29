@@ -113,28 +113,29 @@ void GLSLOpticalFlow::initShader(ShaderCollector* shCol) {
 
     frag = "// Optical Flow Shader pos tex shader\n" + shdr_Header + frag;
 
-    m_flowShader = shCol->add("StandardOpticalFlow", vert.c_str(), frag.c_str());
+    m_flowShader = shCol->add("StandardOpticalFlow", vert, frag);
 }
 
 void GLSLOpticalFlow::update(GLint tex1, GLint tex2, float fdbk) {
     glEnable(GL_BLEND);
 
-    m_texture->dst->bind();
+    m_texture->m_dst->bind();
     if (isInited < 2) {
-        m_texture->dst->clear();
+        m_texture->m_dst->clear();
         ++isInited;
     } else {
-        m_texture->dst->clearAlpha(fdbk, 0.f);
+        m_texture->m_dst->clearAlpha(fdbk, 0.f);
     }
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     m_flowShader->begin();
 
-    if (pvm_ptr == 0)
+    if (pvm_ptr == nullptr) {
         m_flowShader->setIdentMatrix4fv("m_pvm");
-    else
+    } else {
         m_flowShader->setUniformMatrix4fv("m_pvm", pvm_ptr);
+    }
 
     m_flowShader->setUniform2f("scale", 1.f, 2.f);
     m_flowShader->setUniform2f("offset", 1.f / static_cast<float>(width), 1.f / static_cast<float>(height));
@@ -152,7 +153,7 @@ void GLSLOpticalFlow::update(GLint tex1, GLint tex2, float fdbk) {
 
     m_quad->draw();
 
-    m_texture->dst->unbind();
+    m_texture->m_dst->unbind();
     m_texture->swap();
 }
 

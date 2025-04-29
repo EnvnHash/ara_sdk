@@ -31,8 +31,8 @@ public:
     typedef std::function<bool(SceneNode*)>             itNodeCbFunc;
     typedef std::function<bool(SceneNode*, SceneNode*)> itNodeParentCbFunc;
 
-    SceneNode(sceneData* sd = nullptr);
-    virtual ~SceneNode();
+    explicit SceneNode(sceneData* sd = nullptr);
+    virtual ~SceneNode() = default;
 
     virtual void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr);
     virtual void postDraw(double time, double dt, CameraSet* cs, Shaders* shader, TFO* tfo = nullptr) {}
@@ -48,7 +48,7 @@ public:
 
     template <class T>
     T* addChild(bool updtNodeIds = false) {
-        return (T*)addChild(std::make_unique<T>(s_sd), updtNodeIds);
+        return static_cast<T *>(addChild(std::make_unique<T>(s_sd), updtNodeIds));
     }
 
     virtual void addChildRef(SceneNode* newNode,
@@ -59,16 +59,16 @@ public:
 
     template <class T>
     T* insertChild(uint ind, bool updtNodeIds = false) {
-        return (T*)insertChild(ind, std::make_unique<T>(s_sd), updtNodeIds);
+        return static_cast<T *>(insertChild(ind, std::make_unique<T>(s_sd), updtNodeIds));
     }
 
     virtual void       clearChildren();
     virtual void       removeChild(SceneNode* node);
     virtual void       removeChild(std::string name);
     virtual void       removeChildDontKill(SceneNode* node);
-    bool               hasParentNode() { return !m_parents.empty(); }
+    bool               hasParentNode() const { return !m_parents.empty(); }
     virtual SceneNode* getParentNode(int objId);
-    SceneNode*         getFirstParentNode() { return !m_parents.empty() ? (*m_parents.begin()) : nullptr; }
+    SceneNode*         getFirstParentNode() const { return !m_parents.empty() ? (*m_parents.begin()) : nullptr; }
 
     std::list<SceneNode*>*                   getParents() { return &m_parents; }
     virtual SceneNode*                       getRootNode();
@@ -108,12 +108,14 @@ public:
         m_idGroup = std::make_unique<SNIdGroup>(this);
         return m_idGroup.get();
     }
-    SNIdGroup* getIdGroup() { return m_idGroup ? m_idGroup.get() : nullptr; }
-    void       setIdGroup(SNIdGroup* gr) { m_extIdGroup = gr; }
-    SNIdGroup* getExtIdGroup() { return m_extIdGroup; }
-    void addPar(const std::string& cmd, float* ptr) { m_par[cmd] = ptr; }
-    void setPar(std::string* cmd, float val) {
-        if (m_par.find(*cmd) != m_par.end()) *m_par[*cmd] = val;
+    SNIdGroup*  getIdGroup() const { return m_idGroup ? m_idGroup.get() : nullptr; }
+    void        setIdGroup(SNIdGroup* gr) { m_extIdGroup = gr; }
+    SNIdGroup*  getExtIdGroup() const { return m_extIdGroup; }
+    void        addPar(const std::string& cmd, float* ptr) { m_par[cmd] = ptr; }
+    void        setPar(const std::string* cmd, float val) {
+        if (m_par.contains(*cmd)) {
+            *m_par[*cmd] = val;
+        }
     }
 
     virtual bool setSelected(bool val, SceneNode* parent = nullptr, bool procCb = true);
@@ -130,12 +132,12 @@ public:
         m_blendSrc = src;
         m_blendDst = dst;
     }
-    void setMaterial(MaterialProperties* material) { m_material = *material; }
+    void setMaterial(const MaterialProperties* material) { m_material = *material; }
     void setHasModelSN(bool val) { m_hasModelSN = val; }
     bool getHasModelSN() const { return m_hasModelSN; }
     void setGridNrSteps(int x, int y) {
-        m_gridNrSteps.x = (float)x;
-        m_gridNrSteps.y = (float)y;
+        m_gridNrSteps.x = static_cast<float>(x);
+        m_gridNrSteps.y = static_cast<float>(y);
     }
     glm::vec2& getGridNrSteps() { return m_gridNrSteps; }
     void       setGridBgAlpha(float val) { m_gridBgAlpha = val; }
@@ -144,9 +146,9 @@ public:
     void       setPolyFill(bool val) { m_polyFill = val; }
     void       setWinding(GLenum val) { m_winding = val; }
     void       setUseNormalizedTexCoord(GLenum val) { m_useNormalizedTexCoord = val; }
-    void       setFlipTc(glm::ivec2& val) { m_flipTc = val; }
+    void       setFlipTc(const glm::ivec2& val) { m_flipTc = val; }
     void       setFlipTc(int idx, int val) { m_flipTc[idx] = val; }
-    void       setInvertTc(glm::ivec2& val) { m_invertTc = val; }
+    void       setInvertTc(const glm::ivec2& val) { m_invertTc = val; }
     void       setInvertTc(int idx, int val) { m_invertTc[idx] = val; }
     void       setName(const char* name) { m_name = std::string(name); }
     void       setName(std::string name) { m_name = std::move(name); }
@@ -194,14 +196,16 @@ public:
     glm::vec3*                             getBoundingBoxMin() { return &m_boundingBoxMin; }
     glm::vec3*                             getBoundingBoxMax() { return &m_boundingBoxMax; }
     std::vector<std::unique_ptr<Texture>>* getTextures() { return &m_textures; }
-    WindowBase*                            getScene() { return m_scene; }
-    sceneData*                             getSceneData() { return s_sd; }
+    WindowBase*                            getScene() const { return m_scene; }
+    sceneData*                             getSceneData() const { return s_sd; }
     bool                                   isPolyFilled() const { return m_polyFill; }
     bool                                   excludeFromObjMap() const { return m_excludeFromObjMap; }
     void pushClickCb(void* ptr, std::function<void()> func) { m_clickCb[ptr] = std::move(func); }
     void deleteClickCb(void* ptr) {
         auto it = m_clickCb.find(ptr);
-        if (it != m_clickCb.end()) m_clickCb.erase(it);
+        if (it != m_clickCb.end()) {
+            m_clickCb.erase(it);
+        }
     }
 
     /** called when the model Matrix of this node changes */
@@ -210,17 +214,18 @@ public:
     }
     void deleteModelMatChangedCb(void* ptr) {
         auto it = m_modelMatChangedCb.find(ptr);
-        if (it != m_modelMatChangedCb.end()) m_modelMatChangedCb.erase(it);
+        if (it != m_modelMatChangedCb.end()) {
+            m_modelMatChangedCb.erase(it);
+        }
     }
 
     virtual void deleteGarbage();
-
     virtual void unregister();
     virtual void dumpTreeIt(SceneNode* tNode, uint level);
     virtual void dump();
 
 public:
-    VAO* m_vao = nullptr;
+    std::shared_ptr<VAO> m_vao;
 
     uint64_t      m_nameFlag  = 0;
     uint64_t      m_transFlag = 0;
@@ -249,7 +254,7 @@ public:
     std::unordered_map<SceneNode*, int>              m_nodeObjId;
     std::unordered_map<SceneNode*, bool>             m_selected;
     std::array<std::string, GLSG_NUM_RENDER_PASSES>  m_protoName;
-    std::array<ShaderProto*, GLSG_NUM_RENDER_PASSES> m_cachedCustShdr = {0};
+    std::array<ShaderProto*, GLSG_NUM_RENDER_PASSES> m_cachedCustShdr = {nullptr};
 
 protected:
     WindowBase*           m_scene = nullptr;

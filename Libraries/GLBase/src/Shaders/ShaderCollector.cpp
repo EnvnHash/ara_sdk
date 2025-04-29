@@ -24,9 +24,6 @@ ShaderCollector::ShaderCollector() {
         "255.0, 1.0);\n";
 }
 
-ShaderCollector::~ShaderCollector() {
-}
-
 Shaders *ShaderCollector::add(const std::string &name, const std::string &vert, const std::string &frag) {
     if (!hasShader(name)) {
         shaderCollection[name] = make_unique<Shaders>(vert, frag, false);
@@ -80,7 +77,7 @@ void ShaderCollector::deleteShader(const std::string &name) {
     }
 }
 
-void ShaderCollector::deleteShader(Shaders *ptr) {
+void ShaderCollector::deleteShader(const Shaders *ptr) {
     for (auto it = shaderCollection.begin(); it != shaderCollection.end(); ++it) {
         if (it->second.get() == ptr) {
             shaderCollection.erase(it);
@@ -90,14 +87,14 @@ void ShaderCollector::deleteShader(Shaders *ptr) {
 }
 
 Shaders *ShaderCollector::get(const std::string &name) {
-    if (shaderCollection.find(name) != shaderCollection.end())
+    if (shaderCollection.contains(name))
         return shaderCollection[name].get();
     else
         return nullptr;
 }
 
-bool ShaderCollector::hasShader(const std::string &name) {
-    return (!shaderCollection.empty() && (shaderCollection.find(name) != shaderCollection.end()));
+bool ShaderCollector::hasShader(const std::string &name) const {
+    return (!shaderCollection.empty() && (shaderCollection.contains(name)));
 }
 
 Shaders *ShaderCollector::getStdClear(bool layered, int nrLayers) {
@@ -467,7 +464,7 @@ Shaders *ShaderCollector::getStdTexBorder() {
                   });
 #endif
 
-    if (shaderCollection.find("std_tex_border") == shaderCollection.end()) {
+    if (!shaderCollection.contains("std_tex_border")) {
         shaderCollection["std_tex_border"] = make_unique<Shaders>(vert, frag, false);
 #ifdef __EMSCRIPTEN__
         // for GLES and WEBGL bind the standard attribute locations
@@ -831,7 +828,7 @@ Shaders *ShaderCollector::getUIGridTexSimple() {
              float alpha; \n
              float borderRadius;
          };\n
-         void main(void){ \n
+         void main(){ \n
              const vec2[4] vr = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n
              vec2 v = vr[gl_VertexID] * size;\n
 
@@ -1759,7 +1756,9 @@ std::string ShaderCollector::getFisheyeVertSnippet(size_t nrCameras) {
 }
 
 void ShaderCollector::clear() {
-    for (auto &it : shaderCollection) it.second.reset();
+    for (auto &val: shaderCollection | views::values) {
+        val.reset();
+    }
 
     shaderCollection.clear();
 }

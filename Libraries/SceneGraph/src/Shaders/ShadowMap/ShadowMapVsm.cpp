@@ -26,7 +26,7 @@ ShadowMapVsm::ShadowMapVsm(Camera* _gCam, int _scrWidth, int _scrHeight, sceneDa
     vSmapShader +=
         STRINGIFY(layout(location = 0) in vec4 position; layout(location = 4) in mat4 modMatr;
                   uniform int useInstancing; uniform mat4 model_matrix; uniform mat4 view_matrix;
-                  uniform mat4 projection_matrix; mat4 model_view_matrix; out vec4 v_position; void main(void) {
+                  uniform mat4 projection_matrix; mat4 model_view_matrix; out vec4 v_position; void main() {
                       model_view_matrix = view_matrix * (useInstancing == 0 ? model_matrix : modMatr);
                       gl_Position       = projection_matrix * (model_view_matrix * position);
                       v_position        = gl_Position;

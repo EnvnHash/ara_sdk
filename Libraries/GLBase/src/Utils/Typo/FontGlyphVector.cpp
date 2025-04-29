@@ -596,7 +596,7 @@ e_fontline *FontGlyphVector::AddLine(e_fontdglyph *p_begin, e_fontdglyph *p_end,
     return fline;
 }
 
-int FontGlyphVector::codepoint(std::string u) {
+int FontGlyphVector::codepoint(const std::string& u) {
     auto l = static_cast<int>(u.length());
     if (l < 1) {
         return -1;

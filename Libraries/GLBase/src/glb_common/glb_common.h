@@ -9,6 +9,7 @@
 
 #include <util_common.h>
 
+#include <ranges>
 #include <cstdint>
 #include <algorithm>
 #include <unordered_map>
