@@ -169,7 +169,7 @@ void GLNativeWindowManager::gMouseButCallback(GLWindow *window, int button, int 
     // functions of the actual window that is the rootWidget callback of
     // this window
     for (auto &it : mouseButCbMap[window]) {
-        it(button, action, mods, m_lastMouseX, m_lastMouseY);
+        it(button, action, mods, m_lastMousePos.x, m_lastMousePos.y);
     }
 
     // call the global function which applies for all windows
@@ -194,8 +194,8 @@ void GLNativeWindowManager::gMouseCursorCallback(GLWindow *window, double xpos, 
     }
 
     // save last mouse Pos
-    m_lastMouseX = xpos;
-    m_lastMouseY = ypos;
+    m_lastMousePos.x = xpos;
+    m_lastMousePos.y = ypos;
 }
 
 void GLNativeWindowManager::addKeyCallback(unsigned int winInd, std::function<void(int, int, int, int)> _func) {
