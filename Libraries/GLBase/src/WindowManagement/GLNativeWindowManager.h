@@ -78,6 +78,9 @@ public:
     void                                    setPrintFps(bool _val) { showFps = _val; }
     void                                    setDispFunc(std::function<void(double, double, unsigned int)> f) { m_dispFunc = f; }
 
+    void IterateAll(bool only_open_windows, std::function<void(double time, double dt, unsigned int ctxNr)> render_function);
+    void EndMainLoop();
+
     static void error_callback(int error, const char *description) {
         printf(" GFLW ERROR: %s \n", description);
         fputs(description, stderr);
@@ -88,35 +91,14 @@ public:
 
     std::vector<glVidMode>           m_dispModes;
     std::vector<std::pair<int, int>> m_dispOffsets;
-    // int nrMonitors=0;
 
     std::function<void(GLWindow *, int, int, int, int)> m_keyCbFun;
     std::function<void(GLWindow *, double, double)>     m_mouseCursorCbFun;
     std::function<void(GLWindow *, int, int, int)>      m_mouseButtonCbFun;
     std::function<void(GLWindow *, int, int)>           winResizeCbFun;
 
-    // ----------------------------------------------------------	// Set
-    // of interactive functions for independent sequence calls (marco.m_g) These
-    // are useful if we want to call certain functions before and after the
-    // render cycle.
-    // ------------------------------	void BeginMainLoop() { run = true; }
-
-    void IterateAll(bool                                                            only_open_windows,
-                    std::function<void(double time, double dt, unsigned int ctxNr)> render_function) {
-        if ((m_dispFunc = render_function)) {
-            iterate(only_open_windows);
-        }
-    }
-
-    void EndMainLoop() {
-        for (auto &it : windows) {
-            it->destroy();
-        }
-    }
-
     bool                                   run;
-    std::vector<std::unique_ptr<GLWindow>> windows;  // in order to use pointers to the windows of this arrays use
-                                                     // unique_otr.
+    std::vector<std::unique_ptr<GLWindow>> windows;  // in order to use pointers to the windows of this arrays use unique_ptr.
 
 private:
     std::mutex              drawMtx;
@@ -146,7 +128,7 @@ private:
     size_t m_dispCount = 0;
 #endif
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
     int                                m_dispCount       = 0;
     GLFWmonitor                      **m_monitors        = nullptr;
     static constexpr const GLFWvidmode m_defaultDispMode = {0, 0, 0, 0, 0, 0};

@@ -862,7 +862,7 @@ void Scene3DBase::updateScene3DBaseViewport(float x, float y, float width, float
     }
 
     if (m_gizmoFbo) {
-        m_gizmoFbo->resize(static_cast<int>(s_sd.winViewport.z), static_cast<int>(s_sd.winViewport.w));
+        m_gizmoFbo->resize(s_sd.winViewport.z, s_sd.winViewport.w);
     }
 
     m_reqRenderPasses[GLSG_SCENE_PASS]      = true;

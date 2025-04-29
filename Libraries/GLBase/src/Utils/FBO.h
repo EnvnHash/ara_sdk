@@ -36,7 +36,8 @@ public:
     void unbind(bool doRestoreStates = true);
     void blit(uint scrWidth, uint scrHeight, GLenum interp = GL_NEAREST) const;
     void blitTo(FBO *dst) const;
-    void resize(uint _width, uint _height, uint _depth = 0, bool checkStates = true);
+    void resize(float width, float height, float depth = 0, bool checkStates = true);
+    void resize(uint width, uint height, uint depth = 0, bool checkStates = true);
     void clearAlpha(float alpha, float col = 0.f) const;
     void clearToAlpha(float alpha);
     void clearToColor(float r, float g, float b, float a);

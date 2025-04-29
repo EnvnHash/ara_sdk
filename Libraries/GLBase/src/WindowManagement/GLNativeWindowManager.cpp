@@ -23,14 +23,13 @@ GLNativeWindowManager::GLNativeWindowManager() {
 #ifdef _WIN32
     DWORD          DispNum       = 0;
     DISPLAY_DEVICE DisplayDevice = {0};
-    DEVMODEA       defaultMode;
+    DEVMODEA       defaultMode{};
 
     // initialize DisplayDevice
     DisplayDevice.cb = sizeof(DisplayDevice);
 
     // get all display devices
     while (EnumDisplayDevices(NULL, DispNum, &DisplayDevice, 0)) {
-        ZeroMemory(&defaultMode, sizeof(DEVMODE));
         defaultMode.dmSize = sizeof(DEVMODE);
         if (!EnumDisplaySettingsA((LPSTR)DisplayDevice.DeviceName, ENUM_REGISTRY_SETTINGS, &defaultMode))
             OutputDebugStringA("Store default failed\n");
@@ -41,15 +40,10 @@ GLNativeWindowManager::GLNativeWindowManager() {
             m_displays.back().height = defaultMode.dmPelsHeight;
             m_displays.back().offsX  = defaultMode.dmPosition.x;
             m_displays.back().offsY  = defaultMode.dmPosition.y;
-
-            // printf(" got display: offs: %d %d  physical size %d %d \n",
-            //       m_displays.back().offsX, m_displays.back().offsY,
-            //       m_displays.back().width, m_displays.back().height);
         }
 
-        ZeroMemory(&DisplayDevice, sizeof(DisplayDevice));
         DisplayDevice.cb = sizeof(DisplayDevice);
-        DispNum++;
+        ++DispNum;
     }  // end while for all display devices
 
     m_dispCount = m_displays.size();
@@ -274,5 +268,18 @@ int GLNativeWindowManager::getDispOffsetY(unsigned int idx) {
         return 0;
     }
 }
+
+void GLNativeWindowManager::IterateAll(bool only_open_windows, std::function<void(double time, double dt, unsigned int ctxNr)> render_function) {
+    if ((m_dispFunc = render_function)) {
+        iterate(only_open_windows);
+    }
+}
+
+void GLNativeWindowManager::EndMainLoop() {
+    for (auto &it : windows) {
+        it->destroy();
+    }
+}
+
 
 }

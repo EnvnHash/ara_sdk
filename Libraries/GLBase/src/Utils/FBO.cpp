@@ -752,17 +752,21 @@ void FBO::blitTo(FBO *dst) const {
                           GL_NEAREST);
 }
 
+void FBO::resize(float width, float height, float depth, bool checkStates) {
+    resize( static_cast<uint>(width), static_cast<uint>(height), static_cast<uint>(depth), checkStates);
+}
+
 /**
  * Best practise is to use OpenGL immutable storage (glTexStorage*) which can't be resized. So for resizing all textures
  * get destroyed and reallocated with the same parameters
  */
-void FBO::resize(uint _width, uint _height, uint _depth, bool checkStates) {
-    if (!_width) {
+void FBO::resize(uint width, uint height, uint depth, bool checkStates) {
+    if (!width) {
         return;
     }
 
-    m_tex_width    = _width;
-    m_tex_height   = _height;
+    m_tex_width    = width;
+    m_tex_height   = height;
     m_f_tex_width  = static_cast<float>(m_tex_width);
     m_f_tex_height = static_cast<float>(m_tex_height);
     m_f_tex_depth  = static_cast<float>(m_tex_depth);
