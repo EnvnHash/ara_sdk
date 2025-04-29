@@ -83,8 +83,8 @@ public:
         fputs(description, stderr);
     }
 
-    double m_lastMouseX;
-    double m_lastMouseY;
+    double m_lastMouseX = 0;
+    double m_lastMouseY = 0;
 
     std::vector<glVidMode>           m_dispModes;
     std::vector<std::pair<int, int>> m_dispOffsets;

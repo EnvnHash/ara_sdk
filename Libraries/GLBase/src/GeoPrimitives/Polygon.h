@@ -89,7 +89,9 @@ public:
 
     static std::unique_ptr<std::vector<glm::vec2>> getCatmull4PointSeg(const std::vector<CtrlPoint>::iterator &point,
                                                                        const std::vector<CtrlPoint>           &polygon);
-
+    static void extrpSeg(int i, std::array<std::vector<CtrlPoint>::const_iterator, 3>r& pOffsIt,
+                        const std::vector<CtrlPoint>::iterator &point, const std::vector<CtrlPoint> &polygon,
+                        std::array<int, 3>& pOffsIndx, std::unique_ptr<std::vector<glm::vec2>>& out);
     void updatePosVao(const std::map<uint32_t, CtrlPoint *> *pointMap);
     void setMainPolygon(const std::vector<CtrlPoint> &poly);
 

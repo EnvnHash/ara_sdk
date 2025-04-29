@@ -488,13 +488,11 @@ void Polygon::checkCrossingLines(std::vector<CtrlPoint> *polySeg, const vector<C
 }
 
 unique_ptr<vector<vec2>> Polygon::getCatmull4PointSeg(const vector<CtrlPoint>::iterator &point, const vector<CtrlPoint> &polygon) {
-    int     pOffs[3]     = {-1, 1, 2};
-    int     pOffsIndx[3] = {0, 0, 0};
-    int     outIdx[3]    = {0, 2, 3};
+    std::array pOffs = {-1, 1, 2};
+    std::array pOffsIndx = {0, 0, 0};
     auto    out = make_unique<vector<vec2>>(4);
-    bool    p1IsCatM = point->intrPolMethod == interpolM::CatmullRomCentri;
 
-    vector<CtrlPoint>::const_iterator pOffsIt[3];
+    std::array<vector<CtrlPoint>::const_iterator, 3> pOffsIt;
 
 #pragma omp parallel for
     for (int i = 0; i < 3; i++) {
@@ -504,28 +502,38 @@ unique_ptr<vector<vec2>> Polygon::getCatmull4PointSeg(const vector<CtrlPoint>::i
 
 #pragma omp parallel for
     for (int i = 0; i < 3; i++) {
-        bool isCatM = pOffsIt[i]->intrPolMethod == interpolM::CatmullRomCentri;
-        // in case we are not at P0 or P3, take the found points straight away
-        if (i == 1 || isCatM || (i == 2 && pOffsIt[1]->intrPolMethod == interpolM::CatmullRomCentri) ||
-            (i == 0 && p1IsCatM)) {
-            out->at(outIdx[i]).x = pOffsIt[i]->position.x;
-            out->at(outIdx[i]).y = pOffsIt[i]->position.y;
-        } else {
-            // in case we are at P3 and this point doesn't use cattmull-rom,
-            // extrapolate a new point by mirroring P1 on P2
-            auto p2              = polygon.begin() + pOffsIndx[1];
-            vec2 extrPolPoint = i == 2
-                                    ? (p2->position - point->position) + p2->position
-                                    : (point->position - p2->position) + point->position;
-            out->at(outIdx[i]).x = extrPolPoint.x;
-            out->at(outIdx[i]).y = extrPolPoint.y;
-        }
+        extrpSeg(i, pOffsIt, point, polygon, pOffsIndx, out);
     }
 
     out->at(1).x = point->position.x;
     out->at(1).y = point->position.y;
 
     return out;
+}
+
+void Polygon::extrpSeg(int i, array<vector<CtrlPoint>::const_iterator, 3>& pOffsIt, const vector<CtrlPoint>::iterator &point,
+                       const vector<CtrlPoint> &polygon, std::array<int, 3>& pOffsIndx, std::unique_ptr<vector<vec2>>& out) {
+    bool p1IsCatM = point->intrPolMethod == interpolM::CatmullRomCentri;
+    bool isCatM = pOffsIt[i]->intrPolMethod == interpolM::CatmullRomCentri;
+    std::array outIdx = {0, 2, 3};
+
+    // in case we are not at P0 or P3, take the found points straight away
+    if (i == 1
+        || isCatM
+        || (i == 2 && pOffsIt[1]->intrPolMethod == interpolM::CatmullRomCentri)
+        || (i == 0 && p1IsCatM))
+    {
+        out->at(outIdx[i]).x = pOffsIt[i]->position.x;
+        out->at(outIdx[i]).y = pOffsIt[i]->position.y;
+    } else {
+        // in case we are at P3 and this point doesn't use cattmull-rom,
+        // extrapolate a new point by mirroring P1 on P2
+        auto p2              = polygon.begin() + pOffsIndx[1];
+        vec2 extrPolPoint = i == 2 ? (p2->position - point->position) + p2->position
+                                    : (point->position - p2->position) + point->position;
+        out->at(outIdx[i]).x = extrPolPoint.x;
+        out->at(outIdx[i]).y = extrPolPoint.y;
+    }
 }
 
 // TODO: check for polygons with holes
