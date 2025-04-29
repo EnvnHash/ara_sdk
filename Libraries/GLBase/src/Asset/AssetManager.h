@@ -17,7 +17,6 @@
 
 #include "Asset/AssetFont.h"
 #include "Asset/ResGlFont.h"
-#include <RwBinFile.h>
 #include <AssetLoader.h>
 
 namespace ara {
@@ -40,8 +39,8 @@ public:
 
     bool     Load(const std::string &path);
     bool     Reload();
-    ResNode *getRoot() { return m_rootNode.get(); }
-    ResNode *findNode(const std::string &path) { return m_rootNode->findNode(path); }
+    [[nodiscard]] ResNode *getRoot() const { return m_rootNode.get(); }
+    [[nodiscard]] ResNode *findNode(const std::string &path) const { return m_rootNode->findNode(path); }
 
     template <typename T>
     T *findNode(const std::string& path) {
@@ -70,7 +69,7 @@ public:
     Font           *loadFont(const std::string& path, int size, float pixRatio);
     AssetImageBase *img(const std::string& path);
 
-    bool isOK() const { return m_loadState; }
+    [[nodiscard]] bool isOK() const { return m_loadState; }
     bool usingComp() { return m_assetLoader.usingCmrc(); }
 
     bool checkForResSourceChange();
@@ -78,8 +77,8 @@ public:
     void callResSourceChange();
     void callForChangesInFolderFiles();
 
-    void         setPreContent(std::string &str) { m_preContent = str; }
-    void         setPostContent(std::string &str) { m_postContent = str; }
+    void         setPreContent(const std::string &str) { m_preContent = str; }
+    void         setPostContent(const std::string &str) { m_postContent = str; }
     void         setPostContent(std::string str) { m_postContent = std::move(str); }
     std::string &getPreContent() { return m_preContent; }
     std::string &getPostContent() { return m_postContent; }

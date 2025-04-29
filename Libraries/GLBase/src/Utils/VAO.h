@@ -38,9 +38,9 @@ public:
     void init(std::string &&format, bool createBuffers = true, bool interleaved = false);
     virtual ~VAO();
     void   initData(int nrVert, GLfloat *data = nullptr);
-    void   upload(CoordType type, GLfloat *entries, uint32_t nrVertices);
-    void   setElemIndices(uint32_t count, GLuint *indices);
-    void   setExtElemIndices(uint32_t count, GLuint buffer);
+    void   upload(CoordType type, GLfloat *entries, size_t nrVertices);
+    void   setElemIndices(size_t count, GLuint *indices);
+    void   setExtElemIndices(size_t count, GLuint buffer);
     void   resize(GLuint newNrVertices);
     void   remove();
     void   bindBuffer(GLuint buffer, GLenum type = GL_ARRAY_BUFFER) const;

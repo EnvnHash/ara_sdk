@@ -30,7 +30,7 @@ class AssimpExport {
 public:
     void singleMeshExport(uint32_t nrVert, uint32_t nrIndices, ShaderBuffer<custVec3> *pos,
                           ShaderBuffer<custVec3> *norm, ShaderBuffer<custVec3> *texc, ShaderBuffer<uint32_t> *indices,
-                          std::string &path, std::string &formatId);
+                          const std::string &path, const std::string &formatId);
 
 private:
     Assimp::Exporter exp;

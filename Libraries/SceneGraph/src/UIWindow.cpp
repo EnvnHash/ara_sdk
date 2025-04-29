@@ -228,13 +228,19 @@ UIWindow::UIWindow(const UIWindowParams& par)
                         diagPos.y = (m_winHandle->getSize().y - diagSize.y) / 2 + m_winHandle->getPosition().y;
                     }
 
-                    m_appHandle->openInfoDiag(diagPos.x, diagPos.y, diagSize.x, diagSize.y, infoDiagType::confirm,
-                                              "Do you really want to quit?", true, 0, [this] {
-                                                  m_winHandle->hide();
-                                                  m_appHandle->exit();
-                                                  return false;  // don't close the window, stop after
-                                                                 // immediately after this point
-                                              });
+                    m_appHandle->openInfoDiag((InfoDiagParams{
+                        .pos = diagPos,
+                        .size = diagSize,
+                        .tp = infoDiagType::confirm,
+                        .msg = "Do you really want to quit?",
+                        .minStayTime =  0,
+                        .isModal = true,
+                        .onConfirm = [this] {
+                            m_winHandle->hide();
+                            m_appHandle->exit();
+                            return false;  // don't close the window, stop after immediately after this point
+                        }
+                    }));
                 }
             });
 
@@ -262,7 +268,7 @@ UIWindow::UIWindow(const UIWindowParams& par)
         //-------------------------------------------------------------------------------------------
 
         initGL();
-        onSetViewport(0, 0, static_cast<int>(vWidth), static_cast<int>(vHeight));
+        UIWindow::onSetViewport(0, 0, static_cast<int>(vWidth), static_cast<int>(vHeight));
 
         m_stdTex = s_shCol.getStdTex();
         if (m_multisample) {

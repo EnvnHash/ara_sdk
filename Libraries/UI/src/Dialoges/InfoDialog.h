@@ -20,17 +20,14 @@ public:
     void addCloseEvent(std::function<bool()> cb);
     void setType(infoDiagType tp);
 
-    void setInfoMsg(std::string msg) {
-        m_infoMsg = msg;
-        if (m_msgLabel) m_msgLabel->setText(msg);
-    }
-
+    void setInfoMsg(std::string msg);
     void setMinStayTime(int ms) { m_minStayTime = ms; }
-    void setConfirmCb(std::function<bool()> f) { m_confirmCb = f; }
-    void setCloseCb(std::function<void()> f) { m_closeCb = f; }
-    void setCancelCb(std::function<bool()> f) { m_cancelCb = f; }
-    void setRemoveCb(std::function<void()> f) { m_removeCb = f; }
-    long getMinStayTime() { return m_minStayTime; }
+    void setConfirmCb(const std::function<bool()>& f) { m_confirmCb = f; }
+    void setCloseCb(const std::function<void()>& f) { m_closeCb = f; }
+    void setCancelCb(const std::function<bool()>& f) { m_cancelCb = f; }
+    void setRemoveCb(const std::function<void()>& f) { m_removeCb = f; }
+
+    long getMinStayTime() const { return m_minStayTime; }
 
 private:
     Label                                             *m_msgLabel     = nullptr;

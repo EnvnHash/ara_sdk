@@ -27,34 +27,34 @@ using namespace std;
 
 namespace ara {
 Circle::Circle() {
-    circ            = make_unique<MPCircle>();
+    m_circ            = make_unique<MPCircle>();
     m_format        = m_mesh->getFormat();
     m_color         = { 1.f, 1.f, 1.f, 1.f };
-    instAttribs     = nullptr;
-    maxNrInstances  = 1;
+    m_instAttribs     = nullptr;
+    m_maxNrInstances  = 1;
 
     Circle::init();
 }
 
-Circle::Circle(int _nrSegs, float _outerRad, float _innerRad, float _angle, glm::vec4 col,
-               std::vector<CoordType> *_instAttribs, int _nrInstances)
+Circle::Circle(int nrSegs, float outerRad, float innerRad, float angle, glm::vec4 col,
+               std::vector<CoordType> *instAttribs, int nrInstances)
     : GeoPrimitive() {
-    circ = make_unique<MPCircle>(_nrSegs, _outerRad, _innerRad, _angle, col.r, col.g, col.b, col.a);
-    m_format        = m_mesh->getFormat();
-    m_color         = { 1.f, 1.f, 1.f, 1.f };
-    instAttribs     = _instAttribs;
-    maxNrInstances  = _nrInstances;
+    m_circ          = make_unique<MPCircle>(nrSegs, outerRad, innerRad, angle, col.r, col.g, col.b, col.a);
+    m_format        =    m_mesh->getFormat();
+    m_color             = { 1.f, 1.f, 1.f, 1.f };
+    m_instAttribs         = instAttribs;
+    m_maxNrInstances    = nrInstances;
 
     Circle::init();
 }
 
 void Circle::init() {
     GLenum usage = GL_DYNAMIC_DRAW;
-    if (instAttribs) {
+    if (m_instAttribs) {
         usage = GL_DYNAMIC_DRAW;
     }
 
-    m_vao = make_unique<VAO>(m_format, usage, instAttribs, maxNrInstances);
+    m_vao = make_unique<VAO>(m_format, usage, m_instAttribs, m_maxNrInstances);
     m_vao->setStaticColor(m_color);
     m_vao->uploadMesh(m_mesh.get());
 }

@@ -37,15 +37,15 @@ struct CameraInitParams {
     glm::vec3 cp={0.f, 0.f, 1.f};
     glm::vec3 la={0.f, 0.f, 0.f};
     glm::vec3 up = {0.f, 1.f, 0.f};
-    float near = 1.f;
-    float far = 1000.f;
+    float nearLim = 1.f;
+    float farLim = 1000.f;
     float fov = 45.f;
 };
 
 class Camera {
 public:
     Camera() { init(); }
-    Camera(const CameraInitParams& params);
+    explicit Camera(const CameraInitParams& params);
     virtual ~Camera() = default;
 
     void init(bool fromChangedScreenSize = false);
@@ -60,61 +60,21 @@ public:
     void setProjMatr(glm::mat4 &projMatr);
     void setFrustMult(const float *multVal);
     bool setFishEyeParam();
-
     void setType(camType t) { m_type = t; }
     void setCamPos(glm::vec3 pos) { m_camPos = pos; }
     void setLookAt(glm::vec3 lookAt) { m_camLookAt = lookAt; }
     void setUpVec(glm::vec3 upVec) { m_camUpVec = upVec; }
-
-    void setCamPos(float x, float y, float z) {
-        m_camPos.x = x;
-        m_camPos.y = y;
-        m_camPos.z = z;
-    }
-
-    void setLookAt(float x, float y, float z) {
-        m_camLookAt.x = x;
-        m_camLookAt.y = y;
-        m_camLookAt.z = z;
-    }
-
+    void setCamPos(float x, float y, float z);
+    void setLookAt(float x, float y, float z);
     void setClearColor(glm::vec4 col) { m_clearColor = col; }
-
-    void setClearColor(float r, float g, float b, float a) {
-        m_clearColor.r = r;
-        m_clearColor.g = g;
-        m_clearColor.b = b;
-        m_clearColor.a = a;
-    }
-
+    void setClearColor(float r, float g, float b, float a) ;
     void setFloorSwitch(float val) { m_floorSwitch = val; }
     void setFov(float val) { m_fov = val; }
     void setUpdtCb(std::function<void(camUpt)> f) { m_updtCb = std::move(f); }
-
-    void setFisheyeOpenAngle(float openAngle) {
-        m_forceUpdtProjMat = m_openAngle != openAngle;
-        m_openAngle        = openAngle;
-        if (m_useFisheye) setFishEyeParam();
-    }
-
-    void switchFishEye(bool val) {
-        m_forceUpdtProjMat = m_useFisheye != (int)val;
-        m_useFisheye       = (int)val;
-        if (m_useFisheye) setFishEyeParam();
-    }
-
-    void setFishEyeAspect(float val) {
-        m_forceUpdtProjMat = m_feAspect != val;
-        m_feAspect         = val;
-        if (m_useFisheye) setFishEyeParam();
-    }
-
-    void setBorderPix(int val) {
-        m_forceUpdtProjMat = m_borderPix != val;
-        m_borderPix        = val;
-        if (m_useFisheye) setFishEyeParam();
-    }
-
+    void setFisheyeOpenAngle(float openAngle);
+    void switchFishEye(bool val);
+    void setFishEyeAspect(float val);
+    void setBorderPix(int val);
     void setScreenWidth(int width) { m_screenSize.x = static_cast<float>(width); }
     void setScreenHeight(int height) { m_screenSize.y = static_cast<float>(height); }
     void setForceUpdtProjMat(bool val) { m_forceUpdtProjMat = val; }
@@ -194,9 +154,10 @@ private:
     float m_right          = 0.5f;
     float m_bottom         = -0.5f;
     float m_top            = 0.5f;
-    float m_frustMult[4]{0.f};
     float m_openAngle = 1.f;
     float m_feAspect  = 1.f;
+
+    glm::vec4 m_frustMult{};
 
     std::function<void(camUpt)> m_updtCb;
 };

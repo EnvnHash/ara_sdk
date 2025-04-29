@@ -182,7 +182,7 @@ void VAO::initData(int nrVert, GLfloat *_data) {
     }
 }
 
-void VAO::upload(CoordType type, GLfloat *entries, uint32_t nrVertices) {
+void VAO::upload(CoordType type, GLfloat *entries, size_t nrVertices) {
     // check if CoordType exists
     bool   exists = false;
     int    size   = 0;
@@ -200,7 +200,7 @@ void VAO::upload(CoordType type, GLfloat *entries, uint32_t nrVertices) {
         if (m_nrVertices == 0)
             m_nrVertices = nrVertices;
         else {
-            if ((uint32_t)m_nrVertices < nrVertices)
+            if (m_nrVertices < nrVertices)
                 LOGE << "VAO Warning: nr of Vertices to upload is greater than "
                         "the nr of vertices of the existing buffers";
         }
@@ -236,14 +236,13 @@ void VAO::uploadFloat(uint32_t location, uint32_t size, GLfloat *_entries, int _
 }
 #endif
 
-void VAO::setElemIndices(uint32_t count, GLuint *indices) {
+void VAO::setElemIndices(size_t count, GLuint *indices) {
     m_nrElements = count;
 
     if (!m_elementBuffer) {
         glGenBuffers(1, &m_elementBuffer);
         if (!m_elementBuffer)
-            LOGE << "VAO::setElemIndices Error!!! couldn´t generate "
-                    "ElementBuffer";
+            LOGE << "VAO::setElemIndices Error!!! couldn´t generate ElementBuffer";
     }
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_elementBuffer);
@@ -251,7 +250,7 @@ void VAO::setElemIndices(uint32_t count, GLuint *indices) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void VAO::setExtElemIndices(uint32_t count, GLuint buffer) {
+void VAO::setExtElemIndices(size_t count, GLuint buffer) {
     if (buffer != 0) {
         m_elementBuffer = buffer;
         m_nrElements    = count;

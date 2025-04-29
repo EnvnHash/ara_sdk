@@ -58,8 +58,8 @@ void Cylinder::init() {
     std::vector<GLuint> cyl_indices(m_nrSegs * 12);
 
     //  clockwise (viewed from the camera)
-    GLuint oneQuadTemp[6] = {0, 0, 1, 1, 0, 1};
-    GLuint upDownTemp[6]  = {0, 1, 0, 0, 1, 1};  // 0 = bottom, 1 ==top
+    std::array<GLuint, 6> oneQuadTemp = {0, 0, 1, 1, 0, 1};
+    std::array<GLuint, 6> upDownTemp  = {0, 1, 0, 0, 1, 1};  // 0 = bottom, 1 ==top
 
     ind = 0;
 

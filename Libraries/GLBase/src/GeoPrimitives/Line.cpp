@@ -25,7 +25,7 @@ namespace ara {
 
 Line::Line() : GeoPrimitive(), m_nrSegments(100) {
     m_color = { 1.f, 1.f, 1.f, 1.f };
-    init();
+    Line::init();
 }
 
 Line::Line(int _nrSegments) : GeoPrimitive(), m_nrSegments(_nrSegments) {
@@ -33,14 +33,14 @@ Line::Line(int _nrSegments) : GeoPrimitive(), m_nrSegments(_nrSegments) {
     Line::init();
 }
 
-Line::Line(int nrSegments, float r, float g, float b, float a) : GeoPrimitive(), m_nrSegments(nrSegments) {
-    m_color = { r, g, b, a };
+Line::Line(int nrSegments, const vec4& col) : GeoPrimitive(), m_nrSegments(nrSegments) {
+    m_color = col;
     Line::init();
 }
 
-Line::Line(int nrSegments, float r, float g, float b, float a, std::vector<CoordType> *instAttribs, int nrInstance)
+Line::Line(int nrSegments, const vec4& col, std::vector<CoordType> *instAttribs, int nrInstance)
     : GeoPrimitive(), m_nrSegments(nrSegments), m_instAttribs(instAttribs), m_maxNrInstances(nrInstance) {
-    m_color = { r, g, b, a };
+    m_color = col;
     Line::init();
 }
 
@@ -56,10 +56,7 @@ void Line::init() {
         m_mesh->push_back_positions(v, 3);
     }
 
-    GLenum usage = GL_DYNAMIC_DRAW;
-    if (m_instAttribs) usage = GL_DYNAMIC_DRAW;
-
-    m_vao = make_unique<VAO>(m_format, usage, m_instAttribs, m_maxNrInstances);
+    m_vao = make_unique<VAO>(m_format, GL_DYNAMIC_DRAW, m_instAttribs, m_maxNrInstances);
     m_vao->setStaticColor(m_color);
     m_vao->uploadMesh(m_mesh.get());
 }

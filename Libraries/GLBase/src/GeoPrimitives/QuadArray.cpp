@@ -41,29 +41,36 @@ QuadArray::QuadArray(const QuadArrayInitParams& ip)
 
 
 void QuadArray::init() {
-    GLfloat quadPos[18] = {0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 1.f, 0.f};
-    GLfloat norm[3]     = {0.f, 0.f, 1.f};
+    std::array<vec3, 6> quadPos = {
+        vec3{0.f, 1.f, 0.f},
+        vec3{0.f, 0.f, 0.f},
+        vec3{1.f, 0.f, 0.f},
+        vec3{1.f, 0.f, 0.f},
+        vec3{1.f, 1.f, 0.f},
+        vec3{0.f, 1.f, 0.f} };
+    vec3 norm = {0.f, 0.f, 1.f};
 
-    auto quadWidth  = m_totalWidth / static_cast<float>(m_nrSegsX);
-    auto quadHeight = m_totalHeight / static_cast<float>(m_nrSegsY);
+    vec2 quadSize { m_totalWidth / static_cast<float>(m_nrSegsX),
+                    m_totalHeight / static_cast<float>(m_nrSegsY) };
 
-    auto texWidth  = 1.f / static_cast<float>(m_nrSegsX);
-    auto texHeight = 1.f / static_cast<float>(m_nrSegsY);
+    vec2 texSize { 1.f / static_cast<float>(m_nrSegsX),
+                   1.f / static_cast<float>(m_nrSegsY) };
 
     m_mesh = make_unique<Mesh>("position:3f,normal:3f,texCoord:2f,color:4f");
 
     // move the QuadArray to the correct position, in relation to the dimensions
-    for (auto yInd = 0; yInd < m_nrSegsY; yInd++) {
-        for (auto xInd = 0; xInd < m_nrSegsX; xInd++) {
+    for (auto yInd = 0; yInd < m_nrSegsY; ++yInd) {
+        for (auto xInd = 0; xInd < m_nrSegsX; ++xInd) {
             for (auto i = 0; i < 6; i++) {
-                GLfloat v[3] = {quadPos[i * 3] * quadWidth + quadWidth * xInd + m_x,
-                                quadPos[i * 3 + 1] * quadHeight + quadHeight * yInd + m_y, quadPos[i * 3 + 2]};
-                m_mesh->push_back_positions(v, 3);
-                m_mesh->push_back_normals(norm, 3);
+                vec3 v = {  quadPos[i].x * quadSize.x + quadSize.x * xInd + m_x,
+                            quadPos[i].y * quadSize.y + quadSize.y * yInd + m_y,
+                            quadPos[i].z};
+                m_mesh->push_back_positions(&v[0], 1);
+                m_mesh->push_back_normals(&norm[0], 1);
 
-                GLfloat t[2] = {quadPos[i * 3] * texWidth + texWidth * xInd,
-                                quadPos[i * 3 + 1] * texHeight + texHeight * yInd};
-                m_mesh->push_back_texCoords(t, 2);
+                vec2 t = {quadPos[i].x * texSize.x + texSize.x * xInd,
+                          quadPos[i].y * texSize.y + texSize.y * yInd};
+                m_mesh->push_back_texCoords(&t[0], 1);
             }
         }
     }

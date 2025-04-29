@@ -26,6 +26,7 @@ class VAO;
 
 class GeoPrimitive {
 public:
+    virtual ~GeoPrimitive() = default;
     virtual void init() = 0;
 
 #ifndef __EMSCRIPTEN__

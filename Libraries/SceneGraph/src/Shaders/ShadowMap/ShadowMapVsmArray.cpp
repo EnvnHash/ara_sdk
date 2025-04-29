@@ -115,7 +115,8 @@ void ShadowMapVsmArray::rebuildFbo(uint _nrLights) {
             .glbase = s_glbase,
             .alpha = blurAlpha,
             .blurSize = {s_scrWidth, s_scrHeight},
-            .target = GL_TEXTURE_2D_ARRAY, GL_RG32F,
+            .target = GL_TEXTURE_2D_ARRAY,
+            .intFormat = GL_RG32F,
             .nrLayers = std::max<uint>(_nrLights, 1),
             .kSize = KERNEL_3,
             .singleFbo = true
@@ -148,7 +149,9 @@ void ShadowMapVsmArray::setShadowTexPar(GLenum type) {
 }
 
 void ShadowMapVsmArray::begin() {
-    if (s_fbo) s_fbo->bind();
+    if (s_fbo) {
+        s_fbo->bind();
+    }
     s_shadowShader->begin();
 
     // by default render all scenes, this can be set to a light id, to avoid
@@ -158,21 +161,23 @@ void ShadowMapVsmArray::begin() {
 
 void ShadowMapVsmArray::end() {
     s_shadowShader->end();
-    if (s_fbo) s_fbo->unbind();
+    if (s_fbo) {
+        s_fbo->unbind();
+    }
 }
 
-void ShadowMapVsmArray::setNrLights(uint _nrLights) {
-    if (nrLights != _nrLights) {
-        rebuildFbo(_nrLights);
-        rebuildShader(_nrLights);
+void ShadowMapVsmArray::setNrLights(uint nrLights) {
+    if (nrLights != nrLights) {
+        rebuildFbo(nrLights);
+        rebuildShader(nrLights);
     }
 
-    nrLights = _nrLights;
+    nrLights = nrLights;
 }
 
-void ShadowMapVsmArray::setScreenSize(uint _width, uint _height) {
-    s_scrWidth  = _width;
-    s_scrHeight = _height;
+void ShadowMapVsmArray::setScreenSize(uint width, uint height) {
+    s_scrWidth  = width;
+    s_scrHeight = height;
     rebuildFbo(nrLights);
 }
 
@@ -184,7 +189,9 @@ void ShadowMapVsmArray::bindDepthTexViews(GLuint baseTexUnit, uint nrTexs, uint 
 }
 
 void ShadowMapVsmArray::blur() {
-    if (s_fbo && fboBlur) fboBlur->proc(s_fbo->getColorImg());  // blur
+    if (s_fbo && fboBlur) {
+        fboBlur->proc(s_fbo->getColorImg());  // blur
+    }
 }
 
 void ShadowMapVsmArray::clear() {

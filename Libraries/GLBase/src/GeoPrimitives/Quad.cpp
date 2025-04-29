@@ -61,7 +61,7 @@ Quad::Quad() : GeoPrimitive() {
         m_normal.emplace_back(0.f, 0.f, 1.f);
     }
 
-    init();
+    Quad::init();
 }
 
 Quad::Quad(const QuadInitParams& qd)
@@ -106,7 +106,7 @@ Quad::Quad(const QuadInitParams& qd)
         m_normal.emplace_back(qd.inNormal);
     }
 
-    init();
+    Quad::init();
 }
 
 void Quad::init() {

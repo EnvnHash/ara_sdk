@@ -98,7 +98,7 @@ void FontList::update3DLayers() {
     int  sz         = 0;
     for (auto &lc : m_layerCount) {
         sz         = lc.first;
-        entrExists = m_fontTexLayers.find(sz) != m_fontTexLayers.end();
+        entrExists = m_fontTexLayers.contains(sz);
 
         // 3d texture doesn't exist, or quantity changed
         if (!entrExists || (entrExists && m_fontTexLayers[sz]->getDepth() != static_cast<uint>(lc.second.size()))) {

@@ -17,7 +17,7 @@ public:
 
     void  rebuildShader(uint _nrLights);
     void  rebuildFbo(uint _nrLights);
-    void  setShadowTexPar(GLenum type);
+    static void  setShadowTexPar(GLenum type);
     void  begin();
     void  end();
     void  clear();

@@ -27,7 +27,7 @@ using namespace std;
 
 namespace ara {
 
-Quad_P::Quad_P(glm::vec3 center, glm::vec2 size, float dist, glm::vec3 euler, glm::vec2 t0, glm::vec2 t1, bool _flipHori, glm::vec4 color)
+Quad_P::Quad_P(vec3 center, vec2 size, float dist, vec3 euler, vec2 t0, vec2 t1, bool _flipHori, vec4 color)
     : GeoPrimitive() {
     m_Size = size;
 
@@ -67,7 +67,7 @@ Quad_P::Quad_P(glm::vec3 center, glm::vec2 size, float dist, glm::vec3 euler, gl
     m_Position.emplace_back(imat * upperLeft);
     m_TexCoords.emplace_back(t0.x, !_flipHori ? t1.y : 1 - t0.y);
 
-    init();
+    Quad_P::init();
 }
 
 Quad_P::Set &Quad_P::CreateCubeMap(Set &dest, glm::vec3 center, float cube_size, glm::vec4 color) {
@@ -113,7 +113,7 @@ int Quad_P::setObjId(int id) {
     return objId;
 }
 
-int Quad_P::Set::GetIndexByObjId(int objid) {
+int Quad_P::Set::GetIndexByObjId(int objid) const {
     for (int i = 0; i < static_cast<int>(size()); i++) {
         if (at(i)->getObjId() == objid) {
             return i;

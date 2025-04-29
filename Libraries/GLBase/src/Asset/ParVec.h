@@ -21,9 +21,9 @@ namespace ara {
 
 class ParVec : public std::vector<std::string> {
 public:
-    virtual ~ParVec() = default;
+    ~ParVec() = default;
 
-    bool validIndex(size_t index) const {
+    [[nodiscard]] bool validIndex(size_t index) const {
         return index < size();
     }
 
@@ -31,7 +31,7 @@ public:
         return validIndex(index) ? at(index) : def;
     }
 
-    int getIntPar(size_t index, int def) {
+    [[nodiscard]] int getIntPar(size_t index, int def) const {
         if (!validIndex(index)) {
             return def;
         }
@@ -43,7 +43,7 @@ public:
         }
     }
 
-    float getFloatPar(size_t index, float def) {
+    [[nodiscard]] float getFloatPar(size_t index, float def) const {
         if (!validIndex(index)) {
             return def;
         }
@@ -55,7 +55,7 @@ public:
         }
     }
 
-    int getParCount() {
+    [[nodiscard]] int getParCount() const {
         return static_cast<int>(size());
     }
 
@@ -67,7 +67,7 @@ public:
         return !validIndex(index) ? std::string{} : at(index);
     }
 
-    int i(size_t index, int def = 0) {
+    [[nodiscard]] int i(size_t index, int def = 0) const {
         if (!validIndex(index)) {
             return def;
         }
@@ -79,7 +79,7 @@ public:
         }
     }
 
-    float f(size_t index, float def = 0.f) {
+    [[nodiscard]] float f(size_t index, float def = 0.f) const {
         if (!validIndex(index)) {
             return def;
         }
@@ -91,7 +91,7 @@ public:
         }
     }
 
-    int n() const { return static_cast<int>(size()); }
+    [[nodiscard]] int n() const { return static_cast<int>(size()); }
 };
 
 }

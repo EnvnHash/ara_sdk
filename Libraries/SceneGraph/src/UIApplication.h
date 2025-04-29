@@ -113,11 +113,9 @@ public:
     virtual void update() { m_iterate.notify(); }
 
     // Info dialoges
-    virtual void openInfoDiag(int x, int y, int width, int height, infoDiagType tp, const std::string& msg,
-                              bool isModal = true, long minStayTime = 500, const std::function<bool()>& onConfirm = nullptr,
-                              const std::function<void()>& onClose = nullptr, const std::function<bool()>& onCancel = nullptr);
-    virtual void openInfoDiag(infoDiagType tp, std::string msg, std::function<bool()> onConfirm);
-    virtual void showInfo(std::string msg, long minStayTime = 500, int width = 250, int height = 100,
+    virtual void openInfoDiag(const InfoDiagParams& params);
+    virtual void openInfoDiag(infoDiagType tp, const std::string& msg, const std::function<bool()>& onConfirm);
+    virtual void showInfo(const std::string& msg, long minStayTime = 500, int width = 250, int height = 100,
                           bool isModal = true, std::function<void()> onClose = nullptr,
                           std::function<void()> onInfoOpen = nullptr);
     virtual void showCancel(std::string msg, long minStayTime, int width, int height, bool isModal, std::function<bool()> cancelCb);

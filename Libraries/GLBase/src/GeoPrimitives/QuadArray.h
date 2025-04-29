@@ -35,10 +35,10 @@ struct QuadArrayInitParams {
 
 class QuadArray : public GeoPrimitive {
 public:
-    QuadArray(const QuadArrayInitParams& ip);
-    virtual ~QuadArray() = default;
+    explicit QuadArray(const QuadArrayInitParams& ip);
+    ~QuadArray() override = default;
 
-    void init();
+    void init() override;
 
 private:
     int   m_nrSegsX     = 0;

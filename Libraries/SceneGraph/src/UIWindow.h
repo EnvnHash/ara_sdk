@@ -36,9 +36,21 @@ struct UIWindowParams {
     bool scaleToMonitor = false;
 };
 
+struct InfoDiagParams {
+    glm::ivec2 pos{};
+    glm::ivec2 size{};
+    infoDiagType tp{};
+    std::string msg;
+    long minStayTime = 500;
+    bool isModal = true;
+    std::function<bool()> onConfirm;
+    std::function<void()> onClose;
+    std::function<bool()> onCancel;
+};
+
 class UIWindow : public WindowBase {
 public:
-    UIWindow(const UIWindowParams& par);
+    explicit UIWindow(const UIWindowParams& par);
     ~UIWindow() override = default;
 
     // opengl drawing
@@ -146,7 +158,7 @@ public:
 
     std::map<winProcStep, ProcStep>* getProcSteps() { return &m_procSteps; }
     ShaderCollector*                 getShaderCollector() { return &s_shCol; }
-    ShaderProto*                     getShaderProto(uint ind, std::string& name) { return nullptr; };
+    static ShaderProto*              getShaderProto(uint ind, std::string& name) { return nullptr; };
     UINode*                          getRootNode() { return (m_menuBarEnabled && m_contentRoot) ? m_contentRoot : m_uiRoot.get(); };
     MenuBar*                         getMenuBar() { return m_menuBarEnabled ? m_menuBar : nullptr; };
     std::unordered_map<uiColors, glm::vec4>& getColors() { return m_colors; };
@@ -159,11 +171,11 @@ public:
     void                             setLastHoverFound(UINode* node) { m_lastHoverFound = node; }
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    GLWindow*   getWinHandle() { return m_winHandle; }
-    void        makeCurrent() { if (m_winHandle) m_winHandle->makeCurrent(); }
-    bool        isOpen() { return m_winHandle->isOpen(); }
+    GLWindow*   getWinHandle() const { return m_winHandle; }
+    void        makeCurrent() const { if (m_winHandle) m_winHandle->makeCurrent(); }
+    bool        isOpen() const { return m_winHandle->isOpen(); }
     bool        isModal() const { return m_isModal; }
-    void        pollEvents() { if (m_winHandle) m_winHandle->pollEvents(); }
+    void        pollEvents() { if (m_winHandle) ara::GLFWWindow::pollEvents(); }
 #else
     void* getWinHandle() { return m_winHandle; }
 #endif
@@ -172,8 +184,8 @@ public:
     unsigned int getWidthReal() { return s_viewPort.z; }
     unsigned int getHeightReal() { return s_viewPort.w; }
 #elif defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    unsigned int getWidthReal() { return m_winHandle ? m_winHandle->getWidthReal() : 0; }
-    unsigned int getHeightReal() { return m_winHandle ? m_winHandle->getHeightReal() : 0; }
+    unsigned int getWidthReal() const { return m_winHandle ? m_winHandle->getWidthReal() : 0; }
+    unsigned int getHeightReal() const { return m_winHandle ? m_winHandle->getHeightReal() : 0; }
 #endif
 
 #if !defined(ARA_USE_GLFW) && !defined(ARA_USE_EGL) || (defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP))
@@ -183,12 +195,12 @@ public:
     unsigned int getHeight() { return (int)s_windowViewport.w; }
 #else
     // just forwarding for convenience
-    glm::ivec2   getSize() { return m_winHandle ? m_winHandle->getSize() : glm::ivec2{0}; }
-    glm::ivec2   getPosition() { return m_winHandle ? m_winHandle->getPosition() : glm::ivec2{0}; }
-    unsigned int getWidth() { return m_winHandle ? m_winHandle->getWidth() : 0; }
-    unsigned int getHeight() { return m_winHandle ? m_winHandle->getHeight() : 0; }
-    void         setPosition(int x, int y) { m_winHandle->setPosition(x, y); }
-    void         setSize(int width, int height) { m_winHandle->setSize(width, height); }
+    glm::ivec2   getSize() const { return m_winHandle ? m_winHandle->getSize() : glm::ivec2{0}; }
+    glm::ivec2   getPosition() const { return m_winHandle ? m_winHandle->getPosition() : glm::ivec2{0}; }
+    unsigned int getWidth() const { return m_winHandle ? m_winHandle->getWidth() : 0; }
+    unsigned int getHeight() const { return m_winHandle ? m_winHandle->getHeight() : 0; }
+    void         setPosition(int x, int y) const { m_winHandle->setPosition(x, y); }
+    void         setSize(int width, int height) const { m_winHandle->setSize(width, height); }
 #endif
     virtual void setBlockHid(bool val);
     virtual void setModal(bool val);
@@ -197,25 +209,27 @@ public:
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     void swap() { m_winHandle->swap(); }
-    void addKeyCb(const std::function<void(int, int, int, int)>& f) { m_winHandle->addKeyCb(f); }
-    void setCharCb(const std::function<void(int)>& f) { m_winHandle->setCharCb(f); }
-    void setMouseButtonCb(const std::function<void(int, int, int)>& f) { m_winHandle->setMouseButtonCb(f); }
-    void setMouseCursorCb(const std::function<void(double, double)>& f) { m_winHandle->setMouseCursorCb(f); }
-    void setWindowSizeCb(const std::function<void(int, int)>& f) { m_winHandle->setWindowSizeCb(f); }
-    void setScrollCb(const std::function<void(double, double)>& f) { m_winHandle->setScrollCb(f); }
-    void setWindowPosCb(const std::function<void(int, int)>& f) { m_winHandle->setWindowPosCb(f); }
-    void setWindowMaximizeCb(const std::function<void(int)>& f) { m_winHandle->setWindowMaximizeCb(f); }
-    void setWindowIconfifyCb(const std::function<void(int)>& f) { m_winHandle->setWindowIconfifyCb(f); }
-    void setWindowFocusCb(const std::function<void(int)>& f) { m_winHandle->setWindowFocusCb(f); }
-    void setCloseCb(const std::function<void()>& f) { m_winHandle->setCloseCb(f); }
-    void setWindowRefreshCb(const std::function<void()>& f) { m_winHandle->setWindowRefreshCb(f); }
+    void addKeyCb(const std::function<void(int, int, int, int)>& f) const { m_winHandle->addKeyCb(f); }
+    void setCharCb(const std::function<void(int)>& f) const { m_winHandle->setCharCb(f); }
+    void setMouseButtonCb(const std::function<void(int, int, int)>& f) const { m_winHandle->setMouseButtonCb(f); }
+    void setMouseCursorCb(const std::function<void(double, double)>& f) const { m_winHandle->setMouseCursorCb(f); }
+    void setWindowSizeCb(const std::function<void(int, int)>& f) const { m_winHandle->setWindowSizeCb(f); }
+    void setScrollCb(const std::function<void(double, double)>& f) const { m_winHandle->setScrollCb(f); }
+    void setWindowPosCb(const std::function<void(int, int)>& f) const { m_winHandle->setWindowPosCb(f); }
+    void setWindowMaximizeCb(const std::function<void(int)>& f) const { m_winHandle->setWindowMaximizeCb(f); }
+    void setWindowIconfifyCb(const std::function<void(int)>& f) const { m_winHandle->setWindowIconfifyCb(f); }
+    void setWindowFocusCb(const std::function<void(int)>& f) const { m_winHandle->setWindowFocusCb(f); }
+    void setCloseCb(const std::function<void()>& f) const { m_winHandle->setCloseCb(f); }
+    void setWindowRefreshCb(const std::function<void()>& f) const { m_winHandle->setWindowRefreshCb(f); }
 #endif
     void setBlockDraw(bool val) { m_blockDraw = val; }
     bool isBlockDraw() const { return m_blockDraw; }
     void setApplicationHandle(UIApplication* ptr) { m_appHandle = ptr; }
     void setToMainWindow() { m_isMainWindow = true; }
     void setWindowMinSize(int32_t x, int32_t y) { m_minWinSize.x = x; m_minWinSize.y = y; }
-    void setCloseFunc(std::function<void(UIWindow*)> f) { m_closeFunc = std::move(f); }
+    void setCloseFunc(std::function<void(UIWindow*)> f) {
+        m_closeFunc = std::move(f);
+    }
     std::function<void(UIWindow*)>& getCloseFunc() { return m_closeFunc; }
 
     void         addWinCb(const std::function<void()>& f) { m_winProcCb.emplace_back(f); }
@@ -233,7 +247,7 @@ public:
     virtual void hide() {}
     void         setExtWinHnd(void* hnd) { m_winHandle = hnd; }
 #endif
-    bool         isMousePressed() { return m_hidData.mousePressed; }
+    bool         isMousePressed() const { return m_hidData.mousePressed; }
     void         setResChanged(bool val);
 
     bool                       resChanged() const { return m_resChanged; }

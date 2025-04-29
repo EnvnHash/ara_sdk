@@ -24,7 +24,7 @@ public:
     explicit Disk(glm::vec2 size={2.f, 2.f}, int nrSubDiv = 1,
                   std::vector<CoordType> *instAttribs = nullptr, int maxNrInstances = 1, glm::vec4 col = {1.f, 1.f, 1.f, 1.f});
 
-    ~Disk() = default;
+    virtual ~Disk() = default;
 
     void init() override;
 

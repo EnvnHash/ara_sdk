@@ -28,7 +28,7 @@ using namespace std;
 
 namespace ara {
 QuadArrayAdj::QuadArrayAdj()
-    : GeoPrimitive(), m_x(-1.f), m_y(-1.f), m_width(1.f), m_height(1.f), m_nrSegsX(4), m_nrSegsY(4), m_totalWidth(2.f),
+    : GeoPrimitive(), m_nrSegsX(4), m_nrSegsY(4), m_x(-1.f), m_y(-1.f), m_width(1.f), m_height(1.f), m_totalWidth(2.f),
       m_totalHeight(2.f), m_instAttribs(nullptr), m_maxNrInstances(1), m_usage(GL_STATIC_DRAW) {
     m_color = { 1.f, 1.f, 1.f, 1.f };
     QuadArrayAdj::init();
@@ -36,7 +36,7 @@ QuadArrayAdj::QuadArrayAdj()
 
 QuadArrayAdj::QuadArrayAdj(ivec2 nrSegs, vec2 pos, vec2 size, glm::vec4 col, std::vector<CoordType> *instAttribs,
                            int nrInstances, GLenum usage)
-    : GeoPrimitive(), m_x(pos.x), m_y(pos.y), m_width(size.x), m_height(size.y), m_nrSegsX(nrSegs.x), m_nrSegsY(nrSegs.y),
+    : GeoPrimitive(), m_nrSegsX(nrSegs.x), m_nrSegsY(nrSegs.y), m_x(pos.x), m_y(pos.y), m_width(size.x), m_height(size.y),
       m_totalWidth(2.f), m_totalHeight(2.f), m_instAttribs(instAttribs), m_maxNrInstances(nrInstances), m_usage(usage) {
     m_color = col;
     QuadArrayAdj::init();
@@ -44,8 +44,8 @@ QuadArrayAdj::QuadArrayAdj(ivec2 nrSegs, vec2 pos, vec2 size, glm::vec4 col, std
 
 QuadArrayAdj::QuadArrayAdj(ivec2 nrSegs, vec2 pos, vec2 size, vec3 inNormal, std::vector<CoordType> *instAttribs,
                            int nrInstances, GLenum usage)
-    : GeoPrimitive(), m_x(pos.x), m_y(pos.y), m_width(size.x), m_height(size.y), m_nrSegsX(nrSegs.x), m_nrSegsY(nrSegs.y),
-      m_totalWidth(2.f), m_totalHeight(2.f), m_instAttribs(instAttribs), m_maxNrInstances(nrInstances), m_usage(usage), m_qaNormal(inNormal) {
+    : GeoPrimitive(), m_nrSegsX(nrSegs.x), m_nrSegsY(nrSegs.y), m_x(pos.x), m_y(pos.y), m_width(size.x), m_height(size.y),
+      m_totalWidth(2.f), m_totalHeight(2.f), m_qaNormal(inNormal), m_instAttribs(instAttribs), m_maxNrInstances(nrInstances), m_usage(usage) {
     m_color = { 0.f, 0.f, 0.f, 1.f };
     QuadArrayAdj::init();
 }

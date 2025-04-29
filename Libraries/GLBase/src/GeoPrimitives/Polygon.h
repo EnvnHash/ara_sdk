@@ -87,10 +87,11 @@ public:
     static void checkCrossingLines(std::vector<CtrlPoint> *polySeg, const std::vector<CtrlPoint>::iterator& kv,
                                    glm::vec2 point);
 
-    static std::unique_ptr<std::vector<glm::vec2>> getCatmull4PointSeg(std::vector<CtrlPoint>::iterator &point,
-                                                                std::vector<CtrlPoint>           &polygon);
-    void                                    updatePosVao(std::map<uint32_t, CtrlPoint *> *pointMap);
-    void                                    setMainPolygon(std::vector<CtrlPoint> &poly);
+    static std::unique_ptr<std::vector<glm::vec2>> getCatmull4PointSeg(const std::vector<CtrlPoint>::iterator &point,
+                                                                       const std::vector<CtrlPoint>           &polygon);
+
+    void updatePosVao(const std::map<uint32_t, CtrlPoint *> *pointMap);
+    void setMainPolygon(const std::vector<CtrlPoint> &poly);
 
     std::vector<CtrlPoint> *addHole() {
         m_polygon.emplace_back();
@@ -105,7 +106,7 @@ public:
     void                    deletePoint(size_t level, uint32_t idx);
     CtrlPoint              *getPoint(size_t level, uint32_t idx);
     std::vector<CtrlPoint> *getPoints(size_t level);
-    uint32_t                getTotalNrPoints();
+    uint32_t                getTotalNrPoints() const;
 
     void deleteHole(size_t idx) {
         if (m_polygon.size() > idx) {
@@ -127,7 +128,7 @@ public:
     }
 
     void serializeToXml(pugi::xml_node &parent);
-    void parseFromXml(pugi::xml_node &node);
+    void parseFromXml(const pugi::xml_node &node);
 
     template <class B>
     void serialize(B &buf) const {

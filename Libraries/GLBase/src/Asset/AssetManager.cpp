@@ -36,7 +36,7 @@ AssetManager::AssetManager(const string &data_root_path, const string &compilati
 bool AssetManager::Load(const string &path) {
     SrcFile sfile(m_glbase);
 
-    m_loadState   = 1;
+    m_loadState   = true;
     m_resFilePath = path;
 
     std::vector<uint8_t> vp;
@@ -66,8 +66,7 @@ bool AssetManager::Load(const string &path) {
             }
 
             // get fonts
-            auto fontsNode = findNode("fonts");
-            if (fontsNode) {
+            if (auto fontsNode = findNode("fonts")) {
                 for (auto &f : fontsNode->m_node) {
                     m_fontLUT.insert({f->m_name, e_font_lut{f->m_value, 20}});
                 }
@@ -165,7 +164,7 @@ Font *AssetManager::font(const string& path, float pixRatio) {
 }
 
 Font *AssetManager::getGLFont(string font_type_path, int size, float pixRatio) {
-    if (m_fontLUT.find(font_type_path) != m_fontLUT.end()) {
+    if (m_fontLUT.contains(font_type_path)) {
         e_font_lut f   = m_fontLUT[font_type_path];
         font_type_path = f.path;
     }
@@ -191,7 +190,7 @@ Font *AssetManager::getGLFont(string font_type_path, int size, float pixRatio) {
 size_t AssetManager::loadResource(ResNode *node, std::vector<uint8_t> &dest, const string& path) {
     if (node) {
         e_file_bind                   eb{node->getPath(), path};
-        if (std::find_if(m_fileBind.begin(), m_fileBind.end(), [&](e_file_bind &e) {
+        if (ranges::find_if(m_fileBind, [&](const e_file_bind &e) {
                  return e.file_path == eb.file_path && e.node_path == eb.node_path;
              }) == m_fileBind.end()) {
             m_fileBind.emplace_back(eb);
@@ -311,8 +310,8 @@ bool AssetManager::Reload() {
 
         if (err) {
             LOGE << "New resource file has errors";
-            for (ResNode::e_error &err : nroot->errList) {
-                LOGE << "Line " << std::to_string(err.lineIndex + 1) << " " << err.errorString;
+            for (ResNode::e_error &e : nroot->errList) {
+                LOGE << "Line " << std::to_string(e.lineIndex + 1) << " " << e.errorString;
             }
         }
     }
@@ -345,7 +344,6 @@ void AssetManager::callResSourceChange() {
 
         SrcFile              sfile(m_glbase);
         std::vector<uint8_t> vp;
-        bool                 err = true;
 
         loadResource(nullptr, vp, m_resFilePath);
 
@@ -360,6 +358,8 @@ void AssetManager::callResSourceChange() {
         if (sfile.process(nroot.get(), vp)) {
             nroot->preprocess();
             nroot->process();
+
+            bool err = true;
 
             if (nroot->errList.empty())
                 if (nroot->load())
@@ -388,7 +388,7 @@ void AssetManager::callForChangesInFolderFiles() {
     // Check for new files...
     for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator("resdata")) {
         auto fileStr = file.path().string();
-        if (m_resFolderFiles.find(fileStr) == m_resFolderFiles.end()) {
+        if (!m_resFolderFiles.contains(fileStr)) {
             m_resFolderFiles[fileStr] = filesystem::last_write_time(file);
         }
     }

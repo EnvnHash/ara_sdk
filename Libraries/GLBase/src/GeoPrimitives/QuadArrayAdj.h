@@ -24,15 +24,15 @@ class QuadArrayAdj : public GeoPrimitive {
 public:
     QuadArrayAdj();
 
-    QuadArrayAdj(glm::ivec2 nrSegs, glm::vec2 pos={-1.f, -1.f}, glm::vec2 size={2.f, 2.f}, glm::vec4={1.f,1.f, 1.f, 1.f},
+    explicit QuadArrayAdj(glm::ivec2 nrSegs, glm::vec2 pos={-1.f, -1.f}, glm::vec2 size={2.f, 2.f}, glm::vec4={1.f,1.f, 1.f, 1.f},
                  std::vector<CoordType> *instAttribs = nullptr, int nrInstances = 1, GLenum usage = GL_STATIC_DRAW);
 
-    QuadArrayAdj(glm::ivec2 nrSegs, glm::vec2 pos={-1.f, -1.f}, glm::vec2 size={2.f, 2.f}, glm::vec3 inNormal={0.f, 0.f, 1.f},
+    explicit QuadArrayAdj(glm::ivec2 nrSegs, glm::vec2 pos={-1.f, -1.f}, glm::vec2 size={2.f, 2.f}, glm::vec3 inNormal={0.f, 0.f, 1.f},
                  std::vector<CoordType> *instAttribs = nullptr, int nrInstances = 1, GLenum usage = GL_STATIC_DRAW);
 
-    virtual ~QuadArrayAdj() = default;
+    ~QuadArrayAdj() override = default;
 
-    void init();
+    void init() override;
 
 private:
     int m_nrSegsX = 0;

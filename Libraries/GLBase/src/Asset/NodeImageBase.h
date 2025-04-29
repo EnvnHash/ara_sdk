@@ -44,14 +44,11 @@ public:
     virtual Type        getType() { return m_Type; }
     virtual Dist        getDist() { return m_Dist; }
 
-    int getVer(int ver) { return (m_Ver.find(ver) != m_Ver.end()) ? m_Ver[ver] : m_VerDefault; }
-    int getDistPixOffset() { return m_DistPixOffset; }
+    int getVer(int ver) { return m_Ver.contains(ver) ? m_Ver[ver] : m_VerDefault; }
+    int getDistPixOffset() const { return m_DistPixOffset; }
     int *getSectionSep() { return m_PixSep.data(); }
 
     int *getVerPos(int *pos, int ver);  // returns pos
-
-    //void serializeValues(nlohmann::json &j) override;
-    //void deserializeValues_(const nlohmann::json &j) override;
 
 protected:
     static inline int   m_nullIntPtr[2] = {0, 0};

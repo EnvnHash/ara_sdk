@@ -28,8 +28,8 @@ Camera::Camera(const CameraInitParams& params)
     m_right(params.rect.y),
     m_bottom(params.rect.z),
     m_top(params.rect.w),
-    m_near(params.near),
-    m_far(params.far),
+    m_near(params.nearLim),
+    m_far(params.farLim),
     m_camPos(params.cp),
     m_camLookAt(params.la),
     m_camUpVec(params.up),
@@ -39,8 +39,10 @@ Camera::Camera(const CameraInitParams& params)
 
 void Camera::init(bool fromChangedScreenSize) {
     switch (m_type) {
-        case camType::perspective: break;
-        case camType::frustum: break;
+        case camType::perspective:
+            break;
+        case camType::frustum:
+            break;
         case camType::ortho:
             m_near   = 0.0f;
             m_far    = 1000.0f;
@@ -72,8 +74,7 @@ void Camera::buildMatrices(bool fromChangedScreenSize) {
                                    m_top + m_frustMult[2], m_near, m_far);
             break;
         case camType::ortho:
-            m_projection = ortho(m_left, m_right, m_bottom, m_top, m_near,
-                                 m_far);  // In world coordinates
+            m_projection = ortho(m_left, m_right, m_bottom, m_top, m_near, m_far);  // In world coordinates
             break;
         default: break;
     }
@@ -125,13 +126,17 @@ void Camera::setScreenSize(uint width, uint height) {
 void Camera::modelTrans(float x, float y, float z) {
     m_model = translate(m_model, vec3(x, y, z));
     m_mvp   = m_projection * m_view * m_model;  // Remember, matrix multiplication is the other way around
-    if (m_updtCb) m_updtCb(camUpt::ModelTrans);
+    if (m_updtCb) {
+        m_updtCb(camUpt::ModelTrans);
+    }
 }
 
 void Camera::modelRot(float angle, float x, float y, float z) {
     m_model = rotate(m_model, angle, vec3(x, y, z));
     m_mvp   = m_projection * m_view * m_model;
-    if (m_updtCb) m_updtCb(camUpt::ModelRot);
+    if (m_updtCb) {
+        m_updtCb(camUpt::ModelRot);
+    }
 }
 
 void Camera::setModelMatr(mat4 &modelMatr) {
@@ -140,26 +145,36 @@ void Camera::setModelMatr(mat4 &modelMatr) {
         m_model  = modelMatr;
         m_normal = mat3(transpose(inverse(m_model)));
         m_mvp    = m_projection * m_view * m_model;
-        if (m_updtCb) m_updtCb(camUpt::ModelMat);
+        if (m_updtCb) {
+            m_updtCb(camUpt::ModelMat);
+        }
     }
 }
 
 void Camera::setViewMatr(mat4 &viewMatr) {
     m_view = viewMatr;
     m_mvp  = m_projection * m_view * m_model;
-    if (m_updtCb) m_updtCb(camUpt::ViewMat);
+    if (m_updtCb) {
+        m_updtCb(camUpt::ViewMat);
+    }
 }
 
 void Camera::setProjMatr(mat4 &projMatr) {
     m_projection = projMatr;
     m_mvp        = m_projection * m_view * m_model;
-    if (m_updtCb) m_updtCb(camUpt::ProjMat);
+    if (m_updtCb) {
+        m_updtCb(camUpt::ProjMat);
+    }
 }
 
-void Camera::setFrustMult(const float *_multVal) {
-    for (int i = 0; i < 4; i++) m_frustMult[i] = _multVal[i];
+void Camera::setFrustMult(const float *multVal) {
+    for (int i = 0; i < 4; i++) {
+        m_frustMult[i] = multVal[i];
+    }
     buildMatrices();
-    if (m_updtCb) m_updtCb(camUpt::FrustMult);
+    if (m_updtCb) {
+        m_updtCb(camUpt::FrustMult);
+    }
 }
 
 // cam
@@ -196,6 +211,54 @@ bool Camera::setFishEyeParam() {
     m_fishEyeParam0[3] = 0.0f;
 
     return true;
+}
+
+void Camera::setFisheyeOpenAngle(float openAngle) {
+    m_forceUpdtProjMat = m_openAngle != openAngle;
+    m_openAngle        = openAngle;
+    if (m_useFisheye) {
+        setFishEyeParam();
+    }
+}
+
+void Camera::switchFishEye(bool val) {
+    m_forceUpdtProjMat = m_useFisheye != (int)val;
+    m_useFisheye       = (int)val;
+    if (m_useFisheye) {
+        setFishEyeParam();
+    }
+}
+
+void Camera::setFishEyeAspect(float val) {
+    m_forceUpdtProjMat = m_feAspect != val;
+    m_feAspect         = val;
+    if (m_useFisheye) {
+        setFishEyeParam();
+    }
+}
+
+void Camera::setBorderPix(int val) {
+    m_forceUpdtProjMat = m_borderPix != val;
+    m_borderPix        = val;
+    if (m_useFisheye) {
+        setFishEyeParam();
+    }
+}
+
+void Camera::setCamPos(float x, float y, float z) {
+    m_camPos.x = x;
+    m_camPos.y = y;
+    m_camPos.z = z;
+}
+
+void Camera::setLookAt(float x, float y, float z) {
+    m_camLookAt.x = x;
+    m_camLookAt.y = y;
+    m_camLookAt.z = z;
+}
+
+void Camera::setClearColor(float r, float g, float b, float a) {
+    m_clearColor = { r, g, b, a };
 }
 
 void Camera::debug() {

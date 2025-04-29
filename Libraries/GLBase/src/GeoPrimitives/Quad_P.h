@@ -24,27 +24,27 @@ class Quad_P : public GeoPrimitive {
 public:
     class Set : public std::vector<std::unique_ptr<Quad_P>> {
     public:
-        int GetIndexByObjId(int objid);  // -1 means NOT FOUND, array starts from 0 (zero)
+        int GetIndexByObjId(int objid) const;  // -1 means NOT FOUND, array starts from 0 (zero)
     };
 
     Quad_P(glm::vec3 center, glm::vec2 size, float dist, glm::vec3 euler, glm::vec2 t0, glm::vec2 t1,
            bool _flipHori = true, glm::vec4 color = glm::vec4(1.f, 1.f, 1.f, 1.f));
 
-    ~Quad_P() = default;
+    ~Quad_P() override = default;
 
     static Quad_P::Set &CreateCubeMap(Set &dest, glm::vec3 center, float cube_size,
                                       glm::vec4 color = glm::vec4(1.f, 1.f, 1.f, 1.f));
 
-    void init();
-    int  getObjId() const;
+    void init() override;
+    [[nodiscard]] int  getObjId() const;
     int  setObjId(int id);
 
 private:
-    glm::vec2 m_Size;
-    glm::vec4 m_Color;
+    glm::vec2 m_Size{};
+    glm::vec4 m_Color{};
 
     std::vector<glm::vec4> m_Position;
-    glm::vec4              m_Normal;
+    glm::vec4              m_Normal{};
     std::vector<glm::vec2> m_TexCoords;
 
     int objId = 0;

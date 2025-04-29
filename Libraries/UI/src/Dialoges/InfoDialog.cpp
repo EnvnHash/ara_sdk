@@ -148,4 +148,11 @@ void InfoDialog::setType(infoDiagType tp) {
     m_sharedRes.setDrawFlag();
 }
 
+void InfoDialog::setInfoMsg(std::string msg) {
+    m_infoMsg = msg;
+    if (m_msgLabel) {
+        m_msgLabel->setText(msg);
+    }
+}
+
 }  // namespace ara

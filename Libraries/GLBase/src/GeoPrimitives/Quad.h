@@ -33,13 +33,15 @@ struct QuadInitParams {
 class Quad : public GeoPrimitive {
 public:
     Quad();
-    Quad(const QuadInitParams&);
-    virtual ~Quad() = default;
+    explicit Quad(const QuadInitParams&);
+    ~Quad() override = default;
 
-    void init();
+    void init() override;
 
-    void drawAsShared() {
-        if (!m_vao) return;
+    void drawAsShared() const {
+        if (!m_vao) {
+            return;
+        }
         m_vao->enableVertexAttribs();
         glDrawArrays(GL_TRIANGLES, 0, 6);
         m_vao->disableVertexAttribs();
