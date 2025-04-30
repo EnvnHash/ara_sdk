@@ -60,16 +60,21 @@ public:
     static std::string getFisheyeVertSnippet(size_t nrCameras);
 
     void         setShaderHeader(std::string hdr) { shdr_Header = std::move(hdr); }
-    std::string &getShaderHeader() { return shdr_Header; }
     std::string &getUiObjMapUniforms() { return m_uiObjMapUniforms; }
     std::string &getUiObjMapMain() { return m_uiObjMapMain; }
+
+    static std::string &getShaderHeader() { return shdr_Header; }
 
     Shaders *get(const std::string &name);
     bool     hasShader(const std::string &name) const;
 
 private:
     std::unordered_map<std::string, std::unique_ptr<Shaders>> shaderCollection;
-    std::string                                               shdr_Header;
+#ifdef __APPLE__
+    static inline std::string                                 shdr_Header = "#version 410\n";
+#else
+    static inline std::string                                 shdr_Header = "#version 430\n";
+#endif
     std::string                                               m_uiObjMapUniforms;
     std::string                                               m_uiObjMapMain;
 };

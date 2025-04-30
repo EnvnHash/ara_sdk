@@ -10,12 +10,6 @@ using namespace std;
 
 namespace ara {
 ShaderCollector::ShaderCollector() {
-#ifdef __APPLE__
-    shdr_Header = "#version 410\n";
-#else
-    shdr_Header = "#version 430\n";
-#endif
-
     m_uiObjMapUniforms = "layout(location = 1) out vec4 objMap;\n uniform float objId;\n";
 
     m_uiObjMapMain =

@@ -37,27 +37,19 @@ public:
     ~Quad() override = default;
 
     void init() override;
-
-    void drawAsShared() const {
-        if (!m_vao) {
-            return;
-        }
-        m_vao->enableVertexAttribs();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        m_vao->disableVertexAttribs();
-    }
+    void drawAsShared() const;
 
     std::vector<glm::vec3> *getPositions();
     std::vector<glm::vec3> *getNormals();
     std::vector<glm::vec2> *getTexCoords();
 
 private:
-    glm::vec2              m_size{};
+    glm::vec2              m_size{ 2.f, 2.f};
     std::vector<glm::vec3> m_position;
     std::vector<glm::vec3> m_normal;
     std::vector<glm::vec2> m_texCoords;
 
-    std::vector<CoordType> *m_instAttribs;
-    int                     m_maxNrInstances=0;
+    std::vector<CoordType> *m_instAttribs = nullptr;
+    int                     m_maxNrInstances = 1;
 };
 }  // namespace ara
