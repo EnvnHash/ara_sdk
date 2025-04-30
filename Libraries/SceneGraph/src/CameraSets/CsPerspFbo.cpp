@@ -161,8 +161,8 @@ void CsPerspFbo::rebuildFbo() {
         m_fbo.init();
 
         if (!s_updtCb.empty()) {
-            for (auto& cbList : s_updtCb) {
-                for (auto& cb : cbList.second) {
+            for (const auto& cbList : s_updtCb | views::values) {
+                for (const auto& cb : cbList) {
                     cb();
                 }
             }
@@ -194,8 +194,8 @@ void CsPerspFbo::clearScreen(renderPass pass) {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     } else if (pass == GLSG_SHADOW_MAP_PASS || pass == GLSG_OBJECT_MAP_PASS) {
-        for (auto& it : s_shaderProto) {
-            it.second->clear(pass);
+        for (const auto& it : s_shaderProto | views::values) {
+            it->clear(pass);
         }
     }
 }
@@ -206,6 +206,7 @@ void CsPerspFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr,
     if (node->m_calcMatrixStack.load()) {
         s_matrixStack.clear();
     }
+
     if (pass == GLSG_SCENE_PASS) {
         m_fbo.bind();
     }
@@ -215,6 +216,7 @@ void CsPerspFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr,
     if (node->m_calcMatrixStack.load()) {
         node->m_calcMatrixStack = false;
     }
+
     if (pass == GLSG_SCENE_PASS) {
         m_fbo.unbind();
     }
@@ -244,15 +246,19 @@ void CsPerspFbo::render(SceneNode* node, SceneNode* parent, double time, double 
             }
 
             run = proto->end(pass, loopNr);
-            loopNr++;
+            ++loopNr;
         }
     }
 }
 
 void CsPerspFbo::postRender(renderPass _pass, float* extDrawMatr) {
-    for (auto& it : s_shaderProto) it.second->postRender(_pass);
+    for (const auto& it : s_shaderProto) {
+        it.second->postRender(_pass);
+    }
 
-    if (_pass == GLSG_SCENE_PASS) renderFbos(extDrawMatr);
+    if (_pass == GLSG_SCENE_PASS) {
+        renderFbos(extDrawMatr);
+    }
 }
 
 void CsPerspFbo::renderFbos(float* extDrawMatr) {
@@ -285,7 +291,9 @@ vector<pair<TrackBallCam*, void*>>::iterator CsPerspFbo::addCamera(TrackBallCam*
     rebuildFbo();
     initLayerTexShdr();
 
-    for (auto& it : s_shaderProto) it.second->setNrCams((int)s_cam.size());
+    for (auto&[fst, snd] : s_shaderProto) {
+        snd->setNrCams(static_cast<int>(s_cam.size()));
+    }
 
     return s_cam.end() - 1;
 }

@@ -30,7 +30,7 @@ DropDownMenu* DropDownMenuBar::addDropDownMenu(std::string name) {
 }
 
 void DropDownMenuBar::globalMouseDown(hidData* data) {
-    for (auto& it : m_menuEntries) {
+    for (const auto& it : m_menuEntries) {
         it->globalMouseDown(data);
     }
 }

@@ -36,7 +36,7 @@ public:
     /** called when a key is pressed or released. Is called directly from GLFW.
      * When the window has been created through GLFWWindowManager, this is
      * called from there. */
-    void onKey(int key, int scancode, int action, int mods) {
+    void onKey(int key, int scancode, int action, int mods) const {
         if (!m_hidBlocked) {
             for (auto &it : m_keyCb) {
                 it(key, scancode, action, mods);
@@ -44,19 +44,19 @@ public:
         }
     }
 
-    void onChar(unsigned int codepoint) {
+    void onChar(unsigned int codepoint)  const {
         if (!m_hidBlocked && m_charCb) {
             m_charCb(codepoint);
         }
     }
 
-    void onMouseButton(int button, int action, int mods) {
+    void onMouseButton(int button, int action, int mods) const {
         if (!m_hidBlocked && m_mouseButtonCb) {
             m_mouseButtonCb(button, action, mods);
         }
     }
 
-    void onMouseCursor(double xpos, double ypos) {
+    void onMouseCursor(double xpos, double ypos)  const {
         if (!m_hidBlocked && m_mouseCursorCb) {
             m_mouseCursorCb(xpos, ypos);
         }
@@ -65,43 +65,44 @@ public:
     virtual void onWindowSize(int width, int height) = 0;
     virtual void onFrameBufferSize(int width, int height) {}
 
-    void onScroll(double xpos, double ypos) {
+    void onScroll(double xpos, double ypos) const {
         if (!m_hidBlocked && m_scrollCb) {
             m_scrollCb(xpos, ypos);
         }
     }
-    void onWindowPos(int xpos, int ypos) {
+    void onWindowPos(int xpos, int ypos) const {
         if (m_windowPosCb) {
             m_windowPosCb(xpos, ypos);
         }
     }
-    void onWindowMaximize(int flag) {
+    void onWindowMaximize(int flag) const {
         if (m_windowMaximizeCb) {
             m_windowMaximizeCb(flag);
         }
     }
-    void onWindowIconify(int flag) {
+    void onWindowIconify(int flag) const {
         if (m_windowIconfiyCb) {
             m_windowIconfiyCb(flag);
         }
     }
-    void onWindowFocus(int flag) {
+    void onWindowFocus(int flag)  const {
         if (m_windowFocusCb) {
             m_windowFocusCb(flag);
         }
     }
-    void onWindowClose() {
+    void onWindowClose() const {
         if (m_closeCb) {
             m_closeCb();
         }
     }
-    void onWindowRefresh() {
+    void onWindowRefresh() const {
         if (m_windowRefreshCb) {
             m_windowRefreshCb();
         }
     }
-    void onMouseEnter(bool val) {}
-    void onDrop(int count, const char **paths) {}
+
+    static void onMouseEnter(bool val) {}
+    static void onDrop(int count, const char **paths) {}
 
     /** setters for HID callbacks */
     void addKeyCb(const std::function<void(int, int, int, int)>& f) { m_keyCb.emplace_back(f); }
@@ -118,57 +119,57 @@ public:
     void setWindowRefreshCb(const std::function<void()>& f) { m_windowRefreshCb = f; }
     std::function<bool(double, double, int)> &getDrawFunc() { return m_drawFunc; }
 
-int                  getKeyScancode(int key) { return m_scancodes[key]; }
-    uint32_t         getWidth() { return m_widthVirt; }
-    uint32_t         getHeight() { return m_heightVirt; }
-    uint32_t         getWidthReal() { return m_widthReal; }
-    uint32_t         getHeightReal() { return m_heightReal; }
-    uint32_t         getPosX() { return m_offsX; }
-    uint32_t         getPosY() { return m_offsY; }
-    glm::ivec2       getSize() { return {m_widthVirt, m_heightVirt}; }
-    glm::ivec2       getPosition() { return {m_offsX, m_offsY}; }
+    int              getKeyScancode(int key)  const { return m_scancodes[key]; }
+    virtual uint32_t getWidth() const { return m_widthVirt; }
+    virtual uint32_t getHeight() const { return m_heightVirt; }
+    virtual uint32_t getWidthReal() const { return m_widthReal; }
+    virtual uint32_t getHeightReal() const { return m_heightReal; }
+    virtual uint32_t getPosX() const { return m_offsX; }
+    virtual uint32_t getPosY() const { return m_offsY; }
+    glm::ivec2       getSize() const { return {m_widthVirt, m_heightVirt}; }
+    glm::ivec2       getPosition() const { return {m_offsX, m_offsY}; }
     Conditional     *getInitSema() { return &m_initSema; }
     Conditional     *getExitSema() { return &m_exitSema; }
     Conditional     *getGlInitedSema() { return &m_glInitedSema; }
     virtual void    *getWin() { return nullptr; }
     virtual void    *getDisp() { return nullptr; }
-    glm::ivec2       getLastMousePos() { return {m_lastCursorPosX, m_lastCursorPosY}; };
-    int             *getWorkArea() { return nullptr; }
+    glm::ivec2       getLastMousePos() const { return {m_lastCursorPosX, m_lastCursorPosY}; };
+    static int      *getWorkArea() { return nullptr; }
     glm::vec2       &getContentScale() { return m_contentScale; }
-    bool             isInited() { return m_initSignaled; }
-    bool             isOpen() { return m_isOpen; }
-    bool             isRunning() { return m_run; }
-    bool             getRequestOpen() { return m_requestOpen; }
-    bool             getRequestClose() { return m_requestClose; }
-    void             requestOpen(bool val) { m_requestOpen = val; }
-    void             requestClose(bool val) { m_requestClose = val; }
+    bool             isInited() const { return m_initSignaled; }
+    virtual bool     isOpen() const { return m_isOpen; }
+    bool             isRunning() const { return m_run; }
+    virtual bool     getRequestOpen() const { return m_requestOpen; }
+    virtual bool     getRequestClose() const { return m_requestClose; }
+    virtual void     requestOpen(bool val) { m_requestOpen = val; }
+    virtual void     requestClose(bool val) { m_requestClose = val; }
 
 protected:
-    bool m_active;               // Window Active Flag Set To TRUE By Default
-    bool m_fullscreen  = false;  // Fullscreen Flag Set To Fullscreen Mode By Default
-    bool m_isOpen      = false;
-    bool m_run         = false;
-    bool m_done        = false;
-    bool m_transparent = false;
-    bool m_decorated   = false;
-    bool m_resizable   = true;
-    bool m_cursorTracked;
-    bool m_frameAction;
-    bool m_iconified;
-    bool m_maximized;
-    bool m_scaleToMonitor = false;
-    bool m_shouldClose    = false;
-    bool m_stickyKeys;
-    bool m_stickyMouseButtons;
-    bool m_lockKeyMods;
-    bool m_rawMouseMotion = false;
-    bool m_hidBlocked     = false;
-    bool m_requestOpen    = false;
-    bool m_requestClose   = false;
-    bool m_eventBasedLoop = false;
-    bool m_inited         = false;
-    bool m_forceRedraw    = false;
-    bool m_initSignaled   = false;
+    bool m_active{};               // Window Active Flag Set To TRUE By Default
+    bool m_fullscreen           = false;  // Fullscreen Flag Set To Fullscreen Mode By Default
+    bool m_isOpen               = false;
+    bool m_run                  = false;
+    bool m_done                 = false;
+    bool m_transparent          = false;
+    bool m_decorated            = false;
+    bool m_resizable            = true;
+    bool m_cursorTracked        = false;
+    bool m_frameAction          = false;
+    bool m_iconified            = false;
+    bool m_maximized            = false;
+    bool m_scaleToMonitor       = false;
+    bool m_shouldClose          = false;
+    bool m_stickyKeys           = false;
+    bool m_stickyMouseButtons   = false;
+    bool m_lockKeyMods          = false;
+    bool m_rawMouseMotion       = false;
+    bool m_hidBlocked           = false;
+    bool m_requestOpen          = false;
+    bool m_requestClose         = false;
+    bool m_eventBasedLoop       = false;
+    bool m_inited               = false;
+    bool m_forceRedraw          = false;
+    bool m_initSignaled         = false;
 
     // The last received cursor position, regardless of source
     int m_lastCursorPosX = 0;
@@ -197,11 +198,11 @@ protected:
     std::thread m_drawThread;
 
     WindowCallbacks m_callbacks;
-    short int       m_scancodes[GLSG_KEY_LAST + 1];
-    short int       m_keycodes[512];
-    char            m_keys[GLSG_KEY_LAST + 1];
-    char            m_mouseButtons[GLSG_MOUSE_BUTTON_LAST + 1];
-    char            m_keynames[GLSG_KEY_LAST + 1][5];
+    short int       m_scancodes[GLSG_KEY_LAST + 1]{};
+    short int       m_keycodes[512]{};
+    char            m_keys[GLSG_KEY_LAST + 1]{};
+    char            m_mouseButtons[GLSG_MOUSE_BUTTON_LAST + 1]{};
+    char            m_keynames[GLSG_KEY_LAST + 1][5]{};
 
     std::vector<glVidMode>                   modes;
     std::vector<std::pair<int, int>>         monOffsets;

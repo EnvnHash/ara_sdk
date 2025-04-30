@@ -16,7 +16,7 @@ public:
 
     template <class T>
     T* addPage(std::string* styleClass) {
-        for (auto& it : m_pages) it->setVisibility(false);
+        for (const auto& it : m_pages) it->setVisibility(false);
 
         auto newNode = m_content->addChild(std::make_unique<T>());
         newNode->addStyleClass(std::move(*styleClass));
@@ -27,7 +27,7 @@ public:
 
     template <class T>
     T* addPage(std::string&& styleClass) {
-        for (auto& it : m_pages) it->setVisibility(false);
+        for (const auto& it : m_pages) it->setVisibility(false);
 
         auto newNode = m_content->addChild(std::make_unique<T>());
         newNode->addStyleClass(std::move(styleClass));

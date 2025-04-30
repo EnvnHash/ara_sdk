@@ -557,7 +557,7 @@ void ImageButton::setSelectedDoAction(bool val) {
 }
 
 void ImageButton::setLod(float val) {
-    for (auto& it : m_tex) {
+    for (const auto& it : m_tex) {
         it->setLod(val);
     }
 

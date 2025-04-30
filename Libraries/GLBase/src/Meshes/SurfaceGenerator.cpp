@@ -278,13 +278,13 @@ void SurfaceGenerator::exportCollada(const std::string& path, const std::string 
 }
 
 void SurfaceGenerator::setTypeName(const std::string& typeName) {
-    if (!strcmp(typeName.c_str(), "Flat")) {
+    if (typeName == "Flat") {
         m_type = FLAT;
-    } else if (!strcmp(typeName.c_str(), "Cylinder")) {
+    } else if (typeName == "Cylinder") {
         m_type = CYLINDER;
-    } else if (!strcmp(typeName.c_str(), "Dome")) {
+    } else if (typeName == "Dome") {
         m_type = DOME;
-    } else if (!strcmp(typeName.c_str(), "Panadome")) {
+    } else if (typeName == "Panadome") {
         m_type = PANADOME;
     }
 }

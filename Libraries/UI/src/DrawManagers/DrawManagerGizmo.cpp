@@ -16,7 +16,9 @@ Shaders* DrawManagerGizmo::getShader(DrawSet& ds) {
 
     m_shdr = m_shCol->get(shdrName);
 
-    if (m_shdr) return m_shdr;
+    if (m_shdr) {
+        return m_shdr;
+    }
 
     std::string vert = STRINGIFY(layout(location = 0) in vec4 position;\n
         layout(location = 2) in vec2 texCoord; \n
@@ -161,7 +163,9 @@ Shaders* DrawManagerGizmo::getShader(DrawSet& ds) {
 }
 
 void DrawManagerGizmo::draw() {
-    if (!m_shCol) return;
+    if (!m_shCol) {
+        return;
+    }
 
     for (auto& ds : m_drawSets) {
         if (ds.func) {
@@ -170,31 +174,37 @@ void DrawManagerGizmo::draw() {
         }
         ds.shdr = getShader(ds);
 
-        if (!ds.shdr && ds.vaoSize == 0) continue;
+        if (!ds.shdr && ds.vaoSize == 0) {
+            continue;
+        }
 
         ds.shdr->begin();
 
         if (!ds.textures.empty()) {
-            if (m_texUnitMap.size() != ds.textures.size()) m_texUnitMap.resize(ds.textures.size());
+            if (m_texUnitMap.size() != ds.textures.size()) {
+                m_texUnitMap.resize(ds.textures.size());
+            }
 
-            for (auto& tx : ds.textures) {
-                if (tx.second >= m_texUnitMap.size()) continue;
+            for (const auto& tx : ds.textures) {
+                if (tx.second >= m_texUnitMap.size()) {
+                    continue;
+                }
 
-                m_texUnitMap[tx.second] = (GLint)ds.fontTex.size() + tx.second;
+                m_texUnitMap[tx.second] = static_cast<GLint>(ds.fontTex.size() + tx.second);
                 glActiveTexture(GL_TEXTURE0 + m_texUnitMap[tx.second]);
                 glBindTexture(GL_TEXTURE_2D, tx.first);
             }
 
-            ds.shdr->setUniform1iv("textures", &m_texUnitMap[0], (int)m_texUnitMap.size());
+            ds.shdr->setUniform1iv("textures", &m_texUnitMap[0], static_cast<int>(m_texUnitMap.size()));
         }
 
         if (m_optTex != 0) {
-            glActiveTexture(GL_TEXTURE0 + (int)ds.textures.size());
-            ds.shdr->setUniform1i("optTex", (int)ds.textures.size());
+            glActiveTexture(GL_TEXTURE0 + static_cast<int>(ds.textures.size()));
+            ds.shdr->setUniform1i("optTex", static_cast<int>(ds.textures.size()));
             glBindTexture(GL_TEXTURE_2D, m_optTex);
         }
 
-        ds.vao.drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, (GLsizei)ds.indOffs);
+        ds.vao.drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, static_cast<GLsizei>(ds.indOffs));
     }
 }
 

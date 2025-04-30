@@ -108,8 +108,7 @@ public:
     virtual void         setFloorVisibility(bool val);
     virtual void         setWorldAxesVisibility(bool val, float ndcSize);
     virtual void         setWorldAxesVisibility(bool val);
-    virtual SceneNode*   getModelSN(std::string&& name);
-    virtual SceneNode*   getModelSN(std::string* name);
+    virtual SceneNode*   getModelSN(const std::string& name);
     virtual ShaderProto* getShaderProto(uint ind, std::string&& name);
     virtual void         setAddGizmoCb(std::function<void(transMode)> f);
     virtual void         addPassiveGizmo(SceneNode* node, float objRelativeSize = 0.3f, float worldScale = 1.f);

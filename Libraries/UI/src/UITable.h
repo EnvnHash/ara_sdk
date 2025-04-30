@@ -56,13 +56,13 @@ public:
     // background color
     virtual void setColor(float r, float g, float b, float a) {
         m_color = glm::vec4(r, g, b, a);
-        for (auto& it : m_Cells) {
+        for (const auto& it : m_Cells) {
             it.ui_node->setBackgroundColor(getColor());
         }
     }
     virtual void setColor(glm::vec4& col) {
         m_color = col;
-        for (auto& it : m_Cells) {
+        for (const auto& it : m_Cells) {
             it.ui_node->setBackgroundColor(getColor());
         }
     }

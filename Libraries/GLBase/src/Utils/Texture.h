@@ -60,6 +60,7 @@ public:
     GLuint loadSDL(GLenum _textTarget, int nrMipMaps);
 #endif
 
+    void genTexture(GLuint& id);
     GLuint allocate2D(uint32_t w, uint32_t h, GLenum internalGlDataType, GLenum extGlDataType, GLenum textTarget,
                       GLenum pixelType, uint32_t samples = 1, GLboolean fixedsamplelocations = GL_FALSE);
     GLuint gen(GLenum target);

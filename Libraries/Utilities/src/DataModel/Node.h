@@ -203,7 +203,7 @@ public:
 
     static nlohmann::json getValues(const nlohmann::json& j) {
         nlohmann::json valueJson;
-        for (auto& [key, value] : j.items()) {
+        for (const auto& [key, value] : j.items()) {
             if (!value.is_object() && !value.is_array()) {
                 valueJson.emplace(key, value);
             }

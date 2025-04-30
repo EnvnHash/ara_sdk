@@ -27,8 +27,7 @@ struct VertexAttribute {
     [[nodiscard]] GLsizeiptr getByteSize() const { return static_cast<GLsizeiptr>(size * sizeof(type) * nrConsecLocs ); }
 
     void printInfo() {
-        LOGE << std::format("VertexAttribute with name: {} at location {}, size: {}, type: {}, normalized: {}, stride: {}\n",
-            name, location, size, type, normalized, stride);
+        LOGE << "VertexAttribute with name: " << name << " at location " << location <<", size: " << size << ", type: " << type << ", normalized: " << normalized << ", stride: " << stride;
     }
 
     GLsizei location = 0;               // location of the generic vertex attribute to be modified.

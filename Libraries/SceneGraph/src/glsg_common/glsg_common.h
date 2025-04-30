@@ -158,7 +158,7 @@ public:
                                  hidEvent::MouseUpLeft, hidEvent::MouseDownRight, hidEvent::MouseUpRight,
                                  hidEvent::MouseDrag,   hidEvent::MouseWheel};
 
-        for (auto& it : evts) hitNode[it] = nullptr;
+        for (const auto& it : evts) hitNode[it] = nullptr;
     }
 
     void reset() {

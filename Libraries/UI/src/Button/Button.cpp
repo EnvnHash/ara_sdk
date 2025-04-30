@@ -50,7 +50,7 @@ void Button::mouseMove(hidData* data) {
         m_mouseInTime = std::chrono::system_clock::now();
     }
 
-    for (auto& it : m_mouseHidCb[hidEvent::MouseMove]) {
+    for (const auto& it : m_mouseHidCb[hidEvent::MouseMove]) {
         it.first(data);
     }
 

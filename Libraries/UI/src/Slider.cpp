@@ -52,7 +52,7 @@ UINode* Slider::addChild(std::unique_ptr<UINode> child) {
     m_children.emplace_back(std::move(child));
 
     // if there is a numeric view as a child, use it to display the value
-    if (!strcmp(m_children.back()->getName().c_str(), "NumericView")) {
+    if (m_children.back()->getName() == "NumericView") {
         m_numView = m_children.back().get();
     }
 

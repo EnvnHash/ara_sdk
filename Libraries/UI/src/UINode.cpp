@@ -300,7 +300,7 @@ void UINode::setViewport(float x, float y, float width, float height) {
     m_viewPort.w = height;
     m_geoChanged = true;
 
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->setViewport(x, y, width, height);
     }
 }
@@ -621,7 +621,7 @@ void UINode::setBorderRadius(uint32_t val, state st) {
 
 void UINode::setChanged(bool val) {
     m_geoChanged = val;
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->setChanged(val);
     }
 }
@@ -942,8 +942,8 @@ void UINode::updateStyle() {
     }
 
     // reset style functions
-    for (auto& it : m_setStyleFunc) {
-        it.second.clear();
+    for (auto& it : m_setStyleFunc | views::values) {
+        it.clear();
     }
 
     loadStyleDefaults();
@@ -990,7 +990,7 @@ void UINode::updateStyle() {
 
     // set state to none and update styles
     m_state = m_lastState = state::none;
-    for (auto& it : m_setStyleFunc[state::none]) {
+    for (const auto& it : m_setStyleFunc[state::none]) {
         it.second();
     }
 
@@ -1003,7 +1003,7 @@ void UINode::updateStyle() {
         if (m_state == state::selected) {
             setSelected(true, true);
         } else {
-            for (auto& it : m_setStyleFunc[m_state]) {
+            for (const auto& it : m_setStyleFunc[m_state]) {
                 it.second();
             }
         }
@@ -1020,7 +1020,7 @@ void UINode::rebuildCustomStyle() {
 
     // rebuild the stylesheet
     m_custDefStyleSheet.clear();
-    for (auto& stateDef : m_styleCustDefs) {
+    for (const auto& stateDef : m_styleCustDefs) {
         switch (stateDef.first) {
             case state::selected:
                 m_custDefStyleSheet += "selected { \n";
@@ -1046,7 +1046,7 @@ void UINode::rebuildCustomStyle() {
         }
 
         if (!stateDef.second.empty())
-            for (auto& it : stateDef.second) {
+            for (const auto& it : stateDef.second) {
                 if (it.first == "text") {
                     m_custDefStyleSheet += "\t" + it.first + ":\"" + it.second + "\"\n";
                 } else {
@@ -1135,7 +1135,7 @@ void UINode::setVisibility(bool val, state st) {
 void UINode::applyStyle() {
     if (!m_excludeFromStyles) {
         // call all style definitions for the highlighted state if there are any
-        for (auto& it : m_setStyleFunc[m_state]) {
+        for (const auto& it : m_setStyleFunc[m_state]) {
             it.second();
         }
 
@@ -1299,7 +1299,7 @@ void UINode::updtMatrIt(scissorStack* ss) {
     }
 
     // continue iterating through the children
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->updtMatrIt(ss);
 
         // keep track of the children's boundingBox
@@ -1358,7 +1358,7 @@ void UINode::drawIt(scissorStack& ss, uint32_t* objId, bool treeChanged, bool* s
         (*skip) = false;
     }
 
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->drawIt(ss, objId, treeChanged, skip);
     }
 
@@ -1557,7 +1557,7 @@ void UINode::hidIt(hidData* data, hidEvent evt, std::list<UINode*>::iterator it,
     }
 
     // process callbacks
-    for (auto& cbIt : (*it)->getMouseHidCb(evt)) {
+    for (const auto& cbIt : (*it)->getMouseHidCb(evt)) {
         if (!cbIt.second || (cbIt.second && (data->hit || evt == hidEvent::MouseDrag))) {
             cbIt.first(data);
             if (data->breakCbIt) {
@@ -1587,7 +1587,7 @@ void UINode::keyDownIt(hidData* data) {
         keyDown(data);
     }
 
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->keyDownIt(data);
     }
 }
@@ -1598,7 +1598,7 @@ void UINode::onCharIt(hidData* data) {
         onChar(data);
     }
 
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->onCharIt(data);
     }
 }
@@ -1617,7 +1617,7 @@ void UINode::mouseIn(hidData* data) {
         }
 
         // call all style definitions for the highlighted state if there are any
-        for (auto& it : m_setStyleFunc[state::highlighted]) {
+        for (const auto& it : m_setStyleFunc[state::highlighted]) {
             it.second();
         }
 
@@ -1626,7 +1626,7 @@ void UINode::mouseIn(hidData* data) {
         }
     }
 
-    for (auto& it : m_mouseInCb) it.second(data);
+    for (const auto& it : m_mouseInCb) it.second(data);
 }
 
 void UINode::mouseOut(hidData* data) {
@@ -1645,7 +1645,7 @@ void UINode::mouseOut(hidData* data) {
 
     // change styles back to last state if necessary
     if (!m_excludeFromStyles && changeBack) {
-        for (auto& it : m_setStyleFunc[lastState]) {
+        for (const auto& it : m_setStyleFunc[lastState]) {
             it.second();
         }
 
@@ -1656,7 +1656,7 @@ void UINode::mouseOut(hidData* data) {
         }
     }
 
-    for (auto& it : m_mouseOutCb) {
+    for (const auto& it : m_mouseOutCb) {
         it.second(data);
     }
 }
@@ -1808,7 +1808,7 @@ bool UINode::removeFocus() {
         }
 
     // must be done recursively
-    for (auto& it : m_children) it->removeFocus();
+    for (const auto& it : m_children) it->removeFocus();
 
     return false;
 }
@@ -1847,7 +1847,7 @@ bool UINode::hasCb(const std::string& identifier) {
 uint32_t UINode::getMinChildId(uint32_t minId) {
     auto nextMinId = m_objIdMin ? std::min(m_objIdMin, minId) : minId;
 
-    for (auto& child : m_children) {
+    for (const auto& child : m_children) {
         if (child->getMinId() < nextMinId) {
             nextMinId = child->getMinId();
         }
@@ -1860,7 +1860,7 @@ uint32_t UINode::getMinChildId(uint32_t minId) {
 uint32_t UINode::getMaxChildId(uint32_t maxId) {
     auto nextMaxId = std::max(m_objIdMax, maxId);
 
-    for (auto& child : m_children) {
+    for (const auto& child : m_children) {
         if (child->getMaxId() > nextMaxId) {
             nextMaxId = child->getMaxId();
         }
@@ -1871,7 +1871,7 @@ uint32_t UINode::getMaxChildId(uint32_t maxId) {
 }
 
 UINode* UINode::getNodeById(uint32_t searchID) {
-    for (auto& child : m_children) {
+    for (const auto& child : m_children) {
         if (child->getId() == searchID) {
             return child.get();
         } else {
@@ -1943,7 +1943,7 @@ void UINode::dumpIt(UINode* node, int* depth, bool dumpLocalTree) {
         << ", \tpos:" << glm::to_string(node->m_pos) << ", \tsize:" << glm::to_string(node->m_size);
 
     (*depth)++;
-    for (auto& it : node->m_children) {
+    for (const auto& it : node->m_children) {
         dumpIt(it.get(), depth, dumpLocalTree);
     }
     (*depth)--;
@@ -1956,7 +1956,7 @@ uint32_t UINode::getSubNodeCount() {
 }
 
 void UINode::getSubNodeCountIt(UINode* node, uint32_t* count) {
-    for (auto& it : node->m_children) {
+    for (const auto& it : node->m_children) {
         (*count)++;
         getSubNodeCountIt(it.get(), count);
     }
@@ -1977,7 +1977,7 @@ float UINode::getPixRatio() {
 
 void UINode::setHIDBlocked(bool val) {
     m_blockHID = val;
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         if (it) {
             it->setHIDBlocked(val);
         }

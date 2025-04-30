@@ -148,18 +148,26 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
         } break;
         case APP_CMD_LOW_MEMORY: break;
         case APP_CMD_START:
-            for (auto& it : ctx->m_appStateCbs[android_app_cmd::onStart]) it(&ctx->m_cmd_data);
+            for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onStart]) {
+                it(&ctx->m_cmd_data);
+            }
             mIsVisible = true;
             break;
         case APP_CMD_RESUME:
-            for (auto& it : ctx->m_appStateCbs[android_app_cmd::onResume]) it(&ctx->m_cmd_data);
+            for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onResume]) {
+                it(&ctx->m_cmd_data);
+            }
             break;
         case APP_CMD_PAUSE:
-            for (auto& it : ctx->m_appStateCbs[android_app_cmd::onPause]) it(&ctx->m_cmd_data);
+            for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onPause]) {
+                it(&ctx->m_cmd_data);
+            }
             mIsVisible = false;
             break;
         case APP_CMD_STOP:
-            for (auto& it : ctx->m_appStateCbs[android_app_cmd::onStop]) it(&ctx->m_cmd_data);
+            for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onStop]) {
+                it(&ctx->m_cmd_data);
+            }
             break;
         case APP_CMD_DESTROY: break;
         default: break;

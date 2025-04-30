@@ -104,7 +104,7 @@ int UITable::geo_Update() {
         ++i;
     }
 
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->setChanged(true);  // recursively force matrix update
     }
 
@@ -266,7 +266,7 @@ bool UITable::removeRow(int row) {
             cellsToDelete.emplace_back(m_Cells.begin() + idx);
         }
 
-        for (auto& it : cellsToDelete) {
+        for (const auto& it : cellsToDelete) {
             m_Cells.erase(it);
         }
 

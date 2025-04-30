@@ -6,8 +6,6 @@
 
 #include "ShaderCollector.h"
 
-#include <ranges>
-
 using namespace std;
 
 namespace ara {

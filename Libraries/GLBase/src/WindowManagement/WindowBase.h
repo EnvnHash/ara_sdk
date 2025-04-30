@@ -12,7 +12,7 @@ namespace ara {
 
 class WindowBase {
 public:
-    WindowBase() : s_debug(false), s_inited(false), s_drawMtxLocked(false) {}
+    WindowBase() = default;
     virtual ~WindowBase() = default;
 
     virtual void init(uint x, uint y, uint scrWidth, uint scrHeight);
@@ -128,16 +128,18 @@ public:
 
     virtual void addGlCb(void *cbName, const std::string &fName, std::function<bool()> func) {
         bool gotLock = s_drawMtx.try_lock();
-        if (s_openGlCbs.find(cbName) == s_openGlCbs.end()) {
+        if (!s_openGlCbs.contains(cbName)) {
             s_openGlCbs[cbName] = std::unordered_map<std::string, std::function<bool()>>();
         }
         s_openGlCbs[cbName][fName] = std::move(func);
-        if (gotLock) s_drawMtx.unlock();
+        if (gotLock) {
+            s_drawMtx.unlock();
+        }
     }
 
     virtual bool hasCb(void *cbName, const std::string &fName) {
         bool gotLock = s_drawMtx.try_lock();
-        bool ret     = (s_openGlCbs.find(cbName) != s_openGlCbs.end() &&s_openGlCbs[cbName].find(fName) != s_openGlCbs[cbName].end());
+        bool ret     = (s_openGlCbs.contains(cbName) && s_openGlCbs[cbName].contains(fName));
 
         if (gotLock) {
             s_drawMtx.unlock();
@@ -148,7 +150,7 @@ public:
     virtual void eraseGlCb(void *cbName, const std::string &fName) {
         bool gotLock = s_drawMtx.try_lock();
         auto it      = s_openGlCbs.find(cbName);
-        if (it != s_openGlCbs.end() && s_openGlCbs[cbName].find(fName) != s_openGlCbs[cbName].end()) {
+        if (it != s_openGlCbs.end() && s_openGlCbs[cbName].contains(fName)) {
             s_openGlCbs[cbName].erase(fName);
         }
         if (gotLock) {

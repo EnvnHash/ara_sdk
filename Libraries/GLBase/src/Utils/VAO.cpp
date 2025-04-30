@@ -36,7 +36,7 @@ using namespace std;
 
 namespace ara {
 
-VAO::VAO() : m_storeMode(GL_DYNAMIC_DRAW), m_createBuffers(true), m_maxNrInstances(1) {}
+VAO::VAO() : m_storeMode(GL_DYNAMIC_DRAW), m_maxNrInstances(1) {}
 
 VAO::VAO(std::string &&format, GLenum storeMode, vector<CoordType> *instAttribs, int maxNrInstances, bool createBuffers)
     : m_storeMode(storeMode), m_createBuffers(createBuffers), m_maxNrInstances(maxNrInstances),
@@ -72,9 +72,10 @@ void VAO::init(std::string &&format, bool createBuffers, bool interleaved) {
     for (auto &it : sepFormat) {
         auto sep = split(it, ':');
 
-        m_attributes.emplace_back();
-        m_attributes.back().setName(sep[0]);
-        m_attributes.back().setType(sep[1][1]);
+        m_attributes.emplace_back(VertexAttribute{
+            .type = VertexAttribute::typeMap.at(sep[1][1]),
+            .name = sep[0]
+        });
 
         if (sep[0] == "modMatr") {
             m_attributes.back().nrConsecLocs = 4;
@@ -124,14 +125,16 @@ void VAO::init(std::string &&format, bool createBuffers, bool interleaved) {
                 // special case, MODMATR needs 4 attributes
                 if (it == CoordType::ModMatr) {
                     for (int i = 0; i < 4; i++) {
-                        m_attributes.emplace_back();
-                        m_attributes.back().setName(getStdAttribNames()[toType(CoordType::ModMatr)]);
-                        m_attributes.back().location     = toType(CoordType::ModMatr) + i;
-                        m_attributes.back().size         = 4;
-                        m_attributes.back().nrConsecLocs = 4;
-                        m_attributes.back().stride       = sizeof(glm::mat4);
-                        m_attributes.back().pointer      = reinterpret_cast<void *>(sizeof(glm::vec4) * i);
-                        m_attributes.back().instDiv      = 1;
+                        m_attributes.emplace_back(VertexAttribute{
+                            .location     = toType(CoordType::ModMatr) + i,
+                            .size         = 4,
+                            .stride       = sizeof(glm::mat4),
+                            .pointer      = reinterpret_cast<void *>(sizeof(glm::vec4) * i),
+                            .instDiv      = 1,
+                            .nrConsecLocs = 4,
+                            .name = (getStdAttribNames()[toType(CoordType::ModMatr)]),
+                        });
+
                     }
                 } else {
                     m_attributes.emplace_back();
@@ -146,7 +149,6 @@ void VAO::init(std::string &&format, bool createBuffers, bool interleaved) {
 #endif
 
     //-- init buffers
-    //-------------------------------------------------------------------------------------
 
 #ifndef STRICT_WEBGL_1
     glGenVertexArrays(1, &m_VAOId);  // returns 1 unused names for use as VAO in the array VAO
@@ -169,7 +171,9 @@ void VAO::init(std::string &&format, bool createBuffers, bool interleaved) {
                     glBindBuffer(GL_ARRAY_BUFFER, m_buffers[attrIndex]);
                 }
 
-                for (int j = 0; j < 4; j++) m_attributes[i + j].enable();
+                for (int j = 0; j < 4; j++) {
+                    m_attributes[i + j].enable();
+                }
             }
         }
     }
@@ -283,8 +287,7 @@ void VAO::setExtElemIndices(size_t count, GLuint buffer) {
         m_elementBuffer = buffer;
         m_nrElements    = static_cast<GLsizei>(count);
     } else {
-        LOGE << "VAO::setElemIndices Error!!! couldn´t set external "
-                "ElementBuffer";
+        LOGE << "VAO::setElemIndices Error!!! couldn´t set external ElementBuffer";
     }
 }
 
@@ -292,13 +295,15 @@ void VAO::remove() {
 #ifndef STRICT_WEBGL_1
     glBindVertexArray(m_VAOId);
 #else
-    for (int i = 0; i < static_cast<int>(m_attributes.size()); i++) {
-        glDeleteBuffers(1, &buffers[m_attributes[i].location]);
+    for (auto &attr : m_attributes) {
+        glDeleteBuffers(1, &buffers[attr.location]);
     }
 #endif
-    for (auto &m_attribute : m_attributes)
-        if (!m_attribute.isStatic && m_buffers.size() > m_attribute.location)
-            glDeleteBuffers(1, &m_buffers[m_attribute.location]);
+    for (auto &attr : m_attributes) {
+        if (!attr.isStatic && m_buffers.size() > attr.location) {
+            glDeleteBuffers(1, &m_buffers[attr.location]);
+        }
+    }
 
     m_nrVertices = 0;
 
@@ -308,7 +313,9 @@ void VAO::remove() {
     glDeleteVertexArrays(1, &m_VAOId);
 #endif
 
-    if (m_elementBuffer) glDeleteBuffers(1, &m_elementBuffer);
+    if (m_elementBuffer) {
+        glDeleteBuffers(1, &m_elementBuffer);
+    }
 
     m_inited = false;
 }
@@ -317,10 +324,7 @@ void VAO::resize(size_t newNrVertices) {
 #ifndef STRICT_WEBGL_1
     glBindVertexArray(m_VAOId);
 #else
-    for (int i = 0; i < static_cast<int>(m_attributes.size()); i++) {
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[m_attributes[i].location]);
-        m_attributes[i].enable();
-    }
+    enableAttributes();
 #endif
     int i = 0;
     for (auto &attr : m_attributes) {
@@ -351,17 +355,14 @@ void VAO::bindBuffer(GLuint inBuffer, GLenum type) const {
 }
 
 GLuint VAO::addBuffer(CoordType type) {
-    string attribName = getStdAttribNames()[toType(type)];
+    auto v = getStdAttribNames();
+    m_attributes.emplace_back(VertexAttribute{
+        .location = static_cast<GLint>(ranges::find(v, v[toType(type)]) - v.begin()),
+        .size     = getCoTypeStdSize()[toType(type)],
+        .stride   = static_cast<GLsizei>(sizeof(float) * getCoTypeStdSize()[toType(type)]),
+    });
 
-    m_attributes.emplace_back();
-    // attributes.back().setName((GLchar*) attribName.c_str());
-
-    vector<string> v             = getStdAttribNames();
-    m_attributes.back().location = static_cast<GLint>(ranges::find(v, v[toType(type)]) - v.begin());
-    m_attributes.back().size     = getCoTypeStdSize()[toType(type)];
-    m_attributes.back().stride   = static_cast<GLsizei>(sizeof(float) * getCoTypeStdSize()[toType(type)]);
-    m_attributes.back().setType('f');
-
+    string attribName = v[toType(type)];
     if (attribName == "CoordType::ModMatr") {
         m_attributes.back().nrConsecLocs = 4;
     }
@@ -387,9 +388,9 @@ GLuint VAO::addBuffer(CoordType type) {
 
 void VAO::addExtBuffer(CoordType type, GLuint buffer) {
     VertexAttribute *vAttrib = nullptr;
-
-    string attribName    = getStdAttribNames()[toType(type)];
-    bool   found         = false;
+    auto v          = getStdAttribNames();
+    auto attribName     = getStdAttribNames()[toType(type)];
+    bool   found                = false;
     for (auto &it : m_attributes)
         if (it.getName() == attribName) {
             found   = true;
@@ -398,13 +399,11 @@ void VAO::addExtBuffer(CoordType type, GLuint buffer) {
 
     // check if the component already exists
     if (!found) {
-        m_attributes.emplace_back();
-
-        vector<string> v             = getStdAttribNames();
-        m_attributes.back().location = static_cast<GLint>(ranges::find(v, v[toType(type)]) - v.begin());
-        m_attributes.back().size     = getCoTypeStdSize()[toType(type)];
-        m_attributes.back().stride   = static_cast<GLsizei>(sizeof(float) * getCoTypeStdSize()[toType(type)]);
-        m_attributes.back().setType('f');
+        m_attributes.emplace_back(VertexAttribute{
+            .location = static_cast<GLint>(ranges::find(v, v[toType(type)]) - v.begin()),
+            .size     = getCoTypeStdSize()[toType(type)],
+            .stride   = static_cast<GLsizei>(sizeof(float) * getCoTypeStdSize()[toType(type)]),
+        });
 
         if (attribName == "CoordType::ModMatr") {
             m_attributes.back().nrConsecLocs = 4;
@@ -415,7 +414,9 @@ void VAO::addExtBuffer(CoordType type, GLuint buffer) {
         }
     }
 
-    if (m_buffers.empty()) m_buffers.resize(toType(CoordType::Count), 0);
+    if (m_buffers.empty()) {
+        m_buffers.resize(toType(CoordType::Count), 0);
+    }
 
     m_buffers[toType(type)] = buffer;
 
@@ -453,13 +454,20 @@ GLint VAO::addBufferFloat(uint32_t location, uint32_t size, const char *name) {
 
 #endif
 
-#ifndef EMSCRIPTEN
+#ifdef STRICT_WEBGL_1
+void VAO::enableAttributes() {
+    for (auto &attr : m_attributes) {
+        glBindBuffer(GL_ARRAY_BUFFER, buffers[attr.location]);
+        attr.enable();
+    }
+}
+#endif
 
+#ifndef EMSCRIPTEN
 void VAO::bind(TFO *tfo, GLenum recMode) {
     if (tfo) {
         tfo->pauseAndOffsetBuf(recMode);
     }
-
 #else
 void VAO::bind() {
 #endif
@@ -467,10 +475,7 @@ void VAO::bind() {
 #ifndef STRICT_WEBGL_1
     glBindVertexArray(m_VAOId);
 #else
-    for (int i = 0; i < static_cast<int>(m_attributes.size()); i++) {
-        glBindBuffer(GL_ARRAY_BUFFER, buffers[m_attributes[i].location]);
-        m_attributes[i].enable();
-    }
+    enableAttributes();
 #endif
 
     if (!m_interleaved) {
@@ -632,10 +637,7 @@ void VAO::drawElements(GLenum _mode, GLenum _recMode, int _nrElements) {
 
 void VAO::uploadMesh(Mesh *mesh) {
     if (!m_buffers.empty() && mesh != nullptr) {
-        if (mesh->usesIntrl())
-            m_nrVertices = mesh->getNrVertIntrl() / m_nrCoordsPerVert;
-        else
-            m_nrVertices = mesh->getNrPositions();
+        m_nrVertices = mesh->usesIntrl() ? mesh->getNrVertIntrl() / m_nrCoordsPerVert : m_nrVertices = mesh->getNrPositions();
 
 #ifndef STRICT_WEBGL_1
         glBindVertexArray(m_VAOId);
@@ -659,9 +661,7 @@ void VAO::uploadMesh(Mesh *mesh) {
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         }
 
-        // Allocate space for the buffer and upload the data
-        // upload data for mod matr later, will usually only be used for
-        // instancing
+        // Allocate space for the buffer and upload the data, upload data for mod matr later, will usually only be used for instancing
         for (auto &attr : m_attributes) {
             int attrIndex = static_cast<int>(attr.location);
 
@@ -673,13 +673,9 @@ void VAO::uploadMesh(Mesh *mesh) {
                 if (attr.instDiv == 0) {
                     glBufferData(GL_ARRAY_BUFFER, mesh->getByteSize(attrIndex), mesh->getPtr(attrIndex), m_storeMode);
                 } else {
-                    // if it's an instanced attribute, make space for the
-                    // maxNrInstances since for each attrib there´s an extra
-                    // buffer pointer
+                    // if it's an instanced attribute, make space for the maxNrInstances since for each attrib there´s
+                    // an extra buffer pointer
                     glBufferData(GL_ARRAY_BUFFER, attr.getByteSize() * m_maxNrInstances, nullptr, m_storeMode);
-                    // glBufferData(GL_ARRAY_BUFFER, m_attribute.getByteSize() *
-                    // m_maxNrInstances, &m_instData[attrIndex][0],
-                    // m_storeMode);
                 }
             }
         }
@@ -698,8 +694,7 @@ void VAO::uploadMesh(Mesh *mesh) {
     }
 }
 
-/// if a VertexAttribute is not enabled a default value is taken
-/// instead of reading from a VBO, this default value is set with
+/// if a VertexAttribute is not enabled a default value is taken instead of reading from a VBO, this default value is set with
 /// glVertexAttrib{1234}{fds}
 void VAO::setStatic(glm::vec4 col, const std::string& name, const std::string& format) {
     GLsizei statCoordInd = 0;
@@ -773,22 +768,24 @@ void *VAO::mapElementBuffer() const {
 #endif
 
 void VAO::enableVertexAttribs() {
-    for (int i = 0; i < static_cast<int>(m_attributes.size()); i++) {
-        if (m_buffers.size() > m_attributes[i].location)
-            glBindBuffer(GL_ARRAY_BUFFER, m_buffers[m_attributes[i].location]);
+    int i=0;
+    for (auto &attr : m_attributes) {
+        if (m_buffers.size() > attr.location)
+            glBindBuffer(GL_ARRAY_BUFFER, m_buffers[attr.location]);
 
-        if (!m_attributes[i].isStatic) {
-            m_attributes[i].enable();
+        if (!attr.isStatic) {
+            attr.enable();
         } else {
             glVertexAttrib4fv(i, &m_statCoords[i][0]);
         }
+        ++i;
     }
 }
 
-void VAO::disableVertexAttribs() {
+void VAO::disableVertexAttribs() const {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    for (auto &m_attribute : m_attributes) {
-        m_attribute.disable();
+    for (auto &attr : m_attributes) {
+        attr.disable();
     }
 }
 

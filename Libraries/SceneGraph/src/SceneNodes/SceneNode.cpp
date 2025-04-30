@@ -147,13 +147,13 @@ void SceneNode::update(double time, double dt, CameraSet* cs) {
 
             // force an update of the gizmos model matrices
             rebuildModelMat();
-            for (auto& child : *getChildren()) child->m_hasNewModelMat = true;
+            for (const auto& child : *getChildren()) child->m_hasNewModelMat = true;
         }
     }
 }
 
 void SceneNode::assignTexUnits(Shaders* _shader) {
-    for (auto& it : m_auxTex) _shader->setUniform1i(it.name, it.unitNr);  // muss gesetzt werden, sonst glsl fehler
+    for (const auto& it : m_auxTex) _shader->setUniform1i(it.name, it.unitNr);  // muss gesetzt werden, sonst glsl fehler
 }
 
 void SceneNode::useTextureUnitInd(int _unit, int _ind, Shaders* _shader, TFO* _tfo) {
@@ -164,7 +164,7 @@ void SceneNode::useTextureUnitInd(int _unit, int _ind, Shaders* _shader, TFO* _t
 
     if (_tfo) _tfo->addTexture(_unit, _ind, GL_TEXTURE_2D, "texs");
 
-    for (auto& it : m_auxTex) {
+    for (const auto& it : m_auxTex) {
         glActiveTexture(GL_TEXTURE0 + it.unitNr);
         glBindTexture(it.target, it.texNr);
 
@@ -180,16 +180,16 @@ void SceneNode::setParentNode(SceneNode* _parent) {
         if (foundSelf == (*it)->m_children.end()) toKill.emplace_back(it);
     }
 
-    for (auto& it : toKill) m_parents.erase(it);
+    for (const auto& it : toKill) m_parents.erase(it);
 
     // if this parent hasn't been registered, do it now
     auto it = std::find(m_parents.begin(), m_parents.end(), _parent);
     if (it == m_parents.end()) m_parents.push_back(_parent);
 
     // recheck children for correct rootNode
-    for (auto& it : m_children) it->setRootNode(nullptr);
+    for (const auto& it : m_children) it->setRootNode(nullptr);
 
-    for (auto& it : m_changedParentCb) it();
+    for (const auto& it : m_changedParentCb) it();
 }
 
 SceneNode* SceneNode::addChild(bool updtNodeIds) {
@@ -242,7 +242,7 @@ SceneNode* SceneNode::insertChild(uint _ind, unique_ptr<SceneNode> newScene, boo
 
 void SceneNode::clearChildren() {
     // clear bottom up
-    for (auto& it : m_int_children) it->clearChildren();
+    for (const auto& it : m_int_children) it->clearChildren();
 
     if (!m_int_children.empty()) m_int_children.clear();
 
@@ -299,7 +299,7 @@ void SceneNode::removeChild(std::string searchName) {
         vector<SceneNode*>* children = thisNode->getChildren();
         bool                contIt   = true;
         for (vector<SceneNode*>::iterator childIt = children->begin(); childIt != children->end(); ++childIt)
-            if (!strcmp((*childIt)->getName().c_str(), searchName.c_str())) {
+            if ((*childIt)->getName() == searchName) {
                 contIt = false;
                 children->erase(childIt);
             }
@@ -312,7 +312,7 @@ void SceneNode::removeChild(std::string searchName) {
         vector<unique_ptr<SceneNode>>* intChildren = thisNode->getIntChildren();
         bool                           contIt      = true;
         for (vector<unique_ptr<SceneNode>>::iterator it = intChildren->begin(); it != intChildren->end(); ++it)
-            if (!strcmp((*it)->getName().c_str(), searchName.c_str())) {
+            if ((*it)->getName() == searchName) {
                 contIt = false;
                 intChildren->erase(it);
             }
@@ -347,17 +347,17 @@ SceneNode* SceneNode::getRootNode() {
 }
 
 SceneNode* SceneNode::getNode(std::string searchName) {
-    SceneNode* node  = NULL;
+    SceneNode* node  = nullptr;
     bool       found = false;
     uint       cntr  = 0;
 
     while (!found && cntr < m_children.size()) {
-        if (std::strcmp(m_children[cntr]->m_name.c_str(), searchName.c_str()) == 0) {
+        if (m_children[cntr]->m_name == searchName) {
             node  = m_children[cntr];
             found = true;
         }
 
-        cntr++;
+        ++cntr;
     }
 
     return node;
@@ -368,7 +368,7 @@ bool SceneNode::findChild(SceneNode* node) {
 
     iterateNode(this, [node, &found](SceneNode* thisNode) {
         bool contIt = true;
-        auto it     = std::find(thisNode->getChildren()->begin(), thisNode->getChildren()->end(), node);
+        const auto& it     = ranges::find(*thisNode->getChildren(), node);
         if (it != thisNode->getChildren()->end()) {
             found  = true;
             contIt = false;
@@ -382,16 +382,17 @@ bool SceneNode::findChild(SceneNode* node) {
 
 bool SceneNode::setSelected(bool val, SceneNode* parent, bool procCb) {
     if (m_selectable) {
-        if (parent && m_selected.count(parent))
+        if (parent && m_selected.count(parent)) {
             m_selected[parent] = val;
-        else if (!parent && getFirstParentNode() && m_selected.count(getFirstParentNode()))
+        } else if (!parent && getFirstParentNode() && m_selected.count(getFirstParentNode())) {
             m_selected[getFirstParentNode()] = val;
+        }
 
         // traverse all children down and also set them selected
-        for (auto& child : *getChildren()) child->setSelected(val, this, procCb);
+        for (const auto& child : *getChildren()) child->setSelected(val, this, procCb);
 
         if (procCb)
-            for (auto& it : m_clickCb) it.second();
+            for (const auto& it : m_clickCb) it.second();
 
         return true;
 
@@ -432,7 +433,7 @@ bool SceneNode::iterateNode(SceneNode* node, itNodeCbFunc cbFunc) {
     if (!contIteration) return false;
 
     // iterate children
-    for (auto& it : *node->getChildren())
+    for (const auto& it : *node->getChildren())
         if (!iterateNode(it, cbFunc)) return false;
 
     return contIteration;
@@ -444,7 +445,7 @@ bool SceneNode::iterateNodeParent(SceneNode* node, SceneNode* parent, itNodePare
     if (!contIteration) return false;
 
     // set all childrens resetIDs to true
-    for (auto& it : *node->getChildren())
+    for (const auto& it : *node->getChildren())
         if (!iterateNodeParent(it, node, cbFunc)) return false;
 
     return contIteration;
@@ -727,7 +728,7 @@ SceneNode* SceneNode::getNodeWithID(int id) {
 }
 
 void SceneNode::deleteGarbage() {
-    for (auto& it : m_sceneNodesToKill) delete it;
+    for (const auto& it : m_sceneNodesToKill) delete it;
 
     m_sceneNodesToKill.clear();
 }
@@ -735,7 +736,7 @@ void SceneNode::deleteGarbage() {
 void SceneNode::dumpTreeIt(SceneNode* tNode, uint level) {
     uint newLevel = level + 1;
 
-    for (auto& it : *tNode->getChildren()) {
+    for (const auto& it : *tNode->getChildren()) {
         std::string tabs = "";
         for (uint i = 0; i < level - 1; i++) tabs += "\t";
 
@@ -760,31 +761,31 @@ void SceneNode::dumpTreeIt(SceneNode* tNode, uint level) {
         LOG << tabs << "  dimension: " << glm::to_string(*it->getDimension());
 
         LOG << tabs << "  objIds: ";
-        for (auto& pit : it->m_nodeObjId)
+        for (const auto& pit : it->m_nodeObjId)
             LOG << tabs << "    [" << pit.first << "](\"" << (pit.first ? pit.first->getName() : "")
                 << "\"): " << pit.second;
 
         if (it->getIdGroup()) {
             LOG << tabs << "  IdGroup [" << it->getIdGroup()->owner->getName() << "]:";
-            for (auto& g : it->getIdGroup()->ids)
+            for (const auto& g : it->getIdGroup()->ids)
                 LOG << tabs << " \t[" << g.first->getName() << ", " << g.second << "]";
         }
 
         if (it->getExtIdGroup()) {
             LOG << tabs << "  extIdGroup [" << it->getExtIdGroup()->owner->getName() << "]:";
-            for (auto& g : it->getExtIdGroup()->ids)
+            for (const auto& g : it->getExtIdGroup()->ids)
                 LOG << tabs << " \t[" << g.first->getName() << ", " << g.second << "]";
         }
 
         LOG << tabs << "  parents: ";
         uint j = 0;
-        for (auto& pit : *it->getParents()) {
+        for (const auto& pit : *it->getParents()) {
             LOG << tabs << "    [" << j << "]: " << pit << " \"" << pit->getName() << "\"";
             j++;
         }
 
         LOG << tabs << "  selected: ";
-        for (auto& pit : it->m_selected)
+        for (const auto& pit : it->m_selected)
             LOG << tabs << "    [" << pit.first << "](\"" << (pit.first ? pit.first->getName() : "")
                 << "\"): " << pit.second;
 
@@ -807,8 +808,8 @@ void SceneNode::unregister() {
 
     // call the removeCBs, which will release the parent-child relation(s)
     if (!s_removeCb.empty())
-        for (auto& it : s_removeCb)
-            for (auto& f : it.second) f.second();
+        for (const auto& it : s_removeCb)
+            for (const auto& f : it.second) f.second();
 
     // check the whole tree for nodes which do have this node as a reference
     // either in "parents" or in "objIds" also delete removeCB which have this
@@ -847,7 +848,7 @@ void SceneNode::unregister() {
 
         // unregister the node from its parents
         if (!m_parents.empty())
-            for (auto& it : m_parents) {
+            for (const auto& it : m_parents) {
                 if (it->m_children.size()) {
                     auto childIt = std::find(it->m_children.begin(), it->m_children.end(), this);
                     if (childIt != it->m_children.end()) it->m_children.erase(childIt);

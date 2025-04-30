@@ -47,6 +47,10 @@ public:
     GLuint addBuffer(CoordType type);
     void   addExtBuffer(CoordType type, GLuint buffer);
 
+#ifdef STRICT_WEBGL_1
+    void enableAttributes();
+#endif
+
 #ifdef EMSCRIPTEN
     void bind();
 #else
@@ -103,7 +107,7 @@ public:
     }
     void setStatic(glm::vec4 color, const std::string& name, const std::string& format);
     void enableVertexAttribs();
-    void disableVertexAttribs();
+    void disableVertexAttribs() const;
 
     [[nodiscard]] GLuint          getVAOId() const { return m_VAOId; }
     GLuint                        getVBO(CoordType attrIndex) { return m_buffers[toType(attrIndex)]; }

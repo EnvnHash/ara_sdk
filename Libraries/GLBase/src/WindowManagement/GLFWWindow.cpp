@@ -80,7 +80,7 @@ int GLFWWindow::init(const glWinPar &gp) {
         int                countVm;
         bool               found       = false;
         const GLFWvidmode *modes       = glfwGetVideoModes(m_monitors[useMonitor], &countVm);
-        const GLFWvidmode *useThisMode = 0;
+        const GLFWvidmode *useThisMode = nullptr;
 
         if (gp.debug) {
             for (int j = 0; j < countVm; j++) {
@@ -184,7 +184,7 @@ int GLFWWindow::init(const glWinPar &gp) {
         m_monHeight             = mode->height;
     }
 
-    m_window = glfwCreateWindow(m_widthVirt, m_heightVirt, "", gp.fullScreen ? m_mon : nullptr, (GLFWwindow *)gp.shareCont);
+    m_window = glfwCreateWindow(m_widthVirt, m_heightVirt, "", gp.fullScreen ? m_mon : nullptr, static_cast<GLFWwindow *>(gp.shareCont));
     if (!m_window) {
         LOGE << " GWindow ERROR creating window";
         return false;
@@ -215,7 +215,7 @@ int GLFWWindow::init(const glWinPar &gp) {
     glfwMakeContextCurrent(m_window);
 
 #ifdef _WIN32
-    m_nativeHandle = (void *)wglGetCurrentContext();
+    m_nativeHandle = static_cast<void *>(wglGetCurrentContext());
 #elif __linux__
 #ifndef ARA_USE_GLES31
     m_nativeHandle = (void *)glXGetCurrentContext();
@@ -322,8 +322,8 @@ int GLFWWindow::init(const glWinPar &gp) {
         auto windowSizeCb = [](GLFWwindow *w, int width, int height) {
             auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
 #if defined(_WIN32) || defined(__linux__)
-            win->onWindowSize((int)((float)width / win->getContentScale().x),
-                              (int)((float)height / win->getContentScale().y));
+            win->onWindowSize(static_cast<int>(static_cast<float>(width) / win->getContentScale().x),
+                              static_cast<int>(static_cast<float>(height) / win->getContentScale().y));
 #else
             win->onWindowSize(width, height);
 #endif
@@ -333,7 +333,7 @@ int GLFWWindow::init(const glWinPar &gp) {
         auto mouseCursorCb = [](GLFWwindow *w, double xpos, double ypos) {
             auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
 #if defined(_WIN32) || defined(__linux__)
-            win->onMouseCursor(xpos / (double)win->getContentScale().x, ypos / (double)win->getContentScale().y);
+            win->onMouseCursor(xpos / static_cast<double>(win->getContentScale().x), ypos / static_cast<double>(win->getContentScale().y));
 #else
             win->onMouseCursor(xpos, ypos);
 #endif

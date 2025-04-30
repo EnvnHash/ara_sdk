@@ -24,7 +24,7 @@ void PageView::showPage(int idx) {
         return;
     }
 
-    for (auto& it : m_pages) {
+    for (const auto& it : m_pages) {
         it->setVisibility(false);
     }
 

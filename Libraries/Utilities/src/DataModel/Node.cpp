@@ -164,13 +164,13 @@ void Node::deserialize(const std::string& str) {
 void Node::deserialize(const json& j) {
     if (serializeValues() != getValues(j)) {
         deserializeValues(j);
-        for (auto& it: m_changeCb[cbType::postChange]) {
+        for (const auto& it: m_changeCb[cbType::postChange]) {
             it.second();
         }
     }
 
     std::unordered_map<std::string, Node*> existingChildren;
-    for (auto& child : m_children) {
+    for (const auto& child : m_children) {
         existingChildren[child->uuid()] = child.get();
     }
 
@@ -199,7 +199,7 @@ void Node::deserialize(const json& j) {
     }
 
     // Remove remaining existing children that were not found in the JSON input
-    for (auto& pair : existingChildren) {
+    for (const auto& pair : existingChildren) {
         remove(pair.second);
     }
 }
@@ -310,7 +310,7 @@ void Node::redo() {
 
 void Node::iterateChildren(Node& node, const std::function<void(Node&)>& f) {
     f(node);
-    for (auto& it: node.children()) {
+    for (const auto& it: node.children()) {
         iterateChildren(*it, f);
     }
 }

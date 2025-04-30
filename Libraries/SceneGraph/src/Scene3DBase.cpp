@@ -26,7 +26,7 @@ Scene3DBase::Scene3DBase() : Div(), m_shCol(nullptr) {
 void Scene3DBase::init() {
     Div::init();
     initScene();
-    for (auto& it : m_initCb) {
+    for (const auto& it : m_initCb) {
         it();
     }
 }
@@ -149,8 +149,9 @@ void Scene3DBase::initGizmos() {
     gizmoTree->setName("gizmoTree");
 
     // construct all 3 possible gizmos for translation, rotation and scaling
-    for (uint i = 0; i < 3; i++)
+    for (uint i = 0; i < 3; i++) {
         m_gizmos.emplace_back(dynamic_cast<SNGizmo *>(gizmoTree->addChild(make_unique<SNGizmo>(static_cast<transMode>(i), &s_sd), false)));
+    }
 }
 
 void Scene3DBase::initSsao() {
@@ -215,7 +216,7 @@ void Scene3DBase::loadTypo() {
 
 void Scene3DBase::initShaderProtos() {
     // add the standard ObjectSelector ShaderProtoType to all camera sets
-    for (auto& cIt : m_camSet) {
+    for (const auto& cIt : m_camSet) {
         m_objSel = dynamic_cast<SPObjectSelector*>(cIt->addShaderProto(getTypeName<SPObjectSelector>(),
                                                           {GLSG_OBJECT_MAP_PASS}));  // create ObjectSelector
         m_objSel->setGizmoNodes(&m_gizmos);
@@ -295,13 +296,13 @@ bool Scene3DBase::drawFunc(uint32_t* objId) {
     // always sum up alpha values
 
     // copy the requested m_renderPasses
-    for (auto& pIt : m_reqRenderPasses) {
-        m_renderPasses[pIt.first] = static_cast<bool>(pIt.second.load());
+    for (const auto& [key, val] : m_reqRenderPasses) {
+        m_renderPasses[key] = static_cast<bool>(val.load());
     }
 
     // reset the m_reqRenderPasses
-    for (auto& it : m_reqRenderPasses) {
-        it.second = false;
+    for (auto& it : m_reqRenderPasses | views::values) {
+        it = false;
     }
 
     // always set the scene render pass
@@ -324,8 +325,8 @@ bool Scene3DBase::drawFunc(uint32_t* objId) {
     }
 
     // main rendering loop
-    for (auto& cIt : m_camSet) {
-        for (auto& pIt : m_renderPasses) {
+    for (const auto& cIt : m_camSet) {
+        for (const auto& pIt : m_renderPasses) {
             if (pIt.second) {
                 switch (pIt.first) {
                     case GLSG_OBJECT_ID_PASS:  // generate an id for each node (in linear order)
@@ -372,7 +373,9 @@ bool Scene3DBase::drawFunc(uint32_t* objId) {
     }
 
     // set all m_renderPasses to false
-    for (auto& it : m_renderPasses) it.second = false;
+    for (auto& it : m_renderPasses) {
+        it.second = false;
+    }
 
     //----------------------------------------------------------------------------------------------
 
@@ -386,7 +389,7 @@ bool Scene3DBase::drawFunc(uint32_t* objId) {
         glClearDepthf(1.f);
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        for (auto& cIt : m_camSet) {
+        for (const auto& cIt : m_camSet) {
             cIt->renderTree(gizmoTree, m_intTime, dt, 0, GLSG_GIZMO_PASS);  // 0 = pre-render step
         }
 
@@ -550,7 +553,7 @@ void Scene3DBase::keyUp(hidData* data) {
 
 void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
     SPObjectSelector* objSel = nullptr;
-    for (auto& cIt : m_camSet) {
+    for (const auto& cIt : m_camSet) {
         if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
             objSel = dynamic_cast<SPObjectSelector*>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get());
         }
@@ -598,7 +601,7 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
             }
         }
 
-        for (auto& g : *m_gizmos[static_cast<int>(transMode::rotate)]->getChildren()) {
+        for (const auto& g : *m_gizmos[static_cast<int>(transMode::rotate)]->getChildren()) {
             if (g->isSelected()) {
                 auto      object = objSel->getSelectedObjectNode();
                 glm::vec3 rotAxis{static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_X), static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_Y),
@@ -849,11 +852,11 @@ void Scene3DBase::updateScene3DBaseViewport(float x, float y, float width, float
 
     // virtual cameras (NetCameras) have their own Matrix setup (LICamera::setup) since by default Camera sets inside
     // a CameraSets are rebuilt, but those parameters are not available we have to call the NetCameras setup again here
-    for (auto& cam : m_netCameras) {
+    for (const auto& cam : m_netCameras) {
         cam->setup();
     }
 
-    for (auto& c : *m_sceneRenderCam->getCameras()) {
+    for (const auto& c : *m_sceneRenderCam->getCameras()) {
         c.first->updateMatrices();
     }
 
@@ -907,7 +910,7 @@ void Scene3DBase::addLightObj(SPObjectSelector* objSel, const string& _type) {
     lightObjs.back()->translate(createPoint.x, createPoint.y, createPoint.z);
 
     // quick and dirty s_fbo asigning
-    if ( !strcmp(_type.c_str(), "Projector"))
+    if ( _type == "Projector")
             lightObjs.back()->setColTex(surfManTexs[(lightObjs.size() - 1) %
     surfManTexs.size()]);
 
@@ -1125,31 +1128,31 @@ void Scene3DBase::hideSceneWorldAxisGizmo() {
         int skipInd = m_sceneRenderCam->getInteractCam() == m_sceneCam ? 1 : 0;
 
         m_sceneGizmo->m_skipForCamInd[m_sceneTreeCont] = skipInd;
-        for (auto& it : *m_sceneGizmo->getChildren()) {
+        for (const auto& it : *m_sceneGizmo->getChildren()) {
             it->m_skipForCamInd[m_sceneGizmo] = skipInd;
         }
 
         m_sceneGizmoPre->m_skipForCamInd[m_sceneTreeCont] = skipInd;
-        for (auto& it : *m_sceneGizmoPre->getChildren()) {
+        for (const auto& it : *m_sceneGizmoPre->getChildren()) {
             it->m_skipForCamInd[m_sceneGizmoPre] = skipInd;
         }
     }
 }
 
 void Scene3DBase::addShaderProto(const std::string* shdrName) {
-    for (auto& cIt : m_camSet) {
+    for (const auto& cIt : m_camSet) {
         cIt->addShaderProto(*shdrName, {GLSG_SHADOW_MAP_PASS, GLSG_SCENE_PASS, GLSG_GIZMO_PASS});
     }
 
     //-----------------------------------------------------------------------
     // there might be parameter changes before the scene has been m_inited, if
     // this is the case, process them now.
-    for (auto& it : m_preSceneShdrProtoPar) {
-        if (!strcmp(it.first.c_str(), shdrName->c_str())) {
-            for (auto& cb : it.second) {
+    for (auto& [key, val] : m_preSceneShdrProtoPar) {
+        if (key == *shdrName) {
+            for (const auto& cb : val) {
                 cb(this);
             }
-            it.second.clear();
+            val.clear();
         }
     }
 }
@@ -1179,8 +1182,8 @@ ShaderProto* Scene3DBase::getShaderProto(uint ind, string&& name) {
     }
 }
 
-SceneNode* Scene3DBase::getModelSN(string&& name) {
-    if (!strcmp(name.c_str(), "SpotLight")) {
+SceneNode* Scene3DBase::getModelSN(const string& name) {
+    if (name == "SpotLight") {
         return spotLightSN.get();
     } else if (name == getTypeName<LIProjector>()) {
         return projectorSN.get();
@@ -1191,21 +1194,9 @@ SceneNode* Scene3DBase::getModelSN(string&& name) {
     }
 }
 
-SceneNode* Scene3DBase::getModelSN(string* name) {
-    if (!strcmp(name->c_str(), "SpotLight")) {
-        return spotLightSN.get();
-    } else if ((*name) == getTypeName<LIProjector>()) {
-        return projectorSN.get();
-    } else if ((*name) == getTypeName<LICamera>()) {
-        return netCamSN.get();
-    } else {
-        return nullptr;
-    }
-}
-
 void Scene3DBase::selectObj(int objId) {
     if (m_inited) {
-        for (auto& cIt : m_camSet) {
+        for (const auto& cIt : m_camSet) {
             auto objSelector = dynamic_cast<SPObjectSelector *>(cIt->getShaderProto(getTypeName<SPObjectSelector>()));
             if (!objSelector->getLastSceneTree()) objSelector->setLastSceneTree(m_sceneTree);
             objSelector->selectObj(objId, true);
@@ -1258,7 +1249,7 @@ void Scene3DBase::removePassiveGizmo(SceneNode* node) {
 }
 
 void Scene3DBase::deselectAll() {
-    for (auto& cIt : m_camSet) {
+    for (const auto& cIt : m_camSet) {
         if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
             dynamic_cast<SPObjectSelector *>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get())->deselect();
         }
@@ -1280,7 +1271,7 @@ void Scene3DBase::setCfState(cfState cf) {
 
     m_cfState = cf;
 
-    for (auto& cIt : m_camSet) {
+    for (const auto& cIt : m_camSet) {
         if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
             auto objSel = dynamic_cast<SPObjectSelector*>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get());
             if (objSel->getCfState() != cf) objSel->setCfState(cf);

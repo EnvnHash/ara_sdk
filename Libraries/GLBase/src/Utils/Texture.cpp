@@ -535,6 +535,15 @@ GLuint Texture::procTextureData() {
     return m_texData.textureID;
 }
 
+void Texture::genTexture(GLuint& id) {
+    if (id) {
+        glDeleteTextures(1, &id);
+    }
+
+    glGenTextures(1, &id);  // could be more than one, but for now, just one
+    glBindTexture(m_texData.target, id);
+}
+
 #if !defined(__EMSCRIPTEN__) && !defined(ARA_USE_GLES31)
 GLuint Texture::allocate1D(uint w, GLenum internalGlDataType, GLenum extGlDataType, GLenum pixelType) {
     // m_texData.width = std::min<uint>(w, (uint)maxTexSize);
@@ -595,12 +604,7 @@ GLuint Texture::allocate3D(uint w, uint h, uint d, GLenum internalGlDataType, GL
                              4);  // make an array with initial zero data, ...don't care about the
                                   // number of channel, just make it big enough
 
-    if (m_texData.textureID) {
-        glDeleteTextures(1, (GLuint *)&m_texData.textureID);
-    }
-
-    glGenTextures(1, (GLuint *)&m_texData.textureID);  // could be more than one, but for now, just one
-    glBindTexture(m_texData.target, (GLuint)m_texData.textureID);
+    genTexture(m_texData.textureID);
 
     // define immutable storage space. best practise since opengl hereby stops
     // tracking certain features
