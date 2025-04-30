@@ -194,11 +194,11 @@ void GLNativeWindowManager::gMouseCursorCallback(GLWindow *window, double xpos, 
     }
 
     // save last mouse Pos
-    m_lastMousePos.x = xpos;
-    m_lastMousePos.y = ypos;
+    m_lastMousePos.x = static_cast<float>(xpos);
+    m_lastMousePos.y = static_cast<float>(ypos);
 }
 
-void GLNativeWindowManager::addKeyCallback(unsigned int winInd, std::function<void(int, int, int, int)> _func) {
+void GLNativeWindowManager::addKeyCallback(unsigned int winInd, const std::function<void(int, int, int, int)>& _func) {
     if (static_cast<unsigned int>(windows.size()) >= (winInd + 1)) {
         keyCbMap[windows[winInd].get()].emplace_back(_func);
     } else {
@@ -206,7 +206,7 @@ void GLNativeWindowManager::addKeyCallback(unsigned int winInd, std::function<vo
     }
 }
 
-void GLNativeWindowManager::addMouseButCallback(unsigned int winInd, std::function<void(int, int, int, double, double)> _func) {
+void GLNativeWindowManager::addMouseButCallback(unsigned int winInd, const std::function<void(int, int, int, double, double)>& _func) {
     if (static_cast<unsigned int>(windows.size()) >= (winInd + 1)) {
         mouseButCbMap[windows[winInd].get()].push_back(_func);
     } else {

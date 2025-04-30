@@ -45,8 +45,8 @@ public:
     void setGlobalMouseCursorCallback(std::function<void(GLWindow *, double, double)> f) { m_mouseCursorCbFun = f; }
     void setGlobalMouseButtonCallback(std::function<void(GLWindow *window, int button, int action, int mods)> f) { m_mouseButtonCbFun = f; }
     void setWinResizeCallback(std::function<void(GLWindow *, int, int)> f) { winResizeCbFun = f; }
-    void addKeyCallback(unsigned int winInd, std::function<void(int, int, int, int)> _func);
-    void addMouseButCallback(unsigned int winInd, std::function<void(int, int, int, double, double)> _func);
+    void addKeyCallback(unsigned int winInd, const std::function<void(int, int, int, int)>& _func);
+    void addMouseButCallback(unsigned int winInd, const std::function<void(int, int, int, double, double)>& _func);
     void addCursorCallback(unsigned int winInd, std::function<void(double, double)> _func);
     void setSwapInterval(unsigned int winNr, bool swapInterval) {
         //		if (static_cast<unsigned int>(windows.size()) >= winNr)
