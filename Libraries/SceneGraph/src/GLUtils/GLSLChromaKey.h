@@ -17,7 +17,7 @@ public:
     void initChromaShdr();
     void initChromaMaskShdr();
     GLuint proc(GLuint tex);
-    void pickMask2Color(glm::vec2& pos);
+    void pickMask2Color(const glm::vec2& pos);
     void setPar(Property<GLSLChromaKeyPar*>* par) { m_par = par; }
     void setGLBase(GLBase* glbase) { m_glbase = glbase; }
 
@@ -31,10 +31,12 @@ public:
     template <typename T>
     void onChanged(Property<T>* p, std::function<void(std::any)> f) {
         m_onValChangedCb[p] = std::make_shared<std::function<void(std::any)>>(f);
-        if (p) p->onPreChange(m_onValChangedCb[p]);
+        if (p) {
+            p->onPreChange(m_onValChangedCb[p]);
+        }
     }
 
-    bool isInited() { return m_inited; }
+    bool isInited() const { return m_inited; }
 
 private:
     std::unordered_map<void*, std::shared_ptr<std::function<void(std::any)>>> m_onValChangedCb;

@@ -310,7 +310,7 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
 
         shadowGen->getShader()->setUniformMatrix4fv("m_pv", &pv_mats[0][0][0], (uint)s_lights.size());
         shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)],
-                                                    value_ptr(*node->getModelMat(parent)));
+                                                    value_ptr(node->getModelMat(parent)));
 
     } else if ((pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) && s_shader) {
         // estimate nr passes to render all active surfaces and lights
@@ -321,16 +321,16 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
             if (s_lights.size() <= maxNrParLights) {
                 s_nrPasses = 1;
             } else {
-                float div  = float(s_lights.size()) / float(maxNrParLights);
-                float frac = fmod(div, 1.f);
+                auto div  = float(s_lights.size()) / float(maxNrParLights);
+                auto frac = fmod(div, 1.f);
                 s_nrPasses = static_cast<uint>(round(div + (frac > 0.f ? 0.5f : 0.f)));
             }
         }
 
         //-------------------------------------------------------------------------------
 
-        uint lightOffs        = loopNr * (int)maxNrParLights;
-        uint nrLightsThisPass = std::min<int>(int(s_lights.size() - lightOffs), (int)maxNrParLights);
+        uint lightOffs        = loopNr * static_cast<int>(maxNrParLights);
+        uint nrLightsThisPass = std::min<int>(static_cast<int>(s_lights.size() - lightOffs), static_cast<int>(maxNrParLights));
         s_shader->setUniform1i("lightIndIsActMesh", -1);
 
         if (shadowMat.size() != nrLightsThisPass) {
@@ -340,7 +340,7 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
         }
 
         for (uint i = 0; i < nrLightsThisPass; i++) {
-            shadowMat[i]        = s_lights[i + lightOffs]->s_shadow_mat * *node->getModelMat(parent);
+            shadowMat[i]        = s_lights[i + lightOffs]->s_shadow_mat * node->getModelMat(parent);
             depthTexUnits[i]    = i + 1;
             lightColTexUnits[i] = maxNrParLights + i + 1;
 
@@ -369,11 +369,7 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
 
         // bind Light Parameters
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, lightSb->getBuffer());
-
-        if (s_nrPasses > 1 && loopNr < (s_nrPasses - 1))
-            glDepthMask(false);
-        else
-            glDepthMask(true);
+        glDepthMask((!s_nrPasses > 1 && loopNr < s_nrPasses - 1));
     }
 }
 
@@ -416,7 +412,7 @@ bool SPSpotLightShadow::end(renderPass pass, uint loopNr) {
     return loopNr < (s_nrPasses - 1);
 }
 
-ara::Shaders *SPSpotLightShadow::getShader(renderPass pass, uint loopNr) {
+Shaders *SPSpotLightShadow::getShader(renderPass pass, uint loopNr) {
     switch (pass) {
         case GLSG_SHADOW_MAP_PASS: return shadowGen->getShader(); break;
 

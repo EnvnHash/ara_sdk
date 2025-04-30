@@ -159,45 +159,44 @@ void TransformWidget::translate(int j) {
     float amt = m_transAmt[(int)m_cfState];
     switch (m_transPlane) {
         case twPlane::xy:
-            offs = vec3{j == 0 ? amt : ((j == 1) ? -amt : 0.f), j == 2 ? -amt : ((j == 3) ? amt : 0.f), 0.f};
+            offs = vec3{j == 0 ? amt : (j == 1 ? -amt : 0.f), j == 2 ? -amt : (j == 3 ? amt : 0.f), 0.f};
             break;
         case twPlane::xz:
-            offs = vec3{j == 0 ? amt : ((j == 1) ? -amt : 0.f), 0.f, j == 2 ? -amt : ((j == 3) ? amt : 0.f)};
+            offs = vec3{j == 0 ? amt : (j == 1 ? -amt : 0.f), 0.f, j == 2 ? -amt : (j == 3 ? amt : 0.f)};
             break;
         case twPlane::yz:
-            offs = vec3{0.f, j == 2 ? -amt : ((j == 3) ? amt : 0.f), j == 0 ? amt : ((j == 1) ? -amt : 0.f)};
+            offs = vec3{0.f, j == 2 ? -amt : (j == 3 ? amt : 0.f), j == 0 ? amt : (j == 1 ? -amt : 0.f)};
             break;
         default: break;
     }
 
     switch (m_tRel) {
         case transAlign::objectRelative:
-            m_modelNode->translate(*m_modelNode->getTransVec() + vec3(*m_modelNode->getRotMat() * vec4(offs, 1.f)));
+            m_modelNode->translate(m_modelNode->getTransVec() + vec3(m_modelNode->getRotMat() * vec4(offs, 1.f)));
             break;
-        case transAlign::worldRelative: m_modelNode->translate(*m_modelNode->getTransVec() + offs); break;
+        case transAlign::worldRelative: m_modelNode->translate(m_modelNode->getTransVec() + offs); break;
     }
 
     checkCamFlags();
 }
 
 void TransformWidget::rotate(int j) {
-    if (!m_modelNode) return;
+    if (!m_modelNode) {
+        return;
+    }
 
-    m_inRm    = *m_modelNode->getRotMat();
-    float amt = glm::radians(m_rotAmt[(int)m_cfState]);
+    m_inRm    = m_modelNode->getRotMat();
+    auto amt = radians(m_rotAmt[static_cast<int>(m_cfState)]);
 
     switch (m_transPlane) {
         case twPlane::xy:
-            m_modRotMat =
-                glm::eulerAngleXYZ(j == 2 ? -amt : ((j == 3) ? amt : 0.f), j == 0 ? -amt : ((j == 1) ? amt : 0.f), 0.f);
+            m_modRotMat = eulerAngleXYZ(j == 2 ? -amt : (j == 3 ? amt : 0.f), j == 0 ? -amt : (j == 1 ? amt : 0.f), 0.f);
             break;
         case twPlane::xz:
-            m_modRotMat =
-                glm::eulerAngleXYZ(j == 2 ? -amt : ((j == 3) ? amt : 0.f), 0.f, j == 0 ? -amt : ((j == 1) ? amt : 0.f));
+            m_modRotMat = eulerAngleXYZ(j == 2 ? -amt : (j == 3 ? amt : 0.f), 0.f, j == 0 ? -amt : (j == 1 ? amt : 0.f));
             break;
         case twPlane::yz:
-            m_modRotMat =
-                glm::eulerAngleXYZ(0.f, j == 0 ? -amt : ((j == 1) ? amt : 0.f), j == 2 ? amt : ((j == 3) ? -amt : 0.f));
+            m_modRotMat = eulerAngleXYZ(0.f, j == 0 ? -amt : (j == 1 ? amt : 0.f), j == 2 ? amt : (j == 3 ? -amt : 0.f));
             break;
         default: break;
     }

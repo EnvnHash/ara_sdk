@@ -590,10 +590,10 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
 
                 // rotate selected axis into object space and multiply by
                 // gizmoAxis parent (the gizmo container) scaleFact
-                moveVec = *object->getRotMat() * vec4(vec3(moveVec) * m_keyTransStep[static_cast<int>(m_cfState)], 0.f);
+                moveVec = object->getRotMat() * vec4(vec3(moveVec) * m_keyTransStep[static_cast<int>(m_cfState)], 0.f);
 
                 // offset
-                object->translate(*object->getTransVec() + vec3(moveVec));
+                object->translate(object->getTransVec() + vec3(moveVec));
 
                 if (object->getName() == getTypeName<LICamera>()) {
                     dynamic_cast<LICamera*>(object)->setup();
@@ -608,8 +608,7 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
                                   static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_Z)};
 
                 float     offs = m_keyRotStep[static_cast<int>(m_cfState)];
-                glm::mat4 newRot = *object->getRotMat() *
-                    glm::rotate((data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_LEFT) ? -offs : offs, rotAxis);
+                glm::mat4 newRot = object->getRotMat() * glm::rotate((data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_LEFT) ? -offs : offs, rotAxis);
 
                 // offset
                 object->rotate(newRot);
@@ -1112,7 +1111,7 @@ void Scene3DBase::updateCamTrackball(TrackBallCam* cam, LICamera* netCam) {
         // trackball needs to update the cameras SceneNodes modelmatrix
         cam->setUptCamSceneNodeCb([netCam](const TbModData& data) {
             if (data.trans) {
-                netCam->translate(data.trans);
+                netCam->translate(*data.trans);
             }
             if (data.rotQ) {
                 netCam->rotate(glm::angle(*data.rotQ), glm::axis(*data.rotQ));
@@ -1226,11 +1225,11 @@ void Scene3DBase::addPassiveGizmo(SceneNode* node, float objRelativeSize, float 
         gizmo->setName("passive_gizmo");
 
         // position onto the node's center
-        gizmo->translate(((*node->getBoundingBoxMax() - *node->getBoundingBoxMin()) * 0.5f + *node->getBoundingBoxMin()) *
+        gizmo->translate(((node->getBoundingBoxMax() - node->getBoundingBoxMin()) * 0.5f + node->getBoundingBoxMin()) *
             worldScale);
 
         // scale relative to node
-        float diag = std::sqrt(glm::length(*node->getBoundingBoxMax() - *node->getBoundingBoxMin())) * objRelativeSize * worldScale;
+        float diag = std::sqrt(glm::length(node->getBoundingBoxMax() - node->getBoundingBoxMin())) * objRelativeSize * worldScale;
         gizmo->scale(diag, diag, diag);
 
         // set a screen relative limit for the size of the gizmo
@@ -1250,7 +1249,7 @@ void Scene3DBase::removePassiveGizmo(SceneNode* node) {
 
 void Scene3DBase::deselectAll() {
     for (const auto& cIt : m_camSet) {
-        if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
+        if (cIt->s_shaderProto.contains(getTypeName<SPObjectSelector>())) {
             dynamic_cast<SPObjectSelector *>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get())->deselect();
         }
     }

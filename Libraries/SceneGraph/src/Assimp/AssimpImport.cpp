@@ -346,10 +346,10 @@ void AssimpImport::loadSubMeshes(aiScene const* scene, aiNode* node, SceneNode* 
     } else {
         glm::mat4 nodeMat = aiMatrix4x4ToGlm(&node->mTransformation);
         if (glm::decompose(aiMatrix4x4ToGlm(&node->mTransformation), dcScale, dcOri, dcTrans, dcSkew, dcPersp)) {
-            newNode->scale(&dcScale);
+            newNode->scale(dcScale);
             auto rotMat = mat4(dcOri);
             newNode->rotate(rotMat);
-            newNode->translate(&dcTrans);
+            newNode->translate(dcTrans);
         } else {
             newNode->m_usefixedModelMat = true;
             newNode->setModelMat(nodeMat);

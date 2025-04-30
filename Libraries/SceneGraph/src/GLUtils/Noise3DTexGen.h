@@ -6,28 +6,30 @@
 
 #pragma once
 
-#include <GLUtils/sceneData.h>
-#include <GeoPrimitives/Quad.h>
-#include <Shaders/ShaderCollector.h>
-#include <Utils/FBO.h>
 #include <glb_common/glb_common.h>
+#include <Shaders/ShaderCollector.h>
 
 namespace ara {
+
+class FBO;
+class sceneData;
+
 class Noise3DTexGen {
 public:
-    Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, glm::ivec3 size, glm::vec3 scale);
+    Noise3DTexGen(const sceneData* scd, bool color, int nrOctaves, glm::ivec3 size, glm::vec3 scale);
 
     void          initShdr();
-    ara::Shaders* initBlendShdrH();
-    ara::Shaders* initBlendShdrV();
-    GLuint        getTex();
+
+    [[nodiscard]] Shaders* initBlendShdrH() const;
+    [[nodiscard]] Shaders* initBlendShdrV() const;
+    [[nodiscard]] GLuint   getTex() const;
 
     std::unique_ptr<FBO> fbo;
 
 private:
     Shaders*         m_noiseShdr = nullptr;
     Shaders*         m_stdTexShdr = nullptr;
-    ShaderCollector* m_shCol = nullptr;
+    ShaderCollector& m_shCol;
     GLBase*          m_glbase = nullptr;
 
     float m_scaleX{};

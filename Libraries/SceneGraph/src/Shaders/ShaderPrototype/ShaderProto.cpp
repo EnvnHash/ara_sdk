@@ -36,14 +36,14 @@ void ShaderProto::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode
             if (!s_ub.isInited() || s_shader->getProgram() != s_ub.getProgram()) {
                 s_ub.init(s_shader->getProgram(), "nodeData");
 
-                s_ub.addVarName(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)], value_ptr(*node->getModelMat(parent)), 0);
+                s_ub.addVarName(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)], value_ptr(node->getModelMat(parent)), 0);
                 s_ub.addVarName(getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)], cs->getSetModelMatrPtr(), 0);
                 // s_ub.addVarName(getStdMatrixNames()[toType(StdMatNameInd::ViewMat)],
                 // cs->getSetViewMatrPtr(), 0);
                 s_ub.addVarName(getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)], cs->getSetProjectionMatrPtr(), 0);
                 // s_ub.addVarName(getStdMatrixNames()[toType(StdMatNameInd::NormalMat)],
                 // value_ptr(s_normMatr), 0);
-                s_ub.addVarName(getStdMatrixNames()[toType(StdMatNameInd::NormalMat)], value_ptr(*node->getNormalMat(parent)), 0);
+                s_ub.addVarName(getStdMatrixNames()[toType(StdMatNameInd::NormalMat)], value_ptr(node->getNormalMat(parent)), 0);
 
                 // check if the actual node is a camera and part of the actual
                 // camera set, in this case, tell the geometryshader to skip it
@@ -61,14 +61,9 @@ void ShaderProto::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode
             // while internally model/view/projection multiplication would be
             // done for each vertex which will be way slower for model with a
             // lot of vertexes
-            s_shader->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)],
-                                          value_ptr(*node->getModelMat(parent)));
-            s_shader->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)],
-                                          cs->getSetModelMatrPtr(), cs->getNrCameras());
-            // s_shader->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ViewMat)],
-            // cs->getSetViewMatrPtr(), cs->getNrCameras());
-            s_shader->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)],
-                                          cs->getSetProjectionMatrPtr(), cs->getNrCameras());
+            s_shader->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)], value_ptr(node->getModelMat(parent)));
+            s_shader->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)], cs->getSetModelMatrPtr(), cs->getNrCameras());
+            s_shader->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)], cs->getSetProjectionMatrPtr(), cs->getNrCameras());
 
             // check if the actual node is a camera and part of the actual
             // camera set, in this case, tell the geometryshader to skip it
@@ -78,8 +73,7 @@ void ShaderProto::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode
             s_shader->setUniform4fv("fishEyeAdjust", cs->getSetFishEyeParams(), cs->getNrCameras());
 
             if (pass != GLSG_OBJECT_MAP_PASS) {
-                s_shader->setUniformMatrix3fv(getStdMatrixNames()[toType(StdMatNameInd::NormalMat)],
-                                              value_ptr(*node->getNormalMat(parent)));
+                s_shader->setUniformMatrix3fv(getStdMatrixNames()[toType(StdMatNameInd::NormalMat)], value_ptr(node->getNormalMat(parent)));
                 s_shader->setUniform1f("highLight", s_highLight);
             }
         }
@@ -122,7 +116,7 @@ std::string ShaderProto::getUbPar(uint32_t nrCameras) {
 }
 
 void ShaderProto::addLight(Light* light) {
-    light->setup();
+    light->setup(false);
     s_lights.emplace_back(light);
     s_reqCalcLights = true;
 }

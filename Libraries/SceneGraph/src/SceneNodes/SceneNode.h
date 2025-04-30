@@ -64,7 +64,7 @@ public:
 
     virtual void       clearChildren();
     virtual void       removeChild(SceneNode* node);
-    virtual void       removeChild(std::string name);
+    virtual void       removeChild(const std::string& name);
     virtual void       removeChildDontKill(SceneNode* node);
     bool               hasParentNode() const { return !m_parents.empty(); }
     virtual SceneNode* getParentNode(int objId);
@@ -75,25 +75,22 @@ public:
     std::vector<SceneNode*>*                 getChildren() { return &m_children; }
     std::vector<std::unique_ptr<SceneNode>>* getIntChildren() { return &m_int_children; }
     std::string&                             getName() { return m_name; }
-    virtual SceneNode*                       getNode(std::string searchName);
+    virtual SceneNode*                       getNode(const std::string& searchName);
     virtual glm::vec3&                       getCenter();
 
     virtual bool findChild(SceneNode* node);
 
-    virtual bool iterateNode(SceneNode* node, itNodeCbFunc cbFunc);
-    virtual bool iterateNodeParent(SceneNode* node, SceneNode* parent, itNodeParentCbFunc cbFunc);
+    virtual bool iterateNode(SceneNode* node, const itNodeCbFunc& cbFunc);
+    virtual bool iterateNodeParent(SceneNode* node, SceneNode* parent, const itNodeParentCbFunc& cbFunc);
     virtual uint regenNodeIds(uint idOffs);
 
     virtual void translate(float x, float y, float z);
-    virtual void translate(glm::vec3&& transVec);
-    virtual void translate(glm::vec3* transVec);
+    virtual void translate(const glm::vec3& transVec);
     virtual void rotate(float angle, float x, float y, float z);  ///< Angles in Radians, Axis must be normalized
-    virtual void rotate(float angle, glm::vec3* rotVec);  ///< Angles in Radians, Axis must be normalized
-    virtual void rotate(float angle, glm::vec3&& rotVec);  ///< Angles in Radians, Axis must be normalized
+    virtual void rotate(float angle, const glm::vec3& rotVec);  ///< Angles in Radians, Axis must be normalized
     virtual void rotate(glm::mat4& rot);
     virtual void scale(float x, float y, float z);
-    virtual void scale(glm::vec3* scaleVec);
-    virtual void scale(glm::vec3&& scaleVec);
+    virtual void scale(const glm::vec3& scaleVec);
 
     void rebuildModelMat() {
         if (!m_parents.empty()) rebuildModelMat(*m_parents.begin());
@@ -183,18 +180,18 @@ public:
     bool                                   isVisible() const { return m_visible; }
     bool                                   isFixGizmoRot() const { return m_FixGizmoRot; }
     bool                                   dragSelectedAllowed() const { return m_dragSelectAllowed; }
-    glm::vec3*                             getDimension() { return &m_dimension; }
+    glm::vec3&                             getDimension() { return m_dimension; }
     float                                  getRotAngle() const { return m_rotAngle; }
-    glm::vec3*                             getRotAxis() { return &m_rotAxis; }
-    glm::vec3*                             getTransVec() { return &m_transVec; }
-    glm::mat4*                             getRotMat() { return &m_rotMat; }
-    glm::vec3*                             getScalingVec() { return &m_scaleVec; }
+    glm::vec3&                             getRotAxis() { return m_rotAxis; }
+    glm::vec3&                             getTransVec() { return m_transVec; }
+    glm::mat4&                             getRotMat() { return m_rotMat; }
+    glm::vec3&                             getScalingVec() { return m_scaleVec; }
     MaterialProperties*                    getMaterial() { return &m_material; }
-    glm::mat4*                             getModelMat(SceneNode* parent) { return &m_absModelMat[parent]; }
-    glm::mat3*                             getNormalMat(SceneNode* parent) { return &m_absNormalMat[parent]; }
-    glm::mat4*                             getRelModelMat() { return &modelMat; }
-    glm::vec3*                             getBoundingBoxMin() { return &m_boundingBoxMin; }
-    glm::vec3*                             getBoundingBoxMax() { return &m_boundingBoxMax; }
+    glm::mat4&                             getModelMat(SceneNode* parent) { return m_absModelMat[parent]; }
+    glm::mat3&                             getNormalMat(SceneNode* parent) { return m_absNormalMat[parent]; }
+    glm::mat4&                             getRelModelMat() { return modelMat; }
+    glm::vec3&                             getBoundingBoxMin() { return m_boundingBoxMin; }
+    glm::vec3&                             getBoundingBoxMax() { return m_boundingBoxMax; }
     std::vector<std::unique_ptr<Texture>>* getTextures() { return &m_textures; }
     WindowBase*                            getScene() const { return m_scene; }
     sceneData*                             getSceneData() const { return s_sd; }
@@ -202,21 +199,15 @@ public:
     bool                                   excludeFromObjMap() const { return m_excludeFromObjMap; }
     void pushClickCb(void* ptr, std::function<void()> func) { m_clickCb[ptr] = std::move(func); }
     void deleteClickCb(void* ptr) {
-        auto it = m_clickCb.find(ptr);
-        if (it != m_clickCb.end()) {
-            m_clickCb.erase(it);
-        }
+        m_clickCb.erase(ptr);
     }
 
     /** called when the model Matrix of this node changes */
-    void pushModelMatChangedCb(void* ptr, std::function<bool(SceneNode*)> func) {
-        m_modelMatChangedCb[ptr] = std::move(func);
+    void pushModelMatChangedCb(void* ptr, const std::function<bool(SceneNode*)>& func) {
+        m_modelMatChangedCb[ptr] = func;
     }
     void deleteModelMatChangedCb(void* ptr) {
-        auto it = m_modelMatChangedCb.find(ptr);
-        if (it != m_modelMatChangedCb.end()) {
-            m_modelMatChangedCb.erase(it);
-        }
+        m_modelMatChangedCb.erase(ptr);
     }
 
     virtual void deleteGarbage();

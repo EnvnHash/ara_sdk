@@ -20,15 +20,15 @@ SNGizmoRotAxis::SNGizmoRotAxis(sceneData* sd) : SNGizmoAxis(sd) {
     m_nodeType = GLSG_GIZMO;
 
 #ifndef GIZMO_ROT_SHADER_ONLY
-    const uint nrBasePathPoints   = 30;
-    const uint nrExtrCirclePoints = 20;
-    float      ringThickness[2]   = {0.05f, 0.2f};
-    float      radius             = 0.75f;
+    constexpr uint  nrBasePathPoints   = 30;
+    constexpr uint  nrExtrCirclePoints = 20;
+    vec2            ringThickness   = {0.05f, 0.2f};
 
     // build the basePathRing in the x,y plane
     vec3 basePathRing[nrBasePathPoints];
     for (uint i = 0; i < nrBasePathPoints; i++) {
-        float phase     = float(i) / float(nrBasePathPoints) * float(M_PI) * 2.f;
+        float radius             = 0.75f;
+        auto phase     = static_cast<float>(i) / static_cast<float>(nrBasePathPoints) * static_cast<float>(M_PI) * 2.f;
         basePathRing[i] = vec3(std::cos(phase) * radius, std::sin(phase) * radius, 0.f);
     }
 
@@ -36,36 +36,31 @@ SNGizmoRotAxis::SNGizmoRotAxis(sceneData* sd) : SNGizmoAxis(sd) {
     // calculate the normals
     vec3 extrCircle[nrExtrCirclePoints];
     for (uint i = 0; i < nrExtrCirclePoints; i++) {
-        float phase   = float(i) / float(nrExtrCirclePoints) * float(M_PI) * 2.f;
+        float phase   = static_cast<float>(i) / static_cast<float>(nrExtrCirclePoints) * static_cast<float>(M_PI) * 2.f;
         extrCircle[i] = vec3(std::cos(phase), 0.f, std::sin(phase));
     }
 
-    const uint nrVert = nrBasePathPoints * nrExtrCirclePoints;
+    constexpr uint nrVert = nrBasePathPoints * nrExtrCirclePoints;
     GLfloat    positions[nrVert * 3];
     GLfloat    normals[nrVert * 3];
 
     // for each base-path point create a transformation matrix, to move and
     // rotate the extrude-circle according to the angle at that position
-    mat4 extrMat;
-    mat3 normMat;
-    vec3 tPoint;
-    vec3 tNorm;
-    uint i, j, k;
 
     for (int vn = 0; vn < 2; vn++) {
-        for (i = 0; i < nrBasePathPoints; i++) {
-            float phase = float(i) / float(nrBasePathPoints) * float(M_PI) * 2.f;
+        for (auto i = 0; i < nrBasePathPoints; i++) {
+            float phase = static_cast<float>(i) / static_cast<float>(nrBasePathPoints) * static_cast<float>(M_PI) * 2.f;
 
-            extrMat = glm::translate(basePathRing[i]) * glm::rotate(phase, vec3(0.f, 0.f, 1.f)) *
-                      glm::scale(vec3(ringThickness[vn], 1.f, ringThickness[vn]));
+            mat4 extrMat = glm::translate(basePathRing[i]) * glm::rotate(phase, vec3(0.f, 0.f, 1.f)) *
+                           glm::scale(vec3(ringThickness[vn], 1.f, ringThickness[vn]));
 
-            normMat = inverseTranspose(mat3(extrMat));
+            mat3 normMat = inverseTranspose(mat3(extrMat));
 
-            for (j = 0; j < nrExtrCirclePoints; j++) {
-                tPoint = vec3(extrMat * vec4(extrCircle[j], 1.f));
-                tNorm  = normMat * extrCircle[j];
+            for (auto j = 0; j < nrExtrCirclePoints; j++) {
+                vec3 tPoint = vec3(extrMat * vec4(extrCircle[j], 1.f));
+                vec3 tNorm = normMat * extrCircle[j];
 
-                for (k = 0; k < 3; k++) {
+                for (auto k = 0; k < 3; k++) {
                     uint indInd       = (i * nrExtrCirclePoints + j) * 3 + k;
                     positions[indInd] = tPoint[k];
                     normals[indInd]   = tNorm[k];
@@ -78,14 +73,14 @@ SNGizmoRotAxis::SNGizmoRotAxis(sceneData* sd) : SNGizmoAxis(sd) {
         totNrIndices = nrBasePathPoints * nrExtrCirclePoints * 6;
 
         // create the indices
-        std::vector<GLuint> indices             = std::vector<GLuint>(totNrIndices);
-        GLuint              quadTemplExtCirc[6] = {0, 0, 1, 1, 0, 1};
-        GLuint              quadTemplBaseP[6]   = {0, 1, 0, 0, 1, 1};
+        std::vector<GLuint>     indices          = std::vector<GLuint>(totNrIndices);
+        std::array<GLuint, 6>   quadTemplExtCirc = {0, 0, 1, 1, 0, 1};
+        std::array<GLuint, 6>   quadTemplBaseP   = {0, 1, 0, 0, 1, 1};
 
-        for (i = 0; i < nrBasePathPoints; i++)
-            for (j = 0; j < nrExtrCirclePoints; j++)
-                for (k = 0; k < 6; k++) {
-                    uint indInd     = (i * nrExtrCirclePoints + j) * 6 + k;
+        for (auto i = 0; i < nrBasePathPoints; i++)
+            for (auto j = 0; j < nrExtrCirclePoints; j++)
+                for (auto k = 0; k < 6; k++) {
+                    auto indInd     = (i * nrExtrCirclePoints + j) * 6 + k;
                     indices[indInd] = (((quadTemplExtCirc[k] + j) % nrExtrCirclePoints) +
                                        quadTemplBaseP[k] * nrExtrCirclePoints + i * nrExtrCirclePoints) %
                                       (nrBasePathPoints * nrExtrCirclePoints);

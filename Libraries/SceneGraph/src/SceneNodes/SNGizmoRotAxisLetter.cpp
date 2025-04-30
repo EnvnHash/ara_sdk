@@ -21,7 +21,7 @@ SNGizmoRotAxisLetter::SNGizmoRotAxisLetter(sceneData* sd) : SNGizmoAxis(sd) {
     // allocate memory for all positions and normals
     // we just need a simple line
     m_colors.resize(16);
-    std::fill(m_colors.begin(), m_colors.end(), 1.f);
+    ranges::fill(m_colors, 1.f);
 
     gizVao = make_unique<VAO>("position:3f,color:4f", GL_STATIC_DRAW);
     gizVao->upload(CoordType::Position, &m_positions[0], 4);

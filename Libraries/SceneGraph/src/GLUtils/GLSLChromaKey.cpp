@@ -46,8 +46,10 @@ bool GLSLChromaKey::init(GLBase* glbase, Property<GLSLChromaKeyPar*>* par) {
     m_keyCol[1] = (*m_par)()->keyCol_g.ptr;
     m_keyCol[2] = (*m_par)()->keyCol_b.ptr;
 
-    m_keyColUpdtFunc = [this](std::any f) {
-        for (int i = 0; i < 3; i++) m_keyColTmp[i] = (*m_keyCol[i])() / 255.f;
+    m_keyColUpdtFunc = [this](const std::any& f) {
+        for (int i = 0; i < 3; i++) {
+            m_keyColTmp[i] = (*m_keyCol[i])() / 255.f;
+        }
         m_keyCC.x = RGBAToCC(m_keyColTmp).x;
         m_keyCC.y = RGBAToCC(m_keyColTmp).y;
     };
@@ -63,8 +65,10 @@ bool GLSLChromaKey::init(GLBase* glbase, Property<GLSLChromaKeyPar*>* par) {
     m_keyCol2[1] = (*m_par)()->keyCol2_g.ptr;
     m_keyCol2[2] = (*m_par)()->keyCol2_b.ptr;
 
-    m_keyCol2UpdtFunc = [this](std::any f) {
-        for (int i = 0; i < 3; i++) m_keyColTmp2[i] = (*m_keyCol2[i])() / 255.f;
+    m_keyCol2UpdtFunc = [this](const std::any& f) {
+        for (int i = 0; i < 3; i++) {
+            m_keyColTmp2[i] = (*m_keyCol2[i])() / 255.f;
+        }
         m_keyCC.z = RGBAToCC(m_keyColTmp2).x;
         m_keyCC.w = RGBAToCC(m_keyColTmp2).y;
     };
@@ -87,7 +91,7 @@ void GLSLChromaKey::initChromaMaskShdr() {
                 \n gl_Position = m_pvm * position;
                 \n
             });
-    vert = m_glbase->shaderCollector().getShaderHeader() + vert;
+    vert = ara::ShaderCollector::getShaderHeader() + vert;
 
     std::string frag = STRINGIFY(
         uniform sampler2D tex; \n
@@ -125,7 +129,7 @@ void GLSLChromaKey::initChromaMaskShdr() {
                 + (1.0 - smoothstep(maskCut.x, maskCut.y, mask2)) * float(actMask2), 0.0 ), 1.0) ) ;\n
     });
 
-    frag             = m_glbase->shaderCollector().getShaderHeader() + frag;
+    frag             = ara::ShaderCollector::getShaderHeader() + frag;
     m_chromaMaskShdr = m_glbase->shaderCollector().add("greenScreenMaskChroma", vert, frag);
 }
 
@@ -137,7 +141,7 @@ void GLSLChromaKey::initChromaShdr() {
                 \n gl_Position = m_pvm * position;
                 \n
             });
-    vert = m_glbase->shaderCollector().getShaderHeader() + vert;
+    vert = ara::ShaderCollector::getShaderHeader() + vert;
 
     std::string frag = STRINGIFY(
         uniform sampler2D tex; \n
@@ -190,7 +194,7 @@ void GLSLChromaKey::initChromaShdr() {
             //color =  vec4(hsv.r) * 2.0;
     });
 
-    frag         = m_glbase->shaderCollector().getShaderHeader() + frag;
+    frag         = ShaderCollector::getShaderHeader() + frag;
     m_chromaShdr = m_glbase->shaderCollector().add("greenScreenChroma", vert, frag);
 }
 
@@ -226,10 +230,10 @@ GLuint GLSLChromaKey::proc(GLuint tex) {
 
         m_pickMask2Color.y = 1.f - m_pickMask2Color.y;
 
-        m_pickMask2Color.x *= (float)(*m_par)()->width;
-        m_pickMask2Color.y *= (float)(*m_par)()->height;
+        m_pickMask2Color.x *= static_cast<float>((*m_par)()->width);
+        m_pickMask2Color.y *= static_cast<float>((*m_par)()->height);
 
-        uint8_t* bufPtr = &m_downBuf[(size_t)(m_pickMask2Color.y * (float)(*m_par)()->width + m_pickMask2Color.x) * 4];
+        uint8_t* bufPtr = &m_downBuf[static_cast<size_t>(m_pickMask2Color.y * static_cast<float>((*m_par)()->width) + m_pickMask2Color.x) * 4];
 
         (*m_par)()->keyCol2_r = *bufPtr;
         (*m_par)()->keyCol2_g = *(++bufPtr);
@@ -244,7 +248,9 @@ GLuint GLSLChromaKey::proc(GLuint tex) {
     //------------------------------------------------------------------------------------------------------------------
 
     // start m_histogram for Activity calculation
-    if ((*m_par)()->procHisto()) m_histo->proc(m_rgbFbo->getColorImg(0));
+    if ((*m_par)()->procHisto()) {
+        m_histo->proc(m_rgbFbo->getColorImg(0));
+    }
 
     //------------------------------------------------------------------------------------------------------------------
 
@@ -281,7 +287,7 @@ GLuint GLSLChromaKey::proc(GLuint tex) {
     m_fastBlurMem->setOffsScale((*m_par)()->maskBlurSize());
     m_fastBlurMem->proc(m_maskFbo->getColorImg());
 
-    for (int i = 0; i < (int)(*m_par)()->blurIt(); i++) {
+    for (int i = 0; i < static_cast<int>((*m_par)()->blurIt()); i++) {
         m_fastBlurMem->proc(m_fastBlurMem->getResult());
     }
 
@@ -316,18 +322,22 @@ GLuint GLSLChromaKey::proc(GLuint tex) {
     return m_procFbo->getColorImg();
 }
 
-void GLSLChromaKey::pickMask2Color(glm::vec2& pos) { m_pickMask2Color = pos; }
+void GLSLChromaKey::pickMask2Color(const glm::vec2& pos) {
+    m_pickMask2Color = pos;
+}
 
 void GLSLChromaKey::readHistoVal() {
     if (m_par && m_histo && (*m_par)()->procHisto()) {
         for (int i = 0; i < 3; i++) {
-            if (m_keyCol[i])
+            if (m_keyCol[i]) {
                 if (m_histo->getHistoPeakInd(i) != 0.f) {
-                    if ((*m_keyCol[i])() == 0.f)
+                    if ((*m_keyCol[i])() == 0.f) {
                         (*m_keyCol[i]) = m_histo->getHistoPeakInd(i) * 255.f;
-                    else
+                    } else {
                         (*m_keyCol[i]) = ((*m_keyCol[i])() * 30.f + (m_histo->getHistoPeakInd(i) * 255.f)) / 31.f;
+                    }
                 }
+            }
         }
 
         for (int i = 0; i < 3; i++){

@@ -13,15 +13,13 @@ using namespace std;
 
 namespace ara {
 
-SkyBoxBlend::SkyBoxBlend(std::string textureFile, unsigned _nrCams, sceneData* sd) {
-    init(textureFile.c_str(), _nrCams, sd);
-}
-
-SkyBoxBlend::SkyBoxBlend(const char* textureFile, unsigned _nrCams, sceneData* sd) { init(textureFile, _nrCams, sd); }
-
-void SkyBoxBlend::init(const char* textureFile, unsigned _nrCams, sceneData* sd) {
-    vShader = STRINGIFY(layout(location = 0) in vec4 position; out vec4 pos; void main() { pos = position; });
-    vShader = "#version 410\n" + vShader;
+SkyBoxBlend::SkyBoxBlend(const std::string &textureFile, unsigned nrCams, sceneData* sd) {
+    vShader = STRINGIFY(layout(location = 0) in vec4 position;
+        out vec4 pos;
+        void main() {
+            pos = position;
+        });
+    vShader = ShaderCollector::getShaderHeader() + vShader;
 
     gShader = STRINGIFY(in vec4 pos[]; out vec3 tex_coord; out vec3 tex_coord_2; out vec3 tex_coord_3;
                         uniform mat4 tc_rot; uniform mat4 tc_rot2; uniform mat4 tc_rot3; void main() {
@@ -36,10 +34,10 @@ void SkyBoxBlend::init(const char* textureFile, unsigned _nrCams, sceneData* sd)
                             EndPrimitive();
                         });
 
-    std::string gHeader = "#version 410\n";
-    gHeader += "layout(triangles, invocations=" + std::to_string(_nrCams) + ") in;\n";
+    std::string gHeader = ShaderCollector::getShaderHeader();
+    gHeader += "layout(triangles, invocations=" + std::to_string(nrCams) + ") in;\n";
     gHeader += "layout(triangle_strip, max_vertices=3) out;\n";
-    gHeader += "uniform mat4 m_pvm[" + std::to_string(_nrCams) + "];\n";
+    gHeader += "uniform mat4 m_pvm[" + std::to_string(nrCams) + "];\n";
     gShader = gHeader + gShader;
 
     fShader = STRINGIFY(
@@ -158,28 +156,26 @@ void SkyBoxBlend::init(const char* textureFile, unsigned _nrCams, sceneData* sd)
 
             color = vec4(conColor, 1);
         });
-    fShader = "#version 410\n" + fShader;
+    fShader = ShaderCollector::getShaderHeader() + fShader;
 
-    sbShader = new Shaders(vShader.c_str(), gShader.c_str(), fShader.c_str());
+    sbShader = sd->glbase->shaderCollector().add("SkyBoxBlend", vShader, gShader, fShader);
     sbShader->link();
 
-    cubeTex = new Texture(m_glbase);
+    cubeTex = make_unique<Texture>(m_glbase);
     cubeTex->loadTextureCube(textureFile);
 
-    sphere = new Sphere(4.f, 32);
-
-    pvm = glm::mat4();
+    sphere = make_unique<Sphere>(4.f, 32);
 }
 
 void SkyBoxBlend::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo) {
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
     glDisable(GL_CULL_FACE);
-    glFrontFace(GL_CW);  // vermurkst die darstellung, wenn von aussen drauf gesehen
+    glFrontFace(GL_CW);
 
-    glm::mat4 rotMat  = glm::rotate(mat4(1.f), float(time) * 0.3f, vec3(0.f, 1.f, 0.f));
-    glm::mat4 rotMat2 = glm::rotate(rotMat, float(M_PI), vec3(std::sin(time * 0.8f) * 0.4f, 0.8f, 0.2f));
-    glm::mat4 rotMat3 = glm::rotate(rotMat, float(M_PI) * 0.3f, vec3(std::sin(time * 0.6f) * -0.4f, 0.8f, 0.f));
+    glm::mat4 rotMat  = glm::rotate(mat4(1.f), static_cast<float>(time) * 0.3f, vec3(0.f, 1.f, 0.f));
+    glm::mat4 rotMat2 = glm::rotate(rotMat, static_cast<float>(M_PI), vec3(std::sin(time * 0.8f) * 0.4f, 0.8f, 0.2f));
+    glm::mat4 rotMat3 = glm::rotate(rotMat, static_cast<float>(M_PI) * 0.3f, vec3(std::sin(time * 0.6f) * -0.4f, 0.8f, 0.f));
 
     sbShader->begin();
     sbShader->setUniformMatrix4fv("tc_rot", (GLfloat*)&rotMat[0][0]);
@@ -190,8 +186,8 @@ void SkyBoxBlend::draw(double time, double dt, CameraSet* cs, Shaders* shader, r
     sbShader->setUniform2f("noiseScale", 0.04f, 0.04f);
     sbShader->setUniform1f("width", 1280.f);
     sbShader->setUniform1f("height", 720.f);
-    sbShader->setUniform1f("time", (float)time);
-    sbShader->setUniform1f("time2", (float)time * 2.f);
+    sbShader->setUniform1f("time", static_cast<float>(time));
+    sbShader->setUniform1f("time2", static_cast<float>(time) * 2.f);
     cubeTex->bind(0);
 
     sphere->draw();
@@ -203,15 +199,9 @@ void SkyBoxBlend::draw(double time, double dt, CameraSet* cs, Shaders* shader, r
     shader->begin();
 }
 
-void SkyBoxBlend::remove() {
+void SkyBoxBlend::remove() const {
     cubeTex->releaseTexture();
     sphere->remove();
-}
-
-SkyBoxBlend::~SkyBoxBlend() {
-    delete sphere;
-    delete sbShader;
-    delete cubeTex;
 }
 
 }  // namespace ara

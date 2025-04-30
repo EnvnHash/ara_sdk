@@ -247,8 +247,8 @@ void SurfaceGenerator::generateVert() const {
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, 0);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, 0);
 
-    ara::Shaders::unbindProgramPipeline();
-    ara::Shaders::end();
+    Shaders::unbindProgramPipeline();
+    Shaders::end();
 }
 
 void SurfaceGenerator::generateElemInd() const {

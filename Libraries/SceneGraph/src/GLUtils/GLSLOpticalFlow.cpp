@@ -7,29 +7,28 @@
 //
 
 #include "GLSLOpticalFlow.h"
+#include <GLBase.h>
 #include <Utils/FBO.h>
+#include <Utils/PingPongFbo.h>
+#include <Shaders/ShaderCollector.h>
 
 using namespace glm;
 using namespace std;
 
 namespace ara {
 
-GLSLOpticalFlow::GLSLOpticalFlow(GLBase* glbase, int _width, int _height)
+GLSLOpticalFlow::GLSLOpticalFlow(GLBase* glbase, int _m_width, int _height)
     : m_glbase(glbase),
         m_shCol(&glbase->shaderCollector()),
-        width(_width),
-        height(_height),
-        srcId(0),
-        lambda(0.1f),
-        median(3.f),
-        bright(4.f) {
+        m_width(_m_width),
+        m_height(_height) {
     initShader(m_shCol);
     m_texShader = m_shCol->getStdTex();
 
     m_texture = make_unique<PingPongFbo>(FboInitParams{
         .glbase = glbase,
-        .width = width,
-        .height = height,
+        .width = m_width,
+        .height = m_height,
         .type = GL_RGBA16F,
         .wrapMode = GL_CLAMP_TO_EDGE
     });
@@ -64,7 +63,7 @@ void GLSLOpticalFlow::initShader(ShaderCollector* shCol) {
     shdr_Header      = "#version 410 core\n#pragma optimize(on)\n";
     std::string frag = STRINGIFY(
         uniform sampler2D tex0; uniform sampler2D tex1; uniform vec2 scale; uniform vec2 offset; uniform float amp;
-        uniform float lambda; uniform float median;
+        uniform float m_lambda; uniform float m_median;
 
         in vec2 tex_coord; in vec4 col; layout(location = 0) out vec4 color;
 
@@ -101,7 +100,7 @@ void GLSLOpticalFlow::initShader(ShaderCollector* shCol) {
             vec4 grady = texture2DRectGray(tex1, tex_coord + y1) - texture2DRectGray(tex1, tex_coord - y1);
             grady += texture2DRectGray(tex0, tex_coord + y1) - texture2DRectGray(tex0, tex_coord - y1);
 
-            vec4 gradmag = sqrt((gradx * gradx) + (grady * grady) + vec4(lambda));
+            vec4 gradmag = sqrt((gradx * gradx) + (grady * grady) + vec4(m_lambda));
 
             vec4 vx = curdif * (gradx / gradmag);
             vec4 vy = curdif * (grady / gradmag);
@@ -120,9 +119,9 @@ void GLSLOpticalFlow::update(GLint tex1, GLint tex2, float fdbk) {
     glEnable(GL_BLEND);
 
     m_texture->m_dst->bind();
-    if (isInited < 2) {
+    if (m_isInited < 2) {
         m_texture->m_dst->clear();
-        ++isInited;
+        ++m_isInited;
     } else {
         m_texture->m_dst->clearAlpha(fdbk, 0.f);
     }
@@ -131,19 +130,19 @@ void GLSLOpticalFlow::update(GLint tex1, GLint tex2, float fdbk) {
 
     m_flowShader->begin();
 
-    if (pvm_ptr == nullptr) {
+    if (m_pvm_ptr == nullptr) {
         m_flowShader->setIdentMatrix4fv("m_pvm");
     } else {
-        m_flowShader->setUniformMatrix4fv("m_pvm", pvm_ptr);
+        m_flowShader->setUniformMatrix4fv("m_pvm", m_pvm_ptr);
     }
 
     m_flowShader->setUniform2f("scale", 1.f, 2.f);
-    m_flowShader->setUniform2f("offset", 1.f / static_cast<float>(width), 1.f / static_cast<float>(height));
-    m_flowShader->setUniform1f("amp", bright);
-    m_flowShader->setUniform1f("lambda", lambda);
+    m_flowShader->setUniform2f("offset", 1.f / static_cast<float>(m_width), 1.f / static_cast<float>(m_height));
+    m_flowShader->setUniform1f("amp", m_bright);
+    m_flowShader->setUniform1f("m_lambda", m_lambda);
     m_flowShader->setUniform1i("tex0", 0);
     m_flowShader->setUniform1i("tex1", 1);
-    m_flowShader->setUniform1f("median", median);
+    m_flowShader->setUniform1f("m_median", m_median);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, tex1);
@@ -156,5 +155,10 @@ void GLSLOpticalFlow::update(GLint tex1, GLint tex2, float fdbk) {
     m_texture->m_dst->unbind();
     m_texture->swap();
 }
+
+GLuint GLSLOpticalFlow::getResTexId() const {
+    return m_texture->getSrcTexId();
+}
+
 
 }  // namespace ara

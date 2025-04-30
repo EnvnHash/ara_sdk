@@ -184,38 +184,34 @@ void CameraSet::renderTree(SceneNode* node, double time, double dt, uint ctxNr, 
 
 void CameraSet::iterateNode(SceneNode* node, double time, double dt, uint ctxNr, renderPass pass, bool calcMatrixStack) {
     if (calcMatrixStack && node) {
-        s_matrixStack.emplace_back(node->getRelModelMat());
+        s_matrixStack.emplace_back(&node->getRelModelMat());
     }
 
     if (node) {
         for (const auto& it : *node->getChildren()) {
             // if the node was translated, scaled or rotated since the last loop
             if (calcMatrixStack && it->m_hasNewModelMat) {
-                // since all matrices inside the matrixstack are relative to its
-                // respective parent, we need to multiply them down to get the
-                // actual parent matrix
+                // since all matrices inside the matrixstack are relative to its respective parent, we need to multiply
+                // them down to get the actual parent matrix
                 s_sumMat = mat4(1.f);
                 for (const auto& mIt : s_matrixStack) {
                     s_sumMat *= *mIt;
                 }
 
-                // calculate it's new absolute matrix in respect to its parent
-                // nodes
+                // calculate it's new absolute matrix in respect to its parent nodes
                 it->setParentModelMat(node, s_sumMat);
 
                 // this node has been updated, so remove the update flag
                 it->m_hasNewModelMat = false;
 
-                // all subnodes have to be updated, so set the flag to all
-                // children
+                // all subnodes have to be updated, so set the flag to all children
                 for (const auto& child : *it->getChildren()) {
                     child->m_hasNewModelMat = true;
                 }
             }
 
-            // check if the BoundingBox of the SceneNode is calculated, if not
-            // do so NOTE: the bounding box is independent of the nodes actual
-            // translation
+            // check if the BoundingBox of the SceneNode is calculated, if not do so NOTE: the bounding box is
+            // independent of the nodes actual translation
             if (!it->m_hasBoundingBox) {
                 auto bBox = static_cast<BoundingBoxer*>(s_sd->boundBoxer);
                 bBox->begin();
@@ -252,7 +248,7 @@ void CameraSet::mask() {
     s_maskQuad->draw();
     glEnable(GL_DEPTH_TEST);
 
-    ara::Shaders::end();
+    Shaders::end();
 }
 
 inline void CameraSet::setMask(vec3 scale, vec3 trans) {

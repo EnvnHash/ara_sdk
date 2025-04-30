@@ -350,15 +350,17 @@ void Scene3DTool::resetZoom() {
         // get the vector point from the models center to the MRD camera
 
         // transform the model's bounding box into world space
-        m_bb[0] = *m_focusNode->getBoundingBoxMin();
-        m_bb[1] = *m_focusNode->getBoundingBoxMax();
-        for (auto &i : m_bb) i = *m_focusNode->getModelMat() * vec4(i, 1.f);
+        m_bb[0] = m_focusNode->getBoundingBoxMin();
+        m_bb[1] = m_focusNode->getBoundingBoxMax();
+        for (auto &i : m_bb) {
+            i = *m_focusNode->getModelMat() * vec4(i, 1.f);
+        }
 
         // get the models center in world space
         m_modelCenter = (m_bb[1] - m_bb[0]) * 0.5f + m_bb[0];
 
         // vector from model center to MRD camera
-        m_modelCamVec = *m_aimingNode->getTransVec() - m_modelCenter;
+        m_modelCamVec = m_aimingNode->getTransVec() - m_modelCenter;
 
         // m_modelCamVec may be zero, catch this
         if (std::abs(glm::compAdd(m_modelCamVec)) < 1.e-7f) switch (m_scene3D->getBasePlane()) {
@@ -412,17 +414,21 @@ void Scene3DTool::resetZoom() {
             m_newBb[1][i] = numeric_limits<float>::min();
         }
 
-        for (auto &i : cube)
+        for (auto &i : cube) {
             for (int j = 0; j < 3; j++) {
-                if (i[j] > m_newBb[1][j]) m_newBb[1][j] = i[j];
-                if (i[j] < m_newBb[0][j]) m_newBb[0][j] = i[j];
+                if (i[j] > m_newBb[1][j]) {
+                    m_newBb[1][j] = i[j];
+                }
+                if (i[j] < m_newBb[0][j]) {
+                    m_newBb[0][j] = i[j];
+                }
             }
+        }
 
         // get the distance from the model to the new scene camera position, in
         // order to have to whole model filling the screen. this must be done
         // respecting both horizontal and vertical FOV
-        float dh =
-            std::fabs(m_newBb[1].x - m_newBb[0].x) * 0.5f / std::tan(sceneCam->getFov() * sceneCam->getAspect() * 0.5f);
+        float dh = std::fabs(m_newBb[1].x - m_newBb[0].x) * 0.5f / std::tan(sceneCam->getFov() * sceneCam->getAspect() * 0.5f);
         float dv = std::fabs(m_newBb[1].y - m_newBb[0].y) * 0.5f / std::tan(sceneCam->getFov() * 0.5f);
 
         p.pos = m_modelCenter + (m_modelCamVec * ((dh > dv ? dh : dv) + std::fabs(m_newBb[1].z - m_newBb[0].z) * 0.5f));
@@ -430,7 +436,7 @@ void Scene3DTool::resetZoom() {
         // check if camera will be clipped, distance between scene and mrd
         // camera must be at least 1.f (clipping plane)
         float distSceneCam = glm::distance(m_modelCenter, p.pos);
-        float distMRDCam   = glm::distance(m_modelCenter, *m_aimingNode->getTransVec());
+        float distMRDCam   = glm::distance(m_modelCenter, m_aimingNode->getTransVec());
 
         p.pos += (distMRDCam - distSceneCam) > -1.f ? m_modelCamVec * (distMRDCam - distSceneCam + 2.f) : vec3{0.f};
 
@@ -439,7 +445,9 @@ void Scene3DTool::resetZoom() {
         // add a callback which will be executed on every draw until the
         // sceneCam fade stopped
         m_scene3D->addGlCb("animCam", [this, sceneCam]() {
-            if (sceneCam) sceneCam->updateFade();
+            if (sceneCam) {
+                sceneCam->updateFade();
+            }
 
             m_scene3D->m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
             m_scene3D->m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
@@ -453,11 +461,9 @@ void Scene3DTool::resetZoom() {
 void Scene3DTool::objectToolClicked(ToolBarIcon idx) {
     if (!m_scene3D || m_preventObjToolClick) return;
 
-    // prevent unnecessary calls
-    // if (idx != ToolBarIcon::none && m_objToolIcons[idx]->isSelected())
-    //    return;
-
-    if (m_transWidget) m_transWidget->setVisibility(false);
+    if (m_transWidget) {
+        m_transWidget->setVisibility(false);
+    }
 
     m_preventObjToolClick = true;
 

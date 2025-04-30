@@ -14,7 +14,7 @@
 //
 
 #include <UtilityUnitTestCommon.h>
-#include <DataModel/ItemUi.h>
+#include <DataModel/PropertyItemUi.h>
 
 namespace ara {
 

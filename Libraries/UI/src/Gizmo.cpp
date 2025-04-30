@@ -393,17 +393,21 @@ bool Gizmo::drawIndirect(uint32_t *objId) {
 }
 
 bool Gizmo::drawToFbo(uint32_t* objId) {
-    if (!m_DrawShader || !m_fbo[0] || !m_fbo[1]) return false;
+    if (!m_DrawShader || !m_fbo[0] || !m_fbo[1]) {
+        return false;
+    }
 
     // update camera fade if necessary
-    for (const auto& it : m_axisLabels) it->updateCamFade();
+    for (const auto& it : m_axisLabels) {
+        it->updateCamFade();
+    }
 
     // first pass cpu only, update matrices
     if (m_camChanged && m_gizmoSN->getChildren() && !m_gizmoSN->getChildren()->empty()) {
         for (const auto& it : *m_gizmoSN->getChildren()) {
             auto gixAx = dynamic_cast<SNGizmoRotAxisLetter*>(it);
             if (gixAx && gixAx->gizVao) {
-                m_pvm = m_cam.getMVP() * *gixAx->getRotMat();
+                m_pvm = m_cam.getMVP() * gixAx->getRotMat();
 
                 for (int i = 0; i < 2; i++) {
                     // update labels
@@ -414,16 +418,15 @@ bool Gizmo::drawToFbo(uint32_t* objId) {
                     axIndx   = i == 0 ? axIndx : axIndx + 3;
 
                     if (!glm::all(glm::equal(m_axisLabels[axIndx]->getPos(), vec2(m_axlPos)))) {
-                        m_axisLabels[axIndx]->setPos((int)m_axlPos.x, (int)m_axlPos.y, state::none);
-                        m_axisLabels[axIndx]->setPos((int)m_axlPos.x, (int)m_axlPos.y, state::highlighted);
-                        m_axisLabels[axIndx]->setPos((int)m_axlPos.x, (int)m_axlPos.y, state::selected);
+                        m_axisLabels[axIndx]->setPos(static_cast<int>(m_axlPos.x), static_cast<int>(m_axlPos.y), state::none);
+                        m_axisLabels[axIndx]->setPos(static_cast<int>(m_axlPos.x), static_cast<int>(m_axlPos.y), state::highlighted);
+                        m_axisLabels[axIndx]->setPos(static_cast<int>(m_axlPos.x), static_cast<int>(m_axlPos.y), state::selected);
                     }
 
                     if (m_axisLabels[axIndx]->getZPos() != m_axlPos.z) m_axisLabels[axIndx]->setZPos(m_axlPos.z);
 
                     m_tempObjId = m_axisLabels[axIndx]->m_presetObjId + m_objIdMin;
                     m_axisLabels[axIndx]->setId(m_tempObjId);
-                    // m_styleChanged = true; // out of tree rendering
                 }
             }
         }

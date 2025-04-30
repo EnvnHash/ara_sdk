@@ -14,18 +14,18 @@ using namespace std;
 namespace ara {
 FastBlurMem::FastBlurMem(const FastBlurMemParams& p)
     : m_glbase(p.glbase),
-    m_alpha(p.alpha),
+    m_firstPassFbo(nullptr),
+    m_pp(nullptr),
     m_blurW(p.blurSize.x),
     m_blurH(p.blurSize.y),
-    m_bright(1.f),
-    m_intFormat(p.intFormat),
-    m_kSize(p.kSize),
     m_nrLayers(p.nrLayers),
+    m_target(p.target),
+    m_intFormat(p.intFormat),
+    m_alpha(p.alpha),
+    m_bright(1.f),
     m_rot180(p.rot180),
-    m_pp(nullptr),
-    m_firstPassFbo(nullptr),
     m_singleFbo(p.singleFbo),
-    m_target(p.target) {
+    m_kSize(p.kSize) {
     m_fboQuad = make_unique<Quad>(QuadInitParams{});
 
     if (m_nrLayers > 0) {
@@ -42,7 +42,7 @@ void FastBlurMem::initFbo() {
 
     m_blurOffs.resize(m_actKernelSize);
     for (uint i = 0; i < m_actKernelSize; i++) {
-        m_blurOffs[i] = float(i) / m_fWidth;
+        m_blurOffs[i] = static_cast<float>(i) / m_fWidth;
     }
 
     m_blurOffsScale.resize(m_actKernelSize);
@@ -116,7 +116,7 @@ void FastBlurMem::proc(GLint texIn) {
     glBindTexture(m_target, texIn);
 
     m_fboQuad->draw();
-    ara::Shaders::end();
+    Shaders::end();
 
     m_firstPassFbo->unbind();
 
@@ -138,7 +138,7 @@ void FastBlurMem::proc(GLint texIn) {
     glBindTexture(m_target, m_firstPassFbo->getColorImg());
 
     m_fboQuad->draw();
-    ara::Shaders::end();
+    Shaders::end();
 
     m_pp->m_dst->unbind();
 
@@ -170,11 +170,11 @@ void FastBlurMem::initShader() {
         });
     }
 
-    vert = "// FastBlur vertex shader\n" + m_glbase->shaderCollector().getShaderHeader() + vert;
+    vert = "// FastBlur vertex shader\n" + ara::ShaderCollector::getShaderHeader() + vert;
 
     std::string geom;
     if (m_target == GL_TEXTURE_2D_ARRAY) {
-        geom = m_glbase->shaderCollector().getShaderHeader() + "// FastBlurmem geom Shader\n";
+        geom = ara::ShaderCollector::getShaderHeader() + "// FastBlurmem geom Shader\n";
         geom += "layout(triangles, invocations=" + std::to_string(m_nrLayers) + ") in;\n";
 
         geom += STRINGIFY(
@@ -252,7 +252,7 @@ void FastBlurMem::initShader() {
             "\t\t FragmentColor += texture(image, flipTexCoord - vec2(0.0, "
             "offset[i])) * weight[i] * weightScale;\n \t} \n}";
 
-    frag = "// FastBlurMem Vertical fragment shader\n" + m_glbase->shaderCollector().getShaderHeader() + frag;
+    frag = "// FastBlurMem Vertical fragment shader\n" + ara::ShaderCollector::getShaderHeader() + frag;
 
     if (m_target == GL_TEXTURE_2D_ARRAY) {
         m_linearV = m_glbase->shaderCollector().add("FastBlurMemVShader_" + std::to_string(m_nrLayers), vert,
@@ -318,7 +318,7 @@ void FastBlurMem::initShader() {
     frag += "FragmentColor = FragmentColor * bright; \n";
     frag += "}\n";
 
-    frag = "// FastBlurMem horizontal fragment shader\n" + m_glbase->shaderCollector().getShaderHeader() + frag;
+    frag = "// FastBlurMem horizontal fragment shader\n" + ara::ShaderCollector::getShaderHeader() + frag;
 
     if (m_target == GL_TEXTURE_2D_ARRAY) {
         m_linearH = m_glbase->shaderCollector().add("FastBlurMemHShader_" + std::to_string(m_nrLayers), vert, geom, frag);

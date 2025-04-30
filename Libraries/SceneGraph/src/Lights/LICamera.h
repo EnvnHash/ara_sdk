@@ -3,6 +3,8 @@
 #include <Utils/FBO.h>
 #include <Utils/TrackBallCam.h>
 
+#include <utility>
+
 #include "GLUtils/sceneData.h"
 #include "Lights/Light.h"
 
@@ -10,20 +12,20 @@ namespace ara {
 
 class LICamera : public Light {
 public:
-    LICamera(sceneData* sd = nullptr);
-    ~LICamera() = default;
+    explicit LICamera(sceneData* sd = nullptr);
+    ~LICamera() override = default;
 
-    void setup(bool callSetupCb = true);
+    void setup(bool callSetupCb = true) override;
     void          setCsFboPtr(FBO* fbo, int layerNr = -1);
-    void          setCsIt(std::vector<std::pair<TrackBallCam*, void*>>::iterator it) { m_csIt = it; }
-    TrackBallCam* getCamDef() {
+    void          setCsIt(std::vector<std::pair<TrackBallCam*, void*>>::iterator it) { m_csIt = std::move(it); }
+    TrackBallCam* getCamDef() const {
         if (m_camDef)
             return m_camDef.get();
         else
             return nullptr;
     }
     FBO* getCamFbo() { return &m_sceneCamFbo; }
-    void pushSetupCb(std::function<void()> func) { m_setupCb.emplace_back(func); }
+    void pushSetupCb(const std::function<void()>& func) { m_setupCb.emplace_back(func); }
     void clearSetupCb() { m_setupCb.clear(); }
 
     float m_aspect           = 0.f;

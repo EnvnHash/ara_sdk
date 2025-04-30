@@ -10,7 +10,7 @@ namespace ara {
 SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
     m_nodeType = GLSG_GIZMO;
 
-    const uint cylNrPointsCircle = 15;
+    constexpr uint cylNrPointsCircle = 15;
 
     float cylRadius = 0.03f;
     float capRadius = 0.25f;
@@ -23,60 +23,72 @@ SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
 
     // allocate memory for all positions and normals
     // two rings and eight points with each three coordinates (x, y, z)
-    GLfloat positions[(cylNrPointsCircle * 2 + 8) * 3];
-    GLfloat normals[(cylNrPointsCircle * 2 + 8) * 3];
+    vec3 positions[cylNrPointsCircle * 2 + 8];
+    vec3 normals[cylNrPointsCircle * 2 + 8];
 
     // define the two rings
     // 0: the cylinder bottom
     // 1: the cylinder top
     uint ind = 0;
-    for (uint ringNr = 0; ringNr < 2; ringNr++) {
-        for (uint i = 0; i < cylNrPointsCircle; i++) {
-            positions[ind * 3]     = ringPos[i * 2] * (ringNr < 2 ? cylRadius : capRadius);
-            positions[ind * 3 + 1] = ringNr == 0 ? 0.f : 1.f;
-            positions[ind * 3 + 2] = ringPos[i * 2 + 1] * (ringNr < 2 ? cylRadius : capRadius);
+    for (auto ringNr = 0; ringNr < 2; ringNr++) {
+        for (auto i = 0; i < cylNrPointsCircle; i++) {
+            positions[ind].x = ringPos[i * 2] * (ringNr < 2 ? cylRadius : capRadius);
+            positions[ind].y = ringNr == 0 ? 0.f : 1.f;
+            positions[ind].z = ringPos[i * 2 + 1] * (ringNr < 2 ? cylRadius : capRadius);
 
-            normals[ind * 3]     = ringPos[i * 2];
-            normals[ind * 3 + 1] = 0.f;
-            normals[ind * 3 + 2] = ringPos[i * 2 + 1];
+            normals[ind].x = ringPos[i * 2];
+            normals[ind].y = 0.f;
+            normals[ind].z = ringPos[i * 2 + 1];
 
-            ind++;
+            ++ind;
         }
     }
 
     // the eight points of the cube
-    GLfloat cube_vertices[8][3] = {{1.f, 1.f, 1.f},  {1.f, -1.f, 1.f},  {-1.f, -1.f, 1.f},  {-1.f, 1.f, 1.f},
-                                   {1.f, 1.f, -1.f}, {1.f, -1.f, -1.f}, {-1.f, -1.f, -1.f}, {-1.f, 1.f, -1.f}};
+    std::array cube_vertices = {
+        vec3{1.f, 1.f, 1.f},
+        vec3{1.f, -1.f, 1.f},
+        vec3{-1.f, -1.f, 1.f},
+        vec3{-1.f, 1.f, 1.f},
+        vec3{1.f, 1.f, -1.f},
+        vec3{1.f, -1.f, -1.f},
+        vec3{-1.f, -1.f, -1.f},
+        vec3{-1.f, 1.f, -1.f}};
 
-    for (uint i = 0; i < 8; i++) {
-        positions[ind * 3]     = cube_vertices[i][0] * cubeScale;
-        positions[ind * 3 + 1] = cube_vertices[i][1] * cubeScale + 1.f - cubeScale;
-        positions[ind * 3 + 2] = cube_vertices[i][2] * cubeScale;
+    for (auto & cube_vertice : cube_vertices) {
+        for (auto i = 0; i < 3; i++) {
+            positions[ind][i] = cube_vertice[i] * cubeScale + (i == 1 ? 1.f - cubeScale : 0.f);
+        }
 
-        vec3 cubePointNormal = glm::normalize(vec3(cube_vertices[i][0], cube_vertices[i][1], cube_vertices[i][2]));
-        normals[ind * 3]     = cubePointNormal.x;
-        normals[ind * 3 + 1] = cubePointNormal.y;
-        normals[ind * 3 + 2] = cubePointNormal.z;
+        vec3 cubePointNormal = glm::normalize(vec3(cube_vertice[0], cube_vertice[1], cube_vertice[2]));
+        for (auto i = 0; i < 3; i++) {
+            normals[ind][i] = cubePointNormal[i];
+        }
 
-        ind++;
+        ++ind;
     }
 
     // create Indices
     // for the cylinder we need one quad of two triangles per ringPoint =
     // cylNrPointsCircle *6 Points for the cylinder = 6 sides * 6 points (=2
     // triangles per side)
-    GLuint cyl_indices[cylNrPointsCircle * 9 + 36];
+    std::vector<GLuint> cyl_indices(cylNrPointsCircle * 9 + 36);
 
-    GLuint cube_faces[6][6] = {{0, 1, 3, 3, 1, 2}, {1, 5, 2, 2, 5, 6}, {4, 0, 7, 7, 0, 3},
-                               {3, 2, 7, 7, 2, 6}, {4, 5, 0, 0, 5, 1}, {7, 6, 4, 4, 6, 5}};
+    std::array cube_faces = {
+        std::array<GLuint, 6>{0, 1, 3, 3, 1, 2},
+        std::array<GLuint, 6>{1, 5, 2, 2, 5, 6},
+        std::array<GLuint, 6>{4, 0, 7, 7, 0, 3},
+        std::array<GLuint, 6>{3, 2, 7, 7, 2, 6},
+        std::array<GLuint, 6>{4, 5, 0, 0, 5, 1},
+        std::array<GLuint, 6>{7, 6, 4, 4, 6, 5}};
 
     //  clockwise (viewed from the camera)
-    GLuint oneQuadTemp[6] = {0, 0, 1, 1, 0, 1};
-    GLuint upDownTemp[6]  = {0, 1, 0, 0, 1, 1};  // 0 = bottom, 1 ==top
+    std::array<GLuint, 6> oneQuadTemp = {0, 0, 1, 1, 0, 1};
+    std::array<GLuint, 6> upDownTemp  = {0, 1, 0, 0, 1, 1};  // 0 = bottom, 1 ==top
 
     ind = 0;
-    for (uint i = 0; i < cylNrPointsCircle; i++) {
-        for (uint j = 0; j < 6; j++) {
+    for (auto i = 0; i < cylNrPointsCircle; i++) {
+        for (auto j = 0; j < 6; j++) {
             cyl_indices[ind++] = ((oneQuadTemp[j] + i) % cylNrPointsCircle) + (cylNrPointsCircle * upDownTemp[j]);
         }
     }
@@ -89,8 +101,8 @@ SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
     }
 
     gizVao = make_unique<VAO>("position:3f,normal:3f", GL_STATIC_DRAW);
-    gizVao->upload(CoordType::Position, &positions[0], cylNrPointsCircle * 2 + 8);
-    gizVao->upload(CoordType::Normal, &normals[0], cylNrPointsCircle * 2 + 8);
+    gizVao->upload(CoordType::Position, &positions[0][0], cylNrPointsCircle * 2 + 8);
+    gizVao->upload(CoordType::Normal, &normals[0][0], cylNrPointsCircle * 2 + 8);
     gizVao->setElemIndices(cylNrPointsCircle * 6 + 36, &cyl_indices[0]);
 
     totNrPoints = cylNrPointsCircle * 6 + 36;

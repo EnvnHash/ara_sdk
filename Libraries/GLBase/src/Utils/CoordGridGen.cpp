@@ -40,7 +40,7 @@ CoordGridGen::CoordGridGen(ivec2 texSize) {
     coordShdr->setUniform2f("resolution", static_cast<float>(texSize.x), static_cast<float>(texSize.y));
 
     quad->draw();
-    ara::Shaders::end();
+    Shaders::end();
 
     // destroy opengl context
     m_glCtx->destroy();

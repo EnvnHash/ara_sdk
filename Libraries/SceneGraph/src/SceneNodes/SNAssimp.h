@@ -11,8 +11,8 @@ class CameraSet;
 
 class SNAssimp : public SceneNode {
 public:
-    SNAssimp(sceneData* sd = nullptr);
-    ~SNAssimp() {};
+    explicit SNAssimp(sceneData* sd = nullptr);
+    ~SNAssimp() override = default;
 
     bool loadMesh();
 

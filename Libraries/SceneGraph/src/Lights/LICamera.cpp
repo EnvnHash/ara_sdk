@@ -53,7 +53,7 @@ void LICamera::setup(bool callSetupCb) {
         }
     }
 
-    s_fov        = m_forceFov ? m_forceFov : (float)atan(1.0 / (double)(2.0 * m_throwRatio * m_aspect));
+    s_fov        = m_forceFov ? m_forceFov : static_cast<float>(atan(1.0 / (double) (2.0 * m_throwRatio * m_aspect)));
     m_newProjMat = perspective(s_fov, m_aspect, s_near, s_far);
 
     // only update if necessary

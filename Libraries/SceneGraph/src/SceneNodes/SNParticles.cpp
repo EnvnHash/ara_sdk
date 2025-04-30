@@ -201,8 +201,8 @@ void SNParticles::draw(double time, double dt, CameraSet* cs, Shaders* _shader, 
     // if there is no vao bound, glDrawElements doesn't work...
     testVAO->bind();
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mParticles->getPosBuffer()->getBuffer());
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mParticles->getIndexBuffer()->getBuffer());
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mParticles->getPosBuffer().getBuffer());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mParticles->getIndexBuffer().getBuffer());
 
     glDrawElements(GL_TRIANGLES, (GLsizei)mParticles->getSize() * 6, GL_UNSIGNED_INT, 0);
 

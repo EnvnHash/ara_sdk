@@ -5,68 +5,65 @@ using namespace std;
 
 namespace ara {
 
-GLSLParticleSystemCS::GLSLParticleSystemCS(size_t size, const char *shaderPrefix)
-    : m_size(size), m_noiseTex(0), m_noiseSize(16), m_updateProg(0), m_shaderPrefix(shaderPrefix),
-      work_group_size(128) {
-    // Split the velocities and positions, as for now the
-    // rendering only cares about positions, so we just index
-    // that m_buffer for rendering
-    m_pos      = new ShaderBuffer<glm::vec4>(size);
-    m_init_pos = new ShaderBuffer<glm::vec4>(size);
-    m_vel      = new ShaderBuffer<glm::vec4>(size);
-    m_indices  = new ShaderBuffer<uint32_t>(size * 6);
+GLSLParticleSystemCS::GLSLParticleSystemCS(const size_t size, const char *shaderPrefix)
+	: m_size(size),
+	  m_shaderPrefix(shaderPrefix){
+	// Split the velocities and positions, as for now the rendering only cares about positions, so we just index
+	// that m_buffer for rendering
+	m_pos.resize(size);
+	m_init_pos.resize(size);
+	m_vel.resize(size);
+	m_indices.resize(size * 6);
 
-    // the index m_buffer is a classic "two-tri quad" array.
-    // This may seem odd, given that the compute m_buffer contains a single
-    // vector for each particle.  However, the shader takes care of this
-    // by indexing the compute shader m_buffer with a /4.  The value mod 4
-    // is used to compute the offset from the vertex site, and each of the
-    // four indices in a given quad references the same center point
-    uint32_t *indices = m_indices->map();
-    for (size_t i = 0; i < m_size; i++) {
-        size_t index = i << 2;
-        *(indices++) = (uint32_t)index;
-        *(indices++) = (uint32_t)index + 1;
-        *(indices++) = (uint32_t)index + 2;
-        *(indices++) = (uint32_t)index;
-        *(indices++) = (uint32_t)index + 2;
-        *(indices++) = (uint32_t)index + 3;
-    }
-    m_indices->unmap();
+	// the index m_buffer is a classic "two-tri quad" array.
+	// This may seem odd, given that the compute buffer contains a single
+	// vector for each particle.  However, the shader takes care of this
+	// by indexing the compute shader m_buffer with a /4.  The value mod 4
+	// is used to compute the offset from the vertex site, and each of the
+	// four indices in a given quad references the same center point
+	auto indices = m_indices.map();
+	for (size_t i = 0; i < m_size; i++) {
+		size_t index = i << 2;
+		*(indices++) = static_cast<uint32_t>(index);
+		*(indices++) = static_cast<uint32_t>(index + 1);
+		*(indices++) = static_cast<uint32_t>(index + 2);
+		*(indices++) = static_cast<uint32_t>(index);
+		*(indices++) = static_cast<uint32_t>(index + 2);
+		*(indices++) = static_cast<uint32_t>(index + 3);
+	}
+	m_indices.unmap();
 
-    nt         = new NoiseTexNV(m_noiseSize, m_noiseSize, m_noiseSize, GL_RGBA8_SNORM);
-    m_noiseTex = nt->getTex();
+	m_nt = make_unique<NoiseTexNV>(m_noiseSize, m_noiseSize, m_noiseSize, GL_RGBA8_SNORM);
+	m_noiseTex = m_nt->getTex();
 
-    loadShaders();
-
-    //	reset(0.5f);
+	loadShaders();
 }
 
 static inline const char *GetShaderstageName(GLenum target) {
-    switch (target) {
-        case GL_VERTEX_SHADER: return "VERTEX_SHADER"; break;
-        case GL_FRAGMENT_SHADER: return "FRAGMENT_SHADER"; break;
-        case GL_COMPUTE_SHADER: return "COMPUTE_SHADER"; break;
-    }
-    return "";
+	static const std::unordered_map<GLenum, const char*> shaderStageMap = {
+		{GL_VERTEX_SHADER, "VERTEX_SHADER"},
+		{GL_FRAGMENT_SHADER, "FRAGMENT_SHADER"},
+		{GL_COMPUTE_SHADER, "COMPUTE_SHADER"}
+	};
+
+	if (auto it = shaderStageMap.find(target); it != shaderStageMap.end()) {
+		return it->second;
+	}
+
+	return "";
 }
 
-GLuint GLSLParticleSystemCS::createShaderPipelineProgram(GLuint target, const char *src) {
-    GLuint object;
-    GLint  status;
+GLuint GLSLParticleSystemCS::createShaderPipelineProgram(const GLuint target, const std::string& src) const {
+	GLint  status;
 
-    const GLchar *fullSrc[2] = {m_shaderPrefix, src};
-    object                   = glCreateShaderProgramv(target, 2,
-                                                      fullSrc);  // with this command GL_PROGRAM_SEPARABLE is set to true
+    std::array fullSrc = {m_shaderPrefix, src };
+	const auto object = glCreateShaderProgramv(target, 2, reinterpret_cast<const GLchar **>(fullSrc[0].data()));  // with this command GL_PROGRAM_SEPARABLE is set to true
 
-    {
-        GLint logLength;
-        glGetProgramiv(object, GL_INFO_LOG_LENGTH, &logLength);
-        char *log = new char[logLength];
-        glGetProgramInfoLog(object, logLength, 0, log);
-        //  printf("Shader pipeline program not valid:\n%s\n", log);
-        delete[] log;
-    }
+    GLint logLength;
+    glGetProgramiv(object, GL_INFO_LOG_LENGTH, &logLength);
+    std::string log;
+    log.reserve(logLength);
+    glGetProgramInfoLog(object, logLength, nullptr, log.data());
 
     glBindProgramPipeline(m_programPipeline);
     glUseProgramStages(m_programPipeline, GL_COMPUTE_SHADER_BIT, object);
@@ -74,12 +71,10 @@ GLuint GLSLParticleSystemCS::createShaderPipelineProgram(GLuint target, const ch
     glGetProgramPipelineiv(m_programPipeline, GL_VALIDATE_STATUS, &status);
 
     if (status != GL_TRUE) {
-        GLint logLength;
         glGetProgramPipelineiv(m_programPipeline, GL_INFO_LOG_LENGTH, &logLength);
-        char *log = new char[logLength];
-        glGetProgramPipelineInfoLog(m_programPipeline, logLength, 0, log);
-        printf("Shader pipeline not valid:\n%s\n", log);
-        delete[] log;
+    	log.reserve(logLength);
+        glGetProgramPipelineInfoLog(m_programPipeline, logLength, nullptr, log.data());
+        LOGE << "Shader pipeline not valid:" << std::endl << log;
     }
 
     glBindProgramPipeline(0);
@@ -95,17 +90,14 @@ void GLSLParticleSystemCS::loadShaders() {
 
     glGenProgramPipelines(1, &m_programPipeline);
 
-    // std::string src =
-    // loadShadersourceWithUniformTag("ara::Shaders/uniforms.h",
-    // "ara::Shaders/particlesCS.glsl");
-    std::string src = initShdr();
+    const auto src = initShdr();
 
-    m_updateProg = createShaderPipelineProgram(GL_COMPUTE_SHADER, src.c_str());
+    m_updateProg = createShaderPipelineProgram(GL_COMPUTE_SHADER, src);
 
     glBindProgramPipeline(m_programPipeline);
 
     GLint loc = glGetUniformLocation(m_updateProg, "invNoiseSize");
-    glProgramUniform1f(m_updateProg, loc, 1.0f / m_noiseSize);
+    glProgramUniform1f(m_updateProg, loc, 1.0f / static_cast<float>(m_noiseSize));
 
     loc = glGetUniformLocation(m_updateProg, "noiseTex3D");
     glProgramUniform1i(m_updateProg, loc, 0);
@@ -114,24 +106,26 @@ void GLSLParticleSystemCS::loadShaders() {
 }
 
 void GLSLParticleSystemCS::reset(glm::vec3 size) {
-    glm::vec4 *pos = m_pos->map();
+    auto pos = m_pos.map();
     for (size_t i = 0; i < m_size; i++) {
-        pos[i] = glm::vec4(getRandF(-1.f, 1.f) * size.x, getRandF(-1.f, 1.f) * size.y, getRandF(-1.f, 1.f) * size.z, 1.0f);
+        pos[i] = vec4{getRandF(-1.f, 1.f) * size.x, getRandF(-1.f, 1.f) * size.y, getRandF(-1.f, 1.f) * size.z, 1.0f};
     }
-    m_pos->unmap();
+    m_pos.unmap();
 
-    pos = m_init_pos->map();
-    for (size_t i = 0; i < m_size; i++){
-        pos[i] = glm::vec4(getRandF(-1.f, 1.f) * size.x, getRandF(-1.f, 1.f) * size.y, getRandF(-1.f, 1.f) * size.z, 1.0f);
+    pos = m_init_pos.map();
+    for (size_t i = 0; i < m_size; i++) {
+	    pos[i] = vec4{getRandF(-1.f, 1.f) * size.x, getRandF(-1.f, 1.f) * size.y, getRandF(-1.f, 1.f) * size.z, 1.0f};
     }
-    m_init_pos->unmap();
+    m_init_pos.unmap();
 
-    glm::vec4 *vel = m_vel->map();
-    for (size_t i = 0; i < m_size; i++) vel[i] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-    m_vel->unmap();
+    auto vel = m_vel.map();
+    for (size_t i = 0; i < m_size; i++) {
+	    vel[i] = vec4{0.0f, 0.0f, 0.0f, 1.0f};
+    }
+    m_vel.unmap();
 }
 
-void GLSLParticleSystemCS::update() {
+void GLSLParticleSystemCS::update() const {
     // deactivated any shader actually running
     glUseProgram(0);
 
@@ -141,11 +135,11 @@ void GLSLParticleSystemCS::update() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, m_noiseTex);
 
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_pos->getBuffer());
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, m_init_pos->getBuffer());
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_vel->getBuffer());
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_pos.getBuffer());
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, m_init_pos.getBuffer());
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_vel.getBuffer());
 
-    glDispatchCompute((GLuint)m_size / work_group_size, 1, 1);
+    glDispatchCompute(static_cast<GLuint>(m_size) / work_group_size, 1, 1);
 
     // We need to block here on compute completion to ensure that the
     // computation is done before we render
@@ -247,14 +241,11 @@ std::string GLSLParticleSystemCS::getShaderParUBlock() {
 }
 
 GLSLParticleSystemCS::~GLSLParticleSystemCS() {
-    if (m_updateProg) glDeleteProgram(m_updateProg);
+    if (m_updateProg) {
+	    glDeleteProgram(m_updateProg);
+    }
     glDeleteProgramPipelines(1, &m_programPipeline);
 
-    delete nt;
-    delete m_pos;
-    delete m_init_pos;
-    delete m_vel;
-    delete m_indices;
 }
 
 }  // namespace ara

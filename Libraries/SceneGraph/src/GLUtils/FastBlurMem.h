@@ -39,8 +39,8 @@ public:
     void initFbo();
     void initShader();
 
-    GLint getResult() { return m_pp ? m_pp->getSrcTexId() : 0; }
-    GLint getLastResult() { return m_pp ? m_pp->getDstTexId() : 0; }
+    GLint getResult() const { return m_pp ? m_pp->getSrcTexId() : 0; }
+    GLint getLastResult() const { return m_pp ? m_pp->getDstTexId() : 0; }
     void  setAlpha(float alpha) { m_alpha = alpha; }
     void  setOffsScale(float offsScale) { m_offsScale = offsScale; }
     void  setBright(float bright) { m_bright = bright; }

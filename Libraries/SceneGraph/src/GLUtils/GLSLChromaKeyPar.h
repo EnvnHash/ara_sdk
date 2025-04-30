@@ -13,7 +13,7 @@ namespace ara {
 class GLSLChromaKeyPar : public ItemRef, public ItemUi {
 public:
     GLSLChromaKeyPar();
-    virtual ~GLSLChromaKeyPar() = default;
+    ~GLSLChromaKeyPar() override = default;
 
     PropertyPtr<bool>        freeze;
     PropertyPtr<bool>        chromaKey;

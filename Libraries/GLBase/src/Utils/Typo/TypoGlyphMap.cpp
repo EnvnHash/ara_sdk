@@ -378,7 +378,7 @@ int TypoGlyphMap::m_print(glm::vec2 offset, const char *text, int font_size, flo
         ++text;
     }
 
-    ara::Shaders::end();
+    Shaders::end();
     return idx;
 }
 

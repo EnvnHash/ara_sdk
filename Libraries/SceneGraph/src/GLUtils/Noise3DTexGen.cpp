@@ -6,7 +6,10 @@
 //  Generator for a 3D-Texture with perlin noise
 
 #include "Noise3DTexGen.h"
-
+#include <GLUtils/sceneData.h>
+#include <GeoPrimitives/Quad.h>
+#include <Utils/FBO.h>
+#include <Shaders/ShaderCollector.h>
 #include <GLBase.h>
 
 using namespace glm;
@@ -14,9 +17,16 @@ using namespace std;
 
 namespace ara {
 
-Noise3DTexGen::Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, ivec3 size, vec3 scale)
-    : m_glbase(static_cast<GLBase*>(scd->glbase)), m_shCol(&static_cast<GLBase*>(scd->glbase)->shaderCollector()),
-      m_width(size.x), m_height(size.y), m_scaleX(scale.x), m_scaleY(scale.y), m_scaleZ(scale.z), m_depth(size.z),    m_nrLoops(size.z) {
+Noise3DTexGen::Noise3DTexGen(const sceneData* scd, bool color, int nrOctaves, ivec3 size, vec3 scale)
+    : m_shCol(scd->glbase->shaderCollector()),
+    m_glbase(static_cast<GLBase*>(scd->glbase)),
+    m_scaleX(scale.x),
+    m_scaleY(scale.y),
+    m_scaleZ(scale.z),
+    m_width(size.x),
+    m_height(size.y),
+    m_depth(size.z),
+    m_nrLoops(size.z) {
 
     FboInitParams fbi{
         .glbase = static_cast<GLBase*>(scd->glbase),
@@ -29,22 +39,22 @@ Noise3DTexGen::Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, ivec3 si
     auto xBlendFboH = make_unique<FBO>(fbi);
     auto xBlendFboV = make_unique<FBO>(fbi);
 
-    unique_ptr<Quad> quad    = make_unique<Quad>(QuadInitParams{});
-    unique_ptr<Quad> fboQuad = make_unique<Quad>(QuadInitParams{ .pos = {0.f, 0.f}, .size = {1.f, 1.f} });
+    auto quad    = make_unique<Quad>(QuadInitParams{});
+    auto fboQuad = make_unique<Quad>(QuadInitParams{ .pos = {0.f, 0.f}, .size = {1.f, 1.f} });
 
     initShdr();
     auto xBlendShaderH = initBlendShdrH();
     auto xBlendShaderV = initBlendShdrV();
 
-    m_stdTexShdr = m_shCol->getStdTex();
+    m_stdTexShdr = m_shCol.getStdTex();
 
     glEnable(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // bind the s_fbo and render one layer of perlin noise
-    for (short i = 0; i < m_nrLoops; i++) {
-        auto zPos = float(i) / float(m_nrLoops - 1);
+    for (auto i = 0; i < m_nrLoops; i++) {
+        auto zPos = static_cast<float>(i) / static_cast<float>(m_nrLoops - 1);
 
         // generate perlin noise texture
         fbo->set3DLayer(0, i);
@@ -72,7 +82,7 @@ Noise3DTexGen::Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, ivec3 si
         xBlendShaderH->setIdentMatrix4fv("m_pvm");
         xBlendShaderH->setUniform1i("tex", 0);
         xBlendShaderH->setUniform1i("width", size.x);
-        xBlendShaderH->setUniform1f("zPos", zPos + 0.5f / float(m_nrLoops - 1));
+        xBlendShaderH->setUniform1f("zPos", zPos + 0.5f / static_cast<float>(m_nrLoops - 1));
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_3D, fbo->getColorImg());
@@ -118,13 +128,13 @@ Noise3DTexGen::Noise3DTexGen(sceneData* scd, bool color, int nrOctaves, ivec3 si
 void Noise3DTexGen::initShdr() {
     //------ Position Shader -----------------------------------------
 
-    std::string shdr_Header = "#version 410 core\n#pragma optimize(on)\n";
+    std::string shdr_Header = ShaderCollector::getShaderHeader() + "#pragma optimize(on)\n";
     std::string vert        = STRINGIFY(
         layout(location = 0) in vec4 position;\n
         layout(location = 1) in vec3 normal;\n
         layout(location = 2) in vec2 texCoord;\n
         layout(location = 3) in vec4 color;\n
-		\n uniform mat4 m_pvm;\n
+		uniform mat4 m_pvm;\n
         out vec4 pos;\n
         out vec2 texCo;\n
 		void main() { \n
@@ -243,82 +253,92 @@ void Noise3DTexGen::initShdr() {
         });
     frag = "// Noise3DTexGen pos tex shader\n" + shdr_Header + frag;
 
-    m_noiseShdr = m_shCol->add("noise3DTexGen", vert, frag);
+    m_noiseShdr = m_shCol.add("noise3DTexGen", vert, frag);
 }
 
-ara::Shaders* Noise3DTexGen::initBlendShdrH() {
-    std::string shdr_Header = "#version 410 core\n#pragma optimize(on)\n";
+Shaders* Noise3DTexGen::initBlendShdrH() const {
+    std::string shdr_Header = ShaderCollector::getShaderHeader() + "#pragma optimize(on)\n";
     std::string vert        = STRINGIFY(layout(location = 0) in vec4 position; layout(location = 1) in vec4 normal;
-                                        layout(location = 2) in vec2 texCoord; layout(location = 3) in vec4 color;
-                                        uniform mat4 m_pvm; uniform float zPos;
+        layout(location = 2) in vec2 texCoord; layout(location = 3) in vec4 color;
+        uniform mat4 m_pvm; uniform float zPos;
 
-                                        out vec3 tex_coordLeft;   // shift, + stretch, left edge stays
-                                        out vec3 tex_coordRight;  // shift, + stretch, right edge stays
-                                        out vec4 col;
+        out vec3 tex_coordLeft;   // shift, + stretch, left edge stays
+        out vec3 tex_coordRight;  // shift, + stretch, right edge stays
+        out vec4 col;
 
-                                        void main() {
-                                     col = color;
-                                     // shift texCoord, edges will be in the center
-                                     tex_coordLeft  = vec3(texCoord.x * 0.5 + 0.5, texCoord.y + 0.5, zPos);
-                                     tex_coordRight = vec3(texCoord.x * 0.5 + 1.0, texCoord.y + 0.5, zPos);
-                                     gl_Position    = m_pvm * position;
-                                        });
+        void main() {
+             col = color;
+             // shift texCoord, edges will be in the center
+             tex_coordLeft  = vec3(texCoord.x * 0.5 + 0.5, texCoord.y + 0.5, zPos);
+             tex_coordRight = vec3(texCoord.x * 0.5 + 1.0, texCoord.y + 0.5, zPos);
+             gl_Position    = m_pvm * position;
+        });
     vert = "// Noise3DTexGen blendH vertex Shader\n" + shdr_Header + vert;
 
-    std::string frag = STRINGIFY(uniform sampler3D tex; uniform int width;
+    std::string frag = STRINGIFY(
+        uniform sampler3D tex;
+        uniform int width;
 
-                  in vec3 tex_coordLeft; in vec3 tex_coordRight; in vec4 col; layout(location = 0) out vec4 color;
+        in vec3 tex_coordLeft;
+        in vec3 tex_coordRight;
+        in vec4 col;
+        layout(location = 0) out vec4 color;
 
-                  void main() {
-                      float blendPos = gl_FragCoord.x / float(width);
-                      vec4  left     = texture(tex, tex_coordLeft);
-                      vec4  right    = texture(tex, tex_coordRight);
+        void main() {
+            float blendPos = gl_FragCoord.x / float(width);
+            vec4  left     = texture(tex, tex_coordLeft);
+            vec4  right    = texture(tex, tex_coordRight);
 
-                      color = mix(left, right, blendPos);
-                      color.a = 1.0;
-                  });
+            color = mix(left, right, blendPos);
+            color.a = 1.0;
+        });
     frag = "// Noise3DTexGen blendH tex shader\n" + shdr_Header + frag;
 
-    return new ara::Shaders(vert.c_str(), frag.c_str(), false);
+    return m_shCol.add("Noise3DTexGenBlendH", vert, frag);
 }
 
-ara::Shaders* Noise3DTexGen::initBlendShdrV() {
-    std::string shdr_Header = "#version 410 core\n#pragma optimize(on)\n";
+Shaders* Noise3DTexGen::initBlendShdrV() const {
+    std::string shdr_Header = ShaderCollector::getShaderHeader() + "#pragma optimize(on)\n";
     std::string vert =
-        STRINGIFY(layout(location = 0) in vec4 position; layout(location = 1) in vec4 normal;
-                  layout(location = 2) in vec2 texCoord; layout(location = 3) in vec4 color; uniform mat4 m_pvm;
+        STRINGIFY(layout(location = 0) in vec4 position;
+            layout(location = 1) in vec4 normal;
+            layout(location = 2) in vec2 texCoord;
+            layout(location = 3) in vec4 color;
+            uniform mat4 m_pvm;
 
-                  out vec2 tex_coordTop;     // shift, + stretch, Top edge stays
-                  out vec2 tex_coordBottom;  // shift, + stretch, bottom edge stays
-                  out vec4 col;
+            out vec2 tex_coordTop;     // shift, + stretch, Top edge stays
+            out vec2 tex_coordBottom;  // shift, + stretch, bottom edge stays
+            out vec4 col;
 
-                  void main() {
-                      col             = color;
-                      tex_coordTop    = vec2(texCoord.x, texCoord.y * 0.5 + 1.0);
-                      tex_coordBottom = vec2(texCoord.x, texCoord.y * 0.5 + 0.5);
-                      gl_Position     = m_pvm * position;
-                  });
+            void main() {
+                col             = color;
+                tex_coordTop    = vec2(texCoord.x, texCoord.y * 0.5 + 1.0);
+                tex_coordBottom = vec2(texCoord.x, texCoord.y * 0.5 + 0.5);
+                gl_Position     = m_pvm * position;
+            });
     vert = "// Noise3DTexGen blendV vertex Shader\n" + shdr_Header + vert;
 
-    std::string frag = STRINGIFY(uniform sampler2D tex; uniform int height;
+    std::string frag = STRINGIFY(
+        uniform sampler2D tex;
+        uniform int height;
 
-                                 in vec2 tex_coordTop;     // shift, + stretch, left edge stays
-                                 in vec2 tex_coordBottom;  // shift, + stretch, right edge stays
-                                 in vec4 col; layout(location = 0) out vec4 color;
+        in vec2 tex_coordTop;     // shift, + stretch, left edge stays
+        in vec2 tex_coordBottom;  // shift, + stretch, right edge stays
+        in vec4 col; layout(location = 0) out vec4 color;
 
-                                 void main() {
-                                     float blendPos = gl_FragCoord.y / float(height);
-                                     vec4  top      = texture(tex, tex_coordTop);
-                                     vec4  bottom   = texture(tex, tex_coordBottom);
-                                     color          = mix(top, bottom, blendPos);
-                                     color.a        = 1.0;
-                                 });
-    frag             = "// Noise3DTexGen blendV tex shader\n" + shdr_Header + frag;
+        void main() {
+            float blendPos = gl_FragCoord.y / float(height);
+            vec4  top      = texture(tex, tex_coordTop);
+            vec4  bottom   = texture(tex, tex_coordBottom);
+            color          = mix(top, bottom, blendPos);
+            color.a        = 1.0;
+        });
 
-    return new ara::Shaders(vert.c_str(), frag.c_str(), false);
+    frag = "// Noise3DTexGen blendV tex shader\n" + shdr_Header + frag;
+    return m_shCol.add("Noise3DTexGenBlendV", vert, frag);
 }
 
-GLuint Noise3DTexGen::getTex() {
+GLuint Noise3DTexGen::getTex() const {
     return fbo->getColorImg();
 }
 

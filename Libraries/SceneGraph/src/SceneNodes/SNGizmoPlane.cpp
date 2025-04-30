@@ -7,7 +7,7 @@ using namespace std;
 
 namespace ara {
 
-SNGizmoPlane::SNGizmoPlane(sceneData* sd) : SceneNode(sd), nrBasePoints(20), emisBright(0.3f) {
+SNGizmoPlane::SNGizmoPlane(sceneData* sd) : SceneNode(sd) {
     m_nodeType = GLSG_GIZMO;
 
     // draw a quarter ring with a specific width in the x,y plane define as
@@ -24,7 +24,7 @@ SNGizmoPlane::SNGizmoPlane(sceneData* sd) : SceneNode(sd), nrBasePoints(20), emi
 
             for (uint i = 0; i < nrBasePoints; i++) {
                 float fInd  = static_cast<float>(i) / static_cast<float>(nrBasePoints - 1);
-                float phase = (fInd * float(M_PI) * 0.25f) + float(l) * float(M_PI) * 0.25f;
+                float phase = (fInd * static_cast<float>(M_PI) * 0.25f) + static_cast<float>(l) * static_cast<float>(M_PI) * 0.25f;
 
                 b_positions[i] = vec3(std::cos(phase), std::sin(phase), 0.f);
                 b_normals[i]   = vec3(0.f, 0.f, 1.f);
@@ -36,19 +36,23 @@ SNGizmoPlane::SNGizmoPlane(sceneData* sd) : SceneNode(sd), nrBasePoints(20), emi
 
             vector<GLfloat> positions(totNrPoints * 3);
             vector<GLfloat> normals(totNrPoints * 3);
-            GLuint          templ[6]   = {0, 0, 1, 1, 0, 1};
-            GLfloat         radOffs[6] = {ringOuterWidth[v], ringInnerWidth[v], ringOuterWidth[v],
-                                          ringOuterWidth[v], ringInnerWidth[v], ringInnerWidth[v]};
+            std::array<GLuint, 6> templ = {0, 0, 1, 1, 0, 1};
+            std::array radOffs = {ringOuterWidth[v], ringInnerWidth[v], ringOuterWidth[v],
+                                  ringOuterWidth[v], ringInnerWidth[v], ringInnerWidth[v]};
 
             for (uint i = 0; i < (nrBasePoints - 1); i++) {
                 for (uint j = 0; j < 6; j++) {
                     uint ind = (i * 6 + j) * 3;
 
-                    for (uint k = 0; k < 2; k++) positions[ind + k] = b_positions[(templ[j] + i)][k] * radOffs[j];
+                    for (auto k = 0; k < 2; k++) {
+                        positions[ind + k] = b_positions[(templ[j] + i)][k] * radOffs[j];
+                    }
 
                     positions[ind + 2] = 0.f;
 
-                    for (uint k = 0; k < 3; k++) normals[ind + k] = b_normals[i][k];
+                    for (auto k = 0; k < 3; k++) {
+                        normals[ind + k] = b_normals[i][k];
+                    }
                 }
             }
 
@@ -82,7 +86,5 @@ void SNGizmoPlane::draw(double time, double dt, CameraSet* cs, Shaders* shader, 
 void SNGizmoPlane::setGizmoUpperColor(float _r, float _g, float _b, float _a) { gColor[1] = vec4(_r, _g, _b, _a); }
 
 void SNGizmoPlane::setGizmoLowerColor(float _r, float _g, float _b, float _a) { gColor[0] = vec4(_r, _g, _b, _a); }
-
-SNGizmoPlane::~SNGizmoPlane() {}
 
 }  // namespace ara

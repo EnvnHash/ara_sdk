@@ -19,30 +19,27 @@
 namespace ara {
 class SkyBoxBlend {
 public:
-    SkyBoxBlend(std::string textureFile, unsigned _nrCams = 1, sceneData* sd = nullptr);
-    SkyBoxBlend(const char* textureFile, unsigned _nrCams = 1, sceneData* sd = nullptr);
-    virtual ~SkyBoxBlend();
+    explicit SkyBoxBlend(const std::string& textureFile, unsigned _nrCams = 1, sceneData* sd = nullptr);
 
-    void init(const char* textureFile, unsigned _nrCams, sceneData* sd = nullptr);
     void draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* tfo = nullptr);
     void setMatr(glm::mat4* inMatr) { modMatr = inMatr; }
 
-    void remove();
+    void remove() const;
 
 private:
-    GLBase*     m_glbase     = nullptr;
-    Sphere*     sphere       = nullptr;
-    Texture*    cubeTex      = nullptr;
-    Shaders*    perlinShader = nullptr;
-    Shaders*    sbShader     = nullptr;
-    Shaders*    testShader   = nullptr;
-    std::string vShader;
-    std::string gShader;
-    std::string fShader;
-    std::string vShaderSrc;
-    GLuint      texUnit = 0;
-    glm::mat4   pvm;
-    float       angle   = 0.f;
-    glm::mat4*  modMatr = nullptr;
+    GLBase*                     m_glbase     = nullptr;
+    std::unique_ptr<Sphere>     sphere;
+    std::unique_ptr<Texture>    cubeTex;
+    Shaders*                    perlinShader = nullptr;
+    Shaders*                    sbShader     = nullptr;
+    Shaders*                    testShader   = nullptr;
+    std::string                 vShader;
+    std::string                 gShader;
+    std::string                 fShader;
+    std::string                 vShaderSrc;
+    GLuint                      texUnit = 0;
+    glm::mat4                   pvm{};
+    float                       angle   = 0.f;
+    glm::mat4*                  modMatr = nullptr;
 };
 }  // namespace ara

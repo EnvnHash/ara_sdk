@@ -872,7 +872,7 @@ void FBO::clearToAlpha(float alpha) const {
     // don't use the VAO itself since it's not gl context save
     m_quad->draw();
 
-    ara::Shaders::end();
+    Shaders::end();
 
     if (m_hasDepthBuf || m_type == GL_DEPTH24_STENCIL8) {
         glClear(GL_DEPTH_BUFFER_BIT);

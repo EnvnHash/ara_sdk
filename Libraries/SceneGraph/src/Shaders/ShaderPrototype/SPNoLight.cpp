@@ -205,7 +205,7 @@ bool SPNoLight::end(renderPass pass, uint loopNr) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
 #endif
         if (s_shader) {
-            ara::Shaders::end();
+            Shaders::end();
         }
     }
 

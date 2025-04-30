@@ -590,8 +590,7 @@ void SPSpotLightShadowVsm::sendPar(CameraSet *cs, double time, SceneNode *node, 
 
         if (shadowGen && s_lights.size() > 0 && shadowGen->getShader()) {
             shadowGen->getShader()->setUniformMatrix4fv("m_pv", &pv_mats[0][0][0], (uint)s_lights.size());
-            shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)],
-                                                        value_ptr(*node->getModelMat(parent)));
+            shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)], value_ptr(node->getModelMat(parent)));
         }
     } else if ((_pass == GLSG_SCENE_PASS || _pass == GLSG_GIZMO_PASS) && s_shader) {
         // estimate nr passes to render all active surfaces and lights
@@ -621,7 +620,7 @@ void SPSpotLightShadowVsm::sendPar(CameraSet *cs, double time, SceneNode *node, 
             }
 
             for (int i = 0; i < nrLightsThisPass; i++) {
-                shadowMat[i]        = s_lights[i + lightOffs]->s_shadow_mat * *node->getModelMat(parent);
+                shadowMat[i]        = s_lights[i + lightOffs]->s_shadow_mat * node->getModelMat(parent);
                 lightColTexUnits[i] = i + 2;
 
                 // check if we are rendering a light source or a Gizmo, in this
@@ -725,7 +724,7 @@ bool SPSpotLightShadowVsm::end(renderPass pass, uint loopNr) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
 #endif
         if (s_shader) {
-            ara::Shaders::end();
+            Shaders::end();
         }
     }
 

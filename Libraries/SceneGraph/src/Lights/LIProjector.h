@@ -1,41 +1,34 @@
 #pragma once
 
-#include <Utils/Texture.h>
-
 #include "Lights/Light.h"
 
 namespace ara {
 
 class LIProjector : public Light {
 public:
-    LIProjector(sceneData* sd = nullptr);
+    explicit LIProjector(sceneData* sd = nullptr);
 
-    void         setup(bool force = false);
-    virtual void draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo = 0);
+    void setup(bool force) override;
 
     std::string* getTexturePath() { return &m_texture_path; }
-    void         setTexturePath(std::string& _path) { m_texture_path = _path; }
-    void         setReloadTexture(bool _val) { m_reloadTexture = _val; }
-    void         setConnDispName(std::string& name) { m_dispname = name; }
     std::string* getConnDispName() { return &m_dispname; }
-    void setTexId(int id) { s_colTex = id; }
-    int  getTexId() { return s_colTex; }
+    int          getTexId() const { return s_colTex; }
 
-    float m_aspect;
-    float m_throwRatio;
-    float m_lensShift[2];
+    void setTexturePath(const std::string& path) { m_texture_path = path; }
+    void setReloadTexture(bool val) { m_reloadTexture = val; }
+    void setConnDispName(const std::string& name) { m_dispname = name; }
+    void setTexId(int id) { s_colTex = id; }
+
+    float       m_aspect = 16.f / 9.f;
+    float       m_throwRatio = 0.5f;
+    glm::vec2   m_lensShift{};
 
 protected:
-    bool      m_reloadTexture;
-    glm::mat4 m_scale_bias_matrix;
-
-    float m_linearDepthScalar;
-
+    bool        m_reloadTexture = false;
+    glm::mat4   m_scale_bias_matrix{};
+    float       m_linearDepthScalar = 0;
     std::string m_texture_path;
     std::string m_dispname;
-
-    // FFMpegDecode*
-    // m_ffmpegDecode;
 };
 
 }  // namespace ara

@@ -110,7 +110,7 @@ void SSAO::initShaders() {
     debugDepth = initDebugDepth();
 }
 
-ara::Shaders* SSAO::initDebugDepth() {
+Shaders* SSAO::initDebugDepth() {
     std::string shdr_Header = ShaderCollector::getShaderHeader() + "#pragma optimize(on)\n";
     auto vert = "// debug depth shader, vert\n" + shdr_Header + depthDebugVertShdr;
     auto frag = "// debug depth shader, frag\n" + shdr_Header + depthDebugFragShdr;

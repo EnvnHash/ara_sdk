@@ -9,23 +9,26 @@
 #include "Lights/LIStandardSpot.h"
 
 namespace ara {
+
 class LIFactory {
 public:
-    LIFactory() {}
-    ~LIFactory() {}
+    using LightFactory = std::function<std::unique_ptr<Light>(sceneData*)>;
 
     std::unique_ptr<Light> Create(const std::string& sClassName, sceneData* sd) {
-        if (sClassName == getName<LIProjector>()) {
-            return std::make_unique<LIProjector>(sd);
-        } else if (sClassName == getName<LIStandardSpot>()) {
-            return std::make_unique<LIStandardSpot>(sd);
-        } else if (sClassName == getName<LICamera>()) {
-            return std::make_unique<LICamera>(sd);
+        static const std::unordered_map<std::string, LightFactory> lightFactories = {
+            {getTypeName<LIProjector>(), [](sceneData* s) -> std::unique_ptr<Light> { return std::make_unique<LIProjector>(s); }},
+            {getTypeName<LIStandardSpot>(), [](sceneData* s) -> std::unique_ptr<Light> { return std::make_unique<LIStandardSpot>(s); }},
+            {getTypeName<LICamera>(), [](sceneData* s) -> std::unique_ptr<Light> { return std::make_unique<LICamera>(s); }}
+        };
+
+        auto it = lightFactories.find(sClassName);
+        if (it != lightFactories.end()) {
+            return it->second(sd);
         } else {
             LOGE << "LIFactory error, Prototype: " << sClassName.c_str() << " not found";
+            return nullptr;
         }
-        return 0;
-    };
+    }
 };
 
 }  // namespace ara

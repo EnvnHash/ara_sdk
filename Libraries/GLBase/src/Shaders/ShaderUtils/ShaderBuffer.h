@@ -16,6 +16,8 @@ namespace ara {
 template <class T>
 class ShaderBuffer {
 public:
+    ShaderBuffer() = default;
+
     explicit ShaderBuffer(size_t size) : m_size(size) {
         glGenBuffers(1, &m_buffer);
         bind();
