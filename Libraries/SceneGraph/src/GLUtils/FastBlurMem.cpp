@@ -284,7 +284,7 @@ void FastBlurMem::initShader() {
 
     if (m_target == GL_TEXTURE_2D_ARRAY) {
         frag +=
-            "void main(void){\n"
+            "void main(){\n"
             "FragmentColor = texture( image, vec3( tex_coord, float(gl_Layer) "
             ") ) * weight[0] * weightScale;\n";
     } else {

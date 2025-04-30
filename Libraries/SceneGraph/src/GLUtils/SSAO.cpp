@@ -10,17 +10,29 @@
 // #define USE_GLSG_FBO
 
 #include "SSAO.h"
-
 #include "CameraSets/CameraSet.h"
+#include "GLUtils/SSAOShaders.h"
+#include "GeoPrimitives/Quad.h"
+#include "Shaders/ShaderCollector.h"
+#include "Utils/MersenneTwister.h"
 
 using namespace glm;
 using namespace std;
+using namespace ara::ssao;
 
 namespace ara {
-SSAO::SSAO(GLBase* glbase, uint inFboWidth, uint inFboHeight, AlgorithmType _algorithm, bool _blur, float _intensity,
-           float _blurSharpness)
-    : algorithm(_algorithm), m_glbase(glbase), bias(0.1f), blur(_blur), blurSharpness(_blurSharpness), lastBoundFbo(0),
-      intensity(_intensity), inited(false), radius(0.02f), fboWidth(inFboWidth), fboHeight(inFboHeight) {
+
+SSAO::SSAO(GLBase* glbase, uint inFboWidth, uint inFboHeight, AlgorithmType algorithm, bool blur, float intensity,
+           float blurSharpness)
+    : algorithm(algorithm),
+    m_glbase(glbase),
+    blur(blur),
+    blurSharpness(blurSharpness),
+    intensity(intensity),
+    inited(false),
+    fboWidth(inFboWidth),
+    fboHeight(inFboHeight),
+    shCol(glbase->shaderCollector()) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
@@ -31,8 +43,7 @@ SSAO::SSAO(GLBase* glbase, uint inFboWidth, uint inFboHeight, AlgorithmType _alg
     glGenVertexArrays(1, &defaultVAO);
     glBindVertexArray(defaultVAO);
 
-    shCol   = &m_glbase->shaderCollector();
-    texShdr = m_glbase->shaderCollector().getStdTexAlpha(samples > 1 ? true : false);
+    texShdr = m_glbase->shaderCollector().getStdTexAlpha(samples > 1);
     texNoAlpha = samples > 1 ? m_glbase->shaderCollector().getStdTexMulti() : m_glbase->shaderCollector().getStdTex();
 
     initShaders();
@@ -47,302 +58,150 @@ SSAO::SSAO(GLBase* glbase, uint inFboWidth, uint inFboHeight, AlgorithmType _alg
 
 void SSAO::initShaders() {
     com += "#define AO_RANDOMTEX_SIZE " + std::to_string(AO_RANDOMTEX_SIZE) + "\n";
-    com += STRINGIFY(
-		struct HBAOData {\n 
-			float RadiusToScreen;\n        // radius
-			float R2;\n// 1/radius
-			float NegInvR2;\n// radius * radius
-			float NDotVBias;\n 
-			vec2 InvFullResolution;\n
-			vec2 InvQuarterResolution;\n 
-			float AOMultiplier;\n 
-			float PowExponent;\n 
-			vec2 _pad0;\n 
-			vec4 projInfo;\n 
-			vec2 projScale;\n 
-			int projOrtho;\n 
-			int _pad1;\n 
-			vec4 float2Offsets[AO_RANDOMTEX_SIZE*AO_RANDOMTEX_SIZE];\n 
-			vec4 jitters[AO_RANDOMTEX_SIZE*AO_RANDOMTEX_SIZE];\n
-		};\n
-	);
+    com += hbaoDataStruct;
 
-    shdr_Header = "#version 430\n#define AO_LAYERED " + std::to_string(USE_AO_LAYERED_SINGLEPASS) + "\n";
+    std::string shdr_Header = ShaderCollector::getShaderHeader() + "#define AO_LAYERED " + std::to_string(USE_AO_LAYERED_SINGLEPASS) + "\n";
 
     initFullScrQuad();
     initBilateralblur();
 
     std::string frag = initDepthLinearize(0);
-    depth_linearize  = shCol->add("SSAODepth_linearize", fullScrQuad, frag);
+    depth_linearize  = shCol.add("SSAODepth_linearize", fullScrQuad, frag);
 
     frag                 = initDepthLinearize(1);
-    depth_linearize_msaa = shCol->add("SSAODepth_linearize_msaa", fullScrQuad, frag);
+    depth_linearize_msaa = shCol.add("SSAODepth_linearize_msaa", fullScrQuad, frag);
 
     initViewNormal();
 
     frag      = initHbaoCalc(0, 0);
-    hbao_calc = shCol->add("SSAOHBAO_Calc", fullScrQuad, frag);
+    hbao_calc = shCol.add("SSAOHBAO_Calc", fullScrQuad, frag);
 
     frag           = initHbaoCalc(1, 0);
-    hbao_calc_blur = shCol->add("SSAOHBAO_Calc_Blur", fullScrQuad, frag);
+    hbao_calc_blur = shCol.add("SSAOHBAO_Calc_Blur", fullScrQuad, frag);
 
     frag      = initHbaoBlur(0);
-    hbao_blur = shCol->add("SSAOHBAO_Blur", fullScrQuad, frag);
+    hbao_blur = shCol.add("SSAOHBAO_Blur", fullScrQuad, frag);
 
     frag       = initHbaoBlur(1);
-    hbao_blur2 = shCol->add("SSAOHBAO_BlurMsaa", fullScrQuad, frag);
+    hbao_blur2 = shCol.add("SSAOHBAO_BlurMsaa", fullScrQuad, frag);
 
     frag = initHbaoCalc(0, 1);
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_GS
-    hbao2_calc = shCol->add("SSAOHBAO2_Calc", fullScrQuad, fullScrQuadGeo, frag);
+    hbao2_calc = shCol.add("SSAOHBAO2_Calc", fullScrQuad, fullScrQuadGeo, frag);
 #else
-    hbao2_calc = m_shCol->add("SSAOHBAO2_Calc", fullScrQuad, frag);
+    hbao2_calc = m_shCol.add("SSAOHBAO2_Calc", fullScrQuad, frag);
 #endif
 
     frag = initHbaoCalc(1, 1);
 #if USE_AO_LAYERED_SINGLEPASS == AO_LAYERED_GS
-    hbao2_calc_blur = shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad, fullScrQuadGeo, frag);
+    hbao2_calc_blur = shCol.add("SSAOHBAO2_Calc_Blur", fullScrQuad, fullScrQuadGeo, frag);
 #else
-    hbao2_calc_blur = m_shCol->add("SSAOHBAO2_Calc_Blur", fullScrQuad, frag);
+    hbao2_calc_blur = m_shCol.add("SSAOHBAO2_Calc_Blur", fullScrQuad, frag);
 #endif
 
     initDeinterleave();
 
     frag               = initReinterleave(0);
-    hbao2_reinterleave = shCol->add("SSAOHBAO2_Reinterleave", fullScrQuad, frag);
+    hbao2_reinterleave = shCol.add("SSAOHBAO2_Reinterleave", fullScrQuad, frag);
 
     frag                    = initReinterleave(1);
-    hbao2_reinterleave_blur = shCol->add("SSAOHBAO2_ReinterleaveBlur", fullScrQuad, frag);
+    hbao2_reinterleave_blur = shCol.add("SSAOHBAO2_ReinterleaveBlur", fullScrQuad, frag);
 
     debugDepth = initDebugDepth();
 }
 
 ara::Shaders* SSAO::initDebugDepth() {
-    std::string shdr_Header = "#version 410 core\n#pragma optimize(on)\n";
-
-    std::string vert = STRINGIFY(layout(location = 0) in vec4 position; layout(location = 2) in vec2 texCoord;
-                                 uniform mat4 m_pvm; out vec2 tex_coord; void main() {
-                                     tex_coord   = texCoord;
-                                     gl_Position = position;
-                                 });
-
-    vert = "// debug depth shader, vert\n" + shdr_Header + vert;
-
-    std::string frag = STRINGIFY(in vec4 col; layout(location = 0) out vec4 color; uniform sampler2D tex;
-                                 in vec2 tex_coord; void main() { color = texture(tex, tex_coord) * 0.1; });
-    frag             = "// debug depth shader, frag\n" + shdr_Header + frag;
-
-    return shCol->add("SSaoDebugDepth", vert, frag);
+    std::string shdr_Header = ShaderCollector::getShaderHeader() + "#pragma optimize(on)\n";
+    auto vert = "// debug depth shader, vert\n" + shdr_Header + depthDebugVertShdr;
+    auto frag = "// debug depth shader, frag\n" + shdr_Header + depthDebugFragShdr;
+    return shCol.add("SSaoDebugDepth", vert, frag);
 }
 
 void SSAO::initFullScrQuad() {
-    std::string vert = STRINGIFY(out vec2 texCoord;\n
-			\n void main() {
-        \n uint idx = gl_VertexID % 3;
-        \n  // allows rendering multiple fullscreen triangles
-            vec4 pos         = vec4(\n(float(idx & 1U)) * 4.0 - 1.0,\n(float((idx >> 1U) & 1U)) * 4.0 - 1.0,\n 0, 1.0);
-        \n       gl_Position = pos;
-        \n       texCoord    = pos.xy * 0.5 + 0.5;
-        \n
-    });
-
-    fullScrQuad = "// SSAO Full Screen Quad vertex shader\n" + shdr_Header + com + vert;
-
-    //------------------------------------------------------------------------
-
+    fullScrQuad = "// SSAO Full Screen Quad vertex shader\n" + com + fullScreenQuadVertShdr;
     std::string add_shdr_header = "#extension GL_NV_geometry_shader_passthrough : enable\n";
-
-    std::string geo = STRINGIFY(
-        layout(triangles) in;\n layout(triangle_strip, max_vertices = 3) out;\n
-
-            in   Inputs { vec2 texCoord; } IN[];
-        out vec2 texCoord;
-
-        void main() {
-            for (int i = 0; i < 3; i++) {
-                texCoord       = IN[i].texCoord;
-                gl_Layer       = gl_PrimitiveIDIn;
-                gl_PrimitiveID = gl_PrimitiveIDIn;
-                gl_Position    = gl_in[i].gl_Position;
-                EmitVertex();
-            }
-        });
-
-    fullScrQuadGeo = "// SSAO Full Screen Quad geometry shader\n" + shdr_Header + add_shdr_header + com + geo;
+    fullScrQuadGeo = "// SSAO Full Screen Quad geometry shader\n" + ShaderCollector::getShaderHeader() + add_shdr_header + com + fullScreenQuadGeoShader;
 }
 
 void SSAO::initBilateralblur() {
-    std::string frag = STRINGIFY(
-		const float KERNEL_RADIUS = 3;\n
-
-		layout(location=0) uniform float g_Sharpness;\n
-		layout(location=1) uniform vec2 g_InvResolutionDirection;\n // either set x to 1/width or y to 1/height
-
-		layout(binding=0) uniform sampler2D texSource;\n
-		layout(binding=1) uniform sampler2D texLinearDepth;\n
-
-		in vec2 texCoord;\n
-
-		layout(location=0,index=0) out vec4 out_Color;\n
-
-		//-------------------------------------------------------------------------
-
-		vec4 BlurFunction(vec2 uv, float r, vec4 center_c, float center_d, inout float w_total)\n
-		{\n
-			vec4 c = texture( texSource, uv );\n
-			float d = texture( texLinearDepth, uv).x;\n
-
-			const float BlurSigma = float(KERNEL_RADIUS) * 0.5;\n
-			const float BlurFalloff = 1.0 / (2.0*BlurSigma*BlurSigma);\n
-
-			float ddiff = (d - center_d) * g_Sharpness;\n
-			float w = exp2(-r*r*BlurFalloff - ddiff*ddiff);\n
-			w_total += w;\n
-
-			return c*w;\n
-		}\n
-
-		void main()\n
-		{\n
-			vec4 center_c = texture( texSource, texCoord );\n
-			float center_d = texture( texLinearDepth, texCoord).x;\n
-
-			vec4 c_total = center_c;\n
-			float w_total = 1.0;\n
-
-			for (float r = 1; r <= KERNEL_RADIUS; ++r)\n
-			{\n
-				vec2 uv = texCoord + g_InvResolutionDirection * r;\n
-				c_total += BlurFunction(uv, r, center_c, center_d, w_total);\n
-			}\n
-
-
-			for (float r = 1; r <= KERNEL_RADIUS; ++r)\n
-			{\n
-				vec2 uv = texCoord - g_InvResolutionDirection * r;\n
-				c_total += BlurFunction(uv, r, center_c, center_d, w_total);\n
-			}\n
-
-			out_Color = c_total/w_total;\n
-		});
-
-    frag = "// SSAO Bilateralblur Shader vertex shader\n" + shdr_Header + frag;
-
-    bilateralblur = shCol->add("SSAOBilateralblur", fullScrQuad, frag);
+    auto frag = "// SSAO Bilateralblur Shader vertex shader\n" + ShaderCollector::getShaderHeader() + bilateralBlurFragShdr;
+    bilateralblur = shCol.add("SSAOBilateralblur", fullScrQuad, frag);
 }
 
 std::string SSAO::initDepthLinearize(int msaa) {
-    std::string add_shdr_Header = "#define DEPTHLINEARIZE_MSAA ";
+    std::string add_shdr_Header =  "#define DEPTHLINEARIZE_MSAA ";
     add_shdr_Header += std::to_string(msaa);
-    add_shdr_Header += "\n";
-    add_shdr_Header +=
-        "#ifndef DEPTHLINEARIZE_USEMSAA \n#define DEPTHLINEARIZE_USEMSAA 0 "
-        "\n#endif\n";
-    add_shdr_Header +=
-        "#if DEPTHLINEARIZE_MSAA\nlayout(location=1) uniform int "
-        "sampleIndex;\n layout(binding=0)  uniform sampler2DMS "
-        "inputTexture;\n ";
-    add_shdr_Header += "#else\n layout(binding=0)  uniform sampler2D inputTexture;\n#endif\n";
+    add_shdr_Header += "\n"
+                       "#ifndef DEPTHLINEARIZE_USEMSAA \n"
+                       "#define DEPTHLINEARIZE_USEMSAA 0 \n"
+                       "#endif\n"
+                       "#if DEPTHLINEARIZE_MSAA\n"
+                       "layout(location=1) uniform int sampleIndex;\n"
+                       "layout(binding=0)  uniform sampler2DMS "
+                       "inputTexture;\n "
+                       "#else\n "
+                       "layout(binding=0) uniform sampler2D inputTexture;\n"
+                       "#endif\n";
 
-        std::string frag = STRINGIFY(
+    std::string frag = STRINGIFY(
 		layout(location=0) uniform vec4 clipInfo;\n // z_n * z_f,  z_n - z_f,  z_f, perspective = 1 : 0
 		layout(location=0,index=0) out float out_Color;\n
 
-		float reconstructCSZ(float d, vec4 clipInfo) {
-        \n if (clipInfo[3] != 0) {
-            \n return (clipInfo[0] / (clipInfo[1] * d + clipInfo[2]));
-            \n
-        }
-        else {
-            \n return (clipInfo[1] + clipInfo[2] - d * clipInfo[1]);
-            \n
-        }
-        \n
+		float reconstructCSZ(float d, vec4 clipInfo) { \n
+            if (clipInfo[3] != 0) { \n
+                return (clipInfo[0] / (clipInfo[1] * d + clipInfo[2])); \n
+            } else { \n
+                return (clipInfo[1] + clipInfo[2] - d * clipInfo[1]); \n
+            } \n
 		}
 
 		void main() {\n);
 
-        frag += "#if DEPTHLINEARIZE_MSAA\n";
-        frag +=
-            "float depth = texelFetch(inputTexture, ivec2(gl_FragCoord.xy), "
-            "sampleIndex).x;\n";
-        frag += "#else\n";
-        frag +=
-            "float depth = texelFetch(inputTexture, ivec2(gl_FragCoord.xy), "
-            "0).x;\n";
-        frag += "#endif\n";
-        frag += "out_Color = reconstructCSZ(depth, clipInfo);\n}";
+    frag += "#if DEPTHLINEARIZE_MSAA\n"
+            "float depth = texelFetch(inputTexture, ivec2(gl_FragCoord.xy), sampleIndex).x;\n"
+            "#else\n"
+            "float depth = texelFetch(inputTexture, ivec2(gl_FragCoord.xy), 0).x;\n"
+            "#endif\n"
+            "out_Color = reconstructCSZ(depth, clipInfo);\n}";
 
-        frag = "// SSAO Depth Linearize vertex shader\n" + shdr_Header + add_shdr_Header + frag;
+    frag = "// SSAO Depth Linearize vertex shader\n" + ShaderCollector::getShaderHeader() + add_shdr_Header + frag;
 
-        return frag;
+    return frag;
 }
 
-
-void SSAO::initViewNormal()
-{
-        std::string frag = STRINGIFY(
-            in vec2 texCoord;\n layout(location = 0) uniform vec4 projInfo;\n layout(location = 1) uniform int projOrtho;\n layout(location = 2) uniform vec2 InvFullResolution;\n layout(binding = 0) uniform sampler2D texLinearDepth;\n layout(location = 0, index = 0) out vec4 out_Color;\n
-		\n vec3 UVToView(vec2 uv, float eye_z)\n {
-                \n return vec3((uv * projInfo.xy + projInfo.zw) * (projOrtho != 0 ? 1.0 : eye_z), eye_z);
-                \n
-            }\n
-		\n vec3 FetchViewPos(vec2 UV)\n {
-                \n float ViewDepth = textureLod(texLinearDepth, UV, 0).x;
-                \n return UVToView(UV, ViewDepth);
-                \n
-            }\n
-		\n vec3 MinDiff(vec3 P, vec3 Pr, vec3 Pl)\n {
-                \n vec3 V1 = Pr - P;
-                \n vec3 V2 = P - Pl;
-                \n return (dot(V1, V1) < dot(V2, V2)) ? V1 : V2;
-                \n
-            }\n
-		\n vec3 ReconstructNormal(vec2 UV, vec3 P)\n {
-                \n vec3 Pr = FetchViewPos(UV + vec2(InvFullResolution.x, 0));
-                \n vec3 Pl = FetchViewPos(UV + vec2(-InvFullResolution.x, 0));
-                \n vec3 Pt = FetchViewPos(UV + vec2(0, InvFullResolution.y));
-                \n vec3 Pb = FetchViewPos(UV + vec2(0, -InvFullResolution.y));
-                \n return normalize(cross(MinDiff(P, Pr, Pl), MinDiff(P, Pt, Pb)));
-                \n
-            }\n
-		\n void main() {
-                \n vec3 P         = FetchViewPos(texCoord);
-                \n vec3 N         = ReconstructNormal(texCoord, P);
-                \n      out_Color = vec4(N * 0.5 + 0.5, 0);
-                \n
-            });
-
-        frag = "// SSAO View Normal vertex shader\n" + shdr_Header + frag;
-
-        viewnormal = shCol->add("SSAOViewNormal", fullScrQuad, frag);
+void SSAO::initViewNormal() {
+    auto frag = "// SSAO View Normal vertex shader\n" + ShaderCollector::getShaderHeader() + viewNormalFragShdr;
+    viewnormal = shCol.add("SSAOViewNormal", fullScrQuad, frag);
 }
 
-std::string SSAO::initHbaoCalc(int _blur, int deinterl)
-{
-        std::string add_shdr_Header = "#define AO_DEINTERLEAVED " + std::to_string(deinterl) + "\n";
-        add_shdr_Header += "#define AO_BLUR " + std::to_string(_blur) + "\n";
-        // The pragma below is critical for optimal performance
-        // in this fragment shader to let the shader compiler
-        // fully optimize the maths and batch the texture fetches
-        // optimally
-        add_shdr_Header +=
-            "#pragma optionNV(unroll all) \n#ifndef AO_DEINTERLEAVED\n#define "
-            "AO_DEINTERLEAVED 1\n#endif\n";
-        add_shdr_Header +=
-            "#ifndef AO_BLUR\n#define AO_BLUR 1\n#endif\n#ifndef "
-            "AO_LAYERED\n#define AO_LAYERED 1\n#endif\n#define M_PI "
-            "3.14159265f\n";
+std::string SSAO::initHbaoCalc(int _blur, int deinterl) {
+    std::string add_shdr_Header = "#define AO_DEINTERLEAVED " + std::to_string(deinterl) + "\n";
+    add_shdr_Header += "#define AO_BLUR " + std::to_string(_blur) + "\n";
 
-        // tweakables
-        std::string frag = STRINGIFY(
+    // The pragma below is critical for optimal performance in this fragment shader to let the shader compiler
+    // fully optimize the maths and batch the texture fetches optimally
+    add_shdr_Header +=
+        "#pragma optionNV(unroll all) \n"
+        "#ifndef AO_DEINTERLEAVED\n"
+        "#define AO_DEINTERLEAVED 1\n"
+        "#endif\n"
+        "#ifndef AO_BLUR\n"
+        "#define AO_BLUR 1\n"
+        "#endif\n"
+        "#ifndef AO_LAYERED\n"
+        "#define AO_LAYERED 1\n"
+        "#endif\n"
+        "#define M_PI 3.14159265f\n";
+
+    // tweakables
+    std::string frag = STRINGIFY(
 		const float NUM_STEPS = 4;\n
 		const float NUM_DIRECTIONS = 8;\n // texRandom/g_Jitter initialization depends on this
 		layout(std140,binding=0) uniform controlBuffer { HBAOData control; };\n);
 
-        frag += "#if AO_DEINTERLEAVED\n";
+        frag += "#if AO_DEINTERLEAVED\n"
+                "#if AO_LAYERED\n";
 
-        frag += "#if AO_LAYERED\n";
         frag += STRINGIFY(
 		vec2 g_Float2Offset = control.float2Offsets[gl_PrimitiveID].xy;\n
 		vec4 g_Jitter = control.jitters[gl_PrimitiveID];\n
@@ -354,250 +213,241 @@ std::string SSAO::initHbaoCalc(int _blur, int deinterl)
 			return vec3(UV,float(gl_PrimitiveID));\n
 		}\n
 	);
-        frag += "#if AO_LAYERED == 1\n";
-        frag += "#if AO_BLUR\n";
-        frag += "layout(binding=0,rg16f) uniform image2DArray imgOutput;\n";
-        frag += "#else\n";
-        frag += "layout(binding=0,r8) uniform image2DArray imgOutput;\n";
-        frag += "#endif\n";
-        frag += STRINGIFY(void outputColor(vec4 color) {
-            \n imageStore(imgOutput, ivec3(ivec2(gl_FragCoord.xy), gl_PrimitiveID), color);
-            \n
-        }\n);
-        frag += "#else\n";
-        frag += STRINGIFY(layout(location = 0, index = 0) out vec4 out_Color;\n
-		\n void outputColor(vec4 color) {
-            \n out_Color = color;
-            \n
-        }\n);
-        frag += "#endif\n";
-        frag += "#else\n";
-        frag += STRINGIFY(
-		layout(location=0) uniform vec2 g_Float2Offset;\n 
-		layout(location=1) uniform vec4 g_Jitter;\n 
-		\n 
-		layout(binding=0) uniform sampler2D texLinearDepth;\n 
-		layout(binding=1) uniform sampler2D texViewNormal;\n 
-		\n 
-		vec2 getQuarterCoord(vec2 UV){\n
-			return UV;\n 
-		}\n
-		\n
-		layout(location=0,index=0) out vec4 out_Color;\n
-		\n
+
+    frag += "#if AO_LAYERED == 1\n"
+        "#if AO_BLUR\n"
+        "layout(binding=0,rg16f) uniform image2DArray imgOutput;\n"
+        "#else\n"
+        "layout(binding=0,r8) uniform image2DArray imgOutput;\n"
+        "#endif\n";
+
+    frag += STRINGIFY(void outputColor(vec4 color) { \n
+        imageStore(imgOutput, ivec3(ivec2(gl_FragCoord.xy), gl_PrimitiveID), color); \n
+    }\n);
+
+    frag += "#else\n";
+
+    frag += STRINGIFY(layout(location = 0, index = 0) out vec4 out_Color;\n
 		void outputColor(vec4 color) {\n
-			out_Color = color;\n 
-		}\n
-	);
-        frag += "#endif\n";
-
-        frag += "#else\n";
-        frag += STRINGIFY(
-            layout(binding = 0) uniform sampler2D texLinearDepth;\n layout(binding = 1) uniform sampler2D texRandom;\n
-		\n layout(location = 0, index = 0) out vec4 out_Color;\n
-		\n void outputColor(vec4 color) {
-                \n out_Color = color;
-                \n
-            }\n);
-        frag += "#endif\n";
-        frag += STRINGIFY(in vec2 texCoord;\n
-
-                              vec3 UVToView(vec2 uv, float eye_z) {
-                                  \n return vec3((uv * control.projInfo.xy + control.projInfo.zw) *
-                                                     (control.projOrtho != 0 ? 1. : eye_z),
-                                                 eye_z);
-                                  \n
-                              }\n);
-
-        frag += "#if AO_DEINTERLEAVED\n";
-
-        frag += STRINGIFY(vec3 FetchQuarterResViewPos(vec2 UV) {
-            \n float ViewDepth = textureLod(texLinearDepth, getQuarterCoord(UV), 0).x;
-            \n return UVToView(UV, ViewDepth);
-            \n
+            out_Color = color; \n
         }\n);
 
-        frag += "#else //AO_DEINTERLEAVED\n";
+    frag += "#endif\n";
+    frag += "#else\n";
 
-        frag += STRINGIFY(
-            vec3 FetchViewPos(vec2 UV) {
-                \n float ViewDepth = textureLod(texLinearDepth, UV, 0).x;
-                \n return UVToView(UV, ViewDepth);
-                \n
-            }\n
+    frag += STRINGIFY(
+    layout(location=0) uniform vec2 g_Float2Offset;\n
+    layout(location=1) uniform vec4 g_Jitter;\n
+    \n
+    layout(binding=0) uniform sampler2D texLinearDepth;\n
+    layout(binding=1) uniform sampler2D texViewNormal;\n
+    \n
+    vec2 getQuarterCoord(vec2 UV){\n
+        return UV;\n
+    }\n
+    \n
+    layout(location=0,index=0) out vec4 out_Color;\n
+    \n
+    void outputColor(vec4 color) {\n
+        out_Color = color;\n
+    }\n);
 
-                vec3 MinDiff(vec3 P, vec3 Pr, vec3 Pl) {
-                    \n vec3 V1 = Pr - P;
-                    \n vec3 V2 = P - Pl;
-                    \n return (dot(V1, V1) < dot(V2, V2)) ? V1 : V2;
-                    \n
-                }\n
+    frag += "#endif\n";
 
-                    vec3 ReconstructNormal(vec2 UV, vec3 P) {
-                        \n vec3 Pr = FetchViewPos(UV + vec2(control.InvFullResolution.x, 0));
-                        \n vec3 Pl = FetchViewPos(UV + vec2(-control.InvFullResolution.x, 0));
-                        \n vec3 Pt = FetchViewPos(UV + vec2(0, control.InvFullResolution.y));
-                        \n vec3 Pb = FetchViewPos(UV + vec2(0, -control.InvFullResolution.y));
-                        \n return normalize(cross(MinDiff(P, Pr, Pl), MinDiff(P, Pt, Pb)));
-                        \n
-                    }\n);
+    frag += "#else\n";
+    frag += STRINGIFY(
+        layout(binding = 0) uniform sampler2D texLinearDepth;\n
+        layout(binding = 1) uniform sampler2D texRandom;\n
+        layout(location = 0, index = 0) out vec4 out_Color;\n
+        void outputColor(vec4 color) {\n
+            out_Color = color;\n
+        }\n);
 
-        frag += "#endif //AO_DEINTERLEAVED\n";
+    frag += "#endif\n";
+    frag += STRINGIFY(
+        in vec2 texCoord;\n
+        vec3 UVToView(vec2 uv, float eye_z) {\n
+            return vec3((uv * control.projInfo.xy + control.projInfo.zw) *
+                        (control.projOrtho != 0 ? 1. : eye_z),
+                        eye_z); \n
+        }\n);
+
+    frag += "#if AO_DEINTERLEAVED\n";
+
+    frag += STRINGIFY(vec3 FetchQuarterResViewPos(vec2 UV) {\n
+        float ViewDepth = textureLod(texLinearDepth, getQuarterCoord(UV), 0).x; \n
+        return UVToView(UV, ViewDepth); \n
+    }\n);
+
+    frag += "#else //AO_DEINTERLEAVED\n";
+
+    frag += STRINGIFY(
+        vec3 FetchViewPos(vec2 UV) {\n
+            float ViewDepth = textureLod(texLinearDepth, UV, 0).x;\n
+            return UVToView(UV, ViewDepth);\n
+        }\n
+
+        vec3 MinDiff(vec3 P, vec3 Pr, vec3 Pl) {\n
+            vec3 V1 = Pr - P;\n
+            vec3 V2 = P - Pl;
+            \n return (dot(V1, V1) < dot(V2, V2)) ? V1 : V2; \n
+        }\n
+
+        vec3 ReconstructNormal(vec2 UV, vec3 P) { \n
+            vec3 Pr = FetchViewPos(UV + vec2(control.InvFullResolution.x, 0));\n
+            vec3 Pl = FetchViewPos(UV + vec2(-control.InvFullResolution.x, 0));\n
+            vec3 Pt = FetchViewPos(UV + vec2(0, control.InvFullResolution.y));\n
+            vec3 Pb = FetchViewPos(UV + vec2(0, -control.InvFullResolution.y));\n
+            return normalize(cross(MinDiff(P, Pr, Pl), MinDiff(P, Pt, Pb)));\n
+        }\n);
+
+    frag += "#endif //AO_DEINTERLEAVED\n";
+
+    //----------------------------------------------------------------------------------
+
+    frag += STRINGIFY(
+        float Falloff(float DistanceSquare) {\n
+            // 1 scalar mad instruction
+            return DistanceSquare * control.NegInvR2 + 1.0;\n
+        }\n
 
         //----------------------------------------------------------------------------------
-        frag += STRINGIFY(
-				float Falloff(float DistanceSquare) {
-            \n
-                    // 1 scalar mad instruction
-                    return DistanceSquare *
-                    control.NegInvR2 +
-                1.0;
-            \n
-				}\n
-
-					//----------------------------------------------------------------------------------
-					// P = view-space position at the kernel center
-					// N = view-space normal at the kernel center
-					// S = view-space position of the current sample
-					//----------------------------------------------------------------------------------
-					float ComputeAO(vec3 P, vec3 N, vec3 S) {
+        // P = view-space position at the kernel center
+        // N = view-space normal at the kernel center
+        // S = view-space position of the current sample
+        //----------------------------------------------------------------------------------
+        float ComputeAO(vec3 P, vec3 N, vec3 S) {
             \n vec3  V     = S - P;
             \n float VdotV = dot(V, V);
             \n float NdotV = dot(N, V) * 1.0 / sqrt(VdotV);
             \n
 
-                // Use saturate(x) instead of max(x,0.f) because that is faster
-                // on Kepler
-                return clamp(NdotV - control.NDotVBias, 0, 1) *
-                clamp(Falloff(VdotV), 0, 1);
-            \n }\n
+            // Use saturate(x) instead of max(x,0.f) because that is faster
+            // on Kepler
+            return clamp(NdotV - control.NDotVBias, 0, 1) *
+            clamp(Falloff(VdotV), 0, 1);
+        \n }\n
 
-					//----------------------------------------------------------------------------------
-					vec2 RotateDirection(vec2 Dir, vec2 CosSin) {
-            \n return vec2(Dir.x * CosSin.x - Dir.y * CosSin.y,\n Dir.x * CosSin.y + Dir.y * CosSin.x);
-            \n }\n
+                //----------------------------------------------------------------------------------
+                vec2 RotateDirection(vec2 Dir, vec2 CosSin) {
+        \n return vec2(Dir.x * CosSin.x - Dir.y * CosSin.y,\n Dir.x * CosSin.y + Dir.y * CosSin.x);
+        \n }\n
 
-					//----------------------------------------------------------------------------------
-					vec4 GetJitter() {\n);
-            frag += "#if AO_DEINTERLEAVED\n";
-            // Get the current jitter vector from the per-pass constant m_buffer
-            frag += "return g_Jitter;\n";
-            frag += "#else\n";
-            // (cos(Alpha),sin(Alpha),rand1,rand2)
-            frag +=
-                "return textureLod( texRandom, (gl_FragCoord.xy / "
-                "AO_RANDOMTEX_SIZE), 0);\n";
-            frag += "#endif\n}";
+                //----------------------------------------------------------------------------------
+                vec4 GetJitter() {\n);
+        frag += "#if AO_DEINTERLEAVED\n";
+        // Get the current jitter vector from the per-pass constant m_buffer
+        frag += "return g_Jitter;\n";
+        frag += "#else\n";
+        // (cos(Alpha),sin(Alpha),rand1,rand2)
+        frag +=
+            "return textureLod( texRandom, (gl_FragCoord.xy / "
+            "AO_RANDOMTEX_SIZE), 0);\n";
+        frag += "#endif\n}";
+
+        //----------------------------------------------------------------------------------
+        frag +=
+            "float ComputeCoarseAO(vec2 FullResUV, float RadiusPixels, "
+            "vec4 Rand, vec3 ViewPosition, vec3 ViewNormal) {\n";
+        frag += "#if AO_DEINTERLEAVED\n";
+        frag += "RadiusPixels /= 4.0;\n";
+        frag += "#endif\n";
+
+        // Divide by NUM_STEPS+1 so that the farthest samples are not fully
+        // attenuated
+        frag += STRINGIFY(float StepSizePixels = RadiusPixels / (NUM_STEPS + 1);\n
+
+            const float Alpha = 2.0 * M_PI / NUM_DIRECTIONS;\n
+            float AO = 0;\n
+
+            for (float DirectionIndex = 0; DirectionIndex < NUM_DIRECTIONS; ++DirectionIndex) {\n
+                float Angle = Alpha * DirectionIndex;\n
+
+                // Compute normalized 2D direction
+                vec2 Direction = RotateDirection(vec2(cos(Angle), sin(Angle)), Rand.xy);\n
+
+                // Jitter starting sample within the first step
+                float RayPixels = (Rand.z * StepSizePixels + 1.0); \n
+
+                for (float StepIndex = 0; StepIndex < NUM_STEPS; ++StepIndex) {	\n);
+                frag += "#if AO_DEINTERLEAVED\n";
+                frag += STRINGIFY(
+                    vec2 SnappedUV = round(RayPixels * Direction) * control.InvQuarterResolution + FullResUV;\n vec3 S = FetchQuarterResViewPos(SnappedUV);\n);
+                frag += "#else\n";
+                frag += STRINGIFY(
+                    vec2 SnappedUV = round(RayPixels * Direction) * control.InvFullResolution + FullResUV;\n vec3 S = FetchViewPos(SnappedUV);\n);
+                frag += "#endif\n";
+                                                    frag += STRINGIFY(RayPixels += StepSizePixels;\n
+
+                        AO += ComputeAO(ViewPosition, ViewNormal, S);\n
+            }
+            \n
+                }\n
+
+                AO *= control.AOMultiplier / (NUM_DIRECTIONS * NUM_STEPS);\n
+                return clamp(1.0 - AO * 2.0,0,1);\n
+            }\n
 
             //----------------------------------------------------------------------------------
-            frag +=
-                "float ComputeCoarseAO(vec2 FullResUV, float RadiusPixels, "
-                "vec4 Rand, vec3 ViewPosition, vec3 ViewNormal) {\n";
-            frag += "#if AO_DEINTERLEAVED\n";
-            frag += "RadiusPixels /= 4.0;\n";
-            frag += "#endif\n";
+            void main()\n
+            {	\n);
 
-            // Divide by NUM_STEPS+1 so that the farthest samples are not fully
-            // attenuated
-                                        frag += STRINGIFY(float StepSizePixels = RadiusPixels / (NUM_STEPS + 1);\n
+        frag += "#if AO_DEINTERLEAVED\n";
+        frag += STRINGIFY(vec2 base = floor(gl_FragCoord.xy) * 4.0 + g_Float2Offset;\n
+            vec2 uv = base * (control.InvQuarterResolution / 4.0);\n
 
-					const float Alpha = 2.0 * M_PI / NUM_DIRECTIONS;\n
-					float AO = 0;\n
+            vec3 ViewPosition = FetchQuarterResViewPos(uv);\n
+            vec4 NormalAndAO = texelFetch( texViewNormal, ivec2(base), 0);\n
+            vec3 ViewNormal = -(NormalAndAO.xyz * 2.0 - 1.0);\n);
+        frag += "#else\n";
+        frag += STRINGIFY(vec2 uv = texCoord;\n
+            vec3 ViewPosition = FetchViewPos(uv);\n\n
 
-					for (float DirectionIndex = 0; DirectionIndex < NUM_DIRECTIONS; ++DirectionIndex)
-					{
-                \n float Angle = Alpha * DirectionIndex;
-                \n
+            // Reconstruct view-space normal from nearest neighbors
+            vec3 ViewNormal = -ReconstructNormal(uv, ViewPosition);\n);
+        frag += "#endif\n";
 
-                    // Compute normalized 2D direction
-                    vec2 Direction = RotateDirection(vec2(cos(Angle), sin(Angle)), Rand.xy);
-                \n
+        // Compute projection of disk of radius control.R into screen space
+        frag += STRINGIFY(float RadiusPixels = control.RadiusToScreen / (control.projOrtho != 0 ? 1.0 : ViewPosition.z);\n
 
-                    // Jitter starting sample within the first step
-                    float RayPixels = (Rand.z * StepSizePixels + 1.0);
-                \n
+            // Get jitter vector for the current full-res pixel
+            vec4 Rand = GetJitter();\n
 
-                    for (float StepIndex = 0; StepIndex < NUM_STEPS; ++StepIndex) {	\n);
-                    frag += "#if AO_DEINTERLEAVED\n";
-                    frag += STRINGIFY(
-                        vec2 SnappedUV = round(RayPixels * Direction) * control.InvQuarterResolution + FullResUV;\n vec3 S = FetchQuarterResViewPos(SnappedUV);\n);
-                    frag += "#else\n";
-                    frag += STRINGIFY(
-                        vec2 SnappedUV = round(RayPixels * Direction) * control.InvFullResolution + FullResUV;\n vec3 S = FetchViewPos(SnappedUV);\n);
-                    frag += "#endif\n";
-                                                        frag += STRINGIFY(RayPixels += StepSizePixels;\n
+            float AO = ComputeCoarseAO(uv, RadiusPixels, Rand, ViewPosition, ViewNormal);\n);
 
-							AO += ComputeAO(ViewPosition, ViewNormal, S);\n
-                }
-                \n
-					}\n
+        frag += "#if AO_BLUR\n";
+        frag += "outputColor(vec4(pow(AO, control.PowExponent), "
+            "ViewPosition.z, 0, 0));\n";
+        frag += "#else\n";
+        frag += "outputColor(vec4(pow(AO, control.PowExponent)));\n";
+        frag += "#endif\n}";
 
-					AO *= control.AOMultiplier / (NUM_DIRECTIONS * NUM_STEPS);\n
-					return clamp(1.0 - AO * 2.0,0,1);\n
-				}\n
+        frag = "//SSAO HBAO Calc \n" + ShaderCollector::getShaderHeader() + add_shdr_Header + com + frag;
 
-				//----------------------------------------------------------------------------------
-				void main()\n
-				{	\n);
+        return frag;
+}
 
-            frag += "#if AO_DEINTERLEAVED\n";
-            frag += STRINGIFY(vec2 base = floor(gl_FragCoord.xy) * 4.0 + g_Float2Offset;\n
-					vec2 uv = base * (control.InvQuarterResolution / 4.0);\n
+std::string SSAO::initHbaoBlur(int _blur) {
+    std::string add_shdr_Header = "#define AO_BLUR_PRESENT " + std::to_string(_blur) + "\n";
 
-					vec3 ViewPosition = FetchQuarterResViewPos(uv);\n
-					vec4 NormalAndAO = texelFetch( texViewNormal, ivec2(base), 0);\n
-					vec3 ViewNormal = -(NormalAndAO.xyz * 2.0 - 1.0);\n);
-            frag += "#else\n";
-            frag += STRINGIFY(vec2 uv = texCoord;\n
-					vec3 ViewPosition = FetchViewPos(uv);\n\n
+    std::string frag = STRINGIFY(
+        const float KERNEL_RADIUS = 3;\n
 
-					// Reconstruct view-space normal from nearest neighbors
-					vec3 ViewNormal = -ReconstructNormal(uv, ViewPosition);\n);
-            frag += "#endif\n";
+        layout(location=0) uniform float g_Sharpness;\n
+        layout(location=1) uniform vec2 g_InvResolutionDirection;\n // either set x to 1/width or y to 1/height
 
-            // Compute projection of disk of radius control.R into screen space
-            frag += STRINGIFY(float RadiusPixels = control.RadiusToScreen / (control.projOrtho != 0 ? 1.0 : ViewPosition.z);\n
+        layout(binding=0) uniform sampler2D texSource;\n
+        in vec2 texCoord;\n
+        layout(location=0,index=0) out vec4 out_Color;\n
+    );
 
-					// Get jitter vector for the current full-res pixel
-					vec4 Rand = GetJitter();\n
+    frag += "#ifndef AO_BLUR_PRESENT\n";
+    frag += "#define AO_BLUR_PRESENT 1\n";
+    frag += "#endif\n";
 
-					float AO = ComputeCoarseAO(uv, RadiusPixels, Rand, ViewPosition, ViewNormal);\n);
+    //-------------------------------------------------------------------------
 
-            frag += "#if AO_BLUR\n";
-            frag +=
-                "outputColor(vec4(pow(AO, control.PowExponent), "
-                "ViewPosition.z, 0, 0));\n";
-            frag += "#else\n";
-            frag += "outputColor(vec4(pow(AO, control.PowExponent)));\n";
-            frag += "#endif\n}";
-
-            frag = "//SSAO HBAO Calc \n" + shdr_Header + add_shdr_Header + com + frag;
-
-            return frag;
-				}
-
-std::string SSAO::initHbaoBlur(int _blur)
-{
-            std::string add_shdr_Header = "#define AO_BLUR_PRESENT " + std::to_string(_blur) + "\n";
-
-            std::string frag = STRINGIFY(
-		const float KERNEL_RADIUS = 3;\n
-
-		layout(location=0) uniform float g_Sharpness;\n
-		layout(location=1) uniform vec2 g_InvResolutionDirection;\n // either set x to 1/width or y to 1/height
-
-		layout(binding=0) uniform sampler2D texSource;\n
-		in vec2 texCoord;\n
-		layout(location=0,index=0) out vec4 out_Color;\n
-	);
-
-            frag += "#ifndef AO_BLUR_PRESENT\n";
-            frag += "#define AO_BLUR_PRESENT 1\n";
-            frag += "#endif\n";
-
-            //-------------------------------------------------------------------------
-
-        frag += STRINGIFY(
+    frag += STRINGIFY(
 		float BlurFunction(vec2 uv, float r, float center_c, float center_d, inout float w_total) {
                 \n vec2  aoz = texture2D(texSource, uv).xy;
                 \n float c   = aoz.x;
@@ -639,46 +489,45 @@ std::string SSAO::initHbaoBlur(int _blur)
                 }\n
 	);
 
-                frag += "#if AO_BLUR_PRESENT\n";
-                frag += "out_Color = vec4(c_total/w_total);\n";
-                frag += "#else\n";
-                frag += "out_Color = vec4(c_total/w_total, center_d, 0, 0);\n";
-                frag += "#endif\n";
-                frag += "}";
+    frag += "#if AO_BLUR_PRESENT\n";
+    frag += "out_Color = vec4(c_total/w_total);\n";
+    frag += "#else\n";
+    frag += "out_Color = vec4(c_total/w_total, center_d, 0, 0);\n";
+    frag += "#endif\n";
+    frag += "}";
 
-                frag = "// SSAO HBAO_Calc Shader frag shader\n" + shdr_Header + add_shdr_Header + frag;
+    frag = "// SSAO HBAO_Calc Shader frag shader\n" + ShaderCollector::getShaderHeader() + add_shdr_Header + frag;
 
-                return frag;
+    return frag;
 }
 
-void SSAO::initDeinterleave()
-{
+void SSAO::initDeinterleave() {
     std::string frag = STRINGIFY(layout(location = 0) uniform vec4 info;  // xy
-                                 vec2 uvOffset = info.xy; vec2 invResolution = info.zw;
+         vec2 uvOffset = info.xy; vec2 invResolution = info.zw;
 
-                                 layout(binding = 0) uniform sampler2D     texLinearDepth;
-                                 layout(location = 0, index = 0) out float out_Color[8];\n
+         layout(binding = 0) uniform sampler2D     texLinearDepth;
+         layout(location = 0, index = 0) out float out_Color[8];\n
 
-                                 void main() {
-                                     vec2 uv = floor(gl_FragCoord.xy) * 4.0 + uvOffset + 0.5;
-                                     uv *= invResolution;
+         void main() {
+             vec2 uv = floor(gl_FragCoord.xy) * 4.0 + uvOffset + 0.5;
+             uv *= invResolution;
 
-                                     vec4 S0 = textureGather(texLinearDepth, uv, 0);
-                                     vec4 S1 = textureGatherOffset(texLinearDepth, uv, ivec2(2, 0), 0);
+             vec4 S0 = textureGather(texLinearDepth, uv, 0);
+             vec4 S1 = textureGatherOffset(texLinearDepth, uv, ivec2(2, 0), 0);
 
-                                     out_Color[0] = S0.w;
-                                     out_Color[1] = S0.z;
-                                     out_Color[2] = S1.w;
-                                     out_Color[3] = S1.z;
-                                     out_Color[4] = S0.x;
-                                     out_Color[5] = S0.y;
-                                     out_Color[6] = S1.x;
-                                     out_Color[7] = S1.y;
-                                 });
+             out_Color[0] = S0.w;
+             out_Color[1] = S0.z;
+             out_Color[2] = S1.w;
+             out_Color[3] = S1.z;
+             out_Color[4] = S0.x;
+             out_Color[5] = S0.y;
+             out_Color[6] = S1.x;
+             out_Color[7] = S1.y;
+         });
 
-    frag = "// SSAO Deinterleave shader\n" + shdr_Header + frag;
+    frag = "// SSAO Deinterleave shader\n" + ShaderCollector::getShaderHeader() + frag;
 
-    hbao2_deinterleave = shCol->add("SSAO_HBAO2_deinterleave", fullScrQuad, frag);
+    hbao2_deinterleave = shCol.add("SSAO_HBAO2_deinterleave", fullScrQuad, frag);
 }
 
 std::string SSAO::initReinterleave(int _blur) {
@@ -708,7 +557,7 @@ std::string SSAO::initReinterleave(int _blur) {
         "ivec3(QuarterResPos, SliceId), 0).x);\n";
     frag += "#endif\n}";
 
-    frag = "// SSAO Reinterleave Shader frag shader\n" + shdr_Header + add_shdr_Header + frag;
+    frag = "// SSAO Reinterleave Shader frag shader\n" + ShaderCollector::getShaderHeader() + add_shdr_Header + frag;
 
     return frag;
 }
@@ -746,8 +595,7 @@ bool SSAO::initMisc() {
     newTexture(textures.hbao_random);
     glBindTexture(GL_TEXTURE_2D_ARRAY, textures.hbao_random);
 #ifndef ARA_USE_GLES31
-    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA16_SNORM, HBAO_RANDOM_SIZE, HBAO_RANDOM_SIZE,
-                   MAX_SAMPLES);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA16_SNORM, HBAO_RANDOM_SIZE, HBAO_RANDOM_SIZE, MAX_SAMPLES);
 #endif
     glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, 0, HBAO_RANDOM_SIZE, HBAO_RANDOM_SIZE, MAX_SAMPLES,
                     GL_RGBA, GL_SHORT, hbaoRandomShort);
@@ -1474,6 +1322,30 @@ void SSAO::resize(uint width, uint height) {
     fboWidth  = width;
     fboHeight = height;
     initFramebuffers(static_cast<int>(width), static_cast<int>(height), m_glbase->getNrSamples());
+}
+
+void SSAO::newBuffer(GLuint& glid) {
+    if (glid) {
+        glDeleteBuffers(1, &glid);
+    }
+    glGenBuffers(1, &glid);
+}
+
+void SSAO::newTexture(GLuint& glid) {
+    if (glid) {
+#ifndef ARA_USE_GLES31
+        glInvalidateTexImage(glid, 0);
+#endif
+        glDeleteTextures(1, &glid);
+    }
+    glGenTextures(1, &glid);
+}
+
+void SSAO::newFramebuffer(GLuint& glid) {
+    if (glid) {
+        glDeleteFramebuffers(1, &glid);
+    }
+    glGenFramebuffers(1, &glid);
 }
 
 SSAO::~SSAO() {

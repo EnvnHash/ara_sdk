@@ -38,7 +38,7 @@ void ShadowMapVsmArray::rebuildShader(uint _nrLights) {
         uint limitNrLights = std::max<uint>(std::min<uint>(_nrLights, (uint)max_shader_invoc), 1);
 
         string vert = shCol->getShaderHeader() + "// ShadowMapVsmArray vertex Shader\n";
-        vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main(void) {
+        vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main() {
             \n gl_Position = position;
             \n
         });
@@ -73,7 +73,7 @@ void ShadowMapVsmArray::rebuildShader(uint _nrLights) {
 
         frag += STRINGIFY(
             in GS_FS { vec4 position; } v_in; \n
-			\n layout(location = 0) out vec4 color; \n void main(void) {
+			\n layout(location = 0) out vec4 color; \n void main() {
                 float depth   = v_in.position.z / v_in.position.w;
                 depth         = depth * 0.5 + 0.5;  // from NDC z [-1,1] to [0,1]
                 float moment1 = depth;

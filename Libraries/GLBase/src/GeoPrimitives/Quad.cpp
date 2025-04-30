@@ -129,6 +129,15 @@ void Quad::init() {
     m_vao->uploadMesh(&m);
 }
 
+void Quad::drawAsShared() const {
+    if (!m_vao) {
+        return;
+    }
+    m_vao->enableVertexAttribs();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    m_vao->disableVertexAttribs();
+}
+
 std::vector<glm::vec3> *Quad::getPositions() {
     return &m_position;
 }

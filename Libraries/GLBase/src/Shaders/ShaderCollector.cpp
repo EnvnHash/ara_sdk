@@ -10,12 +10,6 @@ using namespace std;
 
 namespace ara {
 ShaderCollector::ShaderCollector() {
-#ifdef __APPLE__
-    shdr_Header = "#version 410\n";
-#else
-    shdr_Header = "#version 430\n";
-#endif
-
     m_uiObjMapUniforms = "layout(location = 1) out vec4 objMap;\n uniform float objId;\n";
 
     m_uiObjMapMain =
@@ -828,7 +822,7 @@ Shaders *ShaderCollector::getUIGridTexSimple() {
              float alpha; \n
              float borderRadius;
          };\n
-         void main(void){ \n
+         void main(){ \n
              const vec2[4] vr = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n
              vec2 v = vr[gl_VertexID] * size;\n
 

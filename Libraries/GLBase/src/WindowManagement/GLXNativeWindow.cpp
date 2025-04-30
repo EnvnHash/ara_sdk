@@ -96,7 +96,7 @@ bool GLXNativeWindow::create(const glWinPar& wp) {
     XFree(vi);
 
     XStoreName(display, win, "GLX Native Win");
-    if (!wp.hidden) {
+    if (!wp.createHidden) {
         XMapWindow(display, win);
     }
 
@@ -105,10 +105,10 @@ bool GLXNativeWindow::create(const glWinPar& wp) {
 
     // NOTE: It is not necessary to create or make current to a context before
     // calling glXGetProcAddressARB
-    glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
+    glXCreateContextAttribsARBProc glXCreateContextAttribsARB = nullptr;
     glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)glXGetProcAddressARB((const GLubyte *)"glXCreateContextAttribsARB");
 
-    ctx = 0;
+    ctx = nullptr;
 
     // Install an X error handler so the application won't exit if GL 3.0
     // context allocation fails.
@@ -123,7 +123,7 @@ bool GLXNativeWindow::create(const glWinPar& wp) {
     // If either is not present, use GLX 1.3 context creation method.
     if (!isExtensionSupported(glxExts, "GLX_ARB_create_context") || !glXCreateContextAttribsARB) {
         printf("glXCreateContextAttribsARB() not found ... using old-style GLX context\n");
-        ctx = glXCreateNewContext(display, bestFbc, GLX_RGBA_TYPE, 0, True);
+        ctx = glXCreateNewContext(display, bestFbc, GLX_RGBA_TYPE, nullptr, True);
     }
     // If it does, try to get a GL 3.0 context!
     else {
@@ -132,7 +132,7 @@ bool GLXNativeWindow::create(const glWinPar& wp) {
                                  // GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
                                  None};
 
-        ctx = glXCreateContextAttribsARB(display, bestFbc, (GLXContext)wp.sharedCtx, True, context_attribs);
+        ctx = glXCreateContextAttribsARB(display, bestFbc, (GLXContext)wp.shareCont, True, context_attribs);
 
         // Sync to ensure any errors generated are processed.
         XSync(display, False);
@@ -150,7 +150,7 @@ bool GLXNativeWindow::create(const glWinPar& wp) {
             ctxErrorOccurred = false;
 
             printf("Failed to create GL 3.0 context  ... using old-style GLX context\n");
-            ctx = glXCreateContextAttribsARB(display, bestFbc, 0, True, context_attribs);
+            ctx = glXCreateContextAttribsARB(display, bestFbc, nullptr, True, context_attribs);
         }
     }
 
@@ -217,9 +217,9 @@ bool GLXNativeWindow::waitForEvent(double *timeout) {
     }
 }
 
-uint64_t GLXNativeWindow::getTimerValue(void) {
+uint64_t GLXNativeWindow::getTimerValue() {
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
     return (uint64_t)tv.tv_sec * (uint64_t)1000000 + (uint64_t)tv.tv_usec;
 }
 
