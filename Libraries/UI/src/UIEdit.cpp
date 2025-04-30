@@ -1,8 +1,6 @@
-#include "UIEdit.h"
-
 #include <Asset/AssetColor.h>
-
-#include "DataModel/Item.h"
+#include <DataModel/PropertyItemUi.h>
+#include "UIEdit.h"
 #include "UIWindow.h"
 
 using namespace glm;

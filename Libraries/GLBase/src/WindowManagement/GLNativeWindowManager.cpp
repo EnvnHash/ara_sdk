@@ -29,7 +29,7 @@ GLNativeWindowManager::GLNativeWindowManager() {
     DisplayDevice.cb = sizeof(DisplayDevice);
 
     // get all display devices
-    while (EnumDisplayDevices(NULL, DispNum, &DisplayDevice, 0)) {
+    while (EnumDisplayDevices(nullptr, DispNum, &DisplayDevice, 0)) {
         defaultMode.dmSize = sizeof(DEVMODE);
         if (!EnumDisplaySettingsA((LPSTR)DisplayDevice.DeviceName, ENUM_REGISTRY_SETTINGS, &defaultMode))
             OutputDebugStringA("Store default failed\n");

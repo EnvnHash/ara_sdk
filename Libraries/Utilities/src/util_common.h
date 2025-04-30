@@ -31,8 +31,10 @@
 #include <map>
 #include <nameof.hpp>
 #include <random>
+#include <ranges>
 #include <thread>
 #include <variant>
+#include <typeindex>
 #include <unordered_map>
 
 #ifdef __ANDROID__
@@ -46,15 +48,35 @@ enum class restCallType : int { post = 0, get, downloadBuffer, downloadFile };
 enum class tpi : int {
     tp_string = 0,
     tp_char,
+    tp_int8,
+    tp_uint8,
+    tp_int16,
+    tp_uint16,
     tp_int32,
     tp_uint32,
-    tp_float,
-    tp_double,
     tp_int64,
     tp_uint64,
+    tp_float,
+    tp_double,
     tp_bool,
     none,
     count
+};
+
+static std::unordered_map<std::type_index, tpi> tpiTypeMap {
+    { typeid(std::string), tpi::tp_string },
+    { typeid(char), tpi::tp_char },
+    { typeid(int8_t), tpi::tp_int8 },
+    { typeid(uint8_t), tpi::tp_uint8 },
+    { typeid(int16_t), tpi::tp_int16 },
+    { typeid(uint16_t), tpi::tp_uint16 },
+    { typeid(int32_t), tpi::tp_int32 },
+    { typeid(uint32_t), tpi::tp_uint32 },
+    { typeid(int64_t), tpi::tp_int64 },
+    { typeid(uint64_t), tpi::tp_uint64 },
+    { typeid(float), tpi::tp_float },
+    { typeid(double), tpi::tp_double },
+    { typeid(bool), tpi::tp_bool },
 };
 
 // helper enum for performance optimization. typeid can't be stored,

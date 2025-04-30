@@ -2,13 +2,12 @@
 // Created by user on 03.03.2021.
 //
 
+#include <DataModel/PropertyItemUi.h>
 #include "ZoomView.h"
-
 #include "UIWindow.h"
 
 using namespace std;
 using namespace glm;
-using namespace pugi;
 
 namespace fs = std::filesystem;
 

@@ -21,13 +21,14 @@
 
 #include <Property.h>
 #include <util_common.h>
-#include <pugixml.hpp>
 #include <json/json.hpp>
 
 namespace ara {
-using stdVar =  std::variant<float, double, int32_t, uint32_t, std::string, const char *, int64_t, uint64_t, bool>;
 
-template <typename T>
+template<typename T>
+concept PropertyType = std::is_same_v<T, std::string> || std::is_integral_v<T> || std::is_floating_point_v<T>;
+
+template <PropertyType T>
 class PropertyItemUi;
 
 class ItemFactory;
@@ -40,15 +41,15 @@ public:
 
     template <class T>
     T *add(std::unique_ptr<T> ptr) {
-        std::unique_lock<std::mutex> l(m_mtx);
-        for (auto &it : m_aboutAddItem) {
-            it.second();
+        std::unique_lock l(m_mtx);
+        for (auto &[fst, func] : m_aboutAddItem) {
+            func();
         }
 
         m_children.emplace_back(std::move(ptr));
 
-        for (auto &it : m_itemAdded) {
-            it.second();
+        for (auto &[fst, func] : m_itemAdded) {
+            func();
         }
 
         m_children.back()->parent        = this;
@@ -61,9 +62,9 @@ public:
     // add item return a raw pointer to Object
     template <class T>
     T *add() {
-        std::unique_lock<std::mutex> l(m_mtx);
-        for (auto &it : m_aboutAddItem) {
-            it.second();
+        std::unique_lock l(m_mtx);
+        for (auto &it : m_aboutAddItem | std::views::values) {
+            it();
         }
 
         m_children.emplace_back(std::make_unique<T>());
@@ -129,18 +130,22 @@ public:
 
     template <class T>
     void remove(T *delIt) {
-        if (!delIt) return;
+        if (!delIt) {
+            return;
+        }
 
         // std::unique_lock<std::mutex> l(m_mtx);
-        for (auto &it : m_aboutRemoveItem) it.second();
+        for (auto &[fst, func] : m_aboutRemoveItem) {
+            func();
+        }
         auto it = std::find_if(m_children.begin(), m_children.end(),
-                               [delIt](const std::unique_ptr<Item> &it) { return it.get() == delIt; });
+                               [delIt](const std::unique_ptr<Item> &item) { return item.get() == delIt; });
         if (it != m_children.end()) {
             m_children.erase(it);
         }
 
-        for (auto &itR : m_itemRemoved) {
-            itR.second();
+        for (auto &[fst, func] : m_itemRemoved) {
+            func();
         }
         signalItemChanged();
     }
@@ -235,49 +240,44 @@ public:
 
     /** utility function for recursive updates after an item is loaded */
     virtual void onLoaded() {
-        for (auto &it : m_children) {
+        for (const auto &it : m_children) {
             it->onLoaded();
         }
     }
 
     void removeAboutAddItemCb(void *ptr) {
-        auto c = m_aboutAddItem.find(ptr);
-        if (c != m_aboutAddItem.end()) {
+        if (const auto c = m_aboutAddItem.find(ptr); c != m_aboutAddItem.end()) {
             m_aboutAddItem.erase(c);
         }
     }
 
     void removeItemAddedCb(void *ptr) {
-        auto c = m_itemAdded.find(ptr);
-        if (c != m_itemAdded.end()) {
+        if (const auto c = m_itemAdded.find(ptr); c != m_itemAdded.end()) {
             m_itemAdded.erase(c);
         }
     }
 
     void removeAboutAddRemoveCb(void *ptr) {
-        auto c = m_aboutRemoveItem.find(ptr);
-        if (c != m_aboutRemoveItem.end()) {
+        if (const auto c = m_aboutRemoveItem.find(ptr); c != m_aboutRemoveItem.end()) {
             m_aboutRemoveItem.erase(c);
         }
     }
 
     void removeItemRemovedCb(void *ptr) {
-        auto c = m_itemRemoved.find(ptr);
-        if (c != m_itemRemoved.end()) {
+        if (const auto c = m_itemRemoved.find(ptr); c != m_itemRemoved.end()) {
             m_itemRemoved.erase(c);
         }
     }
 
     void removeItemChangedCb(void *ptr) {
-        auto c = m_itemChanged.find(ptr);
-        if (c != m_itemChanged.end()) {
+        if (const auto c = m_itemChanged.find(ptr); c != m_itemChanged.end()) {
             m_itemChanged.erase(c);
         }
     }
 
     void signalItemChanged() const {
-        for (auto &it : m_itemChanged) {
-            it.second();
+        for (const auto &[fst, func] : m_itemChanged) {
+            func();
         }
     }
 
@@ -315,209 +315,5 @@ protected:
     std::mutex m_mtx;
 };
 
-class ItemUi : public Item {
-public:
-    ItemUi() : Item() { setTypeName<ItemUi>(); }
-
-    void serializeProperties(nlohmann::json &node) override;
-    void parseProperties(nlohmann::json& node) override;
-
-    ItemUi *getChildById(int id, Item *item = nullptr);
-
-    Property<std::string> displayName = {"item_ui"}; ///> alternative name for displaying this Property in a GUI
-    Property<int>         id = {};
-    Property<bool>        visible = {true};
-
-    template <class T>
-    Property<T> *addProp(std::string inName, const std::string &dpName = "", bool isVisible = true) {
-        auto it = add<PropertyItemUi<T>>(inName);
-        if (!dpName.empty()) {
-            it->displayName = dpName;
-        }
-        it->visible  = isVisible;
-        it->itemType = it->itemType() + "_" + std::to_string(static_cast<int>(it->m_typeId));  // attach PropertyItem m_typeId
-        signalItemChanged();
-        return it->getPtr();
-    }
-};
-
-template <typename T>
-class PropertyItemUi : public ItemUi {
-public:
-    PropertyItemUi() : ItemUi() {
-        isPropertyItem = true;
-        setTypeName<PropertyItemUi>();
-        m_isStdType = isStdType();
-        connectPostChangeCb();
-    }
-
-    explicit PropertyItemUi(const std::string &inName) : ItemUi() {
-        name           = inName;
-        isPropertyItem = true;
-        m_isStdType    = isStdType();
-        connectPostChangeCb();
-    }
-
-    Property<T> *getPtr() {
-        if (m_typeId == tpi::tp_string)
-            return reinterpret_cast<Property<T> *>(&stdString);
-        else if (m_typeId == tpi::tp_int32)
-            return reinterpret_cast<Property<T> *>(&stdInt);
-        else if (m_typeId == tpi::tp_uint32)
-            return reinterpret_cast<Property<T> *>(&stdUInt);
-        else if (m_typeId == tpi::tp_float)
-            return reinterpret_cast<Property<T> *>(&stdFloat);
-        else if (m_typeId == tpi::tp_double)
-            return reinterpret_cast<Property<T> *>(&stdDouble);
-        else if (m_typeId == tpi::tp_int64)
-            return reinterpret_cast<Property<T> *>(&stdLong);
-        else if (m_typeId == tpi::tp_uint64)
-            return reinterpret_cast<Property<T> *>(&stdUlong);
-        else if (m_typeId == tpi::tp_bool)
-            return reinterpret_cast<Property<T> *>(&stdBool);
-        else
-            return nullptr;
-    }
-
-    bool isStdType() {
-        if (typeid(T) == typeid(std::string)) {
-            m_typeId = tpi::tp_string;
-            return true;
-        } else if (typeid(T) == typeid(const char *)) {
-            m_typeId = tpi::tp_char;
-            return true;
-        } else if (typeid(T) == typeid(int)) {
-            m_typeId = tpi::tp_int32;
-            return true;
-        } else if (typeid(T) == typeid(int32_t)) {
-            m_typeId = tpi::tp_int32;
-            return true;
-        } else if (typeid(T) == typeid(unsigned int)) {
-            m_typeId = tpi::tp_uint32;
-            return true;
-        } else if (typeid(T) == typeid(uint32_t)) {
-            m_typeId = tpi::tp_uint32;
-            return true;
-        } else if (typeid(T) == typeid(float)) {
-            m_typeId = tpi::tp_float;
-            return true;
-        } else if (typeid(T) == typeid(double)) {
-            m_typeId = tpi::tp_double;
-            return true;
-        } else if (typeid(T) == typeid(long long)) {
-            m_typeId = tpi::tp_int64;
-            return true;
-        } else if (typeid(T) == typeid(int64_t)) {
-            m_typeId = tpi::tp_int64;
-            return true;
-        } else if (typeid(T) == typeid(unsigned long long)) {
-            m_typeId = tpi::tp_uint64;
-            return true;
-        } else if (typeid(T) == typeid(uint64_t)) {
-            m_typeId = tpi::tp_uint64;
-            return true;
-        } else if (typeid(T) == typeid(bool)) {
-            m_typeId = tpi::tp_bool;
-            return true;
-        } else
-            return false;
-    }
-
-    void connectPostChangeCb() {
-        if (m_typeId == tpi::tp_string)
-            stdString.onPostChange([this]() { signalItemChanged(); }, &stdString);
-        else if (m_typeId == tpi::tp_int32)
-            stdInt.onPostChange([this]() { signalItemChanged(); }, &stdInt);
-        else if (m_typeId == tpi::tp_uint32)
-            stdUInt.onPostChange([this]() { signalItemChanged(); }, &stdUInt);
-        else if (m_typeId == tpi::tp_float)
-            stdFloat.onPostChange([this]() { signalItemChanged(); }, &stdFloat);
-        else if (m_typeId == tpi::tp_double)
-            stdDouble.onPostChange([this]() { signalItemChanged(); }, &stdDouble);
-        else if (m_typeId == tpi::tp_int64)
-            stdLong.onPostChange([this]() { signalItemChanged(); }, &stdLong);
-        else if (m_typeId == tpi::tp_uint64)
-            stdUlong.onPostChange([this]() { signalItemChanged(); }, &stdUlong);
-        else if (m_typeId == tpi::tp_bool)
-            stdBool.onPostChange([this]() { signalItemChanged(); }, &stdBool);
-    }
-
-    void callPostChangeCb() override {
-        if (m_typeId == tpi::tp_string)
-            stdString.callOnPostChange();
-        else if (m_typeId == tpi::tp_int32)
-            stdInt.callOnPostChange();
-        else if (m_typeId == tpi::tp_uint32)
-            stdUInt.callOnPostChange();
-        else if (m_typeId == tpi::tp_float)
-            stdFloat.callOnPostChange();
-        else if (m_typeId == tpi::tp_double)
-            stdDouble.callOnPostChange();
-        else if (m_typeId == tpi::tp_int64)
-            stdLong.callOnPostChange();
-        else if (m_typeId == tpi::tp_uint64)
-            stdUlong.callOnPostChange();
-        else if (m_typeId == tpi::tp_bool)
-            stdBool.callOnPostChange();
-    }
-
-    void serializeProperties(nlohmann::json &node) override {
-        Item::serializeProperties(node);
-
-        if (m_isStdType) {
-            if (m_typeId == tpi::tp_string)
-                node[name()] = stdString();
-            else if (m_typeId == tpi::tp_int32)
-                node[name] = stdInt();
-            else if (m_typeId == tpi::tp_uint32)
-                node[name] = stdUInt();
-            else if (m_typeId == tpi::tp_float)
-                node[name()] = stdFloat();
-            else if (m_typeId == tpi::tp_double)
-                node[name()] = stdDouble();
-            else if (m_typeId == tpi::tp_int64)
-                node[name()] = stdLong();
-            else if (m_typeId == tpi::tp_uint64)
-                node[name()] = stdUlong();
-            else if (m_typeId == tpi::tp_bool)
-                node[name()] = stdBool();
-        }
-    }
-
-    void parseProperties(nlohmann::json &node) override {
-        Item::parseProperties(node);
-
-        if (m_isStdType) {
-            if (m_typeId == tpi::tp_string) {
-                stdString = static_cast<std::string>(node[name()]);
-            } else if (m_typeId == tpi::tp_int32) {
-                stdInt = static_cast<int32_t>(node[name()]);
-            } else if (m_typeId == tpi::tp_uint32) {
-                stdUInt = static_cast<uint32_t>(node[name()]);
-            } else if (m_typeId == tpi::tp_float) {
-                stdFloat = static_cast<float>(node[name()]);
-            } else if (m_typeId == tpi::tp_double) {
-                stdDouble = static_cast<double>(node[name()]);
-            } else if (m_typeId == tpi::tp_int64) {
-                stdLong = static_cast<int64_t>(node[name()]);
-            } else if (m_typeId == tpi::tp_uint64) {
-                stdUlong = static_cast<uint64_t>(node[name()]);
-            } else if (m_typeId == tpi::tp_bool) {
-                stdBool = static_cast<bool>(node[name()]);
-            }
-        }
-    }
-
-    bool m_isStdType = false;
-
-    Property<int32_t>       stdInt   = {0, 0, 0, 0};
-    Property<uint32_t>      stdUInt  = {0, 0, 0, 0};
-    Property<float>         stdFloat = {0.f, 0.f, 0.f, 0.f};
-    Property<std::string>   stdString;
-    Property<double>        stdDouble = {0.0, 0.0, 0.0, 0.0};
-    Property<int64_t>       stdLong   = {0, 0, 0, 0};
-    Property<uint64_t>      stdUlong  = {0, 0, 0, 0};
-    Property<bool>          stdBool   = {false};
-};
 
 }  // namespace ara

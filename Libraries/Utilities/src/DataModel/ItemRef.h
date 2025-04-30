@@ -21,12 +21,16 @@
 
 namespace ara {
 
+class ItemUi;
+
 class ItemRef {
 public:
     explicit ItemRef(ItemUi *item = nullptr) : m_item(item) {}
 
     virtual ~ItemRef() {
-        for (auto &it : m_onPreChangedCb) it.second.reset();
+        for (auto &it : m_onPreChangedCb | std::views::values) {
+            it.reset();
+        }
     }
 
     virtual void setItem(ItemUi *item) { m_item = item; }

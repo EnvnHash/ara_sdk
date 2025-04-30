@@ -9,12 +9,10 @@
 
 #include <util_common.h>
 
-#include <ranges>
 #include <cstdint>
 #include <algorithm>
 #include <unordered_map>
 #include <utility>
-#include <random>  // for random number generation
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>

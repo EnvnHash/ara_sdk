@@ -2,8 +2,8 @@
 // Created by user on 13.08.2021.
 //
 
+#include <DataModel/PropertyItemUi.h>
 #include "ItemEdit.h"
-
 #include "Button/Button.h"
 
 using namespace std;

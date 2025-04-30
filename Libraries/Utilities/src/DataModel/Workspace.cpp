@@ -18,7 +18,7 @@
 #include <DataModel/Workspace.h>
 
 using namespace std;
-using namespace pugi;
+
 namespace fs = std::filesystem;
 
 namespace ara {
@@ -112,15 +112,16 @@ void Workspace::save(bool showInfo) {
 }
 
 bool Workspace::createNewSettings(const fs::path& path) {
-    xml_document doc;
+/*    xml_document doc;
     xml_node     root = doc.append_child(m_appName.c_str());
 
     return doc.save_file(path.string().c_str());
-    ;
+*/
+    return true;
 }
 
 bool Workspace::loadSettings(const fs::path& path) {
-    xml_document     doc;
+/*    xml_document     doc;
     xml_parse_result result = doc.load_file(path.string().c_str(), parse_default | parse_escapes | parse_doctype);
 
     if (!result) {
@@ -131,15 +132,17 @@ bool Workspace::loadSettings(const fs::path& path) {
     xml_node root = doc.document_element();
 
     return saveSettings(path);
-    ;
+    */
+    return true;
 }
 
 bool Workspace::saveSettings(const fs::path& path) {
-    xml_document doc;
+    /*xml_document doc;
     xml_node     root = doc.append_child(m_appName.c_str());
 
     return doc.save_file(path.string().c_str());
-    ;
+    */
+    return true;
 }
 
 }  // namespace ara

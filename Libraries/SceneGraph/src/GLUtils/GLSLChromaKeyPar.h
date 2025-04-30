@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <DataModel/Item.h>
+#include <DataModel/PropertyItemUi.h>
 #include <DataModel/ItemRef.h>
 #include <Property.h>
 

@@ -2,6 +2,7 @@
 // Created by user on 08.04.2021.
 //
 
+#include <DataModel/PropertyItemUi.h>
 #include "PEdit.h"
 
 using namespace std;
