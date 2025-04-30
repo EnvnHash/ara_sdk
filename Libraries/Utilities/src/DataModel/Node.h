@@ -69,7 +69,7 @@ public:
     T& push() {
         prePush();
         {
-            std::unique_lock<std::mutex> l(m_mtx);
+            std::unique_lock l(m_mtx);
             m_children.emplace_back(std::make_shared<T>());
             setDefault(m_children.back());
         }
@@ -81,7 +81,7 @@ public:
     T& push(std::shared_ptr<T>&& ptr) {
         prePush();
         {
-            std::unique_lock<std::mutex> l(m_mtx);
+            std::unique_lock l(m_mtx);
             m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
@@ -93,7 +93,7 @@ public:
     T& push(const std::shared_ptr<T>& ptr) {
         prePush();
         {
-            std::unique_lock<std::mutex> l(m_mtx);
+            std::unique_lock l(m_mtx);
             m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }

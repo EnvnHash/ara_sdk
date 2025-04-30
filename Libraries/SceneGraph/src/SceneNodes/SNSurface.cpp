@@ -70,28 +70,23 @@ void SNSurface::draw(double time, double dt, CameraSet* cs, Shaders* _shader, re
 }
 
 bool SNSurface::rebuildMesh() {
-    // StopWatch watch;
-
     if (hasParentNode() && s_sd) {
-        // watch.setStart();
-
-        if (!m_paramChanged) return true;
+        if (!m_paramChanged) {
+            return true;
+        }
 
         m_surfGen.init(m_surfGen.m_type, &m_glbase->shaderCollector());
-        m_vao                                           = m_surfGen.m_vao.get();
+        m_vao                                           = m_surfGen.m_vao;
         m_paramChanged                                  = false;
         s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
-
-        // watch.setEnd();
-        // watch.print("SNSurface::rebuildMesh ", true);
-
         return true;
-    } else
+    } else {
         return false;
+    }
 }
 
 SNSurface::~SNSurface() {
-    // set set SceneNodes m_vao to zero, in order to not have it delete twice
+    // set SceneNodes m_vao to zero, in order to not have it delete twice
     // which will cause  a crash
     m_vao = nullptr;
 }

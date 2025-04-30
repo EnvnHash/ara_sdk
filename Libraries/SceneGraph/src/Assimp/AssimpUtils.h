@@ -23,15 +23,16 @@ static std::vector<glm::vec3> aiVecVecToGlmVecVec(const std::vector<aiVector3D>&
     std::vector<glm::vec3> glmV(v.size());
 
     if (sizeof(aiVector3D) == sizeof(glm::vec3)) {
-        std::copy(&v[0].x, &v[0].x + v.size() * 3, &glmV[0].r);
+        std::copy_n(&v[0].x, v.size() * 3, &glmV[0].r);
     } else {
-        for (int i = 0; i < static_cast<int>(v.size()); i++) glmV[i] = aiVecToOfVec(v[i]);
+        for (int i = 0; i < static_cast<int>(v.size()); i++) {
+            glmV[i] = aiVecToOfVec(v[i]);
+        }
     }
     return glmV;
 }
 
 static void aiMeshToTavMesh(const aiMesh* aim, Mesh* mesh, AssimpMeshHelper* helper = nullptr) {
-    // copy vertices
     for (int i = 0; i < static_cast<int>(aim->mNumVertices); i++) {
         GLfloat pos[3] = {aim->mVertices[i].x, aim->mVertices[i].y, aim->mVertices[i].z};
         mesh->push_back_positions(&pos[0], 3);

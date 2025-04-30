@@ -8,46 +8,35 @@
 
 namespace ara {
 AssimpAnimation::AssimpAnimation(const aiScene* _scene, aiAnimation* _animation)
-    : scene(_scene), animation(_animation) {
-    animationCurrTime      = 0;
-    animationPrevTime      = 0;
-    bPlay                  = false;
-    bPause                 = false;
-    loopType               = LOOP_NONE;
-    progress               = 0;
-    progressInSeconds      = 0;
-    progressInMilliSeconds = 0;
-    durationInSeconds      = 0;
-    durationInMilliSeconds = 0;
-    speed                  = 1;
+    : m_scene(_scene), m_animation(_animation) {
 
-    if (animation != nullptr) {
-        durationInSeconds      = (float)animation->mDuration;
-        durationInMilliSeconds = (int)durationInSeconds * 1000;
+    if (m_animation != nullptr) {
+        m_durationInSeconds      = static_cast<float>(m_animation->mDuration);
+        m_durationInMilliSeconds = static_cast<int>(m_durationInSeconds) * 1000;
     }
 }
 
-aiAnimation* AssimpAnimation::getAnimation() { return animation; }
+aiAnimation* AssimpAnimation::getAnimation() { return m_animation; }
 
 void AssimpAnimation::update(double time) {
-    animationPrevTime = animationCurrTime;
-    animationCurrTime = (float)time;
-    double tps        = animation->mTicksPerSecond ? animation->mTicksPerSecond : 25.f;
-    animationCurrTime *= (float)tps;
+    m_animationPrevTime = m_animationCurrTime;
+    m_animationCurrTime = static_cast<float>(time);
+    double tps        = m_animation->mTicksPerSecond ? m_animation->mTicksPerSecond : 25.f;
+    m_animationCurrTime *= static_cast<float>(tps);
 
-    if (!bPlay || bPause) {
+    if (!m_play || m_pause) {
         return;
     }
 
     float duration     = getDurationInSeconds();
-    float timeStep     = animationCurrTime - animationPrevTime;
+    float timeStep     = m_animationCurrTime - m_animationPrevTime;
     float positionStep = timeStep / (float)duration;
     float position     = getPosition() + positionStep;
 
-    if (position > 1.0 && loopType == LOOP_NONE) {
+    if (position > 1.0 && m_loopType == LOOP_NONE) {
         position = 1.0;
         stop();
-    } else if (position > 1.0 && loopType == LOOP_NORMAL) {
+    } else if (position > 1.0 && m_loopType == LOOP_NORMAL) {
         position = fmod(position, 1.0f);
     }
 
@@ -55,15 +44,15 @@ void AssimpAnimation::update(double time) {
 }
 
 void AssimpAnimation::updateAnimationNodes() {
-    for (uint i = 0; i < animation->mNumChannels; i++) {
-        const aiNodeAnim* channel    = animation->mChannels[i];
-        aiNode*           targetNode = scene->mRootNode->FindNode(channel->mNodeName);
+    for (uint i = 0; i < m_animation->mNumChannels; i++) {
+        const aiNodeAnim* channel    = m_animation->mChannels[i];
+        aiNode*           targetNode = m_scene->mRootNode->FindNode(channel->mNodeName);
 
         aiVector3D presentPosition(0, 0, 0);
         if (channel->mNumPositionKeys > 0) {
             uint frame = 0;
             while (frame < channel->mNumPositionKeys - 1) {
-                if (progressInSeconds < channel->mPositionKeys[frame + 1].mTime) {
+                if (m_progressInSeconds < channel->mPositionKeys[frame + 1].mTime) {
                     break;
                 }
                 frame++;
@@ -77,7 +66,7 @@ void AssimpAnimation::updateAnimationNodes() {
                 diffTime += getDurationInSeconds();
             }
             if (diffTime > 0) {
-                float factor    = float((progressInSeconds - key.mTime) / diffTime);
+                auto factor    = float((m_progressInSeconds - key.mTime) / diffTime);
                 presentPosition = key.mValue + (nextKey.mValue - key.mValue) * factor;
             } else {
                 presentPosition = key.mValue;
@@ -88,21 +77,23 @@ void AssimpAnimation::updateAnimationNodes() {
         if (channel->mNumRotationKeys > 0) {
             uint frame = 0;
             while (frame < channel->mNumRotationKeys - 1) {
-                if (progressInSeconds < channel->mRotationKeys[frame + 1].mTime) {
+                if (m_progressInSeconds < channel->mRotationKeys[frame + 1].mTime) {
                     break;
                 }
-                frame++;
+                ++frame;
             }
 
             uint             nextFrame = (frame + 1) % channel->mNumRotationKeys;
             const aiQuatKey& key       = channel->mRotationKeys[frame];
             const aiQuatKey& nextKey   = channel->mRotationKeys[nextFrame];
             double           diffTime  = nextKey.mTime - key.mTime;
+
             if (diffTime < 0.0) {
                 diffTime += getDurationInSeconds();
             }
+
             if (diffTime > 0) {
-                float factor = float((progressInSeconds - key.mTime) / diffTime);
+                auto factor = float((m_progressInSeconds - key.mTime) / diffTime);
                 aiQuaternion::Interpolate(presentRotation, key.mValue, nextKey.mValue, factor);
             } else {
                 presentRotation = key.mValue;
@@ -113,10 +104,10 @@ void AssimpAnimation::updateAnimationNodes() {
         if (channel->mNumScalingKeys > 0) {
             uint frame = 0;
             while (frame < channel->mNumScalingKeys - 1) {
-                if (progressInSeconds < channel->mScalingKeys[frame + 1].mTime) {
+                if (m_progressInSeconds < channel->mScalingKeys[frame + 1].mTime) {
                     break;
                 }
-                frame++;
+                ++frame;
             }
 
             presentScaling = channel->mScalingKeys[frame].mValue;
@@ -141,70 +132,92 @@ void AssimpAnimation::updateAnimationNodes() {
 }
 
 void AssimpAnimation::play() {
-    if (animation == nullptr) {
+    if (m_animation == nullptr) {
         return;
     }
-    if (bPlay) {         // if already playing, ignore.
-        bPause = false;  // if paused, then unpause.
+    if (m_play) {         // if already playing, ignore.
+        m_pause = false;  // if paused, then unpause.
         return;
     }
-    bPlay  = true;
-    bPause = false;
+    m_play  = true;
+    m_pause = false;
 
     setPosition(0);
 }
 
 void AssimpAnimation::stop() {
-    if (!bPlay) {
+    if (!m_play) {
         return;
     }
-    bPlay  = false;
-    bPause = false;
+    m_play  = false;
+    m_pause = false;
 }
 
 void AssimpAnimation::reset() { setPosition(0); }
 
-bool AssimpAnimation::isFrameNew() {
-    return (bPlay && !bPause);  // assume its always a new frame when playing and not paused.
+bool AssimpAnimation::isFrameNew() const {
+    return (m_play && !m_pause);  // assume its always a new frame when playing and not paused.
 }
 
-bool AssimpAnimation::isPaused() { return bPause; }
+bool AssimpAnimation::isPaused() const {
+    return m_pause;
+}
 
-bool AssimpAnimation::isPlaying() { return bPlay; }
+bool AssimpAnimation::isPlaying() const {
+    return m_play;
+}
 
-bool AssimpAnimation::isFinished() { return !bPlay && (getPosition() == 1.0); }
+bool AssimpAnimation::isFinished() const {
+    return !m_play && (getPosition() == 1.0);
+}
 
-float AssimpAnimation::getPosition() { return progress; }
+float AssimpAnimation::getPosition() const {
+    return m_progress;
+}
 
-float AssimpAnimation::getPositionInSeconds() { return progressInSeconds; }
+float AssimpAnimation::getPositionInSeconds() const {
+    return m_progressInSeconds;
+}
 
-int AssimpAnimation::getPositionInMilliSeconds() { return progressInMilliSeconds; }
+int AssimpAnimation::getPositionInMilliSeconds() const {
+    return m_progressInMilliSeconds;
+}
 
-float AssimpAnimation::getSpeed() { return speed; }
+float AssimpAnimation::getSpeed() const {
+    return m_speed;
+}
 
-float AssimpAnimation::getDurationInSeconds() { return durationInSeconds; }
+float AssimpAnimation::getDurationInSeconds() const {
+    return m_durationInSeconds;
+}
 
-int AssimpAnimation::getDurationInMilliSeconds() { return durationInMilliSeconds; }
+int AssimpAnimation::getDurationInMilliSeconds() const {
+    return m_durationInMilliSeconds;
+}
 
-void AssimpAnimation::setPaused(bool paused) { bPause = paused; }
+void AssimpAnimation::setPaused(bool paused) {
+    m_pause = paused;
+}
 
 void AssimpAnimation::setPosition(float position) {
     position = glm::clamp(position, 0.0f, 1.0f);
-    if (progress == position) {
+    if (m_progress == position) {
         return;
     }
-    progress               = position;
-    progressInSeconds      = progress * getDurationInSeconds();
-    progressInMilliSeconds = static_cast<int>(progress * getDurationInMilliSeconds());
+    m_progress               = position;
+    m_progressInSeconds      = m_progress * getDurationInSeconds();
+    m_progressInMilliSeconds = static_cast<int>(m_progress * getDurationInMilliSeconds());
 
     updateAnimationNodes();
 }
 
-void AssimpAnimation::setLoopState(enum loopType state) { loopType = state; }
+void AssimpAnimation::setLoopState(enum loopType state) {
+    m_loopType = state;
+}
 
-void AssimpAnimation::setSpeed(float speed) { speed = 1; }
-
-AssimpAnimation::~AssimpAnimation() {}
+void AssimpAnimation::setSpeed(float speed) {
+    speed = 1;
+}
 
 }  // namespace ara
 #endif

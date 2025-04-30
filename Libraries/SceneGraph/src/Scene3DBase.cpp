@@ -1274,7 +1274,9 @@ void Scene3DBase::setCfState(cfState cf) {
     for (const auto& cIt : m_camSet) {
         if (cIt->s_shaderProto.find(getTypeName<SPObjectSelector>()) != cIt->s_shaderProto.end()) {
             auto objSel = dynamic_cast<SPObjectSelector*>(cIt->s_shaderProto[getTypeName<SPObjectSelector>()].get());
-            if (objSel->getCfState() != cf) objSel->setCfState(cf);
+            if (objSel->getCfState() != cf) {
+                objSel->setCfState(cf);
+            }
         }
     }
 }

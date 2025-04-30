@@ -102,7 +102,7 @@ public:
     }
     void minimize() override { glfwIconifyWindow(m_window); }
 
-    void maximize() const {
+    void maximize() {
 #ifdef __APPLE__
         // on macOS glfwMaximizeWindow doesn't work
         m_restoreWinPar.x = getPosition().x;

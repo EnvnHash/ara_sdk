@@ -11,13 +11,14 @@ using namespace std;
 
 namespace ara {
 
-void ShaderProperties::sendToShader(GLuint _prog) {
+void ShaderProperties::sendToShader(GLuint prog) {
     if (m_useUbBlock) {
         if (!m_ub.isInited() && !parameters.empty()) {
-            m_ub.init(_prog, m_ubBlockName);
+            m_ub.init(prog, m_ubBlockName);
 
-            for (auto &parameter : parameters)
+            for (auto &parameter : parameters) {
                 m_ub.addVarName(parameter.first, parameter.second.valPtr, parameter.second.type);
+            }
 
             update();
         }
@@ -25,10 +26,10 @@ void ShaderProperties::sendToShader(GLuint _prog) {
         if (m_ub.isInited()) m_ub.bind();
     } else {
         for (auto &parameter : parameters) {
-            UniformType *type = &parameter.second;
+            auto type = &parameter.second;
 
             if (type->isSet) {
-                type->location = glGetUniformLocation(_prog, parameter.first.c_str());
+                type->location = glGetUniformLocation(prog, parameter.first.c_str());
                 sendUniform(&parameter.first, type);
             }
         }

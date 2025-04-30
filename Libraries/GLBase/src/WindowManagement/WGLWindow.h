@@ -26,18 +26,8 @@ public:
         PFN_RtlVerifyVersionInfo RtlVerifyVersionInfo_;
     } ntdll;
 
-    bool create(const glWinPar& gp) override {
-        LPCWSTR lpszClass = L"WGLWindow";
-        return create(lpszClass, gp.size.x, gp.size.y, gp.shift.x, gp.shift.y, gp.bits, gp.fullScreen, gp.createHidden,
-                      gp.decorated, gp.resizeable, gp.floating, gp.transparent, static_cast<HGLRC>(gp.shareCont));
-    }
-
-    bool create(LPCWSTR title, uint32_t width, uint32_t height, uint32_t posX, uint32_t posY, uint32_t bits,
-                bool fullscreenflag, bool hidden = false, bool decorated = true, bool resizable = true,
-                bool floating = false, bool transparent = false, HGLRC shareCtx = nullptr);
-
+    bool create(const glWinPar& wp);
     bool init();
-
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     void open() override {
@@ -70,6 +60,9 @@ public:
     void resize(GLsizei width, GLsizei height) override;
     static void pollEvents() {}
     void applyAspectRatio(int edge, RECT* area) const;
+    int getDpi() const;
+    bool isLeftOrRightEdge(int edge) const;
+    bool isTopOrBottomEdge(int edge) const;
     void enableRawMouseMotion() const;
     static void disableRawMouseMotion();
     void enableCursor();

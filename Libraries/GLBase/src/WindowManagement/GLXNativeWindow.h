@@ -61,9 +61,7 @@ public:
         return 0;
     }
 
-    bool create(char *title, uint32_t width, uint32_t height, uint32_t m_posX, uint32_t posY, uint32_t bits,
-                uint32_t nrSamples, bool fullscreenflag, bool hidden = false, bool decorated = true,
-                bool resizable = true, bool floating = false, bool transparent = false, void *shareCtx = nullptr);
+    bool create(const glWinPar&);
 
     bool init();
 

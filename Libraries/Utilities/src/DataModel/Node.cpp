@@ -27,7 +27,7 @@ Node::Node() {
 
 Node::~Node() {
     if (!m_fileName.empty()) {
-        auto r = std::find_if(m_watchFiles.begin(), m_watchFiles.end(), [&](auto& it) {
+        auto r = std::ranges::find_if(m_watchFiles, [&](auto& it) {
             return it.path.string() == m_fileName;
         });
         if (r != m_watchFiles.end()) {
@@ -49,7 +49,7 @@ void Node::pop() {
             it();
         }
         {
-            std::unique_lock<std::mutex> l(m_mtx);
+            std::unique_lock l(m_mtx);
             m_children.pop_back();
         }
         for (auto &it : postRemoveCbs) {
@@ -64,8 +64,8 @@ void Node::remove(Node* node) {
     }
 
     if (!m_children.empty()) {
-        auto res = std::find_if(m_children.begin(), m_children.end(),
-                                [&](auto& it) { return it.get() == node; });
+        auto res = std::ranges::find_if(m_children,
+                                        [&](auto& it) { return it.get() == node; });
         if (res != m_children.end()) {
             auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
             auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
@@ -94,7 +94,7 @@ void Node::clearChildren() {
         it();
     }
     {
-        std::unique_lock<std::mutex> l(m_mtx);
+        std::unique_lock l(m_mtx);
         children().clear();
     }
     for (auto &it : postRemoveCbs) {
@@ -131,7 +131,7 @@ void Node::signalChange(Node::cbType cbType) {
 json Node::asJson() {
     json root;
     {
-        std::unique_lock<std::mutex> l(m_mtx);
+        std::unique_lock l(m_mtx);
         serialize(root);
     }
     return root;
@@ -335,7 +335,7 @@ std::deque<std::function<void()>> Node::collectCallbacks(cbType cbType, bool wit
 }
 
 Node* Node::root() {
-    std::unique_lock<std::mutex> l(m_mtx);
+    std::unique_lock l(m_mtx);
     auto currentParent = m_parent;
     if (!currentParent) {
         return this;
@@ -351,17 +351,17 @@ void Node::changeVal(const std::function<void()>& f) {
         m_undoBufRoot->saveState();
     }
 
-    for (auto & it: m_changeCb[cbType::preChange]) {
-        it.second();
+    for (auto &val: m_changeCb[cbType::preChange] | std::views::values) {
+        val();
     }
 
     {
-        std::unique_lock<std::mutex> l(m_mtx);
+        std::unique_lock l(m_mtx);
         f();
     }
 
-    for (auto & it: m_changeCb[cbType::postChange]) {
-        it.second();
+    for (auto &val: m_changeCb[cbType::postChange] | std::views::values) {
+        val();
     }
 }
 

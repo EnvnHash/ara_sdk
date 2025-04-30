@@ -10,9 +10,7 @@
 #include <sys/time.h>
 
 namespace ara {
-bool GLXNativeWindow::create(char *title, uint32_t width, uint32_t height, uint32_t m_posX, uint32_t posY,
-                             uint32_t bits, uint32_t nrSamples, bool fullscreenflag, bool hidden, bool decorated,
-                             bool resizable, bool floating, bool transparent, void *sharedCtx) {
+bool GLXNativeWindow::create(const glWinPar& wp) {
     display = XOpenDisplay(nullptr);
 
     if (!display) {
@@ -55,7 +53,7 @@ bool GLXNativeWindow::create(char *title, uint32_t width, uint32_t height, uint3
             glXGetFBConfigAttrib(display, fbc[i], GLX_SAMPLE_BUFFERS, &samp_buf);
             glXGetFBConfigAttrib(display, fbc[i], GLX_SAMPLES, &samples);
 
-            if (nrSamples == samples) {
+            if (wp.nrSamples == samples) {
                 best_fbc = i;
                 break;
             }
@@ -87,7 +85,7 @@ bool GLXNativeWindow::create(char *title, uint32_t width, uint32_t height, uint3
     swa.border_pixel      = 0;
     swa.event_mask        = StructureNotifyMask;
 
-    win = XCreateWindow(display, RootWindow(display, vi->screen), m_posX, posY, width, height, 0, vi->depth,
+    win = XCreateWindow(display, RootWindow(display, vi->screen), wp.shift.x, wp.shift.y, wp.size.x, wp.size.y, 0, vi->depth,
                         InputOutput, vi->visual, CWBorderPixel | CWColormap | CWEventMask, &swa);
     if (!win) {
         printf("Failed to create window.\n");
@@ -98,7 +96,9 @@ bool GLXNativeWindow::create(char *title, uint32_t width, uint32_t height, uint3
     XFree(vi);
 
     XStoreName(display, win, "GLX Native Win");
-    if (!hidden) XMapWindow(display, win);
+    if (!wp.hidden) {
+        XMapWindow(display, win);
+    }
 
     // Get the default screen's GLX extension list
     const char *glxExts = glXQueryExtensionsString(display, DefaultScreen(display));
@@ -106,8 +106,7 @@ bool GLXNativeWindow::create(char *title, uint32_t width, uint32_t height, uint3
     // NOTE: It is not necessary to create or make current to a context before
     // calling glXGetProcAddressARB
     glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
-    glXCreateContextAttribsARB =
-        (glXCreateContextAttribsARBProc)glXGetProcAddressARB((const GLubyte *)"glXCreateContextAttribsARB");
+    glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)glXGetProcAddressARB((const GLubyte *)"glXCreateContextAttribsARB");
 
     ctx = 0;
 
@@ -123,9 +122,7 @@ bool GLXNativeWindow::create(char *title, uint32_t width, uint32_t height, uint3
     // Check for the GLX_ARB_create_context extension string and the function.
     // If either is not present, use GLX 1.3 context creation method.
     if (!isExtensionSupported(glxExts, "GLX_ARB_create_context") || !glXCreateContextAttribsARB) {
-        printf(
-            "glXCreateContextAttribsARB() not found ... using old-style GLX "
-            "context\n");
+        printf("glXCreateContextAttribsARB() not found ... using old-style GLX context\n");
         ctx = glXCreateNewContext(display, bestFbc, GLX_RGBA_TYPE, 0, True);
     }
     // If it does, try to get a GL 3.0 context!
@@ -135,11 +132,11 @@ bool GLXNativeWindow::create(char *title, uint32_t width, uint32_t height, uint3
                                  // GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
                                  None};
 
-        // printf( "Creating context shared %p \n", sharedCtx );
-        ctx = glXCreateContextAttribsARB(display, bestFbc, (GLXContext)sharedCtx, True, context_attribs);
+        ctx = glXCreateContextAttribsARB(display, bestFbc, (GLXContext)wp.sharedCtx, True, context_attribs);
 
         // Sync to ensure any errors generated are processed.
         XSync(display, False);
+
         if (!(!ctxErrorOccurred && ctx)) {
             // Couldn't create GL 3.0 context.  Fall back to old-style 2.x
             // context. When a context version below 3.0 is requested,
@@ -152,9 +149,7 @@ bool GLXNativeWindow::create(char *title, uint32_t width, uint32_t height, uint3
 
             ctxErrorOccurred = false;
 
-            printf(
-                "Failed to create GL 3.0 context  ... using old-style GLX "
-                "context\n");
+            printf("Failed to create GL 3.0 context  ... using old-style GLX context\n");
             ctx = glXCreateContextAttribsARB(display, bestFbc, 0, True, context_attribs);
         }
     }
@@ -166,7 +161,7 @@ bool GLXNativeWindow::create(char *title, uint32_t width, uint32_t height, uint3
     // easy to do; the bad thing is that we have to do everything
     // manually and some things (like iconify/restore) won't work at
     // all, as those are tasks usually performed by the window manager
-    if (!decorated) {
+    if (!wp.decorated) {
         XSetWindowAttributes attributes;
         attributes.override_redirect = True;
         XChangeWindowAttributes(display, win, CWOverrideRedirect, &attributes);

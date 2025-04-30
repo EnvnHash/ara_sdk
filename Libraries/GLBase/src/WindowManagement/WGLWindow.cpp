@@ -18,27 +18,29 @@ namespace ara {
  ** fullscreenflag	- Use Fullscreen Mode (true) Or Windowed Mode (false)
  */
 
-bool WGLWindow::create(LPCWSTR title, uint32_t width, uint32_t height, uint32_t posX, uint32_t posY, uint32_t bits,
-                       bool fullscreenflag, bool hidden, bool decorated, bool resizable, bool floating,
-                       bool transparent, HGLRC shareCtx) {
-    m_msgLoop = std::thread([this, title, width, height, posX, posY, bits, fullscreenflag, hidden, decorated, resizable,
-                             floating, transparent, shareCtx]() {
+bool WGLWindow::create(const glWinPar& wp) {
+
+    //LPCWSTR title, uint32_t width, uint32_t height, uint32_t posX, uint32_t posY, uint32_t bits,
+                       //bool fullscreenflag, bool hidden, bool decorated, bool resizable, bool floating,
+                       //bool transparent, HGLRC shareCtx
+
+    m_msgLoop = std::thread([this, wp]() {
         // createKeyTables();
         // loadLibraries();
 
         WNDCLASS wc;  // Windows Class Structure
 
         RECT WindowRect;  // Grabs Rectangle Upper Left / Lower Right Values
-        WindowRect.left   = static_cast<long>(posX);
-        WindowRect.right  = static_cast<long>(posX + width);
-        WindowRect.top    = static_cast<long>(posY);
-        WindowRect.bottom = static_cast<long>(posY + height);
+        WindowRect.left   = static_cast<long>(wp.shift.x);
+        WindowRect.right  = static_cast<long>(wp.shift.x + wp.size.x);
+        WindowRect.top    = static_cast<long>(wp.shift.y);
+        WindowRect.bottom = static_cast<long>(wp.shift.y + wp.size.y);
 
-        m_decorated   = decorated;
-        m_resizable   = resizable;
-        m_transparent = transparent;
-        m_sharedCtx   = shareCtx;
-        m_fullscreen  = fullscreenflag;  // Set The Global Fullscreen Flag
+        m_decorated   = wp.decorated;
+        m_resizable   = wp.resizeable;
+        m_transparent = wp.transparent;
+        m_sharedCtx   = static_cast<HGLRC>(wp.shareCont);
+        m_fullscreen  = wp.fullScreen;  // Set The Global Fullscreen Flag
 
         m_hInstance      = GetModuleHandle(nullptr);               // Grab An Instance For Our Window
         wc.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;  // Redraw On Size, And Own DC For Window.
@@ -63,9 +65,9 @@ bool WGLWindow::create(LPCWSTR title, uint32_t width, uint32_t height, uint32_t 
         {
             DEVMODE dmScreenSettings = {};  // Device Mode
             dmScreenSettings.dmSize       = sizeof(dmScreenSettings);  // Size Of The Devmode Structure
-            dmScreenSettings.dmPelsWidth  = width;                     // Selected Screen Width
-            dmScreenSettings.dmPelsHeight = height;                    // Selected Screen Height
-            dmScreenSettings.dmBitsPerPel = bits;                      // Selected Bits Per Pixel
+            dmScreenSettings.dmPelsWidth  = wp.size.x;                     // Selected Screen Width
+            dmScreenSettings.dmPelsHeight = wp.size.y;                    // Selected Screen Height
+            dmScreenSettings.dmBitsPerPel = wp.bits;                      // Selected Bits Per Pixel
             dmScreenSettings.dmFields     = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 
             // Try To Set Selected Mode And Get Results.  NOTE: CDS_FULLSCREEN
@@ -91,33 +93,34 @@ bool WGLWindow::create(LPCWSTR title, uint32_t width, uint32_t height, uint32_t 
             ShowCursor(false);
         }
 
-        // else dwExStyle = WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
-        // // Window Extended Style
-
-        if (floating) {
+        // Window Extended Style
+        if (wp.floating) {
             m_dwExStyle |= WS_EX_TOPMOST;
         }
 
         m_dwStyle = WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
         // if (window->monitor) dwStyle |= WS_POPUP; else {
         m_dwStyle |= WS_SYSMENU | WS_MINIMIZEBOX;
-        if (decorated) {
+        if (wp.decorated) {
             m_dwStyle |= WS_CAPTION;
-            if (resizable) m_dwStyle |= WS_MAXIMIZEBOX | WS_THICKFRAME;
-        } else
+            if (wp.resizeable) {
+                m_dwStyle |= WS_MAXIMIZEBOX | WS_THICKFRAME;
+            }
+        } else {
             m_dwStyle |= WS_POPUP;
-        // }
+        }
 
-        AdjustWindowRectEx(&WindowRect, m_dwStyle, false,
-                           m_dwExStyle);  // Adjust Window To true Requested Size
+        AdjustWindowRectEx(&WindowRect, m_dwStyle, false, m_dwExStyle);  // Adjust Window To true Requested Size
+
+        auto title = StringToLPCWSTR(wp.title);
 
         // Create The Window
         if (!((m_hWnd = CreateWindowEx(m_dwExStyle,                                    // Extended Style For The Window
                                        reinterpret_cast<LPCWSTR>(m_thisClassName.c_str()),                        // Class Name
                                        title,                                          // Window Title
                                        m_dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,  // Required Window Style
-                                       posX, posY,                                     // Window Position
-                                       width, height,                                  // Window Size
+                                       wp.shift.x, wp.shift.y,                                     // Window Position
+                                       wp.size.x, wp.size.y,                                  // Window Size
                                        nullptr,                                        // No Parent Window
                                        nullptr,                                        // No Menu
                                        m_hInstance,                                    // Instance
@@ -137,7 +140,7 @@ bool WGLWindow::create(LPCWSTR title, uint32_t width, uint32_t height, uint32_t 
                     PFD_SUPPORT_OPENGL |        // Format Must Support OpenGL
                     PFD_DOUBLEBUFFER,           // Must Support Double Buffering
                 PFD_TYPE_RGBA,                  // Request An RGBA Format
-                static_cast<BYTE>(bits),                     // Select Our Color Depth
+                static_cast<BYTE>(wp.bits),                     // Select Our Color Depth
                 0, 0, 0, 0, 0,
                 0,  // Color Bits Ignored
                 0,  // No Alpha Buffer
@@ -189,12 +192,12 @@ bool WGLWindow::create(LPCWSTR title, uint32_t width, uint32_t height, uint32_t 
             return;  // Return false
         }
 
-        ShowWindow(m_hWnd, hidden ? SW_HIDE : SW_SHOW);  // Show The Window
-        m_isOpen = !hidden;
+        ShowWindow(m_hWnd, wp.createHidden ? SW_HIDE : SW_SHOW);  // Show The Window
+        m_isOpen = !wp.createHidden;
 
         SetForegroundWindow(m_hWnd);  // Slightly Higher Priority
         SetFocus(m_hWnd);             // Sets Keyboard Focus To The Window
-        resize(width, height);        // Set Up Our Perspective GL Screen
+        resize(wp.size.x, wp.size.y);        // Set Up Our Perspective GL Screen
 
         if (!initGLEW()) {
             return;
@@ -205,7 +208,7 @@ bool WGLWindow::create(LPCWSTR title, uint32_t width, uint32_t height, uint32_t 
             std::cerr << "Initialization Failed." << std::endl;
             return;  // Return false
         }
-        resize(width, height);  // Set Up Our Perspective GL Screen
+        resize(wp.size.x, wp.size.y);  // Set Up Our Perspective GL Screen
     });
     m_msgLoop.detach();
 
@@ -819,21 +822,39 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
 
 // Enforce the content area aspect ratio based on which edge is being dragged
 void WGLWindow::applyAspectRatio(int edge, RECT* area) const {
-    int         xoff, yoff;
-    UINT        dpi   = USER_DEFAULT_SCREEN_DPI;
+    int xoff = 0, yoff = 0;
+    auto dpi = getDpi();
     const float ratio = static_cast<float>(m_numer) / static_cast<float>(m_denom);
-
-    if (isWindows10BuildOrGreaterWin32(14393)) dpi = GetDpiForWindow(m_hWnd);
 
     getFullWindowSize(getWindowStyle(), getWindowExStyle(), 0, 0, &xoff, &yoff, dpi);
 
-    if (edge == WMSZ_LEFT || edge == WMSZ_BOTTOMLEFT || edge == WMSZ_RIGHT || edge == WMSZ_BOTTOMRIGHT) {
+    if (isLeftOrRightEdge(edge)) {
         area->bottom = area->top + yoff + static_cast<int>((area->right - area->left - xoff) / ratio);
-    } else if (edge == WMSZ_TOPLEFT || edge == WMSZ_TOPRIGHT) {
+    } else if (isTopOrBottomEdge(edge)) {
         area->top = area->bottom - yoff - static_cast<int>((area->right - area->left - xoff) / ratio);
-    } else if (edge == WMSZ_TOP || edge == WMSZ_BOTTOM) {
+    }
+
+    if (edge == WMSZ_TOP || edge == WMSZ_BOTTOM) {
         area->right = area->left + xoff + static_cast<int>((area->bottom - area->top - yoff) * ratio);
     }
+}
+
+int WGLWindow::getDpi() const {
+    int dpi = USER_DEFAULT_SCREEN_DPI;
+
+    if (isWindows10BuildOrGreaterWin32(14393)) {
+        dpi = GetDpiForWindow(m_hWnd);
+    }
+
+    return dpi;
+}
+
+bool WGLWindow::isLeftOrRightEdge(int edge) const {
+    return edge == WMSZ_LEFT || edge == WMSZ_BOTTOMLEFT || edge == WMSZ_RIGHT || edge == WMSZ_BOTTOMRIGHT;
+}
+
+bool WGLWindow::isTopOrBottomEdge(int edge) const {
+    return edge == WMSZ_TOPLEFT || edge == WMSZ_TOPRIGHT || edge == WMSZ_TOP || edge == WMSZ_BOTTOM;
 }
 
 // Enables WM_INPUT messages for the mouse for the specified window

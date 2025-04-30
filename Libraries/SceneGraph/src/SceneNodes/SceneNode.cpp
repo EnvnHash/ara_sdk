@@ -15,7 +15,9 @@ using namespace std;
 namespace ara {
 SceneNode::SceneNode(sceneData* sd) : s_sd(sd), m_glbase(sd ? sd->glbase : nullptr) {
     // by default enable the node for all renderPasses
-    for (auto i = 0; i < GLSG_NUM_RENDER_PASSES; i++) m_renderPassEnabled[(renderPass)i] = true;
+    for (auto i = 0; i < GLSG_NUM_RENDER_PASSES; i++) {
+        m_renderPassEnabled[static_cast<renderPass>(i)] = true;
+    }
 }
 
 void SceneNode::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo) {
@@ -25,10 +27,10 @@ void SceneNode::draw(double time, double dt, CameraSet* cs, Shaders* shader, ren
 
 #ifndef ARA_USE_GLES31
         if (!m_polyFill) {
-            // m_glbase->stateMan().set(glFun::PolygonMode, {GL_FRONT_AND_BACK,// GL_LINE});
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-            if (pass == GLSG_OBJECT_MAP_PASS) glDisable(GL_BLEND);
+            if (pass == GLSG_OBJECT_MAP_PASS) {
+                glDisable(GL_BLEND);
+            }
         }
 #endif
 
@@ -37,7 +39,7 @@ void SceneNode::draw(double time, double dt, CameraSet* cs, Shaders* shader, ren
                 glActiveTexture(GL_TEXTURE0 + t);
                 shader->setUniform1i("tex" + std::to_string(t), t);
                 getTextures()->at(t)->bind();
-                texCnt++;
+                ++texCnt;
             }
 
             shader->setUniform1i("hasTexture", 1);
@@ -92,8 +94,6 @@ void SceneNode::draw(double time, double dt, CameraSet* cs, Shaders* shader, ren
 #ifndef ARA_USE_GLES31
         if (!m_polyFill) {
             shader->setUniform1i("polyFill", 1);
-            // m_glbase->stateMan().set(glFun::PolygonMode, {GL_FRONT_AND_BACK,
-            // GL_FILL});
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             if (pass == GLSG_OBJECT_MAP_PASS) glEnable(GL_BLEND);
         }
@@ -180,16 +180,22 @@ void SceneNode::setParentNode(SceneNode* _parent) {
         if (foundSelf == (*it)->m_children.end()) toKill.emplace_back(it);
     }
 
-    for (const auto& it : toKill) m_parents.erase(it);
+    for (const auto& it : toKill) {
+        m_parents.erase(it);
+    }
 
     // if this parent hasn't been registered, do it now
     auto it = std::find(m_parents.begin(), m_parents.end(), _parent);
     if (it == m_parents.end()) m_parents.push_back(_parent);
 
     // recheck children for correct rootNode
-    for (const auto& it : m_children) it->setRootNode(nullptr);
+    for (const auto& it : m_children) {
+        it->setRootNode(nullptr);
+    }
 
-    for (const auto& it : m_changedParentCb) it();
+    for (const auto& it : m_changedParentCb) {
+        it();
+    }
 }
 
 SceneNode* SceneNode::addChild(bool updtNodeIds) {
@@ -208,7 +214,9 @@ SceneNode* SceneNode::addChild(unique_ptr<SceneNode>&& newNode, bool updtNodeIds
     m_int_children.back()->setScene(m_scene);
     m_int_children.back()->setSceneData(s_sd);
     m_children.push_back(m_int_children.back().get());
-    if (updtNodeIds && getRootNode()) regenNodeIds(m_rootNode->getObjId(this));
+    if (updtNodeIds && getRootNode()) {
+        regenNodeIds(m_rootNode->getObjId(this));
+    }
     return m_int_children.back().get();
 }
 
@@ -217,7 +225,9 @@ void SceneNode::addChildRef(SceneNode* newNode, bool updtNodeIds) {
     m_children.back()->setParentNode(this);
     m_children.back()->setScene(m_scene);
     m_children.back()->setSceneData(s_sd);
-    if (updtNodeIds && getRootNode()) regenNodeIds(m_rootNode->getObjId(this));
+    if (updtNodeIds && getRootNode()) {
+        regenNodeIds(m_rootNode->getObjId(this));
+    }
 }
 
 SceneNode* SceneNode::insertChild(uint _ind, bool updtNodeIds) {
@@ -226,8 +236,10 @@ SceneNode* SceneNode::insertChild(uint _ind, bool updtNodeIds) {
     (*newIt)->setScene(m_scene);
     (*newIt)->setSceneData(s_sd);
     m_children.push_back((*newIt).get());
-    if (updtNodeIds && getRootNode()) regenNodeIds(m_rootNode->getObjId(this));
-    return (*newIt).get();
+    if (updtNodeIds && getRootNode()) {
+        regenNodeIds(m_rootNode->getObjId(this));
+    }
+    return newIt->get();
 }
 
 SceneNode* SceneNode::insertChild(uint _ind, unique_ptr<SceneNode> newScene, bool updtNodeIds) {
@@ -236,17 +248,25 @@ SceneNode* SceneNode::insertChild(uint _ind, unique_ptr<SceneNode> newScene, boo
     (*newIt)->setScene(m_scene);
     (*newIt)->setSceneData(s_sd);
     m_children.push_back((*newIt).get());
-    if (updtNodeIds && getRootNode()) regenNodeIds(m_rootNode->getObjId(this));
-    return (*newIt).get();
+    if (updtNodeIds && getRootNode()) {
+        regenNodeIds(m_rootNode->getObjId(this));
+    }
+    return newIt->get();
 }
 
 void SceneNode::clearChildren() {
     // clear bottom up
-    for (const auto& it : m_int_children) it->clearChildren();
+    for (const auto& it : m_int_children) {
+        it->clearChildren();
+    }
 
-    if (!m_int_children.empty()) m_int_children.clear();
+    if (!m_int_children.empty()) {
+        m_int_children.clear();
+    }
 
-    if (!m_children.empty()) m_children.clear();
+    if (!m_children.empty()) {
+        m_children.clear();
+    }
 
     unregister();
 }
@@ -322,11 +342,11 @@ void SceneNode::removeChild(std::string searchName) {
 }
 
 SceneNode* SceneNode::getParentNode(int objId) {
-    auto it = std::find_if(m_nodeObjId.begin(), m_nodeObjId.end(),
-                           [objId](const std::pair<SceneNode*, int>& t) -> bool { return t.second == objId; });
+    auto it = ranges::find_if(m_nodeObjId,
+                              [objId](const std::pair<SceneNode*, int>& t) -> bool { return t.second == objId; });
 
     if (it != m_nodeObjId.end())
-        return (*it).first;
+        return it->first;
     else
         return nullptr;
 }
@@ -336,7 +356,9 @@ SceneNode* SceneNode::getRootNode() {
     if (!m_rootNode || (m_rootNode && m_rootNode == this)) {
         // get the root node
         SceneNode* root = this;
-        while (root->getFirstParentNode()) root = root->getFirstParentNode();
+        while (root->getFirstParentNode()) {
+            root = root->getFirstParentNode();
+        }
 
         // to have the object map generation succeed also before all SceneNodes are assigned, allow also the
         // rootNode to be equal to the SceneNode itself (in case it has not yet been assigned) if (root != this)
@@ -389,24 +411,29 @@ bool SceneNode::setSelected(bool val, SceneNode* parent, bool procCb) {
         }
 
         // traverse all children down and also set them selected
-        for (const auto& child : *getChildren()) child->setSelected(val, this, procCb);
+        for (const auto& child : *getChildren()) {
+            child->setSelected(val, this, procCb);
+        }
 
-        if (procCb)
-            for (const auto& it : m_clickCb) it.second();
-
+        if (procCb) {
+            for (const auto& it : m_clickCb | views::values) {
+                it();
+            }
+        }
         return true;
-
-    } else
+    } else {
         return false;
+    }
 }
 
 bool SceneNode::isSelected(SceneNode* parent) {
-    if (parent && m_selected.count(parent))
+    if (m_selected.contains(parent)) {
         return m_selected[parent];
-    else if (!parent && getFirstParentNode() && m_selected.count(getFirstParentNode()))
+    } else if (!parent && getFirstParentNode() && m_selected.count(getFirstParentNode())) {
         return m_selected[getFirstParentNode()];
-    else
+    } else {
         return false;
+    }
 }
 
 void SceneNode::setBoundingBox(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) {
@@ -430,11 +457,16 @@ void SceneNode::setBoundingBox(vec3* boundMin, vec3* boundMax) {
 bool SceneNode::iterateNode(SceneNode* node, itNodeCbFunc cbFunc) {
     // apply function also to the start SceneNode
     bool contIteration = cbFunc(node);
-    if (!contIteration) return false;
+    if (!contIteration) {
+        return false;
+    }
 
     // iterate children
-    for (const auto& it : *node->getChildren())
-        if (!iterateNode(it, cbFunc)) return false;
+    for (const auto& it : *node->getChildren()) {
+        if (!iterateNode(it, cbFunc)) {
+            return false;
+        }
+    }
 
     return contIteration;
 }
@@ -442,11 +474,16 @@ bool SceneNode::iterateNode(SceneNode* node, itNodeCbFunc cbFunc) {
 bool SceneNode::iterateNodeParent(SceneNode* node, SceneNode* parent, itNodeParentCbFunc cbFunc) {
     // apply function also to the start SceneNode
     bool contIteration = cbFunc(node, parent);
-    if (!contIteration) return false;
+    if (!contIteration) {
+        return false;
+    }
 
     // set all childrens resetIDs to true
-    for (const auto& it : *node->getChildren())
-        if (!iterateNodeParent(it, node, cbFunc)) return false;
+    for (const auto& it : *node->getChildren()) {
+        if (!iterateNodeParent(it, node, cbFunc)) {
+            return false;
+        }
+    }
 
     return contIteration;
 }
@@ -466,13 +503,13 @@ uint SceneNode::regenNodeIds(uint idOffs) {
             if (node->getExtIdGroup()) node->getExtIdGroup()->ids[node] = objIdCntr;
             root->m_sceneNodeMap[objIdCntr] = node;
 
-            objIdCntr++;
+            ++objIdCntr;
             return true;
         });
-
         return objIdCntr;
-    } else
+    } else {
         return 0;
+    }
 }
 
 void SceneNode::setSingleId(bool val) {
@@ -486,7 +523,9 @@ void SceneNode::setSingleId(bool val) {
         return true;
     });
 
-    if (getRootNode()) regenNodeIds(m_rootNode->getObjId(this));
+    if (getRootNode()) {
+        regenNodeIds(m_rootNode->getObjId(this));
+    }
 }
 
 void SceneNode::translate(float x, float y, float z) {
@@ -643,14 +682,13 @@ void SceneNode::rebuildModelMat(SceneNode* parent) {
     m_absModelMat[parent]  = m_parentModelMat[parent] * modelMat;
     m_absNormalMat[parent] = inverseTranspose(mat3(m_absModelMat[parent]));
 
-    // LOG << this << " m_absNormalMat[parent] " <<
-    // glm::to_string(m_absNormalMat[parent]);
-
     // update dimension, this is the initial dimension multiplied by scaling
     m_dimension = m_vaoDimension * m_scaleVec;
 
     // execute optional Callbacks that have been notified
-    for (auto it = m_modelMatChangedCb.begin(); it != m_modelMatChangedCb.end(); ++it) it->second(this);
+    for (auto& it : m_modelMatChangedCb | views::values) {
+        it(this);
+    }
 }
 
 void SceneNode::setModelMat(glm::mat4& mm) {
@@ -665,8 +703,9 @@ void SceneNode::setModelMat(glm::mat4& mm) {
         auto  conj  = conjugate(dcOri);
         float angle = -glm::angle(dcOri);
         vec3  axis  = glm::axis(dcOri);
-        if (!std::isnan(angle) && !std::isnan(axis[0]) && !std::isnan(axis[1]) && !std::isnan(axis[2]))
+        if (!std::isnan(angle) && !std::isnan(axis[0]) && !std::isnan(axis[1]) && !std::isnan(axis[2])) {
             rotate(angle, std::move(axis));
+        }
 
         modelMat         = m_transMat * m_rotMat * m_scaleMat;
         m_hasNewModelMat = true;
@@ -679,24 +718,18 @@ void SceneNode::setParentModelMat(SceneNode* parent, mat4& _inMat) {
 }
 
 mat4* SceneNode::getModelMat() {
-    if (m_parents.size() > 0)
-        return &m_absModelMat[*m_parents.begin()];
-    else
-        return nullptr;
+    return !m_parents.empty() ? &m_absModelMat[*m_parents.begin()] : nullptr;
 }
 
 mat3* SceneNode::getNormalMat() {
-    if (m_parents.size() > 0)
-        return &m_absNormalMat[*m_parents.begin()];
-    else
-        return nullptr;
+    return !m_parents.empty() ? &m_absNormalMat[*m_parents.begin()] : nullptr;
 }
 
 uint SceneNode::getNrSubNodes() {
     uint nrNodes = 0;
 
     iterateNode(this, [&nrNodes](SceneNode* thisNode) {
-        nrNodes++;
+        ++nrNodes;
         return true;
     });
 
@@ -704,27 +737,26 @@ uint SceneNode::getNrSubNodes() {
 }
 
 int SceneNode::getObjId(SceneNode* parent) {
-    if (!parent) parent = getFirstParentNode();
-    if (m_nodeObjId.empty() || m_nodeObjId.find(parent) == m_nodeObjId.end())
-        return 0;
-    else
-        return m_nodeObjId[parent];
+    if (!parent) {
+        parent = getFirstParentNode();
+    }
+    return (m_nodeObjId.empty() || !m_nodeObjId.contains(parent)) ? 0 : m_nodeObjId[parent];
 }
 
 SceneNode* SceneNode::getNodeWithID(int id) {
     SceneNode* root = getRootNode();
-    if (!root) return nullptr;
+    if (!root) {
+        return nullptr;
+    }
 
     // check if the node belongs to an IDGroup
     if (root->m_sceneNodeMap.size() > 0) {
         auto node = root->m_sceneNodeMap[id];
         // if the node is part of an IDGroup, return the owner of the IdGroup
-        if (node->getExtIdGroup())
-            return node->getExtIdGroup()->owner;
-        else
-            return node;
-    } else
+        return node->getExtIdGroup() ? node->getExtIdGroup()->owner : node;
+    } else {
         return nullptr;
+    }
 }
 
 void SceneNode::deleteGarbage() {
@@ -738,7 +770,9 @@ void SceneNode::dumpTreeIt(SceneNode* tNode, uint level) {
 
     for (const auto& it : *tNode->getChildren()) {
         std::string tabs = "";
-        for (uint i = 0; i < level - 1; i++) tabs += "\t";
+        for (uint i = 0; i < level - 1; i++) {
+            tabs += "\t";
+        }
 
         std::string nt;
         switch (it->m_nodeType) {
@@ -773,15 +807,16 @@ void SceneNode::dumpTreeIt(SceneNode* tNode, uint level) {
 
         if (it->getExtIdGroup()) {
             LOG << tabs << "  extIdGroup [" << it->getExtIdGroup()->owner->getName() << "]:";
-            for (const auto& g : it->getExtIdGroup()->ids)
+            for (const auto& g : it->getExtIdGroup()->ids) {
                 LOG << tabs << " \t[" << g.first->getName() << ", " << g.second << "]";
+            }
         }
 
         LOG << tabs << "  parents: ";
         uint j = 0;
         for (const auto& pit : *it->getParents()) {
             LOG << tabs << "    [" << j << "]: " << pit << " \"" << pit->getName() << "\"";
-            j++;
+            ++j;
         }
 
         LOG << tabs << "  selected: ";
@@ -821,25 +856,17 @@ void SceneNode::unregister() {
             iterateNode(m_rootNode, [this](SceneNode* node) {
                 // check objIds
                 if (node && !node->m_nodeObjId.empty()) {
-                    auto foundNode =
-                        find_if(node->m_nodeObjId.begin(), node->m_nodeObjId.end(),
-                                [this](const pair<SceneNode*, int> mapItem) { return mapItem.first == this; });
-                    if (foundNode != node->m_nodeObjId.end()) node->m_nodeObjId.erase(foundNode);
+                    std::erase_if(node->m_nodeObjId, [this](const pair<SceneNode*, int> mapItem) { return mapItem.first == this; });
                 }
 
                 // check parent references
                 if (node && !node->m_parents.empty()) {
-                    auto foundIt = find_if(node->m_parents.begin(), node->m_parents.end(),
-                                           [this](const SceneNode* sn) { return sn == this; });
-                    if (foundIt != node->m_parents.end()) node->m_parents.erase(foundIt);
+                    std::erase_if(node->m_parents, [this](const SceneNode* sn) { return sn == this; });
                 }
 
                 // check "selected" references
                 if (node && !node->m_selected.empty()) {
-                    auto foundSel =
-                        find_if(node->m_selected.begin(), node->m_selected.end(),
-                                [this](const pair<SceneNode*, bool> mapItem) { return mapItem.first == this; });
-                    if (foundSel != node->m_selected.end()) node->m_selected.erase(foundSel);
+                    std::erase_if(node->m_selected, [this](const pair<SceneNode*, bool> mapItem) { return mapItem.first == this; });
                 }
 
                 return true;
@@ -855,16 +882,6 @@ void SceneNode::unregister() {
                 }
             }
     }
-
-    // needs gl context...
-    if (m_vao) {
-        delete m_vao;
-        m_vao = nullptr;
-    }
-}
-
-SceneNode::~SceneNode() {
-    if (m_vao) delete m_vao;
 }
 
 }  // namespace ara

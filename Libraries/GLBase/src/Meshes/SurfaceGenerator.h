@@ -32,7 +32,7 @@ public:
     float                m_rightAng{};
     float                m_bottAng{};
     std::string          m_typeName;
-    std::unique_ptr<VAO> m_vao;
+    std::shared_ptr<VAO> m_vao;
     surfaceType          m_type{};
 
 protected:
