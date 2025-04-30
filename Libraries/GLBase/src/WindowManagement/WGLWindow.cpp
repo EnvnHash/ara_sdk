@@ -1343,7 +1343,7 @@ bool WGLWindow::loadLibraries() {
 }
 
 // Unload used libraries (DLLs)
-void WGLWindow::freeLibraries(void) const {
+void WGLWindow::freeLibraries() const {
     if (ntdll.instance) {
         FreeLibrary(ntdll.instance);
     }

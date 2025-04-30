@@ -46,13 +46,13 @@ ShadowMapStd::ShadowMapStd(CameraSet* _cs, int _scrWidth, int _scrHeight, sceneD
 
     for (unsigned int i = 0; i < 4; i++) vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
 
-    vert += "void main(void) { \n ";
+    vert += "void main() { \n ";
     vert += getStdPvmMult() + "}";
 
     std::string frag = s_glbase->shaderCollector().getShaderHeader();
     frag += "// ShadowMapStd fragment Shader\n";
 
-    frag += STRINGIFY(layout(location = 0) out vec4 color; void main(void) { color = vec4(1.0); });
+    frag += STRINGIFY(layout(location = 0) out vec4 color; void main() { color = vec4(1.0); });
 
     s_shadowShader = s_glbase->shaderCollector().add("ShadowMapStd", vert.c_str(), frag.c_str());
 }

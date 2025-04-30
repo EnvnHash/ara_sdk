@@ -20,11 +20,11 @@ SkyBoxBlend::SkyBoxBlend(std::string textureFile, unsigned _nrCams, sceneData* s
 SkyBoxBlend::SkyBoxBlend(const char* textureFile, unsigned _nrCams, sceneData* sd) { init(textureFile, _nrCams, sd); }
 
 void SkyBoxBlend::init(const char* textureFile, unsigned _nrCams, sceneData* sd) {
-    vShader = STRINGIFY(layout(location = 0) in vec4 position; out vec4 pos; void main(void) { pos = position; });
+    vShader = STRINGIFY(layout(location = 0) in vec4 position; out vec4 pos; void main() { pos = position; });
     vShader = "#version 410\n" + vShader;
 
     gShader = STRINGIFY(in vec4 pos[]; out vec3 tex_coord; out vec3 tex_coord_2; out vec3 tex_coord_3;
-                        uniform mat4 tc_rot; uniform mat4 tc_rot2; uniform mat4 tc_rot3; void main(void) {
+                        uniform mat4 tc_rot; uniform mat4 tc_rot2; uniform mat4 tc_rot3; void main() {
                             gl_ViewportIndex = gl_InvocationID;
                             for (int i = 0; i < gl_in.length(); i++) {
                                 tex_coord   = normalize((tc_rot * pos[i]).xyz);
@@ -132,7 +132,7 @@ void SkyBoxBlend::init(const char* textureFile, unsigned _nrCams, sceneData* sd)
         float noiseC2 = 0.0; const vec3 LumCoeff = vec3(0.2125, 0.7154, 0.0721);
         const vec3                      AvgLumin = vec3(0.5, 0.5, 0.5);
 
-        void main(void) {
+        void main() {
             vec2 posCo = vec2(gl_FragCoord) / vec2(width, height) * noiseScale;
 
             noiseC = (cnoise(vec3(posCo * 32.0, time)) + 1.0) * 0.5;

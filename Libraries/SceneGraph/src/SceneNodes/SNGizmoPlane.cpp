@@ -83,6 +83,6 @@ void SNGizmoPlane::setGizmoUpperColor(float _r, float _g, float _b, float _a) { 
 
 void SNGizmoPlane::setGizmoLowerColor(float _r, float _g, float _b, float _a) { gColor[0] = vec4(_r, _g, _b, _a); }
 
-SNGizmoPlane::~SNGizmoPlane(void) {}
+SNGizmoPlane::~SNGizmoPlane() {}
 
 }  // namespace ara

@@ -11,6 +11,7 @@
 #include <X11/Xutil.h>
 #include <glb_common/glb_common.h>
 #include <unistd.h>
+#include "GLWindowCommon.h"
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -101,9 +102,9 @@ public:
 
     void     requestOpen(bool val) { m_requestOpen = val; }
     void     requestClose(bool val) { m_requestClose = val; }
-    uint64_t getTimerFrequency(void) { return 1000000; }
+    uint64_t getTimerFrequency() { return 1000000; }
 
-    uint64_t getTimerValue(void);
+    uint64_t getTimerValue();
     bool     waitForEvent(double *timeout);
     bool     waitForVisibilityNotify();
 
