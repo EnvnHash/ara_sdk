@@ -66,6 +66,45 @@ static HidNode* addDiv(UIApplication* app) {
     return div;
 }
 
+static void simulateClick(UIWindow* mainWin, HidNode* div, mouseButt b, const glm::vec2& pos, bool expVal) {
+    if (b == mouseButt::left){
+        mainWin->onMouseDownLeft(pos.x, pos.y, false, false, false);
+    } else {
+        mainWin->onMouseDownRight(pos.x, pos.y, false, false, false);
+    }
+    EXPECT_EQ(div->m_clicked[b == mouseButt::left ? hidEvent::MouseDownLeft : hidEvent::MouseDownRight], expVal);
+
+    if (b == mouseButt::left){
+        mainWin->onMouseUpLeft();
+    } else {
+        mainWin->onMouseUpRight();
+    }
+
+    EXPECT_EQ(div->m_clicked[b == mouseButt::left ? hidEvent::MouseUpLeft : hidEvent::MouseUpRight], expVal);
+}
+
+static void setHidCallbacks(HidNode* div, std::unordered_map<hidEvent, bool>& cbCalled) {
+    div->addMouseClickCb([&](hidData* data){
+        cbCalled[hidEvent::MouseDownLeft] = true;
+    });
+    div->addMouseUpCb([&](hidData* data){
+        cbCalled[hidEvent::MouseUpLeft] = true;
+    });
+    div->addMouseClickRightCb([&](hidData* data){
+        cbCalled[hidEvent::MouseDownRight] = true;
+    });
+    div->addMouseUpRightCb([&](hidData* data){
+        cbCalled[hidEvent::MouseUpRight] = true;
+    });
+}
+
+static void checkCbCalled(std::unordered_map<hidEvent, bool>& cbCalled, bool expVal) {
+    EXPECT_EQ(cbCalled[hidEvent::MouseDownLeft], expVal);
+    EXPECT_EQ(cbCalled[hidEvent::MouseUpLeft], expVal);
+    EXPECT_EQ(cbCalled[hidEvent::MouseDownRight], expVal);
+    EXPECT_EQ(cbCalled[hidEvent::MouseUpRight], expVal);
+}
+
 TEST(UITest, HidDefaultTest) {
     HidNode* div = nullptr;
     appBody([&](UIApplication* app){
@@ -86,17 +125,8 @@ TEST(UITest, HidDivClickTest) {
         div = addDiv(app);
     }, [&](UIApplication* app){
         auto mainWin = app->getMainWindow();
-        mainWin->onMouseDownLeft(150, 100, false, false, false);
-        EXPECT_TRUE(div->m_clicked[hidEvent::MouseDownLeft]);
-
-        mainWin->onMouseUpLeft();
-        EXPECT_TRUE(div->m_clicked[hidEvent::MouseUpLeft]);
-
-        mainWin->onMouseDownRight(150, 100, false, false, false);
-        EXPECT_TRUE(div->m_clicked[hidEvent::MouseDownRight]);
-
-        mainWin->onMouseUpRight();
-        EXPECT_TRUE(div->m_clicked[hidEvent::MouseUpRight]);
+        simulateClick(mainWin, div, mouseButt::left, {150, 100}, true);
+        simulateClick(mainWin, div, mouseButt::right, {150, 100}, true);
     }, 600, 400);
 }
 
@@ -106,17 +136,8 @@ TEST(UITest, HidDivClickNegTest) {
         div = addDiv(app);
     }, [&](UIApplication* app){
         auto mainWin = app->getMainWindow();
-        mainWin->onMouseDownLeft(260, 100, false, false, false);
-        EXPECT_FALSE(div->m_clicked[hidEvent::MouseDownLeft]);
-
-        mainWin->onMouseUpLeft();
-        EXPECT_FALSE(div->m_clicked[hidEvent::MouseUpLeft]);
-
-        mainWin->onMouseDownRight(260, 100, false, false, false);
-        EXPECT_FALSE(div->m_clicked[hidEvent::MouseDownRight]);
-
-        mainWin->onMouseUpRight();
-        EXPECT_FALSE(div->m_clicked[hidEvent::MouseUpRight]);
+        simulateClick(mainWin, div, mouseButt::left, {260, 100}, false);
+        simulateClick(mainWin, div, mouseButt::right, {260, 100}, false);
     }, 600, 400);
 }
 
@@ -129,32 +150,16 @@ TEST(UITest, HidDivClickCallbackTest) {
 
     appBody([&](UIApplication* app){
         div = addDiv(app);
-        div->addMouseClickCb([&](hidData* data){
-            cbCalled[hidEvent::MouseDownLeft] = true;
-        });
-        div->addMouseUpCb([&](hidData* data){
-            cbCalled[hidEvent::MouseUpLeft] = true;
-        });
-        div->addMouseClickRightCb([&](hidData* data){
-            cbCalled[hidEvent::MouseDownRight] = true;
-        });
-        div->addMouseUpRightCb([&](hidData* data){
-            cbCalled[hidEvent::MouseUpRight] = true;
-        });
+        setHidCallbacks(div, cbCalled);
     }, [&](UIApplication* app){
         auto mainWin = app->getMainWindow();
-        mainWin->onMouseDownLeft(150, 100, false, false, false);
-        mainWin->onMouseUpLeft();
-        mainWin->onMouseDownRight(150, 100, false, false, false);
-        mainWin->onMouseUpRight();
+        simulateClick(mainWin, div, mouseButt::left, {150, 100}, true);
+        simulateClick(mainWin, div, mouseButt::right, {150, 100}, true);
 
         app->getWinBase()->draw(0, 0, 0);
         mainWin->swap();
 
-        EXPECT_TRUE(cbCalled[hidEvent::MouseDownLeft]);
-        EXPECT_TRUE(cbCalled[hidEvent::MouseUpLeft]);
-        EXPECT_TRUE(cbCalled[hidEvent::MouseDownRight]);
-        EXPECT_TRUE(cbCalled[hidEvent::MouseUpRight]);
+        checkCbCalled(cbCalled, true);
     }, 600, 400);
 }
 
@@ -167,35 +172,19 @@ TEST(UITest, HidDivClickCallbackNegTest) {
 
     appBody([&](UIApplication* app){
         div = addDiv(app);
-        div->addMouseClickCb([&](hidData* data){
-            cbCalled[hidEvent::MouseDownLeft] = true;
-        });
-        div->addMouseUpCb([&](hidData* data){
-            cbCalled[hidEvent::MouseUpLeft] = true;
-        });
-        div->addMouseClickRightCb([&](hidData* data){
-            cbCalled[hidEvent::MouseDownRight] = true;
-        });
-        div->addMouseUpRightCb([&](hidData* data){
-            cbCalled[hidEvent::MouseUpRight] = true;
-        });
+        setHidCallbacks(div, cbCalled);
     }, [&](UIApplication* app){
         compareFrameBufferToImage(filesystem::current_path() / "hid_node_test.png",
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
 
         auto mainWin = app->getMainWindow();
-        mainWin->onMouseDownLeft(260, 100, false, false, false);
-        mainWin->onMouseUpLeft();
-        mainWin->onMouseDownRight(260, 100, false, false, false);
-        mainWin->onMouseUpRight();
+        simulateClick(mainWin, div, mouseButt::left, {260, 100}, false);
+        simulateClick(mainWin, div, mouseButt::right, {260, 100}, false);
 
         app->getWinBase()->draw(0, 0, 0);
         mainWin->swap();
 
-        EXPECT_FALSE(cbCalled[hidEvent::MouseDownLeft]);
-        EXPECT_FALSE(cbCalled[hidEvent::MouseUpLeft]);
-        EXPECT_FALSE(cbCalled[hidEvent::MouseDownRight]);
-        EXPECT_FALSE(cbCalled[hidEvent::MouseUpRight]);
+        checkCbCalled(cbCalled, false);
     }, 600, 400);
 }
 
