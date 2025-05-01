@@ -66,21 +66,24 @@ static HidNode* addDiv(UIApplication* app) {
     return div;
 }
 
-static void simulateClick(UIWindow* mainWin, HidNode* div, mouseButt b, const glm::vec2& pos, bool expVal) {
-    if (b == mouseButt::left){
-        mainWin->onMouseDownLeft(pos.x, pos.y, false, false, false);
-    } else {
-        mainWin->onMouseDownRight(pos.x, pos.y, false, false, false);
-    }
-    EXPECT_EQ(div->m_clicked[b == mouseButt::left ? hidEvent::MouseDownLeft : hidEvent::MouseDownRight], expVal);
+static void simulateClickLeftRight(UIWindow* mainWin, HidNode* div, const glm::vec2& pos, bool expVal) {
+    mainWin->onMouseDownLeft(pos.x, pos.y, false, false, false);
+    EXPECT_EQ(div->m_clicked[hidEvent::MouseDownLeft], expVal);
+    mainWin->onMouseUpLeft();
+    EXPECT_EQ(div->m_clicked[hidEvent::MouseUpLeft], expVal);
 
-    if (b == mouseButt::left){
-        mainWin->onMouseUpLeft();
-    } else {
-        mainWin->onMouseUpRight();
-    }
+    mainWin->onMouseDownRight(pos.x, pos.y, false, false, false);
+    EXPECT_EQ(div->m_clicked[hidEvent::MouseDownLeft], expVal);
+    mainWin->onMouseUpRight();
+    EXPECT_EQ(div->m_clicked[hidEvent::MouseUpLeft], expVal);
+}
 
-    EXPECT_EQ(div->m_clicked[b == mouseButt::left ? hidEvent::MouseUpLeft : hidEvent::MouseUpRight], expVal);
+static std::unordered_map<hidEvent, bool> initCallbacks() {
+    std::unordered_map<hidEvent, bool> cbCalled{};
+    for (auto i=0; i<static_cast<int32_t>(hidEvent::Size);i++) {
+        cbCalled[static_cast<hidEvent>(i)] = false;
+    }
+    return cbCalled;
 }
 
 static void setHidCallbacks(HidNode* div, std::unordered_map<hidEvent, bool>& cbCalled) {
@@ -125,8 +128,7 @@ TEST(UITest, HidDivClickTest) {
         div = addDiv(app);
     }, [&](UIApplication* app){
         auto mainWin = app->getMainWindow();
-        simulateClick(mainWin, div, mouseButt::left, {150, 100}, true);
-        simulateClick(mainWin, div, mouseButt::right, {150, 100}, true);
+        simulateClickLeftRight(mainWin, div, {150, 100}, true);
     }, 600, 400);
 }
 
@@ -136,25 +138,19 @@ TEST(UITest, HidDivClickNegTest) {
         div = addDiv(app);
     }, [&](UIApplication* app){
         auto mainWin = app->getMainWindow();
-        simulateClick(mainWin, div, mouseButt::left, {260, 100}, false);
-        simulateClick(mainWin, div, mouseButt::right, {260, 100}, false);
+        simulateClickLeftRight(mainWin, div, {260, 100}, false);
     }, 600, 400);
 }
 
 TEST(UITest, HidDivClickCallbackTest) {
     HidNode* div = nullptr;
-    std::unordered_map<hidEvent, bool> cbCalled{};
-    for (auto i=0; i<static_cast<int32_t>(hidEvent::Size);i++) {
-        cbCalled[static_cast<hidEvent>(i)] = false;
-    }
-
+    auto cbCalled = initCallbacks();
     appBody([&](UIApplication* app){
         div = addDiv(app);
         setHidCallbacks(div, cbCalled);
     }, [&](UIApplication* app){
         auto mainWin = app->getMainWindow();
-        simulateClick(mainWin, div, mouseButt::left, {150, 100}, true);
-        simulateClick(mainWin, div, mouseButt::right, {150, 100}, true);
+        simulateClickLeftRight(mainWin, div, {150, 100}, true);
 
         app->getWinBase()->draw(0, 0, 0);
         mainWin->swap();
@@ -165,10 +161,7 @@ TEST(UITest, HidDivClickCallbackTest) {
 
 TEST(UITest, HidDivClickCallbackNegTest) {
     HidNode* div = nullptr;
-    std::unordered_map<hidEvent, bool> cbCalled{};
-    for (auto i=0; i<static_cast<int32_t>(hidEvent::Size);i++) {
-        cbCalled[static_cast<hidEvent>(i)] = false;
-    }
+    auto cbCalled = initCallbacks();
 
     appBody([&](UIApplication* app){
         div = addDiv(app);
@@ -178,8 +171,7 @@ TEST(UITest, HidDivClickCallbackNegTest) {
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
 
         auto mainWin = app->getMainWindow();
-        simulateClick(mainWin, div, mouseButt::left, {260, 100}, false);
-        simulateClick(mainWin, div, mouseButt::right, {260, 100}, false);
+        simulateClickLeftRight(mainWin, div, {260, 100}, false);
 
         app->getWinBase()->draw(0, 0, 0);
         mainWin->swap();
