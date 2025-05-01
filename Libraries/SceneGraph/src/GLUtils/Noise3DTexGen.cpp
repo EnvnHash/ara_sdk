@@ -59,54 +59,13 @@ Noise3DTexGen::Noise3DTexGen(const sceneData* scd, bool color, int nrOctaves, iv
         // generate perlin noise texture
         fbo->set3DLayer(0, i);
         fbo->bind();
-
-        m_noiseShdr->begin();
-        m_noiseShdr->setIdentMatrix4fv("m_pvm");
-        m_noiseShdr->setUniform1i("useColor", 1);
-        m_noiseShdr->setUniform1f("zPos", (zPos * m_scaleZ));
-        m_noiseShdr->setUniform1f("m_scaleX", m_scaleX);
-        m_noiseShdr->setUniform1f("m_scaleY", m_scaleY);
-        m_noiseShdr->setUniform1i("nrOctaves", std::max<int>(nrOctaves, 1));
-
-        quad->draw();
+        drawNoise(quad, zPos, nrOctaves);
         fbo->unbind();
 
         // ---- blend texture perlin noise pattern to be used borderless
-        // --------
-        // ---- blend horizontal --------
 
-        xBlendFboH->bind();
-        xBlendFboH->clear();
-
-        xBlendShaderH->begin();
-        xBlendShaderH->setIdentMatrix4fv("m_pvm");
-        xBlendShaderH->setUniform1i("tex", 0);
-        xBlendShaderH->setUniform1i("width", size.x);
-        xBlendShaderH->setUniform1f("zPos", zPos + 0.5f / static_cast<float>(m_nrLoops - 1));
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_3D, fbo->getColorImg());
-
-        quad->draw();
-
-        xBlendFboH->unbind();
-
-        // ---- blend vertical --------
-
-        xBlendFboV->bind();
-        xBlendFboV->clear();
-
-        xBlendShaderV->begin();
-        xBlendShaderV->setIdentMatrix4fv("m_pvm");
-        xBlendShaderV->setUniform1i("tex", 0);
-        xBlendShaderV->setUniform1i("height", size.y);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, xBlendFboH->getColorImg());
-
-        quad->draw();
-
-        xBlendFboV->unbind();
+        blendHorizontal(xBlendFboH, xBlendShaderH, quad, zPos, size);
+        blendVertical(xBlendFboV, xBlendFboH, xBlendShaderV, quad, zPos, size);
 
         // ---- copy the result ---------
 
@@ -123,6 +82,53 @@ Noise3DTexGen::Noise3DTexGen(const sceneData* scd, bool color, int nrOctaves, iv
 
         fbo->unbind();
     }
+}
+
+void Noise3DTexGen::drawNoise(std::unique_ptr<Quad>& quad, float zPos, int nrOctaves) {
+    m_noiseShdr->begin();
+    m_noiseShdr->setIdentMatrix4fv("m_pvm");
+    m_noiseShdr->setUniform1i("useColor", 1);
+    m_noiseShdr->setUniform1f("zPos", (zPos * m_scaleZ));
+    m_noiseShdr->setUniform1f("m_scaleX", m_scaleX);
+    m_noiseShdr->setUniform1f("m_scaleY", m_scaleY);
+    m_noiseShdr->setUniform1i("nrOctaves", std::max<int>(nrOctaves, 1));
+
+    quad->draw();
+}
+
+void Noise3DTexGen::blendHorizontal(std::unique_ptr<FBO>& xBlendFboH, Shaders* xBlendShaderH, std::unique_ptr<Quad>& quad, float zPos, const glm::ivec3& size) {
+    xBlendFboH->bind();
+    xBlendFboH->clear();
+
+    xBlendShaderH->begin();
+    xBlendShaderH->setIdentMatrix4fv("m_pvm");
+    xBlendShaderH->setUniform1i("tex", 0);
+    xBlendShaderH->setUniform1i("width", size.x);
+    xBlendShaderH->setUniform1f("zPos", zPos + 0.5f / static_cast<float>(m_nrLoops - 1));
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_3D, fbo->getColorImg());
+
+    quad->draw();
+
+    xBlendFboH->unbind();
+}
+
+void Noise3DTexGen::blendVertical(std::unique_ptr<FBO>& xBlendFboV, std::unique_ptr<FBO>& fboH, Shaders* xBlendShaderV, std::unique_ptr<Quad>& quad, float zPos, const glm::ivec3& size) {
+    xBlendFboV->bind();
+    xBlendFboV->clear();
+
+    xBlendShaderV->begin();
+    xBlendShaderV->setIdentMatrix4fv("m_pvm");
+    xBlendShaderV->setUniform1i("tex", 0);
+    xBlendShaderV->setUniform1i("height", size.y);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, fboH->getColorImg());
+
+    quad->draw();
+
+    xBlendFboV->unbind();
 }
 
 void Noise3DTexGen::initShdr() {
