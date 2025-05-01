@@ -19,16 +19,7 @@ Grid::Grid() : Div() {
 #endif
 }
 
-Grid::Grid(std::string* styleClass) : Div() {
-    setName(getTypeName<Grid>());
-    addStyleClass(std::move(*styleClass));
-    excludeFromObjMap(true);
-#ifndef FORCE_INMEDIATEMODE_RENDERING
-    m_drawImmediate = false;
-#endif
-}
-
-Grid::Grid(std::string&& styleClass) : Div() {
+Grid::Grid(const std::string& styleClass) : Div() {
     setName(getTypeName<Grid>());
     addStyleClass(std::move(styleClass));
     excludeFromObjMap(true);

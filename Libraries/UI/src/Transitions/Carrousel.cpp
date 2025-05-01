@@ -10,7 +10,7 @@ CarrouselSlide::CarrouselSlide() : Div() {
     setName(getTypeName<CarrouselSlide>());
 }
 
-CarrouselSlide::CarrouselSlide(std::string &&styleClass) : Div() {
+CarrouselSlide::CarrouselSlide(const std::string& styleClass) : Div() {
     setName(getTypeName<CarrouselSlide>());
     addStyleClass(std::move(styleClass));
 }
@@ -20,7 +20,7 @@ Carrousel::Carrousel() : Div() {
     initFixedChildren();
 }
 
-Carrousel::Carrousel(std::string &&styleClass)  {
+Carrousel::Carrousel(const std::string& styleClass)  {
     setName(getTypeName<Carrousel>());
     addStyleClass(std::move(styleClass));
     initFixedChildren();

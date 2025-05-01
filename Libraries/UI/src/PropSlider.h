@@ -63,7 +63,7 @@ public:
     void setProp(Property<float>* prop) { setProp<float>(prop); }
     void setProp(Property<double>* prop) { setProp<double>(prop); }
     void setProp(Property<glm::vec2>* prop, int idx);
-    void addStyleClass(std::string&& styleClass) override;
+    void addStyleClass(const std::string& styleClass) override;
 
     void setLabel(const std::string& txt) const {
         if (m_label) {

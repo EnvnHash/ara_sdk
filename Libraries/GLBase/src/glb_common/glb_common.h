@@ -439,6 +439,9 @@ public:
     float z = 0.f;
 };
 
+template<typename T>
+concept CoordinateType = std::is_integral_v<T> || std::is_floating_point_v<T>;
+
 // shortcut for strongly typed enums to be cast to their underlying type
 template <typename E>
 constexpr typename std::underlying_type<E>::type toType(E e) {

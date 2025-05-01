@@ -135,30 +135,9 @@ public:
     }
 
     template <typename T>
-    T* addChild(std::string* styleClass) {
+    T* addChild(const std::string& styleClass) {
         T* nc = UINode::addChild<T>();
-        nc->addStyleClass(std::move(*styleClass));
-        return nc;
-    }
-
-    template <typename T>
-    T* addChild(std::string&& styleClass) {
-        T* nc = UINode::addChild<T>();
-        nc->addStyleClass(std::move(styleClass));
-        return nc;
-    }
-
-    template <typename T>
-    T* insertChild(int32_t position, std::string* styleClass) {
-        T* nc = UINode::insertChild<T>(position);
-        nc->addStyleClass(std::move(*styleClass));
-        return nc;
-    }
-
-    template <typename T>
-    T* insertChild(int32_t position, std::string&& styleClass) {
-        T* nc = UINode::insertChild<T>(position);
-        nc->addStyleClass(std::move(styleClass));
+        nc->addStyleClass(styleClass);
         return nc;
     }
 
@@ -707,10 +686,9 @@ public:
     }
     virtual void loadStyleDefaults();
     virtual void rebuildCustomStyle();
-    virtual void updateStyleIt(ResNode* node, state st, std::string& styleClass);
+    virtual void updateStyleIt(ResNode* node, state st, const std::string& styleClass);
     virtual void updateStyle();
-    void         addStyleClass(std::string* styleClass) { addStyleClass(std::move(*styleClass)); }
-    virtual void addStyleClass(std::string&& styleClass);
+    virtual void addStyleClass(const std::string& styleClass);
     virtual void clearStyles();
     virtual void applyStyle();
     std::string& getStyleClass() { return m_baseStyleClass; }

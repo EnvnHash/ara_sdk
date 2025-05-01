@@ -22,7 +22,7 @@ ScrollView::ScrollView() : Div() {
     m_content->excludeFromObjMap(true);
 }
 
-ScrollView::ScrollView(std::string&& styleClass) : Div(std::move(styleClass)) {
+ScrollView::ScrollView(const std::string& styleClass) : Div(std::move(styleClass)) {
     setName(getTypeName<ScrollView>());
     setFocusAllowed(false);
     setScissorChildren(true);

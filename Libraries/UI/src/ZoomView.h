@@ -15,7 +15,7 @@ namespace ara {
 class ZoomView : public Div {
 public:
     ZoomView();
-    ZoomView(std::string&& styleClass);
+    ZoomView(const std::string& styleClass);
     virtual ~ZoomView() = default;
 
     void init();

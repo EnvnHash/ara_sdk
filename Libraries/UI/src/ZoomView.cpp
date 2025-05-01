@@ -15,7 +15,7 @@ namespace ara {
 
 ZoomView::ZoomView() : Div() { setName(getTypeName<ZoomView>()); }
 
-ZoomView::ZoomView(std::string&& styleClass) : Div(std::move(styleClass)) { setName(getTypeName<ZoomView>()); }
+ZoomView::ZoomView(const std::string& styleClass) : Div(std::move(styleClass)) { setName(getTypeName<ZoomView>()); }
 
 void ZoomView::init() {
     Div::init();

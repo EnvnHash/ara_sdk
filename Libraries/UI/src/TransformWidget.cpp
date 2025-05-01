@@ -25,7 +25,7 @@ TransformWidget::TransformWidget() : Div() {
     m_excludeFromParentScissoring = true;
 }
 
-TransformWidget::TransformWidget(std::string &&styleClass) : Div(std::move(styleClass)) {
+TransformWidget::TransformWidget(const std::string& styleClass) : Div(std::move(styleClass)) {
     m_canReceiveDrag = true;
     setName(getTypeName<TransformWidget>());
     setFocusAllowed(false);

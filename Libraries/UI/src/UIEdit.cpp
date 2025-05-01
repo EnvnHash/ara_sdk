@@ -899,7 +899,7 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
     return position + 1;
 }
 
-void UIEdit::updateStyleIt(ResNode *node, state st, std::string &styleClass) {
+void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClass) {
     Label::updateStyleIt(node, st, styleClass);
 
     if (node->hasValue("edit-opt")) {

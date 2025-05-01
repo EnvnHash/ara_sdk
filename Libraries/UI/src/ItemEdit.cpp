@@ -15,7 +15,7 @@ ItemEdit::ItemEdit() : UITable(), m_rowHeight(30.f) {
     setFocusAllowed(false);
 }
 
-ItemEdit::ItemEdit(std::string&& styleClass) : UITable(std::move(styleClass)) {
+ItemEdit::ItemEdit(const std::string& styleClass) : UITable(std::move(styleClass)) {
     setName(getTypeName<ItemEdit>());
     setFocusAllowed(false);
 }

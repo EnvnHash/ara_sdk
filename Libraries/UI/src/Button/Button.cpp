@@ -13,7 +13,7 @@ Button::Button() : Label(), m_typoColor(glm::vec4(0.f, 0.f, 0.f, 1.f)), m_altTex
     Label::setScissorChildren(true);
 }
 
-Button::Button(std::string&& styleClass) : Label(std::move(styleClass)) {
+Button::Button(const std::string& styleClass) : Label(styleClass) {
     setName(getTypeName<Button>());
     setFocusAllowed(false);
     Label::setScissorChildren(true);

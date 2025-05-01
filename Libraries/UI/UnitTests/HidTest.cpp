@@ -73,9 +73,9 @@ static void simulateClickLeftRight(UIWindow* mainWin, HidNode* div, const glm::v
     EXPECT_EQ(div->m_clicked[hidEvent::MouseUpLeft], expVal);
 
     mainWin->onMouseDownRight(pos.x, pos.y, false, false, false);
-    EXPECT_EQ(div->m_clicked[hidEvent::MouseDownLeft], expVal);
+    EXPECT_EQ(div->m_clicked[hidEvent::MouseDownRight], expVal);
     mainWin->onMouseUpRight();
-    EXPECT_EQ(div->m_clicked[hidEvent::MouseUpLeft], expVal);
+    EXPECT_EQ(div->m_clicked[hidEvent::MouseUpRight], expVal);
 }
 
 static std::unordered_map<hidEvent, bool> initCallbacks() {

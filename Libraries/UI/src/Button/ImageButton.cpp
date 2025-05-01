@@ -86,7 +86,7 @@ void ImageButton::loadStyleDefaults() {
     // m_ImgAlign[0] = m_ImgAlign[1] = 1; };
 }
 
-void ImageButton::updateStyleIt(ResNode *node, state st, std::string &styleClass) {
+void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     auto *inode = node->findNode<ResNode>("image");

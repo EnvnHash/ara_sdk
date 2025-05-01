@@ -41,7 +41,7 @@ public:
     void drawCaret(bool forceCaretVaoUpdt = true);
     void prepareSelBgVao();
 
-    void updateStyleIt(ResNode* node, state st, std::string& styleClass) override;
+    void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
     void updateFontGeo() override;
     void clearDs() override;
 

@@ -16,7 +16,7 @@ Gizmo::Gizmo() : Image() {
     setScissorChildren(false);
 }
 
-Gizmo::Gizmo(std::string&& styleClass) : Image(std::move(styleClass)) {
+Gizmo::Gizmo(const std::string& styleClass) : Image(std::move(styleClass)) {
     m_canReceiveDrag = true;
     setName(getTypeName<Gizmo>());
     setFocusAllowed(false);

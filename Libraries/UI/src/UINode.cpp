@@ -776,23 +776,21 @@ void UINode::addGlCbSync(const std::function<bool()>& func) const {
 
 // styles - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-void UINode::addStyleClass(std::string&& styleClass) {
-    std::string sc = styleClass;  // done this way, since on Windows a DLL has an own memory
-                                  // heap and at the end of this function styleClass would be
-                                  // deleted causing a crash
-
+void UINode::addStyleClass(const std::string& styleClass) {
     if (m_styleTree.empty() || (m_styleTree.size() == 1 && m_styleTree.front().find("__") != std::string::npos)) {
-        m_baseStyleClass = sc;
+        m_baseStyleClass = styleClass;
     }
 
     m_styleClassInited = false;
 
     // in case there was a previous (not default) style definition, delete it
     if (!m_styleTree.empty()) {
-        auto it = find_if(m_styleTree.begin(), m_styleTree.end(), [sc](const std::string& st) { return st == sc; });
-        if (it == m_styleTree.end()) m_styleTree.emplace_back(sc);
+        auto it = find_if(m_styleTree.begin(), m_styleTree.end(), [&styleClass](const std::string& st) { return st == styleClass; });
+        if (it == m_styleTree.end()) {
+            m_styleTree.emplace_back(styleClass);
+        }
     } else {
-        m_styleTree.emplace_back(sc);
+        m_styleTree.emplace_back(styleClass);
     }
 }
 
@@ -801,7 +799,7 @@ void UINode::clearStyles() {
     m_styleTree.clear();
 
     // clear lambada functions
-    for (int i = 0; i < (int)state::count; i++) {
+    for (int i = 0; i < static_cast<int>(state::count); i++) {
         m_setStyleFunc[(state)i].clear();
     }
 
@@ -811,7 +809,7 @@ void UINode::clearStyles() {
     m_styleClassInited = false;
 }
 
-void UINode::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
+void UINode::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     AssetColor* color;
 
     auto x = node->findNumericNode("x");

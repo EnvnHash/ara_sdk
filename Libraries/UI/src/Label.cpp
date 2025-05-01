@@ -16,7 +16,7 @@ Label::Label() {
     setFocusAllowed(false);
 }
 
-Label::Label(std::string&& styleClass) : Div(std::move(styleClass)) {
+Label::Label(const std::string& styleClass) : Div(std::move(styleClass)) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
@@ -49,7 +49,7 @@ void Label::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::labelOptions] = [this]() { m_tOpt = 0; };
 }
 
-void Label::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
+void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     auto color = node->findNode<AssetColor>("text-color");

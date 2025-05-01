@@ -84,7 +84,7 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
     m_Edit->setValue((*prop)()[idx]);
 }
 
-void PropSlider::addStyleClass(std::string&& styleClass) {
+void PropSlider::addStyleClass(const std::string& styleClass) {
     UINode::addStyleClass(std::move(styleClass));
 
     if (m_Edit && m_Slider && m_label) {

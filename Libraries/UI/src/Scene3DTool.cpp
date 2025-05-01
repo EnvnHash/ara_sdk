@@ -19,7 +19,7 @@ namespace ara {
 
 Scene3DTool::Scene3DTool() : Div() { setName(getTypeName<Scene3DTool>()); }
 
-Scene3DTool::Scene3DTool(std::string &&styleClass) : Div(std::move(styleClass)) { setName(getTypeName<Scene3DTool>()); }
+Scene3DTool::Scene3DTool(const std::string& styleClass) : Div(std::move(styleClass)) { setName(getTypeName<Scene3DTool>()); }
 
 Scene3DTool::~Scene3DTool() {
     if (m_sharedRes && m_sharedRes->win) {
