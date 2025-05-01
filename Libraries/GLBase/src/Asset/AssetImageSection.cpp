@@ -53,7 +53,7 @@ void AssetImageSection::onProcess() {
 
     procFlags();
 
-    m_verDefault = value1i("default", 0);
+    m_verDefault = value<int>("default", 0);
 }
 
 void AssetImageSection::parseNode(ResNode* src) {
@@ -93,12 +93,12 @@ void AssetImageSection::procFlags() {
 
     if (hasFlag("vdist")) {
         m_dist          = Dist::vert;
-        m_distPixOffset = value1i("vdist", 0);
+        m_distPixOffset = value<int32_t>("vdist", 0);
     }
 
     if (hasFlag("hdist")) {
         m_dist          = Dist::horz;
-        m_distPixOffset = value1i("hdist", 0);
+        m_distPixOffset = value<int32_t>("hdist", 0);
     }
 
     if (hasFlag("ver")) {

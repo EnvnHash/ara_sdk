@@ -947,7 +947,7 @@ void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClas
 
     /*if (node->has("font-size")){
 
-        int size = node->value1i("font-size", 18);
+        int size = node->value<int32_t>("font-size", 18);
 
         m_setStyleFunc[st][styleInit::fontSize] = [this,
     size](){setFontSize(size); };
@@ -956,7 +956,7 @@ void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClas
 
     auto f = node->findNode<AssetFont>("font");
     if (f) {
-        int         size = ((ResNode *)f)->value1i("size", 0);
+        int         size = ((ResNode *)f)->value<int32_t>("size", 0);
         std::string font = ((ResNode *)f)->getValue("font");
 
         m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size]() { setFontSize(size); };

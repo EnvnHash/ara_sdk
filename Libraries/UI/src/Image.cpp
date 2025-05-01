@@ -177,7 +177,7 @@ void Image::setImgAlign(ResNode* node, state st) {
 }
 
 void Image::setImgScale(ResNode* node, state st) {
-    float scale                             = node->value1f("img-scale", 1.f);
+    float scale                             = node->value<float>("img-scale", 1.f);
     m_imgScale                              = scale;
     m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() { m_imgScale = scale; };
 }

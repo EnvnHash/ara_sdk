@@ -110,42 +110,6 @@ bool AssetManager::getvalue(string &dest, const string &path, int index) {
     return true;
 }
 
-bool AssetManager::valueiv(std::vector<int> &v, const string &path, int fcount, int def) {
-    v.clear();
-
-    auto *node = findNode<AssetFont>(path);
-    if (node == nullptr) {
-        return false;
-    }
-
-    ParVec tok = node->splitValue();
-
-    fcount = fcount > 0 ? fcount : tok.getParCount();
-    for (int i = 0; i < fcount; i++) {
-        v.emplace_back(tok.getIntPar(i, def));
-    }
-
-    return true;
-}
-
-bool AssetManager::valuefv(std::vector<float> &v, const string &path, int fcount, float def) {
-    v.clear();
-
-    auto *node = findNode<AssetFont>(path);
-    if (node == nullptr) {
-        return false;
-    }
-
-    ParVec tok = node->splitValue();
-    fcount     = fcount > 0 ? fcount : tok.getParCount();
-
-    for (int i = 0; i < fcount; i++) {
-        v.emplace_back(tok.getFloatPar(i, def));
-    }
-
-    return true;
-}
-
 float *AssetManager::color(const string& path) {
     auto c = findNode<AssetColor>(path);
     return c == nullptr ? default_Color : c->getColor4fv();
@@ -467,32 +431,6 @@ std::string AssetManager::value(const std::string &path, const std::string& def)
         return def;
     }
     return node->m_value;
-}
-
-int AssetManager::value1i(const std::string &path, int def) {
-    std::string s;
-    if (!getvalue(s, path)) {
-        return def;
-    }
-
-    try {
-        return stoi(s);
-    } catch (...) {
-        return def;
-    }
-}
-
-float AssetManager::value1f(const std::string &path, float def) {
-    std::string s;
-    if (!getvalue(s, path)) {
-        return def;
-    }
-
-    try {
-        return stof(s);
-    } catch (...) {
-        return def;
-    }
 }
 
 }  // namespace ara

@@ -421,10 +421,10 @@ void UINode::updateMatrix() {
     }
 
     // set position and size for further calculations
-    m_pos.x       = (float)m_posXInt;
-    m_pos.y       = (float)m_posYInt;
-    m_init_size.x = (float)m_widthInt;
-    m_init_size.y = (float)m_heightInt;
+    m_pos.x       = static_cast<float>(m_posXInt);
+    m_pos.y       = static_cast<float>(m_posYInt);
+    m_init_size.x = static_cast<float>(m_widthInt);
+    m_init_size.y = static_cast<float>(m_heightInt);
 
     // if there is a negative integer width or height, convert it to size - val
     if (m_widthType == unitType::Pixels && m_widthInt < 0) {

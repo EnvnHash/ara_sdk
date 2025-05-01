@@ -100,7 +100,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
     }
 
     if (node->hasValue("imagePadding")) {
-        float imgPadding                            = node->value1f("imagePadding", 1.f);
+        float imgPadding                            = node->value<float>("imagePadding", 1.f);
         m_setStyleFunc[st][styleInit::imagePadding] = [imgPadding, this]() {
             if (!m_tex.empty() && m_tex[0]) {
                 m_tex[0]->setPadding(imgPadding, state::none);
@@ -217,7 +217,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
     }
 
     if (node->hasValue("img-scale")) {
-        float scale                             = node->value1f("img-scale", 1.f);
+        float scale                             = node->value<float>("img-scale", 1.f);
         m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() {
             for (auto &it : m_tex) {
                 if (it) {
