@@ -1,6 +1,7 @@
 #include "Gizmo.h"
 
 #include <Asset/AssetImageBase.h>
+#include <SceneNodes/SNGizmoRotAxisLetter.h>
 
 #include "UIWindow.h"
 
@@ -406,7 +407,7 @@ bool Gizmo::drawToFbo(uint32_t* objId) {
     if (m_camChanged && m_gizmoSN->getChildren() && !m_gizmoSN->getChildren()->empty()) {
         for (const auto& it : *m_gizmoSN->getChildren()) {
             auto gixAx = dynamic_cast<SNGizmoRotAxisLetter*>(it);
-            if (gixAx && gixAx->gizVao) {
+            if (gixAx && gixAx->m_gizVao) {
                 m_pvm = m_cam.getMVP() * gixAx->getRotMat();
 
                 for (int i = 0; i < 2; i++) {

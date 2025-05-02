@@ -29,7 +29,7 @@ void SPNoLight::rebuildShader(uint32_t nrCameras) {
     if (!nrCameras) return;
 
 
-    string vert = s_shCol->getShaderHeader() + "// SPNoLight Light Prototype\n";
+    string vert = ShaderCollector::getShaderHeader() + "// SPNoLight Light Prototype\n";
     vert += STRINGIFY(
         layout(location = 0) in vec4 position; \n
         layout(location = 1) in vec4 normal; \n
@@ -123,7 +123,7 @@ void SPNoLight::rebuildShader(uint32_t nrCameras) {
 
     //------------------------------------------------------------------
 
-    string frag = s_shCol->getShaderHeader();
+    string frag = ShaderCollector::getShaderHeader();
 
     frag +=
         "uniform sampler2D tex0;\n"

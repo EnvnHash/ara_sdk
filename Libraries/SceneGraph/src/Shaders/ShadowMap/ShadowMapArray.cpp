@@ -34,7 +34,7 @@ void ShadowMapArray::rebuildShader(uint _nrLights) {
     // we will use ShaderBufferObjects to not have to recompile the shader every
     // time
     // ...and they are faster anyway
-    uint limitNrLights = std::max<uint>(std::min<uint>(_nrLights, (uint)max_shader_invoc), 1);
+    uint limitNrLights = std::max<uint>(std::min<uint>(_nrLights, static_cast<uint>(max_shader_invoc)), 1);
 
     string vert = shCol->getShaderHeader() + "// ShadowMapArray vertex Shader\n";
 
@@ -50,9 +50,7 @@ void ShadowMapArray::rebuildShader(uint _nrLights) {
             "uniform mat4 m_pv[" +
             std::to_string(limitNrLights) +
             "];\n"
-            "uniform mat4 " +
-            getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
-            "; \n"
+            "uniform mat4 " + getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] + "; \n"
             "uniform int lightIndIsActMesh;\n";
 
     geom += STRINGIFY(void main() {
@@ -80,7 +78,7 @@ void ShadowMapArray::rebuildFbo(uint _nrLights) {
         s_fbo.release();
 
         // delete textures views
-        for (uint i = 0; i < std::min(nrLights, (uint)depthTexViews.size()); i++) {
+        for (uint i = 0; i < std::min(nrLights, static_cast<uint>(depthTexViews.size())); i++) {
             glDeleteTextures(1, &depthTexViews[i]);
         }
     }
@@ -157,9 +155,9 @@ void ShadowMapArray::setNrLights(uint _nrLights) {
     nrLights = _nrLights;
 }
 
-void ShadowMapArray::setScreenSize(uint _width, uint _height) {
-    s_scrWidth  = _width;
-    s_scrHeight = _height;
+void ShadowMapArray::setScreenSize(uint width, uint height) {
+    s_scrWidth  = width;
+    s_scrHeight = height;
     rebuildFbo(nrLights);
 }
 

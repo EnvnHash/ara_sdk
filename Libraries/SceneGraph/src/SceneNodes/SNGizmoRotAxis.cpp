@@ -70,10 +70,10 @@ SNGizmoRotAxis::SNGizmoRotAxis(sceneData* sd) : SNGizmoAxis(sd) {
 
         // to build the full object we need for each extrCirclPoint a quad of
         // two triangles (6 points)
-        totNrIndices = nrBasePathPoints * nrExtrCirclePoints * 6;
+        m_totNrIndices = nrBasePathPoints * nrExtrCirclePoints * 6;
 
         // create the indices
-        std::vector<GLuint>     indices          = std::vector<GLuint>(totNrIndices);
+        std::vector<GLuint>     indices          = std::vector<GLuint>(m_totNrIndices);
         std::array<GLuint, 6>   quadTemplExtCirc = {0, 0, 1, 1, 0, 1};
         std::array<GLuint, 6>   quadTemplBaseP   = {0, 1, 0, 0, 1, 1};
 
@@ -89,7 +89,7 @@ SNGizmoRotAxis::SNGizmoRotAxis(sceneData* sd) : SNGizmoAxis(sd) {
         m_gizVao[vn] = make_unique<VAO>("position:3f,normal:3f", GL_STATIC_DRAW);
         m_gizVao[vn]->upload(CoordType::Position, &positions[0], nrVert);
         m_gizVao[vn]->upload(CoordType::Normal, &normals[0], nrVert);
-        m_gizVao[vn]->setElemIndices(totNrIndices, &indices[0]);
+        m_gizVao[vn]->setElemIndices(m_totNrIndices, &indices[0]);
     }
 #endif
 }
@@ -192,8 +192,7 @@ void SNGizmoRotAxis::draw(double time, double dt, CameraSet* cs, Shaders* shader
         }
 
         m_locPvm = s_cs->getProjectionMatr() * s_cs->getModelMatr() * *getModelMat() * m_gRot;
-        m_invCamMat =
-            glm::inverse(m_locPvm) * glm::scale(vec3(s_cs->getActFboSize()->y / s_cs->getActFboSize()->x, 1.f, 1.f));
+        m_invCamMat = glm::inverse(m_locPvm) * glm::scale(vec3(s_cs->getActFboSize()->y / s_cs->getActFboSize()->x, 1.f, 1.f));
 
         m_torusShader->begin();
         m_torusShader->setUniformMatrix4fv("invprojview", &m_invCamMat[0][0]);
@@ -211,13 +210,13 @@ void SNGizmoRotAxis::draw(double time, double dt, CameraSet* cs, Shaders* shader
         shader->setUniform1i("hasTexture", 0);
         shader->setUniform1i("lightMode", 0);
         shader->setUniform4f("ambient", 0.f, 0.f, 0.f, 0.f);
-        shader->setUniform4f("emissive", gColor.r * emisBright, gColor.g * emisBright, gColor.b * emisBright,
-                             gColor.a * emisBright);
-        shader->setUniform4fv("diffuse", value_ptr(gColor));
+        shader->setUniform4f("emissive", m_gColor.r * m_emisBright, m_gColor.g * m_emisBright, m_gColor.b * m_emisBright,
+                             m_gColor.a * m_emisBright);
+        shader->setUniform4fv("diffuse", value_ptr(m_gColor));
         shader->setUniform4f("specular", 1.f, 1.f, 1.f, 1.f);
         shader->setUniform1i("drawGridTexture", 0);
 
-        m_gizVao[pass == GLSG_OBJECT_MAP_PASS ? 1 : 0]->drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, totNrIndices);
+        m_gizVao[pass == GLSG_OBJECT_MAP_PASS ? 1 : 0]->drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, m_totNrIndices);
 #endif
     }
 }

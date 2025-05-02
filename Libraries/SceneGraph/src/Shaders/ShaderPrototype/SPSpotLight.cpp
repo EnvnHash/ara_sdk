@@ -30,7 +30,7 @@ SPSpotLight::SPSpotLight(sceneData* sd) : ShaderProto(sd) {
     lightProp.setConeDirection(lightDir.x * -1.0f, lightDir.y * -1.0f,
                                lightDir.z * -1.0f);  // must point opposite of eye dir
 
-    std::string vert = s_shCol->getShaderHeader();
+    std::string vert = ShaderCollector::getShaderHeader();
     vert += "// SPSpotLight Light Prototype\n";
 
     vert += STRINGIFY(layout(location = 0) in vec4 position; layout(location = 1) in vec4 normal;
@@ -57,7 +57,7 @@ SPSpotLight::SPSpotLight(sceneData* sd) : ShaderProto(sd) {
         vert += getStdPvmMult();
         vert += "}";
 
-        std::string frag = s_shCol->getShaderHeader();
+        std::string frag = ShaderCollector::getShaderHeader();
         frag += "// SPSpotLight Light Prototype\n";
 
         frag += STRINGIFY(
@@ -173,21 +173,21 @@ bool SPSpotLight::begin(CameraSet* cs, renderPass pass, uint loopNr)
 }
 
 
-bool SPSpotLight::end(renderPass pass, uint loopNr)
-{
-        if (pass == GLSG_SCENE_PASS || pass == GLSG_SCENE_PASS) s_shader->end();
+bool SPSpotLight::end(renderPass pass, uint loopNr) {
+    if (pass == GLSG_SCENE_PASS ) {
+	    s_shader->end();
+    }
 
-        return false;
+    return false;
 }
 
 
-Shaders* SPSpotLight::getShader(renderPass pass, uint loopNr)
-{
-        return s_shader;
+Shaders* SPSpotLight::getShader(renderPass pass, uint loopNr) {
+    return s_shader;
 }
-
 
 SPSpotLight::~SPSpotLight()
 {
 }
+
 }

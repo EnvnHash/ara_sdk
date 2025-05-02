@@ -179,7 +179,7 @@ void CsStereoFbo::initLayerTexShdr() {
                 \n
             });
 
-    vert = s_shCol->getShaderHeader() + "// CsStereoFbo layer texture shader, vert\n" + vert;
+    vert = ShaderCollector::getShaderHeader() + "// CsStereoFbo layer texture shader, vert\n" + vert;
 
 #ifdef ARA_USE_GLES31
     string frag = "highp uniform sampler2DArray tex; \n";
@@ -217,7 +217,7 @@ void CsStereoFbo::initLayerTexShdr() {
                    0.0, 0.0, 1.0);*/
             });
 
-    frag = s_shCol->getShaderHeader() + "// CsStereoFbo layer texture shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsStereoFbo layer texture shader, frag\n" + frag;
 
     m_layerTexShdr = s_shCol->add(shdrName, vert, frag);
 }
@@ -238,9 +238,9 @@ void CsStereoFbo::initBackTexShdr(size_t nrLayers) {
                 \n
             });
 
-    vert = s_shCol->getShaderHeader() + "// CsStereoFbo backTex shader, vert\n" + vert;
+    vert = ShaderCollector::getShaderHeader() + "// CsStereoFbo backTex shader, vert\n" + vert;
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\nuniform vec4 "
                                 "clearCol[" +
@@ -278,7 +278,7 @@ void CsStereoFbo::initBackTexShdr(size_t nrLayers) {
         "precision highp float;\n // CsStereoFbo backTex shader, frag\n" +
         frag;
 #else
-    frag = s_shCol->getShaderHeader() + "// CsStereoFbo backTex shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsStereoFbo backTex shader, frag\n" + frag;
 #endif
 
     m_backTexShdr = s_shCol->add(shdrName, vert, geom, frag);
@@ -303,7 +303,7 @@ void CsStereoFbo::initPlaneShdr(size_t nrLayers) {
         "CsStereoFbo plane shader, vert\n" +
         vert;
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\n";
     std::string geom = "uniform mat4 mvp[" + std::to_string(nrLayers) + "];";
@@ -387,7 +387,7 @@ void CsStereoFbo::initFocSquareShdr(size_t nrLayers) {
         "CsStereoFbo focus square shader, vert\n" +
         vert;
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\n";
 
@@ -439,11 +439,11 @@ void CsStereoFbo::initClearShader(size_t nrLayers) {
     }
 
     std::string vert = STRINGIFY(layout(location = 0) in vec4 position; void main() { gl_Position = position; });
-    vert             = s_shCol->getShaderHeader() + "// CsStereoFbo clear shader, vert\n" + vert;
+    vert             = ShaderCollector::getShaderHeader() + "// CsStereoFbo clear shader, vert\n" + vert;
 
     //---------------------------------------------------------
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\nuniform vec4 "
                                 "clearCol[" +
@@ -468,7 +468,7 @@ void CsStereoFbo::initClearShader(size_t nrLayers) {
     std::string frag =
         "layout (location = 0) out vec4 color; in vec4 o_col;\n void main() { "
         "color = o_col; }";
-    frag = s_shCol->getShaderHeader() + "// CsStereoFbo clear color shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsStereoFbo clear color shader, frag\n" + frag;
 
     m_clearShdr = s_shCol->add(shdrName, vert, geom, frag);
 }

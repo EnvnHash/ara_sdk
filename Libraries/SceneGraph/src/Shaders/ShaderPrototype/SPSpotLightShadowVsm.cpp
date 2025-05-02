@@ -39,7 +39,7 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
     //    if(s_shader)
     //        s_shCol->deleteShader("SPSpotLightShadowVsm");
 
-    string vert = s_shCol->getShaderHeader() + "// SPSpotLightShadowVsm Light Prototype\n";
+    string vert = ShaderCollector::getShaderHeader() + "// SPSpotLightShadowVsm Light Prototype\n";
     vert += STRINGIFY(
         layout(location = 0) in vec4 position; \n
         layout(location = 1) in vec4 normal; \n
@@ -187,7 +187,7 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
 
     //------------------------------------------------------------------
 
-    string frag = s_shCol->getShaderHeader();
+    string frag = ShaderCollector::getShaderHeader();
 
 #ifndef __APPLE__
     if (s_lights.size() > 0) frag += s_lights[0]->getLightShaderBlock();  // add LightPar BufferBlock
@@ -482,13 +482,13 @@ s_shader = s_shCol->add("SPSpotLightShadowVsm_" + std::to_string(nrCameras), ver
 ///< called every time when a new light is added with proto
 
 void SPSpotLightShadowVsm::calcLights(CameraSet *cs, renderPass _pass) {
-    if ((uint)s_lights.size() != s_nrLights || !s_shader) {
+    if (static_cast<uint>(s_lights.size()) != s_nrLights || !s_shader) {
         if (shadowGen) {
             if (m_shadowGenBound) {
                 shadowGen->getFbo()->unbind();
             }
 
-            shadowGen->rebuildFbo((uint)s_lights.size());
+            shadowGen->rebuildFbo(static_cast<uint>(s_lights.size()));
 
             if (m_shadowGenBound) {
                 shadowGen->getFbo()->bind();
@@ -498,7 +498,7 @@ void SPSpotLightShadowVsm::calcLights(CameraSet *cs, renderPass _pass) {
                 shadowGen->getShader()->end();
             }
 
-            shadowGen->rebuildShader((uint)s_lights.size());
+            shadowGen->rebuildShader(static_cast<uint>(s_lights.size()));
 
             if (m_shadowGenBound) {
                 shadowGen->getShader()->begin();
@@ -508,7 +508,7 @@ void SPSpotLightShadowVsm::calcLights(CameraSet *cs, renderPass _pass) {
         rebuildShader(cs->getNrCameras());  // unbounds the actual shaders
         if (m_shadowGenBound) shadowGen->getShader()->begin();
 
-        lightSb->resize((uint)s_lights.size());
+        lightSb->resize(static_cast<uint>(s_lights.size()));
     }
 
     s_nrLights = static_cast<uint>(s_lights.size());
@@ -589,7 +589,7 @@ void SPSpotLightShadowVsm::sendPar(CameraSet *cs, double time, SceneNode *node, 
         }
 
         if (shadowGen && s_lights.size() > 0 && shadowGen->getShader()) {
-            shadowGen->getShader()->setUniformMatrix4fv("m_pv", &pv_mats[0][0][0], (uint)s_lights.size());
+            shadowGen->getShader()->setUniformMatrix4fv("m_pv", &pv_mats[0][0][0], static_cast<uint>(s_lights.size()));
             shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)], value_ptr(node->getModelMat(parent)));
         }
     } else if ((_pass == GLSG_SCENE_PASS || _pass == GLSG_GIZMO_PASS) && s_shader) {

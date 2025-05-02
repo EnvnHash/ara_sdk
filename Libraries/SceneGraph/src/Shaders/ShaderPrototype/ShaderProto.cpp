@@ -122,10 +122,10 @@ void ShaderProto::addLight(Light* light) {
 }
 
 void ShaderProto::removeLight(Light* light) {
-    auto it = find_if(s_lights.begin(), s_lights.end(), isThisLight(light));
+    auto it = ranges::find_if(s_lights, isThisLight(light));
 
     if (it != s_lights.end()) {
-        eraseShadowMap((uint)(it - s_lights.begin()));
+        eraseShadowMap(static_cast<uint>(it - s_lights.begin()));
         s_lights.erase(it);
     } else {
         LOGE << " ShaderProto::removeLight Error!!! Couldn't find Light to remove";

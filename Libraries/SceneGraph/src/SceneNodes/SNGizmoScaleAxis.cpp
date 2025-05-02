@@ -23,25 +23,18 @@ SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
 
     // allocate memory for all positions and normals
     // two rings and eight points with each three coordinates (x, y, z)
-    vec3 positions[cylNrPointsCircle * 2 + 8];
-    vec3 normals[cylNrPointsCircle * 2 + 8];
+    vector<vec3> positions(cylNrPointsCircle * 2 + 8);
+    vector<vec3> normals(cylNrPointsCircle * 2 + 8);
+
+    auto posIt = positions.begin();
+    auto normIt = normals.begin();
 
     // define the two rings
     // 0: the cylinder bottom
     // 1: the cylinder top
     uint ind = 0;
     for (auto ringNr = 0; ringNr < 2; ringNr++) {
-        for (auto i = 0; i < cylNrPointsCircle; i++) {
-            positions[ind].x = ringPos[i * 2] * (ringNr < 2 ? cylRadius : capRadius);
-            positions[ind].y = ringNr == 0 ? 0.f : 1.f;
-            positions[ind].z = ringPos[i * 2 + 1] * (ringNr < 2 ? cylRadius : capRadius);
-
-            normals[ind].x = ringPos[i * 2];
-            normals[ind].y = 0.f;
-            normals[ind].z = ringPos[i * 2 + 1];
-
-            ++ind;
-        }
+        buildRing(cylNrPointsCircle, posIt, normIt, ringPos, cylRadius, ringNr == 0 ? 0.f : 1.f);
     }
 
     // the eight points of the cube
@@ -57,15 +50,16 @@ SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
 
     for (auto & cube_vertice : cube_vertices) {
         for (auto i = 0; i < 3; i++) {
-            positions[ind][i] = cube_vertice[i] * cubeScale + (i == 1 ? 1.f - cubeScale : 0.f);
+            (*posIt)[i] = cube_vertice[i] * cubeScale + (i == 1 ? 1.f - cubeScale : 0.f);
         }
 
         vec3 cubePointNormal = glm::normalize(vec3(cube_vertice[0], cube_vertice[1], cube_vertice[2]));
         for (auto i = 0; i < 3; i++) {
-            normals[ind][i] = cubePointNormal[i];
+            (*normIt)[i]  = cubePointNormal[i];
         }
 
-        ++ind;
+        ++posIt;
+        ++normIt;
     }
 
     // create Indices
@@ -100,12 +94,12 @@ SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
         }
     }
 
-    gizVao = make_unique<VAO>("position:3f,normal:3f", GL_STATIC_DRAW);
-    gizVao->upload(CoordType::Position, &positions[0][0], cylNrPointsCircle * 2 + 8);
-    gizVao->upload(CoordType::Normal, &normals[0][0], cylNrPointsCircle * 2 + 8);
-    gizVao->setElemIndices(cylNrPointsCircle * 6 + 36, &cyl_indices[0]);
+    m_gizVao = make_unique<VAO>("position:3f,normal:3f", GL_STATIC_DRAW);
+    m_gizVao->upload(CoordType::Position, &positions[0][0], cylNrPointsCircle * 2 + 8);
+    m_gizVao->upload(CoordType::Normal, &normals[0][0], cylNrPointsCircle * 2 + 8);
+    m_gizVao->setElemIndices(cylNrPointsCircle * 6 + 36, &cyl_indices[0]);
 
-    totNrPoints = cylNrPointsCircle * 6 + 36;
+    m_totNrPoints = cylNrPointsCircle * 6 + 36;
 }
 
 void SNGizmoScaleAxis::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo) {
@@ -117,13 +111,13 @@ void SNGizmoScaleAxis::draw(double time, double dt, CameraSet* cs, Shaders* shad
         shader->setUniform1i("hasTexture", 0);
         shader->setUniform1i("lightMode", 0);
         shader->setUniform4f("ambient", 0.f, 0.f, 0.f, 0.f);
-        shader->setUniform4f("emissive", gColor.r * emisBright, gColor.g * emisBright, gColor.b * emisBright,
-                              gColor.a * emisBright);
-        shader->setUniform4fv("diffuse", glm::value_ptr(gColor));
+        shader->setUniform4f("emissive", m_gColor.r * m_emisBright, m_gColor.g * m_emisBright, m_gColor.b * m_emisBright,
+                              m_gColor.a * m_emisBright);
+        shader->setUniform4fv("diffuse", glm::value_ptr(m_gColor));
         shader->setUniform4f("specular", 1.f, 1.f, 1.f, 1.f);
         shader->setUniform1i("drawGridTexture", 0);
 
-        gizVao->drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, totNrPoints);
+        m_gizVao->drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, m_totNrPoints);
     }
 }
 

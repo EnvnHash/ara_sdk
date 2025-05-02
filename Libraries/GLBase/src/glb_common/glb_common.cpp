@@ -888,18 +888,16 @@ void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pix
     glDeleteFramebuffers(1, &fbo);
 }
 
-vector<GLfloat> get2DRing(int nrPoints) {
-    vector<GLfloat> ringPos(nrPoints * 2);
+vector<vec2> get2DRing(int nrPoints) {
+    vector<vec2> ringPos(nrPoints);
 
     for (int i = 0; i < nrPoints; i++) {
         // define a circle with n points
         float fInd = static_cast<float>(i) / static_cast<float>(nrPoints);
-        float x = std::cos(fInd * static_cast<float>(M_PI) * 2.f);
-        float z = std::sin(fInd * static_cast<float>(M_PI) * 2.f);
 
         // tip and cap
-        ringPos[i * 2]     = x;
-        ringPos[i * 2 + 1] = z;
+        ringPos[i].x = std::cos(fInd * static_cast<float>(M_PI) * 2.f);
+        ringPos[i].y = std::sin(fInd * static_cast<float>(M_PI) * 2.f);
     }
 
     return ringPos;
@@ -910,7 +908,7 @@ bool initGLEW() {
     glewExperimental = GL_TRUE;
     GLuint err       = glewInit();
     if (GLEW_OK != err) {
-        fprintf(stderr, "Error couldn't init GLEW : %s\n", glewGetErrorString(err));
+        LOGE << "Error couldn't init GLEW : " << glewGetErrorString(err);
         return false;
     }
     glGetError();  // delete glew standard error (bug in glew)

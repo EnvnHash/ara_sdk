@@ -46,7 +46,7 @@ SPSkyBox::SPSkyBox(sceneData* sd) : ShaderProto(sd) {
 void SPSkyBox::rebuildShader(uint32_t nrCameras) {
     if (!nrCameras) return;
 
-    string vert = s_shCol->getShaderHeader() + "// SPSkyBox \n";
+    string vert = ShaderCollector::getShaderHeader() + "// SPSkyBox \n";
     vert += STRINGIFY(layout(location = 0) in vec4 position; \n out vec4 pos; \n void main() { pos = position; }\n);
 
     std::string geom = s_glbase->shaderCollector().getShaderHeader() +
@@ -83,7 +83,7 @@ void SPSkyBox::rebuildShader(uint32_t nrCameras) {
 
     //---
 
-    string frag = s_shCol->getShaderHeader();
+    string frag = ShaderCollector::getShaderHeader();
 
     frag += STRINGIFY(
         in GS_FS {\n

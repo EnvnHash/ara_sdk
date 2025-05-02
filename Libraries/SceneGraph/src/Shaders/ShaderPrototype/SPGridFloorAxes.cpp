@@ -27,7 +27,7 @@ void SPGridFloorAxes::rebuildShader(uint32_t nrCameras) {
 
     if (s_shader) s_shCol->deleteShader(s_name);
 
-    string vert = s_shCol->getShaderHeader() + "// SPGridFloorAxes \n";
+    string vert = ShaderCollector::getShaderHeader() + "// SPGridFloorAxes \n";
     vert +=
         "layout(location = 0) in vec4 position; \n"
         "layout(location = 3) in vec4 color; \n"
@@ -103,7 +103,7 @@ void SPGridFloorAxes::rebuildShader(uint32_t nrCameras) {
 
     //------------------------------------------------------------------
 
-    string frag = s_shCol->getShaderHeader();
+    string frag = ShaderCollector::getShaderHeader();
 
     frag += STRINGIFY(uniform vec2 floorGridSize;\n
         in GS_FS {\n
@@ -127,18 +127,20 @@ void SPGridFloorAxes::rebuildShader(uint32_t nrCameras) {
 
 void SPGridFloorAxes::clear(renderPass pass) {}
 
-void SPGridFloorAxes::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode* parent, renderPass pass,
-                              uint loopNr) {
+void SPGridFloorAxes::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode* parent, renderPass pass, uint loopNr) {
     ShaderProto::sendPar(cs, time, node, parent, pass);
 
-    if (pass == GLSG_SCENE_PASS && s_shader)
+    if (pass == GLSG_SCENE_PASS && s_shader) {
         s_shader->setUniform1fv("floorSwitch", cs->getSetFloorSwitches(), cs->getNrCameras());
+    }
 }
 
 bool SPGridFloorAxes::begin(CameraSet* cs, renderPass pass, uint loopNr) {
     switch (pass) {
         case GLSG_SCENE_PASS:
-            if (s_shader) s_shader->begin();
+            if (s_shader) {
+                s_shader->begin();
+            }
             return true;
 
         default: return false;
@@ -146,8 +148,11 @@ bool SPGridFloorAxes::begin(CameraSet* cs, renderPass pass, uint loopNr) {
 }
 
 bool SPGridFloorAxes::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS)
-        if (s_shader) s_shader->end();
+    if (pass == GLSG_SCENE_PASS) {
+        if (s_shader) {
+            s_shader->end();
+        }
+    }
 
     return false;
 }
@@ -156,17 +161,18 @@ void SPGridFloorAxes::postRender(renderPass pass) {}
 
 Shaders* SPGridFloorAxes::getShader(renderPass pass, uint loopNr) {
     switch (pass) {
-        case GLSG_SCENE_PASS: return s_shader ? s_shader : nullptr;
-
+        case GLSG_SCENE_PASS:
+            return s_shader ? s_shader : nullptr;
         default: return nullptr;
     }
 }
 
-void SPGridFloorAxes::setScreenSize(uint width, uint height) { s_scrWidth = width, s_scrHeight = height; }
+void SPGridFloorAxes::setScreenSize(uint width, uint height) {
+    s_scrWidth = width, s_scrHeight = height;
+}
 
-void SPGridFloorAxes::setNrCams(int nrCams) {
-    nrCams = nrCams;
-    rebuildShader(nrCams);
+void SPGridFloorAxes::setNrCams(int num) {
+    rebuildShader(num);
 }
 
 }  // namespace ara

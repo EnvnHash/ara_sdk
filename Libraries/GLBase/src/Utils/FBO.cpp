@@ -67,63 +67,8 @@ void FBO::fromShared(FBO *sharedFbo) {
         glGenFramebuffers(1, &m_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-        // Attach the texture to the s_fbo,  iterate through the different types
-        for (auto i = 0; i < m_nrAttachments; i++) {
-            switch (m_target) {
-#ifndef ARA_USE_GLES31
-                case GL_TEXTURE_1D:
-                    glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_target, m_textures[i], 0);
-                    break;
-#endif
-                case GL_TEXTURE_2D:
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_target, m_textures[i], 0);
-                    break;
-                case GL_TEXTURE_2D_MULTISAMPLE:
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_target, m_textures[i], 0);
-                    break;
-#ifndef ARA_USE_GLES31
-                case GL_TEXTURE_1D_ARRAY:
-                    // glFramebufferTexture2D(GL_FRAMEBUFFER,
-                    // GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_1D_ARRAY,
-                    // m_depthBuf, 0);
-                    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_textures[i], 0);
-                    break;
-                case GL_TEXTURE_3D:
-                    if (m_layered)
-                        glFramebufferTexture3D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_target, m_textures[i], 0, i);
-                    else
-                        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_textures[i], 0);
-                    break;
-                case GL_TEXTURE_2D_ARRAY:
-                    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_textures[i], 0);
-                    break;
-                case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
-                    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_textures[i], 0);
-                    break;
-                case GL_TEXTURE_RECTANGLE:
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_target, m_textures[i], 0);
-                    break;
-#endif
-            }
-        }
-
-        if (m_hasDepthBuf)
-#ifndef ARA_USE_GLES31
-            glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, m_depthBuf, 0);
-#else
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_depthBuf, 0);
-#endif
-
-        checkFbo();
-
-        // if the FBO we are sharing is removed and m_inited again, we'd like to
-        // be informed since we also need to update the local parameters of this
-        // instance sharedFbo->addReinitCb((void*)sharedFbo, [this,
-        // sharedFbo](){ this->remove(); this->fromShared(sharedFbo); });
-
+        attachTextures(true);
         m_inited = true;
-        // m_hasBeenInited = true;
-
         restoreStates();
     }
 }
@@ -695,7 +640,7 @@ void FBO::bind(bool saveStates) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     glViewport(0, 0, m_tex_width, m_tex_height);
-    glScissor(0, 0, m_tex_width, m_tex_height);  // wichtig!!!
+    glScissor(0, 0, m_tex_width, m_tex_height);
 
 #ifndef ARA_USE_GLES31
     if (m_target == GL_TEXTURE_2D_MULTISAMPLE || m_target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY) {
@@ -1093,17 +1038,14 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
 
     switch (m_pixType) {
         case GL_UNSIGNED_SHORT: {
-            switch (format) {
-                case GL_RED:
-                    bitmap = FreeImage_AllocateT(FIT_UINT16, m_tex_width, m_tex_height);
-                break;
-                default:
-                    LOGE << "Texture::saveTexToFile2D Error: unknown m_format";
-                break;
+            if (format == GL_RED) {
+                bitmap = FreeImage_AllocateT(FIT_UINT16, m_tex_width, m_tex_height);
+            } else {
+                LOGE << "Texture::saveTexToFile2D Error: unknown m_format";
             }
 
             if (bitmap) {
-                auto *bits = (GLubyte *)FreeImage_GetBits(bitmap);
+                auto bits = FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
                 glesGetTexImage(texId, GL_TEXTURE_2D, GL_RED, GL_UNSIGNED_SHORT, m_tex_width, m_tex_height, bits);
 #else
@@ -1118,13 +1060,7 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
             bitmap = FreeImage_Allocate(m_tex_width, m_tex_height, nrChan * 8);
             if (bitmap) {
                 FreeImage_SetTransparent(bitmap, ara::getExtType(m_type) == GL_RGBA);
-
-                auto *bits = (GLubyte *)FreeImage_GetBits(bitmap);
-#ifdef ARA_USE_GLES31
-                glesGetTexImage(texId, saveTarget, format, m_pixType, m_tex_width, m_tex_height, bits);
-#else
-                glGetTexImage(saveTarget, 0, format, m_pixType, bits);
-#endif
+                getTexImage(bitmap, saveTarget, format);
             } else
                 LOGE << "Texture::saveTexToFile2D Error: could not allocate "
                         "bitmap";
@@ -1139,17 +1075,7 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
                 case GL_RGBA32F: bitmap = FreeImage_AllocateT(FIT_RGBAF, m_tex_width, m_tex_height); break;
                 default: LOGE << "Texture::saveTexToFile2D Error: unknown m_format"; break;
             }
-
-            if (bitmap) {
-                auto *bits = (GLubyte *)FreeImage_GetBits(bitmap);
-#ifdef ARA_USE_GLES31
-                glesGetTexImage(texId, saveTarget, format, m_pixType, m_tex_width, m_tex_height, bits);
-#else
-                glGetTexImage(saveTarget, 0, format, m_pixType, bits);
-#endif
-            } else
-                LOGE << "Texture::saveTexToFile2D Error: could not allocate "
-                        "bitmap";
+            getTexImage(bitmap, saveTarget, format);
             break;
         }
         default: LOGE << "Texture::saveTexToFile2D Error: Unknown pixel m_format"; break;
@@ -1163,11 +1089,21 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
     return true;
 }
 
-void FBO::download(void *ptr, GLenum intFormat, GLenum extFormat) {
-    // bind the texture
-    glBindTexture(m_target, getColorImg());
+void FBO::getTexImage(FIBITMAP* bitmap, GLenum saveTarget, GLenum format) const {
+    if (bitmap) {
+        auto *bits = FreeImage_GetBits(bitmap);
+#ifdef ARA_USE_GLES31
+        glesGetTexImage(texId, saveTarget, format, m_pixType, m_tex_width, m_tex_height, bits);
+#else
+        glGetTexImage(saveTarget, 0, format, m_pixType, bits);
+#endif
+    } else
+        LOGE << "Texture::saveTexToFile2D Error: could not allocate "
+                "bitmap";
+}
 
-    // read back
+void FBO::download(void *ptr, GLenum intFormat, GLenum extFormat) const {
+    glBindTexture(m_target, getColorImg());
     glPixelStorei(GL_PACK_ALIGNMENT, 4);  // should be 4
 
     // synchronous, blocking command, no swap() needed
@@ -1179,6 +1115,24 @@ void FBO::download(void *ptr, GLenum intFormat, GLenum extFormat) {
     if (ptr)
         glGetTexImage(m_target, 0, extFormat ? extFormat : ara::getExtType(intFormat), ara::getPixelType(intFormat), ptr);
 #endif
+}
+
+void FBO::genFbo() {
+    glGenFramebuffers(1, &m_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+}
+
+void FBO::deleteFbo() const {
+    glDeleteFramebuffers(1, &m_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+GLuint FBO::getColorImg() const {
+    return (!m_textures.empty() && m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8) ? m_textures[0] : 0;
+}
+
+GLuint FBO::getColorImg(int index) const {
+    return static_cast<int>(m_textures.size()) > index && m_nrAttachments > index && m_type != GL_DEPTH24_STENCIL8 ? m_textures[index] : 0;
 }
 
 }  // namespace ara

@@ -546,7 +546,6 @@ void Texture::genTexture(GLuint& id) {
 
 #if !defined(__EMSCRIPTEN__) && !defined(ARA_USE_GLES31)
 GLuint Texture::allocate1D(uint w, GLenum internalGlDataType, GLenum extGlDataType, GLenum pixelType) {
-    // m_texData.width = std::min<uint>(w, (uint)maxTexSize);
     m_texData.width          = w;
     m_texData.tex_t          = static_cast<float>(w) / static_cast<float>(m_texData.width);
     m_texData.target         = GL_TEXTURE_1D;

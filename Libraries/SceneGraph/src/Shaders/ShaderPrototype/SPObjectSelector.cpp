@@ -61,7 +61,7 @@ void SPObjectSelector::initDepthGenShader(uint nrCameras) {
 
     // if (s_shader) m_shCol->deleteShader("SPObjectSelector_gen");
 
-    std::string vert = s_shCol->getShaderHeader();
+    std::string vert = ShaderCollector::getShaderHeader();
     vert +=
         "// SPObjectSelector_gen Prototype\n"
         "layout(location = 0) in vec4 position; \n"
@@ -74,7 +74,7 @@ void SPObjectSelector::initDepthGenShader(uint nrCameras) {
         " * position; \n"
         "}";
 
-    std::string geom = s_shCol->getShaderHeader() + "layout(triangles, invocations=" + to_string(nrCameras) +
+    std::string geom = ShaderCollector::getShaderHeader() + "layout(triangles, invocations=" + to_string(nrCameras) +
                        ") in;\n"
                        "layout(triangle_strip, max_vertices=3) out;\n"
                        "uniform mat4 " +
@@ -96,7 +96,7 @@ void SPObjectSelector::initDepthGenShader(uint nrCameras) {
                        "EndPrimitive(); \n"
                        "}";
 
-    std::string frag = s_shCol->getShaderHeader();
+    std::string frag = ShaderCollector::getShaderHeader();
     frag += "// SPObjectSelector Light Prototype\n";
 
     frag += STRINGIFY(
@@ -111,7 +111,7 @@ void SPObjectSelector::initDepthGenShader(uint nrCameras) {
 // TODO: expand to arbitray number of layers, at the moment, only use first
 // layer
 void SPObjectSelector::initDepthReadShader() {
-    std::string vert = s_shCol->getShaderHeader();
+    std::string vert = ShaderCollector::getShaderHeader();
     vert += "// SPObjectSelector_read Prototype\n";
 
     vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main() {
@@ -119,7 +119,7 @@ void SPObjectSelector::initDepthReadShader() {
         \n
     });
 
-    std::string frag = s_shCol->getShaderHeader();
+    std::string frag = ShaderCollector::getShaderHeader();
     frag += "// SPObjectSelector_read Prototype\n";
 
 #ifdef ARA_USE_GLES31
@@ -869,8 +869,7 @@ vec4 SPObjectSelector::unProjectMouse(vec4& inPoint, vec3 camPos, vec3& planeOri
     mouseDown3D.z    = -1.f;
     mouseDown3D.w    = 1.f;
 
-    // unproject (with the inverse projection, view and model matrix of the
-    // camera)
+    // unproject (with the inverse projection, view and model matrix of the camera)
     mouseDown3D = inverse(m_cs->getProjectionMatr() * m_cs->getViewMatr()) * mouseDown3D;
     mouseDown3D /= mouseDown3D.w;
 
@@ -880,7 +879,7 @@ vec4 SPObjectSelector::unProjectMouse(vec4& inPoint, vec3 camPos, vec3& planeOri
     float d   = dot(dir, planeNormal);
     m_rayDist = dot(planeOrig - camPos, planeNormal) / d;
 
-    return vec4(camPos + dir * m_rayDist, 1.f);
+    return {camPos + dir * m_rayDist, 1.f};
 }
 
 void SPObjectSelector::addGizmo(transMode gMode) {

@@ -9,6 +9,7 @@
 
 #include "CameraSets/CameraSet.h"
 #include "SceneNodes/SNGizmoRotAxis.h"
+#include "SceneNodes/SNGizmoRotAxisLetter.h"
 
 using namespace glm;
 using namespace std;
@@ -18,34 +19,32 @@ namespace ara {
 SNGizmoRotAxisLetter::SNGizmoRotAxisLetter(sceneData* sd) : SNGizmoAxis(sd) {
     m_nodeType = GLSG_GIZMO;
 
-    // allocate memory for all positions and normals
-    // we just need a simple line
+    // allocate memory for all positions and normals we just need a simple line
     m_colors.resize(16);
     ranges::fill(m_colors, 1.f);
 
-    gizVao = make_unique<VAO>("position:3f,color:4f", GL_STATIC_DRAW);
-    gizVao->upload(CoordType::Position, &m_positions[0], 4);
-    gizVao->upload(CoordType::Color, &m_colors[0], 4);
+    m_gizVao = make_unique<VAO>("position:3f,color:4f", GL_STATIC_DRAW);
+    m_gizVao->upload(CoordType::Position, &m_positions[0], 4);
+    m_gizVao->upload(CoordType::Color, &m_colors[0], 4);
 
-    totNrPoints = 2;
+    m_totNrPoints = 2;
 }
 
-void SNGizmoRotAxisLetter::draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo) {
+void SNGizmoRotAxisLetter::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo) {
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    if (_pass == GLSG_GIZMO_PASS || _pass == GLSG_OBJECT_MAP_PASS) {
-        // material
-        _shader->setUniform1i("hasTexture", 0);
-        _shader->setUniform1i("lightMode", 0);
-        _shader->setUniform4f("ambient", 0.f, 0.f, 0.f, 0.f);
-        _shader->setUniform4f("emissive", gColor.r * emisBright, gColor.g * emisBright, gColor.b * emisBright,
-                              gColor.a * emisBright);
-        _shader->setUniform4fv("diffuse", value_ptr(gColor));
-        _shader->setUniform4f("specular", 1.f, 1.f, 1.f, 1.f);
-        _shader->setUniform1i("drawGridTexture", 0);
+    if (pass == GLSG_GIZMO_PASS || pass == GLSG_OBJECT_MAP_PASS) {
+        shader->setUniform1i("hasTexture", 0);
+        shader->setUniform1i("lightMode", 0);
+        shader->setUniform4f("ambient", 0.f, 0.f, 0.f, 0.f);
+        shader->setUniform4f("emissive", m_gColor.r * m_emisBright, m_gColor.g * m_emisBright, m_gColor.b * m_emisBright,
+                              m_gColor.a * m_emisBright);
+        shader->setUniform4fv("diffuse", value_ptr(m_gColor));
+        shader->setUniform4f("specular", 1.f, 1.f, 1.f, 1.f);
+        shader->setUniform1i("drawGridTexture", 0);
 
-        gizVao->draw(GL_LINES);
+        m_gizVao->draw(GL_LINES);
     }
 }
 

@@ -17,13 +17,13 @@ public:
     twPlane getPlaneType() const { return m_planeType; }
 
 private:
-    std::array<std::array<std::unique_ptr<VAO>, 2>, 2> planeVao{};
-    std::array<glm::vec4, 2>                           gColor{};
-    float                                              emisBright=0.3f;
-    std::array<float, 2>                               ringInnerWidth{0.35f, 0.2f};
-    std::array<float, 2>                               ringOuterWidth{0.45f, 0.6f};
-    uint                                               nrBasePoints=20;
-    twPlane                                            m_planeType = twPlane::xy;
+    std::array<std::array<std::unique_ptr<VAO>, 2>, 2>  m_planeVao{};
+    std::array<glm::vec4, 2>                            m_gColor{};
+    float                                               m_emisBright=0.3f;
+    glm::vec2                                           m_ringInnerWidth{0.35f, 0.2f};
+    glm::vec2                                           m_ringOuterWidth{0.45f, 0.6f};
+    uint                                                m_nrBasePoints=20;
+    twPlane                                             m_planeType = twPlane::xy;
 };
 
 }  // namespace ara

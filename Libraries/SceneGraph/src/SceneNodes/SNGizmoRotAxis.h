@@ -8,8 +8,8 @@ namespace ara {
 
 class SNGizmoRotAxis : public SNGizmoAxis {
 public:
-    SNGizmoRotAxis(sceneData* sd = nullptr);
-    virtual ~SNGizmoRotAxis() = default;
+    explicit SNGizmoRotAxis(sceneData* sd = nullptr);
+    ~SNGizmoRotAxis() override = default;
 
     void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr) override;
 

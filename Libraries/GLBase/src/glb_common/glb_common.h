@@ -565,7 +565,7 @@ static const inline int                stdQuadInd[6]{0, 1, 3, 3, 2, 0};  // two 
 void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pixelType, int width, int height,
                      GLubyte *pixels);
 
-std::vector<GLfloat> get2DRing(int nrPoints);
+std::vector<glm::vec2> get2DRing(int nrPoints);
 
 bool initGLEW();
 

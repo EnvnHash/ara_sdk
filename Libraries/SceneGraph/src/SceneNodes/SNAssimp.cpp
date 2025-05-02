@@ -5,6 +5,7 @@
 #ifdef ARA_USE_ASSIMP
 
 #include "SceneNodes/SNAssimp.h"
+#include "Assimp/AssimpImport.h"
 
 using namespace glm;
 using namespace std;

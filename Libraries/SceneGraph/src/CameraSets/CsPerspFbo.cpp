@@ -58,7 +58,7 @@ void CsPerspFbo::initLayerTexShdr() {
             gl_Position = m_pvm * position;\n
         });
 
-    vert = s_shCol->getShaderHeader() + "// CsPerspFbo layer texture shader, vert\n" + vert;
+    vert = ShaderCollector::getShaderHeader() + "// CsPerspFbo layer texture shader, vert\n" + vert;
 
 #if defined(ARA_USE_GLES31)
     string frag = "highp uniform sampler2DArray tex; \n";
@@ -88,18 +88,18 @@ void CsPerspFbo::initLayerTexShdr() {
                 : texture(tex, vec3(tex_coord, float(layerNr)));
             });
 
-    frag = s_shCol->getShaderHeader() + "// CsPerspFbo layer texture shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsPerspFbo layer texture shader, frag\n" + frag;
 
     m_layerTexShdr = s_shCol->add("CsPerspFbo", vert, frag);
 }
 
 void CsPerspFbo::initClearShader(int nrLayers) {
     std::string vert = STRINGIFY(layout(location = 0) in vec4 position; void main() { gl_Position = position; });
-    vert             = s_shCol->getShaderHeader() + "// CsPerspFbo clear shader, vert\n" + vert;
+    vert             = ShaderCollector::getShaderHeader() + "// CsPerspFbo clear shader, vert\n" + vert;
 
     //---------------------------------------------------------
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\nuniform vec4 "
                                 "clearCol[" +
@@ -122,7 +122,7 @@ void CsPerspFbo::initClearShader(int nrLayers) {
 
     std::string frag = "layout (location = 0) out vec4 color; in vec4 o_col;\n void main() { "
         "color = o_col; }";
-    frag = s_shCol->getShaderHeader() + "// CsPerspFbo clear color shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsPerspFbo clear color shader, frag\n" + frag;
 
     m_clearShdr = s_shCol->add("CsPerspFbo_ClearShader", vert, geom, frag);
 }

@@ -35,15 +35,15 @@ void ShadowMapVsmArray::rebuildShader(uint _nrLights) {
         // we will use ShaderBufferObjects to not have to recompile the shader
         // every time
         // ...and they are faster anyway
-        uint limitNrLights = std::max<uint>(std::min<uint>(_nrLights, (uint)max_shader_invoc), 1);
+        uint limitNrLights = std::max<uint>(std::min<uint>(_nrLights, static_cast<uint>(max_shader_invoc)), 1);
 
-        string vert = shCol->getShaderHeader() + "// ShadowMapVsmArray vertex Shader\n";
+        string vert = ShaderCollector::getShaderHeader() + "// ShadowMapVsmArray vertex Shader\n";
         vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main() {
             \n gl_Position = position;
             \n
         });
 
-        std::string geom = shCol->getShaderHeader() + "// ShadowMapVsmArray geom Shader\n";
+        std::string geom = ShaderCollector::getShaderHeader() + "// ShadowMapVsmArray geom Shader\n";
         geom += "layout(triangles, invocations= " + std::to_string(limitNrLights) +
                 ") in;\n"
                 "layout(triangle_strip, max_vertices = 3) out;\n"
@@ -69,7 +69,7 @@ void ShadowMapVsmArray::rebuildShader(uint _nrLights) {
             }
         });
 
-        std::string frag = shCol->getShaderHeader() + "// ShadowMapVsmArray fragment Shader\n";
+        std::string frag = ShaderCollector::getShaderHeader() + "// ShadowMapVsmArray fragment Shader\n";
 
         frag += STRINGIFY(
             in GS_FS { vec4 position; } v_in; \n

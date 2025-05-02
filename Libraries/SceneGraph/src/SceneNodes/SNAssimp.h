@@ -2,11 +2,11 @@
 
 #ifdef ARA_USE_ASSIMP
 
-#include "Assimp/AssimpImport.h"
 #include "SceneNodes/SceneNode.h"
 
 namespace ara {
 
+class AssimpImport;
 class CameraSet;
 
 class SNAssimp : public SceneNode {
@@ -17,10 +17,10 @@ public:
     bool loadMesh();
 
     std::string m_fileName;
-    bool        loaded = false;
+    bool        m_loaded = false;
 
 protected:
-    std::unique_ptr<AssimpImport> aImport;
+    std::unique_ptr<AssimpImport> m_aImport;
 };
 
 }  // namespace ara

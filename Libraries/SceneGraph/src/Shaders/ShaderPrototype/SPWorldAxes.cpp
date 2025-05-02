@@ -27,7 +27,7 @@ void SPWorldAxes::rebuildShader(uint32_t nrCameras) {
 
     if (s_shader) s_shCol->deleteShader(s_name);
 
-    string vert = s_shCol->getShaderHeader() + "// SPWorldAxes \n";
+    string vert = ShaderCollector::getShaderHeader() + "// SPWorldAxes \n";
     vert +=
         "layout(location = 0) in vec4 position; \n"
         "layout(location = 3) in vec4 color; \n"
@@ -101,7 +101,7 @@ void SPWorldAxes::rebuildShader(uint32_t nrCameras) {
 
     //------------------------------------------------------------------
 
-    string frag = s_shCol->getShaderHeader();
+    string frag = ShaderCollector::getShaderHeader();
 
     frag += STRINGIFY(
         in GS_FS {\n

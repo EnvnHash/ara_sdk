@@ -3,6 +3,7 @@
 //
 
 #include <Scene3DTool.h>
+#include <SceneNodes/SNGizmoPlane.h>
 #include <UIWindow.h>
 
 using namespace std;
@@ -17,13 +18,17 @@ namespace fs = std::filesystem;
 
 namespace ara {
 
-Scene3DTool::Scene3DTool() : Div() { setName(getTypeName<Scene3DTool>()); }
+Scene3DTool::Scene3DTool() {
+    setName(getTypeName<Scene3DTool>());
+}
 
-Scene3DTool::Scene3DTool(std::string &&styleClass) : Div(std::move(styleClass)) { setName(getTypeName<Scene3DTool>()); }
+Scene3DTool::Scene3DTool(const std::string &styleClass) : Div(styleClass) {
+    setName(getTypeName<Scene3DTool>());
+}
 
 Scene3DTool::~Scene3DTool() {
     if (m_sharedRes && m_sharedRes->win) {
-        auto uiWin = (UIWindow *)m_sharedRes->win;
+        auto uiWin = static_cast<UIWindow *>(m_sharedRes->win);
         uiWin->removeGlobalKeyDownCb(this);
         uiWin->removeGlobalKeyUpCb(this);
     }

@@ -284,14 +284,12 @@ void GLRenderer::freeGLResources() {
 
 void GLRenderer::loadTypo(filesystem::path typoPath) {
     if (!m_typo && s_inited) {
-        m_typo = make_unique<TypoGlyphMap>((uint)m_dim.x, (uint)m_dim.y);
-        // m_typo->setFontHeight(45);
+        m_typo = make_unique<TypoGlyphMap>(static_cast<uint>(m_dim.x), static_cast<uint>(m_dim.y));
         m_typo->loadFont((m_dataPath / typoPath).string().c_str(), &s_shCol);
     }
 }
 
 bool GLRenderer::draw(double time, double dt, int ctxNr) {
-    // std::unique_lock<std::mutex> l( *m_glbase->glMtx() );
     m_doSwap = m_procSteps[Draw].active;
 
     if (s_inited) {
@@ -328,15 +326,18 @@ void GLRenderer::iterate() {
 }
 
 void GLRenderer::close(bool direct) {
-    if (!s_inited) return;
+    if (!s_inited) {
+        return;
+    }
 
-    if (!direct)
+    if (!direct) {
         m_glbase->runOnMainThread([this] {
             closeEvtLoopCb();
             return true;
         });
-    else
+    } else {
         closeEvtLoopCb();
+    }
 }
 
 bool GLRenderer::closeEvtLoopCb() {

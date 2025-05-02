@@ -27,7 +27,7 @@ SPDirLight::SPDirLight(sceneData* sd) : ShaderProto(sd) {
     lightProp.setColor(1.0f, 1.0f, 1.0f);  // LightColor
 
     // vertex shader
-    std::string vert = s_shCol->getShaderHeader();
+    std::string vert = ShaderCollector::getShaderHeader();
     vert += "//SPDirLight Directional Light Prototype\n";
 
     vert += STRINGIFY(layout(location = 0) in vec4 position; layout(location = 1) in vec4 normal;
@@ -53,7 +53,7 @@ SPDirLight::SPDirLight(sceneData* sd) : ShaderProto(sd) {
 
         vert += getStdPvmMult() + "}";
 
-        std::string frag = s_shCol->getShaderHeader();
+        std::string frag = ShaderCollector::getShaderHeader();
         frag += "//SPDirLight Directional Light Prototype\n";
 
         frag += STRINGIFY(
@@ -146,20 +146,19 @@ bool SPDirLight::begin(CameraSet* cs, renderPass pass, uint loopNr)
 }
 
 
-bool SPDirLight::end(renderPass pass, uint loopNr)
-{
-        s_shader->end();
-        return false;
+bool SPDirLight::end(renderPass pass, uint loopNr) {
+    s_shader->end();
+    return false;
 }
 
 
-Shaders* SPDirLight::getShader(renderPass pass, uint loopNr)
-{
-        return s_shader;
+Shaders* SPDirLight::getShader(renderPass pass, uint loopNr) {
+    return s_shader;
 }
 
 
 SPDirLight::~SPDirLight() 
 {
 }
+
 }

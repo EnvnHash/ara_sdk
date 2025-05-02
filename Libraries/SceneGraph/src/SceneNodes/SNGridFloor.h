@@ -8,11 +8,12 @@ class SNGridFloor : public SceneNode {
 public:
     SNGridFloor(sceneData* sd = nullptr);
 
-    void update(double time, double dt, CameraSet* cs);
-    void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr);
+    void update(double time, double dt, CameraSet* cs) override;
+    void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr) override;
 
     void setDepthMask(bool val) { m_depthMask = val; }
-    void setBasePlane(basePlane bp) {
+
+    virtual void setBasePlane(basePlane bp) {
         m_basePlane   = bp;
         m_rotationSet = false;
     }

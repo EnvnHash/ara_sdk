@@ -223,20 +223,20 @@ void SNParticles::update(double time, double dt) {
     model = glm::rotate(float(M_PI * time * 0.02), glm::vec3(0.f, 1.f, 0.f)) * glm::translate(glm::vec3(0.f, 0.f, 0.f));
 
     // update struct representing UBO
-    mShaderParams.numParticles  = (uint)mParticles->getSize();
-    mShaderParams.noiseStrength = noiseStren + float(sin(time * 0.02f)) * 0.0008f;
+    mShaderParams.numParticles  = static_cast<uint>(mParticles->getSize());
+    mShaderParams.noiseStrength = noiseStren + static_cast<float>(sin(time * 0.02f)) * 0.0008f;
     mShaderParams.spriteSize    = spriteSize;
-    initAmt                     = float(sin(time * 0.125)) * 0.0025f + 0.0025f;
+    initAmt                     = static_cast<float>(sin(time * 0.125)) * 0.0025f + 0.0025f;
     mShaderParams.initAmt       = initAmt;
-    mShaderParams.noiseFreq     = noiseFreq + float(sin(time * 0.02)) * 0.5f;
+    mShaderParams.noiseFreq     = noiseFreq + static_cast<float>(sin(time * 0.02)) * 0.5f;
 
     if (mEnableAttractor) {
         // move attractor
         const float speed         = 0.1f;
-        mShaderParams.attractor.x = sin(mTime * speed + (float)sin(time * 0.01) * 0.01f);
+        mShaderParams.attractor.x = sin(mTime * speed + static_cast<float>(sin(time * 0.01)) * 0.01f);
         mShaderParams.attractor.y = sin(mTime * speed * 1.3f);
         mShaderParams.attractor.z = cos(mTime * speed);
-        mTime += (float)dt;
+        mTime += static_cast<float>(dt);
 
         mShaderParams.attractor.w = 0.00002f;
     } else {

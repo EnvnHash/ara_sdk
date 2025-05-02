@@ -86,16 +86,14 @@ public:
             m_sceneRenderCam->getLayer(0)->setFloorSwitch(1.f);
             m_sceneRenderCam->getLayer(0)->setTrackBallMode(TrackBallCam::mode::orbitNoRoll);
         }
-        m_sceneRenderCam->setViewport(0, 0, (uint)s_sd.winViewport.z, (uint)s_sd.winViewport.w, false);
+        m_sceneRenderCam->setViewport(0, 0, static_cast<uint>(s_sd.winViewport.z), static_cast<uint>(s_sd.winViewport.w), false);
 
         m_camSet.emplace_back(m_sceneRenderCam.get());
 
         // trackball preset
         if (m_sceneRenderCam->getInteractCam()) {
-            m_sceneRenderCam->getInteractCam()->setTrackBallTrans(
-                vec3(0.f, 0.8f, 3.f));  // absolute position in world coordinates of the virtual trackball camera
-            m_sceneRenderCam->getInteractCam()->setTrackBallRot(
-                vec3(-0.3f, 0.f, 0.f));  // absolute position in world coordinates of the virtual trackball camera
+            m_sceneRenderCam->getInteractCam()->setTrackBallTrans({0.f, 0.8f, 3.f});  // absolute position in world coordinates of the virtual trackball camera
+            m_sceneRenderCam->getInteractCam()->setTrackBallRot({-0.3f, 0.f, 0.f});  // absolute position in world coordinates of the virtual trackball camera
             m_sceneRenderCam->getInteractCam()->updateFromExternal(true);
         }
 

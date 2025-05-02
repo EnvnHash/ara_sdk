@@ -8,6 +8,8 @@
 #include "glb_common/glb_common.h"
 #include <GeoPrimitives/Quad.h>
 
+struct FIBITMAP;
+
 namespace ara {
 
 class GLBase;
@@ -48,31 +50,12 @@ public:
     bool saveToFile(const std::filesystem::path &filename, size_t attachNr, GLenum intFormat);
     void deleteColorTextures() const;
     void deleteDepthTextures() const;
-    void download(void *ptr, GLenum intFormat, GLenum extFormat = 0);
-
-    void genFbo() {
-        glGenFramebuffers(1, &m_fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    }
-
-    void deleteFbo() {
-        glDeleteFramebuffers(1, &m_fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    GLuint getColorImg() {
-        if (!m_textures.empty() && m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8)
-            return m_textures[0];
-        else
-            return 0;
-    }
-
-    GLuint getColorImg(int index) {
-        if ((int)m_textures.size() > index && m_nrAttachments > index && m_type != GL_DEPTH24_STENCIL8)
-            return m_textures[index];
-        else
-            return 0;
-    }
+    void download(void *ptr, GLenum intFormat, GLenum extFormat = 0) const;
+    void getTexImage(FIBITMAP* fibitmap, GLenum saveTarget, GLenum format) const;
+    void genFbo();
+    void deleteFbo() const;
+    GLuint getColorImg() const;
+    GLuint getColorImg(int index) const;
 
     [[nodiscard]] GLuint       getDepthImg() const { return  m_hasDepthBuf ? m_depthBuf : 0; }
     [[nodiscard]] GLuint       getWidth() const { return m_tex_width; }

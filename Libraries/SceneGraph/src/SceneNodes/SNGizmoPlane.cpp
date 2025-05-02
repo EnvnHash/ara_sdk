@@ -19,11 +19,11 @@ SNGizmoPlane::SNGizmoPlane(sceneData* sd) : SceneNode(sd) {
         // separate the plane in two half for different colors
         for (uint l = 0; l < 2; l++) {
             // create base points for a quarter circle
-            vector<vec3> b_positions(nrBasePoints);
-            vector<vec3> b_normals(nrBasePoints);
+            vector<vec3> b_positions(m_nrBasePoints);
+            vector<vec3> b_normals(m_nrBasePoints);
 
-            for (uint i = 0; i < nrBasePoints; i++) {
-                float fInd  = static_cast<float>(i) / static_cast<float>(nrBasePoints - 1);
+            for (uint i = 0; i < m_nrBasePoints; i++) {
+                float fInd  = static_cast<float>(i) / static_cast<float>(m_nrBasePoints - 1);
                 float phase = (fInd * static_cast<float>(M_PI) * 0.25f) + static_cast<float>(l) * static_cast<float>(M_PI) * 0.25f;
 
                 b_positions[i] = vec3(std::cos(phase), std::sin(phase), 0.f);
@@ -32,15 +32,15 @@ SNGizmoPlane::SNGizmoPlane(sceneData* sd) : SceneNode(sd) {
 
             // for each base point of the ring two triangles (6 vertices) are
             // needed to define the ring counterclockwise
-            uint totNrPoints = (nrBasePoints - 1) * 6;
+            uint totNrPoints = (m_nrBasePoints - 1) * 6;
 
             vector<GLfloat> positions(totNrPoints * 3);
             vector<GLfloat> normals(totNrPoints * 3);
             std::array<GLuint, 6> templ = {0, 0, 1, 1, 0, 1};
-            std::array radOffs = {ringOuterWidth[v], ringInnerWidth[v], ringOuterWidth[v],
-                                  ringOuterWidth[v], ringInnerWidth[v], ringInnerWidth[v]};
+            std::array radOffs = {m_ringOuterWidth[v], m_ringInnerWidth[v], m_ringOuterWidth[v],
+                                  m_ringOuterWidth[v], m_ringInnerWidth[v], m_ringInnerWidth[v]};
 
-            for (uint i = 0; i < (nrBasePoints - 1); i++) {
+            for (uint i = 0; i < (m_nrBasePoints - 1); i++) {
                 for (uint j = 0; j < 6; j++) {
                     uint ind = (i * 6 + j) * 3;
 
@@ -56,9 +56,9 @@ SNGizmoPlane::SNGizmoPlane(sceneData* sd) : SceneNode(sd) {
                 }
             }
 
-            planeVao[v][l] = make_unique<VAO>("position:3f,normal:3f", GL_STATIC_DRAW);
-            planeVao[v][l]->upload(CoordType::Position, &positions[0], totNrPoints);
-            planeVao[v][l]->upload(CoordType::Normal, &normals[0], totNrPoints);
+            m_planeVao[v][l] = make_unique<VAO>("position:3f,normal:3f", GL_STATIC_DRAW);
+            m_planeVao[v][l]->upload(CoordType::Position, &positions[0], totNrPoints);
+            m_planeVao[v][l]->upload(CoordType::Normal, &normals[0], totNrPoints);
         }
     }
 }
@@ -75,16 +75,20 @@ void SNGizmoPlane::draw(double time, double dt, CameraSet* cs, Shaders* shader, 
     shader->setUniform1i("drawGridTexture", 0);
 
     for (uint i = 0; i < 2; i++) {
-        shader->setUniform4f("emissive", gColor[i].r * emisBright, gColor[i].g * emisBright, gColor[i].b * emisBright,
-                             gColor[i].a * emisBright);
-        shader->setUniform4fv("diffuse", value_ptr(gColor[i]));
+        shader->setUniform4f("emissive", m_gColor[i].r * m_emisBright, m_gColor[i].g * m_emisBright, m_gColor[i].b * m_emisBright,
+                             m_gColor[i].a * m_emisBright);
+        shader->setUniform4fv("diffuse", value_ptr(m_gColor[i]));
 
-        planeVao[pass == GLSG_OBJECT_MAP_PASS ? 1 : 0][i]->draw();
+        m_planeVao[pass == GLSG_OBJECT_MAP_PASS ? 1 : 0][i]->draw();
     }
 }
 
-void SNGizmoPlane::setGizmoUpperColor(float _r, float _g, float _b, float _a) { gColor[1] = vec4(_r, _g, _b, _a); }
+void SNGizmoPlane::setGizmoUpperColor(float r, float g, float b, float a) {
+    m_gColor[1] = vec4{r, g, b, a};
+}
 
-void SNGizmoPlane::setGizmoLowerColor(float _r, float _g, float _b, float _a) { gColor[0] = vec4(_r, _g, _b, _a); }
+void SNGizmoPlane::setGizmoLowerColor(float r, float g, float b, float a) {
+    m_gColor[0] = vec4{r, g, b, a};
+}
 
 }  // namespace ara

@@ -220,7 +220,7 @@ void UIPolygon::mouseDown(hidData *data) {
 
 void UIPolygon::onResize() {
         if (m_fbo->getWidth() != getNodeSize().x || m_fbo->getHeight() != getNodeSize().y)
-            m_fbo->resize((uint)getNodeSize().x, (uint)getNodeSize().y);
+            m_fbo->resize(static_cast<uint>(getNodeSize().x), static_cast<uint>(getNodeSize().y));
 }
 
 void UIPolygon::addPointToSelection(uint32_t clickedObjId, uint32_t level, map <winProcStep, ProcStep> *procSteps) {

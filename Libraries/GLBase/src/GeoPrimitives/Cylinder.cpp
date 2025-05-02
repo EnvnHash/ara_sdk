@@ -14,6 +14,9 @@
 //
 
 #include "GeoPrimitives/Cylinder.h"
+
+#include <glsg_common/glsg_common.h>
+
 #include "Utils/VAO.h"
 
 using namespace std;
@@ -35,7 +38,7 @@ void Cylinder::init() {
     // on the top -> so different normals at same positions)
 
     // define a ring in the x, z plain
-    auto ringPos = get2DRing(static_cast<int>(m_nrSegs) * 2);
+    const auto ringPos = get2DRing(static_cast<int>(m_nrSegs) * 2);
 
     // ------- cylinder body
     // allocate memory for all positions and normals
@@ -44,28 +47,33 @@ void Cylinder::init() {
     // one center point on each cap
 
     unsigned int totNrVert = m_nrSegs * 4 + 2;
-    auto        positions = std::vector<GLfloat>(totNrVert * 3);
-    auto        normals   = std::vector<GLfloat>(totNrVert * 3);
+    auto        positions = std::vector<vec3>(totNrVert);
+    auto        normals   = std::vector<vec3>(totNrVert);
 
-    unsigned int ind = 0;
-    createTopRings(positions, normals, ringPos, cylRadius, ind);
-    createCapCenters(positions, normals, ind);
-    createCapRings(positions, normals, ringPos, cylRadius, ind);
+    auto posIt = positions.begin();
+    auto normIt = normals.begin();
+
+    for (unsigned int ringNr = 0; ringNr < 2; ringNr++) {
+        buildRing(m_nrSegs, posIt, normIt, ringPos, cylRadius, ringNr == 0 ? -1.f : 1.f);
+    }
+
+    createCapCenters(posIt, normIt);
+
+    for (unsigned int ringNr = 0; ringNr < 2; ringNr++) {
+        buildRing(m_nrSegs, posIt, normIt, ringPos, cylRadius,  ringNr == 0 ? -1.f : 1.f
+                  /*, vec3{0.f, ringNr == 0 ? -1.f : 1.f, 0.f} */);
+    }
 
     // create Indices
-    // for the cylinder we need one quad of two triangles per ringPoint = nrSegs *6 Vertices for each cap we
-    // need nrSegs * 3 Vertices, since we have two caps nrSegs *6 so in total we need nrSegs *12
     std::vector<GLuint> cyl_indices(m_nrSegs * 12);
 
     //  clockwise (viewed from the camera)
     std::array<GLuint, 6> oneQuadTemp = {0, 0, 1, 1, 0, 1};
     std::array<GLuint, 6> upDownTemp  = {0, 1, 0, 0, 1, 1};  // 0 = bottom, 1 ==top
 
-    ind = 0;
-
-    // cylinder body
-    for (unsigned int i = 0; i < m_nrSegs; i++) {
-        for (unsigned int j = 0; j < 6; j++) {
+    uint ind = 0;
+    for (auto i = 0; i < m_nrSegs; i++) {
+        for (auto j = 0; j < 6; j++) {
             cyl_indices[ind++] = ((oneQuadTemp[j] + i) % m_nrSegs) + (m_nrSegs * upDownTemp[j]);
         }
     }
@@ -77,8 +85,8 @@ void Cylinder::init() {
     for (unsigned int k = 0; k < 2; k++) {
         auto posIndOffs = m_nrSegs * 2 + 2 + m_nrSegs * k;
 
-        for (unsigned int i = 0; i < m_nrSegs; i++) {
-            for (unsigned int j = 0; j < 3; j++) {
+        for (auto i = 0; i < m_nrSegs; i++) {
+            for (auto j = 0; j < 3; j++) {
                 switch (j) {
                     case 0:
                         cyl_indices[ind++] = capCenterInd + k;
@@ -100,63 +108,18 @@ void Cylinder::init() {
     }
 
     m_vao = make_unique<VAO>("position:4f,normal:2f", usage, m_instAttribs, m_maxNrInstances, true);
-    m_vao->upload(CoordType::Position, &positions[0], totNrVert);
-    m_vao->upload(CoordType::Normal, &normals[0], totNrVert);
+    m_vao->upload(CoordType::Position, &positions[0][0], totNrVert);
+    m_vao->upload(CoordType::Normal, &normals[0][0], totNrVert);
     m_vao->setElemIndices(m_nrSegs * 12, &cyl_indices[0]);
 
     m_totNrPoints = totNrVert;
 }
 
-void Cylinder::createTopRings(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, const vector<GLfloat>& ringPos,
-                              float cylRadius, unsigned int& ind) const {
-    // define the two rings
-    // 0: the cylinder bottom
-    // 1: the cylinder top
-    for (unsigned int ringNr = 0; ringNr < 2; ringNr++) {
-        for (unsigned int i = 0; i < m_nrSegs; i++) {
-            positions[ind * 3]     = ringPos[i * 2] * cylRadius;
-            positions[ind * 3 + 1] = ringNr == 0 ? -1.f : 1.f;
-            positions[ind * 3 + 2] = ringPos[i * 2 + 1] * cylRadius;
-
-            normals[ind * 3]     = ringPos[i * 2];
-            normals[ind * 3 + 1] = 0.f;
-            normals[ind * 3 + 2] = ringPos[i * 2 + 1];
-
-            ind++;
-        }
-    }
-}
-
-void Cylinder::createCapCenters(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, unsigned int& ind) {
+void Cylinder::createCapCenters(std::vector<vec3>::iterator& pos, std::vector<vec3>::iterator& norm) {
     for (unsigned int i = 0; i < 2; i++) {
-        positions[ind * 3]     = 0.f;
-        positions[ind * 3 + 1] = i == 0 ? -1.f : 1.f;
-        positions[ind * 3 + 2] = 0.f;
-
-        normals[ind * 3]     = 0.f;
-        normals[ind * 3 + 1] = i == 0 ? -1.f : 1.f;
-        normals[ind * 3 + 2] = 0.f;
-
-        ++ind;
+        *pos = {0.f, i == 0 ? -1.f : 1.f, 0.f};
+        *norm = {0.f, i == 0 ? -1.f : 1.f, 0.f};
     }
-}
-
-void Cylinder::createCapRings(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, const std::vector<GLfloat>& ringPos,
-                            float cylRadius, unsigned int& ind) const {
-    for (unsigned int ringNr = 0; ringNr < 2; ringNr++) {
-        for (unsigned int i = 0; i < m_nrSegs; i++) {
-            positions[ind * 3]     = ringPos[i * 2] * cylRadius;
-            positions[ind * 3 + 1] = ringNr == 0 ? -1.f : 1.f;
-            positions[ind * 3 + 2] = ringPos[i * 2 + 1] * cylRadius;
-
-            normals[ind * 3]     = 0.f;
-            normals[ind * 3 + 1] = ringNr == 0 ? -1.f : 1.f;
-            normals[ind * 3 + 2] = 0.f;
-
-            ++ind;
-        }
-    }
-
 }
 
 }  // namespace ara
