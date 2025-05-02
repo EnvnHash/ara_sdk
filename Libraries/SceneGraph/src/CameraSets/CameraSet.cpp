@@ -5,6 +5,9 @@
 //
 
 #include "CameraSets/CameraSet.h"
+
+#include <SceneNodes/SceneNode.h>
+
 #include "Utils/BoundingBoxer.h"
 
 using namespace glm;

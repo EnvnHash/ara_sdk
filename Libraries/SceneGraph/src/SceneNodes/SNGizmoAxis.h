@@ -10,9 +10,6 @@ public:
     ~SNGizmoAxis() override = default;
 
     void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr) override = 0;
-    void buildRing(int32_t nrPoints, std::vector<glm::vec3>::iterator& pos, std::vector<glm::vec3>::iterator& norm,
-                   const std::vector<glm::vec2>& ringPos, float radius, float yPos);
-
     void setGizmoColor(float r, float g, float b, float a) { m_gColor = {r, g, b, a}; }
 
     std::unique_ptr<VAO>    m_gizVao;

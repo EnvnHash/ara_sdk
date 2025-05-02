@@ -28,7 +28,7 @@ class BoundingBoxer;
 class Scene3DBase : public Div {
 public:
     Scene3DBase();
-    virtual ~Scene3DBase();
+    ~Scene3DBase() override;
 
     void         init() override;
     virtual bool initScene();
@@ -98,7 +98,7 @@ public:
         }
 
         // share the cameraset globally
-        s_sd.contentCamSet = (void*)&m_camSet;
+        s_sd.contentCamSet = static_cast<void *>(&m_camSet);
         updateMatrix();
     }
 
@@ -116,27 +116,27 @@ public:
     virtual void         deselectAll();
     virtual void         setCfState(cfState cf);
 
-    SPObjectSelector*           getObjectSelector() { return m_objSel; }
-    std::vector<CameraSet*>*    getCamSet() { return &m_camSet; }
-    SceneNode*                  getGizmoTree() const { return gizmoTree; }
-    std::vector<SNGizmo*>*      getGizmos() { return &m_gizmos; }
-    SceneNode*                  getSceneTree() const { return m_sceneTree; }
-    std::vector<LICamera*>*     getNetCameras() { return &m_netCameras; }
-    CameraSet*                  getSceneCam() { return m_sceneRenderCam ? m_sceneRenderCam.get() : nullptr; }
-    TrackBallCam*               getSceneCamDef() { return m_sceneCam; }
-    SceneNode*                  getGridFloor() { return m_gridFloor; }
-    bool                        isFloorVisible() { return m_gridFloor && m_gridFloor->isVisible(); }
-    float*                      getKeyTransStep() { return m_keyTransStep; }
-    float*                      getKeyRotStep() { return m_keyRotStep; }
-    basePlane                   getBasePlane() { return m_basePlane; }
-    bool                        getWorldAxesVisibility() const { return m_worldAxisVisibility; }
-    float                       getWorldAxesNdcSize() const { return m_worldAxisNdcSize; }
-    glm::vec2&                  getMouseRotScale() { return m_mouseRotScale; }
-    float                       getMouseRotExp() const { return m_mouseRotExp; }
-    cfState                     getCfState() { return m_cfState; }
-    sceneData*                  getSceneData() { return &s_sd; }
+    [[nodiscard]] SPObjectSelector* getObjectSelector() const { return m_objSel; }
+    std::vector<CameraSet*>*        getCamSet() { return &m_camSet; }
+    [[nodiscard]] SceneNode*        getGizmoTree() const { return gizmoTree; }
+    std::vector<SNGizmo*>*          getGizmos() { return &m_gizmos; }
+    [[nodiscard]] SceneNode*        getSceneTree() const { return m_sceneTree; }
+    std::vector<LICamera*>*         getNetCameras() { return &m_netCameras; }
+    [[nodiscard]] CameraSet*        getSceneCam() const { return m_sceneRenderCam ? m_sceneRenderCam.get() : nullptr; }
+    [[nodiscard]] TrackBallCam*     getSceneCamDef() const { return m_sceneCam; }
+    [[nodiscard]] SceneNode*        getGridFloor() const { return m_gridFloor; }
+    [[nodiscard]] bool              isFloorVisible() const { return m_gridFloor && m_gridFloor->isVisible(); }
+    float*                          getKeyTransStep() { return m_keyTransStep; }
+    float*                          getKeyRotStep() { return m_keyRotStep; }
+    [[nodiscard]] basePlane         getBasePlane() const { return m_basePlane; }
+    [[nodiscard]] bool              getWorldAxesVisibility() const { return m_worldAxisVisibility; }
+    [[nodiscard]] float             getWorldAxesNdcSize() const { return m_worldAxisNdcSize; }
+    glm::vec2&                      getMouseRotScale() { return m_mouseRotScale; }
+    [[nodiscard]] float             getMouseRotExp() const { return m_mouseRotExp; }
+    cfState                         getCfState() const { return m_cfState; }
+    sceneData*                      getSceneData() { return &s_sd; }
 
-    void setSceneTrackBallMode(TrackBallCam::mode mode) {
+    void setSceneTrackBallMode(TrackBallCam::mode mode) const {
         if (m_sceneCam) {
             m_sceneCam->setTrackBallMode(mode);
         }
@@ -155,8 +155,8 @@ public:
     void setDataPath(const std::string* _dataPath) { s_sd.dataPath = *_dataPath; }
     void setAllProcSteps() {
         for (auto i = 0; i < GLSG_NUM_RENDER_PASSES; i++) {
-            m_renderPasses[(renderPass)i]    = true;
-            m_reqRenderPasses[(renderPass)i] = true;
+            m_renderPasses[static_cast<renderPass>(i)]    = true;
+            m_reqRenderPasses[static_cast<renderPass>(i)] = true;
         }
     }
     void setDrawProcSteps() {

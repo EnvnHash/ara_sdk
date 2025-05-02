@@ -69,7 +69,7 @@ bool UIPolygon::draw(uint32_t *objId) {
     m_uiTexShdr->setUniform1i("hFlip", 1);
 
     m_objIdMin = (*objId);
-    m_uiTexShdr->setUniform1f("objId", (float)(*objId)++);
+    m_uiTexShdr->setUniform1f("objId", static_cast<float>((*objId)++));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_fbo->getColorImg());
@@ -88,7 +88,7 @@ void UIPolygon::drawCtrlPoints(uint32_t *id) {
         glDisable(GL_BLEND);
         it.id = *id;
 
-        vec2 refPointSize = (float)m_ctrlPointSizePix /
+        vec2 refPointSize = static_cast<float>(m_ctrlPointSizePix) /
                             vec2(getParent()->getViewport()->z, getParent()->getViewport()->w) *
                             getContentTransScale2D();
 
@@ -101,7 +101,7 @@ void UIPolygon::drawCtrlPoints(uint32_t *id) {
         m_ctrPointShdr->setUniform2f("size", 1.f, 1.f);
         m_ctrPointShdr->setUniform1i("round", 1);
         m_ctrPointShdr->setUniform1i("useTex", 0);
-        m_ctrPointShdr->setUniform1f("objId", (float)(*id));
+        m_ctrPointShdr->setUniform1f("objId", static_cast<float>((*id)));
 
         m_quad->drawAsShared();
 

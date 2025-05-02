@@ -30,7 +30,7 @@ public:
     UIApplication();
     virtual ~UIApplication() = default;
 
-    virtual void init(std::function<void()> func);
+    void init(std::function<void()> func) override;
 
     /// \brief initialization function for sequential rendering. A loop which calls the WindowManager's iterate function,
     /// which will call all window's draw functions on after another
@@ -88,8 +88,8 @@ public:
 
     // called from UIWindow::close() when the removeFromApp bool is set
     void removeWindow(UIWindow* win) {
-        auto ptr = std::find_if(m_uiWindows.begin(), m_uiWindows.end(),
-                                [win](const std::unique_ptr<UIWindow>& w) { return w.get() == win; });
+        auto ptr = std::ranges::find_if(m_uiWindows,
+                                        [win](const std::unique_ptr<UIWindow>& w) { return w.get() == win; });
 
         if (ptr != m_uiWindows.end()) {
             m_uiWindows.erase(ptr);
@@ -121,7 +121,7 @@ public:
     virtual void showCancel(std::string msg, long minStayTime, int width, int height, bool isModal, std::function<bool()> cancelCb);
     virtual void closeInfoDiag();
 
-    UIWindow* getInfoDiag() { return m_infoDiag; }
+    UIWindow* getInfoDiag() const { return m_infoDiag; }
     void      waitForExit() { m_exitSema.wait(0); }
     void      startEventLoop(); // run a pure event loop inside WindowManager, -> event will be distributed to all registered windows
 
@@ -139,9 +139,9 @@ public:
     virtual UINode* getRootNode(uint winIdx = 0) { return (m_uiWindows.size() > winIdx) ? m_uiWindows[winIdx]->getRootNode() : nullptr; }
     virtual UIWindow* getWinBase(uint winIdx = 0) { return m_uiWindows.size() > winIdx ? m_uiWindows[winIdx].get() : nullptr; }
 
-    UIWindow*                               getMainWindow() { return m_mainWindow; }
+    UIWindow*                               getMainWindow() const { return m_mainWindow; }
     std::vector<std::unique_ptr<UIWindow>>* getUIWindows() { return &m_uiWindows; }
-    void*                                   getDataModel() { return m_dataModel; }
+    void*                                   getDataModel() const { return m_dataModel; }
 
     void stop();            /// for single threaded mode
     virtual void exit();    /// exit the application, must called from the main thread in multi-thread setups

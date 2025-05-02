@@ -601,7 +601,7 @@ bool Image::setTexId(GLuint inTexId, int width, int height, int bitCount) {
     m_extTexWidth    = width;
     m_extTexHeight   = height;
     m_extTexBitCount = bitCount;
-    m_texAspect      = (float)width / (float)height;
+    m_texAspect      = static_cast<float>(width) / static_cast<float>(height);
     m_loaded         = true;
 
     if (m_fixAspect != -1.f && (getAspect() != m_texAspect)) {

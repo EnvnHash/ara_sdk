@@ -87,7 +87,7 @@ void Div::updateDrawData() {
             dIt->aux1.w = getBorderRadiusRel().y;
             dIt->aux2.x = getBorderAliasRel().x;
             dIt->aux2.y = getBorderAliasRel().y;
-            dIt->aux2.z = m_excludeFromObjMap ? 0.f : (float)m_objIdMin; // obsolete
+            dIt->aux2.z = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin); // obsolete
             dIt->aux2.w = m_zPos; // obsolete
             dIt->aux3.x = 0.f;  // type indicator (0=Div)
             dIt->aux3.w = m_absoluteAlpha;

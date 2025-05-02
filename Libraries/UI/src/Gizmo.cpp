@@ -39,8 +39,8 @@ void Gizmo::init() {
     }
 
     // get width height from stylesheets
-    auto node      = getSharedRes()->res->findNode(getStyleClass());
-    int  viewWidth = 120, viewHeight = 120;
+    auto node           = getSharedRes()->res->findNode(getStyleClass());
+    int32_t viewWidth   = 120, viewHeight = 120;
     if (node) {
         viewWidth  = node->value<int32_t>("width", 120);
         viewHeight = node->value<int32_t>("height", 120);
@@ -135,7 +135,7 @@ void Gizmo::init() {
                                         : glm::vec4{float(j == 1) * dir, float(j == 2) * dir, float(j == 0) * dir, 1.f};
 
                 m_crossAux0[ind]   = glm::vec4{0.f};
-                m_crossAux0[ind].x = (1.f + (float)(j == 1 ? (i * 3) : (j == 2 ? (i * 3 + 1) : (i * 3 + 2)))) * 0.1f;
+                m_crossAux0[ind].x = (1.f + static_cast<float>(j == 1 ? i * 3 : j == 2 ? i * 3 + 1 : i * 3 + 2)) * 0.1f;
             }
         }
     }
@@ -148,7 +148,7 @@ void Gizmo::init() {
     m_auxViewport = vec4(0, 0, viewWidth, viewHeight);
     m_auxUIRoot.setViewport(&m_auxViewport);
     m_auxSharedRes          = UISharedRes(*getSharedRes());
-    m_auxOrtho              = glm::ortho(0.f, (float)viewWidth, (float)viewHeight, 0.f);
+    m_auxOrtho              = glm::ortho(0.f, static_cast<float>(viewWidth), static_cast<float>(viewHeight), 0.f);
     m_auxSharedRes.orthoMat = &m_auxOrtho;
     m_auxUIRoot.setSharedRes(&m_auxSharedRes);
 
@@ -182,10 +182,10 @@ void Gizmo::init() {
     for (const auto& it : m_axisLabels) {
         it->setGizmoParent(this);
         it->setSize(m_axisLabelSize.x, m_axisLabelSize.y);
-        it->setAxisFlag((TrackBallCam::snap)(i - 1));
+        it->setAxisFlag(static_cast<TrackBallCam::snap>(i - 1));
         it->updtMatrIt(nullptr);
         it->setDrawInmediate(false);
-        it->m_presetObjId = (i++);  // preset objid
+        it->m_presetObjId = ++i;  // preset objid
     }
 
     // add a callback for including the axisLabels into the id tree iteration
@@ -573,8 +573,8 @@ glm::vec3 Gizmo::getAxisEnd(glm::mat4& pvm, float yVal) {
     axlPos.z = axlPos.z * 0.5f + 0.5f;  // for directly writing depth buffer
                                         // values in fragment shader
 
-    return glm::vec3((axlPos.x * getSize().x) - (float)m_axisLabelSize.x * 0.5f,
-                     (axlPos.y * getSize().y) - (float)m_axisLabelSize.y * 0.5f, axlPos.z);
+    return glm::vec3(axlPos.x * getSize().x - static_cast<float>(m_axisLabelSize.x) * 0.5f,
+                     axlPos.y * getSize().y - static_cast<float>(m_axisLabelSize.y) * 0.5f, axlPos.z);
 }
 
 void Gizmo::mouseDrag(hidData* data) {
@@ -603,7 +603,8 @@ void Gizmo::drag(hidData* data)
         m_resetExcludeFromStyles = true;
     }
 
-    m_cam.mouseDrag((float)data->mousePosNodeRel.x / getSize().x, (float)data->mousePosNodeRel.y / getSize().y,
+    m_cam.mouseDrag(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                    static_cast<float>(data->mousePosNodeRel.y) / getSize().y,
                     data->shiftPressed, data->altPressed, data->ctrlPressed, m_rotScale);
 
     getSharedRes()->requestRedraw = true;
@@ -622,7 +623,8 @@ void Gizmo::mouseUp(hidData* data) {
         }
     }
 
-    m_cam.mouseUpLeft((float)data->mousePosNodeRel.x / getSize().x, (float)data->mousePosNodeRel.y / getSize().y);
+    m_cam.mouseUpLeft(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
 
     if (getWindow()) {
         getWindow()->setMouseCursorVisible(true);
@@ -672,8 +674,8 @@ void Gizmo::mouseDownRight(hidData* data) {
         getWindow()->setMouseCursorVisible(true);
     }
 
-    m_cam.mouseDownRight((float)data->mousePosNodeRel.x / getSize().x,
-                         (float)data->mousePosNodeRel.y / getSize().y);
+    m_cam.mouseDownRight(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                         static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
     data->consumed = true;
     m_rightPressed = true;
 }
@@ -700,7 +702,8 @@ void Gizmo::mouseUpRight(hidData* data)
         getWindow()->setMouseCursorVisible(true);
     }
 
-    m_cam.mouseUpRight((float)data->mousePosNodeRel.x / getSize().x, (float)data->mousePosNodeRel.y / getSize().y);
+    m_cam.mouseUpRight(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                    static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
     data->consumed = true;
     m_rightPressed = false;
 }
@@ -718,7 +721,8 @@ void Gizmo::mouseMove(hidData* data) {
 }
 
 void Gizmo::mouseDown(hidData* data) {
-    m_cam.mouseDownLeft((float)data->mousePosNodeRel.x / getSize().x, (float)data->mousePosNodeRel.y / getSize().y);
+    m_cam.mouseDownLeft(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                        static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
     data->consumed = true;
     m_leftPressed  = true;
 }

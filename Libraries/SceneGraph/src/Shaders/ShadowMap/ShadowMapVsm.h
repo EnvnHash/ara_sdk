@@ -12,38 +12,39 @@
 #include "Utils/FBO.h"
 #include "glb_common/glb_common.h"
 
-using namespace glm;
-
 namespace ara {
+
+    class sceneData;
+
 class ShadowMapVsm : public ShadowMap {
 public:
     ShadowMapVsm(Camera* gCam, int scrWidth, int scrHeight, sceneData* scd);
-    ~ShadowMapVsm();
+    ~ShadowMapVsm() override = default;
 
-    void begin();
-    void end();
-    GLuint    getDepthImg();
-    GLuint    getColorImg();
-    glm::mat4 getLightProjMatr();
-    glm::mat4 lightViewMatr();
-    void      setLightPos(vec3 _pos);
-    void      setLookAtPoint(vec3 _pos);
-    int       getWidth();
-    int       getHeight();
-    float     getCoef();
-    FBO*      getFbo();
+    void begin() override;
+    void end() override;
+    GLuint    getDepthImg() override;
+    GLuint    getColorImg() override;
+    glm::mat4 getLightProjMatr() const;
+    glm::mat4 lightViewMatr() const;
+    void      setLightPos(glm::vec3 pos);
+    void      setLookAtPoint(glm::vec3 pos);
+    int       getWidth() override;
+    int       getHeight() override;
+    float     getCoef() const;
+    FBO*      getFbo() override;
 
 private:
-    std::unique_ptr<Shaders> shadowShader;
-    Camera*                  gCam;
+    std::unique_ptr<Shaders> m_shadowShader;
+    Camera*                  m_gCam = nullptr;
 
-    glm::mat4 n_mvp;
-    glm::mat3 n_mat;
-    glm::mat4 scene_model_matrix;
-    glm::mat4 light_view_matrix;
-    glm::mat4 light_projection_matrix;
+    glm::mat4 m_mvp{};
+    glm::mat3 m_mat{};
+    glm::mat4 m_sceneModelMatrix{};
+    glm::mat4 m_lightViewMatrix{};
+    glm::mat4 m_lightProjectionMatrix{};
 
-    glm::vec3 light_position;
-    glm::vec3 lookAtPoint;
+    glm::vec3 m_lightPosition{};
+    glm::vec3 m_lookAtPoint{};
 };
 }  // namespace ara

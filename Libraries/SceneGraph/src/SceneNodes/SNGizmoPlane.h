@@ -2,8 +2,6 @@
 
 #include "SceneNodes/SceneNode.h"
 
-using namespace glm;
-
 namespace ara {
 class SNGizmoPlane : public SceneNode {
 public:

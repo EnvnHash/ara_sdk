@@ -13,7 +13,7 @@ public:
                                           glm::vec4(0.f, 0.f, 1.f, 1.f)};
 
 private:
-    std::unique_ptr<VAO> m_lineVao = nullptr;
+    std::unique_ptr<VAO> m_lineVao ;
 };
 
 }  // namespace ara

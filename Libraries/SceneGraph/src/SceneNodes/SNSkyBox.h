@@ -16,17 +16,16 @@ namespace ara {
 class SNSkyBox : public SceneNode {
 public:
     explicit SNSkyBox(sceneData* sd = nullptr);
-    virtual ~SNSkyBox();
 
     void init();
     void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr) override;
 
 private:
-    std::unique_ptr<Quad> m_normQuad;
-    Sphere*               sphere   = nullptr;
-    float                 angle    = 0.f;
-    GLuint                m_VAOId  = 0;
-    GLuint                m_posBuf = 0;
-    int                   numberVertices;
+    std::unique_ptr<Quad>   m_normQuad;
+    std::unique_ptr<Sphere> m_sphere;
+    float                   m_angle  = 0.f;
+    GLuint                  m_VAOId  = 0;
+    GLuint                  m_posBuf = 0;
+    int                     m_numberVertices = 0;
 };
 }  // namespace ara

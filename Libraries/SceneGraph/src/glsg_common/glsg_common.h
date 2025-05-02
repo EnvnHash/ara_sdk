@@ -103,17 +103,17 @@ public:
 
 static void buildRing(int32_t nrPoints, std::vector<glm::vec3>::iterator& pos, std::vector<glm::vec3>::iterator& norm,
                       const std::vector<glm::vec2>& ringPos, float radius, float yPos/*, std::optional<glm::vec3> fixedNorm = std::nullopt*/) {
-    /*for (int32_t i = 0; i < nrPoints; i++) {
+    for (int32_t i = 0; i < nrPoints; i++) {
         pos->x = ringPos[i].x * radius;
         pos->y = yPos;
         pos->z = ringPos[i].y * radius;
 
         glm::vec3 defNorm = { ringPos[i]. x, 0.f, ringPos[i].y };
-        *norm = fixedNorm.value_or(defNorm);
+     //   *norm = fixedNorm.value_or(defNorm);
 
         ++pos;
         ++norm;
-    }*/
+    }
 }
 
 static std::vector<GLuint> buildCylinderIndices(uint32_t nrPointsCircle) {
@@ -123,13 +123,13 @@ static std::vector<GLuint> buildCylinderIndices(uint32_t nrPointsCircle) {
     //  clockwise (viewed from the camera)
     std::array<GLuint, 6> oneQuadTemp = {0, 0, 1, 1, 0, 1};
     std::array<GLuint, 6> upDownTemp  = {0, 1, 0, 0, 1, 1};  // 0 = bottom, 1 ==top
-/*
+
     for (uint32_t i = 0; i < nrPointsCircle; i++) {
         for (auto j = 0; j < 6; j++) {
             *it++ = ((oneQuadTemp[j] + i) % nrPointsCircle) + (nrPointsCircle * upDownTemp[j]);
         }
     }
-*/
+
     return indices;
 }
 

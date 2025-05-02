@@ -5,10 +5,10 @@
 //
 
 #include "Shaders/ShaderPrototype/SPGridFloor.h"
-
+#include "Shaders/ShaderUtils/ShaderBuffer.h"
+#include "CameraSets/CameraSet.h"
 #include <GLBase.h>
 
-#include "CameraSets/CameraSet.h"
 
 using namespace glm;
 using namespace std;
@@ -18,13 +18,13 @@ namespace ara {
 SPGridFloor::SPGridFloor(sceneData* sd) : ShaderProto(sd) {
     s_name                = getTypeName<SPGridFloor>();
     s_usesNodeMaterialPar = true;
-
-    // init shader
     rebuildShader(1);
 }
 
 void SPGridFloor::rebuildShader(uint32_t nrCameras) {
-    if (!nrCameras) return;
+    if (!nrCameras) {
+        return;
+    }
 
     if (s_shader) s_shCol->deleteShader(s_name);
 
@@ -60,7 +60,7 @@ void SPGridFloor::rebuildShader(uint32_t nrCameras) {
 
     //------------------------------------------------------------------------
 
-    std::string geom = s_glbase->shaderCollector().getShaderHeader() +
+    std::string geom = ShaderCollector::getShaderHeader() +
                        "layout(triangles, invocations=" + to_string(nrCameras) +
                        ") in;\n"
                        "layout(triangle_strip, max_vertices=3) out;\n"
@@ -90,7 +90,7 @@ void SPGridFloor::rebuildShader(uint32_t nrCameras) {
                        "uniform int camLimit; \n"
                        "uniform int fishEye[" +
                        to_string(nrCameras) + "]; \n" + "uniform vec4 fishEyeAdjust[" + to_string(nrCameras) + "]; \n" +
-                       s_glbase->shaderCollector().getFisheyeVertSnippet(nrCameras) +
+                       ShaderCollector::getFisheyeVertSnippet(nrCameras) +
                        "void main() {\n"
                        "\tif(skipForInd != gl_InvocationID && gl_InvocationID <= camLimit) {\n"
                        "\t\tfor (int i = 0; i < gl_in.length(); i++) { \n"
@@ -118,9 +118,6 @@ void SPGridFloor::rebuildShader(uint32_t nrCameras) {
     //------------------------------------------------------------------
 
     string frag = ShaderCollector::getShaderHeader();
-
-    // MaterialProperties mp;
-    // frag += mp.getUbString();
 
     frag += STRINGIFY(  uniform vec2 floorGridSize;\n
 
@@ -209,22 +206,16 @@ void SPGridFloor::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode
 }
 
 bool SPGridFloor::begin(CameraSet* cs, renderPass pass, uint loopNr) {
-    switch (pass) {
-        case GLSG_SCENE_PASS:
-            if (s_shader) {
-                s_shader->begin();
-            }
-            return true;
-
-        default: return false;
+    if (pass == GLSG_SCENE_PASS  && s_shader) {
+        s_shader->begin();
+        return true;
     }
+    return false;
 }
 
 bool SPGridFloor::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS) {
-        if (s_shader) {
-            s_shader->end();
-        }
+    if (pass == GLSG_SCENE_PASS && s_shader) {
+        Shaders::end();
     }
     return false;
 }
@@ -232,14 +223,13 @@ bool SPGridFloor::end(renderPass pass, uint loopNr) {
 void SPGridFloor::postRender(renderPass pass) {}
 
 Shaders* SPGridFloor::getShader(renderPass pass, uint loopNr) {
-    switch (pass) {
-        case GLSG_SCENE_PASS:
-            return s_shader ? s_shader : nullptr;
-        default: return nullptr;
-    }
+    return pass == GLSG_SCENE_PASS && s_shader ? s_shader : nullptr;
 }
 
-void SPGridFloor::setScreenSize(uint width, uint height) { s_scrWidth = width, s_scrHeight = height; }
+void SPGridFloor::setScreenSize(uint width, uint height) {
+    s_scrWidth = width;
+    s_scrHeight = height;
+}
 
 void SPGridFloor::setNrCams(int num) {
     rebuildShader(num);

@@ -174,8 +174,8 @@ glm::vec2& UINode::getContWinPos() {
 
     // this node's content's left/top corner in relation to the window's
     // top/left corner
-    m_contWinPos.x = m_parentContVp.x + m_pos.x + m_padding.x + (float)m_borderWidth;
-    m_contWinPos.y = m_parentContVp.y + m_pos.y + m_padding.y + (float)m_borderWidth;
+    m_contWinPos.x = m_parentContVp.x + m_pos.x + m_padding.x + static_cast<float>(m_borderWidth);
+    m_contWinPos.y = m_parentContVp.y + m_pos.y + m_padding.y + static_cast<float>(m_borderWidth);
 
     return m_contWinPos;
 }
@@ -186,8 +186,8 @@ glm::vec2& UINode::getContentSize() {
     }
 
     // calculate the size of the node's content area
-    m_contentSize.x = m_size.x - (m_padding.x + m_padding.z + (float)m_borderWidth * 2.f);
-    m_contentSize.y = m_size.y - (m_padding.y + m_padding.w + (float)m_borderWidth * 2.f);
+    m_contentSize.x = m_size.x - (m_padding.x + m_padding.z + static_cast<float>(m_borderWidth * 2.f));
+    m_contentSize.y = m_size.y - (m_padding.y + m_padding.w + static_cast<float>(m_borderWidth * 2.f));
 
     return m_contentSize;
 }
@@ -198,8 +198,8 @@ glm::vec2& UINode::getContentOffset() {
     }
 
     // calculate the size of the node's content area
-    m_contentOffset.x = m_padding.x + (float)m_borderWidth;
-    m_contentOffset.y = m_padding.y + (float)m_borderWidth;
+    m_contentOffset.x = m_padding.x + static_cast<float>(m_borderWidth);
+    m_contentOffset.y = m_padding.y + static_cast<float>(m_borderWidth);
 
     return m_contentOffset;
 }
@@ -211,7 +211,7 @@ glm::vec2& UINode::getBorderWidthRel() {
 
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
-            m_borderWidthRel[i] = (float)m_borderWidth / m_size[i] / m_parentContScale[i];
+            m_borderWidthRel[i] = static_cast<float>(m_borderWidth) / m_size[i] / m_parentContScale[i];
         } else {
             m_borderWidthRel[i] = 0.f;
         }
@@ -227,7 +227,7 @@ glm::vec2& UINode::getBorderRadiusRel() {
 
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
-            m_borderRadiusRel[i] = (float)m_borderRadius / m_size[i] / m_parentContScale[i];
+            m_borderRadiusRel[i] = static_cast<float>(m_borderRadius) / m_size[i] / m_parentContScale[i];
         } else {
             m_borderRadiusRel[i] = 0.f;
         }
@@ -243,7 +243,7 @@ glm::vec2& UINode::getBorderAliasRel() {
 
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
-            m_borderAliasRel[i] = (float)m_borderAlias / m_size[i] / m_parentContScale[i];
+            m_borderAliasRel[i] = static_cast<float>(m_borderAlias) / m_size[i] / m_parentContScale[i];
         } else {
             m_borderAliasRel[i] = 0.f;
         }
@@ -401,11 +401,11 @@ void UINode::updateMatrix() {
 
     // if there is a negative integer width or height, convert it to size - val
     if (m_widthType == unitType::Pixels && m_widthInt < 0) {
-        m_init_size.x = m_parentContVp.z + (float)m_widthInt;
+        m_init_size.x = m_parentContVp.z + static_cast<float>(m_widthInt);
     }
 
     if (m_heightType == unitType::Pixels && m_heightInt < 0) {
-        m_init_size.y = m_parentContVp.w + (float)m_heightInt;
+        m_init_size.y = m_parentContVp.w + static_cast<float>(m_heightInt);
     }
 
     // if there are relative position or size coordinates, convert them to
@@ -471,8 +471,8 @@ void UINode::updateMatrix() {
     m_size = m_work_size;
 
     // parent relative content matrix for the node's children
-    m_nodeMat[3][0] = m_pos.x + (float)m_borderWidth;
-    m_nodeMat[3][1] = m_pos.y + (float)m_borderWidth;
+    m_nodeMat[3][0] = m_pos.x + static_cast<float>(m_borderWidth);
+    m_nodeMat[3][1] = m_pos.y + static_cast<float>(m_borderWidth);
 
     m_contentMat[3][0] = m_nodeMat[3][0] + m_padding.x;
     m_contentMat[3][1] = m_nodeMat[3][1] + m_padding.y;
@@ -605,8 +605,8 @@ void UINode::setFixAspect(float val) {
 }
 
 glm::vec2 UINode::getOrigPos() {
-    return {m_posXType == unitType::Pixels ? (float)m_posXInt : m_posXFloat,
-            m_posYType == unitType::Pixels ? (float)m_posYInt : m_posYFloat};
+    return {m_posXType == unitType::Pixels ? static_cast<float>(m_posXInt) : m_posXFloat,
+            m_posYType == unitType::Pixels ? static_cast<float>(m_posYInt) : m_posYFloat};
 }
 
 glm::vec2& UINode::getPos() {
@@ -1238,8 +1238,8 @@ void UINode::updtMatrIt(scissorStack* ss) {
         // here we get the top left corner, but glScissor needs lower left corner scissor area can't exceed actual scissor bounds
         auto t_nodeViewPortGL = getNodeViewportGL();
 
-        m_scissVp.x = std::max(std::floor(std::round(t_nodeViewPortGL.x + (float)getBorderWidth())) * getPixRatio(), m_sc.x);
-        m_scissVp.y = std::max(std::floor(std::round(t_nodeViewPortGL.y + (float)getBorderWidth())) * getPixRatio(), m_sc.y);
+        m_scissVp.x = std::max(std::floor(std::round(t_nodeViewPortGL.x + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.x);
+        m_scissVp.y = std::max(std::floor(std::round(t_nodeViewPortGL.y + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.y);
         m_scissVp.z = std::floor(std::round(t_nodeViewPortGL.z - getBorderWidth() * 2)) * getPixRatio();
         m_scissVp.w = std::floor(std::round(t_nodeViewPortGL.w - getBorderWidth() * 2)) * getPixRatio();
 

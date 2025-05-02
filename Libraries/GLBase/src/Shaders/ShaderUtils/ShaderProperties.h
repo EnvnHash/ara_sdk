@@ -16,21 +16,21 @@ public:
     ShaderProperties() = default;
     virtual ~ShaderProperties() = default;
 
-    typedef struct UniformType {
+    struct UniformType {
         GLboolean              isSet    = false;
         GLint                  location = -1;
         GLboolean              bVal     = false;
         GLint                  iVal     = 0;
-        std::array<GLint, 2>   i2Val    = {0};
-        std::array<GLint, 3>   i3Val    = {0};
-        std::array<GLint, 4>   i4Val    = {0};
+        std::array<GLint, 2>   i2Val    = {};
+        std::array<GLint, 3>   i3Val    = {};
+        std::array<GLint, 4>   i4Val    = {};
         GLfloat                fVal     = 0.f;
-        std::array<GLfloat, 2> f2Val    = {0};
-        std::array<GLfloat, 3> f3Val    = {0};
-        std::array<GLfloat, 4> f4Val    = {0};
+        std::array<GLfloat, 2> f2Val    = {};
+        std::array<GLfloat, 3> f3Val    = {};
+        std::array<GLfloat, 4> f4Val    = {};
         void                  *valPtr   = nullptr;
         GLenum                 type     = 0;
-    } UniformType;
+    };
 
     virtual void sendToShader(GLuint prog);
     virtual void sendUniform(const std::string *name, UniformType *par);

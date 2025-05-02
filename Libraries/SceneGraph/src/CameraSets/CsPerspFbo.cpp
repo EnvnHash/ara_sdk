@@ -10,6 +10,8 @@
 
 #include "CameraSets/CsPerspFbo.h"
 
+#include <SceneNodes/SceneNode.h>
+
 using namespace glm;
 using namespace std;
 

@@ -26,7 +26,6 @@ SPSkyBox::SPSkyBox(sceneData* sd) : ShaderProto(sd) {
     s_name    = getTypeName<SPSkyBox>();
     m_cubeTex = make_unique<Texture>(sd->glbase);
 
-    // init shader
     rebuildShader(1);
 
 #ifdef ARA_USE_CMRC
@@ -44,7 +43,9 @@ SPSkyBox::SPSkyBox(sceneData* sd) : ShaderProto(sd) {
 }
 
 void SPSkyBox::rebuildShader(uint32_t nrCameras) {
-    if (!nrCameras) return;
+    if (!nrCameras) {
+        return;
+    }
 
     string vert = ShaderCollector::getShaderHeader() + "// SPSkyBox \n";
     vert += STRINGIFY(layout(location = 0) in vec4 position; \n out vec4 pos; \n void main() { pos = position; }\n);
@@ -116,34 +117,30 @@ void SPSkyBox::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode* p
 }
 
 bool SPSkyBox::begin(CameraSet* cs, renderPass pass, uint loopNr) {
-    switch (pass) {
-        case GLSG_SCENE_PASS:
-            if (s_shader) s_shader->begin();
-            return true;
-
-        default: return false;
+    if (pass == GLSG_SCENE_PASS && s_shader) {
+        s_shader->begin();
+        return true;
     }
+    return false;
 }
 
 bool SPSkyBox::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS)
-        if (s_shader) s_shader->end();
-
+    if (pass == GLSG_SCENE_PASS && s_shader) {
+        Shaders::end();
+        return true;
+    }
     return false;
 }
 
 Shaders* SPSkyBox::getShader(renderPass pass, uint loopNr) {
-    switch (pass) {
-        case GLSG_SCENE_PASS: return s_shader;
-
-        default: return nullptr;
-    }
+    return pass == GLSG_SCENE_PASS && s_shader ? s_shader : nullptr;
 }
 
-void SPSkyBox::setScreenSize(uint width, uint height) { s_scrWidth = width, s_scrHeight = height; }
+void SPSkyBox::setScreenSize(uint width, uint height) {
+    s_scrWidth = width, s_scrHeight = height;
+}
 
 void SPSkyBox::setNrCams(int nrCams) {
-    nrCams = nrCams;
     rebuildShader(nrCams);
 }
 

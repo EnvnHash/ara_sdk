@@ -51,8 +51,8 @@ TEST(UITest, GetPixelPosition_Absolute) {
         ASSERT_EQ(div1->getWinPos().x, div0_pos.x + div1_pos.x);
         ASSERT_EQ(div1->getWinPos().y, div0_pos.y + div1_pos.y);
 
-        ASSERT_EQ(div2->getWinPos().x, std::round((float)div0_size.x * div2_pos.x + div0_pos.x));
-        ASSERT_EQ(div2->getWinPos().y, std::round((float)div0_size.y * div2_pos.y + div0_pos.y));
+        ASSERT_EQ(div2->getWinPos().x, std::round(static_cast<float>(div0_size.x) * div2_pos.x + div0_pos.x));
+        ASSERT_EQ(div2->getWinPos().y, std::round(static_cast<float>(div0_size.y) * div2_pos.y + div0_pos.y));
 
     });
 

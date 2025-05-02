@@ -12,27 +12,28 @@
 namespace ara {
 class ShadowMapVsmArray : public ShadowMap {
 public:
-    ShadowMapVsmArray(CameraSet* _cs, int _scrWidth, int _scrHeight, uint _initNrLights);
-    ~ShadowMapVsmArray() = default;
+    ShadowMapVsmArray(CameraSet* cs, int scrWidth, int scrHeight, int32_t initNrLights);
+    ~ShadowMapVsmArray() override = default;
 
-    void  rebuildShader(uint _nrLights);
-    void  rebuildFbo(uint _nrLights);
+    void  rebuildShader(uint nrLights);
+    void  rebuildFbo(uint nrLights);
     static void  setShadowTexPar(GLenum type);
-    void  begin();
-    void  end();
-    void  clear();
-    void  setNrLights(uint _nrLights);
-    void  setScreenSize(uint _width, uint _height);
-    void  bindDepthTexViews(GLuint baseTexUnit, uint nrTexs, uint texOffs);
-    GLint getTex() { return fboBlur ? fboBlur->getLastResult() : 0; }
-    void  blur();
+    void  begin() override;
+    void  end() override;
+    void  clear() override;
+    void  setNrLights(uint nrLights);
+    void  setScreenSize(uint width, uint height) override;
+    void  bindDepthTexViews(GLuint baseTexUnit, uint nrTexs, uint texOffs) const;
+    void  blur() const;
+
+    [[nodiscard]] GLint getTex() const { return m_fboBlur ? m_fboBlur->getLastResult() : 0; }
 
 private:
-    GLint                        max_shader_invoc;
-    float                        blurAlpha;
-    std::vector<GLuint>          depthTexViews;
-    ShaderCollector*             shCol;
-    uint                         nrLights;
-    std::unique_ptr<FastBlurMem> fboBlur;
+    GLint                        m_maxShaderInvoc = 0;
+    float                        m_blurAlpha = 0.f;
+    std::vector<GLuint>          m_depthTexViews;
+    ShaderCollector*             m_shCol = nullptr;
+    uint                         m_nrLights = 0;
+    std::unique_ptr<FastBlurMem> m_fboBlur;
 };
 }  // namespace ara

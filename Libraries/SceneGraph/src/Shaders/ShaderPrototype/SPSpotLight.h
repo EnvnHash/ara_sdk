@@ -14,16 +14,15 @@ namespace ara {
 class SPSpotLight : public ShaderProto {
 public:
     SPSpotLight(sceneData* sd);
-    ~SPSpotLight();
 
-    void clear(renderPass _pass);
-    void sendPar(CameraSet* cs, double time, SceneNode* _scene, SceneNode* _parent, renderPass _pass, uint loopNr = 0);
-    bool begin(CameraSet* cs, renderPass _pass, uint loopNr = 0);
-    bool end(renderPass _pass, uint loopNr = 0);
-    Shaders* getShader(renderPass pass, uint loopNr = 0);
+    void clear(renderPass _pass) override;
+    void sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr = 0) override;
+    bool begin(CameraSet* cs, renderPass pass, uint loopNr = 0) override;
+    bool end(renderPass pass, uint loopNr = 0) override;
+    Shaders* getShader(renderPass pass, uint loopNr = 0) override;
 
 private:
-    glm::vec3             lightDir;
-    LightShaderProperties lightProp;
+    glm::vec3             m_lightDir{};
+    LightShaderProperties m_lightProp{};
 };
 }  // namespace ara

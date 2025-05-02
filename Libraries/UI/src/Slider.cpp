@@ -35,7 +35,7 @@ void Slider::adjustKnob() {
     m_knob->setSize(m_knobWidth, m_knobWidth);
     m_knob->setBorderRadius(m_knobWidth / 2);
 
-    m_maxDragWay    = m_size.x - (float)m_knobWidth;
+    m_maxDragWay    = m_size.x - static_cast<float>(m_knobWidth);
     m_maxDragWayRel = m_maxDragWay / m_size.x;
 }
 

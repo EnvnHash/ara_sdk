@@ -240,8 +240,8 @@ int GLFWWindow::init(const glWinPar &gp) {
     m_posXreal   = gp.shift.x * m_contentScale.x;
     m_posYreal   = gp.shift.y * m_contentScale.y;
 #else
-    m_widthReal  = (int)((float)m_widthVirt * m_contentScale.x);
-    m_heightReal = (int)((float)m_heightVirt * m_contentScale.y);
+    m_widthReal  = (int)(static_cast<float>(m_widthVirt) * m_contentScale.x);
+    m_heightReal = (int)(static_cast<float>(m_heightVirt) * m_contentScale.y);
     m_posXreal   = (int)(gp.shift.x * m_contentScale.x);
     m_posYreal   = (int)(gp.shift.y * m_contentScale.y);
 #endif
@@ -433,8 +433,8 @@ void GLFWWindow::onWindowSize(int width, int height) {
 #endif
 
 #ifdef __APPLE__
-    m_widthVirt  = (int)((float)width * m_contentScale.x);
-    m_heightVirt = (int)((float)height * m_contentScale.y);
+    m_widthVirt  = (int)(static_cast<float>(width) * m_contentScale.x);
+    m_heightVirt = (int)(static_cast<float>(height) * m_contentScale.y);
 #else
     m_widthVirt  = width;
     m_heightVirt = height;

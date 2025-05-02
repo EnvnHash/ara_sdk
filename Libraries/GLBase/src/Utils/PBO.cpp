@@ -40,7 +40,7 @@ void PBO::init() {
         m_pbos.resize(m_nrPboBufs, 0);
 
         glGenBuffers(m_nrPboBufs, &m_pbos[0]);
-        for (uint32_t i = 0; i < m_nrPboBufs; i++) {
+        for (auto i = 0; i < m_nrPboBufs; i++) {
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbos[i]);
             glBufferData(GL_PIXEL_UNPACK_BUFFER, m_dataSize, nullptr, GL_STREAM_DRAW);
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);

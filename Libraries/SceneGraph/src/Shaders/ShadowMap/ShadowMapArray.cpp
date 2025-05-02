@@ -14,36 +14,34 @@ using namespace std;
 
 namespace ara {
 
-ShadowMapArray::ShadowMapArray(CameraSet* _cs, int _scrWidth, int _scrHeight, uint _initNrLights)
-    : ShadowMap(_cs->getGLBase()), shCol(&_cs->getGLBase()->shaderCollector()), nrLights(_initNrLights) {
-    s_cs        = _cs;
-    s_scrWidth  = _scrWidth;
-    s_scrHeight = _scrHeight;
+ShadowMapArray::ShadowMapArray(CameraSet* cs, int scrWidth, int scrHeight, int32_t initNrLights)
+    : ShadowMap(cs->getGLBase()), m_shCol(&cs->getGLBase()->shaderCollector()), m_nrLights(initNrLights) {
+    s_cs        = cs;
+    s_scrWidth  = scrWidth;
+    s_scrHeight = scrHeight;
 
 #ifndef ARA_USE_GLES31
-    glGetIntegerv(GL_MAX_GEOMETRY_SHADER_INVOCATIONS, &max_shader_invoc);
-    glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &maxNumberLayers);
+    glGetIntegerv(GL_MAX_GEOMETRY_SHADER_INVOCATIONS, &m_maxShaderInvoc);
+    glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxNumberLayers);
 #endif
 
-    rebuildFbo(_initNrLights);
-    rebuildShader(_initNrLights);
+    rebuildFbo(initNrLights);
+    rebuildShader(initNrLights);
 }
 
 void ShadowMapArray::rebuildShader(uint _nrLights) {
-    // since the number of lights used in the scene will vary during runtime
-    // we will use ShaderBufferObjects to not have to recompile the shader every
-    // time
-    // ...and they are faster anyway
-    uint limitNrLights = std::max<uint>(std::min<uint>(_nrLights, static_cast<uint>(max_shader_invoc)), 1);
+    // since the number of lights used in the scene will vary during runtime we will use ShaderBufferObjects to not have
+    // to recompile the shader every time ...and they are faster anyway
+    uint limitNrLights = std::max<uint>(std::min<uint>(_nrLights, static_cast<uint>(m_maxShaderInvoc)), 1);
 
-    string vert = shCol->getShaderHeader() + "// ShadowMapArray vertex Shader\n";
+    string vert = ara::ShaderCollector::getShaderHeader() + "// ShadowMapArray vertex Shader\n";
 
-    vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main() {
-        \n gl_Position = position;
-        \n
+    vert += STRINGIFY(layout(location = 0) in vec4 position; \n
+        void main() {\n
+        gl_Position = position; \n
     });
 
-    std::string geom = shCol->getShaderHeader() + "// ShadowMapArray geom Shader\n";
+    std::string geom = ara::ShaderCollector::getShaderHeader() + "// ShadowMapArray geom Shader\n";
     geom += "layout(triangles, invocations= " + std::to_string(limitNrLights) +
             ") in;\n"
             "layout(triangle_strip, max_vertices = 3) out;\n"
@@ -64,27 +62,29 @@ void ShadowMapArray::rebuildShader(uint _nrLights) {
         }
     });
 
-    std::string frag = shCol->getShaderHeader() + "// ShadowMapArray fragment Shader\n";
+    std::string frag = ara::ShaderCollector::getShaderHeader() + "// ShadowMapArray fragment Shader\n";
 
     frag += STRINGIFY(layout(location = 0) out vec4 color; \n void main() { color = vec4(1.0); });
 
-    if (s_shadowShader) shCol->deleteShader("ShadowMapArray");
+    if (s_shadowShader) {
+        m_shCol->deleteShader("ShadowMapArray");
+    }
 
-    s_shadowShader = shCol->add("ShadowMapArray", vert, geom, frag);
+    s_shadowShader = m_shCol->add("ShadowMapArray", vert, geom, frag);
 }
 
-void ShadowMapArray::rebuildFbo(uint _nrLights) {
+void ShadowMapArray::rebuildFbo(int32_t nrLights) {
     if (s_fbo) {
         s_fbo.release();
 
         // delete textures views
-        for (uint i = 0; i < std::min(nrLights, static_cast<uint>(depthTexViews.size())); i++) {
-            glDeleteTextures(1, &depthTexViews[i]);
+        for (auto i = 0; i < std::min(nrLights, static_cast<int32_t>(m_depthTexViews.size())); i++) {
+            glDeleteTextures(1, &m_depthTexViews[i]);
         }
     }
 
     // s_fbo for saving the depth information
-    s_fbo = make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth * 2, s_scrHeight * 2, std::max<int>(_nrLights, 1), GL_RGBA8,
+    s_fbo = make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth * 2, s_scrHeight * 2, std::max<int>(nrLights, 1), GL_RGBA8,
                              GL_TEXTURE_2D_ARRAY, true, 1, 1, 1, GL_CLAMP_TO_BORDER, true});
 
     // set the necessary texture parameters for the depth textures
@@ -92,25 +92,24 @@ void ShadowMapArray::rebuildFbo(uint _nrLights) {
     setShadowTexPar(GL_TEXTURE_2D_ARRAY);
 
     // build textures views
-    depthTexViews.resize(_nrLights);
-    for (uint i = 0; i < _nrLights; i++) {
-        // if (i >= nrLights)
-        glGenTextures(1, &depthTexViews[i]);
+    m_depthTexViews.resize(nrLights);
+    for (auto i = 0; i < nrLights; i++) {
+        glGenTextures(1, &m_depthTexViews[i]);
 
 #ifndef ARA_USE_GLES31
         // Now, create a view of the depth textures
-        glTextureView(depthTexViews[i],      // New texture view
+        glTextureView(m_depthTexViews[i],      // New texture view
                       GL_TEXTURE_2D,         // Target for the new view
                       s_fbo->getDepthImg(),  // Original texture
                       GL_DEPTH24_STENCIL8,   // depth component m_format
                       0, 1,                  // All mipmaps, but it's only one
                       i, 1);                 // the specific layer, only one layer
 #endif
-        glBindTexture(GL_TEXTURE_2D, depthTexViews[i]);
+        glBindTexture(GL_TEXTURE_2D, m_depthTexViews[i]);
         setShadowTexPar(GL_TEXTURE_2D);
     }
 
-    nrLights = _nrLights;
+    m_nrLights = nrLights;
 }
 
 void ShadowMapArray::setShadowTexPar(GLenum type) {
@@ -142,29 +141,29 @@ void ShadowMapArray::begin() {
 
 void ShadowMapArray::end() {
     glDisable(GL_POLYGON_OFFSET_FILL);
-    s_shadowShader->end();
+    ara::Shaders::end();
     s_fbo->unbind();
 }
 
-void ShadowMapArray::setNrLights(uint _nrLights) {
-    if (nrLights != _nrLights) {
-        rebuildFbo(_nrLights);
-        rebuildShader(_nrLights);
+void ShadowMapArray::setNrLights(int32_t nrLights) {
+    if (m_nrLights != nrLights) {
+        rebuildFbo(nrLights);
+        rebuildShader(nrLights);
     }
 
-    nrLights = _nrLights;
+    m_nrLights = nrLights;
 }
 
 void ShadowMapArray::setScreenSize(uint width, uint height) {
-    s_scrWidth  = width;
-    s_scrHeight = height;
-    rebuildFbo(nrLights);
+    s_scrWidth  = static_cast<int32_t>(width);
+    s_scrHeight = static_cast<int32_t>(height);
+    rebuildFbo(m_nrLights);
 }
 
-void ShadowMapArray::bindDepthTexViews(GLuint baseTexUnit, uint nrTexs, uint texOffs) {
-    for (uint i = 0; i < nrTexs; i++) {
+void ShadowMapArray::bindDepthTexViews(GLuint baseTexUnit, uint nrTexs, uint texOffs) const {
+    for (uint i = 0; i < nrTexs; ++i) {
         glActiveTexture(GL_TEXTURE0 + baseTexUnit + i);
-        glBindTexture(GL_TEXTURE_2D, depthTexViews[texOffs + i]);
+        glBindTexture(GL_TEXTURE_2D, m_depthTexViews[texOffs + i]);
     }
 }
 

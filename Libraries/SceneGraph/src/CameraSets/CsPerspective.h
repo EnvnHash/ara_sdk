@@ -24,7 +24,7 @@ public:
 
     void onKey(int key, int scancode, int action, int mods) {}
 
-    std::array<GLint, 4> m_csVp;
+    std::array<GLint, 4> m_csVp{};
     glm::vec3            camPos{0.f, 0.f, 1.f};
     Shaders*             m_clearShdr = nullptr;
     Quad*                m_quad      = nullptr;

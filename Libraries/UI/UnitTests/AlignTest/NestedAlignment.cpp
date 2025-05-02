@@ -32,7 +32,7 @@ namespace ara::SceneGraphUnitTest::NestedAlignment{
             vector<UINode*> children;
             int nrElements = 15;
             int nrElementsPerRow = 5;
-            int nrRows = (int)std::ceil((float)nrElements / (float)nrElementsPerRow);
+            int nrRows = (int)std::ceil(static_cast<float>(nrElements) / static_cast<float>(nrElementsPerRow));
             int margin = 20;
             glm::ivec2 elementSize = glm::ivec2( (app.getWinBase()->getWidth() - margin * (1 + nrElementsPerRow)) / nrElementsPerRow,
                                                  (app.getWinBase()->getHeight() - margin * (1 + nrRows)) / nrRows);

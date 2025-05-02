@@ -12,6 +12,7 @@
 #include <Utils/Stereo/DistortionMesh.h>
 #include <UIApplication.h>
 #include <UIWindow.h>
+#include <SceneNodes/SceneNode.h>
 
 using namespace glm;
 using namespace std;
@@ -528,7 +529,7 @@ void CsStereoFbo::clearScreen(renderPass pass) {
         m_clearShdr->setUniform4fv("clearCol", &s_clearColors[0][0], (int)s_clearColors.size());
         m_clearShdr->setIdentMatrix4fv("m_pvm");
         m_quad->draw();
-        m_clearShdr->end();
+        Shaders::end();
 
         renderBackground();
 
@@ -538,8 +539,8 @@ void CsStereoFbo::clearScreen(renderPass pass) {
         m_fbo.unbind();
 
     } else if (pass == GLSG_SHADOW_MAP_PASS || pass == GLSG_OBJECT_MAP_PASS) {
-        for (const auto& it : s_shaderProto) {
-            it.second->clear(pass);
+        for (const auto&[fst, proto] : s_shaderProto) {
+            proto->clear(pass);
         }
     }
 }
@@ -551,7 +552,9 @@ void CsStereoFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr
         s_matrixStack.clear();
     }
 
-    if (pass == GLSG_SCENE_PASS) m_fbo.bind();
+    if (pass == GLSG_SCENE_PASS) {
+        m_fbo.bind();
+    }
 
     iterateNode(node, time, dt, ctxNr, pass, node->m_calcMatrixStack.load());
 
@@ -559,7 +562,9 @@ void CsStereoFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr
         node->m_calcMatrixStack = false;
     }
 
-    if (pass == GLSG_SCENE_PASS) m_fbo.unbind();
+    if (pass == GLSG_SCENE_PASS) {
+        m_fbo.unbind();
+    }
 }
 
 void CsStereoFbo::render(SceneNode* node, SceneNode* parent, double time, double dt, uint ctxNr, renderPass pass) {

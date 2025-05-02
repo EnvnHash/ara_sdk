@@ -6,13 +6,18 @@
 
 #pragma once
 
-#include "Lights/Light.h"
-#include "SceneNodes/SceneNode.h"
-#include "Shaders/ShaderCollector.h"
-#include "Shaders/Shaders.h"
-#include "Utils/UniformBlock.h"
+#include <Utils/UniformBlock.h>
+#include "glsg_common/glsg_common.h"
 
 namespace ara {
+
+class CameraSet;
+class Light;
+class sceneData;
+class SceneNode;
+class Shaders;
+class ShaderCollector;
+
 class ShaderProto {
 public:
     struct isThisLight {
@@ -21,7 +26,7 @@ public:
         bool operator()(const Light* cls) const { return (cls == m_value); }
     };
 
-    ShaderProto(sceneData* sd);
+    explicit ShaderProto(sceneData* sd);
     virtual ~ShaderProto() = default;
 
     virtual void sendPar(CameraSet* cp, double time, SceneNode* node, SceneNode* parent, renderPass pass,
@@ -68,8 +73,8 @@ public:
     bool s_useUniformBlock     = false;
     bool s_usesNodeMaterialPar = false;
 
-    float s_ambientBrightness = 0.f;
-    float s_maxSceneLightDens = 0.f;
+    float s_ambientBrightness = 0.5f;
+    float s_maxSceneLightDens = 600.f;
     float s_highLight         = 0.f;
     int   s_showProjBright    = 0;
 

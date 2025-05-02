@@ -151,18 +151,18 @@ void UIApplication::openInfoDiag(const InfoDiagParams& params) {
 
 void UIApplication::showInfo(const std::string& msg, long minStayTime, int width, int height, bool isModal,
                              std::function<void()> onClose, std::function<void()> onInfoOpen) {
-    m_infoDiagCreatedCb = onInfoOpen;
+    m_infoDiagCreatedCb = std::move(onInfoOpen);
 
     ivec2 diagPos = ivec2(0, 0);
     if (!m_uiWindows.empty()) {
-        diagPos.x = (m_uiWindows.front()->getWidth() - width) / 2 + m_uiWindows.front()->getPosition().x;
-        diagPos.y = (m_uiWindows.front()->getHeight() - height) / 2 + m_uiWindows.front()->getPosition().y;
+        diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - width) / 2 + m_uiWindows.front()->getPosition().x;
+        diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - height) / 2 + m_uiWindows.front()->getPosition().y;
     }
 
     openInfoDiag(InfoDiagParams{
         .pos = diagPos,
         .size = {width, height},
-        .tp = infoDiagType::info,
+        .tp = info,
         .msg = msg,
         .minStayTime =  minStayTime,
         .isModal = isModal,
@@ -174,14 +174,14 @@ void UIApplication::showCancel(std::string msg, long minStayTime, int width, int
                                std::function<bool()> cancelCb) {
     ivec2 diagPos = ivec2(0, 0);
     if (!m_uiWindows.empty()) {
-        diagPos.x = (m_uiWindows.front()->getWidth() - width) / 2 + m_uiWindows.front()->getPosition().x;
-        diagPos.y = (m_uiWindows.front()->getHeight() - height) / 2 + m_uiWindows.front()->getPosition().y;
+        diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - width) / 2 + m_uiWindows.front()->getPosition().x;
+        diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - height) / 2 + m_uiWindows.front()->getPosition().y;
     }
 
     openInfoDiag(InfoDiagParams{
         .pos = diagPos,
         .size = {width, height},
-        .tp = infoDiagType::cancel,
+        .tp = cancel,
         .msg = std::move(msg),
         .minStayTime =  minStayTime,
         .isModal = isModal,
@@ -194,28 +194,35 @@ void UIApplication::openInfoDiag(infoDiagType tp, const std::string& msg, const 
     ivec2 diagSize = ivec2(750, 150);
 
     if (!m_uiWindows.empty()) {
-        diagPos.x = (m_uiWindows.front()->getWidth() - diagSize.x) / 2 + m_uiWindows.front()->getPosition().x;
-        diagPos.y = (m_uiWindows.front()->getHeight() - diagSize.y) / 2 + m_uiWindows.front()->getPosition().y;
+        diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - diagSize.x) / 2 + m_uiWindows.front()->getPosition().x;
+        diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - diagSize.y) / 2 + m_uiWindows.front()->getPosition().y;
     }
 
     openInfoDiag(InfoDiagParams{
         .pos = diagPos,
         .size = diagSize,
-        .tp = infoDiagType::cancel,
-        .msg = std::move(msg),
+        .tp = cancel,
+        .msg = msg,
         .minStayTime =  500,
         .isModal = true,
-        .onConfirm = std::move(onConfirm)
+        .onConfirm = onConfirm
     });
 }
 
 void UIApplication::setActiveModalWin(UIWindow *win) {
     if (win) {
-        for (auto &it : m_uiWindows)
-            if (it && it.get() != win) it->setBlockHid(true);
-    } else
-        for (auto &it : m_uiWindows)
-            if (it) it->setBlockHid(false);
+        for (auto &it : m_uiWindows) {
+            if (it && it.get() != win) {
+                it->setBlockHid(true);
+            }
+        }
+    } else {
+        for (auto &it : m_uiWindows) {
+            if (it) {
+                it->setBlockHid(false);
+            }
+        }
+    }
 }
 
 void UIApplication::startEventLoop() {

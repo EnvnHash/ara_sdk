@@ -19,34 +19,28 @@
 namespace ara {
 class ShaderProtoFact {
 public:
-    ShaderProtoFact() {}
-    virtual ~ShaderProtoFact() {}
+    static std::unique_ptr<ShaderProto> Create(const std::string& sClassName, sceneData* sd) {
+        static const std::unordered_map<std::string, std::function<std::unique_ptr<ShaderProto>(sceneData*)>> creatorMap = {
+            {getTypeName<SPNoLight>(), [](sceneData* sd){ return std::make_unique<SPNoLight>(sd); }},
+            {getTypeName<SPDirLight>(), [](sceneData* sd){ return std::make_unique<SPDirLight>(sd); }},
+            {getTypeName<SPSpotLight>(), [](sceneData* sd){ return std::make_unique<SPSpotLight>(sd); }},
+            {getTypeName<SPSpotLightShadow>(), [](sceneData* sd){ return std::make_unique<SPSpotLightShadow>(sd); }},
+            {getTypeName<SPSpotLightShadowVsm>(), [](sceneData* sd){ return std::make_unique<SPSpotLightShadowVsm>(sd); }},
+            {getTypeName<SPGridFloorAxes>(), [](sceneData* sd){ return std::make_unique<SPGridFloorAxes>(sd); }},
+            {getTypeName<SPGridFloor>(), [](sceneData* sd){ return std::make_unique<SPGridFloor>(sd); }},
+            {getTypeName<SPWorldAxes>(), [](sceneData* sd){ return std::make_unique<SPWorldAxes>(sd); }},
+            {getTypeName<SPObjectSelector>(), [](sceneData* sd){ return std::make_unique<SPObjectSelector>(sd); }},
+            {getTypeName<SPSkyBox>(), [](sceneData* sd){ return std::make_unique<SPSkyBox>(sd); }}
+        };
 
-    std::unique_ptr<ShaderProto> Create(const std::string& sClassName, sceneData* sd) {
-        if (sClassName == getTypeName<SPNoLight>()) {
-            return std::make_unique<SPNoLight>(sd);
-        } else if (sClassName == getTypeName<SPDirLight>()) {
-            return std::make_unique<SPDirLight>(sd);
-        } else if (sClassName == getTypeName<SPSpotLight>()) {
-            return std::make_unique<SPSpotLight>(sd);
-        } else if (sClassName == getTypeName<SPSpotLightShadow>()) {
-            return std::make_unique<SPSpotLightShadow>(sd);
-        } else if (sClassName == getTypeName<SPSpotLightShadowVsm>()) {
-            return std::make_unique<SPSpotLightShadowVsm>(sd);
-        } else if (sClassName == getTypeName<SPGridFloorAxes>()) {
-            return std::make_unique<SPGridFloorAxes>(sd);
-        } else if (sClassName == getTypeName<SPGridFloor>()) {
-            return std::make_unique<SPGridFloor>(sd);
-        } else if (sClassName == getTypeName<SPWorldAxes>()) {
-            return std::make_unique<SPWorldAxes>(sd);
-        } else if (sClassName == getTypeName<SPObjectSelector>()) {
-            return std::make_unique<SPObjectSelector>(sd);
-        } else if (sClassName == getTypeName<SPSkyBox>()) {
-            return std::make_unique<SPSkyBox>(sd);
+        auto it = creatorMap.find(sClassName);
+        if (it != creatorMap.end()) {
+            return it->second(sd);
         } else {
             LOGE << "ShaderProtoFact error, Prototype: " << sClassName.c_str() << " not found";
+            return nullptr;
         }
-        return 0;
     };
 };
+
 }  // namespace ara

@@ -13,7 +13,7 @@ SNSurface::SNSurface(sceneData* sd) : SceneNode(sd), m_paramChanged(true) {
     setName(getTypeName<SNSurface>());
 }
 
-void SNSurface::draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo) {
+void SNSurface::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo) {
     if (!m_fbSet) {
         m_surfGen.setUseGL32Fallback(m_glbase->getUseFallback());
         m_fbSet = true;
@@ -24,44 +24,45 @@ void SNSurface::draw(double time, double dt, CameraSet* cs, Shaders* _shader, re
         m_reqRebuildMesh = false;
     }
 
-    if (m_vao && m_renderPassEnabled[_pass]) {
+    if (m_vao && m_renderPassEnabled[pass]) {
         uint texCnt = 0;
         glBlendFunc(m_blendSrc, m_blendDst);
 
-        if (getTextures()->size() > 0) {
-            for (uint t = 0; t < int(getTextures()->size()); t++) {
+        if (!getTextures()->empty()) {
+            for (auto t = 0; t < getTextures()->size(); t++) {
                 glActiveTexture(GL_TEXTURE0 + t);
-                _shader->setUniform1i("tex" + std::to_string(t), t);
+                shader->setUniform1i("tex" + std::to_string(t), t);
                 getTextures()->at(t)->bind();
-                texCnt++;
+                ++texCnt;
             }
 
-            _shader->setUniform1i("hasTexture", 1);
-        } else
-            _shader->setUniform1i("hasTexture", 0);
+            shader->setUniform1i("hasTexture", 1);
+        } else {
+            shader->setUniform1i("hasTexture", 0);
+        }
 
         float gridCellSize = 100.f;  // mm
-        _shader->setUniform1i("drawGridTexture", (int)m_drawGridTex);
+        shader->setUniform1i("drawGridTexture", m_drawGridTex);
 
         if (m_surfGen.m_type == SurfaceGenerator::FLAT)
-            _shader->setUniform2f("gridNrSteps", m_surfGen.m_width / gridCellSize, m_surfGen.m_height / gridCellSize);
+            shader->setUniform2f("gridNrSteps", m_surfGen.m_width / gridCellSize, m_surfGen.m_height / gridCellSize);
         else if (m_surfGen.m_type == SurfaceGenerator::PANADOME)
-            _shader->setUniform2f("gridNrSteps",
-                                  (m_surfGen.m_rightAng - m_surfGen.m_leftAng) / 360.f * (float)M_TWO_PI *
+            shader->setUniform2f("gridNrSteps",
+                                  (m_surfGen.m_rightAng - m_surfGen.m_leftAng) / 360.f * static_cast<float>(M_TWO_PI) *
                                       m_surfGen.m_radius / gridCellSize,
-                                  (m_surfGen.m_topAng - m_surfGen.m_bottAng) / 360.f * (float)M_TWO_PI *
+                                  (m_surfGen.m_topAng - m_surfGen.m_bottAng) / 360.f * static_cast<float>(M_TWO_PI) *
                                       m_surfGen.m_radius / gridCellSize);
         else if (m_surfGen.m_type == SurfaceGenerator::DOME)
-            _shader->setUniform2f("gridNrSteps", m_surfGen.m_radius * (float)M_TWO_PI / gridCellSize,
-                                  m_surfGen.m_radius * (float)M_PI / gridCellSize);
+            shader->setUniform2f("gridNrSteps", m_surfGen.m_radius * static_cast<float>(M_TWO_PI) / gridCellSize,
+                                  m_surfGen.m_radius * static_cast<float>(M_PI) / gridCellSize);
         else if (m_surfGen.m_type == SurfaceGenerator::CYLINDER)
-            _shader->setUniform2f("gridNrSteps",
-                                  (m_surfGen.m_rightAng - m_surfGen.m_leftAng) / 360.f * (float)M_TWO_PI *
+            shader->setUniform2f("gridNrSteps",
+                                  (m_surfGen.m_rightAng - m_surfGen.m_leftAng) / 360.f * static_cast<float>(M_TWO_PI) *
                                       m_surfGen.m_radius / gridCellSize,
                                   m_surfGen.m_height / gridCellSize);
 
-        _shader->setUniform1f("gridBgAlpha", m_gridBgAlpha);
-        _shader->setUniform2f("resolution", cs->getActFboSize()->x, cs->getActFboSize()->y);
+        shader->setUniform1f("gridBgAlpha", m_gridBgAlpha);
+        shader->setUniform2f("resolution", cs->getActFboSize()->x, cs->getActFboSize()->y);
 
         m_cullFace ? glEnable(GL_CULL_FACE) : glDisable(GL_CULL_FACE);
         m_depthTest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
@@ -83,12 +84,6 @@ bool SNSurface::rebuildMesh() {
     } else {
         return false;
     }
-}
-
-SNSurface::~SNSurface() {
-    // set SceneNodes m_vao to zero, in order to not have it delete twice
-    // which will cause  a crash
-    m_vao = nullptr;
 }
 
 }  // namespace ara

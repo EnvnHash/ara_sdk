@@ -12,87 +12,45 @@ using namespace std;
 namespace ara {
 
 LightShaderProperties::LightShaderProperties() : ShaderProperties() {
-    /*
-    // true to apply this light in this invocation
-    parameters["isEnabled"] = UniformType();
-    parameters["isEnabled"].type = GL_BOOL;
-
-    // true for a point light or a spotlight,  false for a positional light
-    parameters["isLocal"] = UniformType();
-    parameters["isLocal"].type = GL_BOOL;
-
-    // true if the light is a spotlight
-    parameters["isSpot"] = UniformType();
-    parameters["isSpot"].type = GL_BOOL;
-    */
-
     // light’s contribution to ambient light
-    parameters["ambientColor"]      = UniformType();
     parameters["ambientColor"].type = GL_FLOAT_VEC4;
 
     // color of light
-    parameters["LColor"]      = UniformType();
-    parameters["LColor"].type = GL_FLOAT_VEC4;
+    parameters["LColor"].type       = GL_FLOAT_VEC4;
+    parameters["LSpecular"].type    = GL_FLOAT_VEC4;
 
-    parameters["LSpecular"]      = UniformType();
-    parameters["LSpecular"].type = GL_FLOAT_VEC4;
-
-    // location of light, if is Local is true, otherwise the direction toward
-    // the light
-    parameters["LPosition"]      = UniformType();
-    parameters["LPosition"].type = GL_FLOAT_VEC4;
+    // location of light, if is Local is true, otherwise the direction toward the light
+    parameters["LPosition"].type    = GL_FLOAT_VEC4;
 
     // direction of highlights for directional light
-    parameters["LDirection"]      = UniformType();
-    parameters["LDirection"].type = GL_FLOAT_VEC4;
-
-    parameters["halfVector"]      = UniformType();
-    parameters["halfVector"].type = GL_FLOAT_VEC4;
+    parameters["LDirection"].type   = GL_FLOAT_VEC4;
+    parameters["halfVector"].type   = GL_FLOAT_VEC4;
 
     // spotlight attributes
-    parameters["coneDirection"]      = UniformType();
-    parameters["coneDirection"].type = GL_FLOAT_VEC4;
-
-    parameters["eyeDirection"]      = UniformType();
-    parameters["eyeDirection"].type = GL_FLOAT_VEC4;
-
-    parameters["spotCosCutoff"]      = UniformType();
-    parameters["spotCosCutoff"].type = GL_FLOAT;
-
-    parameters["spotExponent"]      = UniformType();
-    parameters["spotExponent"].type = GL_FLOAT;
-
-    parameters["constantAttenuation"]      = UniformType();
-    parameters["constantAttenuation"].type = GL_FLOAT;
-
-    parameters["linearAttenuation"]      = UniformType();
-    parameters["linearAttenuation"].type = GL_FLOAT;
-
-    parameters["quadraticAttenuation"]      = UniformType();
+    parameters["coneDirection"].type        = GL_FLOAT_VEC4;
+    parameters["eyeDirection"].type         = GL_FLOAT_VEC4;
+    parameters["spotCosCutoff"].type        = GL_FLOAT;
+    parameters["spotExponent"].type         = GL_FLOAT;
+    parameters["constantAttenuation"].type  = GL_FLOAT;
+    parameters["linearAttenuation"].type    = GL_FLOAT;
     parameters["quadraticAttenuation"].type = GL_FLOAT;
-
-    parameters["scaleFactor"]      = UniformType();
-    parameters["scaleFactor"].type = GL_FLOAT;
-
-    parameters["lightMode"]      = UniformType();
-    parameters["lightMode"].type = GL_FLOAT;
-
-    parameters["aspect"]      = UniformType();
-    parameters["aspect"].type = GL_FLOAT;
-
-    parameters["throwRatio"]      = UniformType();
-    parameters["throwRatio"].type = GL_FLOAT;
+    parameters["scaleFactor"].type          = GL_FLOAT;
+    parameters["lightMode"].type            = GL_FLOAT;
+    parameters["aspect"].type               = GL_FLOAT;
+    parameters["throwRatio"].type           = GL_FLOAT;
 }
 
-void LightShaderProperties::enable(bool _b) { setBool("isEnabled", _b); }
+void LightShaderProperties::enable(bool b) {
+    setBool("isEnabled", b);
+}
 
-void* LightShaderProperties::getPtr(std::string name) {
+void* LightShaderProperties::getPtr(const std::string& name) {
     auto it = parameters.find(name);
 
     if (it != parameters.end()) {
-        return (*it).second.valPtr;
+        return it->second.valPtr;
     } else {
-        LOG << "LightShaderProperties::getPtr ERROR no parameter with name: " << name.c_str();
+        LOGE << "LightShaderProperties::getPtr ERROR no parameter with name: " << name.c_str();
         return nullptr;
     }
 }

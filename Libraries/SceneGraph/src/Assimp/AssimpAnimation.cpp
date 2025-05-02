@@ -30,7 +30,7 @@ void AssimpAnimation::update(double time) {
 
     float duration     = getDurationInSeconds();
     float timeStep     = m_animationCurrTime - m_animationPrevTime;
-    float positionStep = timeStep / (float)duration;
+    float positionStep = timeStep / static_cast<float>(duration);
     float position     = getPosition() + positionStep;
 
     if (position > 1.0 && m_loopType == LOOP_NONE) {

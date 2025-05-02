@@ -46,7 +46,7 @@ public:
 #ifdef __ANDROID__
         // stupid restriction of max 4k log length
         std::string ssStr      = m_stringStream.str();
-        int         chunkCount = (int)std::ceil((float)ssStr.size() / 1000.f);
+        int         chunkCount = (int)std::ceil(static_cast<float>(ssStr.size()) / 1000.f);
         for (int i = 0, offs = 0; i < chunkCount; i++, offs += 1000) {
             if (err) {
                 __android_log_print(

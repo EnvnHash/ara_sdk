@@ -17,7 +17,7 @@ namespace ara {
 
 ShadowMapVsm::ShadowMapVsm(Camera* _gCam, int _scrWidth, int _scrHeight, sceneData* _scd)
     : ShadowMap((GLBase*)_scd->glbase) {
-    gCam              = _gCam;
+    m_gCam              = _gCam;
     s_shadow_map_coef = 1.0f;
     s_scrWidth        = static_cast<int>(static_cast<float>(_scrWidth) * s_shadow_map_coef);
     s_scrHeight       = static_cast<int>(static_cast<float>(_scrHeight) * s_shadow_map_coef);
@@ -47,41 +47,60 @@ ShadowMapVsm::ShadowMapVsm(Camera* _gCam, int _scrWidth, int _scrHeight, sceneDa
         color         = vec4(moment1, moment2, 0.0, 0.0);
     });
 
-    shadowShader = make_unique<Shaders>((char*)vSmapShader.c_str(), nullptr, (char*)fSmapShader.c_str(), false);
+    m_shadowShader = make_unique<Shaders>(vSmapShader, nullptr, fSmapShader, false);
 
     // s_fbo for saving the depth information
     s_fbo =
         make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, 1, GL_RGB16F, GL_TEXTURE_2D, true, 1, 1, 1,
                                        GL_REPEAT, false});
 
-    light_position = vec3(-0.5f, 1.0f, 2.0f);
-    lookAtPoint    = vec3(0.0f, 0.0f, 0.0f);
+    m_lightPosition = vec3{-0.5f, 1.0f, 2.0f};
+    m_lookAtPoint    = vec3{0.0f, 0.0f, 0.0f};
 }
-
-ShadowMapVsm::~ShadowMapVsm() {}
 
 void ShadowMapVsm::begin() {
 }
 
-void ShadowMapVsm::end() {}
+void ShadowMapVsm::end() {
+}
 
-GLuint ShadowMapVsm::getDepthImg() { return s_fbo->getDepthImg(); }
+GLuint ShadowMapVsm::getDepthImg() {
+    return s_fbo->getDepthImg();
+}
 
-GLuint ShadowMapVsm::getColorImg() { return s_fbo->getColorImg(); }
+GLuint ShadowMapVsm::getColorImg() {
+    return s_fbo->getColorImg();
+}
 
-mat4 ShadowMapVsm::getLightProjMatr() { return light_projection_matrix; }
+mat4 ShadowMapVsm::getLightProjMatr() const {
+    return m_lightProjectionMatrix;
+}
 
-mat4 ShadowMapVsm::lightViewMatr() { return light_view_matrix; }
+mat4 ShadowMapVsm::lightViewMatr() const {
+    return m_lightViewMatrix;
+}
 
-void ShadowMapVsm::setLightPos(vec3 _pos) { light_position = _pos; }
+void ShadowMapVsm::setLightPos(vec3 pos) {
+    m_lightPosition = pos;
+}
 
-void ShadowMapVsm::setLookAtPoint(vec3 _pos) { lookAtPoint = _pos; }
+void ShadowMapVsm::setLookAtPoint(vec3 pos) {
+    m_lookAtPoint = pos;
+}
 
-int ShadowMapVsm::getWidth() { return s_scrWidth; }
+int ShadowMapVsm::getWidth() {
+    return s_scrWidth;
+}
 
-int ShadowMapVsm::getHeight() { return s_scrHeight; }
+int ShadowMapVsm::getHeight() {
+    return s_scrHeight;
+}
 
-float ShadowMapVsm::getCoef() { return s_shadow_map_coef; }
+float ShadowMapVsm::getCoef() const {
+    return s_shadow_map_coef;
+}
 
-FBO* ShadowMapVsm::getFbo() { return s_fbo.get(); }
+FBO* ShadowMapVsm::getFbo() {
+    return s_fbo.get();
+}
 }  // namespace ara

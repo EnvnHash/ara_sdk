@@ -26,7 +26,7 @@ struct ShaderParams {
 
 class GLSLParticleSystemCS {
 public:
-    GLSLParticleSystemCS(const size_t size, const char* shaderPrefix);
+    GLSLParticleSystemCS(const size_t size, const std::string& shaderPrefix);
     ~GLSLParticleSystemCS();
 
     void        loadShaders();

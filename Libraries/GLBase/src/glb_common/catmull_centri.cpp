@@ -14,10 +14,10 @@ void catmullRomCentriCalcCoeff(SplineSegment &seg, vec2 **points, float tension)
     // seg.c = m1
     seg.c = (1.0f - tension) *
             (*points[2] - *points[1] +
-             t12 * ((*points[1] - *points[0]) / t01 - (*points[2] - *points[0]) / std::max(t01 + t12, (float)1e-7)));
+             t12 * ((*points[1] - *points[0]) / t01 - (*points[2] - *points[0]) / std::max(t01 + t12, static_cast<float>(1e-7))));
     vec2 m2 = (1.0f - tension) *
               (*points[2] - *points[1] +
-               t12 * ((*points[3] - *points[2]) / t23 - (*points[3] - *points[1]) / std::max(t12 + t23, (float)1e-7)));
+               t12 * ((*points[3] - *points[2]) / t23 - (*points[3] - *points[1]) / std::max(t12 + t23, static_cast<float>(1e-7))));
 
     seg.a = 2.f * (*points[1] - *points[2]) + seg.c + m2;
     seg.b = -3.f * (*points[1] - *points[2]) - seg.c - seg.c - m2;
@@ -31,13 +31,13 @@ void catmullRomCentriCalcCoeff2(SplineSegment *seg, vector<vec2> *points) {
     t0 = 0.0f;
     dX = points->at(1).x - points->at(0).x;
     dY = points->at(1).y - points->at(0).y;
-    t1 = t0 + std::max(std::pow((dX * dX + dY * dY), alpha), (float)1e-7);
+    t1 = t0 + std::max(std::pow((dX * dX + dY * dY), alpha), static_cast<float>(1e-7));
     dX = points->at(2).x - points->at(1).x;
     dY = points->at(2).y - points->at(1).y;
-    t2 = t1 + std::max(std::pow((dX * dX + dY * dY), alpha), (float)1e-7);
+    t2 = t1 + std::max(std::pow((dX * dX + dY * dY), alpha), static_cast<float>(1e-7));
     dX = points->at(3).x - points->at(2).x;
     dY = points->at(3).y - points->at(2).y;
-    t3 = t2 + std::max(std::pow((dX * dX + dY * dY), alpha), (float)1e-7);
+    t3 = t2 + std::max(std::pow((dX * dX + dY * dY), alpha), static_cast<float>(1e-7));
 
     float t01 = t0 - t1;
     float t02 = t0 - t2;
@@ -82,13 +82,13 @@ void catmullRomCentriCalcCoeff2(SplineSegment &seg, vec2 **points) {
     t0 = 0.0f;
     dX = points[1]->x - points[0]->x;
     dY = points[1]->y - points[0]->y;
-    t1 = t0 + std::max(std::pow((dX * dX + dY * dY), alpha), (float)1e-7);
+    t1 = t0 + std::max(std::pow((dX * dX + dY * dY), alpha), static_cast<float>(1e-7));
     dX = points[2]->x - points[1]->x;
     dY = points[2]->y - points[1]->y;
-    t2 = t1 + std::max(std::pow((dX * dX + dY * dY), alpha), (float)1e-7);
+    t2 = t1 + std::max(std::pow((dX * dX + dY * dY), alpha), static_cast<float>(1e-7));
     dX = points[3]->x - points[2]->x;
     dY = points[3]->y - points[2]->y;
-    t3 = t2 + std::max(std::pow((dX * dX + dY * dY), alpha), (float)1e-7);
+    t3 = t2 + std::max(std::pow((dX * dX + dY * dY), alpha), static_cast<float>(1e-7));
 
     float t01 = t0 - t1;
     float t02 = t0 - t2;
@@ -128,7 +128,7 @@ void catmullRomCentri(std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &
                       float tension, int mode) {
     glm::vec2 startP, endP;
     outPoints.resize(dstNrPoints);
-    float nrIntPointPerSeg = (float)dstNrPoints / (float)(inPoints.size() - 1);
+    float nrIntPointPerSeg = dstNrPoints / static_cast<float>(inPoints.size() - 1);
 
     unsigned int offs = 0;
     unsigned int sum  = 0;
@@ -142,9 +142,9 @@ void catmullRomCentri(std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &
         // correct the rounding errors from float to integer, add addtional
         // interation steps when we are behind the exact destination index.
         sum += (int)nrIntPointPerSeg + diff;
-        diff              = (int)((float)(segNr + 1) * nrIntPointPerSeg) - sum;
-        unsigned int nrIt = (int)nrIntPointPerSeg + diff;
-        float        div  = (nrIntPointPerSeg + (float)diff - 1.f);
+        diff              = static_cast<int>((segNr + 1) * nrIntPointPerSeg - sum);
+        unsigned int nrIt = static_cast<int>(nrIntPointPerSeg) + diff;
+        float        div  = nrIntPointPerSeg + (diff - 1.f);
 
         // extrapolate point at the beginning by mirroring
         if (segNr == 0) {

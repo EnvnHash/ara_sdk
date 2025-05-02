@@ -332,14 +332,14 @@ float DrawManager::pushFont(GLuint texId, float nrLayers) {
         m_drawSets.back().fontTex[texId] = static_cast<int>(m_drawSets.back().fontTex.size());  // associate a texUnit to this new texId
 
         if (m_drawSets.back().layerSizes.size() < m_drawSets.back().fontTex.size()) {
-            m_drawSets.back().layerSizes.emplace_back((float)nrLayers);
+            m_drawSets.back().layerSizes.emplace_back(static_cast<float>(nrLayers));
             m_drawSets.back().layerUnits.emplace_back(m_drawSets.back().fontTex[texId]);
         } else if (m_drawSets.back().layerSizes[m_drawSets.back().fontTex[texId]] != nrLayers) {
             m_drawSets.back().layerSizes[m_drawSets.back().fontTex[texId]] = nrLayers;
         }
     }
 
-    return (float)m_drawSets.back().fontTex[texId];
+    return static_cast<float>(m_drawSets.back().fontTex[texId]);
 }
 
 float DrawManager::pushTexture(GLuint texId) {

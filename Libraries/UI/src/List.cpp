@@ -52,7 +52,7 @@ void ListBase::updateStyleIt(ResNode* node, state st, const std::string& styleCl
         } else {
             int val                                  = stoi(get<string>(rh));
             m_setStyleFunc[st][styleInit::rowHeight] = [this, val, st]() {
-                m_rowHeight = (float)val;
+                m_rowHeight = static_cast<float>(val);
                 addGlCb("rbList", [this] {
                     rebuild();
                     return true;

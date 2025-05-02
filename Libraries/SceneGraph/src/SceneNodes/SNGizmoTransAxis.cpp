@@ -57,16 +57,16 @@ SNGizmoTransAxis::SNGizmoTransAxis(sceneData* sd) : SNGizmoAxis(sd) {
 
         // create Indices
         auto cyl_indices = buildCylinderIndices(cylNrPointsCircle);
-        uint ind = cyl_indices.size();
+        auto ind = cyl_indices.size();
         cyl_indices.reserve(cylNrPointsCircle * 12);
 
         // cap and tip
         uint capCenterInd = cylNrPointsCircle * 3;
         uint posIndOffs   = cylNrPointsCircle * 2;
 
-        for (uint k = 0; k < 2; k++) {
-            for (uint i = 0; i < cylNrPointsCircle; i++) {
-                for (uint j = 0; j < 3; j++) switch (j) {
+        for (auto k = 0; k < 2; k++) {
+            for (auto i = 0; i < cylNrPointsCircle; i++) {
+                for (auto j = 0; j < 3; j++) switch (j) {
                     case 0: cyl_indices[ind++] = capCenterInd + k; break;  // always center of cap / tip
                     case 1: cyl_indices[ind++] = ((i + 1) % cylNrPointsCircle) + posIndOffs; break;
                     case 2: cyl_indices[ind++] = i + posIndOffs; break;

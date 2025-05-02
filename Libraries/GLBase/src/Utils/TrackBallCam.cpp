@@ -194,8 +194,8 @@ bool TrackBallCam::updateExt(glm::vec3 *trans, glm::vec3 *rot) {
         update = true;
     }
 
-    auto newRot = glm::mod(*rot + vec3((float)M_TWO_PI), vec3((float)M_TWO_PI));
-    auto oldRot = glm::mod(m_tbEulerAngle + vec3((float)M_TWO_PI), vec3((float)M_TWO_PI));
+    auto newRot = glm::mod(*rot + vec3(static_cast<float>(M_TWO_PI)), vec3(static_cast<float>(M_TWO_PI)));
+    auto oldRot = glm::mod(m_tbEulerAngle + vec3(static_cast<float>(M_TWO_PI)), vec3(static_cast<float>(M_TWO_PI)));
     auto diff   = glm::abs(oldRot - newRot);
 
     if (glm::compAdd(diff) > 1.e-5f) {
@@ -215,8 +215,8 @@ void TrackBallCam::setInteractionStart() {
 
     m_tbMouseDownPos         = m_tbTrans;
     m_tbMouseDownEulerAngle  = m_tbEulerAngle;
-    m_tbMouseTrans           = vec3(0.f, 0.f, 0.f);
-    m_tbMouseRot             = vec3(0.f, 0.f, 0.f);
+    m_tbMouseTrans           = {0.f, 0.f, 0.f};
+    m_tbMouseRot             = {0.f, 0.f, 0.f};
     m_tbMouseDownCamModelMat = getModelMatr();
     m_tbResultModelMat       = getModelMatr();
 

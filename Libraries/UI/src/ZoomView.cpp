@@ -88,7 +88,7 @@ void ZoomView::setDisplaySize(int w, int h) {
     m_displaySize.y = h;
 
     if (ui_content) {
-        ui_content->setFixAspect((float)w / (float)h);
+        ui_content->setFixAspect(static_cast<float>(w) / static_cast<float>(h));
         ui_content->updateMatrix();
     }
 }
@@ -123,7 +123,7 @@ void ZoomView::mouseWheel(hidData* data) {
     if (getWindow()->isMousePressed()) return;
 
     if (m_zoomProp) {
-        float newVal   = m_zoomProp() * 0.01f * (1.f + (float)data->degrees * (data->ctrlPressed ? 0.01f : 0.1f));
+        float newVal   = m_zoomProp() * 0.01f * (1.f + data->degrees * (data->ctrlPressed ? 0.01f : 0.1f));
         m_zoomUseWheel = true;
         m_zoomProp.setClamp(newVal * 100.f);
     }

@@ -10,22 +10,25 @@
 #include "Shaders/ShaderUtils/ShaderBuffer.h"
 
 namespace ara {
+
+class Texture;
+
 class SPSkyBox : public ShaderProto {
 public:
-    SPSkyBox(sceneData* sd);
-    virtual ~SPSkyBox() = default;
+    explicit SPSkyBox(sceneData* sd);
+    ~SPSkyBox() override = default;
 
     void rebuildShader(uint nrCameras);
-    void clear(renderPass pass);
-    void sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr = 0);
-    bool begin(CameraSet* cs, renderPass pass, uint loopNr = 0);
-    bool end(renderPass pass, uint loopNr = 0);
-    void postRender(renderPass pass) {}
+    void clear(renderPass pass) override;
+    void sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr = 0) override;
+    bool begin(CameraSet* cs, renderPass pass, uint loopNr = 0) override;
+    bool end(renderPass pass, uint loopNr = 0) override;
+    void postRender(renderPass pass) override { }
 
     Shaders* getShader(renderPass pass, uint loopNr = 0);
 
-    void setScreenSize(uint width, uint height);
-    void setNrCams(int nrCams);
+    void setScreenSize(uint width, uint height) override;
+    void setNrCams(int nrCams) override;
 
 private:
     std::unique_ptr<Texture> m_cubeTex;

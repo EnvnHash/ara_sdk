@@ -141,7 +141,7 @@ UIWindow::UIWindow(const UIWindowParams& par)
         glGenVertexArrays(1, &m_nullVao);
 
         m_objSel = make_unique<ObjectMapInteraction>(&s_shCol, rWidth, rHeight, m_sceneFbo.get(), m_multisample);
-        m_drawMan->setMaxObjId((uint32_t)m_objSel->getMaxObjId());
+        m_drawMan->setMaxObjId(static_cast<uint32_t>(m_objSel->getMaxObjId()));
         m_drawMan->setShaderCollector(&s_shCol);
 
         //-------------------------------------------------------------------------------------------
@@ -210,7 +210,7 @@ UIWindow::UIWindow(const UIWindowParams& par)
             m_menuBar = m_uiRoot->addChild<MenuBar>();
             m_menuBar->setPadding(m_stdPadding * 3, m_stdPadding, m_stdPadding * 3, m_stdPadding);
             m_menuBar->setAlignY(valign::top);
-            m_menuBar->setSize(1.f, m_sharedRes.gridSize.y + (int)m_stdPadding * 2);
+            m_menuBar->setSize(1.f, m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2);
             m_menuBar->setBackgroundColor(m_colors[uiColors::background]);
             m_menuBar->setWindowHandle(m_winHandle);
 
@@ -548,7 +548,7 @@ void UIWindow::update() {
 #endif
 }
 
-void UIWindow::iterate() {
+void UIWindow::iterate() const {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     if (m_selfManagedCtx && m_winHandle->isRunning() && m_winHandle->isInited()) m_winHandle->iterate();
 #endif
@@ -653,7 +653,7 @@ void UIWindow::cursor_callback(double xpos, double ypos) {
 
     if (!m_winHandle->isRunning() || !m_winHandle->isInited()) return;
 
-    WindowBase::osMouseMove((float)xpos, (float)ypos, 0);
+    WindowBase::osMouseMove(static_cast<float>(xpos), static_cast<float>(ypos), 0);
     iterate();  // -> procHID
 #endif
 }
@@ -671,13 +671,13 @@ void UIWindow::mouseBut_callback(int button, int action, int mods) {
 #endif
 
     if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_PRESS)
-        WindowBase::osMouseDownLeft((float)m_lastMouseX, (float)m_lastMouseY, mods & GLSG_MOD_SHIFT,
+        WindowBase::osMouseDownLeft(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & GLSG_MOD_SHIFT,
                                     mods & GLSG_MOD_CONTROL, mods & GLSG_MOD_ALT);
 
     if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_RELEASE) WindowBase::osMouseUpLeft();
 
     if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_PRESS)
-        WindowBase::osMouseDownRight((float)m_lastMouseX, (float)m_lastMouseY, mods & GLSG_MOD_SHIFT,
+        WindowBase::osMouseDownRight(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & GLSG_MOD_SHIFT,
                                      mods & GLSG_MOD_CONTROL, mods & GLSG_MOD_ALT);
 
     if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_RELEASE) WindowBase::osMouseUpRight();
@@ -689,7 +689,7 @@ void UIWindow::mouseBut_callback(int button, int action, int mods) {
 }
 
 void UIWindow::scroll_callback(double xoffset, double yoffset) {
-    WindowBase::osWheel((float)yoffset);  // degree
+    WindowBase::osWheel(static_cast<float>(yoffset));  // degree
     iterate();
 }
 
@@ -784,7 +784,7 @@ void UIWindow::window_size_callback(int width, int height) {
 void UIWindow::window_close_callback() {
 #ifdef ARA_USE_GLFW
     // when alt+F4 pressed on windows, prevent to close -> there should be a dialog before
-    glfwSetWindowShouldClose((GLFWwindow *)m_winHandle->getWin(), GLFW_FALSE);
+    glfwSetWindowShouldClose(static_cast<GLFWwindow *>(m_winHandle->getWin()), GLFW_FALSE);
 #endif
 }
 
@@ -924,7 +924,7 @@ void UIWindow::onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool c
     }
 
     m_draggingNodeTree.clear();
-    std::copy(m_opi.localTree.begin(), m_opi.localTree.end(), std::back_inserter(m_draggingNodeTree));
+    ranges::copy(m_opi.localTree, std::back_inserter(m_draggingNodeTree));
 
     // iterate mouse click through UINode - Tree
     m_hidData.reset();
@@ -976,8 +976,8 @@ void UIWindow::onMouseUpLeft() {
     // in case an object id changed during mouseDrag explicitly call the mouseup on this element
     if (m_hidData.dragging && m_draggingNode && !m_draggingNode->isHIDBlocked()) {
         m_draggingNode->mouseUp(&m_hidData);
-        for (auto &it : m_draggingNode->getMouseUpCb()) {
-            it.first(&m_hidData);
+        for (auto &key: m_draggingNode->getMouseUpCb() | views::keys) {
+            key(&m_hidData);
         }
     } else {
         m_hidData.reset();
@@ -1009,7 +1009,7 @@ void UIWindow::onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool 
     }
 
     m_draggingNodeTree.clear();
-    std::copy(m_opi.localTree.begin(), m_opi.localTree.end(), std::back_inserter(m_draggingNodeTree));
+    ranges::copy(m_opi.localTree, std::back_inserter(m_draggingNodeTree));
 
     // iterate mouse click through UINode - Tree
     m_hidData.reset();
@@ -1024,8 +1024,8 @@ void UIWindow::onMouseUpRight() {
     // in case an object id changed during mouseDrag explicitly call the mouseup on this element
     if (m_hidData.dragging && m_draggingNode && !m_draggingNode->isHIDBlocked()) {
         m_draggingNode->mouseUpRight(&m_hidData);
-        for (auto &it : m_draggingNode->getMouseUpRightCb()) {
-            it.first(&m_hidData);
+        for (auto &key: m_draggingNode->getMouseUpRightCb() | views::keys) {
+            key(&m_hidData);
         }
     }
 
@@ -1056,7 +1056,7 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
         UINode::hidIt(&m_hidData, hidEvent::MouseMove, m_opi.localTree.begin(), m_opi.localTree);
     }
 
-    m_hidData.newNode = (void *)foundNode;
+    m_hidData.newNode = static_cast<void *>(foundNode);
 
     for (auto &it : m_globalMouseMoveCb) {
         it.second(&m_hidData);
@@ -1290,15 +1290,13 @@ void UIWindow::setAppIcon(std::string &path) {
     logo.width  = 48;
     logo.height = 48;
     // logo.pixels = (uint8_t*)pBitmap->data;
-    logo.pixels = (uint8_t *)pBitmap->data + logo.width * 8;
-
-    int nrChan = 4;
+    logo.pixels = static_cast<uint8_t *>(pBitmap->data) + logo.width * 8;
 
     // convert to bgra
     std::array<uint8_t, 4> t{};
-    int                    x, y;
-    for (y = 0; y < (logo.height); y++) {
-        for (x = 0; x < logo.width; x++) {
+    for (int y = 0; y < (logo.height); y++) {
+        for (int x = 0; x < logo.width; x++) {
+            int nrChan = 4;
             int idx = ((y * logo.width) + x) * nrChan;
 
             t[0] = logo.pixels[idx + 2];
@@ -1306,11 +1304,11 @@ void UIWindow::setAppIcon(std::string &path) {
             t[2] = logo.pixels[idx + 0];
             t[3] = logo.pixels[idx + 3];
 
-            std::copy(&t[0], &t[0] + nrChan, &logo.pixels[idx]);
+            std::copy_n(&t[0], nrChan, &logo.pixels[idx]);
         }
     }
 
-    glfwSetWindowIcon((GLFWwindow *)getWinHandle()->getWin(), 1, &logo);
+    glfwSetWindowIcon(static_cast<GLFWwindow *>(getWinHandle()->getWin()), 1, &logo);
 #endif
 }
 
@@ -1503,7 +1501,7 @@ std::string UIWindow::OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuff
     return out;
 }
 
-std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
+std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const {
 #ifdef _WIN32
 #ifdef ARA_USE_GLFW
     HWND owner = getWinHandle()->getHwndHandle();

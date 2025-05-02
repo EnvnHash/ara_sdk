@@ -55,7 +55,7 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
     m_Edit->addEnterCb(
         [prop, idx](const std::string& txt) {
             glm::vec2 lastVal = (*prop)();
-            lastVal[idx]      = (float)atof(txt.c_str());
+            lastVal[idx]      = static_cast<float>(atof(txt.c_str()));
             (*prop)           = lastVal;  // to be done this way in order to cause a onPreChange()
         },
         prop);

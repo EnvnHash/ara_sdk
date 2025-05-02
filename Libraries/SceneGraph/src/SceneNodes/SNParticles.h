@@ -6,70 +6,65 @@
 
 #pragma once
 
+#include <GLUtils/GLSLParticleSystemCS.h>
 #include <SceneNodes/SceneNode.h>
-#include <Shaders/ShaderCollector.h>
-#include <Shaders/ShaderUtils/ShaderBuffer.h>
-#include <Utils/NoiseTexNV.h>
-#include <glb_common/glb_common.h>
-
-#include "GLUtils/GLSLParticleSystemCS.h"
 
 namespace ara {
 
 class SNParticles : public SceneNode {
 public:
-    SNParticles(sceneData* sd = nullptr);
-    ~SNParticles();
+    explicit SNParticles(sceneData* sd = nullptr);
+    ~SNParticles() override;
 
     void draw();
     void initShdr();
-    std::string getVertShader();
-    std::string getFragShader();
-    void draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo = nullptr);
+    static std::string getVertShader();
+
+    static std::string getFragShader();
+    void draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo = nullptr) override;
     void cleanUp();
     void update(double time, double dt);
-    void onKey(int key, int scancode, int action, int mods);
+    void onKey(int key, int scancode, int action, int mods) override;
 
 private:
-    ShaderParams                          mShaderParams;
-    ShaderCollector*                      shCol       = nullptr;
-    Shaders*                              mRenderProg = nullptr;
-    std::unique_ptr<GLSLParticleSystemCS> mParticles;
-    std::unique_ptr<VAO>                  testVAO;
+    ShaderParams                          m_shaderParams{};
+    ShaderCollector*                      m_shCol       = nullptr;
+    Shaders*                              m_renderProg = nullptr;
+    std::unique_ptr<GLSLParticleSystemCS> m_particles;
+    std::unique_ptr<VAO>                  m_testVAO;
 
-    const int mNumParticles;
-    GLuint    mUBO;
-    GLuint    mVBO;
+    const int m_numParticles = 1 << 17;
+    GLuint    m_UBO = 0;
+    GLuint    m_VBO = 0;
 
-    GLint  uboSize;
-    GLuint uboIndex;
+    GLint  m_uboSize = 0;
+    GLuint m_uboIndex  = 0;
 
-    GLfloat partColors[6][4];
+    std::array<glm::vec4, 6> m_partColors{};
 
-    bool mEnableAttractor;
-    bool mAnimate;
-    bool mReset;
+    bool mEnableAttractor = true;
+    bool mReset = false;
 
-    float alpha;
-    float noiseFreq;
-    float noiseStren;
-    float spriteSize;
-    float initAmt;
+    float m_alpha = 1.f;
+    float m_noiseFreq = 10.f;
+    float m_noiseStren = 0.002f;
+    float m_spriteSize = 0.025f;
+    float m_initAmt = 0.f;
 
-    float propo;
-    float mTime;
-    float globalScale;
+    float m_propo = 0.f;
+    float m_time = 0.f;
+    float m_globalScale = 16.f;
 
-    int oldReset;
-    int nrPartColors;
+    int32_t m_oldReset = 0;
+    int32_t m_nrPartColors = 6;
 
-    double lastTime;
-    double lastPartUpdt;
+    double m_lastTime = 0.0;
+    double m_lastPartUpdt = 0.0;
 
-    glm::mat4  model;
-    glm::mat4  view;
-    glm::mat4  proj;
-    glm::vec4* chanCols;
+    glm::mat4  m_model{};
+    glm::mat4  m_view{};
+    glm::mat4  m_proj{};
+    glm::vec4* m_chanCols= nullptr;
 };
 
 }  // namespace ara

@@ -462,7 +462,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
     // check if the layerTexture containing this font was already collected, if not append it (must happen before Glyph
     // updating in order to have the correct texUnit value set to the vao data)
     if (m_riFont && checkFontTex) {
-        m_fontTexUnit = m_sharedRes->drawMan->pushFont(m_riFont->getLayerTexId(), (float)m_riFont->getLayerTexSize());
+        m_fontTexUnit = m_sharedRes->drawMan->pushFont(m_riFont->getLayerTexId(), static_cast<float>(m_riFont->getLayerTexSize()));
     }
 
     auto ld = m_lblDB.vaoData.begin();
@@ -496,8 +496,8 @@ void Label::updateIndDrawData(bool checkFontTex) {
             ld->color    = m_color;
 
             ld->aux2.x = m_fontTexUnit;                          // layerTex Id
-            ld->aux2.y = (float)m_riFont->getLayerTexLayerId();  // layer Id
-            ld->aux2.z = m_excludeFromObjMap ? 0.f : (float)m_objIdMin;
+            ld->aux2.y = static_cast<float>(m_riFont->getLayerTexLayerId());  // layer Id
+            ld->aux2.z = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
             ld->aux2.w = m_zPos;
             ld->aux3.x = 1.f;  // type indicator (1=Label)
             ld->aux3.w = m_absoluteAlpha;

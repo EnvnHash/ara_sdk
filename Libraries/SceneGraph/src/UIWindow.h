@@ -60,7 +60,7 @@ public:
 
     void copyToScreen() const;
     void update();
-    void iterate();
+    void iterate() const;
 
     // window changes
     void onSetViewport(int x, int y, int width, int height) override;
@@ -69,18 +69,18 @@ public:
 
 #ifdef _WIN32
     std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC>& allowedSuffix) const;
-    std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes);
+    std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const;
 #elif defined(__linux__) && !defined(__ANDROID__)
     std::string OpenFileDialog(std::vector<const char*>& allowedSuffix) {
         return OpenFileDialog(allowedSuffix);
     }
 
-    std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
+    std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const {
         return SaveFileDialog(fileTypes);
     }
 #elif __APPLE__
     std::string OpenFileDialog(std::vector<const char*>& allowedSuffix) { return OpenFileDialog(allowedSuffix); }
-    std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes) {
+    std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes) const {
         return SaveFileDialog(fileTypes);
     }
 #endif

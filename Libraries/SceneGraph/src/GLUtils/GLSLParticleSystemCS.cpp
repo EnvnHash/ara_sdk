@@ -5,7 +5,7 @@ using namespace std;
 
 namespace ara {
 
-GLSLParticleSystemCS::GLSLParticleSystemCS(const size_t size, const char *shaderPrefix)
+GLSLParticleSystemCS::GLSLParticleSystemCS(const size_t size, const std::string& shaderPrefix)
 	: m_size(size),
 	  m_shaderPrefix(shaderPrefix){
 	// Split the velocities and positions, as for now the rendering only cares about positions, so we just index
