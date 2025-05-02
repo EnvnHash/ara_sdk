@@ -142,6 +142,13 @@ public:
     }
 
     template <typename T>
+    T* insertChild(int32_t position, const std::string& styleClass) {
+        T* nc = UINode::insertChild<T>(position);
+        nc->addStyleClass(styleClass);
+        return nc;
+    }
+
+    template <typename T>
     T* addChild(int32_t x, int32_t y, int32_t w, int32_t h) {
         T* nc = UINode::addChild<T>();
         nc->setPos(x, y);

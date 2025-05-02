@@ -58,7 +58,7 @@ public:
     std::string value(const std::string &path, const std::string& def);
 
     template<CoordinateType32Signed T>
-    T value(const std::string &path, int def) {
+    T value(const std::string &path, T def) {
         std::string s;
         if (!getvalue(s, path)) {
             return def;
@@ -72,7 +72,7 @@ public:
     }
 
     template<CoordinateType32Signed T>
-    bool value_v(std::vector<T> &v, const std::string &path, int fcount = 0, int def = 0) {
+    bool value_v(std::vector<T> &v, const std::string &path, int fcount = 0, T def = 0) {
         v.clear();
 
         auto *node = findNode<AssetFont>(path);
@@ -84,7 +84,7 @@ public:
         fcount     = fcount > 0 ? fcount : tok.getParCount();
 
         for (int i = 0; i < fcount; i++) {
-            v.emplace_back(tok.getFloatPar(i, static_cast<float>(def)));
+            v.emplace_back(tok.getFloatPar(i, static_cast<T>(def)));
         }
 
         return true;

@@ -159,8 +159,8 @@ public:
     std::string         getValue(const std::string &name, std::string def = {});  // Returns the value of a
 
     template<CoordinateType32Signed T>
-    T value(const std::string &name, int def) {
-        int      v = def;
+    T value(const std::string &name, T def) {
+        T      v = def;
         ResNode *ptr;
 
         if ((ptr = getByName(name)) == nullptr) {
@@ -181,7 +181,7 @@ public:
     }
 
     template<CoordinateType32Signed T>
-    bool value_v(std::vector<T> &v, const std::string &path, int fcount = 0, int def = 0) {
+    bool value_v(std::vector<T> &v, const std::string &path, int fcount = 0, T def = 0) {
         v.clear();
         ResNode *node = findNode(path);
         if (node == nullptr) {
