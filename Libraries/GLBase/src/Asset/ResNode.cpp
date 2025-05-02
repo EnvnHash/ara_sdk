@@ -13,9 +13,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-
-#include <string_utils.h>
-
 #include <Asset/ResNode.h>
 #include <Asset/AssetImageSource.h>
 #include <Asset/AssetImageSection.h>
@@ -288,69 +285,6 @@ string ResNode::getValue(const string &name, string def) {
     }
 
     return def;
-}
-
-int ResNode::value1i(const string &name, int def) {
-    int      v = def;
-    ResNode *ptr;
-
-    if ((ptr = getByName(name)) == nullptr) {
-        return def;
-    }
-
-    try {
-        auto vp = split(ptr->m_value, "px");
-        if (vp.size() > 1) {
-            v = stoi(vp[0]);
-        } else {
-            v = stoi(ptr->m_value);
-        }
-    } catch (...) {
-    }
-
-    return v;
-}
-
-float ResNode::value1f(const string &name, float def) {
-    float    v = def;
-    ResNode *ptr;
-    if ((ptr = getByName(name)) == nullptr) return def;
-    try {
-        auto vp = split(ptr->m_value, "%");
-        if (vp.size() > 1) {
-            v = stof(vp[0]);
-        } else {
-            v = stof(ptr->m_value);
-        }
-    } catch (...) {
-    }
-    return v;
-}
-
-bool ResNode::valueiv(std::vector<int> &v, const string &path, int fcount, int def) {
-    v.clear();
-    ResNode *node = findNode(path);
-    if (node == nullptr) return false;
-    ParVec tok = node->splitValue();
-    fcount     = fcount > 0 ? fcount : tok.getParCount();
-    for (int i = 0; i < fcount; i++) {
-        v.emplace_back(tok.getIntPar(i, def));
-    }
-    return true;
-}
-
-bool ResNode::valuefv(std::vector<float> &v, const string &path, int fcount, float def) {
-    v.clear();
-    ResNode *node = findNode(path);
-    if (node == nullptr) {
-        return false;
-    }
-    ParVec tok = node->splitValue();
-    fcount     = fcount > 0 ? fcount : tok.getParCount();
-    for (int i = 0; i < fcount; i++) {
-        v.emplace_back(tok.getFloatPar(i, def));
-    }
-    return true;
 }
 
 std::vector<float> ResNode::valuefv(const string &path, int fcount, float def) {

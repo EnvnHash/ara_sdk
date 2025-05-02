@@ -59,7 +59,7 @@ void Spinner::init() {
     m_initTime = std::chrono::system_clock::now();
 }
 
-void Spinner::updateStyleIt(ResNode * node, state st, std::string & styleClass) {
+void Spinner::updateStyleIt(ResNode * node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     if (!m_sharedRes) {

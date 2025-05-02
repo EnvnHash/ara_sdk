@@ -19,7 +19,7 @@ class CollapseList : public List
 {
 public:
     CollapseList();
-    CollapseList(std::string&& styleClass);
+    CollapseList(const std::string& styleClass);
     virtual ~CollapseList()=default;
 
     void rebuildList();

@@ -13,7 +13,7 @@ public:
     } e_cell;
 
     UITable();
-    UITable(std::string&& styleClass);
+    UITable(const std::string& styleClass);
     UITable(glm::vec2 pos, glm::vec2 size, glm::ivec2 topology, glm::vec2 margin = {0, 0},
             glm::vec2 padding = {0, 0}, const float* fg_color = nullptr, const float* bg_color = nullptr);
     UITable(float h_margin, float v_margin, float h_padding, float v_padding, const float* fg_color, const float* bg_color);

@@ -13,7 +13,7 @@ public:
     ~Spinner() override = default;
 
     void init() override;
-    void updateStyleIt(ResNode* node, state st, std::string& styleClass) override;
+    void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
     void setImgBase(AssetImageBase* imgBase);
     bool draw(uint32_t* objId) override;
     bool drawIndirect(uint32_t* objId) override;

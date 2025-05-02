@@ -16,7 +16,7 @@ Label::Label() {
     setFocusAllowed(false);
 }
 
-Label::Label(std::string&& styleClass) : Div(std::move(styleClass)) {
+Label::Label(const std::string& styleClass) : Div(std::move(styleClass)) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
@@ -49,7 +49,7 @@ void Label::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::labelOptions] = [this]() { m_tOpt = 0; };
 }
 
-void Label::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
+void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     auto color = node->findNode<AssetColor>("text-color");
@@ -145,7 +145,7 @@ void Label::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
 
     auto f = node->findNode<AssetFont>("font");
     if (f) {
-        int         size = ((ResNode*)f)->value1i("size", 0);
+        int         size = ((ResNode*)f)->value<int32_t>("size", 0);
         std::string font = ((ResNode*)f)->getValue("font");
 
         m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size]() { setFontSize(size); };
@@ -570,10 +570,10 @@ void Label::setFont(std::string fontType, uint32_t fontSize, align ax, valign ay
 }
 
 void Label::setColor(float r, float g, float b, float a, state st)  {
-    UINode::setColor(r, g, b, a, st);
+    Label::setColor({r, g, b, a}, st);
 }
 
-void Label::setColor(glm::vec4 &col, state st)  {
+void Label::setColor(const glm::vec4 &col, state st)  {
     UINode::setColor(col, st);
 }
 

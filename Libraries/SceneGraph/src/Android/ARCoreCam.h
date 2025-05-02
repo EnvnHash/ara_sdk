@@ -16,7 +16,7 @@ class UIWindow;
 class ARCoreCam : public Image {
 public:
     ARCoreCam();
-    ARCoreCam(std::string&& styleClass);
+    ARCoreCam(const std::string& styleClass);
     virtual ~ARCoreCam() = default;
 
     void createArSession();

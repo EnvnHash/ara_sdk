@@ -19,18 +19,9 @@ Div::Div() : UINode() {
 #endif
 }
 
-Div::Div(std::string *styleClass) : UINode() {
+Div::Div(const std::string& styleClass) : UINode() {
     setName(getTypeName<Div>());
-    addStyleClass(std::move(*styleClass));
-#ifndef FORCE_INMEDIATEMODE_RENDERING
-    m_indDrawBlock.stdInit();
-    m_drawImmediate = false;
-#endif
-}
-
-Div::Div(std::string &&styleClass) : UINode() {
-    setName(getTypeName<Div>());
-    addStyleClass(std::move(styleClass));
+    addStyleClass(styleClass);
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_indDrawBlock.stdInit();
     m_drawImmediate = false;

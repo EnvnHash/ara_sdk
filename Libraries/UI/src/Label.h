@@ -26,18 +26,14 @@ public:
         none         = 0x0000,
         single_line  = 0x0010,    // Single line, do not accept CR
         accept_tabs  = 0x0020,    // Accepting TABs
-        manual_space = 0x0040,    // the edit pixel space is defined by the user,
-                                  // otherwise it will adapt to content size
-        end_ellipsis = 0x0080,    // will crop text if exceeds area and add
-                                  // ellipsis at the end (...)
-        front_ellipsis = 0x0100,  // will crop text if exceeds area and add
-                                  // ellipsis at the beginning (...)
-        adaptive = 0x0120         // will adjust the fontsize to fit the content into
-                                  // the container
+        manual_space = 0x0040,    // the edit pixel space is defined by the user, otherwise it will adapt to content size
+        end_ellipsis = 0x0080,    // will crop text if exceeds area and add ellipsis at the end (...)
+        front_ellipsis = 0x0100,  // will crop text if exceeds area and add ellipsis at the beginning (...)
+        adaptive = 0x0120         // will adjust the fontsize to fit the content into the container
     };
 
     Label();
-    Label(std::string &&styleClass);
+    Label(const std::string& styleClass);
     Label(LabelInitData initData);
     ~Label() override = default;
 
@@ -59,13 +55,13 @@ public:
     virtual void  reqUpdtGlyphs(bool updateTree);
     void          clearDs() override;
     void          loadStyleDefaults() override;
-    void          updateStyleIt(ResNode *node, state st, std::string &styleClass) override;
+    void          updateStyleIt(ResNode *node, state st, const std::string& styleClass) override;
     virtual void  setProp(Property<std::string> *prop);
     virtual void  setProp(Property<std::filesystem::path> *prop);
 
     void setFont(std::string fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st = state::m_state);
     void setColor(float r, float g, float b, float a, state st = state::m_state) override;
-    void setColor(glm::vec4 &col, state st = state::m_state) override;
+    void setColor(const glm::vec4 &col, state st = state::m_state) override;
     void setTextAlign(align ax, valign ay, state st = state::m_state);
     void setTextAlignX(align ax, state st = state::m_state);
     void setTextAlignY(valign ay, state st = state::m_state);

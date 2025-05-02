@@ -380,7 +380,7 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
 
         // bind Light Parameters
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, lightSb->getBuffer());
-        glDepthMask((!s_nrPasses > 1 && loopNr < s_nrPasses - 1));
+        glDepthMask(!(s_nrPasses > 1 && loopNr < s_nrPasses - 1));
     }
 }
 

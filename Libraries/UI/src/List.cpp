@@ -15,7 +15,7 @@ ListBase::ListBase() : ScrollView() {
     setFocusAllowed(false);
 }
 
-ListBase::ListBase(std::string&& styleClass) : ScrollView(std::move(styleClass)) {
+ListBase::ListBase(const std::string& styleClass) : ScrollView(std::move(styleClass)) {
     setName(getTypeName<ListBase>());
     setFocusAllowed(false);
 }
@@ -35,7 +35,7 @@ void ListBase::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::rowHeight] = [this]() { m_rowHeight = 30.f; };
 }
 
-void ListBase::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
+void ListBase::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     auto rh = node->findNumericNode("rowHeight");

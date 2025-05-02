@@ -18,7 +18,7 @@ namespace ara {
 class Gizmo : public Image {
 public:
     Gizmo();
-    explicit Gizmo(std::string &&styleClass);
+    explicit Gizmo(const std::string& styleClass);
     ~Gizmo() override { delete m_crossVao; };
 
     void init() override;

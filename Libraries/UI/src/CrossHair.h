@@ -11,8 +11,7 @@ namespace ara {
 class CrossHair : public Div {
 public:
     CrossHair();
-    CrossHair(std::string* styleClass);
-    CrossHair(std::string&& styleClass);
+    CrossHair(const std::string& styleClass);
     virtual ~CrossHair() = default;
 
     void init();

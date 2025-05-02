@@ -135,30 +135,16 @@ public:
     }
 
     template <typename T>
-    T* addChild(std::string* styleClass) {
+    T* addChild(const std::string& styleClass) {
         T* nc = UINode::addChild<T>();
-        nc->addStyleClass(std::move(*styleClass));
+        nc->addStyleClass(styleClass);
         return nc;
     }
 
     template <typename T>
-    T* addChild(std::string&& styleClass) {
-        T* nc = UINode::addChild<T>();
-        nc->addStyleClass(std::move(styleClass));
-        return nc;
-    }
-
-    template <typename T>
-    T* insertChild(int32_t position, std::string* styleClass) {
+    T* insertChild(int32_t position, const std::string& styleClass) {
         T* nc = UINode::insertChild<T>(position);
-        nc->addStyleClass(std::move(*styleClass));
-        return nc;
-    }
-
-    template <typename T>
-    T* insertChild(int32_t position, std::string&& styleClass) {
-        T* nc = UINode::insertChild<T>(position);
-        nc->addStyleClass(std::move(styleClass));
+        nc->addStyleClass(styleClass);
         return nc;
     }
 
@@ -560,12 +546,13 @@ public:
     void setBorderWidth(uint32_t val, state st = state::m_state);
     void setBorderRadius(uint32_t val, state st = state::m_state);
 
+    void setStyleInitCol(const std::string& propName, const glm::vec4& col, state st);
     virtual void setBorderColor(float r, float g, float b, float a, state st = state::m_state);
-    virtual void setBorderColor(glm::vec4& col, state st = state::m_state);
+    virtual void setBorderColor(const glm::vec4& col, state st = state::m_state);
     virtual void setColor(float r, float g, float b, float a, state st = state::m_state);
-    virtual void setColor(glm::vec4& col, state st = state::m_state);
+    virtual void setColor(const glm::vec4& col, state st = state::m_state);
     virtual void setBackgroundColor(float r, float g, float b, float a, state st = state::m_state);
-    virtual void setBackgroundColor(glm::vec4& col, state st = state::m_state);
+    virtual void setBackgroundColor(const glm::vec4& col, state st = state::m_state);
 
     glm::vec4& getColor() { return m_color; }
     glm::vec4& getBackgroundColor() { return m_bgColor; }
@@ -702,15 +689,14 @@ public:
 
     // styles - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    void setStyleInitVal(const std::string& name, std::string val, state st = state::m_state) {
-        m_styleCustDefs[st == state::m_state ? m_state : st][name] = std::move(val);
+    void setStyleInitVal(const std::string& name, const std::string& val, state st = state::m_state) {
+        m_styleCustDefs[st == state::m_state ? m_state : st][name] = val;
     }
     virtual void loadStyleDefaults();
     virtual void rebuildCustomStyle();
-    virtual void updateStyleIt(ResNode* node, state st, std::string& styleClass);
+    virtual void updateStyleIt(ResNode* node, state st, const std::string& styleClass);
     virtual void updateStyle();
-    void         addStyleClass(std::string* styleClass) { addStyleClass(std::move(*styleClass)); }
-    virtual void addStyleClass(std::string&& styleClass);
+    virtual void addStyleClass(const std::string& styleClass);
     virtual void clearStyles();
     virtual void applyStyle();
     std::string& getStyleClass() { return m_baseStyleClass; }

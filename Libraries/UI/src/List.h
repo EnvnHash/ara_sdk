@@ -20,7 +20,7 @@ public:
         setName(getTypeName<ListItemBase>());
     }
 
-    ListItemBase(std::string &&styleClass) : Div(std::move(styleClass)) {
+    ListItemBase(const std::string& styleClass) : Div(std::move(styleClass)) {
 #ifdef __ANDROID__
         setCanReceiveDrag(true);
 #endif
@@ -32,7 +32,7 @@ template <typename T>
 class ListItem : public ListItemBase {
 public:
     ListItem() : ListItemBase() { setName(getTypeName<ListItem>()); }
-    ListItem(std::string &&styleClass) : ListItemBase(std::move(styleClass)) { setName(getTypeName<ListItem>()); }
+    ListItem(const std::string& styleClass) : ListItemBase(std::move(styleClass)) { setName(getTypeName<ListItem>()); }
 
     void init() override {
         Div::init();
@@ -79,7 +79,7 @@ class ListBase : public ScrollView {
 public:
     ListBase();
 
-    explicit ListBase(std::string &&styleClass);
+    explicit ListBase(const std::string& styleClass);
 
     virtual ~ListBase() = default;
 
@@ -89,7 +89,7 @@ public:
 
     void loadStyleDefaults() override;
 
-    void updateStyleIt(ResNode *node, state st, std::string &styleClass) override;
+    void updateStyleIt(ResNode *node, state st, const std::string& styleClass) override;
 
     void setRowHeight(float val) { m_rowHeight = val; }
 
@@ -108,7 +108,7 @@ template <typename DataTyp, class LiTyp = ListItem<DataTyp>>
 class List : public ListBase {
 public:
     List() : ListBase() {}
-    explicit List(std::string &&styleClass) : ListBase(std::move(styleClass)) {}
+    explicit List(const std::string& styleClass) : ListBase(std::move(styleClass)) {}
 
     void rebuild() override {
         if (!m_table || (!m_items && !m_itemsVec && !m_listProp)) return;

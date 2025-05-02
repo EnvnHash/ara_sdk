@@ -16,6 +16,7 @@
 #pragma once
 
 #include <Asset/ParVec.h>
+#include <string_utils.h>
 
 namespace ara {
 
@@ -156,11 +157,44 @@ public:
 
     bool                hasValue(const std::string &path) { return getByName(path) != nullptr; }
     std::string         getValue(const std::string &name, std::string def = {});  // Returns the value of a
-                                                                          // giving immediate child node
-    int                 value1i(const std::string &name, int def);
-    float               value1f(const std::string &name, float def);
-    bool                valueiv(std::vector<int> &v, const std::string &path, int fcount = 0, int def = 0);
-    bool                valuefv(std::vector<float> &v, const std::string &path, int fcount = 0, float def = 0);
+
+    template<CoordinateType32Signed T>
+    T value(const std::string &name, T def) {
+        T      v = def;
+        ResNode *ptr;
+
+        if ((ptr = getByName(name)) == nullptr) {
+            return def;
+        }
+
+        try {
+        auto vp = split(ptr->m_value, "px");
+            if (vp.size() > 1) {
+                v = typeid(T) == typeid(int32_t) ? stoi(vp[0]) : stof(vp[0]);
+            } else {
+                v = typeid(T) == typeid(int32_t) ? stoi(ptr->m_value) : stof(ptr->m_value);
+            }
+        } catch (...) {
+        }
+
+        return v;
+    }
+
+    template<CoordinateType32Signed T>
+    bool value_v(std::vector<T> &v, const std::string &path, int fcount = 0, T def = 0) {
+        v.clear();
+        ResNode *node = findNode(path);
+        if (node == nullptr) {
+            return false;
+        }
+        ParVec tok = node->splitValue();
+        fcount     = fcount > 0 ? fcount : tok.getParCount();
+        for (int i = 0; i < fcount; i++) {
+            v.emplace_back(typeid(T) == typeid(int32_t) ? tok.getIntPar(i, def) : tok.getFloatPar(i, def));
+        }
+        return true;
+    }
+
     std::vector<float>  valuefv(const std::string &path, int fcount = 0, float def = 0);
 
     bool                isInPixels(const std::string &name);

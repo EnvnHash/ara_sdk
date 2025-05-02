@@ -10,7 +10,7 @@ namespace ara {
 class DropDownMenu : public Div {
 public:
     DropDownMenu();
-    DropDownMenu(std::string&& styleClass);
+    DropDownMenu(const std::string& styleClass);
     ~DropDownMenu() override;
 
     void init() override;

@@ -20,7 +20,7 @@ DropDownMenu::DropDownMenu() : Div() {
     loadStyleDefaults();
 }
 
-DropDownMenu::DropDownMenu(std::string&& styleClass) : Div(std::move(styleClass)) {
+DropDownMenu::DropDownMenu(const std::string& styleClass) : Div(styleClass) {
     setName(getTypeName<DropDownMenu>());
     setFocusAllowed(false);
     loadStyleDefaults();

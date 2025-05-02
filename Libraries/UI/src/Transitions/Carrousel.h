@@ -12,7 +12,7 @@ namespace ara {
 class CarrouselSlide : public Div {
 public:
     CarrouselSlide();
-    explicit CarrouselSlide(std::string &&styleClass);
+    explicit CarrouselSlide(const std::string& styleClass);
 
     void setOnShowFunc(const std::function<void()>& f) { m_onShow = f; }
 
@@ -23,7 +23,7 @@ private:
 class Carrousel : public UIStack, public Div {
 public:
     Carrousel();
-    explicit Carrousel(std::string &&styleClass);
+    explicit Carrousel(const std::string& styleClass);
 
     void initFixedChildren();
     void mouseUp(hidData* data) override;

@@ -166,13 +166,12 @@ void ShadowMapVsmArray::end() {
     }
 }
 
-void ShadowMapVsmArray::setNrLights(uint nrLights) {
-    if (nrLights != nrLights) {
-        rebuildFbo(nrLights);
+void ShadowMapVsmArray::setNrLights(uint num) {
+    if (nrLights != num) {
+        rebuildFbo(num);
         rebuildShader(nrLights);
     }
-
-    nrLights = nrLights;
+    nrLights = num;
 }
 
 void ShadowMapVsmArray::setScreenSize(uint width, uint height) {

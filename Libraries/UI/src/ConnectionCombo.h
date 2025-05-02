@@ -24,7 +24,7 @@ public:
     ConnectionCombo(T *item, std::string connectToType)
         : ComboBox(), ItemRef(), m_item(item), m_connectToType(connectToType) {}
 
-    ConnectionCombo(T *item, std::string connectToType, std::string styleClass)
+    ConnectionCombo(T *item, std::string connectToType, const std::string& styleClass)
         : ComboBox(styleClass), ItemRef(), m_item(item), m_connectToType(connectToType) {}
 
     void init() {

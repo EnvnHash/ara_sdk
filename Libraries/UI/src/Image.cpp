@@ -25,7 +25,7 @@ Image::Image() : Div() {
 #endif
 }
 
-Image::Image(std::string&& styleClass) : Div(std::move(styleClass)) {
+Image::Image(const std::string& styleClass) : Div(std::move(styleClass)) {
     setName(getTypeName<Image>());
     setFocusAllowed(false);
     Image::initDefaults();
@@ -74,7 +74,7 @@ void Image::init() {
     }
 }
 
-void Image::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
+void Image::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     if (!m_sharedRes) {
@@ -177,7 +177,7 @@ void Image::setImgAlign(ResNode* node, state st) {
 }
 
 void Image::setImgScale(ResNode* node, state st) {
-    float scale                             = node->value1f("img-scale", 1.f);
+    float scale                             = node->value<float>("img-scale", 1.f);
     m_imgScale                              = scale;
     m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() { m_imgScale = scale; };
 }

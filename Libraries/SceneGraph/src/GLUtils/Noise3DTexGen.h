@@ -13,12 +13,15 @@ namespace ara {
 
 class FBO;
 class sceneData;
+class Quad;
 
 class Noise3DTexGen {
 public:
     Noise3DTexGen(const sceneData* scd, bool color, int nrOctaves, glm::ivec3 size, glm::vec3 scale);
-
-    void          initShdr();
+    void drawNoise(std::unique_ptr<Quad>& quad, float zPos, int nrOctaves);
+    void blendHorizontal(std::unique_ptr<FBO>& fbo, Shaders* xBlendShaderH, std::unique_ptr<Quad>& quad, float zPos, const glm::ivec3& size);
+    void blendVertical(std::unique_ptr<FBO>& fbo, std::unique_ptr<FBO>& fboH, Shaders* xBlendShaderH, std::unique_ptr<Quad>& quad, float zPos, const glm::ivec3& size);
+    void initShdr();
 
     [[nodiscard]] Shaders* initBlendShdrH() const;
     [[nodiscard]] Shaders* initBlendShdrV() const;

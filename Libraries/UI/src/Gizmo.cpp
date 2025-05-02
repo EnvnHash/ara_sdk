@@ -17,7 +17,7 @@ Gizmo::Gizmo() : Image() {
     setScissorChildren(false);
 }
 
-Gizmo::Gizmo(std::string&& styleClass) : Image(std::move(styleClass)) {
+Gizmo::Gizmo(const std::string& styleClass) : Image(std::move(styleClass)) {
     m_canReceiveDrag = true;
     setName(getTypeName<Gizmo>());
     setFocusAllowed(false);
@@ -42,14 +42,14 @@ void Gizmo::init() {
     auto node      = getSharedRes()->res->findNode(getStyleClass());
     int  viewWidth = 120, viewHeight = 120;
     if (node) {
-        viewWidth  = node->value1i("width", 120);
-        viewHeight = node->value1i("height", 120);
+        viewWidth  = node->value<int32_t>("width", 120);
+        viewHeight = node->value<int32_t>("height", 120);
     }
 
     // get drag handle size
     node = getSharedRes()->res->findNode("defaults");
     if (node) {
-        m_axisLabelSize.x = node->value1i("gizmoDragHandleSize", 20);
+        m_axisLabelSize.x = node->value<int32_t>("gizmoDragHandleSize", 20);
         m_axisLabelSize.y = m_axisLabelSize.x;
     }
 

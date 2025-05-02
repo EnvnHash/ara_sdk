@@ -60,76 +60,49 @@ void UINode::setPadding(glm::vec4& val, state st) {
                         std::to_string(val[3]), st);
 }
 
-void UINode::setBorderColor(float r, float g, float b, float a, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_borderColor      = glm::vec4(r, g, b, a);
-        m_drawParamChanged = true;
-    }
-    setStyleInitVal("border-color",
-                    "rgba(" + std::to_string(int(r * 255)) + "," + std::to_string(int(g * 255)) + "," +
-                        std::to_string(int(b * 255)) + "," + std::to_string(int(a * 255)) + ")",
+void UINode::setStyleInitCol(const std::string& propName, const glm::vec4& col, state st) {
+    setStyleInitVal(propName,
+                    "rgba(" + std::to_string(static_cast<int>(col.r * 255)) + ","
+                    + std::to_string(static_cast<int>(col.g * 255)) + ","
+                    + std::to_string(static_cast<int>(col.b * 255)) + ","
+                    + std::to_string(static_cast<int>(col.a * 255)) + ")",
                     st);
 }
 
-void UINode::setBorderColor(glm::vec4& col, state st) {
+void UINode::setBorderColor(float r, float g, float b, float a, state st) {
+    setBorderColor({r, g, b, a}, st);
+}
+
+void UINode::setBorderColor(const glm::vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_borderColor      = col;
         m_drawParamChanged = true;
     }
-    setStyleInitVal("border-color",
-                    "rgba(" + std::to_string(int(col.r * 255)) + "," + std::to_string(int(col.g * 255)) + "," +
-                        std::to_string(int(col.b * 255)) + "," + std::to_string(int(col.a * 255)) + ")",
-                    st);
+    setStyleInitCol("border-color", col, st);
 }
 
 void UINode::setColor(float r, float g, float b, float a, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_color.r          = r;
-        m_color.g          = g;
-        m_color.b          = b;
-        m_color.a          = a;
-        m_drawParamChanged = true;
-    }
-    setStyleInitVal("color",
-                    "rgba(" + std::to_string(int(r * 255)) + "," + std::to_string(int(g * 255)) + "," +
-                        std::to_string(int(b * 255)) + "," + std::to_string(int(a * 255)) + ")",
-                    st);
+    setColor({r, g, b, a}, st);
 }
 
-void UINode::setColor(glm::vec4& col, state st) {
+void UINode::setColor(const glm::vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_color            = col;
         m_drawParamChanged = true;
     }
-    setStyleInitVal("color",
-                    "rgba(" + std::to_string(int(col.r * 255)) + "," + std::to_string(int(col.g * 255)) + "," +
-                        std::to_string(int(col.b * 255)) + "," + std::to_string(int(col.a * 255)) + ")",
-                    st);
+    setStyleInitCol("color", col, st);
 }
 
 void UINode::setBackgroundColor(float r, float g, float b, float a, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_bgColor.r        = r;
-        m_bgColor.g        = g;
-        m_bgColor.b        = b;
-        m_bgColor.a        = a;
-        m_drawParamChanged = true;
-    }
-    setStyleInitVal("bkcolor",
-                    "rgba(" + std::to_string(int(r * 255)) + "," + std::to_string(int(g * 255)) + "," +
-                        std::to_string(int(b * 255)) + "," + std::to_string(int(a * 255)) + ")",
-                    st);
+    setBackgroundColor({r, g, b, a}, st);
 }
 
-void UINode::setBackgroundColor(glm::vec4& col, state st) {
+void UINode::setBackgroundColor(const glm::vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_bgColor          = col;
         m_drawParamChanged = true;
     }
-    setStyleInitVal("bkcolor",
-                    "rgba(" + std::to_string(int(col.r * 255)) + "," + std::to_string(int(col.g * 255)) + "," +
-                        std::to_string(int(col.b * 255)) + "," + std::to_string(int(col.a * 255)) + ")",
-                    st);
+    setStyleInitCol("bkcolor", col, st);
 }
 
 mat4* UINode::getContentMat(bool excludedFromParentContentTrans, bool excludedFromPadding) {
@@ -421,10 +394,10 @@ void UINode::updateMatrix() {
     }
 
     // set position and size for further calculations
-    m_pos.x       = (float)m_posXInt;
-    m_pos.y       = (float)m_posYInt;
-    m_init_size.x = (float)m_widthInt;
-    m_init_size.y = (float)m_heightInt;
+    m_pos.x       = static_cast<float>(m_posXInt);
+    m_pos.y       = static_cast<float>(m_posYInt);
+    m_init_size.x = static_cast<float>(m_widthInt);
+    m_init_size.y = static_cast<float>(m_heightInt);
 
     // if there is a negative integer width or height, convert it to size - val
     if (m_widthType == unitType::Pixels && m_widthInt < 0) {
@@ -776,23 +749,21 @@ void UINode::addGlCbSync(const std::function<bool()>& func) const {
 
 // styles - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-void UINode::addStyleClass(std::string&& styleClass) {
-    std::string sc = styleClass;  // done this way, since on Windows a DLL has an own memory
-                                  // heap and at the end of this function styleClass would be
-                                  // deleted causing a crash
-
+void UINode::addStyleClass(const std::string& styleClass) {
     if (m_styleTree.empty() || (m_styleTree.size() == 1 && m_styleTree.front().find("__") != std::string::npos)) {
-        m_baseStyleClass = sc;
+        m_baseStyleClass = styleClass;
     }
 
     m_styleClassInited = false;
 
     // in case there was a previous (not default) style definition, delete it
     if (!m_styleTree.empty()) {
-        auto it = find_if(m_styleTree.begin(), m_styleTree.end(), [sc](const std::string& st) { return st == sc; });
-        if (it == m_styleTree.end()) m_styleTree.emplace_back(sc);
+        auto it = find_if(m_styleTree.begin(), m_styleTree.end(), [&styleClass](const std::string& st) { return st == styleClass; });
+        if (it == m_styleTree.end()) {
+            m_styleTree.emplace_back(styleClass);
+        }
     } else {
-        m_styleTree.emplace_back(sc);
+        m_styleTree.emplace_back(styleClass);
     }
 }
 
@@ -801,7 +772,7 @@ void UINode::clearStyles() {
     m_styleTree.clear();
 
     // clear lambada functions
-    for (int i = 0; i < (int)state::count; i++) {
+    for (int i = 0; i < static_cast<int>(state::count); i++) {
         m_setStyleFunc[(state)i].clear();
     }
 
@@ -811,7 +782,7 @@ void UINode::clearStyles() {
     m_styleClassInited = false;
 }
 
-void UINode::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
+void UINode::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     AssetColor* color;
 
     auto x = node->findNumericNode("x");
