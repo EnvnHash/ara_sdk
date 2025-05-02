@@ -539,12 +539,13 @@ public:
     void setBorderWidth(uint32_t val, state st = state::m_state);
     void setBorderRadius(uint32_t val, state st = state::m_state);
 
+    void setStyleInitCol(const std::string& propName, const glm::vec4& col, state st);
     virtual void setBorderColor(float r, float g, float b, float a, state st = state::m_state);
-    virtual void setBorderColor(glm::vec4& col, state st = state::m_state);
+    virtual void setBorderColor(const glm::vec4& col, state st = state::m_state);
     virtual void setColor(float r, float g, float b, float a, state st = state::m_state);
-    virtual void setColor(glm::vec4& col, state st = state::m_state);
+    virtual void setColor(const glm::vec4& col, state st = state::m_state);
     virtual void setBackgroundColor(float r, float g, float b, float a, state st = state::m_state);
-    virtual void setBackgroundColor(glm::vec4& col, state st = state::m_state);
+    virtual void setBackgroundColor(const glm::vec4& col, state st = state::m_state);
 
     glm::vec4& getColor() { return m_color; }
     glm::vec4& getBackgroundColor() { return m_bgColor; }
@@ -681,8 +682,8 @@ public:
 
     // styles - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    void setStyleInitVal(const std::string& name, std::string val, state st = state::m_state) {
-        m_styleCustDefs[st == state::m_state ? m_state : st][name] = std::move(val);
+    void setStyleInitVal(const std::string& name, const std::string& val, state st = state::m_state) {
+        m_styleCustDefs[st == state::m_state ? m_state : st][name] = val;
     }
     virtual void loadStyleDefaults();
     virtual void rebuildCustomStyle();

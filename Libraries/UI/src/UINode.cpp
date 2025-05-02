@@ -60,76 +60,49 @@ void UINode::setPadding(glm::vec4& val, state st) {
                         std::to_string(val[3]), st);
 }
 
-void UINode::setBorderColor(float r, float g, float b, float a, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_borderColor      = glm::vec4(r, g, b, a);
-        m_drawParamChanged = true;
-    }
-    setStyleInitVal("border-color",
-                    "rgba(" + std::to_string(int(r * 255)) + "," + std::to_string(int(g * 255)) + "," +
-                        std::to_string(int(b * 255)) + "," + std::to_string(int(a * 255)) + ")",
+void UINode::setStyleInitCol(const std::string& propName, const glm::vec4& col, state st) {
+    setStyleInitVal(propName,
+                    "rgba(" + std::to_string(static_cast<int>(col.r * 255)) + ","
+                    + std::to_string(static_cast<int>(col.g * 255)) + ","
+                    + std::to_string(static_cast<int>(col.b * 255)) + ","
+                    + std::to_string(static_cast<int>(col.a * 255)) + ")",
                     st);
 }
 
-void UINode::setBorderColor(glm::vec4& col, state st) {
+void UINode::setBorderColor(float r, float g, float b, float a, state st) {
+    setBorderColor({r, g, b, a}, st);
+}
+
+void UINode::setBorderColor(const glm::vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_borderColor      = col;
         m_drawParamChanged = true;
     }
-    setStyleInitVal("border-color",
-                    "rgba(" + std::to_string(int(col.r * 255)) + "," + std::to_string(int(col.g * 255)) + "," +
-                        std::to_string(int(col.b * 255)) + "," + std::to_string(int(col.a * 255)) + ")",
-                    st);
+    setStyleInitCol("border-color", col, st);
 }
 
 void UINode::setColor(float r, float g, float b, float a, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_color.r          = r;
-        m_color.g          = g;
-        m_color.b          = b;
-        m_color.a          = a;
-        m_drawParamChanged = true;
-    }
-    setStyleInitVal("color",
-                    "rgba(" + std::to_string(int(r * 255)) + "," + std::to_string(int(g * 255)) + "," +
-                        std::to_string(int(b * 255)) + "," + std::to_string(int(a * 255)) + ")",
-                    st);
+    setColor({r, g, b, a}, st);
 }
 
-void UINode::setColor(glm::vec4& col, state st) {
+void UINode::setColor(const glm::vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_color            = col;
         m_drawParamChanged = true;
     }
-    setStyleInitVal("color",
-                    "rgba(" + std::to_string(int(col.r * 255)) + "," + std::to_string(int(col.g * 255)) + "," +
-                        std::to_string(int(col.b * 255)) + "," + std::to_string(int(col.a * 255)) + ")",
-                    st);
+    setStyleInitCol("color", col, st);
 }
 
 void UINode::setBackgroundColor(float r, float g, float b, float a, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_bgColor.r        = r;
-        m_bgColor.g        = g;
-        m_bgColor.b        = b;
-        m_bgColor.a        = a;
-        m_drawParamChanged = true;
-    }
-    setStyleInitVal("bkcolor",
-                    "rgba(" + std::to_string(int(r * 255)) + "," + std::to_string(int(g * 255)) + "," +
-                        std::to_string(int(b * 255)) + "," + std::to_string(int(a * 255)) + ")",
-                    st);
+    setBackgroundColor({r, g, b, a}, st);
 }
 
-void UINode::setBackgroundColor(glm::vec4& col, state st) {
+void UINode::setBackgroundColor(const glm::vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_bgColor          = col;
         m_drawParamChanged = true;
     }
-    setStyleInitVal("bkcolor",
-                    "rgba(" + std::to_string(int(col.r * 255)) + "," + std::to_string(int(col.g * 255)) + "," +
-                        std::to_string(int(col.b * 255)) + "," + std::to_string(int(col.a * 255)) + ")",
-                    st);
+    setStyleInitCol("bkcolor", col, st);
 }
 
 mat4* UINode::getContentMat(bool excludedFromParentContentTrans, bool excludedFromPadding) {

@@ -570,10 +570,10 @@ void Label::setFont(std::string fontType, uint32_t fontSize, align ax, valign ay
 }
 
 void Label::setColor(float r, float g, float b, float a, state st)  {
-    UINode::setColor(r, g, b, a, st);
+    Label::setColor({r, g, b, a}, st);
 }
 
-void Label::setColor(glm::vec4 &col, state st)  {
+void Label::setColor(const glm::vec4 &col, state st)  {
     UINode::setColor(col, st);
 }
 

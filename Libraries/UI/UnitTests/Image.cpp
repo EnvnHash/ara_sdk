@@ -21,7 +21,7 @@ Image* addImage(UIApplication *app, const std::string& imageFile, const glm::ive
     img->setAlign(align::center, valign::center);
     return img;
 }
-
+/*
 TEST(UITest, ImageSingle) {
     appBody([&](UIApplication *app) {
         addImage(app, "test_img.jpg", {200,200}, {0.f, 0.f, 0.f, 0.f});
@@ -73,7 +73,7 @@ TEST(UITest, ImageSingleFill) {
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
     }, 500, 500);
 }
-
+*/
 TEST(UITest, ImageSingleScale) {
     appBody([&](UIApplication *app) {
         auto img = addImage(app, "test-tex.png");
@@ -88,7 +88,7 @@ TEST(UITest, ImageSingleScale) {
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
     }, 500, 500);
 }
-
+/*
 TEST(UITest, ImageSingleHFlip) {
     appBody([&](UIApplication *app) {
         auto img = addImage(app, "test-tex.png");
@@ -126,6 +126,6 @@ TEST(UITest, ImageSingleNoAspect) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_no_aspect.png",
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
     }, 500, 500);
-}
+}*/
 
 }

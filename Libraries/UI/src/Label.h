@@ -61,7 +61,7 @@ public:
 
     void setFont(std::string fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st = state::m_state);
     void setColor(float r, float g, float b, float a, state st = state::m_state) override;
-    void setColor(glm::vec4 &col, state st = state::m_state) override;
+    void setColor(const glm::vec4 &col, state st = state::m_state) override;
     void setTextAlign(align ax, valign ay, state st = state::m_state);
     void setTextAlignX(align ax, state st = state::m_state);
     void setTextAlignY(valign ay, state st = state::m_state);
