@@ -58,9 +58,7 @@ endif()
 # osx platform selection
 if (APPLE)
 	include(CheckCCompilerFlag)
-
 	set(SUPPORTED_ARCHITECTURES "")
-
 	execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE MACHINE)
 
 	#try to build universal binary. on an intel mac x86_64 should be supported, on an m1 both should be supported
@@ -73,11 +71,6 @@ if (APPLE)
 		list(APPEND SUPPORTED_ARCHITECTURES "x86_64")
 		message(STATUS "x86_64 is supported")
 	endif ()
-	#check_c_compiler_flag("-arch arm64" arm64Supported)
-	#if (${x86_64Supported})
-#		list(APPEND SUPPORTED_ARCHITECTURES ";arm64")
-#		message(STATUS "arm 64 is supported")
-	#endif ()
 
 	SET(CMAKE_OSX_ARCHITECTURES ${SUPPORTED_ARCHITECTURES} CACHE STRING "Build architectures for Mac OS X" FORCE)
 endif()

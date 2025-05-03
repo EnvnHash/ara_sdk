@@ -27,7 +27,7 @@ Node::Node() {
 
 Node::~Node() {
     if (!m_fileName.empty()) {
-        auto r = std::find_if(m_watchFiles.begin(), m_watchFiles.end(), [&](auto& it) {
+        auto r = std::ranges::find_if(m_watchFiles, [&](auto& it) {
             return it.path.string() == m_fileName;
         });
         if (r != m_watchFiles.end()) {
@@ -373,7 +373,7 @@ void Node::setUndoBuffer(bool enabled, size_t size) {
 }
 
 void Node::checkAndAddWatchPath(const std::string& fn) {
-    auto r = std::find_if(m_watchFiles.begin(), m_watchFiles.end(), [&](auto& it) {
+    auto r = std::ranges::find_if(m_watchFiles, [&](auto& it) {
         return it.path.string() == fn;
     });
 

@@ -808,12 +808,7 @@ protected:
             *fn = node;
             return true;
         } else {
-            for (auto& it : node->m_children) {
-                if (getNodeIt(it.get(), fn, name)) {
-                    return true;
-                }
-            }
-            return false;
+            return std::ranges::any_of(node->m_children, [&](auto&it){ return getNodeIt(it.get(), fn, name); });
         }
     }
 
