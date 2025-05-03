@@ -11,7 +11,6 @@
 using namespace ara;
 using namespace glm;
 using namespace std;
-using namespace ara;
 
 DemoView_Edit::DemoView_Edit() : DemoView("Edit Demo",glm::vec4(.15f,.15f,.15f,1.f)) {
     setName(getTypeName<DemoView_Edit>());

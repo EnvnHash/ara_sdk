@@ -18,7 +18,7 @@ SNGizmo::SNGizmo(transMode _mode, sceneData* sd)
                              // m_staticNDCSize = 0.15f;
     m_depthTest     = true;
     m_cullFace      = true;
-    m_nodeType      = GLSG_GIZMO;
+    m_nodeType      = sceneNodeType::gizmo;
     m_emptyDrawFunc = true;
 
     setName(getTypeName<SNGizmo>() + "_" + string(nameof::nameof_enum(m_tMode)));

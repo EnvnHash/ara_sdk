@@ -110,14 +110,14 @@ void SPSkyBox::clear(renderPass pass) {}
 void SPSkyBox::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode* parent, renderPass pass, uint loopNr) {
     ShaderProto::sendPar(cs, time, node, parent, pass);
 
-    if (pass == GLSG_SCENE_PASS && s_shader) {
+    if (pass == renderPass::scene && s_shader) {
         s_shader->setUniform1i("samplerCube", 0);
         m_cubeTex->bind(0);
     }
 }
 
 bool SPSkyBox::begin(CameraSet* cs, renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS && s_shader) {
+    if (pass == renderPass::scene && s_shader) {
         s_shader->begin();
         return true;
     }
@@ -125,7 +125,7 @@ bool SPSkyBox::begin(CameraSet* cs, renderPass pass, uint loopNr) {
 }
 
 bool SPSkyBox::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS && s_shader) {
+    if (pass == renderPass::scene && s_shader) {
         Shaders::end();
         return true;
     }
@@ -133,7 +133,7 @@ bool SPSkyBox::end(renderPass pass, uint loopNr) {
 }
 
 Shaders* SPSkyBox::getShader(renderPass pass, uint loopNr) {
-    return pass == GLSG_SCENE_PASS && s_shader ? s_shader : nullptr;
+    return pass == renderPass::scene && s_shader ? s_shader : nullptr;
 }
 
 void SPSkyBox::setScreenSize(uint width, uint height) {

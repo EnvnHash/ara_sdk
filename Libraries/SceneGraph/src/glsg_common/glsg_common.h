@@ -15,7 +15,7 @@
 #endif
 
 namespace ara {
-enum class cpEditMode : int {
+enum class cpEditMode : int32_t {
     L2Move = 0,
     L2CpMove,
     L2CpScale,
@@ -61,55 +61,56 @@ enum gizmoType : uint64_t {
     GLSG_PASSIVE_GIZMO_Z  = 1ULL << 20
 };
 
-enum mouseEditMode { GLSG_EM_NORMAL = 0, GLSG_EM_DIST, GLSG_EM_BRIGHT };
-enum infoDiagType : int { info, confirm, warning, error, cancel };
-enum class transMode : int { translate = 0, scale, rotate, rotate_axis, passive, twWidget, none };
-enum transFlag : uint64_t { GLSG_PROPO_SCALE = 1ULL << 1, GLSG_NO_SCALE = 1ULL << 2 };
-enum sliderScale { GLSG_SLID_LIN = 0, GLSG_SLID_SQRT, GLSG_SLID_SQ };
-enum class twPlane : int { xy = 0, xz, yz, count };
+enum class mouseEditMode : int32_t { emNormal = 0, emDist, emBright };
+enum class infoDiagType : int32_t { info, confirm, warning, error, cancel };
+enum class transMode : int32_t { translate = 0, scale, rotate, rotate_axis, passive, twWidget, none };
+enum class transFlag : uint64_t { propoScale = 1ULL << 1, noScale = 1ULL << 2 };
+enum class sliderScale : int32_t { slideLinear = 0, slidSqrt, slidSquared };
+enum class twPlane : int32_t { xy = 0, xz, yz, count };
 
 ///> order matters, shadow_map pass has to be executed before the scene_pass
 /// otherwise the object can cast shadows onto itself
-enum renderPass {
-    GLSG_OBJECT_ID_PASS = 0,
-    GLSG_OBJECT_MAP_PASS,
-    GLSG_SHADOW_MAP_PASS,
-    GLSG_SCENE_PASS,
-    GLSG_GIZMO_PASS,
-    GLSG_NUM_RENDER_PASSES
+enum class renderPass : int32_t {
+    objectId = 0,
+    objectMap,
+    shadowMap,
+    scene,
+    gizmo,
+    size
 };
 
-enum sceneNodeType {
-    GLSG_SNT_STANDARD = 0,
-    GLSG_SNT_LIGHT,
-    GLSG_SNT_LIGHT_SCENE_MESH,
-    GLSG_GIZMO,
-    GLSG_SNT_CAMERA,
-    GLSG_SNT_CAMERA_SCENE_MESH,
-    GLSG_SNT_COUNT
+enum class sceneNodeType : int32_t {
+    standard = 0,
+    light,
+    lightSceneMesh,
+    gizmo,
+    camera,
+    cameraSceneMesh,
+    size
 };
 
-enum class pivotX { left = 0, right, center };
-enum class pivotY { bottom = 0, top, center };
-enum class undoState { undo = 0, redo, createCopy, none };
-enum class basePlane { xz = 0, xy, yz };
+enum class pivotX : int32_t { left = 0, right, center };
+enum class pivotY : int32_t { bottom = 0, top, center };
+enum class undoState : int32_t { undo = 0, redo, createCopy, none };
+enum class basePlane : int32_t { xz = 0, xy, yz };
 
 class trackballPreset {
 public:
-    glm::vec3 pos      = glm::vec3(0.f);
-    glm::vec3 rotEuler = glm::vec3(0.f);
+    glm::vec3 pos{};
+    glm::vec3 rotEuler{};
     double    duration = 3.0;
 };
 
 static void buildRing(int32_t nrPoints, std::vector<glm::vec3>::iterator& pos, std::vector<glm::vec3>::iterator& norm,
-                      const std::vector<glm::vec2>& ringPos, float radius, float yPos/*, std::optional<glm::vec3> fixedNorm = std::nullopt*/) {
+                      const std::vector<glm::vec2>& ringPos, float radius, float yPos, std::optional<glm::vec3> fixedNorm = std::nullopt) {
     for (int32_t i = 0; i < nrPoints; i++) {
         pos->x = ringPos[i].x * radius;
         pos->y = yPos;
         pos->z = ringPos[i].y * radius;
 
         glm::vec3 defNorm = { ringPos[i]. x, 0.f, ringPos[i].y };
-     //   *norm = fixedNorm.value_or(defNorm);
+
+        *norm = fixedNorm.value_or(defNorm);
 
         ++pos;
         ++norm;
@@ -177,23 +178,20 @@ public:
     std::map<winProcStep, ProcStep>* procSteps = nullptr;
     void*                            newNode   = nullptr;  // used in WindowResizeAreas for avoiding
                                                            // unnecessary mouse icon changes
-    std::unordered_map<hidEvent, UINode*> hitNode;
+    std::unordered_map<hidEvent, UINode*> hitNode = {
+        { hidEvent::MouseMove, nullptr },
+        { hidEvent::MouseWheel, nullptr },
+        { hidEvent::MouseDownLeft, nullptr },
+        { hidEvent::MouseUpLeft, nullptr },
+        { hidEvent::MouseDownRight, nullptr },
+        { hidEvent::MouseUpRight, nullptr },
+        { hidEvent::MouseDrag, nullptr },
+        { hidEvent::MouseWheel, nullptr }
+    };
 
     int          key       = 0;  // key callback
     unsigned int codepoint = 0;  // char callback
     float        degrees   = 0;  // scroll wheel
-
-    float vcViewZoom = 1.f;
-
-    hidData() {
-        std::list evts{ hidEvent::MouseMove,   hidEvent::MouseWheel,     hidEvent::MouseDownLeft,
-                        hidEvent::MouseUpLeft, hidEvent::MouseDownRight, hidEvent::MouseUpRight,
-                        hidEvent::MouseDrag,   hidEvent::MouseWheel};
-
-        for (const auto& it : evts) {
-            hitNode[it] = nullptr;
-        }
-    }
 
     void reset() {
         consumed  = false;
@@ -207,8 +205,8 @@ public:
 
 [[maybe_unused]] static std::string getStyleDefName(const std::string& name) { return "__" + name + "_default"; }
 
-// second of pair indicates whether the callback should only be called when the
-// element was really clicked (true => data->hit == true) or if the callback
-// should be called in any case
+// second of pair indicates whether the callback should only be called when the element was really clicked
+// (true => data->hit == true) or if the callback should be called in any case
 typedef std::pair<std::function<void(hidData*)>, bool> mouseCb;
+
 }  // namespace ara

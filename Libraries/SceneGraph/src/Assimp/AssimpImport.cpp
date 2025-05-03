@@ -11,8 +11,7 @@
 #include "Scene3DBase.h"
 #include <Utils/BoundingBoxer.h>
 #include <Utils/Texture.h>
-
-#include <utility>
+#include <WindowManagement/WindowBase.h>
 
 #define aisgl_min(x, y) (x < y ? x : y)
 #define aisgl_max(x, y) (y > x ? y : x)
@@ -233,8 +232,7 @@ void AssimpImport::loadThread(SceneNode* root, function<void(SceneNode*)> cb, SN
                 LOG << this << "AssimpImport loading model done, took: " << dur << " ms";
             }
 
-            // add a call the sceneData openGlCbs vector with the local
-            // uploadToGl() method
+            // add a call the sceneData openGlCbs vector with the local uploadToGl() method
             if (m_scene) {
                 m_scene->addGlCb(this, m_filePath, [this] { return uploadToGL(); });
             } else if (m_scene3D) {
@@ -276,15 +274,15 @@ bool AssimpImport::loadGLResources() {
 
     // Object Map and LightShadow Maps have to be regenerated
     if (s_sd) {
-        s_sd->reqRenderPasses->at(GLSG_OBJECT_MAP_PASS) = true;
-        s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
-        s_sd->reqRenderPasses->at(GLSG_OBJECT_ID_PASS)  = true;
+        s_sd->reqRenderPasses->at(renderPass::objectMap) = true;
+        s_sd->reqRenderPasses->at(renderPass::shadowMap) = true;
+        s_sd->reqRenderPasses->at(renderPass::objectId)  = true;
     }
     m_sd.loadEndCb(m_sd.sceneRoot);  // call gl load end callback, pass by ref
 
     if (m_scene3D) {
-        m_scene3D->getSceneData()->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
-        m_scene3D->getSceneData()->reqRenderPasses->at(GLSG_OBJECT_MAP_PASS) = true;
+        m_scene3D->getSceneData()->reqRenderPasses->at(renderPass::shadowMap) = true;
+        m_scene3D->getSceneData()->reqRenderPasses->at(renderPass::objectMap) = true;
     }
 
     // the importer destructor will clean up everything

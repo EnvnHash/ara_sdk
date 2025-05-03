@@ -5,11 +5,11 @@
 #include <Asset/AssetManager.h>
 #include <Asset/ResNode.h>
 #include <Asset/ResSrcFile.h>
+#include <Utils/PingPongFbo.h>
 
 using namespace ara;
 using namespace glm;
 using namespace std;
-using namespace ara;
 
 DemoView_Resources::DemoView_Resources() : DemoView("Resources Demo",glm::vec4(.15f,.15f,.15f,1.f)) {
     setName(getTypeName<DemoView_Resources>());

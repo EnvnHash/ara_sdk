@@ -19,6 +19,7 @@
 #include <Log.h>
 #include <TypeName.h>
 
+#include <algorithm>
 #include <any>
 #include <atomic>
 #include <chrono>
@@ -78,6 +79,15 @@ static std::unordered_map<std::type_index, tpi> tpiTypeMap {
     { typeid(double), tpi::tp_double },
     { typeid(bool), tpi::tp_bool },
 };
+
+template<typename T>
+concept CoordinateType = std::is_integral_v<T> || std::is_floating_point_v<T>;
+
+template<typename T>
+concept CoordinateType32Signed = std::is_same_v<T, int32_t> || std::is_same_v<T, float> ;
+
+template<typename T>
+concept PropertyType = std::is_same_v<T, std::string> || std::is_integral_v<T> || std::is_floating_point_v<T>;
 
 // helper enum for performance optimization. typeid can't be stored,
 // type_info.name() is too costly

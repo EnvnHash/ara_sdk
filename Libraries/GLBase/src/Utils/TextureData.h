@@ -58,7 +58,7 @@ public:
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
     std::array<uint8_t*, 6> faceData{};
 #else
-    unsigned char **faceData{};
+    std::array<uint8_t*, 6> faceData{};
 #endif
 
 };

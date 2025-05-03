@@ -5,9 +5,6 @@
 #pragma once
 
 #include "WindowResizeArea.h"
-#include "WindowManagement/GLFWWindow.h"
-
-#include "Button/ImageButton.h"
 
 namespace ara {
 

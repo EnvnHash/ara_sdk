@@ -162,7 +162,7 @@ void UIApplication::showInfo(const std::string& msg, long minStayTime, int width
     openInfoDiag(InfoDiagParams{
         .pos = diagPos,
         .size = {width, height},
-        .tp = info,
+        .tp = infoDiagType::info,
         .msg = msg,
         .minStayTime =  minStayTime,
         .isModal = isModal,
@@ -181,7 +181,7 @@ void UIApplication::showCancel(std::string msg, long minStayTime, int width, int
     openInfoDiag(InfoDiagParams{
         .pos = diagPos,
         .size = {width, height},
-        .tp = cancel,
+        .tp = infoDiagType::cancel,
         .msg = std::move(msg),
         .minStayTime =  minStayTime,
         .isModal = isModal,
@@ -194,14 +194,13 @@ void UIApplication::openInfoDiag(infoDiagType tp, const std::string& msg, const 
     ivec2 diagSize = ivec2(750, 150);
 
     if (!m_uiWindows.empty()) {
-        diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - diagSize.x) / 2 + m_uiWindows.front()->getPosition().x;
-        diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - diagSize.y) / 2 + m_uiWindows.front()->getPosition().y;
+        diagPos = (static_cast<ivec2>(m_uiWindows.front()->getSize()) - diagSize) / 2 + m_uiWindows.front()->getPosition();
     }
 
     openInfoDiag(InfoDiagParams{
         .pos = diagPos,
         .size = diagSize,
-        .tp = cancel,
+        .tp = infoDiagType::cancel,
         .msg = msg,
         .minStayTime =  500,
         .isModal = true,

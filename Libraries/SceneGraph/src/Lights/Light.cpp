@@ -7,7 +7,7 @@ using namespace std;
 namespace ara {
 
 Light::Light(sceneData* sd) : SceneNode(sd) {
-    m_nodeType = GLSG_SNT_LIGHT;
+    m_nodeType = sceneNodeType::light;
 
     // when the model Matrix of this Node changes, call the light setup() method
     pushModelMatChangedCb(this, [this](SceneNode* node) {

@@ -27,7 +27,7 @@ public:
 
     void init() override;
 
-    virtual void addMouseDragCb(std::function<void(hidData*)> func) { m_knob->addMouseDragCb(std::move(func)); }
+    virtual void addMouseDragCb(const std::function<void(hidData*)>& func) { m_knob->addMouseDragCb(func); }
 
     virtual void adjustKnob();
     void         updateMatrix() override;
@@ -37,9 +37,9 @@ public:
     virtual float getScaledVal(float in);
     virtual float getUnScaled(float in);
 
-    int   getKnobWidth() { return m_knobWidth; }
+    int   getKnobWidth() const { return m_knobWidth; }
     float getMaxDragWay() { return (m_maxDragWay = getSize().x - static_cast<float>(m_knobWidth)); }
-    float getScaledNormValue() { return m_scaledNormValue; }
+    float getScaledNormValue() const  { return m_scaledNormValue; }
     void  setNumEdit(UIEdit* edit) { m_numEdit = edit; }
     void  setLineColor(float r, float g, float b, float a) {
         m_lineColor.r = r;
@@ -84,7 +84,7 @@ private:
     float       m_normValue       = 0.5f;
     float       m_scaledNormValue = 0.f;
     float       m_mappedValue     = 0.f;
-    sliderScale m_scaling         = GLSG_SLID_LIN;
+    sliderScale m_scaling         = sliderScale::slideLinear;
 
     std::function<void(float)> m_valueChangeCb;
 };

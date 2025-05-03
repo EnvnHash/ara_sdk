@@ -110,13 +110,13 @@ void SPWorldAxes::clear(renderPass pass) {}
 
 void SPWorldAxes::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode* parent, renderPass pass, uint loopNr) {
     ShaderProto::sendPar(cs, time, node, parent, pass);
-    if (pass == GLSG_SCENE_PASS && s_shader) {
+    if (pass == renderPass::scene && s_shader) {
         s_shader->setUniform1fv("floorSwitch", cs->getSetFloorSwitches(), cs->getNrCameras());
     }
 }
 
 bool SPWorldAxes::begin(CameraSet* cs, renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS && s_shader) {
+    if (pass == renderPass::scene && s_shader) {
         s_shader->begin();
         return true;
     }
@@ -124,7 +124,7 @@ bool SPWorldAxes::begin(CameraSet* cs, renderPass pass, uint loopNr) {
 }
 
 bool SPWorldAxes::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS  && s_shader) {
+    if (pass == renderPass::scene  && s_shader) {
         Shaders::end();
     }
     return false;
@@ -133,7 +133,7 @@ bool SPWorldAxes::end(renderPass pass, uint loopNr) {
 void SPWorldAxes::postRender(renderPass pass) {}
 
 Shaders* SPWorldAxes::getShader(renderPass pass, uint loopNr) {
-    return pass == GLSG_SCENE_PASS && s_shader ? s_shader : nullptr;
+    return pass == renderPass::scene && s_shader ? s_shader : nullptr;
 }
 
 void SPWorldAxes::setScreenSize(uint width, uint height) {

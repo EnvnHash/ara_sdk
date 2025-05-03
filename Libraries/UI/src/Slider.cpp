@@ -85,11 +85,11 @@ void SliderKnob::mouseDrag(hidData* data) {
 }
 
 float Slider::getScaledVal(float in) {
-    if (m_scaling == GLSG_SLID_LIN) {
+    if (m_scaling == sliderScale::slideLinear) {
         return in;
-    } else if (m_scaling == GLSG_SLID_SQRT) {
+    } else if (m_scaling == sliderScale::slidSquared) {
         return std::sqrt(in);
-    } else if (m_scaling == GLSG_SLID_SQ) {
+    } else if (m_scaling == sliderScale::slidSqrt) {
         return in * in;
     } else {
         return 0.f;
@@ -97,11 +97,11 @@ float Slider::getScaledVal(float in) {
 }
 
 float Slider::getUnScaled(float in) {
-    if (m_scaling == GLSG_SLID_LIN) {
+    if (m_scaling == sliderScale::slideLinear) {
         return in;
-    } else if (m_scaling == GLSG_SLID_SQ) {
+    } else if (m_scaling == sliderScale::slidSquared) {
         return std::sqrt(in);
-    } else if (m_scaling == GLSG_SLID_SQRT) {
+    } else if (m_scaling == sliderScale::slidSqrt) {
         return in * in;
     } else {
         return 0.f;

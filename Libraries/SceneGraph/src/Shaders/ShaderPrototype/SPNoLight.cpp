@@ -169,7 +169,7 @@ void SPNoLight::rebuildShader(uint32_t nrCameras) {
 }
 
 void SPNoLight::clear(renderPass _pass) {
-    if (_pass == GLSG_SHADOW_MAP_PASS && shadowGen) {
+    if (_pass == renderPass::shadowMap && shadowGen) {
         shadowGen->clear();
     }
 }
@@ -177,22 +177,22 @@ void SPNoLight::clear(renderPass _pass) {
 void SPNoLight::sendPar(CameraSet *cs, double time, SceneNode *node, SceneNode *parent, renderPass pass, uint loopNr) {
     ShaderProto::sendPar(cs, time, node, parent, pass, loopNr);
 
-    if ((pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) && s_shader) {
+    if ((pass == renderPass::scene || pass == renderPass::gizmo) && s_shader) {
         s_shader->setUniform1i("hasTexture", 0);
-        s_shader->setUniform1i("isGizmo", parent->m_nodeType == GLSG_GIZMO);
+        s_shader->setUniform1i("isGizmo", parent->m_nodeType == sceneNodeType::gizmo);
     }
 }
 
 bool SPNoLight::begin(CameraSet *cs, renderPass pass, uint loopNr) {
     switch (pass) {
-        case GLSG_SCENE_PASS:
+        case renderPass::scene:
             if (s_shader) {
                 glEnable(GL_BLEND);  // something is disabling blending before randomly...
                 s_shader->begin();
             }
             return true;
 
-        case GLSG_GIZMO_PASS:
+        case renderPass::gizmo:
             if (s_shader) {
                 s_shader->begin();
             }
@@ -203,7 +203,7 @@ bool SPNoLight::begin(CameraSet *cs, renderPass pass, uint loopNr) {
 }
 
 bool SPNoLight::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) {
+    if (pass == renderPass::scene || pass == renderPass::gizmo) {
 #ifndef __APPLE__
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
 #endif
@@ -217,10 +217,10 @@ bool SPNoLight::end(renderPass pass, uint loopNr) {
 
 Shaders *SPNoLight::getShader(renderPass pass, uint loopNr) {
     switch (pass) {
-        case GLSG_SHADOW_MAP_PASS:
-        case GLSG_SCENE_PASS:
+        case renderPass::shadowMap:
+        case renderPass::scene:
             return s_shader ? s_shader : nullptr;
-        case GLSG_GIZMO_PASS:
+        case renderPass::gizmo:
             return s_shader ? s_shader : nullptr;
         default:
             return nullptr;
@@ -232,7 +232,7 @@ void SPNoLight::setScreenSize(uint width, uint height) {
     if (shadowGen) {
         shadowGen->setScreenSize(width, height);
         if (s_sd) {
-            s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
+            s_sd->reqRenderPasses->at(renderPass::shadowMap) = true;
         }
     }
 }

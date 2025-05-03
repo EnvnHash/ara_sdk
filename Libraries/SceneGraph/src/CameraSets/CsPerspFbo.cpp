@@ -173,7 +173,7 @@ void CsPerspFbo::rebuildFbo() {
 }
 
 void CsPerspFbo::clearScreen(renderPass pass) {
-    if ((pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) && m_clearShdr) {
+    if ((pass == renderPass::scene || pass == renderPass::gizmo) && m_clearShdr) {
         m_fbo.bind();
 
         glClearDepthf(1.f);
@@ -195,7 +195,7 @@ void CsPerspFbo::clearScreen(renderPass pass) {
         glDepthMask(GL_TRUE);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    } else if (pass == GLSG_SHADOW_MAP_PASS || pass == GLSG_OBJECT_MAP_PASS) {
+    } else if (pass == renderPass::shadowMap || pass == renderPass::objectMap) {
         for (const auto& it : s_shaderProto | views::values) {
             it->clear(pass);
         }
@@ -209,7 +209,7 @@ void CsPerspFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr,
         s_matrixStack.clear();
     }
 
-    if (pass == GLSG_SCENE_PASS) {
+    if (pass == renderPass::scene) {
         m_fbo.bind();
     }
 
@@ -219,7 +219,7 @@ void CsPerspFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr,
         node->m_calcMatrixStack = false;
     }
 
-    if (pass == GLSG_SCENE_PASS) {
+    if (pass == renderPass::scene) {
         m_fbo.unbind();
     }
 }
@@ -253,12 +253,12 @@ void CsPerspFbo::render(SceneNode* node, SceneNode* parent, double time, double 
     }
 }
 
-void CsPerspFbo::postRender(renderPass _pass, float* extDrawMatr) {
+void CsPerspFbo::postRender(renderPass pass, float* extDrawMatr) {
     for (const auto& it : s_shaderProto) {
-        it.second->postRender(_pass);
+        it.second->postRender(pass);
     }
 
-    if (_pass == GLSG_SCENE_PASS) {
+    if (pass == renderPass::scene) {
         renderFbos(extDrawMatr);
     }
 }
@@ -266,10 +266,11 @@ void CsPerspFbo::postRender(renderPass _pass, float* extDrawMatr) {
 void CsPerspFbo::renderFbos(float* extDrawMatr) {
     // s_fbo contains an 2d texture array, render them all in parallel
     m_layerTexShdr->begin();
-    if (extDrawMatr)
+    if (extDrawMatr) {
         m_layerTexShdr->setUniformMatrix4fv("m_pvm", extDrawMatr);
-    else
+    } else {
         m_layerTexShdr->setIdentMatrix4fv("m_pvm");
+    }
     m_layerTexShdr->setUniform1i("tex", 0);
     m_layerTexShdr->setUniform1i("useBorder", 0);
     m_layerTexShdr->setUniform1f("layerNr", 0);

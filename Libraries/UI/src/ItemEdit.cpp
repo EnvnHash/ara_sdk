@@ -4,6 +4,8 @@
 
 #include <DataModel/PropertyItemUi.h>
 #include "ItemEdit.h"
+#include "UIEdit.h"
+#include "PropSlider.h"
 #include "Button/Button.h"
 
 using namespace std;

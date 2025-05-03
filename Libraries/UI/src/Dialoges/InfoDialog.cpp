@@ -3,7 +3,8 @@
 //
 
 #include "Dialoges/InfoDialog.h"
-
+#include "Button/Button.h"
+#include "Label.h"
 #include "UIApplication.h"
 
 using namespace std;
@@ -83,15 +84,14 @@ void InfoDialog::addCloseEvent(std::function<bool()> cb) {
     // this will be called only from the eventloop
     bool closeAndRemove = true;
 
-    hide();  // immediately hide the window, so the user knows his interaction
-             // was received
+    hide();  // immediately hide the window, so the user knows his interaction was received
 
-    if (m_diagType == info || m_diagType == warning || m_diagType == error) {
+    if (m_diagType == infoDiagType::info || m_diagType == infoDiagType::warning || m_diagType == infoDiagType::error) {
         if (m_closeCb) m_closeCb();
         if (cb) {
             closeAndRemove = cb();
         }
-    } else if (m_diagType == confirm) {
+    } else if (m_diagType == infoDiagType::confirm) {
         if (cb) {
             closeAndRemove = cb();
         }
@@ -112,31 +112,31 @@ void InfoDialog::setType(infoDiagType tp) {
     m_msgLabel->addStyleClass("infoDiag.message");
 
     switch (tp) {
-        case info:
+        case infoDiagType::info:
             m_msgLabel->addStyleClass("infoDiag.message.info");
             m_okButton->setVisibility(false);
             m_okButton->setX(0.f);
             m_cancelButton->setVisibility(false);
             break;
-        case confirm:
+        case infoDiagType::confirm:
             m_msgLabel->addStyleClass("infoDiag.message.error");
             m_okButton->setVisibility(true);
             m_okButton->setX(65);
             m_cancelButton->setVisibility(true);
             m_cancelButton->setX(-65);
             break;
-        case warning:
+        case infoDiagType::warning:
             m_msgLabel->addStyleClass("infoDiag.message.warning");
             m_okButton->setVisibility(false);
             m_cancelButton->setVisibility(false);
             break;
-        case error:
+        case infoDiagType::error:
             m_msgLabel->addStyleClass("infoDiag.message.error");
             m_okButton->setVisibility(true);
             m_okButton->setX(0.f);
             m_cancelButton->setVisibility(false);
             break;
-        case cancel:
+        case infoDiagType::cancel:
             m_msgLabel->addStyleClass("infoDiag.message.error");
             m_okButton->setVisibility(false);
             m_cancelButton->setVisibility(true);

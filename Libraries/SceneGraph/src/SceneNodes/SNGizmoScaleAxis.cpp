@@ -8,7 +8,7 @@ using namespace std;
 namespace ara {
 
 SNGizmoScaleAxis::SNGizmoScaleAxis(sceneData* sd) : SNGizmoAxis(sd) {
-    m_nodeType = GLSG_GIZMO;
+    m_nodeType = sceneNodeType::gizmo;
 
     constexpr uint cylNrPointsCircle = 15;
 
@@ -106,7 +106,7 @@ void SNGizmoScaleAxis::draw(double time, double dt, CameraSet* cs, Shaders* shad
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    if (pass == GLSG_GIZMO_PASS || pass == GLSG_OBJECT_MAP_PASS) {
+    if (pass == renderPass::gizmo || pass == renderPass::objectMap) {
         // material
         shader->setUniform1i("hasTexture", 0);
         shader->setUniform1i("lightMode", 0);

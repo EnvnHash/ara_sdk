@@ -25,8 +25,12 @@ public:
     void calcLight(CameraSet* cs, Light* lightPtr, LightPar* lightParPtr);
     void clear(renderPass pass) override;
 
-    void sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass,
-                 uint loopNr = 0) override;
+    void sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr = 0) override;
+    void sendParShadowMapPass(SceneNode *node, SceneNode *parent);
+    void estimateNumPasses(uint loopNr);
+    void sendParSceneAndGizmoPass(SceneNode *node, SceneNode *parent, uint loopNr);
+    void sendLightPar(SceneNode *node, SceneNode *parent, int nrLightsThisPass, uint lightOffs);
+
     bool begin(CameraSet* cs, renderPass pass, uint loopNr = 0) override;
     bool end(renderPass pass, uint loopNr = 0) override;
     void postRender(renderPass pass) override;

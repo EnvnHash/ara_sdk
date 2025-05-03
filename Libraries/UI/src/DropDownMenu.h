@@ -1,11 +1,9 @@
 #pragma once
 
-#include <Utils/Texture.h>
-
-#include <Button/Button.h>
-#include <Utils/Typo/TypoGlyphMap.h>
+#include <Div.h>
 
 namespace ara {
+class Button;
 
 class DropDownMenu : public Div {
 public:

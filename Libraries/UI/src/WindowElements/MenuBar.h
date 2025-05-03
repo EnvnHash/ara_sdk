@@ -5,13 +5,11 @@
 #pragma once
 
 #include "WindowManagement/GLFWWindow.h"
-
-#include <utility>
-
 #include "Image.h"
-#include "Button/ImageButton.h"
 
 namespace ara {
+
+class ImageButton;
 
 class MenuBar : public Image {
 public:
@@ -21,18 +19,12 @@ public:
 
     void init() override;
 
-    void hideButtons(bool val) {
-        m_showButtons = !val;
-        for (const auto& it : m_menButtons) {
-            it.second->setVisibility(!val);
-        }
-    }
 #ifdef ARA_USE_GLFW
     void setWindowHandle(GLFWWindow* win) { m_win = win; }
 #else
     void setWindowHandle(void* win) { m_win = win; }
 #endif
-    void setCloseIcon(const std::string& file) {}
+    [[maybe_unused]] void setCloseIcon(const std::string& file) {}
     void setCloseFunc(std::function<void()> func) { m_closeFunc = std::move(func); }
     void setMinimizeFunc(std::function<void()> func) { m_minimizeFunc = std::move(func); }
     void setMaximizeFunc(std::function<void()> func) { m_maximizeFunc = std::move(func); }
@@ -42,6 +34,7 @@ public:
     void mouseDown(hidData* data) override;
     void mouseDrag(hidData* data) override;
     void setEnableMinMaxButtons(bool val);
+    [[maybe_unused]] void hideButtons(bool val);
 
 private:
     bool m_showButtons = true;

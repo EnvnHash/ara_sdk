@@ -200,13 +200,13 @@ void SPGridFloor::clear(renderPass pass) {}
 void SPGridFloor::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode* parent, renderPass pass, uint loopNr) {
     ShaderProto::sendPar(cs, time, node, parent, pass);
 
-    if (pass != GLSG_SHADOW_MAP_PASS && s_shader) {
+    if (pass != renderPass::shadowMap && s_shader) {
         s_shader->setUniform1fv("floorSwitch", cs->getSetFloorSwitches(), cs->getNrCameras());
     }
 }
 
 bool SPGridFloor::begin(CameraSet* cs, renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS  && s_shader) {
+    if (pass == renderPass::scene  && s_shader) {
         s_shader->begin();
         return true;
     }
@@ -214,7 +214,7 @@ bool SPGridFloor::begin(CameraSet* cs, renderPass pass, uint loopNr) {
 }
 
 bool SPGridFloor::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS && s_shader) {
+    if (pass == renderPass::scene && s_shader) {
         Shaders::end();
     }
     return false;
@@ -223,7 +223,7 @@ bool SPGridFloor::end(renderPass pass, uint loopNr) {
 void SPGridFloor::postRender(renderPass pass) {}
 
 Shaders* SPGridFloor::getShader(renderPass pass, uint loopNr) {
-    return pass == GLSG_SCENE_PASS && s_shader ? s_shader : nullptr;
+    return pass == renderPass::scene && s_shader ? s_shader : nullptr;
 }
 
 void SPGridFloor::setScreenSize(uint width, uint height) {

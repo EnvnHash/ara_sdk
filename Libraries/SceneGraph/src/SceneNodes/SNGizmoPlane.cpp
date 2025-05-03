@@ -8,7 +8,7 @@ using namespace std;
 namespace ara {
 
 SNGizmoPlane::SNGizmoPlane(sceneData* sd) : SceneNode(sd) {
-    m_nodeType = GLSG_GIZMO;
+    m_nodeType = sceneNodeType::gizmo;
 
     // draw a quarter ring with a specific width in the x,y plane define as
     // triangles
@@ -79,7 +79,7 @@ void SNGizmoPlane::draw(double time, double dt, CameraSet* cs, Shaders* shader, 
                              m_gColor[i].a * m_emisBright);
         shader->setUniform4fv("diffuse", value_ptr(m_gColor[i]));
 
-        m_planeVao[pass == GLSG_OBJECT_MAP_PASS ? 1 : 0][i]->draw();
+        m_planeVao[pass == renderPass::objectMap ? 1 : 0][i]->draw();
     }
 }
 

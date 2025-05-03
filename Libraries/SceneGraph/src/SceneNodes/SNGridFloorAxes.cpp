@@ -10,7 +10,7 @@ namespace ara {
 SNGridFloorAxes::SNGridFloorAxes(sceneData* sd) : SNGridFloor(sd) {
     setName(getTypeName<SNGridFloorAxes>());
 
-    m_protoName[GLSG_SCENE_PASS] = getTypeName<SPGridFloorAxes>();  // force the use of the GridFloor
+    m_protoName[renderPass::scene] = getTypeName<SPGridFloorAxes>();  // force the use of the GridFloor
                                                                     // ShaderPrototype if it is present
 
     // x and z axis
@@ -23,7 +23,7 @@ SNGridFloorAxes::SNGridFloorAxes(sceneData* sd) : SNGridFloor(sd) {
 void SNGridFloorAxes::update(double time, double dt, CameraSet* cs) { SNGridFloor::update(time, dt, cs); }
 
 void SNGridFloorAxes::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO*) {
-    if (pass != GLSG_SCENE_PASS) return;
+    if (pass != renderPass::scene) return;
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(m_depthMask);

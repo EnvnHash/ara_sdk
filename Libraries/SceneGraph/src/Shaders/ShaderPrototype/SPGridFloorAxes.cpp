@@ -117,7 +117,9 @@ void SPGridFloorAxes::rebuildShader(uint32_t nrCameras) {
         layout (location = 0) out vec4 fragColor; \n
 
         void main() {\n
-            if (!bool(vertex_in.floorSwitch)) discard;
+            if (!bool(vertex_in.floorSwitch)) {
+                discard;
+            }
 
             vec4 procCol = vertex_in.color; \n
             float on = max(1.0 - (vertex_in.camDist / floorGridSize.y), 0.0); // depth fragment [0-1], 1 => far
@@ -132,13 +134,13 @@ void SPGridFloorAxes::clear(renderPass pass) {}
 void SPGridFloorAxes::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode* parent, renderPass pass, uint loopNr) {
     ShaderProto::sendPar(cs, time, node, parent, pass);
 
-    if (pass == GLSG_SCENE_PASS && s_shader) {
+    if (pass == renderPass::scene && s_shader) {
         s_shader->setUniform1fv("floorSwitch", cs->getSetFloorSwitches(), cs->getNrCameras());
     }
 }
 
 bool SPGridFloorAxes::begin(CameraSet* cs, renderPass pass, uint loopNr) {
-    if(pass == GLSG_SCENE_PASS && s_shader) {
+    if(pass == renderPass::scene && s_shader) {
         s_shader->begin();
         return true;
     }
@@ -146,7 +148,7 @@ bool SPGridFloorAxes::begin(CameraSet* cs, renderPass pass, uint loopNr) {
 }
 
 bool SPGridFloorAxes::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS && s_shader) {
+    if (pass == renderPass::scene && s_shader) {
         Shaders::end();
     }
     return false;
@@ -155,7 +157,7 @@ bool SPGridFloorAxes::end(renderPass pass, uint loopNr) {
 void SPGridFloorAxes::postRender(renderPass pass) {}
 
 Shaders* SPGridFloorAxes::getShader(renderPass pass, uint loopNr) {
-    return pass == GLSG_SCENE_PASS && s_shader ? s_shader : nullptr;
+    return pass == renderPass::scene && s_shader ? s_shader : nullptr;
 }
 
 void SPGridFloorAxes::setScreenSize(uint width, uint height) {

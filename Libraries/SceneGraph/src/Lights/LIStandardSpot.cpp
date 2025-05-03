@@ -7,7 +7,7 @@ namespace ara {
 
 LIStandardSpot::LIStandardSpot(sceneData* sd) : Light(sd) {
     setName(getTypeName<LIStandardSpot>());
-    m_transFlag |= GLSG_NO_SCALE;
+    m_transFlag |= toType(transFlag::noScale);
 }
 
 void LIStandardSpot::setup(bool force) {
@@ -32,8 +32,7 @@ void LIStandardSpot::setup(bool force) {
         s_lightProp.setHalfVector(0.f, 1.f, 0.f);  // init with anything
         s_lightProp.setLightMode(0.f);             // spot light
         s_lightProp.setFloat("m_aspect", 16.f / 9.f);
-        s_lightProp.setFloat("fovY",
-                             radians(s_fov) * 0.5f);  // apply * 0.5f already here and not in the
+        s_lightProp.setFloat("fovY", radians(s_fov) * 0.5f);  // apply * 0.5f already here and not in the
                                                       // shader, for brightness calc
 
         float sc          = 0.5f;

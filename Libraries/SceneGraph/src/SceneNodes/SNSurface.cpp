@@ -7,7 +7,7 @@ using namespace std;
 
 namespace ara {
 SNSurface::SNSurface(sceneData* sd) : SceneNode(sd), m_paramChanged(true) {
-    m_transFlag |= GLSG_NO_SCALE;
+    m_transFlag |= toType(transFlag::noScale);
     m_cullFace    = false;
     m_drawIndexed = true;
     setName(getTypeName<SNSurface>());
@@ -79,7 +79,7 @@ bool SNSurface::rebuildMesh() {
         m_surfGen.init(m_surfGen.m_type, &m_glbase->shaderCollector());
         m_vao                                           = m_surfGen.m_vao;
         m_paramChanged                                  = false;
-        s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
+        s_sd->reqRenderPasses->at(renderPass::shadowMap) = true;
         return true;
     } else {
         return false;

@@ -7,7 +7,7 @@ using namespace std;
 
 namespace ara {
 
-Button::Button() : Label(), m_typoColor(glm::vec4(0.f, 0.f, 0.f, 1.f)), m_altTextFontSize(22) {
+Button::Button() : Label() {
     setName(getTypeName<Button>());
     setFocusAllowed(false);
     Label::setScissorChildren(true);

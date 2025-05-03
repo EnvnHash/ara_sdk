@@ -17,9 +17,9 @@ glm::quat RotationBetweenVectors(glm::vec3 start, glm::vec3 dest) {
         // there is no "ideal" rotation axis
         // So guess one; any will do as long as it's perpendicular to start
         rotationAxis = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), start);
-        if (glm::length2(rotationAxis) < 0.01)  // bad luck, they were parallel, try again!
+        if (glm::length2(rotationAxis) < 0.01) { // bad luck, they were parallel, try again!
             rotationAxis = glm::cross(glm::vec3(1.0f, 0.0f, 0.0f), start);
-
+        }
         rotationAxis = glm::normalize(rotationAxis);
         return glm::angleAxis(180.0f, rotationAxis);
     }
@@ -53,20 +53,18 @@ void catmullRom(const std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &
             if (segNr == 0) {
                 // extrapolate point at the beginning by mirroring
                 glm::vec2 startP = (inPoints[0] - inPoints[1]) + inPoints[0];
-                outPoints[offs] =
-                    glm::catmullRom(startP, inPoints[segNr], inPoints[segNr + 1], inPoints[segNr + 2], fInd);
+                outPoints[offs] = glm::catmullRom(startP, inPoints[segNr], inPoints[segNr + 1], inPoints[segNr + 2], fInd);
             } else if (segNr == inPoints.size() - 2) {
                 // extrapolate point at the end by mirroring
-                glm::vec2 endP =
-                    (inPoints[inPoints.size() - 1] - inPoints[inPoints.size() - 2]) + inPoints[inPoints.size() - 1];
-                outPoints[offs] =
-                    glm::catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1], endP, fInd);
+                glm::vec2 endP = (inPoints[inPoints.size() - 1] - inPoints[inPoints.size() - 2]) + inPoints[inPoints.size() - 1];
+                outPoints[offs] = glm::catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1],
+                                                  endP, fInd);
             } else {
                 outPoints[offs] = glm::catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1],
                                                   inPoints[segNr + 2], fInd);
             }
 
-            offs++;
+            ++offs;
         }
     }
 }
@@ -78,14 +76,11 @@ float perlinOct1D(float x, int octaves, float persistence) {
 
     for (int i = 0; i < octaves; i++) {
         float fx = x * freq;
-
         r += glm::perlin(glm::vec2(fx, 0.f)) * a;
-
         //! update amplitude
         a *= persistence;
         freq = static_cast<float>(2 << i);
     }
-
     return r;
 }
 
@@ -100,10 +95,7 @@ vec4 linInterpolVec4(float inInd, const std::vector<vec4> *array) {
         int   upperInd = static_cast<int>(glm::min(lowerInd + 1.0f, fArraySize - 1.0f));
         float weight   = fInd - lowerInd;
 
-        if (weight == 0.0)
-            outVal = array->at(lowerInd);
-        else
-            outVal = glm::mix(array->at(lowerInd), array->at(upperInd), weight);
+        outVal = weight == 0.0 ? array->at(lowerInd) : glm::mix(array->at(lowerInd), array->at(upperInd), weight);
     } else {
         LOGE << "linInterpolVec4() ERROR: array size = 0";
     }
@@ -118,13 +110,13 @@ pair<bool, vec2> projPointToLine(glm::vec2 point, glm::vec2 l1Start, glm::vec2 l
     float dx = l1End.x - l1Start.x;
     float dy = l1End.y - l1Start.y;
     if (dx == 0) {
-        out             = glm::vec2(l1Start.x, point.y);
+        out             = { l1Start.x, point.y };
         pointInsideLine = l1Start.y <= l1End.y ? (l1Start.y <= point.y && point.y <= l1End.y)
                                                : (l1End.y <= point.y && point.y <= l1Start.y);
         return make_pair(pointInsideLine, out);
     };
     if (dy == 0) {
-        out             = glm::vec2(point.x, l1Start.y);
+        out             = { point.x, l1Start.y };
         pointInsideLine = l1Start.x <= l1End.x ? (l1Start.x <= point.x && point.x <= l1End.x)
                                                : (l1End.x <= point.x && point.x <= l1Start.x);
         return make_pair(pointInsideLine, out);
@@ -185,7 +177,6 @@ pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2S
         else if (dx2 == 0.0 && dx1 != 0.0) {
             intersection.x = l2Start.x;
             intersection.y = static_cast<float>(m1 * l2Start.x + c1);
-
         } else {
             intersection.x = static_cast<float>((c2 - c1) / (m1 - m2));
             intersection.y = static_cast<float>(m1 * intersection.x + c1);
@@ -467,39 +458,25 @@ glm::mat4 matrixToGlm(const matrix *_mat) {
 GLenum postGLError(bool silence) {
     GLenum glErr = glGetError();
 
-    if (glErr != GL_NO_ERROR && !silence) {
-        switch (glErr) {
-            case GL_INVALID_ENUM:
-                LOGE << "\n GL ERROR: GL_INVALID_ENUM \n \n"; break;
-            case GL_INVALID_VALUE:
-                LOGE << "\n GL ERROR: GL_INVALID_VALUE, A numeric argument is "
-                        "out of range  \n \n";
-                break;
-            case GL_INVALID_OPERATION:
-                LOGE << "\n GL ERROR: GL_INVALID_OPERATION, The specified "
-                        "operation is not allowed in the current state.  \n \n";
-                break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION:
-                LOGE << "\n GL ERROR: GL_INVALID_FRAMEBUFFER_OPERATION, The "
-                        "framebuffer object is not complete. \n  \n";
-                break;
+    static std::unordered_map<GLenum, std::string> errCodeMap = {
+        { GL_INVALID_ENUM, "GL ERROR: GL_INVALID_ENUM" },
+        { GL_INVALID_VALUE, "GL ERROR: GL_INVALID_VALUE, A numeric argument is out of range"},
+        { GL_INVALID_OPERATION, "GL ERROR: GL_INVALID_OPERATION, The specified operation is not allowed in the current state."},
+        { GL_INVALID_FRAMEBUFFER_OPERATION, "GL ERROR: GL_INVALID_FRAMEBUFFER_OPERATION, The framebuffer object is not complete."},
 #ifndef ARA_USE_GLES31
-            case GL_STACK_OVERFLOW:
-                LOGE << "\n GL ERROR: GL_STACK_OVERFLOW, Given when a stack "
-                        "pushing operation cannot be done because it would "
-                        "overflow the limit of that stack's size.  \n \n";
-                break;
-            case GL_STACK_UNDERFLOW:
-                LOGE << "\n GL ERROR: GL_STACK_UNDERFLOW, Given when a stack "
-                        "popping operation cannot be done because the stack is "
-                        "already at its lowest point.  \n \n";
-                break;
+        { GL_STACK_OVERFLOW, "GL ERROR: GL_STACK_OVERFLOW, Given when a stack pushing operation cannot be done because it would overflow the limit of that stack's size."},
+        { GL_STACK_UNDERFLOW, "GL ERROR: GL_STACK_UNDERFLOW, Given when a stack popping operation cannot be done because the stack is already at its lowest point." },
 #endif
-            case GL_OUT_OF_MEMORY: LOGE << "\n GL ERROR: GL_OUT_OF_MEMORY, GL_OUT_OF_MEMORY  \n \n"; break;
-            default: LOGE << "\n GL ERROR \n \n"; break;
-        }
+        { GL_OUT_OF_MEMORY, "GL ERROR: GL_OUT_OF_MEMORY, GL_OUT_OF_MEMORY" }
+    };
+
+    if (glErr != GL_NO_ERROR && !silence) {
+        LOGE << "";
+        LOGE << (errCodeMap.find(glErr) != errCodeMap.end() ? errCodeMap[glErr] : "GL ERROR");
+        LOGE << "\n";
         return glErr;
     }
+
     return GL_NO_ERROR;
 }
 

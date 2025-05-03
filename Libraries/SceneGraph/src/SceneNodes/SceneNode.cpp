@@ -5,7 +5,12 @@
 //
 
 #include "SceneNode.h"
+#include <Shaders/Shaders.h>
+#include <Utils/TFO.h>
+#include <Utils/Texture.h>
+#include <WindowManagement/WindowBase.h>
 
+#include "GLUtils/sceneData.h"
 #include "CameraSets/CameraSet.h"
 #include "WindowManagement/WindowBase.h"
 
@@ -15,8 +20,11 @@ using namespace std;
 namespace ara {
 SceneNode::SceneNode(sceneData* sd) : m_glbase(sd ? sd->glbase : nullptr), s_sd(sd) {
     // by default enable the node for all renderPasses
-    for (auto i = 0; i < GLSG_NUM_RENDER_PASSES; i++) {
-        m_renderPassEnabled[static_cast<renderPass>(i)] = true;
+    for (auto i = 0; i < toType(renderPass::size); ++i) {
+        auto rp = static_cast<renderPass>(i);
+        m_renderPassEnabled[rp] = true;
+        m_protoName[rp] = "";
+        m_cachedCustShdr[rp] = nullptr;
     }
 }
 
@@ -27,7 +35,7 @@ void SceneNode::draw(double time, double dt, CameraSet* cs, Shaders* shader, ren
 #ifndef ARA_USE_GLES31
         if (!m_polyFill) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            if (pass == GLSG_OBJECT_MAP_PASS) {
+            if (pass == renderPass::objectMap) {
                 glDisable(GL_BLEND);
             }
         }
@@ -95,7 +103,7 @@ void SceneNode::draw(double time, double dt, CameraSet* cs, Shaders* shader, ren
         if (!m_polyFill) {
             shader->setUniform1i("polyFill", 1);
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            if (pass == GLSG_OBJECT_MAP_PASS) {
+            if (pass == renderPass::objectMap) {
                 glEnable(GL_BLEND);
             }
         }
@@ -692,10 +700,10 @@ void SceneNode::dumpTreeIt(SceneNode* tNode, uint level) {
 
         std::string nt;
         switch (it->m_nodeType) {
-            case GLSG_SNT_STANDARD: nt = "GLSG_SNT_STANDARD"; break;
-            case GLSG_SNT_LIGHT: nt = "GLSG_SNT_LIGHT"; break;
-            case GLSG_SNT_LIGHT_SCENE_MESH: nt = "GLSG_SNT_LIGHT_SCENE_MESH"; break;
-            case GLSG_GIZMO: nt = "GLSG_GIZMO"; break;
+            case sceneNodeType::standard: nt = "standard"; break;
+            case sceneNodeType::light: nt = "light"; break;
+            case sceneNodeType::lightSceneMesh: nt = "lightSceneMesh"; break;
+            case sceneNodeType::gizmo: nt = "gizmo"; break;
             default: nt = ""; break;
         }
 
@@ -766,9 +774,8 @@ void SceneNode::unregister() {
         }
     }
 
-    // check the whole tree for nodes which do have this node as a reference
-    // either in "parents" or in "objIds" also delete removeCB which have this
-    // node as name
+    // check the whole tree for nodes which do have this node as a reference either in "parents" or in "objIds" also
+    // delete removeCB which have this node as name
     if (m_name != "root") {
         getRootNode();
 
@@ -794,10 +801,11 @@ void SceneNode::unregister() {
         }
 
         // unregister the node from its parents
-        if (!m_parents.empty())
+        if (!m_parents.empty()) {
             for (const auto& it : m_parents) {
                 std::erase_if(it->m_children, [this](const auto& item) { return item == this; });
             }
+        }
     }
 }
 
