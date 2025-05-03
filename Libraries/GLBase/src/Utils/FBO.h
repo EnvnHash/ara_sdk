@@ -8,6 +8,8 @@
 #include "glb_common/glb_common.h"
 #include <GeoPrimitives/Quad.h>
 
+struct FIBITMAP;
+
 namespace ara {
 
 class GLBase;
@@ -27,51 +29,33 @@ public:
     void fromSharedExtractLayer(FBO *sharedFbo, int layer);
     void fromSharedSelectAttachment(FBO *sharedFbo, int attNr);
     void initFromShared(FBO *sharedFbo);
-    void fromTexMan(Texture *texMan);
+    void fromTexMan(const Texture *texMan);
     void init();
     void allocColorTexture();
     void allocDepthTexture();
-    void attachTextures(bool doCheckFbo);
+    void attachTextures(bool doCheckFbo) const;
     void bind(bool saveStates = true);
     void unbind(bool doRestoreStates = true);
     void blit(uint scrWidth, uint scrHeight, GLenum interp = GL_NEAREST) const;
-    void blitTo(FBO *dst) const;
-    void resize(uint _width, uint _height, uint _depth = 0, bool checkStates = true);
+    void blitTo(const FBO *dst) const;
+    void resize(float width, float height, float depth = 0, bool checkStates = true);
+    void resize(uint width, uint height, uint depth = 0, bool checkStates = true);
     void clearAlpha(float alpha, float col = 0.f) const;
-    void clearToAlpha(float alpha);
-    void clearToColor(float r, float g, float b, float a);
+    void clearToAlpha(float alpha) const;
+    void clearToColor(float r, float g, float b, float a) const;
     void clearToColor(float r, float g, float b, float a, size_t bufIndx) const;
     void clearWhite() const;
-    void clear();
+    void clear() const;
     void clearDepth() const;
     bool saveToFile(const std::filesystem::path &filename, size_t attachNr, GLenum intFormat);
-    void deleteColorTextures();
-    void deleteDepthTextures();
-    void download(void *ptr, GLenum intFormat, GLenum extFormat = 0);
-
-    void genFbo() {
-        glGenFramebuffers(1, &m_fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-    }
-
-    void deleteFbo() {
-        glDeleteFramebuffers(1, &m_fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    }
-
-    GLuint getColorImg() {
-        if (!m_textures.empty() && m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8)
-            return m_textures[0];
-        else
-            return 0;
-    }
-
-    GLuint getColorImg(int index) {
-        if ((int)m_textures.size() > index && m_nrAttachments > index && m_type != GL_DEPTH24_STENCIL8)
-            return m_textures[index];
-        else
-            return 0;
-    }
+    void deleteColorTextures() const;
+    void deleteDepthTextures() const;
+    void download(void *ptr, GLenum intFormat, GLenum extFormat = 0) const;
+    void getTexImage(FIBITMAP* fibitmap, GLenum saveTarget, GLenum format) const;
+    void genFbo();
+    void deleteFbo() const;
+    GLuint getColorImg() const;
+    GLuint getColorImg(int index) const;
 
     [[nodiscard]] GLuint       getDepthImg() const { return  m_hasDepthBuf ? m_depthBuf : 0; }
     [[nodiscard]] GLuint       getWidth() const { return m_tex_width; }
@@ -105,11 +89,11 @@ public:
     void                      *getContext() { return m_enterCtx; }
 
     void assignTex(int attachmentNr, GLuint tex) const;
-    void setMinFilter(GLenum _type);
-    void setMagFilter(GLenum _type);
-    void setMinFilter(GLenum _type, int attNr);
-    void setMagFilter(GLenum _type, int attNr);
-    void set3DLayer(int attachment, int offset);
+    void setMinFilter(GLint type);
+    void setMagFilter(GLint type);
+    void setMinFilter(GLint type, int attNr) const;
+    void setMagFilter(GLint type, int attNr) const;
+    void set3DLayer(int attachment, int offset) const;
     void setMipMapLevels(int nrLevels) { m_mipMapLevels = nrLevels; }
     void setNrAttachments(int nrAtt) { m_nrAttachments = nrAtt; }
     void setWidth(int width) { m_tex_width = width; }

@@ -2,6 +2,7 @@
 
 #include "CameraSets/CameraSet.h"
 #include "SceneNodes/SNGridFloor.h"
+#include "SceneNodes/SNGizmo.h"
 
 using namespace glm;
 using namespace std;
@@ -14,9 +15,12 @@ namespace ara {
 SPObjectSelector::SPObjectSelector(sceneData* sd) : ShaderProto(sd) {
     s_name = getTypeName<SPObjectSelector>();
 
-    if (!s_sd) return;
-    s_scrWidth  = (int)s_sd->winViewport.z;
-    s_scrHeight = (int)s_sd->winViewport.w;
+    if (!s_sd) {
+        return;
+    }
+
+    s_scrWidth  = static_cast<int>(s_sd->winViewport.z);
+    s_scrHeight = static_cast<int>(s_sd->winViewport.w);
 
 #ifdef ARA_USE_GLES31
     m_resFbo = make_unique<FBO>(FboInitParams{sd->glbase, 1, 1, 1, GL_R32F, GL_TEXTURE_2D, false, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
@@ -27,7 +31,7 @@ SPObjectSelector::SPObjectSelector(sceneData* sd) : ShaderProto(sd) {
     m_resFbo->setMagFilter(GL_NEAREST);
 
     m_point        = make_unique<VAO>("position:4f", GL_STATIC_DRAW);
-    GLfloat pos[4] = {0.f, 0.f, 0.f, 1.f};
+    vec4 pos = {0.f, 0.f, 0.f, 1.f};
     m_point->upload(CoordType::Position, &pos[0], 1);
 
     initDepthGenShader(1);
@@ -59,9 +63,7 @@ void SPObjectSelector::initDepthGenShader(uint nrCameras) {
         return;
     }
 
-    // if (s_shader) m_shCol->deleteShader("SPObjectSelector_gen");
-
-    std::string vert = s_shCol->getShaderHeader();
+    std::string vert = ShaderCollector::getShaderHeader();
     vert +=
         "// SPObjectSelector_gen Prototype\n"
         "layout(location = 0) in vec4 position; \n"
@@ -74,7 +76,7 @@ void SPObjectSelector::initDepthGenShader(uint nrCameras) {
         " * position; \n"
         "}";
 
-    std::string geom = s_shCol->getShaderHeader() + "layout(triangles, invocations=" + to_string(nrCameras) +
+    std::string geom = ShaderCollector::getShaderHeader() + "layout(triangles, invocations=" + to_string(nrCameras) +
                        ") in;\n"
                        "layout(triangle_strip, max_vertices=3) out;\n"
                        "uniform mat4 " +
@@ -96,22 +98,23 @@ void SPObjectSelector::initDepthGenShader(uint nrCameras) {
                        "EndPrimitive(); \n"
                        "}";
 
-    std::string frag = s_shCol->getShaderHeader();
+    std::string frag = ShaderCollector::getShaderHeader();
     frag += "// SPObjectSelector Light Prototype\n";
 
     frag += STRINGIFY(
         uniform float objID; \n out vec4 fragColor; \n void main() { fragColor = vec4(objID, 0.0, 0.0, 1.0); });
 
-    if (nrCameras > 1)
+    if (nrCameras > 1) {
         s_shader = s_shCol->add(shdrName, vert, geom, frag);
-    else
+    } else {
         s_shader = s_shCol->add(shdrName, vert, frag);
+    }
 }
 
 // TODO: expand to arbitray number of layers, at the moment, only use first
 // layer
 void SPObjectSelector::initDepthReadShader() {
-    std::string vert = s_shCol->getShaderHeader();
+    std::string vert = ShaderCollector::getShaderHeader();
     vert += "// SPObjectSelector_read Prototype\n";
 
     vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main() {
@@ -119,7 +122,7 @@ void SPObjectSelector::initDepthReadShader() {
         \n
     });
 
-    std::string frag = s_shCol->getShaderHeader();
+    std::string frag = ShaderCollector::getShaderHeader();
     frag += "// SPObjectSelector_read Prototype\n";
 
 #ifdef ARA_USE_GLES31
@@ -129,7 +132,6 @@ void SPObjectSelector::initDepthReadShader() {
     });
 #else
     // NOTE: highp
-    // frag += STRINGIFY(highp uniform sampler2DArray objMap;
     frag += STRINGIFY(uniform sampler2DArray objMap; uniform ivec2 mousePos;\n out vec4 fragColor; \n void main() {
         fragColor = texelFetch(objMap, ivec3(mousePos, 0), 0);
         \n
@@ -141,29 +143,25 @@ void SPObjectSelector::initDepthReadShader() {
 
 bool SPObjectSelector::zoomSelectedObject(trackballPreset* camPreset, bool toObjCenter, bool adjRotation) {
     if (m_selectedObjectNode && m_cs) {
-        zoomToBounds(camPreset, *m_selectedObjectNode->getBoundingBoxMin(), *m_selectedObjectNode->getBoundingBoxMax(),
-                     *m_selectedObjectNode->getTransVec(), toObjCenter, adjRotation);
+        zoomToBounds(camPreset, m_selectedObjectNode->getBoundingBoxMin(), m_selectedObjectNode->getBoundingBoxMax(),
+                     m_selectedObjectNode->getTransVec(), toObjCenter, adjRotation);
         return true;
     }
 
     return false;
 }
 
-void SPObjectSelector::zoomToBounds(trackballPreset* camPreset, vec3& bbMin, vec3& bbMax, glm::vec3& transOffs,
+void SPObjectSelector::zoomToBounds(trackballPreset* camPreset, const vec3& bbMin, const vec3& bbMax, const vec3& transOffs,
                                     bool toObjCenter, bool adjRotation) {
-    // calculate the distance the object has to have to the camera to cover the
-    // whole width
+    // calculate the distance the object has to have to the camera to cover the whole width
     m_tempBoxSize = bbMax - bbMin;
 
     float fovX      = m_cs->getFov() * (m_cs->getActFboSize()->x / m_cs->getActFboSize()->y);
     vec3  distToCam = vec3(0.f, 0.f, 0.f);
 
     if (!toObjCenter) {
-        if (m_tempBoxSize.x > m_tempBoxSize.y)
-            distToCam.z = ((m_tempBoxSize.x * 0.5f) / std::tan(fovX * 0.5f));
-        else
-            distToCam.z = ((m_tempBoxSize.y * 0.5f) / std::tan(m_cs->getFov() * 0.5f));
-
+        distToCam.z = m_tempBoxSize.x > m_tempBoxSize.y ? m_tempBoxSize.x * 0.5f / std::tan(fovX * 0.5f)
+                                                        : m_tempBoxSize.y * 0.5f / std::tan(m_cs->getFov() * 0.5f);
         distToCam.z += m_tempBoxSize.z * 0.75f;
 
         // get cam view dir
@@ -175,18 +173,19 @@ void SPObjectSelector::zoomToBounds(trackballPreset* camPreset, vec3& bbMin, vec
     }
 
     if (adjRotation && m_selectedObjectNode) {
-        quat nodeRotQuat    = glm::angleAxis(m_selectedObjectNode->getRotAngle(), *m_selectedObjectNode->getRotAxis());
+        quat nodeRotQuat    = angleAxis(m_selectedObjectNode->getRotAngle(), m_selectedObjectNode->getRotAxis());
         camPreset->rotEuler = eulerAngles(nodeRotQuat);
         distToCam           = nodeRotQuat * vec3(0.f, 0.f, 1.f);
     }
 
     // the camera has to move the scene into the opposite direction
     camPreset->pos = transOffs - distToCam;
-    // camPreset->pos = *m_selectedObjectNode->getTransVec() - distToCam;
 }
 
 void SPObjectSelector::mouseDownLeft(float x, float y, SceneNode* sceneTree) {
-    if (!s_sd || !m_cs) return;
+    if (!s_sd || !m_cs) {
+        return;
+    }
 
     m_mouseDown.x   = x * s_sd->contentScale.x;
     m_mouseDown.y   = y * s_sd->contentScale.y;
@@ -214,7 +213,7 @@ void SPObjectSelector::mouseDownLeft(float x, float y, SceneNode* sceneTree) {
 
     m_read_shader->begin();
     m_read_shader->setUniform1i("objMap", 0);
-    m_read_shader->setUniform2i("mousePos", (int)m_mouseDown.x, (int)s_scrHeight - (int)m_mouseDown.y);
+    m_read_shader->setUniform2i("mousePos", static_cast<int>(m_mouseDown.x), static_cast<int>(s_scrHeight) - static_cast<int>(m_mouseDown.y));
 
     glActiveTexture(GL_TEXTURE0);
 #ifdef ARA_USE_GLES31
@@ -226,7 +225,7 @@ void SPObjectSelector::mouseDownLeft(float x, float y, SceneNode* sceneTree) {
 
     m_point->draw(GL_POINTS);
 
-    m_read_shader->end();
+    Shaders::end();
     m_resFbo->unbind();
 
     //------------------------------------------------------------
@@ -247,15 +246,14 @@ void SPObjectSelector::mouseUpLeft(SceneNode* sceneTree) {
     // if we were dragging, save the new transVector of the moved object and of
     // the gizmo
     if (m_selectedObjectNode && m_gizmoDragged && s_sd) {
-        m_mouseDownObjTransVec = *m_selectedObjectNode->getTransVec();
-        m_mouseDownObjScaleVec = *m_selectedObjectNode->getScalingVec();
-        m_mouseDownObjRot      = angleAxis(m_selectedObjectNode->getRotAngle(), *m_selectedObjectNode->getRotAxis());
+        m_mouseDownObjTransVec = m_selectedObjectNode->getTransVec();
+        m_mouseDownObjScaleVec = m_selectedObjectNode->getScalingVec();
+        m_mouseDownObjRot      = angleAxis(m_selectedObjectNode->getRotAngle(), m_selectedObjectNode->getRotAxis());
 
-        auto parentNode = m_selectedNode->getParentNode(m_cs->s_selectObj);
-        if (parentNode) {
-            m_gizmoMouseDownTransVec = *parentNode->getTransVec();
-            m_gizmoMouseDownRot      = angleAxis(parentNode->getRotAngle(), *parentNode->getRotAxis());
-            m_gizmoMouseDownScaleVec = *parentNode->getScalingVec();
+        if (auto parentNode = m_selectedNode->getParentNode(m_cs->s_selectObj)) {
+            m_gizmoMouseDownTransVec = parentNode->getTransVec();
+            m_gizmoMouseDownRot      = angleAxis(parentNode->getRotAngle(), parentNode->getRotAxis());
+            m_gizmoMouseDownScaleVec = parentNode->getScalingVec();
         }
 
         s_sd->reqRenderPasses->at(GLSG_OBJECT_MAP_PASS) = true;
@@ -306,17 +304,18 @@ void SPObjectSelector::mouseMove(float x, float y) {
         g_norm_center = vec4(0.f, 0.f, 0.f, 1.f);
 
         if (gizmoNode->m_nameFlag & GLSG_TRANS_GIZMO) {
-            g_norm_end = vec4(float((m_gizmoselected & GLSG_TRANS_GIZMO_X) != 0),
-                              float((m_gizmoselected & GLSG_TRANS_GIZMO_Y) != 0),
-                              float((m_gizmoselected & GLSG_TRANS_GIZMO_Z) != 0), 1.f);
+            g_norm_end = vec4(static_cast<float>((m_gizmoselected & GLSG_TRANS_GIZMO_X) != 0),
+                              static_cast<float>((m_gizmoselected & GLSG_TRANS_GIZMO_Y) != 0),
+                              static_cast<float>((m_gizmoselected & GLSG_TRANS_GIZMO_Z) != 0), 1.f);
         } else if (gizmoNode->m_nameFlag & GLSG_SCALE_GIZMO) {
-            g_norm_end = vec4(float((m_gizmoselected & GLSG_SCALE_GIZMO_X) != 0),
-                              float((m_gizmoselected & GLSG_SCALE_GIZMO_Y) != 0),
-                              float((m_gizmoselected & GLSG_SCALE_GIZMO_Z) != 0), 1.f);
+            g_norm_end = vec4(static_cast<float>((m_gizmoselected & GLSG_SCALE_GIZMO_X) != 0),
+                              static_cast<float>((m_gizmoselected & GLSG_SCALE_GIZMO_Y) != 0),
+                              static_cast<float>((m_gizmoselected & GLSG_SCALE_GIZMO_Z) != 0), 1.f);
         } else if (gizmoNode->m_nameFlag & GLSG_ROT_GIZMO) {
             g_norm_end =
-                vec4(float((m_gizmoselected & GLSG_ROT_GIZMO_X) != 0), float((m_gizmoselected & GLSG_ROT_GIZMO_Y) != 0),
-                     float((m_gizmoselected & GLSG_ROT_GIZMO_Z) != 0), 1.f);
+                vec4(static_cast<float>((m_gizmoselected & GLSG_ROT_GIZMO_X) != 0),
+                    static_cast<float>((m_gizmoselected & GLSG_ROT_GIZMO_Y) != 0),
+                     static_cast<float>((m_gizmoselected & GLSG_ROT_GIZMO_Z) != 0), 1.f);
         }
 
         //----------------------------------------------------------------
@@ -325,8 +324,9 @@ void SPObjectSelector::mouseMove(float x, float y) {
         calcMouseMoveVec(mouseScaled.x, mouseScaled.y, &mouseMovedSign);
         calcIntersectPlane(mouseScaled.x, mouseScaled.y, (gizmoNode->m_nameFlag & GLSG_ROT_GIZMO) > 0);
 
-        if ((gizmoNode->m_nameFlag & GLSG_TRANS_GIZMO) || (gizmoNode->m_nameFlag & GLSG_SCALE_GIZMO))
+        if ((gizmoNode->m_nameFlag & GLSG_TRANS_GIZMO) || (gizmoNode->m_nameFlag & GLSG_SCALE_GIZMO)) {
             calcOffsVecTransAndScale(&offsetVec, &mouseMovedSign);
+        }
 
         //----------------------------------------------------------------
 
@@ -413,11 +413,11 @@ void SPObjectSelector::mouseMove(float x, float y) {
 
             // offset the gizmo
             m_newTransVec = m_gizmoMouseDownTransVec + offsetVec;
-            gizmoNode->translate(&m_newTransVec);
+            gizmoNode->translate(m_newTransVec);
 
             // offset the object to move, must be same offset
             m_newTransVec = m_mouseDownObjTransVec + offsetVec;
-            m_selectedObjectNode->translate(&m_newTransVec);
+            m_selectedObjectNode->translate(m_newTransVec);
 
             m_gizmoDragged = length(offsetVec) > m_mouseDragToleranceTrans;
             m_state        = objSelState::translating;
@@ -432,12 +432,14 @@ void SPObjectSelector::mouseMove(float x, float y) {
                                  m_gizmoselected & GLSG_SCALE_GIZMO_Y ? 1 : 0,
                                  m_gizmoselected & GLSG_SCALE_GIZMO_Z ? 1 : 0};
 
-            vec3 maxAxis{m_selectedObjectNode->getBoundingBoxMax()->x - m_selectedObjectNode->getBoundingBoxMin()->x,
-                         m_selectedObjectNode->getBoundingBoxMax()->y - m_selectedObjectNode->getBoundingBoxMin()->y,
-                         m_selectedObjectNode->getBoundingBoxMax()->z - m_selectedObjectNode->getBoundingBoxMin()->z};
+            vec3 maxAxis{m_selectedObjectNode->getBoundingBoxMax().x - m_selectedObjectNode->getBoundingBoxMin().x,
+                         m_selectedObjectNode->getBoundingBoxMax().y - m_selectedObjectNode->getBoundingBoxMin().y,
+                         m_selectedObjectNode->getBoundingBoxMax().z - m_selectedObjectNode->getBoundingBoxMin().z};
 
             ivec3 checkScalingPosible;
-            for (short i = 0; i < 3; i++) checkScalingPosible[i] = scaleAxisIndex[i] > 0 && maxAxis[i] == 0.f;
+            for (short i = 0; i < 3; i++) {
+                checkScalingPosible[i] = scaleAxisIndex[i] > 0 && maxAxis[i] == 0.f;
+            }
 
             maxAxis *= m_mouseDownObjScaleVec;
 
@@ -446,45 +448,37 @@ void SPObjectSelector::mouseMove(float x, float y) {
                 // of the offsetSign
                 if (compAdd(g_norm_end) == 3.f) m_offsetSign = mouseMovedSign;
 
-                int scaleAxisIndex = m_gizmoselected & GLSG_SCALE_GIZMO_X   ? 0
+                int scaleAxisIdx = m_gizmoselected & GLSG_SCALE_GIZMO_X   ? 0
                                      : m_gizmoselected & GLSG_SCALE_GIZMO_Y ? 1
                                      : m_gizmoselected & GLSG_SCALE_GIZMO_Z ? 2
                                                                             : 0;
 
-                float newDim                = maxAxis[scaleAxisIndex] + length(offsetVec) * m_offsetSign * 2.f;
+                float newDim                = maxAxis[scaleAxisIdx] + length(offsetVec) * m_offsetSign * 2.f;
                 vec3  newScaleVec           = m_mouseDownObjScaleVec;
-                newScaleVec[scaleAxisIndex] = newDim / ((*m_selectedObjectNode->getBoundingBoxMax())[scaleAxisIndex] -
-                                                        (*m_selectedObjectNode->getBoundingBoxMin())[scaleAxisIndex]);
+                newScaleVec[scaleAxisIdx] = newDim / ((m_selectedObjectNode->getBoundingBoxMax())[scaleAxisIdx] -
+                                                        (m_selectedObjectNode->getBoundingBoxMin())[scaleAxisIdx]);
 
-                if (newScaleVec[scaleAxisIndex] > 0.f) {
-                    float scaleOffsetAmt = newScaleVec[scaleAxisIndex] / m_mouseDownObjScaleVec[scaleAxisIndex];
+                if (newScaleVec[scaleAxisIdx] > 0.f) {
+                    float scaleOffsetAmt = newScaleVec[scaleAxisIdx] / m_mouseDownObjScaleVec[scaleAxisIdx];
 
-                    // if the GLSG_PROPO_SCALE flag is set, all dimensions must
-                    // have the same scaling offset
+                    // if the GLSG_PROPO_SCALE flag is set, all dimensions must have the same scaling offset
                     if (m_selectedObjectNode->m_transFlag & GLSG_PROPO_SCALE) {
-                        // apply this offset to all axis, if the dimension in
-                        // this axis is > 0
-                        for (uint i = 0; i < 3; i++)
-                            if (((*m_selectedObjectNode->getBoundingBoxMax())[i] -
-                                 (*m_selectedObjectNode->getBoundingBoxMin())[i]) > 0.f)
-                                newScaleVec[i] = m_mouseDownObjScaleVec[i] * scaleOffsetAmt;
-                            else
-                                newScaleVec[i] = 1.f;
+                        // apply this offset to all axis, if the dimension in this axis is > 0
+                        for (auto i = 0; i < 3; i++)
+                            newScaleVec[i] = m_selectedObjectNode->getBoundingBoxMax()[i] - m_selectedObjectNode->getBoundingBoxMin()[i] > 0.f ?
+                                 m_mouseDownObjScaleVec[i] * scaleOffsetAmt : newScaleVec[i] = 1.f;
 
-                        // scaling in a plane, take one of the axes and set the
-                        // scaling into the other axis accordingly
+                        // scaling in a plane, take one of the axes and set the scaling into the other axis accordingly
                     } else if (compAdd(g_norm_end) == 3.f) {
                         uint64_t axes[3] = {GLSG_SCALE_GIZMO_X, GLSG_SCALE_GIZMO_Y, GLSG_SCALE_GIZMO_Z};
 
-                        for (uint i = 0; i < 3; i++)
-                            if ((((*m_selectedObjectNode->getBoundingBoxMax())[i] -
-                                  (*m_selectedObjectNode->getBoundingBoxMin())[i]) > 0.f) &&
-                                (m_gizmoselected & axes[i]))
-                                newScaleVec[i] = m_mouseDownObjScaleVec[i] * scaleOffsetAmt;
-                            else
-                                newScaleVec[i] = 1.f;
+                        for (auto i = 0; i < 3; i++) {
+                            newScaleVec[i] = m_selectedObjectNode->getBoundingBoxMax()[i] - m_selectedObjectNode->getBoundingBoxMin()[i] > 0.f
+                                            && m_gizmoselected & axes[i]
+                                            ? m_mouseDownObjScaleVec[i] * scaleOffsetAmt : newScaleVec[i] = 1.f;
+                        }
                     }
-                    m_selectedObjectNode->scale(&newScaleVec);
+                    m_selectedObjectNode->scale(newScaleVec);
                 }
             }
 
@@ -498,25 +492,30 @@ void SPObjectSelector::mouseMove(float x, float y) {
 }
 
 void SPObjectSelector::keyDown(hidData* data) {
-    if (data->key == GLSG_KEY_LEFT_CONTROL || data->key == GLSG_KEY_RIGHT_CONTROL) m_cfState = cfState::fine;
+    if (data->key == GLSG_KEY_LEFT_CONTROL || data->key == GLSG_KEY_RIGHT_CONTROL) {
+        m_cfState = cfState::fine;
+    }
 
-    if (data->key == GLSG_KEY_LEFT_SHIFT || data->key == GLSG_KEY_LEFT_SHIFT) m_cfState = cfState::coarse;
+    if (data->key == GLSG_KEY_LEFT_SHIFT) {
+        m_cfState = cfState::coarse;
+    }
 
     // if there is a selected object (that is a gizmo placed ontop of it) switch
     // the selected axis first rotate through the simple axes, then in case of a
     // translation gizmo, through the planes
     if (m_selectedObjectNode && m_cs && m_cs->s_activeGizmo && data->key == GLSG_KEY_TAB) {
-        if (data->shiftPressed)
+        if (data->shiftPressed) {
             m_cs->s_activeGizmo->selectPrevAxis();
-        else
+        } else {
             m_cs->s_activeGizmo->selectNextAxis();
+        }
     }
 }
 
 void SPObjectSelector::keyUp(hidData* data) {
-    if (data->key == GLSG_KEY_LEFT_CONTROL || data->key == GLSG_KEY_RIGHT_CONTROL || data->key == GLSG_KEY_LEFT_SHIFT ||
-        data->key == GLSG_KEY_LEFT_SHIFT)
+    if (data->key == GLSG_KEY_LEFT_CONTROL || data->key == GLSG_KEY_RIGHT_CONTROL || data->key == GLSG_KEY_LEFT_SHIFT) {
         m_cfState = cfState::normal;
+    }
 }
 
 // is called from the opengl context and the event-queue
@@ -526,18 +525,26 @@ void SPObjectSelector::selectObj(int inObjId, bool onMouseUp) {
     if (m_lastSceneTree && objId) {
         // get the corresponding SceneNode
         m_selectedNode = m_lastSceneTree->getNodeWithID(objId);
-        if (!onMouseUp && (!m_selectedNode || (m_selectedNode && !m_selectedNode->dragSelectedAllowed()))) return;
+        if (!onMouseUp && (!m_selectedNode || (m_selectedNode && !m_selectedNode->dragSelectedAllowed()))) {
+            return;
+        }
 
         int outVal      = -1;
         m_gizmoselected = 0;  // reset the gizmo-selected-flag
 
         // if there is a selected object, deselect it
-        if (m_selectedObjectNode) m_selectedObjectNode->setSelected(false);
+        if (m_selectedObjectNode) {
+            m_selectedObjectNode->setSelected(false);
+        }
 
         if (m_selectedNode->getName() == getTypeName<SNGridFloor>()) {
-            if (s_sd && s_sd->deselectAll) s_sd->deselectAll();
+            if (s_sd && s_sd->deselectAll) {
+                s_sd->deselectAll();
+            }
 
-            if (m_addGizmoCb) m_addGizmoCb(transMode::none);
+            if (m_addGizmoCb) {
+                m_addGizmoCb(transMode::none);
+            }
         }
 
         if (m_selectedNode) {
@@ -548,15 +555,14 @@ void SPObjectSelector::selectObj(int inObjId, bool onMouseUp) {
                 // object (light objects can't have more the one Node SubLevel)
                 if (m_selectedNode->m_nodeType == GLSG_SNT_LIGHT_SCENE_MESH ||
                     m_selectedNode->m_nodeType == GLSG_SNT_CAMERA_SCENE_MESH) {
-                    m_selectedNode =
-                        m_selectedNode->getIdGroup() ? m_selectedNode : m_selectedNode->getParentNode(objId);
+                    m_selectedNode = m_selectedNode->getIdGroup() ? m_selectedNode : m_selectedNode->getParentNode(objId);
                     // set the objId to the parent Node, in this case there will
                     // be for sure only one
                     objId = m_selectedNode->getObjId(m_selectedNode->getFirstParentNode());
                 }
             }
 
-            // if a SceneNode was selected and it was not a Gizmo, save it
+            // if a SceneNode was selected, and it was not a Gizmo, save it
             if (!parentNode ||
                 (!(parentNode->m_nameFlag & GLSG_TRANS_GIZMO) && !(parentNode->m_nameFlag & GLSG_SCALE_GIZMO) &&
                  !(parentNode->m_nameFlag & GLSG_ROT_GIZMO))) {
@@ -587,24 +593,23 @@ void SPObjectSelector::selectObj(int inObjId, bool onMouseUp) {
             {
                 // get the center of the SceneNode and add a Gizmo
 
-                // check if the selected node is part of an id group, if this is
-                // the case, take the owner's id
+                // check if the selected node is part of an id group, if this is the case, take the owner's id
                 outVal            = m_selectedNode->getObjId();
                 m_cs->s_selectObj = outVal;
 
-                // if the parentnode of the selectedNode is a gizmo, then an
-                // axis or plane of a gizmo was selected for dragging
+                // if the parentnode of the selectedNode is a gizmo, then an axis or plane of a gizmo was selected for dragging
                 if (parentNode &&
                     ((parentNode->m_nameFlag & GLSG_TRANS_GIZMO) || (parentNode->m_nameFlag & GLSG_SCALE_GIZMO) ||
                      (parentNode->m_nameFlag & GLSG_ROT_GIZMO))) {
-                    // if there was an SceneNode selected, before the gizmo was
-                    // clicked, reselect this SceneNode
-                    if (m_selectedObjectNode && !m_selectedObjectNode->setSelected(true)) return;
+                    // if there was an SceneNode selected, before the gizmo was clicked, reselect this SceneNode
+                    if (m_selectedObjectNode && !m_selectedObjectNode->setSelected(true)) {
+                        return;
+                    }
 
                     m_gizmoselected |= m_selectedNode->m_nameFlag;
-                    m_gizmoMouseDownTransVec = *parentNode->getTransVec();
-                    m_gizmoMouseDownScaleVec = *parentNode->getScalingVec();
-                    m_gizmoMouseDownRot      = angleAxis(parentNode->getRotAngle(), *parentNode->getRotAxis());
+                    m_gizmoMouseDownTransVec = parentNode->getTransVec();
+                    m_gizmoMouseDownScaleVec = parentNode->getScalingVec();
+                    m_gizmoMouseDownRot      = angleAxis(parentNode->getRotAngle(), parentNode->getRotAxis());
                     m_gizmoMouseDownModelMat = *parentNode->getModelMat();
 
                     // deselect all parts of the gizmo
@@ -616,25 +621,25 @@ void SPObjectSelector::selectObj(int inObjId, bool onMouseUp) {
 
                 // if an object was clicked, save the translation vector of the
                 // selected object (we do it here right after the MouseDown)
-                m_mouseDownObjTransVec = *m_selectedNode->getTransVec();
-                m_mouseDownObjScaleVec = *m_selectedNode->getScalingVec();
-                m_mouseDownObjRot      = angleAxis(m_selectedNode->getRotAngle(), *m_selectedNode->getRotAxis());
+                m_mouseDownObjTransVec = m_selectedNode->getTransVec();
+                m_mouseDownObjScaleVec = m_selectedNode->getScalingVec();
+                m_mouseDownObjRot      = angleAxis(m_selectedNode->getRotAngle(), m_selectedNode->getRotAxis());
 
                 // in case the SceneNode is not selectable, don't add the gizmo
-                if (m_selectedNode->setSelected(true)) addGizmo(m_actTransMode);
+                if (m_selectedNode->setSelected(true)) {
+                    addGizmo(m_actTransMode);
+                }
             }
 
             m_cs->s_selectObj = outVal;
-
-        } else
-            LOGE << " ERROR SPObjectSelector:: selectedNode returned from "
-                    "getNodeWithID("
-                 << objId << ") is nullptr";
+        } else {
+            LOGE << " ERROR SPObjectSelector:: selectedNode returned from getNodeWithID(" << objId << ") is nullptr";
+        }
     }
 }
 
 /**
- * called during a Object dragging. Calculates Vector by which the Gizmo will be
+ * called during an Object dragging. Calculates Vector by which the Gizmo will be
  * moved in NDC space (as it appears on the screen)
  */
 void SPObjectSelector::calcGizmoAxisNDC() {
@@ -670,26 +675,29 @@ void SPObjectSelector::calcGizmoAxisNDC() {
 }
 
 /**
- * called during a Object dragging. Calculates the mouse Offset Vector in NDC
+ * called during ann Object dragging. Calculates the mouse Offset Vector in NDC
  * space (as it appears on the screen)
  */
 void SPObjectSelector::calcMouseMoveVec(float x, float y, float* mouseMovedSign) {
-    // get the vector of the MouseDown StartPosition and the actual Position
-    // in normalized screen coordinates
+    // get the vector of the MouseDown StartPosition and the actual Position in normalized screen coordinates
     m_mouseMoved2D = vec2((x - m_mouseDown.x) / m_cs->getActFboSize()->x * 2.f,
                           -(y - m_mouseDown.y) / m_cs->getActFboSize()->y * 2.f);
 
-    *mouseMovedSign = std::atan2(m_mouseMoved2D.y, m_mouseMoved2D.x) / float(M_PI);
+    *mouseMovedSign = std::atan2(m_mouseMoved2D.y, m_mouseMoved2D.x) / static_cast<float>(M_PI);
     if (*mouseMovedSign > 0.f) {
-        if (*mouseMovedSign > 0.5f) *mouseMovedSign = 1.f - *mouseMovedSign;
+        if (*mouseMovedSign > 0.5f) {
+            *mouseMovedSign = 1.f - *mouseMovedSign;
+        }
     } else {
-        if (*mouseMovedSign < -0.5f) *mouseMovedSign = (*mouseMovedSign + 1.f) * -1.f;
+        if (*mouseMovedSign < -0.5f) {
+            *mouseMovedSign = (*mouseMovedSign + 1.f) * -1.f;
+        }
     }
     *mouseMovedSign *= 2.f;
 }
 
 /**
- * called during a Object dragging. Calculates the plane, which contains the
+ * called during ann Object dragging. Calculates the plane, which contains the
  * gizmo axis, we are moving along and which is most parallel to the screen
  * plane
  */
@@ -706,9 +714,9 @@ void SPObjectSelector::calcIntersectPlane(float x, float y, bool skipPlaneSortin
         vec3 planeNormals[3] = {vec3(1.f, 0.f, 0.f), vec3(0.f, 1.f, 0.f), vec3(0.f, 0.f, 1.f)};
         m_sortedNormals.clear();
 
-        for (int i = 0; i < 3; i++) {
+        for (auto planeNormal : planeNormals) {
             // offset planeNormal by gizmoModelMat
-            vec4 planeNormModel = normalize((m_gizmo_camModelMat * vec4(planeNormals[i], 1.f)) - g_norm_center_mod);
+            vec4 planeNormModel = normalize((m_gizmo_camModelMat * vec4(planeNormal, 1.f)) - g_norm_center_mod);
 
             // offset the s_camPos by the planeNormal
             vec3 camPlaneNormModel = m_cs->getCamPos() + vec3(planeNormModel);
@@ -718,19 +726,19 @@ void SPObjectSelector::calcIntersectPlane(float x, float y, bool skipPlaneSortin
             vec3 negScreenNormal = normalize(m_cs->getCamPos() - m_cs->getLookAtPoint());
 
             float dist = 0.f;
-            m_doesInters =
-                intersectRayPlane(camPlaneNormModel, negScreenNormal, m_cs->getCamPos(), -negScreenNormal, dist);
+            m_doesInters = intersectRayPlane(camPlaneNormModel, negScreenNormal, m_cs->getCamPos(), -negScreenNormal, dist);
 
-            m_sortedNormals[std::fabs(dist)] = planeNormals[i];
+            m_sortedNormals[std::fabs(dist)] = planeNormal;
         }
 
-        m_planeNormal                 = (*(--m_sortedNormals.end())).second;
-        m_planeNormalLength           = (*(--m_sortedNormals.end())).first;
-        m_planeWithGizmoAxisMostOrtho = (*(--m_sortedNormals.end())).second;
+        m_planeNormal                 = (--m_sortedNormals.end())->second;
+        m_planeNormalLength           = (--m_sortedNormals.end())->first;
+        m_planeWithGizmoAxisMostOrtho = (--m_sortedNormals.end())->second;
 
         if (singleAxisTrans) {
-            if (m_planeWithGizmoAxisMostOrtho == vec3(g_norm_end))
-                m_planeWithGizmoAxisMostOrtho = (*(--(--m_sortedNormals.end()))).second;
+            if (m_planeWithGizmoAxisMostOrtho == vec3(g_norm_end)) {
+                m_planeWithGizmoAxisMostOrtho = (-- --m_sortedNormals.end())->second;
+            }
 
         } else {
             m_planeWithGizmoAxisMostOrtho =
@@ -746,7 +754,7 @@ void SPObjectSelector::calcIntersectPlane(float x, float y, bool skipPlaneSortin
  * movement of the mouse can be in any direction, we need to calculate the
  * relative movement along the desired axis from it.
  */
-void SPObjectSelector::calcOffsVecTransAndScale(vec3* offsetVec, float* mouseMovedSign) {
+void SPObjectSelector::calcOffsVecTransAndScale(vec3* offsetVec, const float* mouseMovedSign) {
     bool singleAxisTrans = compAdd(g_norm_end) == 2.f;
 
     if (!m_skipMoveAnalogToMouse) {
@@ -859,18 +867,15 @@ void SPObjectSelector::calcOffsVecTransAndScale(vec3* offsetVec, float* mouseMov
 }
 
 // everything has to be in camera space
-vec4 SPObjectSelector::unProjectMouse(vec4& inPoint, vec3 camPos, vec3& planeOrig, vec3& planeNormal) {
-    // we can't know the z-coordinate since we move the gizmo by the mouse in 2D
-    // space. But our result must lie on the line through this Point with this
-    // x,y coordinates on the near plane, so set the z-coordinate to -1.f by
-    // this we know that the result will lie at s_camPos.z - nearPlane in 3D
-    // Space
+vec4 SPObjectSelector::unProjectMouse(const vec4& inPoint, vec3 camPos, const vec3& planeOrig, const vec3& planeNormal) {
+    // we can't know the z-coordinate since we move the gizmo by the mouse in 2D space. But our result must lie on the
+    // line through this Point with this x,y coordinates on the near plane, so set the z-coordinate to -1.f by this we
+    // know that the result will lie at s_camPos.z - nearPlane in 3D Space
     vec4 mouseDown3D = inPoint;
     mouseDown3D.z    = -1.f;
     mouseDown3D.w    = 1.f;
 
-    // unproject (with the inverse projection, view and model matrix of the
-    // camera)
+    // unproject (with the inverse projection, view and model matrix of the camera)
     mouseDown3D = inverse(m_cs->getProjectionMatr() * m_cs->getViewMatr()) * mouseDown3D;
     mouseDown3D /= mouseDown3D.w;
 
@@ -880,36 +885,37 @@ vec4 SPObjectSelector::unProjectMouse(vec4& inPoint, vec3 camPos, vec3& planeOri
     float d   = dot(dir, planeNormal);
     m_rayDist = dot(planeOrig - camPos, planeNormal) / d;
 
-    return vec4(camPos + dir * m_rayDist, 1.f);
+    return {camPos + dir * m_rayDist, 1.f};
 }
 
 void SPObjectSelector::addGizmo(transMode gMode) {
     if (m_selectedNode) {
         // be sure all gizmos are deselected
-        for (auto& g : *m_gizmos)
-            if (g) g->setSelected(false);
+        for (const auto& g : *m_gizmos) {
+            if (g) {
+                g->setSelected(false);
+            }
+        }
 
         // add a Gizmo to the end of the SceneTree with the position of the
         // center of the selected SceneNode if the Gizmo is a Scaling Gizmo and
         // the NO_SCALE flag is set, don't add anything
         if (!m_cs->s_activeGizmo && gMode != transMode::none && gMode != transMode::twWidget) {
-            m_cs->s_activeGizmo = m_gizmos->at((int)gMode);
+            m_cs->s_activeGizmo = m_gizmos->at(static_cast<int>(gMode));
 
             // if requested, immediately select the first axis of the gizmo,
             // when it is added
-            if (m_addGizmoSelectsAxis) m_cs->s_activeGizmo->selectAxis(0);
+            if (m_addGizmoSelectsAxis) {
+                m_cs->s_activeGizmo->selectAxis(0);
+            }
         }
 
-        SNGizmo* actGiz = nullptr;
         if (m_cs->s_activeGizmo) {
-            actGiz = m_cs->s_activeGizmo;
+            auto actGiz = m_cs->s_activeGizmo;
             actGiz->setVisibility(true);
 
             if (!m_selectedNode->isFixGizmoRot()) {
                 actGiz->rotate(m_selectedNode->getRotAngle(), m_selectedNode->getRotAxis());
-                // actGiz->rotate(m_selectedNode->getRotAngle() * (gMode !=
-                // transMode::translate ? 1.f:0.f),
-                // m_selectedNode->getRotAxis());
             }
 
             actGiz->translate(m_selectedNode->getTransVec());
@@ -917,20 +923,21 @@ void SPObjectSelector::addGizmo(transMode gMode) {
             // register a callback to update the gizmo when the corresponding
             // sceneNode is moved from code
             m_selectedNode->pushModelMatChangedCb(this, [actGiz, this](SceneNode* node) {
-                if (!m_gizmoDragged && s_sd)  // avoid a translation feedback loop, otherwise this
-                                              // will be also called when the gizmo is moved via
-                                              // the mouse
-                {
+                if (!m_gizmoDragged && s_sd) {  // avoid a translation feedback loop, otherwise this will be also called
+                                                // when the gizmo is moved via the mouse
                     actGiz->translate(node->getTransVec());
-                    if (!node->isFixGizmoRot()) actGiz->rotate(node->getRotAngle(), node->getRotAxis());
+                    if (!node->isFixGizmoRot()) {
+                        actGiz->rotate(node->getRotAngle(), node->getRotAxis());
+                    }
 
-                    s_sd->reqRenderPasses->at(renderPass::GLSG_OBJECT_MAP_PASS) = true;
-                    if (node->m_nodeType == GLSG_SNT_LIGHT)
-                        s_sd->reqRenderPasses->at(renderPass::GLSG_SHADOW_MAP_PASS) = true;
+                    s_sd->reqRenderPasses->at(GLSG_OBJECT_MAP_PASS) = true;
+                    if (node->m_nodeType == GLSG_SNT_LIGHT) {
+                        s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
+                    }
 
-                    m_mouseDownObjTransVec = *node->getTransVec();
-                    m_mouseDownObjScaleVec = *node->getScalingVec();
-                    m_mouseDownObjRot      = angleAxis(node->getRotAngle(), *node->getRotAxis());
+                    m_mouseDownObjTransVec = node->getTransVec();
+                    m_mouseDownObjScaleVec = node->getScalingVec();
+                    m_mouseDownObjRot      = angleAxis(node->getRotAngle(), node->getRotAxis());
                 }
 
                 return false;  // keep this callback after execution
@@ -939,11 +946,14 @@ void SPObjectSelector::addGizmo(transMode gMode) {
             // note: scaling is always relative to screen which is done inside
             // Gizmo::draw() dynamically, so it is not set here
 
-            if (m_lastSceneData) m_lastSceneData->reqRenderPasses->at(GLSG_OBJECT_MAP_PASS) = true;
+            if (m_lastSceneData) {
+                m_lastSceneData->reqRenderPasses->at(GLSG_OBJECT_MAP_PASS) = true;
+            }
         }
 
-        if (m_addGizmoCb) m_addGizmoCb(gMode);
-
+        if (m_addGizmoCb) {
+            m_addGizmoCb(gMode);
+        }
         m_actTransMode = gMode;
     }
 }
@@ -954,7 +964,7 @@ void SPObjectSelector::sendPar(CameraSet* cs, double time, SceneNode* node, Scen
 
     // set object id
     if (pass == GLSG_OBJECT_MAP_PASS && s_shader) {
-        s_shader->setUniform1f("objID", float(node->getObjId(parent)));
+        s_shader->setUniform1f("objID", static_cast<float>(node->getObjId(parent)));
     }
 }
 
@@ -969,14 +979,14 @@ bool SPObjectSelector::begin(CameraSet* cs, renderPass pass, uint loopNr) {
         s_shader->begin();
         m_needUnbindFbo = true;
         return true;
+    }
 
-    } else
-        return false;
+    return false;
 }
 
 bool SPObjectSelector::end(renderPass pass, uint loopNr) {
     if (pass == GLSG_OBJECT_MAP_PASS && m_needUnbindFbo) {
-        s_shader->end();
+        Shaders::end();
         m_fbo->unbind();
         m_needUnbindFbo = false;
     }
@@ -993,7 +1003,7 @@ void SPObjectSelector::clear(renderPass pass) {
     }
 }
 
-void SPObjectSelector::clearDepth() {
+void SPObjectSelector::clearDepth() const {
     m_fbo->bind();
     m_fbo->clearDepth();
     m_fbo->unbind();
@@ -1001,15 +1011,16 @@ void SPObjectSelector::clearDepth() {
 
 ///> read one pixel of the actual depth buffer, convert depth_map values to
 /// world z -values
-float SPObjectSelector::getDepthAtScreen(float _x, float _y, float _near, float _far) {
+float SPObjectSelector::getDepthAtScreen(float x, float y, float near_lim, float far_lim) const {
     GLfloat val;
 
     glReadBuffer(GL_BACK);
-    glReadPixels(static_cast<int>((_x * 0.5f + 0.5f) * float(s_scrWidth)),
-                 static_cast<int>((_y * 0.5f + 0.5f) * float(s_scrHeight)), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &val);
+    glReadPixels(static_cast<int>((x * 0.5f + 0.5f) * static_cast<float>(s_scrWidth)),
+                 static_cast<int>((y * 0.5f + 0.5f) * static_cast<float>(s_scrHeight)),
+                 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &val);
 
     float z_n = 2.f * val - 1.f;
-    float z_e = 2.f * _near * _far / (_far + _near - z_n * (_far - _near));
+    float z_e = 2.f * near_lim * far_lim / (far_lim + near_lim - z_n * (far_lim - near_lim));
 
     return z_e;
 }
@@ -1017,7 +1028,9 @@ float SPObjectSelector::getDepthAtScreen(float _x, float _y, float _near, float 
 void SPObjectSelector::setScreenSize(uint width, uint height) {
     s_scrWidth = width, s_scrHeight = height;
     m_fbo->resize(width, height);
-    if (s_sd) s_sd->reqRenderPasses->at(GLSG_OBJECT_MAP_PASS) = true;
+    if (s_sd) {
+        s_sd->reqRenderPasses->at(GLSG_OBJECT_MAP_PASS) = true;
+    }
 }
 
 void SPObjectSelector::setTransMode(transMode trMode) {
@@ -1052,14 +1065,15 @@ void SPObjectSelector::setTransMode(transMode trMode) {
 }
 
 void SPObjectSelector::deselect() {
-    if (m_selectedNode) {
-        // setTransMode(transMode::translate);
-        if (m_selectedNode->isSelected()) m_selectedNode->setSelected(false);
+    if (m_selectedNode && m_selectedNode->isSelected()) {
+        m_selectedNode->setSelected(false);
     }
 
     m_selectedNode = nullptr;
 
-    if (m_selectedObjectNode) m_selectedObjectNode->setSelected(false);
+    if (m_selectedObjectNode) {
+        m_selectedObjectNode->setSelected(false);
+    }
 
     m_selectedObjectNode = nullptr;
 
@@ -1072,9 +1086,11 @@ void SPObjectSelector::deselect() {
     }
 }
 
-SceneNode* SPObjectSelector::getGizmoNode() {
+SceneNode* SPObjectSelector::getGizmoNode() const {
     SceneNode* gizmoNode = nullptr;
-    if (m_cs && m_selectedNode) gizmoNode = m_selectedNode->getParentNode(m_cs->s_selectObj);
+    if (m_cs && m_selectedNode) {
+        gizmoNode = m_selectedNode->getParentNode(m_cs->s_selectObj);
+    }
 
     return gizmoNode;
 }

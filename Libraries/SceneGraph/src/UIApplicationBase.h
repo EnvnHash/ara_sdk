@@ -14,6 +14,8 @@ namespace ara {
 
 class UIApplicationBase {
 public:
+    virtual ~UIApplicationBase() = default;
+
     /** this is meant for a simple one window setup. An initCb can be passed,
      * that is supposed to configure the ui-scenegraph UI rendering is done in a
      * separate thread, though this function is non-blocking For more complex
@@ -31,7 +33,7 @@ public:
     /// destroy the global opengl context and all its resources
     void destroyGLBase();
     /// cause a draw loop iteration on the main window
-    void mainWinIterate();
+    void mainWinIterate() const;
     /// causes a draw loop iteration on the glbase gl context
     void glBaseIterate();
     /// calls startThreadedRendering and startEventLoop on the windowManager when GLFW or EGL is used, otherwise does nothing

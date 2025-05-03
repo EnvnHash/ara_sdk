@@ -10,12 +10,10 @@ namespace ara {
 
 class FloatingMenuDialog : public UIWindow {
 public:
-    FloatingMenuDialog(GLBase* glbase, int width, int height, int shiftX, int shiftY, bool osDecoration,
-                       bool transparentFB = false, bool floating = false, bool initToCurrentCtx = false,
-                       bool multisample = true, void* extWinHandle = nullptr, bool scaleToMonitor = false);
-    virtual ~FloatingMenuDialog() = default;
+    FloatingMenuDialog(const UIWindowParams& params);
+    ~FloatingMenuDialog() override = default;
 
-    virtual void close(bool direct = false);
+    void close(bool direct = false) override;
 
     void setOnClose(const std::function<void(std::string)>& f) { m_onCloseFunc = f; }
     void setRemoveCb(const std::function<void()>& f) { m_removeCb = f; }

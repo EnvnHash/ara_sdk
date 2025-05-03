@@ -11,9 +11,9 @@ public:
     virtual ~Mesh() = default;
 
     void init(const char *format);
-    void scale(float scaleX, float scaleY, float scaleZ);
+    void scale(glm::vec3 scale);
     void rotate(float angle, float rotX, float rotY, float rotZ);
-    void translate(float x, float y, float z);
+    void translate(glm::vec3 trans);
     void doTransform(bool transfNormals);
     void invertNormals();
     void calcNormals();
@@ -56,7 +56,7 @@ public:
 
     void *getPtrInterleaved();
 
-    int getNrIndices() {
+    [[nodiscard]] int getNrIndices() const {
         if (m_useIndices) {
             return static_cast<int>(m_indices.size());
         } else if (m_useIndicesUint) {
@@ -65,23 +65,23 @@ public:
         return 0;
     }
 
-    int getByteSizeInd() {
+    [[nodiscard]] int getByteSizeInd() const {
         return m_useIndices ? static_cast<int>(m_indices.size() * sizeof(GLushort))
                             : m_useIndicesUint ? static_cast<int>(m_indicesUint.size() * sizeof(GLuint))
                                                : 0;
     }
 
-    int getNrPositions() { return static_cast<int>(m_positions.size()) / m_coordTypeSize[toType(CoordType::Position)]; }
-    int getNrVertIntrl() { return static_cast<int>(m_interleaved.size()); }
-    int getByteSizeVert() { return static_cast<int>(m_positions.size()) * sizeof(GLfloat); }
-    GLenum getType(CoordType t) { return GL_FLOAT; }
-    int    getByteSize(int t) { return static_cast<int>(m_allCoords[t]->size() * sizeof(GL_FLOAT)); }
-    int    getByteSize(CoordType t) { return static_cast<int>(m_allCoords[toType(t)]->size() * sizeof(GL_FLOAT)); }
-    int    getNrAttributes() { return static_cast<int>(m_usedCoordTypes.size()); }
-    int    getSize(CoordType t) { return static_cast<int>(m_allCoords[toType(t)]->size()); }
+    [[nodiscard]] int getNrPositions() const { return static_cast<int>(m_positions.size()) / m_coordTypeSize[toType(CoordType::Position)]; }
+    [[nodiscard]] int getNrVertIntrl() const { return static_cast<int>(m_interleaved.size()); }
+    [[nodiscard]] int getByteSizeVert() const { return static_cast<int>(m_positions.size()) * sizeof(GLfloat); }
+    static GLenum getType(CoordType t) { return GL_FLOAT; }
+    [[nodiscard]] int getByteSize(int t) const { return static_cast<int>(m_allCoords[t]->size() * sizeof(GL_FLOAT)); }
+    [[nodiscard]] int getByteSize(CoordType t) const { return static_cast<int>(m_allCoords[toType(t)]->size() * sizeof(GL_FLOAT)); }
+    [[nodiscard]] int getNrAttributes() const { return static_cast<int>(m_usedCoordTypes.size()); }
+    [[nodiscard]] int getSize(CoordType t) const { return static_cast<int>(m_allCoords[toType(t)]->size()); }
 
-    void *getPtr(int t) { return !m_allCoords[t]->empty() ? &m_allCoords[t]->front() : nullptr; }
-    void *getPtr(CoordType t) { return !m_allCoords[toType(t)]->empty() ? &m_allCoords[toType(t)]->front() : nullptr; }
+    [[nodiscard]] void *getPtr(int t) const { return !m_allCoords[t]->empty() ? &m_allCoords[t]->front() : nullptr; }
+    [[nodiscard]] void *getPtr(CoordType t) const { return !m_allCoords[toType(t)]->empty() ? &m_allCoords[toType(t)]->front() : nullptr; }
 
     GLfloat  *getPositionPtr() { return &m_positions.front(); }
     GLfloat  *getNormalPtr() { return &m_normals.front(); }
@@ -89,16 +89,16 @@ public:
     GLushort *getIndicePtr() { return &m_indices.front(); }
     GLuint   *getIndiceUintPtr() { return &m_indicesUint.front(); }
 
-    GLuint getIndexUint(int ind) {
+    [[nodiscard]] GLuint getIndexUint(int ind) const {
         GLuint out = 0;
-        if (int(m_indices.size()) > ind) {
+        if (static_cast<int>(m_indices.size()) > ind) {
             out = m_indices[ind];
         }
         return out;
     }
 
-    GLushort getIndex(int ind) {
-        if (int(m_indices.size()) > ind) {
+    [[nodiscard]] GLushort getIndex(int ind) const {
+        if (static_cast<int>(m_indices.size()) > ind) {
             return m_indices[ind];
         }
         return 0;
@@ -112,19 +112,19 @@ public:
     std::vector<GLfloat> *getStaticNormal() { return &m_statNormal; }
 
     void setStaticColor(float r, float g, float b, float a);
-    void setStaticNormal(float x, float y, float z);
-    bool usesStaticColor() { return !m_statColor.empty(); }
-    bool usesStaticNormal() { return !m_statNormal.empty(); }
+    void setStaticNormal(glm::vec3 norm);
+    [[nodiscard]] bool usesStaticColor() const { return !m_statColor.empty(); }
+    [[nodiscard]] bool usesStaticNormal() const { return !m_statNormal.empty(); }
     void dumpInterleaved();
 
     [[nodiscard]] bool usesIntrl() const { return m_useIntrl; }
     [[nodiscard]] bool usesIndices() const { return m_useIndices || m_useIndicesUint; }
     [[nodiscard]] bool usesUintIndices() const { return m_useIndicesUint; }
-    bool               hasTexCoords() { return static_cast<int>(!m_texCoords.empty()); }
+    [[nodiscard]] bool               hasTexCoords() const { return static_cast<int>(!m_texCoords.empty()); }
     void               setVec3(CoordType t, uint32_t ind, glm::vec3 _vec);
     void               setName(std::string name) { m_name = std::move(name); }
     void               setMaterialId(int id) { m_materialId = id; }
-    const char        *getFormat() { return m_format.c_str(); }
+    [[nodiscard]] const char        *getFormat() const { return m_format.c_str(); }
 
 protected:
     std::string              m_name;

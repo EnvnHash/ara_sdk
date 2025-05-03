@@ -66,8 +66,8 @@ public:
     template <class B>
     void serialize(B &buf) const {
         buf << position.x << position.y << refTexCoord.x << refTexCoord.y << offsetPos.x << offsetPos.y << refPosition.x
-            << refPosition.y << (int)extrPolMethod << (int)intrPolMethod << id << iPolTime << refGridPos[0]
-            << refGridPos[1] << patchInd << (int)texBasePoint << (int)selected << (int)mDir << (int)mouseIcon;
+            << refPosition.y << static_cast<int>(extrPolMethod) << static_cast<int>(intrPolMethod) << id << iPolTime << refGridPos[0]
+            << refGridPos[1] << patchInd << static_cast<int>(texBasePoint) << static_cast<int>(selected) << static_cast<int>(mDir) << static_cast<int>(mouseIcon);
     }
 
     template <class B>
@@ -77,19 +77,19 @@ public:
 
         int temp;
         buf >> temp;
-        extrPolMethod = (extrapolM)temp;
+        extrPolMethod = static_cast<extrapolM>(temp);
         buf >> temp;
-        intrPolMethod = (interpolM)temp;
+        intrPolMethod = static_cast<interpolM>(temp);
         buf >> id >> iPolTime >> refGridPos[0] >> refGridPos[1] >> patchInd;
 
         buf >> temp;
-        texBasePoint = (bool)temp;
+        texBasePoint = static_cast<bool>(temp);
         buf >> temp;
-        selected = (bool)temp;
+        selected = static_cast<bool>(temp);
         buf >> temp;
-        mDir = (moveDir)temp;
+        mDir = static_cast<moveDir>(temp);
         buf >> temp;
-        mouseIcon = (MouseIcon)temp;
+        mouseIcon = static_cast<MouseIcon>(temp);
     }
 
     void serializeToXml(pugi::xml_node &parent) {
@@ -103,11 +103,11 @@ public:
         }
 
         auto node = parent.append_child("extrPolMethod");
-        node.text().set((int)extrPolMethod);
+        node.text().set(static_cast<int>(extrPolMethod));
         node.append_attribute("propertyName").set_value("extrPolMethod");
 
         node = parent.append_child("intrPolMethod");
-        node.text().set((int)intrPolMethod);
+        node.text().set(static_cast<int>(intrPolMethod));
         node.append_attribute("propertyName").set_value("intrPolMethod");
 
         node = parent.append_child("UInt");
@@ -131,26 +131,38 @@ public:
         }
     }
 
-    void parseFromXml(pugi::xml_node &node) {
+    void parseFromXml(const pugi::xml_node &node) {
         pugi::xml_attribute attr;
 
         auto child = node.first_child();
-        if ((attr = child.attribute("x"))) position.x = attr.as_float();
-        if ((attr = child.attribute("y"))) position.y = attr.as_float();
+        if ((attr = child.attribute("x"))) {
+            position.x = attr.as_float();
+        }
+        if ((attr = child.attribute("y"))) {
+            position.y = attr.as_float();
+        }
 
         child = child.next_sibling();
-        if ((attr = child.attribute("x"))) refPosition.x = attr.as_float();
-        if ((attr = child.attribute("y"))) refPosition.y = attr.as_float();
+        if ((attr = child.attribute("x"))) {
+            refPosition.x = attr.as_float();
+        }
+        if ((attr = child.attribute("y"))) {
+            refPosition.y = attr.as_float();
+        }
 
         child = child.next_sibling();
-        if ((attr = child.attribute("x"))) refTexCoord.x = attr.as_float();
-        if ((attr = child.attribute("y"))) refTexCoord.y = attr.as_float();
+        if ((attr = child.attribute("x"))) {
+            refTexCoord.x = attr.as_float();
+        }
+        if ((attr = child.attribute("y"))) {
+            refTexCoord.y = attr.as_float();
+        }
 
         child         = child.next_sibling();
-        extrPolMethod = (extrapolM)child.text().as_int();
+        extrPolMethod = static_cast<extrapolM>(child.text().as_int());
 
         child         = child.next_sibling();
-        intrPolMethod = (interpolM)child.text().as_int();
+        intrPolMethod = static_cast<interpolM>(child.text().as_int());
 
         child = child.next_sibling();
         id    = child.text().as_int();
@@ -166,8 +178,11 @@ public:
             if (!seg) seg = std::make_unique<SplineSegment>();
             std::vector<std::string> attrNames = {"aX", "aY", "bX", "bY", "cX", "cY", "dX", "dY"};
             float                   *ptr       = &seg->a[0];
-            for (auto &it : attrNames)
-                if ((attr = child.attribute(it.c_str()))) *ptr++ = attr.as_float();
+            for (auto &it : attrNames) {
+                if ((attr = child.attribute(it.c_str()))) {
+                    *ptr++ = attr.as_float();
+                }
+            }
         }
     }
 };
@@ -175,8 +190,8 @@ public:
 }  // namespace ara
 
 // wrapper for use with earcut tesselator
-namespace mapbox {
-namespace util {
+
+namespace mapbox::util {
 
 template <>
 struct nth<0, ara::CtrlPoint> {
@@ -198,5 +213,5 @@ struct nth<1, glm::vec2> {
     static auto get(const glm::vec2 &t) { return t.y; };
 };
 
-}  // namespace util
-}  // namespace mapbox
+} // namespace mapbox::util
+

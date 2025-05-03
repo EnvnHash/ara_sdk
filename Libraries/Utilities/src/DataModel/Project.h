@@ -16,10 +16,8 @@
 
 #pragma once
 
-#include <DataModel/Item.h>
+#include <DataModel/PropertyItemUi.h>
 #include <util_common.h>
-
-#include <utility>
 
 // obsolete. to be changed to Node derivate
 

@@ -60,76 +60,49 @@ void UINode::setPadding(glm::vec4& val, state st) {
                         std::to_string(val[3]), st);
 }
 
-void UINode::setBorderColor(float r, float g, float b, float a, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_borderColor      = glm::vec4(r, g, b, a);
-        m_drawParamChanged = true;
-    }
-    setStyleInitVal("border-color",
-                    "rgba(" + std::to_string(int(r * 255)) + "," + std::to_string(int(g * 255)) + "," +
-                        std::to_string(int(b * 255)) + "," + std::to_string(int(a * 255)) + ")",
+void UINode::setStyleInitCol(const std::string& propName, const glm::vec4& col, state st) {
+    setStyleInitVal(propName,
+                    "rgba(" + std::to_string(static_cast<int>(col.r * 255)) + ","
+                    + std::to_string(static_cast<int>(col.g * 255)) + ","
+                    + std::to_string(static_cast<int>(col.b * 255)) + ","
+                    + std::to_string(static_cast<int>(col.a * 255)) + ")",
                     st);
 }
 
-void UINode::setBorderColor(glm::vec4& col, state st) {
+void UINode::setBorderColor(float r, float g, float b, float a, state st) {
+    setBorderColor({r, g, b, a}, st);
+}
+
+void UINode::setBorderColor(const glm::vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_borderColor      = col;
         m_drawParamChanged = true;
     }
-    setStyleInitVal("border-color",
-                    "rgba(" + std::to_string(int(col.r * 255)) + "," + std::to_string(int(col.g * 255)) + "," +
-                        std::to_string(int(col.b * 255)) + "," + std::to_string(int(col.a * 255)) + ")",
-                    st);
+    setStyleInitCol("border-color", col, st);
 }
 
 void UINode::setColor(float r, float g, float b, float a, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_color.r          = r;
-        m_color.g          = g;
-        m_color.b          = b;
-        m_color.a          = a;
-        m_drawParamChanged = true;
-    }
-    setStyleInitVal("color",
-                    "rgba(" + std::to_string(int(r * 255)) + "," + std::to_string(int(g * 255)) + "," +
-                        std::to_string(int(b * 255)) + "," + std::to_string(int(a * 255)) + ")",
-                    st);
+    setColor({r, g, b, a}, st);
 }
 
-void UINode::setColor(glm::vec4& col, state st) {
+void UINode::setColor(const glm::vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_color            = col;
         m_drawParamChanged = true;
     }
-    setStyleInitVal("color",
-                    "rgba(" + std::to_string(int(col.r * 255)) + "," + std::to_string(int(col.g * 255)) + "," +
-                        std::to_string(int(col.b * 255)) + "," + std::to_string(int(col.a * 255)) + ")",
-                    st);
+    setStyleInitCol("color", col, st);
 }
 
 void UINode::setBackgroundColor(float r, float g, float b, float a, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_bgColor.r        = r;
-        m_bgColor.g        = g;
-        m_bgColor.b        = b;
-        m_bgColor.a        = a;
-        m_drawParamChanged = true;
-    }
-    setStyleInitVal("bkcolor",
-                    "rgba(" + std::to_string(int(r * 255)) + "," + std::to_string(int(g * 255)) + "," +
-                        std::to_string(int(b * 255)) + "," + std::to_string(int(a * 255)) + ")",
-                    st);
+    setBackgroundColor({r, g, b, a}, st);
 }
 
-void UINode::setBackgroundColor(glm::vec4& col, state st) {
+void UINode::setBackgroundColor(const glm::vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_bgColor          = col;
         m_drawParamChanged = true;
     }
-    setStyleInitVal("bkcolor",
-                    "rgba(" + std::to_string(int(col.r * 255)) + "," + std::to_string(int(col.g * 255)) + "," +
-                        std::to_string(int(col.b * 255)) + "," + std::to_string(int(col.a * 255)) + ")",
-                    st);
+    setStyleInitCol("bkcolor", col, st);
 }
 
 mat4* UINode::getContentMat(bool excludedFromParentContentTrans, bool excludedFromPadding) {
@@ -201,8 +174,8 @@ glm::vec2& UINode::getContWinPos() {
 
     // this node's content's left/top corner in relation to the window's
     // top/left corner
-    m_contWinPos.x = m_parentContVp.x + m_pos.x + m_padding.x + (float)m_borderWidth;
-    m_contWinPos.y = m_parentContVp.y + m_pos.y + m_padding.y + (float)m_borderWidth;
+    m_contWinPos.x = m_parentContVp.x + m_pos.x + m_padding.x + static_cast<float>(m_borderWidth);
+    m_contWinPos.y = m_parentContVp.y + m_pos.y + m_padding.y + static_cast<float>(m_borderWidth);
 
     return m_contWinPos;
 }
@@ -213,8 +186,8 @@ glm::vec2& UINode::getContentSize() {
     }
 
     // calculate the size of the node's content area
-    m_contentSize.x = m_size.x - (m_padding.x + m_padding.z + (float)m_borderWidth * 2.f);
-    m_contentSize.y = m_size.y - (m_padding.y + m_padding.w + (float)m_borderWidth * 2.f);
+    m_contentSize.x = m_size.x - (m_padding.x + m_padding.z + static_cast<float>(m_borderWidth * 2.f));
+    m_contentSize.y = m_size.y - (m_padding.y + m_padding.w + static_cast<float>(m_borderWidth * 2.f));
 
     return m_contentSize;
 }
@@ -225,8 +198,8 @@ glm::vec2& UINode::getContentOffset() {
     }
 
     // calculate the size of the node's content area
-    m_contentOffset.x = m_padding.x + (float)m_borderWidth;
-    m_contentOffset.y = m_padding.y + (float)m_borderWidth;
+    m_contentOffset.x = m_padding.x + static_cast<float>(m_borderWidth);
+    m_contentOffset.y = m_padding.y + static_cast<float>(m_borderWidth);
 
     return m_contentOffset;
 }
@@ -238,7 +211,7 @@ glm::vec2& UINode::getBorderWidthRel() {
 
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
-            m_borderWidthRel[i] = (float)m_borderWidth / m_size[i] / m_parentContScale[i];
+            m_borderWidthRel[i] = static_cast<float>(m_borderWidth) / m_size[i] / m_parentContScale[i];
         } else {
             m_borderWidthRel[i] = 0.f;
         }
@@ -254,7 +227,7 @@ glm::vec2& UINode::getBorderRadiusRel() {
 
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
-            m_borderRadiusRel[i] = (float)m_borderRadius / m_size[i] / m_parentContScale[i];
+            m_borderRadiusRel[i] = static_cast<float>(m_borderRadius) / m_size[i] / m_parentContScale[i];
         } else {
             m_borderRadiusRel[i] = 0.f;
         }
@@ -270,7 +243,7 @@ glm::vec2& UINode::getBorderAliasRel() {
 
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
-            m_borderAliasRel[i] = (float)m_borderAlias / m_size[i] / m_parentContScale[i];
+            m_borderAliasRel[i] = static_cast<float>(m_borderAlias) / m_size[i] / m_parentContScale[i];
         } else {
             m_borderAliasRel[i] = 0.f;
         }
@@ -300,7 +273,7 @@ void UINode::setViewport(float x, float y, float width, float height) {
     m_viewPort.w = height;
     m_geoChanged = true;
 
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->setViewport(x, y, width, height);
     }
 }
@@ -421,18 +394,18 @@ void UINode::updateMatrix() {
     }
 
     // set position and size for further calculations
-    m_pos.x       = (float)m_posXInt;
-    m_pos.y       = (float)m_posYInt;
-    m_init_size.x = (float)m_widthInt;
-    m_init_size.y = (float)m_heightInt;
+    m_pos.x       = static_cast<float>(m_posXInt);
+    m_pos.y       = static_cast<float>(m_posYInt);
+    m_init_size.x = static_cast<float>(m_widthInt);
+    m_init_size.y = static_cast<float>(m_heightInt);
 
     // if there is a negative integer width or height, convert it to size - val
     if (m_widthType == unitType::Pixels && m_widthInt < 0) {
-        m_init_size.x = m_parentContVp.z + (float)m_widthInt;
+        m_init_size.x = m_parentContVp.z + static_cast<float>(m_widthInt);
     }
 
     if (m_heightType == unitType::Pixels && m_heightInt < 0) {
-        m_init_size.y = m_parentContVp.w + (float)m_heightInt;
+        m_init_size.y = m_parentContVp.w + static_cast<float>(m_heightInt);
     }
 
     // if there are relative position or size coordinates, convert them to
@@ -498,8 +471,8 @@ void UINode::updateMatrix() {
     m_size = m_work_size;
 
     // parent relative content matrix for the node's children
-    m_nodeMat[3][0] = m_pos.x + (float)m_borderWidth;
-    m_nodeMat[3][1] = m_pos.y + (float)m_borderWidth;
+    m_nodeMat[3][0] = m_pos.x + static_cast<float>(m_borderWidth);
+    m_nodeMat[3][1] = m_pos.y + static_cast<float>(m_borderWidth);
 
     m_contentMat[3][0] = m_nodeMat[3][0] + m_padding.x;
     m_contentMat[3][1] = m_nodeMat[3][1] + m_padding.y;
@@ -621,7 +594,7 @@ void UINode::setBorderRadius(uint32_t val, state st) {
 
 void UINode::setChanged(bool val) {
     m_geoChanged = val;
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->setChanged(val);
     }
 }
@@ -632,8 +605,8 @@ void UINode::setFixAspect(float val) {
 }
 
 glm::vec2 UINode::getOrigPos() {
-    return {m_posXType == unitType::Pixels ? (float)m_posXInt : m_posXFloat,
-            m_posYType == unitType::Pixels ? (float)m_posYInt : m_posYFloat};
+    return {m_posXType == unitType::Pixels ? static_cast<float>(m_posXInt) : m_posXFloat,
+            m_posYType == unitType::Pixels ? static_cast<float>(m_posYInt) : m_posYFloat};
 }
 
 glm::vec2& UINode::getPos() {
@@ -776,23 +749,21 @@ void UINode::addGlCbSync(const std::function<bool()>& func) const {
 
 // styles - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-void UINode::addStyleClass(std::string&& styleClass) {
-    std::string sc = styleClass;  // done this way, since on Windows a DLL has an own memory
-                                  // heap and at the end of this function styleClass would be
-                                  // deleted causing a crash
-
+void UINode::addStyleClass(const std::string& styleClass) {
     if (m_styleTree.empty() || (m_styleTree.size() == 1 && m_styleTree.front().find("__") != std::string::npos)) {
-        m_baseStyleClass = sc;
+        m_baseStyleClass = styleClass;
     }
 
     m_styleClassInited = false;
 
     // in case there was a previous (not default) style definition, delete it
     if (!m_styleTree.empty()) {
-        auto it = find_if(m_styleTree.begin(), m_styleTree.end(), [sc](const std::string& st) { return st == sc; });
-        if (it == m_styleTree.end()) m_styleTree.push_back(sc);
+        auto it = find_if(m_styleTree.begin(), m_styleTree.end(), [&styleClass](const std::string& st) { return st == styleClass; });
+        if (it == m_styleTree.end()) {
+            m_styleTree.emplace_back(styleClass);
+        }
     } else {
-        m_styleTree.emplace_back(sc);
+        m_styleTree.emplace_back(styleClass);
     }
 }
 
@@ -801,7 +772,7 @@ void UINode::clearStyles() {
     m_styleTree.clear();
 
     // clear lambada functions
-    for (int i = 0; i < (int)state::count; i++) {
+    for (int i = 0; i < static_cast<int>(state::count); i++) {
         m_setStyleFunc[(state)i].clear();
     }
 
@@ -811,7 +782,7 @@ void UINode::clearStyles() {
     m_styleClassInited = false;
 }
 
-void UINode::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
+void UINode::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     AssetColor* color;
 
     auto x = node->findNumericNode("x");
@@ -942,8 +913,8 @@ void UINode::updateStyle() {
     }
 
     // reset style functions
-    for (auto& it : m_setStyleFunc) {
-        it.second.clear();
+    for (auto& it : m_setStyleFunc | views::values) {
+        it.clear();
     }
 
     loadStyleDefaults();
@@ -990,7 +961,7 @@ void UINode::updateStyle() {
 
     // set state to none and update styles
     m_state = m_lastState = state::none;
-    for (auto& it : m_setStyleFunc[state::none]) {
+    for (const auto& it : m_setStyleFunc[state::none]) {
         it.second();
     }
 
@@ -1003,7 +974,7 @@ void UINode::updateStyle() {
         if (m_state == state::selected) {
             setSelected(true, true);
         } else {
-            for (auto& it : m_setStyleFunc[m_state]) {
+            for (const auto& it : m_setStyleFunc[m_state]) {
                 it.second();
             }
         }
@@ -1020,7 +991,7 @@ void UINode::rebuildCustomStyle() {
 
     // rebuild the stylesheet
     m_custDefStyleSheet.clear();
-    for (auto& stateDef : m_styleCustDefs) {
+    for (const auto& stateDef : m_styleCustDefs) {
         switch (stateDef.first) {
             case state::selected:
                 m_custDefStyleSheet += "selected { \n";
@@ -1046,7 +1017,7 @@ void UINode::rebuildCustomStyle() {
         }
 
         if (!stateDef.second.empty())
-            for (auto& it : stateDef.second) {
+            for (const auto& it : stateDef.second) {
                 if (it.first == "text") {
                     m_custDefStyleSheet += "\t" + it.first + ":\"" + it.second + "\"\n";
                 } else {
@@ -1135,7 +1106,7 @@ void UINode::setVisibility(bool val, state st) {
 void UINode::applyStyle() {
     if (!m_excludeFromStyles) {
         // call all style definitions for the highlighted state if there are any
-        for (auto& it : m_setStyleFunc[m_state]) {
+        for (const auto& it : m_setStyleFunc[m_state]) {
             it.second();
         }
 
@@ -1267,8 +1238,8 @@ void UINode::updtMatrIt(scissorStack* ss) {
         // here we get the top left corner, but glScissor needs lower left corner scissor area can't exceed actual scissor bounds
         auto t_nodeViewPortGL = getNodeViewportGL();
 
-        m_scissVp.x = std::max(std::floor(std::round(t_nodeViewPortGL.x + (float)getBorderWidth())) * getPixRatio(), m_sc.x);
-        m_scissVp.y = std::max(std::floor(std::round(t_nodeViewPortGL.y + (float)getBorderWidth())) * getPixRatio(), m_sc.y);
+        m_scissVp.x = std::max(std::floor(std::round(t_nodeViewPortGL.x + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.x);
+        m_scissVp.y = std::max(std::floor(std::round(t_nodeViewPortGL.y + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.y);
         m_scissVp.z = std::floor(std::round(t_nodeViewPortGL.z - getBorderWidth() * 2)) * getPixRatio();
         m_scissVp.w = std::floor(std::round(t_nodeViewPortGL.w - getBorderWidth() * 2)) * getPixRatio();
 
@@ -1299,7 +1270,7 @@ void UINode::updtMatrIt(scissorStack* ss) {
     }
 
     // continue iterating through the children
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->updtMatrIt(ss);
 
         // keep track of the children's boundingBox
@@ -1358,7 +1329,7 @@ void UINode::drawIt(scissorStack& ss, uint32_t* objId, bool treeChanged, bool* s
         (*skip) = false;
     }
 
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->drawIt(ss, objId, treeChanged, skip);
     }
 
@@ -1557,7 +1528,7 @@ void UINode::hidIt(hidData* data, hidEvent evt, std::list<UINode*>::iterator it,
     }
 
     // process callbacks
-    for (auto& cbIt : (*it)->getMouseHidCb(evt)) {
+    for (const auto& cbIt : (*it)->getMouseHidCb(evt)) {
         if (!cbIt.second || (cbIt.second && (data->hit || evt == hidEvent::MouseDrag))) {
             cbIt.first(data);
             if (data->breakCbIt) {
@@ -1587,7 +1558,7 @@ void UINode::keyDownIt(hidData* data) {
         keyDown(data);
     }
 
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->keyDownIt(data);
     }
 }
@@ -1598,7 +1569,7 @@ void UINode::onCharIt(hidData* data) {
         onChar(data);
     }
 
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         it->onCharIt(data);
     }
 }
@@ -1617,7 +1588,7 @@ void UINode::mouseIn(hidData* data) {
         }
 
         // call all style definitions for the highlighted state if there are any
-        for (auto& it : m_setStyleFunc[state::highlighted]) {
+        for (const auto& it : m_setStyleFunc[state::highlighted]) {
             it.second();
         }
 
@@ -1626,7 +1597,7 @@ void UINode::mouseIn(hidData* data) {
         }
     }
 
-    for (auto& it : m_mouseInCb) it.second(data);
+    for (const auto& it : m_mouseInCb) it.second(data);
 }
 
 void UINode::mouseOut(hidData* data) {
@@ -1645,7 +1616,7 @@ void UINode::mouseOut(hidData* data) {
 
     // change styles back to last state if necessary
     if (!m_excludeFromStyles && changeBack) {
-        for (auto& it : m_setStyleFunc[lastState]) {
+        for (const auto& it : m_setStyleFunc[lastState]) {
             it.second();
         }
 
@@ -1656,7 +1627,7 @@ void UINode::mouseOut(hidData* data) {
         }
     }
 
-    for (auto& it : m_mouseOutCb) {
+    for (const auto& it : m_mouseOutCb) {
         it.second(data);
     }
 }
@@ -1808,7 +1779,7 @@ bool UINode::removeFocus() {
         }
 
     // must be done recursively
-    for (auto& it : m_children) it->removeFocus();
+    for (const auto& it : m_children) it->removeFocus();
 
     return false;
 }
@@ -1847,7 +1818,7 @@ bool UINode::hasCb(const std::string& identifier) {
 uint32_t UINode::getMinChildId(uint32_t minId) {
     auto nextMinId = m_objIdMin ? std::min(m_objIdMin, minId) : minId;
 
-    for (auto& child : m_children) {
+    for (const auto& child : m_children) {
         if (child->getMinId() < nextMinId) {
             nextMinId = child->getMinId();
         }
@@ -1860,7 +1831,7 @@ uint32_t UINode::getMinChildId(uint32_t minId) {
 uint32_t UINode::getMaxChildId(uint32_t maxId) {
     auto nextMaxId = std::max(m_objIdMax, maxId);
 
-    for (auto& child : m_children) {
+    for (const auto& child : m_children) {
         if (child->getMaxId() > nextMaxId) {
             nextMaxId = child->getMaxId();
         }
@@ -1871,7 +1842,7 @@ uint32_t UINode::getMaxChildId(uint32_t maxId) {
 }
 
 UINode* UINode::getNodeById(uint32_t searchID) {
-    for (auto& child : m_children) {
+    for (const auto& child : m_children) {
         if (child->getId() == searchID) {
             return child.get();
         } else {
@@ -1943,7 +1914,7 @@ void UINode::dumpIt(UINode* node, int* depth, bool dumpLocalTree) {
         << ", \tpos:" << glm::to_string(node->m_pos) << ", \tsize:" << glm::to_string(node->m_size);
 
     (*depth)++;
-    for (auto& it : node->m_children) {
+    for (const auto& it : node->m_children) {
         dumpIt(it.get(), depth, dumpLocalTree);
     }
     (*depth)--;
@@ -1956,7 +1927,7 @@ uint32_t UINode::getSubNodeCount() {
 }
 
 void UINode::getSubNodeCountIt(UINode* node, uint32_t* count) {
-    for (auto& it : node->m_children) {
+    for (const auto& it : node->m_children) {
         (*count)++;
         getSubNodeCountIt(it.get(), count);
     }
@@ -1977,7 +1948,7 @@ float UINode::getPixRatio() {
 
 void UINode::setHIDBlocked(bool val) {
     m_blockHID = val;
-    for (auto& it : m_children) {
+    for (const auto& it : m_children) {
         if (it) {
             it->setHIDBlocked(val);
         }

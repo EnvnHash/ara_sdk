@@ -9,12 +9,15 @@
 #include "Shaders/ShadowMap/ShadowMap.h"
 
 namespace ara {
+
+    class sceneData;
+
 class ShadowMapStd : public ShadowMap {
 public:
-    ShadowMapStd(CameraSet* _cs, int _scrWidth, int _scrHeight, sceneData* _scd);
-    ~ShadowMapStd();
+    ShadowMapStd(CameraSet* cs, int scrWidth, int scrHeight, sceneData* scd);
+    ~ShadowMapStd() override = default;
 
-    void begin();
-    void end();
+    void begin() override;
+    void end() override;
 };
 }  // namespace ara

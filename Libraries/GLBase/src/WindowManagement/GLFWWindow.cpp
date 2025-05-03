@@ -14,8 +14,8 @@ using namespace std;
 namespace ara {
 
 int GLFWWindow::init(const glWinPar &gp) {
-    m_widthVirt  = gp.width;
-    m_heightVirt = gp.height;
+    m_widthVirt  = gp.size.x;
+    m_heightVirt = gp.size.y;
     m_monWidth   = 0;
     m_monHeight  = 0;
 
@@ -80,7 +80,7 @@ int GLFWWindow::init(const glWinPar &gp) {
         int                countVm;
         bool               found       = false;
         const GLFWvidmode *modes       = glfwGetVideoModes(m_monitors[useMonitor], &countVm);
-        const GLFWvidmode *useThisMode = 0;
+        const GLFWvidmode *useThisMode = nullptr;
 
         if (gp.debug) {
             for (int j = 0; j < countVm; j++) {
@@ -90,7 +90,7 @@ int GLFWWindow::init(const glWinPar &gp) {
         }
 
         for (auto i = 0; i < countVm; i++) {
-            if (modes[i].width == gp.width && modes[i].height == gp.height && modes[i].refreshRate == gp.refreshRate &&
+            if (modes[i].width == gp.size.x && modes[i].height == gp.size.y && modes[i].refreshRate == gp.refreshRate &&
                 modes[i].redBits == 8) {
                 found       = true;
                 useThisMode = &modes[i];
@@ -184,7 +184,7 @@ int GLFWWindow::init(const glWinPar &gp) {
         m_monHeight             = mode->height;
     }
 
-    m_window = glfwCreateWindow(m_widthVirt, m_heightVirt, "", gp.fullScreen ? m_mon : nullptr, (GLFWwindow *)gp.shareCont);
+    m_window = glfwCreateWindow(m_widthVirt, m_heightVirt, "", gp.fullScreen ? m_mon : nullptr, static_cast<GLFWwindow *>(gp.shareCont));
     if (!m_window) {
         LOGE << " GWindow ERROR creating window";
         return false;
@@ -215,7 +215,7 @@ int GLFWWindow::init(const glWinPar &gp) {
     glfwMakeContextCurrent(m_window);
 
 #ifdef _WIN32
-    m_nativeHandle = (void *)wglGetCurrentContext();
+    m_nativeHandle = static_cast<void *>(wglGetCurrentContext());
 #elif __linux__
 #ifndef ARA_USE_GLES31
     m_nativeHandle = (void *)glXGetCurrentContext();
@@ -237,13 +237,13 @@ int GLFWWindow::init(const glWinPar &gp) {
     // if there is content scaling on this display, adjust size and position
     m_widthReal  = fbWidth;
     m_heightReal = fbHeight;
-    m_posXreal   = gp.shiftX * m_contentScale.x;
-    m_posYreal   = gp.shiftY * m_contentScale.y;
+    m_posXreal   = gp.shift.x * m_contentScale.x;
+    m_posYreal   = gp.shift.y * m_contentScale.y;
 #else
-    m_widthReal  = (int)((float)m_widthVirt * m_contentScale.x);
-    m_heightReal = (int)((float)m_heightVirt * m_contentScale.y);
-    m_posXreal   = (int)(gp.shiftX * m_contentScale.x);
-    m_posYreal   = (int)(gp.shiftY * m_contentScale.y);
+    m_widthReal  = (int)(static_cast<float>(m_widthVirt) * m_contentScale.x);
+    m_heightReal = (int)(static_cast<float>(m_heightVirt) * m_contentScale.y);
+    m_posXreal   = (int)(gp.shift.x * m_contentScale.x);
+    m_posYreal   = (int)(gp.shift.y * m_contentScale.y);
 #endif
 
     glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));
@@ -322,8 +322,8 @@ int GLFWWindow::init(const glWinPar &gp) {
         auto windowSizeCb = [](GLFWwindow *w, int width, int height) {
             auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
 #if defined(_WIN32) || defined(__linux__)
-            win->onWindowSize((int)((float)width / win->getContentScale().x),
-                              (int)((float)height / win->getContentScale().y));
+            win->onWindowSize(static_cast<int>(static_cast<float>(width) / win->getContentScale().x),
+                              static_cast<int>(static_cast<float>(height) / win->getContentScale().y));
 #else
             win->onWindowSize(width, height);
 #endif
@@ -333,7 +333,7 @@ int GLFWWindow::init(const glWinPar &gp) {
         auto mouseCursorCb = [](GLFWwindow *w, double xpos, double ypos) {
             auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
 #if defined(_WIN32) || defined(__linux__)
-            win->onMouseCursor(xpos / (double)win->getContentScale().x, ypos / (double)win->getContentScale().y);
+            win->onMouseCursor(xpos / static_cast<double>(win->getContentScale().x), ypos / static_cast<double>(win->getContentScale().y));
 #else
             win->onMouseCursor(xpos, ypos);
 #endif
@@ -433,8 +433,8 @@ void GLFWWindow::onWindowSize(int width, int height) {
 #endif
 
 #ifdef __APPLE__
-    m_widthVirt  = (int)((float)width * m_contentScale.x);
-    m_heightVirt = (int)((float)height * m_contentScale.y);
+    m_widthVirt  = (int)(static_cast<float>(width) * m_contentScale.x);
+    m_heightVirt = (int)(static_cast<float>(height) * m_contentScale.y);
 #else
     m_widthVirt  = width;
     m_heightVirt = height;

@@ -6,6 +6,7 @@
 
 #include "Shaders/ShaderPrototype/SPSpotLightShadowVsm.h"
 #include "CameraSets/CameraSet.h"
+#include "Lights/Light.h"
 
 using namespace glm;
 using namespace std;
@@ -23,23 +24,19 @@ SPSpotLightShadowVsm::SPSpotLightShadowVsm(sceneData *sd) : ShaderProto(sd), m_s
 
 #ifndef __APPLE__
     // use a ShaderBuffer to transfer the LightParameters
-    lightSb = make_unique<ShaderBuffer<LightPar>>(1);
+    m_lightSb = make_unique<ShaderBuffer<LightPar>>(1);
 #endif
 
-    // get max nr Texture Binds
-    maxNrParLights = (sd->glbase->maxTexUnits() - 1) / 2;
-
-    // init shader
+    m_maxNrParLights = (sd->glbase->maxTexUnits() - 1) / 2;
     rebuildShader(1);
 }
 
 void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
-    if (!nrCameras) return;
+    if (!nrCameras) {
+        return;
+    }
 
-    //    if(s_shader)
-    //        s_shCol->deleteShader("SPSpotLightShadowVsm");
-
-    string vert = s_shCol->getShaderHeader() + "// SPSpotLightShadowVsm Light Prototype\n";
+    string vert = ShaderCollector::getShaderHeader() + "// SPSpotLightShadowVsm Light Prototype\n";
     vert += STRINGIFY(
         layout(location = 0) in vec4 position; \n
         layout(location = 1) in vec4 normal; \n
@@ -89,13 +86,9 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
             "gl_Position = position; \n"
             "}";
 
-    // LOG <<
-    // "-------------------------------------------------------------------------------------------";
-    // LOG << " vertex shader:\n " << vert << "\n\n";
-
     //------------------------------------------------------------------------
 
-    std::string geom = s_glbase->shaderCollector().getShaderHeader() +
+    std::string geom = ShaderCollector::getShaderHeader() +
                        "layout(triangles, invocations=" + to_string(nrCameras) +
                        ") in;\n"
                        "layout(triangle_strip, max_vertices=3) out;\n"
@@ -142,10 +135,11 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
                 "]; \n"
                 "uniform vec4 fishEyeAdjust[" +
                 to_string(nrCameras) + "]; \n";
-    } else
+    } else {
         geom += getNodeDataUb(nrCameras);
+    }
 
-    geom += s_shCol->getFisheyeVertSnippet(nrCameras) + "\n";
+    geom += ShaderCollector::getFisheyeVertSnippet(nrCameras) + "\n";
 
     geom +=
         "void main() {\n"
@@ -187,10 +181,12 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
 
     //------------------------------------------------------------------
 
-    string frag = s_shCol->getShaderHeader();
+    string frag = ShaderCollector::getShaderHeader();
 
 #ifndef __APPLE__
-    if (s_lights.size() > 0) frag += s_lights[0]->getLightShaderBlock();  // add LightPar BufferBlock
+    if (!s_lights.empty()) {
+        frag += s_lights[0]->getLightShaderBlock();  // add LightPar BufferBlock
+    }
 #endif
 
 #ifdef ARA_USE_GLES31
@@ -198,9 +194,6 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
 #else
     frag += "uniform sampler2DArray shadow_tex;\n";
 #endif
-
-    // MaterialProperties mp;
-    // frag += mp.getUbString();
 
     frag +=
         "uniform vec4 ambient; \n"      // material parameter, ambient amount
@@ -240,15 +233,18 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
             "uniform vec2 texMin;\n"
             "uniform vec2 texMax;\n"
             "uniform vec2 resolution;\n";
-    } else
+    } else {
         frag += getNodeDataUb(nrCameras);
+    }
 
-    frag +=
-        "float pi=3.14159265358979323846;\n"
-
+    frag += "float pi=3.14159265358979323846;\n"
         "in GS_FS {\n";
-    if (!s_lights.empty()) frag += "vec4 shadow_coord[" + to_string(s_lights.size()) + "]; \n";
-        frag += STRINGIFY(vec4 rawPos; \n
+
+    if (!s_lights.empty()) {
+        frag += "vec4 shadow_coord[" + to_string(s_lights.size()) + "]; \n";
+    }
+
+    frag += STRINGIFY(vec4 rawPos; \n
 	\t	vec3 normal; \n
 	\t	vec2 tex_coord; \n
 	\t	vec4 color; \n
@@ -284,7 +280,7 @@ vertex_in; \n\n
 
 #ifndef __APPLE__
 // add this part only if there are light sources
-if (s_lights.size() > 0)
+if (!s_lights.empty())
     frag += STRINGIFY(
         vec4 spot(float shadowVal, int ind) {\n
             // find the direction and distance of the light,
@@ -455,8 +451,7 @@ frag += STRINGIFY(
 
 #ifndef __APPLE__
         if (!s_lights.empty()) {
-            // using std::to_string(lights.size()) as a uniform int causes
-            // severe performance drawback
+            // using std::to_string(lights.size()) as a uniform int causes severe performance drawback
             frag += "for (int i=0;i<" + std::to_string(s_lights.size()) + "; i++)\n"
                 + STRINGIFY({\n
                     vec4  shadowCoordNDC = vertex_in.shadow_coord[i] / vertex_in.shadow_coord[i].w; \n
@@ -471,6 +466,7 @@ frag += STRINGIFY(
         frag += STRINGIFY(
 		float alpha = bool(isGizmo) ? 1.0 : ( bool(lumaKey) ? smoothstep(lumaThresLow, lumaThresHigh, dot(texCol.rgb, vec3(1.0))) : procCol.a ); \n
 		fragColor = vec4(procCol.rgb + highLight * vec3(0.25), bool(drawGridTexture) ? gridColor.a : alpha); \n
+
 		// since we are always drawing the floorgrid above everything else, with GL_DEPTH_TEST enabled, alpha=0 must result in depthValue =1
 		gl_FragDepth = bool(drawGridTexture) ? (gridColor.a > 0.2 ? gl_FragCoord.z : 1.0)
                 : (bool(lumaKey) ? (alpha > 0.2 ? gl_FragCoord.z : 1.0) : gl_FragCoord.z);
@@ -481,195 +477,193 @@ s_shader = s_shCol->add("SPSpotLightShadowVsm_" + std::to_string(nrCameras), ver
 
 ///< called every time when a new light is added with proto
 
-void SPSpotLightShadowVsm::calcLights(CameraSet *cs, renderPass _pass) {
-    if ((uint)s_lights.size() != s_nrLights || !s_shader) {
-        if (shadowGen) {
+void SPSpotLightShadowVsm::calcLights(CameraSet *cs, renderPass pass) {
+    if (static_cast<uint>(s_lights.size()) != s_nrLights || !s_shader) {
+        if (m_shadowGen) {
             if (m_shadowGenBound) {
-                shadowGen->getFbo()->unbind();
+                m_shadowGen->getFbo()->unbind();
             }
 
-            shadowGen->rebuildFbo((uint)s_lights.size());
+            m_shadowGen->rebuildFbo(static_cast<uint>(s_lights.size()));
 
             if (m_shadowGenBound) {
-                shadowGen->getFbo()->bind();
+                m_shadowGen->getFbo()->bind();
             }
 
             if (m_shadowGenBound) {
-                shadowGen->getShader()->end();
+                Shaders::end();
             }
 
-            shadowGen->rebuildShader((uint)s_lights.size());
+            m_shadowGen->rebuildShader(static_cast<uint>(s_lights.size()));
 
             if (m_shadowGenBound) {
-                shadowGen->getShader()->begin();
+                m_shadowGen->getShader()->begin();
             }
         }
 
         rebuildShader(cs->getNrCameras());  // unbounds the actual shaders
-        if (m_shadowGenBound) shadowGen->getShader()->begin();
+        if (m_shadowGenBound) m_shadowGen->getShader()->begin();
 
-        lightSb->resize((uint)s_lights.size());
+        m_lightSb->resize(static_cast<uint>(s_lights.size()));
     }
 
     s_nrLights = static_cast<uint>(s_lights.size());
 
 #ifndef __APPLE__
     // update ShaderBuffer
-    auto ptr = (LightPar *)lightSb->map(GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
-    for (auto &it : s_lights) {
+    auto ptr = (LightPar *)m_lightSb->map(GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+    for (const auto &it : s_lights) {
         calcLight(cs, it, ptr);
-        ptr++;
+        ++ptr;
     }
-    lightSb->unmap();
+    m_lightSb->unmap();
 #endif
 }
 
 void SPSpotLightShadowVsm::calcLight(CameraSet *cs, Light *lightPtr, LightPar *lightParPtr) {
 #ifndef __APPLE__
-    halfVector = glm::normalize(lightPtr->s_direction + cs->getViewerVec());
-    lightPtr->getLightShdrProp()->setHalfVector(halfVector.x, halfVector.y, halfVector.z);
+    m_halfVector = glm::normalize(lightPtr->s_direction + cs->getViewerVec());
+    lightPtr->getLightShdrProp()->setHalfVector(m_halfVector.x, m_halfVector.y, m_halfVector.z);
 
-    lightParPtr->ambientColor         = *((vec4 *)lightPtr->getPtr("ambientColor"));
-    lightParPtr->LColor               = *((vec4 *)lightPtr->getPtr("LColor"));
-    lightParPtr->LDirection           = *((vec4 *)lightPtr->getPtr("LDirection"));
-    lightParPtr->LPosition            = *((vec4 *)lightPtr->getPtr("LPosition"));
-    lightParPtr->halfVector           = *((vec4 *)lightPtr->getPtr("halfVector"));
-    lightParPtr->eyeDirection         = *((vec4 *)lightPtr->getPtr("eyeDirection"));
-    lightParPtr->coneDirection        = *((vec4 *)lightPtr->getPtr("coneDirection"));
-    lightParPtr->constantAttenuation  = *((float *)lightPtr->getPtr("constantAttenuation"));
-    lightParPtr->linearAttenuation    = *((float *)lightPtr->getPtr("linearAttenuation"));
-    lightParPtr->quadraticAttenuation = *((float *)lightPtr->getPtr("quadraticAttenuation"));
-    lightParPtr->spotCosCutoff        = *((float *)lightPtr->getPtr("spotCosCutoff"));
-    lightParPtr->spotExponent         = *((float *)lightPtr->getPtr("spotExponent"));
-    lightParPtr->lightMode            = *((float *)lightPtr->getPtr("lightMode"));
-    lightParPtr->aspect               = *((float *)lightPtr->getPtr("aspect"));
-    lightParPtr->throwRatio           = *((float *)lightPtr->getPtr("throwRatio"));
+    lightParPtr->ambientColor         = *(static_cast<vec4 *>(lightPtr->getPtr("ambientColor")));
+    lightParPtr->LColor               = *(static_cast<vec4 *>(lightPtr->getPtr("LColor")));
+    lightParPtr->LDirection           = *(static_cast<vec4 *>(lightPtr->getPtr("LDirection")));
+    lightParPtr->LPosition            = *(static_cast<vec4 *>(lightPtr->getPtr("LPosition")));
+    lightParPtr->halfVector           = *(static_cast<vec4 *>(lightPtr->getPtr("halfVector")));
+    lightParPtr->eyeDirection         = *(static_cast<vec4 *>(lightPtr->getPtr("eyeDirection")));
+    lightParPtr->coneDirection        = *(static_cast<vec4 *>(lightPtr->getPtr("coneDirection")));
+    lightParPtr->constantAttenuation  = *(static_cast<float *>(lightPtr->getPtr("constantAttenuation")));
+    lightParPtr->linearAttenuation    = *(static_cast<float *>(lightPtr->getPtr("linearAttenuation")));
+    lightParPtr->quadraticAttenuation = *(static_cast<float *>(lightPtr->getPtr("quadraticAttenuation")));
+    lightParPtr->spotCosCutoff        = *(static_cast<float *>(lightPtr->getPtr("spotCosCutoff")));
+    lightParPtr->spotExponent         = *(static_cast<float *>(lightPtr->getPtr("spotExponent")));
+    lightParPtr->lightMode            = *(static_cast<float *>(lightPtr->getPtr("lightMode")));
+    lightParPtr->aspect               = *(static_cast<float *>(lightPtr->getPtr("aspect")));
+    lightParPtr->throwRatio           = *(static_cast<float *>(lightPtr->getPtr("throwRatio")));
 #endif
 }
 
-void SPSpotLightShadowVsm::clear(renderPass _pass) {
-    if (_pass == GLSG_SHADOW_MAP_PASS && shadowGen) {
-        shadowGen->clear();
+void SPSpotLightShadowVsm::clear(renderPass pass) {
+    if (pass == GLSG_SHADOW_MAP_PASS && m_shadowGen) {
+        m_shadowGen->clear();
     }
 }
 
-void SPSpotLightShadowVsm::sendPar(CameraSet *cs, double time, SceneNode *node, SceneNode *parent, renderPass _pass,
+void SPSpotLightShadowVsm::sendPar(CameraSet *cs, double time, SceneNode *node, SceneNode *parent, renderPass pass,
                                    uint loopNr) {
     // check if it is necessary to rebuild all light parameters and shadow maps
     if (s_reqCalcLights) {
-        calcLights(cs, _pass);
+        calcLights(cs, pass);
         s_reqCalcLights = false;
     }
 
 #ifndef __APPLE__
-    // check if it is necessary to rebuild a individual light (parameters and
-    // shadow maps)
+    // check if it is necessary to rebuild a individual light (parameters and shadow maps)
     for (auto i = 0; i < s_lights.size(); i++)
         if (s_lights[i]->s_needsRecalc.load()) {
-            auto ptr = (LightPar *)lightSb->map(GL_MAP_WRITE_BIT);
+            auto ptr = m_lightSb->map(GL_MAP_WRITE_BIT);
             calcLight(cs, s_lights[i], &ptr[i]);
-            lightSb->unmap();
+            m_lightSb->unmap();
             s_lights[i]->s_needsRecalc = false;
         }
 #endif
 
-    ShaderProto::sendPar(cs, time, node, parent, _pass, loopNr);
+    ShaderProto::sendPar(cs, time, node, parent, pass, loopNr);
 
-    if (_pass == GLSG_SHADOW_MAP_PASS) {
+    if (pass == GLSG_SHADOW_MAP_PASS) {
         // send projection/view matrices for all lights
-        if (pv_mats.size() != s_lights.size()) pv_mats.resize(s_lights.size());
+        if (m_pv_mats.size() != s_lights.size()) {
+            m_pv_mats.resize(s_lights.size());
+        }
 
         for (uint i = 0; i < s_lights.size(); i++) {
-            pv_mats[i] = s_lights[i]->s_proj_mat * s_lights[i]->s_view_mat;
+            m_pv_mats[i] = s_lights[i]->s_proj_mat * s_lights[i]->s_view_mat;
 
             // check if we are rendering a light source, in this case, avoid
             // that it casts light onto itself
-            if (node->m_nodeType == GLSG_SNT_LIGHT_SCENE_MESH && s_lights[i] == parent && shadowGen)
-                shadowGen->getShader()->setUniform1i("lightIndIsActMesh", i);
+            if (node->m_nodeType == GLSG_SNT_LIGHT_SCENE_MESH && s_lights[i] == parent && m_shadowGen) {
+                m_shadowGen->getShader()->setUniform1i("lightIndIsActMesh", i);
+            }
         }
 
-        if (shadowGen && s_lights.size() > 0 && shadowGen->getShader()) {
-            shadowGen->getShader()->setUniformMatrix4fv("m_pv", &pv_mats[0][0][0], (uint)s_lights.size());
-            shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)],
-                                                        value_ptr(*node->getModelMat(parent)));
+        if (m_shadowGen && !s_lights.empty() && m_shadowGen->getShader()) {
+            m_shadowGen->getShader()->setUniformMatrix4fv("m_pv", &m_pv_mats[0][0][0], static_cast<int>(s_lights.size()));
+            m_shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)], value_ptr(node->getModelMat(parent)));
         }
-    } else if ((_pass == GLSG_SCENE_PASS || _pass == GLSG_GIZMO_PASS) && s_shader) {
-        // estimate nr passes to render all active surfaces and lights
-        // one sceneNode con only contain one active surface, so the maximum of
-        // active surfacs textures bound is one
+    } else if ((pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) && s_shader) {
+        // estimate nr passes to render all active surfaces and lights one sceneNode con only contain one active surface,
+        // so the maximum of active surfaces textures bound is one
         if (loopNr == 0) {
-            if (s_lights.size() > maxNrParLights) {
-                float div  = float(s_lights.size()) / float(maxNrParLights);
+            if (s_lights.size() > m_maxNrParLights) {
+                float div  = static_cast<float>(s_lights.size()) / static_cast<float>(m_maxNrParLights);
                 float frac = fmod(div, 1.f);
                 s_nrPasses = static_cast<uint>(round(div + (frac > 0.f ? 0.5f : 0.f)));
-            } else
+            } else {
                 s_nrPasses = 1;
+            }
         }
 
         //-------------------------------------------------------------------------------
 
-        if (s_shader && shadowGen && s_lights.size() > 0) {
-            uint lightOffs        = loopNr * (int)maxNrParLights;
-            int nrLightsThisPass = std::min<int>(int(s_lights.size() - lightOffs), (int)maxNrParLights);
+        if (s_shader && m_shadowGen && !s_lights.empty()) {
+            uint lightOffs        = loopNr * static_cast<int>(m_maxNrParLights);
+            int nrLightsThisPass = std::min<int>(static_cast<int>(s_lights.size() - lightOffs), static_cast<int>(m_maxNrParLights));
             s_shader->setUniform1i("lightIndIsActMesh", -1);
 
             // if the number of lights has changed, adjust the shadowTexture
             // lists
-            if (shadowMat.size() != nrLightsThisPass) {
-                shadowMat.resize(nrLightsThisPass);
-                lightColTexUnits.resize(nrLightsThisPass);
+            if (m_shadowMat.size() != nrLightsThisPass) {
+                m_shadowMat.resize(nrLightsThisPass);
+                m_lightColTexUnits.resize(nrLightsThisPass);
             }
 
             for (int i = 0; i < nrLightsThisPass; i++) {
-                shadowMat[i]        = s_lights[i + lightOffs]->s_shadow_mat * *node->getModelMat(parent);
-                lightColTexUnits[i] = i + 2;
+                m_shadowMat[i]        = s_lights[i + lightOffs]->s_shadow_mat * node->getModelMat(parent);
+                m_lightColTexUnits[i] = i + 2;
 
                 // check if we are rendering a light source or a Gizmo, in this
                 // case, avoid that it casts light onto itself
                 if ((node->m_nodeType == GLSG_SNT_LIGHT_SCENE_MESH && s_lights[i + lightOffs] == parent) ||
-                    parent->m_nodeType == GLSG_GIZMO)
+                    parent->m_nodeType == GLSG_GIZMO) {
                     s_shader->setUniform1i("lightIndIsActMesh", i);
+                }
 
                 // bind light color textures
                 if (s_lights[i + lightOffs]->getColTex() != 0) {
-                    glActiveTexture(GL_TEXTURE0 + lightColTexUnits[i]);
+                    glActiveTexture(GL_TEXTURE0 + m_lightColTexUnits[i]);
                     glBindTexture(GL_TEXTURE_2D, s_lights[i + lightOffs]->getColTex());
                 }
             }
 
-            s_shader->setUniformMatrix4fv("shadow_matrix", &shadowMat[0][0][0], nrLightsThisPass);
+            s_shader->setUniformMatrix4fv("shadow_matrix", &m_shadowMat[0][0][0], nrLightsThisPass);
             s_shader->setUniform1i("shadow_tex", 1);
-            s_shader->setUniform1iv("light_col_tex", &lightColTexUnits[0], nrLightsThisPass);
+            s_shader->setUniform1iv("light_col_tex", &m_lightColTexUnits[0], nrLightsThisPass);
             s_shader->setUniform1i("lightMode", 1);
             s_shader->setUniform1i("shineThrough", (int)m_shineThrough);
             s_shader->setUniform1i("lumaKey", 0);
             s_shader->setUniform1f("lumaThresLow", 0);
             s_shader->setUniform1f("lumaThresHigh", 0);
-            // shader->setUniform1i("camLimit", (int)m_shineThrough);
             s_shader->setUniform1i("isYuv", 0);         // y
             s_shader->setUniform1i("isNv12", 0);        // y
             s_shader->setUniform1i("depthFromTex", 0);  // y
 
             // bind depth textures
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D_ARRAY, shadowGen->getTex());
+            glBindTexture(GL_TEXTURE_2D_ARRAY, m_shadowGen->getTex());
 
             // bind Light Parameters
 #ifndef __APPLE__
-            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, lightSb->getBuffer());
+            glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_lightSb->getBuffer());
 #endif
 
-            if (s_nrPasses > 1 && loopNr < (s_nrPasses - 1))
-                glDepthMask(false);
-            else
-                glDepthMask(true);
+            glDepthMask(!(s_nrPasses > 1 && loopNr < (s_nrPasses - 1)));
         }
 
         // default is no textures
         s_shader->setUniform1i("hasTexture", 0);
 
         // gizmo treating
-        s_shader->setUniform1i("isGizmo", (int)(parent->m_nodeType == GLSG_GIZMO));
+        s_shader->setUniform1i("isGizmo", parent->m_nodeType == GLSG_GIZMO);
 
         // overwrite material ambient parameter
         s_shader->setUniform1f("ambientAmt", s_ambientBrightness);
@@ -679,27 +673,23 @@ void SPSpotLightShadowVsm::sendPar(CameraSet *cs, double time, SceneNode *node, 
 }
 
 bool SPSpotLightShadowVsm::begin(CameraSet *cs, renderPass pass, uint loopNr) {
-    // init a ShadowMap Generator. Has to be done here, since the FboSize is not
-    // known before ShadowMapArray -> one ShadowMap generates all ShadowMaps for
-    // all lights
-    if (!shadowGen && !s_lights.empty()) {
-        shadowGen = make_unique<ShadowMapVsmArray>(cs, 512, 512, static_cast<uint>(s_lights.size()));
-        // shadowGen = make_unique<ShadowMapVsmArray>(s_cs,
-        // (int)s_cs->getActFboSize()->x, (int)s_cs->getActFboSize()->y,
-        // static_cast<uint>(s_lights.size()));
+    // init a ShadowMap Generator. Has to be done here, since the FboSize is not known before ShadowMapArray ->
+    // one ShadowMap generates all ShadowMaps for all lights
+    if (!m_shadowGen && !s_lights.empty()) {
+        m_shadowGen = make_unique<ShadowMapVsmArray>(cs, 512, 512, static_cast<uint>(s_lights.size()));
     }
 
     switch (pass) {
         case GLSG_SHADOW_MAP_PASS:
-            if (shadowGen) {
+            if (m_shadowGen) {
                 m_shadowGenBound = true;
-                shadowGen->begin();
+                m_shadowGen->begin();
             }
             return true;
 
         case GLSG_SCENE_PASS:
             if (s_shader) {
-                glEnable(GL_BLEND);  // something is disabeling blending before randomly...
+                glEnable(GL_BLEND);  // something is disabling blending before randomly...
                 s_shader->begin();
             }
             return true;
@@ -716,8 +706,8 @@ bool SPSpotLightShadowVsm::begin(CameraSet *cs, renderPass pass, uint loopNr) {
 
 bool SPSpotLightShadowVsm::end(renderPass pass, uint loopNr) {
     if (pass == GLSG_SHADOW_MAP_PASS) {
-        if (shadowGen) {
-            shadowGen->end();
+        if (m_shadowGen) {
+            m_shadowGen->end();
             m_shadowGenBound = false;
         }
     } else if (pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) {
@@ -725,7 +715,7 @@ bool SPSpotLightShadowVsm::end(renderPass pass, uint loopNr) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
 #endif
         if (s_shader) {
-            ara::Shaders::end();
+            Shaders::end();
         }
     }
 
@@ -733,13 +723,13 @@ bool SPSpotLightShadowVsm::end(renderPass pass, uint loopNr) {
 }
 
 void SPSpotLightShadowVsm::postRender(renderPass pass) {
-    if (pass == GLSG_SHADOW_MAP_PASS && shadowGen) shadowGen->blur();
+    if (pass == GLSG_SHADOW_MAP_PASS && m_shadowGen) m_shadowGen->blur();
 }
 
 Shaders *SPSpotLightShadowVsm::getShader(renderPass pass, uint loopNr) {
     switch (pass) {
         case GLSG_SHADOW_MAP_PASS:
-            return shadowGen ? shadowGen->getShader() : nullptr;
+            return m_shadowGen ? m_shadowGen->getShader() : nullptr;
         case GLSG_SCENE_PASS:
             return s_shader ? s_shader : nullptr;
         case GLSG_GIZMO_PASS:
@@ -751,9 +741,11 @@ Shaders *SPSpotLightShadowVsm::getShader(renderPass pass, uint loopNr) {
 
 void SPSpotLightShadowVsm::setScreenSize(uint width, uint height) {
     s_scrWidth = width, s_scrHeight = height;
-    if (shadowGen) {
-        shadowGen->setScreenSize(width, height);
-        if (s_sd) s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
+    if (m_shadowGen) {
+        m_shadowGen->setScreenSize(width, height);
+        if (s_sd) {
+            s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
+        }
     }
 }
 

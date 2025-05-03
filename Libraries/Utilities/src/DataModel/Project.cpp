@@ -18,7 +18,7 @@
 
 using namespace std;
 using namespace std::filesystem;
-using namespace pugi;
+
 namespace fs = std::filesystem;
 
 namespace ara {

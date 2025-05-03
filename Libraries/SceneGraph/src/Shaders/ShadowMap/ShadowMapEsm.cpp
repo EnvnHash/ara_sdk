@@ -14,38 +14,36 @@ using namespace glm;
 using namespace std;
 
 namespace ara {
-ShadowMapEsm::ShadowMapEsm(CameraSet* _cs, int _scrWidth, int _scrHeight, vec3 _lightPos, float _near, float _far,
-                           sceneData* _scd)
-    : ShadowMap(_cs->getGLBase()), colBufType(GL_R32F) {
+ShadowMapEsm::ShadowMapEsm(CameraSet* cs, int scrWidth, int scrHeight, vec3 lightPos, float near_lim, float far_lim,
+                           sceneData* scd)
+    : ShadowMap(cs->getGLBase()), colBufType(GL_R32F) {
     s_shadow_map_coef = 1.f;
-    s_scrWidth        = static_cast<int>(static_cast<float>(_scrWidth) * s_shadow_map_coef);
-    s_scrHeight       = static_cast<int>(static_cast<float>(_scrHeight) * s_shadow_map_coef);
+    s_scrWidth        = static_cast<int>(static_cast<float>(scrWidth) * s_shadow_map_coef);
+    s_scrHeight       = static_cast<int>(static_cast<float>(scrHeight) * s_shadow_map_coef);
 
     // s_fbo for saving the depth information
     s_fbo =
         make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, 1, colBufType, GL_TEXTURE_2D, true, 1, 1, 1, GL_REPEAT, false});
 
-    string vSmapShader = s_glbase->shaderCollector().getShaderHeader();
+    string vSmapShader = ShaderCollector::getShaderHeader();
     vSmapShader +=
         STRINGIFY(layout(location = 0) in vec4 position; layout(location = 4) in mat4 modMatr;
                   uniform int useInstancing; uniform mat4 modelMatrix; uniform mat4 viewMatrix;
-                  uniform mat4 projectionMatrix; mat4 model_view_matrix; out vec4 v_position; void main(void) {
+                  uniform mat4 projectionMatrix; mat4 model_view_matrix; out vec4 v_position; void main() {
                       model_view_matrix = viewMatrix * (useInstancing == 0 ? modelMatrix : modMatr);
                       v_position        = model_view_matrix * position;
                       gl_Position       = projectionMatrix * model_view_matrix * position;
                   });
 
-    string fSmapShader = _cs->getGLBase()->shaderCollector().getShaderHeader();
+    string fSmapShader = ShaderCollector::getShaderHeader();
     fSmapShader += STRINGIFY(uniform float u_LinearDepthConstant; in vec4 v_position;
                              layout(location = 0) out vec4 color; void main() {
                                  float linearDepth = length(v_position.xyz) * u_LinearDepthConstant;
                                  color.r           = linearDepth;
                              });
 
-    s_shadowShader = s_glbase->shaderCollector().add("ShadowMapEsm", vSmapShader.c_str(), fSmapShader.c_str());
+    s_shadowShader = s_glbase->shaderCollector().add("ShadowMapEsm", vSmapShader, fSmapShader);
 }
-
-ShadowMapEsm::~ShadowMapEsm() {}
 
 void ShadowMapEsm::begin() {
     /*
@@ -76,5 +74,7 @@ s_shadowShader->end();
 
 void ShadowMapEsm::end() {}
 
-GLenum ShadowMapEsm::getColorBufType() { return colBufType; }
+GLenum ShadowMapEsm::getColorBufType() const {
+    return colBufType;
+}
 }  // namespace ara

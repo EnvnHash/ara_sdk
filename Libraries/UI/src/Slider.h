@@ -38,7 +38,7 @@ public:
     virtual float getUnScaled(float in);
 
     int   getKnobWidth() { return m_knobWidth; }
-    float getMaxDragWay() { return (m_maxDragWay = getSize().x - (float)m_knobWidth); }
+    float getMaxDragWay() { return (m_maxDragWay = getSize().x - static_cast<float>(m_knobWidth)); }
     float getScaledNormValue() { return m_scaledNormValue; }
     void  setNumEdit(UIEdit* edit) { m_numEdit = edit; }
     void  setLineColor(float r, float g, float b, float a) {

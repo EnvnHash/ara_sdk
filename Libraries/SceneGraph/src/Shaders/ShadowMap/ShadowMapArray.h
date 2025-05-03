@@ -8,27 +8,29 @@
 #include "Shaders/ShadowMap/ShadowMap.h"
 
 namespace ara {
+
+class ShaderCollector;
+
 class ShadowMapArray : public ShadowMap {
 public:
-    ShadowMapArray(CameraSet* _cs, int _scrWidth, int _scrHeight, uint _initNrLights);
-    ~ShadowMapArray() = default;
+    ShadowMapArray(CameraSet* cs, int scrWidth, int scrHeight, int32_t initNrLights);
+    ~ShadowMapArray() override = default;
 
-    void rebuildShader(uint _nrLights);
-    void rebuildFbo(uint _nrLights);
-    void setShadowTexPar(GLenum type);
-    void begin();
-    void end();
-    void clear();
-    void setNrLights(uint _nrLights);
-    void setScreenSize(uint _width, uint _height);
-    void bindDepthTexViews(GLuint baseTexUnit, uint nrTexs, uint texOffs);
+    void rebuildShader(uint nrLights);
+    void rebuildFbo(int32_t nrLights);
+    static void setShadowTexPar(GLenum type);
+    void begin() override;
+    void end() override;
+    void clear() override;
+    void setNrLights(int32_t nrLights);
+    void setScreenSize(uint width, uint height) override;
+    void bindDepthTexViews(GLuint baseTexUnit, uint nrTexs, uint texOffs) const;
 
 private:
-    GLint               max_shader_invoc;
-    GLint               maxNumberLayers;
-    std::vector<GLuint> depthTexViews;
-    ShaderCollector*    shCol;
-    // sceneData*					scd;
-    uint nrLights;
+    GLint               m_maxShaderInvoc = 0;
+    GLint               m_maxNumberLayers = 0;
+    std::vector<GLuint> m_depthTexViews;
+    ShaderCollector*    m_shCol = nullptr;
+    int32_t             m_nrLights = 0;
 };
 }  // namespace ara

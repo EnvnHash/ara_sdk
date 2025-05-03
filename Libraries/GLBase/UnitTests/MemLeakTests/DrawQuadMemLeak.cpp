@@ -16,30 +16,21 @@ namespace ara::GLBaseUnitTest::DrawQuadMemLeak {
     bool didFindMemLeak = false;
 
     TEST(GLBaseTest, DrawQuadMemLeak) {
-        // direct window creation
-        // gp.debug = true;
-        gp.width = 1920;            // set the windows width
-        gp.height = 1080;            // set the windows height
-        gp.shiftX = 100;            // x offset relative to OS screen canvas
-        gp.shiftY = 100;            // y offset relative to OS screen canvas
-        gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
-        gp.createHidden = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
+        ASSERT_TRUE(gwin.create(glWinPar{
+            .createHidden = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system
+            .shift = { 100, 100 },
+            .size = { 1920, 1080 },
+            .scaleToMonitor = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
+        }));    // now pass the arguments and create the window
 
-        ASSERT_TRUE(gwin.create(gp));    // now pass the arguments and create the window
-
-        // init glew
         ara::initGLEW();
 
 #ifdef _WIN32
         _CrtMemState sOld, sNew, sDiff;
         _CrtMemCheckpoint(&sOld); //take a snapshot
 #endif
-
         for (int i = 0; i < 10; i++) {
-            auto quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
-                                                         glm::vec3(0.f, 0.f, 1.f),
-                                                         1.f, 0.f, 0.f,
-                                                         1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+            auto quad = make_unique<Quad>(QuadInitParams{ .color = {1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
             gwin.swap();
             quad.reset();
 

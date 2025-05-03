@@ -16,21 +16,21 @@ namespace ara {
 SPSpotLight::SPSpotLight(sceneData* sd) : ShaderProto(sd) {
     s_name = getTypeName<SPSpotLight>();
 
-    lightProp.setAmbientColor(0.04f, 0.04f, 0.04f);
-    lightProp.setColor(1.0f, 1.0f, 1.0f);
-    lightProp.setPosition(-1.0f, 4.0f, -2.0f);
-    lightProp.setConstantAttenuation(0.0f);
-    lightProp.setLinearAttenuation(0.0f);
-    lightProp.setQuadraticAttenuation(0.025f);
-    lightProp.setSpotCosCutoff(0.3f);
-    lightProp.setSpotExponent(0.002f);
+    m_lightProp.setAmbientColor(0.04f, 0.04f, 0.04f);
+    m_lightProp.setColor(1.0f, 1.0f, 1.0f);
+    m_lightProp.setPosition(-1.0f, 4.0f, -2.0f);
+    m_lightProp.setConstantAttenuation(0.0f);
+    m_lightProp.setLinearAttenuation(0.0f);
+    m_lightProp.setQuadraticAttenuation(0.025f);
+    m_lightProp.setSpotCosCutoff(0.3f);
+    m_lightProp.setSpotExponent(0.002f);
 
-    lightDir = normalize(vec3(0.f, 0.5f, 1.f));
-    lightProp.setEyeDirection(lightDir.x, lightDir.y, lightDir.z);
-    lightProp.setConeDirection(lightDir.x * -1.0f, lightDir.y * -1.0f,
-                               lightDir.z * -1.0f);  // must point opposite of eye dir
+    m_lightDir = normalize(vec3(0.f, 0.5f, 1.f));
+    m_lightProp.setEyeDirection(m_lightDir.x, m_lightDir.y, m_lightDir.z);
+    m_lightProp.setConeDirection(m_lightDir.x * -1.0f, m_lightDir.y * -1.0f,
+                               m_lightDir.z * -1.0f);  // must point opposite of eye dir
 
-    std::string vert = s_shCol->getShaderHeader();
+    std::string vert = ShaderCollector::getShaderHeader();
     vert += "// SPSpotLight Light Prototype\n";
 
     vert += STRINGIFY(layout(location = 0) in vec4 position; layout(location = 1) in vec4 normal;
@@ -39,26 +39,25 @@ SPSpotLight::SPSpotLight(sceneData* sd) : ShaderProto(sd) {
     for (uint i = 0; i < 4; i++) vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
     vert += "uniform mat3 " + getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] + "; \n";
 
-        vert += STRINGIFY(
+    vert += STRINGIFY(
 		out VS_FS {
-        vec4    rawPos;
-        vec4    color;
-        \n vec3 normal;
-        \n vec2 tex_coord;
-        \n
+	        vec4    rawPos; \n
+	        vec4    color; \n
+			vec3 normal;\n
+			vec2 tex_coord;\n
 		} vertex_out;
 
 		void main() {
-        vertex_out.rawPos       = position;
-        \n vertex_out.color     = color;
-        \n vertex_out.tex_coord = texCoord;
-        \n vertex_out.normal    = m_normal * normal.xyz; \n);
+	        vertex_out.rawPos    = position;\n
+			vertex_out.color     = color;\n
+			vertex_out.tex_coord = texCoord;\n
+			vertex_out.normal    = m_normal * normal.xyz; \n);
 
-        vert += getStdPvmMult();
-        vert += "}";
+    vert += getStdPvmMult();
+    vert += "}";
 
-        std::string frag = s_shCol->getShaderHeader();
-        frag += "// SPSpotLight Light Prototype\n";
+    std::string frag = ShaderCollector::getShaderHeader();
+    frag += "// SPSpotLight Light Prototype\n";
 
         frag += STRINGIFY(
 		uniform vec4 ambient; \n			// material parameter, ambient amount
@@ -138,56 +137,44 @@ SPSpotLight::SPSpotLight(sceneData* sd) : ShaderProto(sd) {
 			fragColor.a = alpha;
 	});
 
-        s_shader = s_shCol->add("SPSpotLight", vert, frag);
+    s_shader = s_shCol->add("SPSpotLight", vert, frag);
 }
 
-
-void SPSpotLight::clear(renderPass _pass) {}
-
-
-void SPSpotLight::sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr)
-{
-        ShaderProto::sendPar(cs, time, scene, parent, pass);
-
-        if (pass == GLSG_SCENE_PASS || pass == GLSG_SCENE_PASS) lightProp.sendToShader(s_shader->getProgram());
+void SPSpotLight::clear(renderPass _pass) {
 }
 
+void SPSpotLight::sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr) {
+    ShaderProto::sendPar(cs, time, scene, parent, pass);
+	if (pass == GLSG_SCENE_PASS) {
+		m_lightProp.sendToShader(s_shader->getProgram());
+	}
+}
 
-bool SPSpotLight::begin(CameraSet* cs, renderPass pass, uint loopNr)
-{
-        switch (pass) {
-            case GLSG_SHADOW_MAP_PASS: return false; break;
-
-            case GLSG_SCENE_PASS:
-                s_shader->begin();
-                return true;
-                break;
-
-            case GLSG_GIZMO_PASS:
-                s_shader->begin();
-                return true;
-                break;
-
-            default: return false; break;
+bool SPSpotLight::begin(CameraSet* cs, renderPass pass, uint loopNr) {
+    switch (pass) {
+        case GLSG_SHADOW_MAP_PASS:
+        	return false;
+        case GLSG_SCENE_PASS:
+            s_shader->begin();
+            return true;
+        case GLSG_GIZMO_PASS:
+            s_shader->begin();
+            return true;
+        default:
+        	return false;
         }
 }
 
+bool SPSpotLight::end(renderPass pass, uint loopNr) {
+    if (pass == GLSG_SCENE_PASS ) {
+	    Shaders::end();
+    }
 
-bool SPSpotLight::end(renderPass pass, uint loopNr)
-{
-        if (pass == GLSG_SCENE_PASS || pass == GLSG_SCENE_PASS) s_shader->end();
-
-        return false;
+    return false;
 }
 
-
-Shaders* SPSpotLight::getShader(renderPass pass, uint loopNr)
-{
-        return s_shader;
+Shaders* SPSpotLight::getShader(renderPass pass, uint loopNr) {
+    return s_shader;
 }
 
-
-SPSpotLight::~SPSpotLight()
-{
-}
 }

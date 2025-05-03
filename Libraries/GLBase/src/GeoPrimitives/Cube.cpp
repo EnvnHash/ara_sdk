@@ -26,24 +26,26 @@ using namespace glm;
 namespace ara {
 
 Cube::Cube(float width, float height, float depth) {
-    // A four vertices
-    GLfloat cube_positions[] = {-width, -height, -depth, 1.0f, -width, -height, depth, 1.0f,
-                                -width, height,  -depth, 1.0f, -width, height,  depth, 1.0f,
-                                width,  -height, -depth, 1.0f, width,  -height, depth, 1.0f,
-                                width,  height,  -depth, 1.0f, width,  height,  depth, 1.0f};
+    std::array<vec4, 8> cube_positions = {
+        vec4{-width, -height, -depth, 1.0f}, vec4{-width, -height, depth, 1.0f},
+        vec4{-width, height,  -depth, 1.0f}, vec4{-width, height,  depth, 1.0f},
+        vec4{width,  -height, -depth, 1.0f}, vec4{width,  -height, depth, 1.0f},
+        vec4{width,  height,  -depth, 1.0f}, vec4{width,  height,  depth, 1.0f}};
 
-    glm::vec3 normal         = glm::normalize(glm::vec3(1.f, 1.f, 1.f));
-    GLfloat   cube_normals[] = {-normal.x, -normal.y, -normal.z, 0.0f, -normal.x, -normal.y, normal.z, 0.0f,
-                                -normal.x, normal.y,  -normal.z, 0.0f, -normal.x, normal.y,  normal.z, 0.0f,
-                                normal.x,  -normal.y, -normal.z, 0.0f, normal.x,  -normal.y, normal.z, 0.0f,
-                                normal.x,  normal.y,  -normal.z, 0.0f, normal.x,  normal.y,  normal.z, 0.0f};
+    vec3 normal         = normalize(vec3(1.f, 1.f, 1.f));
+
+    std::array<vec4, 8> cube_normals = {
+        vec4{-normal.x, -normal.y, -normal.z, 0.f}, vec4{-normal.x, -normal.y, normal.z, 0.f},
+        vec4{-normal.x, normal.y,  -normal.z, 0.f}, vec4{-normal.x, normal.y,  normal.z, 0.f},
+        vec4{normal.x,  -normal.y, -normal.z, 0.f}, vec4{normal.x,  -normal.y, normal.z, 0.f},
+        vec4{normal.x,  normal.y,  -normal.z, 0.f}, vec4{normal.x,  normal.y,  normal.z, 0.f}};
 
     // Color for each vertex
-    GLfloat cube_colors[] = {1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f,
-                             1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f};
+    auto white = vec4{1.f, 1.f, 1.f, 1.f};
+    std::array<vec4, 8> cube_colors = { white, white, white, white, white, white, white, white};
 
     // Indices for the triangle strips
-    GLuint cube_indices[] = {
+    std::array<GLuint, 17> cube_indices = {
         0,      1, 2, 3, 6, 7, 4, 5,  // First strip
         0xFFFF,                       // <<- - This is the restart index
         2,      6, 0, 4, 1, 5, 3, 7   // Second strip
@@ -51,13 +53,13 @@ Cube::Cube(float width, float height, float depth) {
 
     // Set
     m_vao = make_unique<VAO>("position:4f,normal:4f,color:4f", GL_STATIC_DRAW, nullptr, 1, true);
-    m_vao->upload(CoordType::Position, cube_positions, 8);
-    m_vao->upload(CoordType::Normal, cube_normals, 8);
-    m_vao->upload(CoordType::Color, cube_colors, 8);
-    m_vao->setElemIndices(19, cube_indices);
+    m_vao->upload(CoordType::Position, &cube_positions[0][0], cube_positions.size());
+    m_vao->upload(CoordType::Normal, &cube_normals[0][0], cube_normals.size());
+    m_vao->upload(CoordType::Color, &cube_colors[0][0], cube_colors.size());
+    m_vao->setElemIndices(cube_indices.size(), cube_indices.data());
 }
 
-void Cube::draw(TFO *_tfo) {
+void Cube::draw(TFO* tfo) {
     m_vao->drawElements(GL_TRIANGLE_STRIP, nullptr, GL_TRIANGLES, 8);
     m_vao->drawElements(GL_TRIANGLE_STRIP, nullptr, GL_TRIANGLES, 8, 9);
 }

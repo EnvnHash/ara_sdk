@@ -25,7 +25,7 @@ bool DrawManager::rebuildVaos() {
             ds.vao.init("position:4f,texCoord:2f,color:4f,aux0:4f,aux1:4f,aux2:4f,aux3:4f", true, true);  // use interleave buffers
         }
 
-        if (ds.vao.getNrVertices() < ds.vaoSize) {
+        if (static_cast<GLuint>(ds.vao.getNrVertices()) < ds.vaoSize) {
             ds.vao.resize(ds.vaoSize);
         }
 
@@ -34,25 +34,29 @@ bool DrawManager::rebuildVaos() {
         }
 
         // divVao is arranged as interleave data, so just run through the DivData and upload
-        auto ptr = (DivVaoData *)ds.vao.getMapBuffer(CoordType::Position);
-        if (ptr) {
-            for (auto &it : ds.divData) {
-                std::copy((*it).begin(), (*it).end(), ptr);
-                ptr += it->size();
+        try {
+            auto ptr = (DivVaoData *)ds.vao.getMapBuffer(CoordType::Position);
+            if (ptr) {
+                for (auto &it : ds.divData) {
+                    std::copy((*it).begin(), (*it).end(), ptr);
+                    ptr += it->size();
+                }
+
+                VAO::unMapBuffer();
             }
 
-            VAO::unMapBuffer();
-        }
+            // build the indices
+            auto ip = (GLuint *)ds.vao.mapElementBuffer();
+            if (ip) {
+                for (auto &it : ds.divIndices) {
+                    std::copy(it->begin(), it->end(), ip);
+                    ip += it->size();
+                }
 
-        // build the indices
-        auto ip = (GLuint *)ds.vao.mapElementBuffer();
-        if (ip) {
-            for (auto &it : ds.divIndices) {
-                std::copy(it->begin(), it->end(), ip);
-                ip += it->size();
+                VAO::unMapElementBuffer();
             }
-
-            VAO::unMapElementBuffer();
+        } catch (std::runtime_error& e) {
+            LOGE << e.what();
         }
     }
 
@@ -66,18 +70,22 @@ void DrawManager::update() {
         }
 
         // update VBO
-        auto ptr = static_cast<DivVaoData*>(ds.vao.getMapBuffer(CoordType::Position));
-        if (ptr) {
-            for (auto &it : ds.updtNodes) {
-                ptr += it.second;
-                if (it.first) {
-                    std::copy(it.first->begin(), it.first->end(), ptr);
+        try {
+            auto ptr = static_cast<DivVaoData*>(ds.vao.getMapBuffer(CoordType::Position));
+            if (ptr) {
+                for (auto &it : ds.updtNodes) {
+                    ptr += it.second;
+                    if (it.first) {
+                        std::copy(it.first->begin(), it.first->end(), ptr);
+                    }
+                    ptr -= it.second;
                 }
-                ptr -= it.second;
+                VAO::unMapBuffer();
             }
-            VAO::unMapBuffer();
+            ds.updtNodes.clear();
+        } catch (std::runtime_error& e) {
+            LOGE << e.what();
         }
-        ds.updtNodes.clear();
     }
 }
 
@@ -294,7 +302,7 @@ list<DrawSet>::reference DrawManager::push(IndDrawBlock &block, UINode *node) {
 
     // update indices
     for (int i = 0; i < block.indices.size(); i++) {
-        block.indices[i] = stdQuadInd[i % 6] + int((float)i / 6.f) * 4 + m_vaoOffset;
+        block.indices[i] = stdQuadInd[i % 6] + int(static_cast<float>(i) / 6.f) * 4 + m_vaoOffset;
     }
 
     m_drawSets.back().divIndices.emplace_back(&block.indices);
@@ -317,21 +325,21 @@ float DrawManager::pushFont(GLuint texId, float nrLayers) {
         static_cast<size_t>(m_drawSets.back().fontTex.find(texId) == m_drawSets.back().fontTex.end());
 
     // check if the maximum number of parallel texture units are used if this is the case, create a new draw set
-    if (newFontTexSize + m_drawSets.back().textures.size() > (size_t)m_glbase->maxTexUnits()) m_drawSets.emplace_back();
+    if (newFontTexSize + m_drawSets.back().textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) m_drawSets.emplace_back();
 
     // in case this is a new texId or the nrLayers has changed
     if (m_drawSets.back().fontTex.find(texId) == m_drawSets.back().fontTex.end()) {
-        m_drawSets.back().fontTex[texId] = (int)m_drawSets.back().fontTex.size();  // associate a texUnit to this new texId
+        m_drawSets.back().fontTex[texId] = static_cast<int>(m_drawSets.back().fontTex.size());  // associate a texUnit to this new texId
 
         if (m_drawSets.back().layerSizes.size() < m_drawSets.back().fontTex.size()) {
-            m_drawSets.back().layerSizes.emplace_back((float)nrLayers);
+            m_drawSets.back().layerSizes.emplace_back(static_cast<float>(nrLayers));
             m_drawSets.back().layerUnits.emplace_back(m_drawSets.back().fontTex[texId]);
         } else if (m_drawSets.back().layerSizes[m_drawSets.back().fontTex[texId]] != nrLayers) {
             m_drawSets.back().layerSizes[m_drawSets.back().fontTex[texId]] = nrLayers;
         }
     }
 
-    return (float)m_drawSets.back().fontTex[texId];
+    return static_cast<float>(m_drawSets.back().fontTex[texId]);
 }
 
 float DrawManager::pushTexture(GLuint texId) {
@@ -345,16 +353,16 @@ float DrawManager::pushTexture(DrawSet &ds, GLuint texId) {
     size_t newTexSize = ds.textures.size() + static_cast<size_t>(ds.textures.find(texId) == ds.textures.end());
 
     // check if the maximum number of parallel texture units are used if this is the case, create a new draw set
-    if (newTexSize + ds.textures.size() > (size_t)m_glbase->maxTexUnits()) {
+    if (newTexSize + ds.textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
         m_drawSets.emplace_back();
     }
 
     // in case this is a new texId or the nrLayers has changed
     if (ds.textures.find(texId) == ds.textures.end()) {
-        ds.textures[texId] = (int)ds.textures.size();  // associate a texUnit to this new texId
+        ds.textures[texId] = static_cast<int>(ds.textures.size());  // associate a texUnit to this new texId
     }
 
-    return (float)ds.textures[texId];
+    return static_cast<float>(ds.textures[texId]);
 }
 
 void DrawManager::popTexture(DrawSet &ds, GLuint texId) {
@@ -379,7 +387,7 @@ void DrawManager::clear() {
         }
     }
 
-    for (auto &it : m_nodeList) {
+    for (const auto &it : m_nodeList) {
         if (it) {
             it->clearDs();
         }

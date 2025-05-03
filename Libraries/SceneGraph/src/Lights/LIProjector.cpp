@@ -8,10 +8,7 @@ using namespace std;
 
 namespace ara {
 
-LIProjector::LIProjector(sceneData* sd)
-    : Light(sd), m_reloadTexture(false), m_aspect(16.f / 9.f), m_throwRatio(0.5f),
-      m_lensShift{0, 0}  //, m_ffmpegDecode(nullptr)
-{
+LIProjector::LIProjector(sceneData* sd) : Light(sd) {
     setName(getTypeName<LIProjector>());
     m_transFlag |= GLSG_NO_SCALE;
     float ansiLumen = 125.f;
@@ -52,65 +49,17 @@ void LIProjector::setup(bool force) {
     s_view_mat = glm::lookAt(m_transVec, lightCenter, upVec);
 
     // calculate the fovY n respect to throwRatio and aspect
-    s_fov = (float)atan(1.0 / (double)(2.0 * m_throwRatio * m_aspect));
+    s_fov = static_cast<float>(atan(1.0 / (double) (2.0 * m_throwRatio * m_aspect)));
 
     float tt = s_near * 0.5f / m_throwRatio;
 
-    vec2 p(m_lensShift[0] * s_near / 100.0f, m_lensShift[1] * s_near / 100.0f);
-    vec2 dp(tt, tt / m_aspect);
+    vec2 p{m_lensShift[0] * s_near / 100.0f, m_lensShift[1] * s_near / 100.0f};
+    vec2 dp{tt, tt / m_aspect};
 
-    s_proj_mat = frustum(p.x - dp.x, p.x + dp.x, p.y - dp.y, p.y + dp.y, s_near, s_far);
-
-    // s_proj_mat = perspective(s_fov, m_aspect, s_near, s_far);
-
+    s_proj_mat    = frustum(p.x - dp.x, p.x + dp.x, p.y - dp.y, p.y + dp.y, s_near, s_far);
     s_pvm_mat     = s_proj_mat * s_view_mat;
     s_shadow_mat  = m_scale_bias_matrix * s_proj_mat * s_view_mat;
     s_needsRecalc = true;
-
-    /*
-    string absFilePath = sceneData::inst()->dataPath+m_texture_path;
-
-    // load texture if set from qml
-    if (m_reloadTexture && (!m_texture || (m_texture &&
-    strcmp(m_texture->getFileName()->c_str(), absFilePath.c_str()))))
-    {
-        if (getScene())
-        getScene()->addGlCb(this, [this, absFilePath]() {
-            // if (!this) return true;
-            if (m_texture) m_texture.reset();
-
-            m_texture = make_unique<Texture>();
-            m_texture->loadTexture2D(absFilePath, 1);
-            s_colTex = m_texture->getId();
-
-            // get ffmpeg object
-            //m_ffmpegDecode =
-    static_cast<FFMpegDecode*>(sceneData::inst()->ffmpegDecode);
-
-            return true;
-        });
-
-            m_reloadTexture = false;
-    }*/
-}
-
-void LIProjector::draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo) {
-    // map<string, unique_ptr<FBO>>* postWarpFbos =
-    // sceneData::inst()->postWarpFbos ? static_cast<map<string,
-    // unique_ptr<FBO>>*>(sceneData::inst()->postWarpFbos) : nullptr;
-
-    if (m_renderPassEnabled[_pass]) {
-        // if (postWarpFbos && postWarpFbos->size() && m_dispname.size())
-        //	s_colTex = postWarpFbos->at(m_dispname)->getColorImg();
-        // else
-        // if (m_texture && m_extTexId == -1)
-        //	s_colTex = m_texture->getId();
-
-        // if (m_extTexId != -1)
-        //     s_colTex = m_extTexId;
-
-        //		s_colTex = m_ffmpegDecode->getTex();
-    }
 }
 
 }  // namespace ara

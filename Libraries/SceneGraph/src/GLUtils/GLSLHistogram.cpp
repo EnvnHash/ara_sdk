@@ -64,8 +64,7 @@ GLSLHistogram::GLSLHistogram(GLBase* glbase, ivec2 size, GLenum type, unsigned i
     : m_glbase(glbase), m_shCol(&glbase->shaderCollector()), m_texType(type), m_geoAmp(32), m_width(size.x), m_height(size.y),
       m_maxHistoWidth(static_cast<int>(histWidth)), m_downSample(downSample), m_normalize(normalize), m_getBounds(getBounds),
       m_valThres(0.f), m_indValThres(0.05f), m_maxValPerChan(maxValPerChan) {
-    m_quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f,
-                                              0.f});  // color will be replaced when rendering with blending on
+    m_quad = make_unique<Quad>(QuadInitParams{.color = {0.f, 0.f, 0.f, 0.f} });  // color will be replaced when rendering with blending on
 
     m_minMax[0] = 0;
     m_minMax[1] = 0;
@@ -249,7 +248,7 @@ void GLSLHistogram::proc(GLint texId) {
 
     // debug values
     if (m_getEnergySum) {
-        glBindTexture(GL_TEXTURE_2D, m_histoFbo->src->getColorImg());
+        glBindTexture(GL_TEXTURE_2D, m_histoFbo->m_src->getColorImg());
 #ifdef ARA_USE_GLES31
         glesGetTexImage(m_histoFbo->src->getColorImg(), GL_TEXTURE_2D, GL_RED, GL_FLOAT, m_histoFbo->getWidth(),
                         m_histoFbo->getHeight(), (GLubyte*)&m_histoDownload[0]);
@@ -308,8 +307,8 @@ void GLSLHistogram::getMinMax(GLuint texId) {
 }
 
 void GLSLHistogram::getSpectrum(GLuint texId) const {
-    m_histoFbo->dst->bind();
-    m_histoFbo->dst->clearAlpha(m_smoothing, 0.f);
+    m_histoFbo->m_dst->bind();
+    m_histoFbo->m_dst->clearAlpha(m_smoothing, 0.f);
 
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_ONE, GL_ONE);
@@ -329,7 +328,7 @@ void GLSLHistogram::getSpectrum(GLuint texId) const {
 
     m_trigVao->draw(GL_POINTS);
 
-    m_histoFbo->dst->unbind();
+    m_histoFbo->m_dst->unbind();
     m_histoFbo->swap();
 }
 
@@ -349,7 +348,7 @@ void GLSLHistogram::getHistoBounds() const {
     m_minMaxSpectrShader->setUniform1i("m_nrChan", m_nrChan);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_histoFbo->src->getColorImg());
+    glBindTexture(GL_TEXTURE_2D, m_histoFbo->m_src->getColorImg());
 
     m_trigSpectrVao->draw(GL_POINTS);
 
@@ -363,8 +362,8 @@ void GLSLHistogram::normalizeHisto() {
 
     // ------ rewrite spectrum normalized ----------
 
-    m_histoFbo->dst->bind();
-    m_histoFbo->dst->clear();
+    m_histoFbo->m_dst->bind();
+    m_histoFbo->m_dst->clear();
 
     glBlendFunc(GL_ONE, GL_ZERO);
 
@@ -379,11 +378,11 @@ void GLSLHistogram::normalizeHisto() {
     glBindTexture(GL_TEXTURE_2D, m_minMaxSpectrFbo->getColorImg());
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_histoFbo->src->getColorImg());
+    glBindTexture(GL_TEXTURE_2D, m_histoFbo->m_src->getColorImg());
 
     m_quad->draw();
 
-    m_histoFbo->dst->unbind();
+    m_histoFbo->m_dst->unbind();
     m_histoFbo->swap();
 
     glEnable(GL_BLEND);
@@ -401,7 +400,7 @@ void GLSLHistogram::normalizeHisto() {
         m_energyMedShader->setUniform1i("m_nrChan", m_nrChan);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_histoFbo->src->getColorImg());
+        glBindTexture(GL_TEXTURE_2D, m_histoFbo->m_src->getColorImg());
 
         m_trigSpectrVao->draw(GL_POINTS);
 
@@ -509,33 +508,39 @@ void GLSLHistogram::initMinMaxShader() {
     std::string stdVert = STRINGIFY(layout(location = 0) in vec4 position; void main() { gl_Position = position; });
     stdVert             = "// GLSLHistogram m_minMax vertex shader\n" + shdr_Header + stdVert;
 
-    std::string geom = STRINGIFY(layout(points) in; uniform sampler2D tex; uniform ivec2 cellSize; uniform int cellInc;
-                                 ivec2 texCoord; vec4 col; float lum; out float pixLum;
+    std::string geom = STRINGIFY(layout(points) in;
+        uniform sampler2D tex;
+        uniform ivec2 cellSize;
+        uniform int cellInc;
+        ivec2 texCoord;
+        vec4 col;
+        float lum;
+        out float pixLum;
 
-                                 void main() {
-                                     for (int y = 0; y < m_cellSize.y; y += cellInc) {
-                                         for (int x = 0; x < m_cellSize.x; x += cellInc) {
-                                             texCoord = ivec2(gl_in[0].gl_Position.x + x, gl_in[0].gl_Position.y + y);
-                                             col      = texelFetch(tex, texCoord, 0);
-                                             lum      = (col.r + col.g + col.b);
+         void main() {
+             for (int y = 0; y < m_cellSize.y; y += cellInc) {
+                 for (int x = 0; x < m_cellSize.x; x += cellInc) {
+                     texCoord = ivec2(gl_in[0].gl_Position.x + x, gl_in[0].gl_Position.y + y);
+                     col      = texelFetch(tex, texCoord, 0);
+                     lum      = (col.r + col.g + col.b);
 
-                                             if (lum > 0) {
-                                                 // max
-                                                 pixLum      = lum;
-                                                 gl_Position = vec4(-0.75, 0.0, 0.0, 1.0);
-                                                 EmitVertex();
-                                                 EndPrimitive();
+                     if (lum > 0) {
+                         // max
+                         pixLum      = lum;
+                         gl_Position = vec4(-0.75, 0.0, 0.0, 1.0);
+                         EmitVertex();
+                         EndPrimitive();
 
-                                                 // min
-                                                 pixLum      = -lum;
-                                                 gl_Position = vec4(0.75, 0.0, 0.0, 1.0);
-                                                 EmitVertex();
-                                                 EndPrimitive();
-                                             }
-                                         }
-                                     }
-                                 });
-    geom             = "// GLSLHistogram m_minMax geom shader\n" + shdr_Header +
+                         // min
+                         pixLum      = -lum;
+                         gl_Position = vec4(0.75, 0.0, 0.0, 1.0);
+                         EmitVertex();
+                         EndPrimitive();
+                     }
+                 }
+             }
+         });
+    geom = "// GLSLHistogram m_minMax geom shader\n" + shdr_Header +
                        "layout (points, max_vertices = " + std::to_string(m_geoAmp) + ") out;\n" + geom;
 
     std::string frag = STRINGIFY(layout(location = 0) out vec4 color; in float pixLum;
@@ -615,7 +620,7 @@ void GLSLHistogram::initEnergyMedShader() {
                                              val        = texelFetch(tex, ivec2(texCoord, i), 0).r;
                                              float yPos = float(2 * i + 1) / float(m_nrChan) - 1.0;
 
-                                             // summe ind * val [4]
+                                             // sum ind * val [4]
                                              if (val == 1.0) {
                                                  pixLum      = texCoord;
                                                  gl_Position = vec4(0.0, yPos, 0.0, 1.0);

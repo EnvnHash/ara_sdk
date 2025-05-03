@@ -25,7 +25,7 @@ Image::Image() : Node() {
 }
 
 void Image::load() { // called when the image was changed on disk
-    for (auto& cb : m_changeCb[cbType::postChange]) {
+    for (const auto& cb : m_changeCb[cbType::postChange]) {
         cb.second();
     }
 }

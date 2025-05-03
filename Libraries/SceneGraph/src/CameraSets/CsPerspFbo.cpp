@@ -10,6 +10,8 @@
 
 #include "CameraSets/CsPerspFbo.h"
 
+#include <SceneNodes/SceneNode.h>
+
 using namespace glm;
 using namespace std;
 
@@ -20,18 +22,17 @@ CsPerspFbo::CsPerspFbo(sceneData* sd)
 
     m_camPos     = vec3{0.f, 0.f, 1.f};
     float aspect = s_sd->winViewport.z / s_sd->winViewport.w;
-    m_quad       = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 1.f, 1.f, 1.f, 1.f});
+    m_quad       = make_unique<Quad>(QuadInitParams{});
     s_viewport   = s_sd->winViewport;
     s_iViewport  = s_sd->winViewport;
 
     if (s_sd->winViewport.z > 0.f && s_sd->winViewport.w > 0.f) {
-        s_intern_cam.emplace_back(make_unique<TrackBallCam>(Camera::camType::perspective,
-                                                            static_cast<float>(s_sd->winViewport.z), static_cast<float>(s_sd->winViewport.w),
-                                                            -aspect, aspect, -1.0f, 1.0f,  // left, right, bottom, top
-                                                            m_camPos.x, m_camPos.y, m_camPos.z,  // s_camPos
-                                                            0.f, 0.f, 0.f,                       // s_lookAt
-                                                            0.f, 1.f, 0.f,                       // upVec
-                                                            0.1f, 1000.f));
+        s_intern_cam.emplace_back(make_unique<TrackBallCam>(CameraInitParams{
+            .cTyp = camType::perspective,
+            .screenSize { s_sd->winViewport.z, s_sd->winViewport.w},
+            .rect = { -aspect, aspect, -1.0f, 1.0f },  // left, right, bottom, top
+            .cp = m_camPos
+        }));
 
         s_intern_cam.back()->setUseTrackBall(true);
         s_cam.emplace_back(s_intern_cam.back().get(), this);
@@ -48,14 +49,18 @@ void CsPerspFbo::initLayerTexShdr() {
     if (m_layerTexShdr) s_shCol->deleteShader("CsPerspFbo");
 
     string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 1) in vec4 normal; \n layout(location = 2) in vec2 texCoord; \n layout(location = 3) in vec4 color; \n out vec2 tex_coord; \n uniform mat4 m_pvm; \n void
-            main() {
-                \n tex_coord   = texCoord;
-                \n gl_Position = m_pvm * position;
-                \n
-            });
+        layout(location = 0) in vec4 position; \n
+        layout(location = 1) in vec4 normal; \n
+        layout(location = 2) in vec2 texCoord; \n
+        layout(location = 3) in vec4 color; \n
+        out vec2 tex_coord; \n
+        uniform mat4 m_pvm; \n
+        void main() { \n
+            tex_coord   = texCoord;\n
+            gl_Position = m_pvm * position;\n
+        });
 
-    vert = s_shCol->getShaderHeader() + "// CsPerspFbo layer texture shader, vert\n" + vert;
+    vert = ShaderCollector::getShaderHeader() + "// CsPerspFbo layer texture shader, vert\n" + vert;
 
 #if defined(ARA_USE_GLES31)
     string frag = "highp uniform sampler2DArray tex; \n";
@@ -85,43 +90,41 @@ void CsPerspFbo::initLayerTexShdr() {
                 : texture(tex, vec3(tex_coord, float(layerNr)));
             });
 
-    frag = s_shCol->getShaderHeader() + "// CsPerspFbo layer texture shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsPerspFbo layer texture shader, frag\n" + frag;
 
     m_layerTexShdr = s_shCol->add("CsPerspFbo", vert, frag);
 }
 
 void CsPerspFbo::initClearShader(int nrLayers) {
     std::string vert = STRINGIFY(layout(location = 0) in vec4 position; void main() { gl_Position = position; });
-    vert             = s_shCol->getShaderHeader() + "// CsPerspFbo clear shader, vert\n" + vert;
+    vert             = ShaderCollector::getShaderHeader() + "// CsPerspFbo clear shader, vert\n" + vert;
 
     //---------------------------------------------------------
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\nuniform vec4 "
                                 "clearCol[" +
                                 std::to_string(nrLayers) + "];\n";
 
-    std::string geom = STRINGIFY(uniform mat4 m_pvm; out vec4 o_col; void main() {
-        \n for (int i = 0; i < gl_in.length(); i++)\n {
-            \n gl_Layer = gl_InvocationID;
-            o_col       = clearCol[gl_InvocationID];
-            gl_Position = m_pvm * gl_in[i].gl_Position;
-            \n EmitVertex();
-            \n
-        }
-        \n EndPrimitive();
-        \n
+    std::string geom = STRINGIFY(uniform mat4 m_pvm; out vec4 o_col;
+        void main() {\n
+            for (int i = 0; i < gl_in.length(); i++) {\n
+                gl_Layer = gl_InvocationID;
+                o_col       = clearCol[gl_InvocationID];
+                gl_Position = m_pvm * gl_in[i].gl_Position;\n
+                EmitVertex();\n
+            }\n
+            EndPrimitive();\n
     });
 
     geom = shdr_Header_g + "// CsPerspFbo clear shader, geom\n" + geom;
 
     //---------------------------------------------------------
 
-    std::string frag =
-        "layout (location = 0) out vec4 color; in vec4 o_col;\n void main() { "
+    std::string frag = "layout (location = 0) out vec4 color; in vec4 o_col;\n void main() { "
         "color = o_col; }";
-    frag = s_shCol->getShaderHeader() + "// CsPerspFbo clear color shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsPerspFbo clear color shader, frag\n" + frag;
 
     m_clearShdr = s_shCol->add("CsPerspFbo_ClearShader", vert, geom, frag);
 }
@@ -129,15 +132,23 @@ void CsPerspFbo::initClearShader(int nrLayers) {
 void CsPerspFbo::rebuildFbo() {
     bool nrCamsChanged = m_fbo.getDepth() != (int)s_cam.size();
 
-    if (m_fbo.getWidth() != (int)s_viewport.z || m_fbo.getHeight() != (int)s_viewport.w || nrCamsChanged ||
-        m_fbo.getNrSamples() != m_glbase->getNrSamples() || m_fbo.getType() != GL_RGBA8 ||
-        m_fbo.getTarget() != GL_TEXTURE_2D_ARRAY || !m_fbo.isInited()) {
+    if (m_fbo.getWidth() != (int)s_viewport.z
+        || m_fbo.getHeight() != (int)s_viewport.w
+        || nrCamsChanged
+        || m_fbo.getNrSamples() != m_glbase->getNrSamples()
+        || m_fbo.getType() != GL_RGBA8
+        || m_fbo.getTarget() != GL_TEXTURE_2D_ARRAY
+        || !m_fbo.isInited()) {
         if (nrCamsChanged || !m_fbo.isInited()) {
-            if (m_clearShdr) s_shCol->deleteShader("CsPerspFbo_ClearShader");
+            if (m_clearShdr) {
+                s_shCol->deleteShader("CsPerspFbo_ClearShader");
+            }
             initClearShader((int)s_cam.size());
         }
 
-        if (m_fbo.isInited()) m_fbo.remove();
+        if (m_fbo.isInited()) {
+            m_fbo.remove();
+        }
 
         m_fbo.setWidth((int)s_viewport.z);
         m_fbo.setHeight((int)s_viewport.w);
@@ -151,9 +162,13 @@ void CsPerspFbo::rebuildFbo() {
         m_fbo.setGlbase(m_glbase);
         m_fbo.init();
 
-        if (!s_updtCb.empty())
-            for (auto& cbList : s_updtCb)
-                for (auto& cb : cbList.second) cb();
+        if (!s_updtCb.empty()) {
+            for (const auto& cbList : s_updtCb | views::values) {
+                for (const auto& cb : cbList) {
+                    cb();
+                }
+            }
+        }
     }
 }
 
@@ -181,7 +196,9 @@ void CsPerspFbo::clearScreen(renderPass pass) {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     } else if (pass == GLSG_SHADOW_MAP_PASS || pass == GLSG_OBJECT_MAP_PASS) {
-        for (auto& it : s_shaderProto) it.second->clear(pass);
+        for (const auto& it : s_shaderProto | views::values) {
+            it->clear(pass);
+        }
     }
 }
 
@@ -191,6 +208,7 @@ void CsPerspFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr,
     if (node->m_calcMatrixStack.load()) {
         s_matrixStack.clear();
     }
+
     if (pass == GLSG_SCENE_PASS) {
         m_fbo.bind();
     }
@@ -200,6 +218,7 @@ void CsPerspFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr,
     if (node->m_calcMatrixStack.load()) {
         node->m_calcMatrixStack = false;
     }
+
     if (pass == GLSG_SCENE_PASS) {
         m_fbo.unbind();
     }
@@ -229,15 +248,19 @@ void CsPerspFbo::render(SceneNode* node, SceneNode* parent, double time, double 
             }
 
             run = proto->end(pass, loopNr);
-            loopNr++;
+            ++loopNr;
         }
     }
 }
 
 void CsPerspFbo::postRender(renderPass _pass, float* extDrawMatr) {
-    for (auto& it : s_shaderProto) it.second->postRender(_pass);
+    for (const auto& it : s_shaderProto) {
+        it.second->postRender(_pass);
+    }
 
-    if (_pass == GLSG_SCENE_PASS) renderFbos(extDrawMatr);
+    if (_pass == GLSG_SCENE_PASS) {
+        renderFbos(extDrawMatr);
+    }
 }
 
 void CsPerspFbo::renderFbos(float* extDrawMatr) {
@@ -270,7 +293,9 @@ vector<pair<TrackBallCam*, void*>>::iterator CsPerspFbo::addCamera(TrackBallCam*
     rebuildFbo();
     initLayerTexShdr();
 
-    for (auto& it : s_shaderProto) it.second->setNrCams((int)s_cam.size());
+    for (auto&[fst, snd] : s_shaderProto) {
+        snd->setNrCams(static_cast<int>(s_cam.size()));
+    }
 
     return s_cam.end() - 1;
 }

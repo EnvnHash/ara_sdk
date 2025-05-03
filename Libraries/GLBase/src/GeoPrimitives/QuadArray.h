@@ -30,18 +30,15 @@ struct QuadArrayInitParams {
     std::vector<CoordType> *instAttribs = nullptr;
     int nrInstances = 1;
     GLenum usage = GL_STATIC_DRAW;
-    float r = 1.f;
-    float g = 1.f;
-    float b = 1.f;
-    float a = 1.f;
+    glm::vec4 color =  {1.f, 1.f, 1.f, 1.f };
 };
 
 class QuadArray : public GeoPrimitive {
 public:
-    QuadArray(const QuadArrayInitParams& ip);
-    virtual ~QuadArray() = default;
+    explicit QuadArray(const QuadArrayInitParams& ip);
+    ~QuadArray() override = default;
 
-    void init();
+    void init() override;
 
 private:
     int   m_nrSegsX     = 0;

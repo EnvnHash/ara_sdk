@@ -37,15 +37,19 @@ public:
         bool createBuffers = true);
     void init(std::string &&format, bool createBuffers = true, bool interleaved = false);
     virtual ~VAO();
-    void   initData(int nrVert, GLfloat *data = nullptr);
-    void   upload(CoordType type, GLfloat *entries, uint32_t nrVertices);
-    void   setElemIndices(uint32_t count, GLuint *indices);
-    void   setExtElemIndices(uint32_t count, GLuint buffer);
-    void   resize(GLuint newNrVertices);
+    void   initData(int nrVert, const GLfloat *data = nullptr);
+    void   upload(CoordType type, const GLfloat *entries, size_t nrVertices);
+    void   setElemIndices(size_t count, const GLuint *indices);
+    void   setExtElemIndices(size_t count, GLuint buffer);
+    void   resize(size_t newNrVertices);
     void   remove();
     void   bindBuffer(GLuint buffer, GLenum type = GL_ARRAY_BUFFER) const;
     GLuint addBuffer(CoordType type);
     void   addExtBuffer(CoordType type, GLuint buffer);
+
+#ifdef STRICT_WEBGL_1
+    void enableAttributes();
+#endif
 
 #ifdef EMSCRIPTEN
     void bind();
@@ -65,12 +69,12 @@ public:
     void        draw(GLenum mode, TFO *tfo, GLenum recMode);
     void        draw(GLenum mode, GLint offset, GLsizei count, TFO *tfo);
     void        draw(GLenum mode, GLint offset, GLsizei count, TFO *tfo, GLenum recMode);
-    void        drawInstanced(GLenum mode, GLuint nrInstances, TFO *tfo = nullptr, float nrVert = 1.f);
+    void        drawInstanced(GLenum mode, GLsizei nrInstances, TFO *tfo = nullptr, float nrVert = 1.f);
     void        drawElements(GLenum mode, TFO *tfo, GLenum recMode);
     void        drawElements(GLenum mode, TFO *tfo, GLenum recMode, int nrElements);
     void        drawElements(GLenum mode, TFO *tfo, GLenum recMode, int nrElements, int offset);
-    void        drawElementsInst(GLenum mode, GLuint nrInstances, TFO *tfo, GLenum recMode);
-    void       *getMapBuffer(CoordType attrIndex);
+    void        drawElementsInst(GLenum mode, GLsizei nrInstances, TFO *tfo, GLenum recMode);
+    void       *getMapBuffer(CoordType attrIndex) const;
     static void unMapBuffer() {
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -91,28 +95,28 @@ public:
 
 #endif
     void uploadMesh(Mesh *mesh);
-    void setStaticNormal(float x, float y, float z) { setStatic(x, y, z, 0, (char *)"normal", (char *)"normal:3f"); }
+    void setStaticNormal(float x, float y, float z) { setStatic({x, y, z, 0}, "normal", "normal:3f"); }
     void setStaticNormal(std::vector<GLfloat> *norm) {
-        setStatic(norm->at(0), norm->at(1), norm->at(2), 0, (char *)"normal", (char *)"normal:3f");
+        setStatic({norm->at(0), norm->at(1), norm->at(2), 0}, "normal", "normal:3f");
     }
-    void setStaticColor(float r, float g, float b, float a) {
-        setStatic(r, g, b, a, (char *)"color", (char *)"color:4f");
+    void setStaticColor(glm::vec4 color) {
+        setStatic(color, (char *)"color", (char *)"color:4f");
     }
     void setStaticColor(std::vector<GLfloat> *col) {
-        setStatic(col->at(0), col->at(1), col->at(2), col->at(3), (char *)"color", (char *)"color:4f");
+        setStatic({col->at(0), col->at(1), col->at(2), col->at(3)}, (char *)"color", (char *)"color:4f");
     }
-    void setStatic(float r, float g, float b, float a, char *name, char *format);
+    void setStatic(glm::vec4 color, const std::string& name, const std::string& format);
     void enableVertexAttribs();
-    void disableVertexAttribs();
+    void disableVertexAttribs() const;
 
     [[nodiscard]] GLuint          getVAOId() const { return m_VAOId; }
     GLuint                        getVBO(CoordType attrIndex) { return m_buffers[toType(attrIndex)]; }
     std::vector<VertexAttribute> *getAttributes() { return &m_attributes; }
-    [[nodiscard]] uint32_t        getNrVertices() const { return m_nrVertices; }
-    uint32_t                      getNrBuffers() { return (uint32_t)m_buffers.size(); }
+    [[nodiscard]] GLsizei        getNrVertices() const { return m_nrVertices; }
+    uint32_t                      getNrBuffers() { return static_cast<uint32_t>(m_buffers.size()); }
     [[nodiscard]] uint32_t        getNrIndices() const { return m_nrElements; }
-    GLuint                        getElementBuffer() const { return m_elementBuffer; }
-    bool                          isInited() const { return m_inited; }
+    [[nodiscard]] GLuint          getElementBuffer() const { return m_elementBuffer; }
+    [[nodiscard]] bool            isInited() const { return m_inited; }
     void                          setStoreMode(GLenum mode) { m_storeMode = mode; }
 
 private:
@@ -126,11 +130,11 @@ private:
     bool m_inited        = false;
     bool m_interleaved   = false;
 
-    GLuint m_nrElements      = 0;
-    GLuint m_nrVertices      = 0;
-    int    m_drawNrVertices  = 0;
-    int    m_nrCoordsPerVert = 3;
-    int    m_maxNrInstances  = 0;
+    GLsizei m_nrElements      = 0;
+    GLsizei  m_nrVertices     = 0;
+    int     m_drawNrVertices  = 0;
+    int     m_nrCoordsPerVert = 3;
+    int     m_maxNrInstances  = 0;
 
     std::vector<VertexAttribute> m_attributes;  //  Array of attributes.
     std::vector<CoordType>      *m_instAttribs = nullptr;

@@ -60,7 +60,7 @@ void MenuBar::init() {
         m_brightAdjCol = vec4{m_brightAdj >= 0.f ? m_brightAdj : m_sharedRes->colors->at(uiColors::font).r};
 
         int i = 0;
-        for (auto& but : m_menButtons)
+        for (const auto& but : m_menButtons)
             if (but.second) {
                 but.second->setSize(containersWidth, 1.f);
                 but.second->setPadding(8.f);

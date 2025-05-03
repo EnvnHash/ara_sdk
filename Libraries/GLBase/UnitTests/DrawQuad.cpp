@@ -15,7 +15,7 @@ namespace ara::GLBaseUnitTest::DrawQuad {
     void staticDrawFunc() {
         // set some OpenGL parameters
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                    // clear the screen
-        glViewport(0, 0, (GLsizei) gp.width, (GLsizei) gp.height);        // set the drawable arean
+        glViewport(0, 0, static_cast<GLsizei>(gp.size.x), static_cast<GLsizei>(gp.size.y));        // set the drawable arean
 
         colShader->begin();                        // bind the shader
         colShader->setIdentMatrix4fv("m_pvm");  // set the model-view-projection matrix to an indent matrix
@@ -46,23 +46,17 @@ namespace ara::GLBaseUnitTest::DrawQuad {
     }
 
     TEST(GLBaseTest, DrawQuad) {
-        // direct window creation
-        gp.width = 1920;            // set the windows width
-        gp.height = 1080;            // set the windows height
-        gp.shiftX = 100;            // x offset relative to OS screen canvas
-        gp.shiftY = 100;            // y offset relative to OS screen canvas
-        gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
-        gp.createHidden = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
-
-        ASSERT_TRUE(gwin.create(gp));    // now pass the arguments and create the window
+        ASSERT_TRUE(gwin.create(glWinPar{
+            .createHidden = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
+            .shift = { 100, 100 },    // offset relative to OS screen canvas
+            .size = { 1920, 1080 },   // set the windows size
+            .scaleToMonitor = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
+        }));
 
         // init glew
         initGLEW();
 
-        quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
-                                                glm::vec3(0.f, 0.f, 1.f),
-                                                1.f, 0.f, 0.f,
-                                                1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+        quad = make_unique<Quad>(QuadInitParams{.color = {1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
         colShader = shCol.getStdCol(); // get a simple standard color shader
 
         // start a draw loop

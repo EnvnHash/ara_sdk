@@ -16,7 +16,7 @@ public:
 
     void init() override;
     void loadStyleDefaults() override;
-    void updateStyleIt(ResNode* node, state st, std::string& styleClass) override;
+    void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
 
     void mouseMove(hidData* data) override;
     void mouseUp(hidData* data) override;

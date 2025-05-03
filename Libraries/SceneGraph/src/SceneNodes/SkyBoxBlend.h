@@ -8,41 +8,40 @@
 
 #pragma once
 
-#include <CameraSets/CameraSet.h>
-
-#include "GeoPrimitives/Sphere.h"
-#include "SceneNodes/SceneNode.h"
-#include "Shaders/Shaders.h"
-#include "Utils/TFO.h"
-#include "Utils/Texture.h"
+#include <glsg_common/glsg_common.h>
 
 namespace ara {
+
+class Sphere;
+class Texture;
+class Shaders;
+class CameraSet;
+class sceneData;
+class TFO;
+
 class SkyBoxBlend {
 public:
-    SkyBoxBlend(std::string textureFile, unsigned _nrCams = 1, sceneData* sd = nullptr);
-    SkyBoxBlend(const char* textureFile, unsigned _nrCams = 1, sceneData* sd = nullptr);
-    virtual ~SkyBoxBlend();
+    explicit SkyBoxBlend(const std::string& textureFile, unsigned _nrCams = 1, sceneData* sd = nullptr);
 
-    void init(const char* textureFile, unsigned _nrCams, sceneData* sd = nullptr);
-    void draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* tfo = nullptr);
-    void setMatr(glm::mat4* inMatr) { modMatr = inMatr; }
+    void draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* tfo = nullptr) const;
+    void setMatr(glm::mat4* inMatr) { m_modMatr = inMatr; }
 
-    void remove();
+    void remove() const;
 
 private:
-    GLBase*     m_glbase     = nullptr;
-    Sphere*     sphere       = nullptr;
-    Texture*    cubeTex      = nullptr;
-    Shaders*    perlinShader = nullptr;
-    Shaders*    sbShader     = nullptr;
-    Shaders*    testShader   = nullptr;
-    std::string vShader;
-    std::string gShader;
-    std::string fShader;
-    std::string vShaderSrc;
-    GLuint      texUnit = 0;
-    glm::mat4   pvm;
-    float       angle   = 0.f;
-    glm::mat4*  modMatr = nullptr;
+    GLBase*                     m_glbase     = nullptr;
+    std::unique_ptr<Sphere>     m_sphere;
+    std::unique_ptr<Texture>    m_cubeTex;
+    Shaders*                    m_perlinShader = nullptr;
+    Shaders*                    m_sbShader     = nullptr;
+    Shaders*                    m_testShader   = nullptr;
+    std::string                 m_vShader;
+    std::string                 m_gShader;
+    std::string                 m_fShader;
+    std::string                 m_vShaderSrc;
+    GLuint                      m_texUnit = 0;
+    glm::mat4                   m_pvm{};
+    float                       m_angle   = 0.f;
+    glm::mat4*                  m_modMatr = nullptr;
 };
 }  // namespace ara

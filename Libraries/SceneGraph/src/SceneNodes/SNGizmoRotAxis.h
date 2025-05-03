@@ -8,12 +8,12 @@ namespace ara {
 
 class SNGizmoRotAxis : public SNGizmoAxis {
 public:
-    SNGizmoRotAxis(sceneData* sd = nullptr);
-    virtual ~SNGizmoRotAxis() = default;
+    explicit SNGizmoRotAxis(sceneData* sd = nullptr);
+    ~SNGizmoRotAxis() override = default;
 
-    void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr);
+    void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr) override;
 
-    std::unique_ptr<VAO> m_gizVao[2];
+    std::array<std::unique_ptr<VAO>, 2> m_gizVao;
 #ifdef GIZMO_ROT_SHADER_ONLY
     void initShader();
 

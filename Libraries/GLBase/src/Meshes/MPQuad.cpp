@@ -64,11 +64,11 @@ void MPQuad::setPositions(float x, float y, float w, float h, const glm::mat4& r
 
     // first triangle
     m_positions.insert(m_positions.end(), &upperLeft[0], &upperLeft[3]);
-    m_texCoords.push_back(0.f);
-    m_texCoords.push_back(1.f);
+    m_texCoords.emplace_back(0.f);
+    m_texCoords.emplace_back(1.f);
 
     m_positions.insert(m_positions.end(), &lowerLeft[0], &lowerLeft[3]);
-    m_texCoords.push_back(0.f);
+    m_texCoords.emplace_back(0.f);
     m_texCoords.push_back(0.f);
 
     m_positions.insert(m_positions.end(), &lowerRight[0], &lowerRight[3]);

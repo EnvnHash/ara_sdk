@@ -15,80 +15,75 @@
 
 
 #include "GeoPrimitives/Sphere.h"
-
 #include <Meshes/Mesh.h>
 #include <Utils/VAO.h>
 
+using namespace std;
+using namespace glm;
+
 namespace ara {
 Sphere::Sphere(float _radius, int _nrSlices, bool _cclockw, bool _triangulate, bool _genTexCoord)
-    : GeoPrimitive(), radius(_radius), cclockw(_cclockw), numberSlices(_nrSlices), triangulate(_triangulate),
-      genTexCoord(_genTexCoord) {
+    : GeoPrimitive(), genTexCoord(_genTexCoord), cclockw(_cclockw), triangulate(_triangulate), radius(_radius),
+      numberSlices(_nrSlices) {
     instAttribs    = nullptr;
     maxNrInstances = 1;
-    init();
+    Sphere::init();
 }
 
 void Sphere::init() {
     unsigned int i, j;
-    unsigned int indexIndices;
 
     unsigned int numberParallels = numberSlices / 2;
     numberVertices               = (numberParallels + 1) * (numberSlices + 1);
     unsigned int numberIndices   = numberParallels * numberSlices * 6;
 
-    float angleStep = (2.0f * (float)M_PI) / ((float)numberSlices);
-    // float angleStepY = (2.0f * M_PI) / ((float) numberSlices-1);
+    float angleStep = (2.0f * static_cast<float>(M_PI)) / static_cast<float>(numberSlices);
 
-    // used later to help us calculating tangents vectors
+    // used later to help us to calculate tangents vectors
     glm::vec4 helpVector = glm::vec4(1.f, 0.f, 0.f, 0.f);
     glm::quat helpQuaternion;
-    glm::mat4 helpMatrix;
 
-    if (numberSlices < 3 || numberVertices > MAX_VERTICES || numberIndices > MAX_INDICES)
+    if (numberSlices < 3 || numberVertices > MAX_VERTICES || numberIndices > MAX_INDICES) {
         std::cerr << "Sphere initialization error!!!!" << std::endl;
+    }
 
-    vertices  = new GLfloat[3 * numberVertices];
-    normals   = new GLfloat[3 * numberVertices];
-    texCoords = new GLfloat[2 * numberVertices];
-    colors    = new GLfloat[4 * numberVertices];
-    indices   = new GLuint[numberIndices];
+    vertices.resize(numberVertices);
+    normals.resize(numberVertices);
+    texCoords.resize(numberVertices);
+    colors.resize(numberVertices);
+    indices.resize(numberIndices);
 
-    glm::vec4 *tangents = new glm::vec4[numberVertices];
+    auto tangents = std::vector<glm::vec4>(numberVertices);
 
     for (i = 0; i < numberParallels + 1; i++) {
         for (j = 0; j < numberSlices + 1; j++) {
-            GLuint baseInd        = (i * (numberSlices + 1) + j);
-            GLuint vertexIndex    = baseInd * 3;
-            GLuint normalIndex    = baseInd * 3;
-            GLuint colorIndex     = baseInd * 4;
-            GLuint texCoordsIndex = baseInd * 2;
-            GLuint tangentIndex   = baseInd;
+            auto  baseInd = (i * (numberSlices + 1) + j);
 
-            vertices[vertexIndex + 0] = radius * sinf(angleStep * (GLfloat)i) * sinf(angleStep * (GLfloat)j);
-            vertices[vertexIndex + 1] = radius * cosf(angleStep * (GLfloat)i);
-            vertices[vertexIndex + 2] = radius * sinf(angleStep * (GLfloat)i) * cosf(angleStep * (GLfloat)j);
+            vertices[baseInd].x = radius * sinf(angleStep * static_cast<GLfloat>(i)) * sinf(angleStep * static_cast<GLfloat>(j));
+            vertices[baseInd].y = radius * cosf(angleStep * static_cast<GLfloat>(i));
+            vertices[baseInd].z = radius * sinf(angleStep * static_cast<GLfloat>(i)) * cosf(angleStep * static_cast<GLfloat>(j));
 
-            normals[normalIndex + 0] = vertices[vertexIndex + 0] / radius;
-            normals[normalIndex + 1] = vertices[vertexIndex + 1] / radius;
-            normals[normalIndex + 2] = vertices[vertexIndex + 2] / radius;
+            normals[baseInd].x = vertices[baseInd].x / radius;
+            normals[baseInd].y = vertices[baseInd].y / radius;
+            normals[baseInd].z = vertices[baseInd].z / radius;
 
-            colors[colorIndex + 0] = 1.f;
-            colors[colorIndex + 1] = 1.f;
-            colors[colorIndex + 2] = 1.f;
-            colors[colorIndex + 3] = 1.f;
+            colors[baseInd].r = 1.f;
+            colors[baseInd].g = 1.f;
+            colors[baseInd].b = 1.f;
+            colors[baseInd].a = 1.f;
 
-            texCoords[texCoordsIndex + 0] = (GLfloat)j / (GLfloat)numberSlices;
-            texCoords[texCoordsIndex + 1] = 1.0f - (GLfloat)i / (GLfloat)numberParallels;
+            texCoords[baseInd].x = static_cast<GLfloat>(j) / static_cast<GLfloat>(numberSlices);
+            texCoords[baseInd].y = 1.0f - static_cast<GLfloat>(i) / static_cast<GLfloat>(numberParallels);
 
             // use quaternion to get the tangent vector
-            glm::rotate(helpQuaternion, glm::vec4(texCoords[texCoordsIndex + 0]) * GLfloat(M_PI * 2.0));
-            helpMatrix             = glm::mat4(helpQuaternion);
-            tangents[tangentIndex] = helpMatrix * helpVector;
+            glm::rotate(helpQuaternion, glm::vec4(texCoords[baseInd].x) * static_cast<GLfloat>(M_PI * 2.0));
+            auto helpMatrix = glm::mat4(helpQuaternion);
+            tangents[baseInd] = helpMatrix * helpVector;
         }
     }
 
     // generate indices
-    indexIndices = 0;
+    unsigned int indexIndices = 0;
     if (cclockw) {
         for (i = 0; i < numberParallels; i++) {
             for (j = 0; j < numberSlices; j++) {
@@ -116,43 +111,47 @@ void Sphere::init() {
     }
 
     // everything ready now convert the Mesh to a VAO -> upload to GPU
-    GLenum usage = GL_STATIC_DRAW;
-    if (instAttribs) usage = GL_DYNAMIC_DRAW;
-    if (genTexCoord)
-        m_format = "position:3f,normal:3f,texCoord:2f,color:4f";
-    else
-        m_format = "position:3f,normal:3f,color:4f";
+    GLenum usage = instAttribs ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW;
+    m_format = genTexCoord ? "position:3f,normal:3f,texCoord:2f,color:4f" : "position:3f,normal:3f,color:4f";
 
     m_vao = std::make_unique<VAO>(m_format, usage, instAttribs, maxNrInstances, true);
 
     if (triangulate) {
         numberVertices = numberIndices;
 
-        tVertices  = new GLfloat[numberVertices * 3];
-        tNormals   = new GLfloat[numberVertices * 3];
-        tTexCoords = new GLfloat[numberVertices * 2];
-        tColors    = new GLfloat[numberVertices * 4];
+        tVertices.resize(numberVertices);
+        tNormals.resize(numberVertices);
+        tTexCoords.resize(numberVertices);
+        tColors.resize(numberVertices);
 
-        for (unsigned int j = 0; j < numberIndices; j++) {
+        for (unsigned int l = 0; l < numberIndices; l++) {
             for (unsigned int k = 0; k < 3; k++) {
-                tVertices[j * 3 + k] = vertices[indices[j] * 3 + k];
-                tNormals[j * 3 + k]  = normals[indices[j] * 3 + k];
+                tVertices[l + k] = vertices[indices[l] + k];
+                tNormals[l + k]  = normals[indices[l] + k];
             }
 
-            for (unsigned int k = 0; k < 2; k++) tTexCoords[j * 2 + k] = texCoords[indices[j] * 2 + k];
+            for (unsigned int k = 0; k < 2; k++) {
+                tTexCoords[l + k] = texCoords[indices[l] + k];
+            }
 
-            for (unsigned int k = 0; k < 4; k++) tColors[j * 4 + k] = colors[indices[j] * 4 + k];
+            for (unsigned int k = 0; k < 4; k++) {
+                tColors[l + k] = colors[indices[l] + k];
+            }
         }
 
-        m_vao->upload(CoordType::Position, &tVertices[0], numberVertices);
-        m_vao->upload(CoordType::Normal, &tNormals[0], numberVertices);
-        if (genTexCoord) m_vao->upload(CoordType::TexCoord, &tTexCoords[0], numberVertices);
-        m_vao->upload(CoordType::Color, &tColors[0], numberVertices);
+        m_vao->upload(CoordType::Position, &tVertices[0][0], numberVertices);
+        m_vao->upload(CoordType::Normal, &tNormals[0][0], numberVertices);
+        if (genTexCoord) {
+            m_vao->upload(CoordType::TexCoord, &tTexCoords[0][0], numberVertices);
+        }
+        m_vao->upload(CoordType::Color, &tColors[0][0], numberVertices);
     } else {
-        m_vao->upload(CoordType::Position, &vertices[0], numberVertices);
-        m_vao->upload(CoordType::Normal, &normals[0], numberVertices);
-        if (genTexCoord) m_vao->upload(CoordType::TexCoord, &texCoords[0], numberVertices);
-        m_vao->upload(CoordType::Color, &colors[0], numberVertices);
+        m_vao->upload(CoordType::Position, &vertices[0][0], numberVertices);
+        m_vao->upload(CoordType::Normal, &normals[0][0], numberVertices);
+        if (genTexCoord) {
+            m_vao->upload(CoordType::TexCoord, &texCoords[0][0], numberVertices);
+        }
+        m_vao->upload(CoordType::Color, &colors[0][0], numberVertices);
         m_vao->setElemIndices(numberIndices, &indices[0]);
     }
 }
@@ -160,10 +159,11 @@ void Sphere::init() {
 #ifndef __EMSCRIPTEN__
 
 void Sphere::draw(TFO *_tfo) {
-    if (!triangulate)
+    if (!triangulate) {
         m_vao->drawElements(GL_TRIANGLES, _tfo, GL_TRIANGLES);
-    else
+    } else {
         m_vao->draw(GL_TRIANGLES, _tfo, GL_TRIANGLES);
+    }
 }
 
 #else
@@ -178,35 +178,27 @@ void Sphere::draw() {
 void Sphere::remove() {}
 
 GLfloat *Sphere::getPositions() {
-    if (triangulate)
-        return &tVertices[0];
-    else
-        return &vertices[0];
+    return triangulate ? &tVertices[0][0] : &vertices[0][0];
 }
 
 GLfloat *Sphere::getNormals() {
-    if (triangulate)
-        return &tNormals[0];
-    else
-        return &normals[0];
+    return triangulate ? &tNormals[0][0] : &normals[0][0];
 }
 
 GLfloat *Sphere::getTexCoords() {
-    if (triangulate)
-        return &tTexCoords[0];
-    else
-        return &texCoords[0];
+    return triangulate ? &tTexCoords[0][0] : &texCoords[0][0];
 }
 
 GLfloat *Sphere::getColors() {
-    if (triangulate)
-        return &tColors[0];
-    else
-        return &colors[0];
+    return triangulate ? &tColors[0][0] : &colors[0][0];
 }
 
-GLuint *Sphere::getIndices() { return &indices[0]; }
+GLuint *Sphere::getIndices() {
+    return &indices[0];
+}
 
-unsigned int Sphere::getNrVertices() { return numberVertices; }
+unsigned int Sphere::getNrVertices() const {
+    return numberVertices;
+}
 
 }  // namespace ara

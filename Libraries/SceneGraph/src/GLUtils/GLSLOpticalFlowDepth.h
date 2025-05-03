@@ -26,11 +26,11 @@ public:
     void update();
     void initShaders();
 
-    void setMedian(float median) { median = median; }
+    void setMedian(float median) { m_median = median; }
     void setBright(float val) { m_bright = val; }
     void setMaxDist(float val) { m_maxDist = val; }
     void setDiffAmp(float val) { m_diffAmp = val; }
-    GLuint getLastTexId() { return m_srcId; }
+    GLuint getLastTexId() const { return m_srcId; }
 
     GLuint getResTexId();
     GLuint getDiffTexId();

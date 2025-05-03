@@ -11,9 +11,7 @@
 namespace ara {
 
 // SHOULD BE 32 BIT aligned!!!
-class LightPar {
-public:
-    LightPar() = default;
+struct LightPar {
     glm::vec4 ambientColor{0.1f, 0.1f, 0.1f, 0.f};  // material parameter
     glm::vec4 LColor{1.f, 1.f, 1.f, 1.f};           // Light Parameter
     glm::vec4 LPosition{0.f, 0.f, 0.f, 1.f};        // location of the light, eye space
@@ -34,12 +32,12 @@ public:
 class LightShaderProperties : public ShaderProperties {
 public:
     LightShaderProperties();
-    ~LightShaderProperties() = default;
+    ~LightShaderProperties() override = default;
 
     void enable(bool _b);
 
-    void*       getPtr(std::string name);
-    std::string getLightParStruct();
+    void*       getPtr(const std::string& name);
+    static std::string getLightParStruct();
 
     glm::vec3 getAmbientColor();
     glm::vec3 getColor();
@@ -59,8 +57,8 @@ public:
     //	void setUpStd();
     //	void isLocal(bool _b);
     //	void isSpot(bool _b);
-    void setAmbientColor(GLfloat _r, GLfloat _g, GLfloat _b);
-    void setColor(GLfloat _r, GLfloat _g, GLfloat _b);
+    void setAmbientColor(GLfloat r, GLfloat g, GLfloat b);
+    void setColor(GLfloat r, GLfloat g, GLfloat b);
     void setPosition(GLfloat _x, GLfloat _y, GLfloat _z);
     void setDirection(GLfloat _x, GLfloat _y, GLfloat _z);
     void setHalfVector(GLfloat _x, GLfloat _y, GLfloat _z);

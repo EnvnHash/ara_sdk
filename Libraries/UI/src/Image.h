@@ -17,14 +17,14 @@ class AssetImageBase;
 class Image : public Div {
 public:
     Image();
-    Image(std::string &&styleClass);
+    Image(const std::string& styleClass);
     Image(const std::string& file, int mipMapLevel, bool keep_aspect, align ax = align::center, valign ay = valign::center);
     ~Image() override = default;
 
     void            init() override;
     virtual void    initDefaults();
     void            loadStyleDefaults() override;
-    void            updateStyleIt(ResNode *node, state st, std::string &styleClass) override;
+    void            updateStyleIt(ResNode *node, state st, const std::string& styleClass) override;
     virtual void    setImgFlag(ResNode *node, state st);
     virtual void    setImgAlign(ResNode *node, state st);
     virtual void    setImgScale(ResNode *node, state st);
@@ -77,10 +77,8 @@ public:
     void            resizeUplPbo(int w, int h, GLenum format) { m_uplPbo.resize(w, h, format); }
     PingPongFbo    *getUplFbo();
     void            initUplPbo(int w, int h, GLenum format);
-    void            initUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-                               int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
-    void            rebuildUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-                                  int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered);
+    void            initUplFbo(const FboInitParams& params);
+    void            rebuildUplFbo(const FboInitParams& params);
 
     unsigned     m_imgFlags    = 0;
     float        m_imgScale    = 1;

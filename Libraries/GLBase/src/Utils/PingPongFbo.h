@@ -19,11 +19,11 @@ public:
     virtual ~PingPongFbo() = default;
 
     void swap();
-    void clear(float _alpha = 1.f);
-    void clearWhite();
-    void clearAlpha(float _alpha, float _col);
+    void clear(float alpha = 1.f) const;
+    void clearWhite() const;
+    void clearAlpha(float alpha, float col) const;
 
-    FBO* operator[](int n) { return fbos[n].get(); }
+    FBO* operator[](int n) const { return m_fbos[n].get(); }
 
     [[nodiscard]] GLuint getWidth() const;
     [[nodiscard]] GLuint getHeight() const;
@@ -31,20 +31,20 @@ public:
     [[nodiscard]] GLuint getBitCount() const;
     [[nodiscard]] GLenum getTarget() const;
 
-    void setMinFilter(GLenum type);
-    void setMagFilter(GLenum type);
+    void setMinFilter(GLenum type) const;
+    void setMagFilter(GLenum type) const;
 
     [[nodiscard]] GLuint getSrcTexId() const;
     [[nodiscard]] GLuint getDstTexId() const;
     [[nodiscard]] GLuint getSrcTexId(int index) const;
     [[nodiscard]] GLuint getDstTexId(int index) const;
 
-    FBO *src = nullptr;  // Source       ->  Ping
-    FBO *dst = nullptr;  // Destination  ->  Pong
+    FBO *m_src = nullptr;  // Source       ->  Ping
+    FBO *m_dst = nullptr;  // Destination  ->  Pong
 
 private:
-    std::array<std::unique_ptr<FBO>, 2> fbos;
-    int                                 flag   = 0;        // Integer for making a quick swap
-    bool                                inited = false;
+    std::array<std::unique_ptr<FBO>, 2> m_fbos;
+    int                                 m_flag   = 0;        // Integer for making a quick swap
+    bool                                m_inited = false;
 };
 }  // namespace ara

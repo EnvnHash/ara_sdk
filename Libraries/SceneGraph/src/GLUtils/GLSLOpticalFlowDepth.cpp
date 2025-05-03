@@ -32,14 +32,14 @@ GLSLOpticalFlowDepth::GLSLOpticalFlowDepth(GLBase* glbase, int width, int height
     m_texShader = m_shCol->getStdTex();
     m_texture   = make_unique<PingPongFbo>(FboInitParams{glbase, m_width, m_height, 1, GL_RGBA16F, GL_TEXTURE_2D, false, 2, 1, GL_CLAMP_TO_EDGE});
     m_texture->clear();
-    m_quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
+    m_quad = make_unique<Quad>(QuadInitParams{ .color = {0.f, 0.f, 0.f, 0.f} });
 
     initShaders();
 }
 
 void GLSLOpticalFlowDepth::update() {
-    m_texture->dst->bind();
-    m_texture->dst->clear();
+    m_texture->m_dst->bind();
+    m_texture->m_dst->clear();
 
     m_flowShader->begin();
     m_flowShader->setIdentMatrix4fv("m_pvm");
@@ -67,7 +67,7 @@ void GLSLOpticalFlowDepth::update() {
 
     m_quad->draw();
 
-    m_texture->dst->unbind();
+    m_texture->m_dst->unbind();
     m_texture->swap();
 }
 
@@ -146,7 +146,7 @@ void GLSLOpticalFlowDepth::initShaders() {
 
     frag = shdr_Header + frag;
 
-    m_flowShader = m_shCol->add("GLSLOpticalFlowDepth", vert.c_str(), frag.c_str());
+    m_flowShader = m_shCol->add("GLSLOpticalFlowDepth", vert, frag);
 }
 
 GLuint GLSLOpticalFlowDepth::getResTexId() {
@@ -154,7 +154,7 @@ GLuint GLSLOpticalFlowDepth::getResTexId() {
 }
 
 GLuint GLSLOpticalFlowDepth::getDiffTexId() {
-    return m_texture->src->getColorImg(1);
+    return m_texture->m_src->getColorImg(1);
 }
 
 }  // namespace ara

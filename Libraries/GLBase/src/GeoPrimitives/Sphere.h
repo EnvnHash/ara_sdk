@@ -23,7 +23,7 @@ class Sphere : public GeoPrimitive {
 public:
     Sphere(float radius, int nrSlices, bool cclockw = true, bool triangulate = true, bool genTexCoord = true);
 
-    virtual ~Sphere() = default;
+    ~Sphere() override = default;
 
     void init() override;
 
@@ -35,19 +35,15 @@ public:
     void draw();
 #endif
 
-    void remove();
+    static void remove();
 
     GLfloat *getPositions();
-
     GLfloat *getNormals();
-
     GLfloat *getTexCoords();
-
     GLfloat *getColors();
-
     GLuint *getIndices();
 
-    unsigned int getNrVertices();
+    unsigned int getNrVertices() const;
 
 private:
     bool                    genTexCoord    = false;
@@ -62,15 +58,15 @@ private:
 
     unsigned int numberVertices = 0;
 
-    GLfloat *vertices  = nullptr;
-    GLfloat *normals   = nullptr;
-    GLfloat *texCoords = nullptr;
-    GLfloat *colors    = nullptr;
-    GLuint  *indices   = nullptr;
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> texCoords;
+    std::vector<glm::vec4> colors;
+    std::vector<GLuint> indices;
 
-    GLfloat *tVertices  = nullptr;
-    GLfloat *tNormals   = nullptr;
-    GLfloat *tTexCoords = nullptr;
-    GLfloat *tColors    = nullptr;
+    std::vector<glm::vec3> tVertices;
+    std::vector<glm::vec3> tNormals;
+    std::vector<glm::vec2> tTexCoords;
+    std::vector<glm::vec4> tColors;
 };
 }  // namespace ara

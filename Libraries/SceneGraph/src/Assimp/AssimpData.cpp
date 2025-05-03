@@ -8,149 +8,125 @@ using namespace std;
 
 namespace ara {
 
-void AssimpData::drawMeshNoShdr(uint meshNr, GLenum renderType) {
-    if (loadSuccess) {
-        auto mesh = modelMeshes[std::max<uint>(static_cast<uint>(0),
-                                               std::min<uint>(meshNr, static_cast<uint>(modelMeshes.size() - 1)))];
-        if (drawIndexed) {
-            mesh->vao->drawElements(renderType);
-        } else {
-            mesh->vao->draw(renderType);
+void AssimpData::setTextures(const AssimpMeshHelper& mesh, Shaders* shdr) const {
+    if (bUsingTextures && mesh.hasTexture()) {
+        for (uint t = 0; t < static_cast<int>(mesh.textures.size()); t++) {
+            glActiveTexture(GL_TEXTURE0 + t);
+            shdr->setUniform1i("tex_diffuse" + to_string(t), static_cast<int>(t));
+            mesh.textures[t]->bind();
         }
     }
 }
 
 void AssimpData::sendMeshMatToShdr(uint meshNr, Shaders* shdr) {
     if (loadSuccess) {
-        auto mesh = modelMeshes[std::max<uint>(static_cast<uint>(0),
+        auto& mesh = modelMeshes[std::max<uint>(static_cast<uint>(0),
                                                std::min<uint>(meshNr, static_cast<uint>(modelMeshes.size() - 1)))];
-        if (bUsingMaterials) mesh->material.sendToShader(shdr->getProgram());
+        if (bUsingMaterials) {
+            mesh.material.sendToShader(shdr->getProgram());
+        }
     }
+}
+
+void AssimpData::setCullFace(const AssimpMeshHelper& mesh) {
+    if (mesh.twoSided) {
+        glEnable(GL_CULL_FACE);
+    } else {
+        glDisable(GL_CULL_FACE);
+    }
+}
+
+void AssimpData::setMaterials(AssimpMeshHelper& mesh, Shaders* shdr) const {
+    if (bUsingMaterials) {
+        mesh.material.sendToShader(shdr->getProgram());
+    }
+}
+
+void AssimpData::setBlendFunc(const AssimpMeshHelper& mesh) {
+    if (mesh.blendMode == AssimpMeshHelper::BLENDMODE_ALPHA) {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    } else if (mesh.blendMode == AssimpMeshHelper::BLENDMODE_ADD) {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    }
+}
+
+void AssimpData::drawByRenderType(const AssimpMeshHelper& mesh, GLenum renderType, uint nrInst) const {
+    if (nrInst > 0) {
+        if (drawIndexed) {
+            mesh.vao->drawElements(renderType);
+        } else {
+            mesh.vao->draw(renderType);
+        }
+    } else {
+        if (drawIndexed) {
+            mesh.vao->drawElementsInst(renderType, nrInst, nullptr, renderType);
+        } else {
+            mesh.vao->drawInstanced(renderType, nrInst, nullptr, static_cast<float>(mesh.mesh->mNumVertices));
+        }
+    }
+}
+
+void AssimpData::drawMeshNoShdr(uint meshNr, GLenum renderType) const {
+    if (loadSuccess) {
+        const auto& mesh = modelMeshes[std::max<uint>(static_cast<uint>(0),
+                                               std::min<uint>(meshNr, static_cast<uint>(modelMeshes.size() - 1)))];
+        drawByRenderType(mesh, renderType);
+    }
+}
+
+void AssimpData::draw(AssimpMeshHelper& mesh, Shaders* shdr, GLenum renderType, bool useTextures, uint nrInst) const {
+    if (useTextures) {
+        setTextures(mesh, shdr);
+    }
+
+    setMaterials(mesh, shdr);
+    setCullFace(mesh);
+    setBlendFunc(mesh);
+    drawByRenderType(mesh, renderType);
 }
 
 void AssimpData::drawMesh(uint meshNr, GLenum renderType, Shaders* shdr) {
     if (glOk) {
-        auto mesh = modelMeshes[std::max<uint>(static_cast<uint>(0),
-                                               std::min<uint>(meshNr, static_cast<uint>(modelMeshes.size() - 1)))];
-
-        if (bUsingTextures && mesh->hasTexture())
-            for (auto t = 0; t < int(mesh->textures.size()); t++) {
-                glActiveTexture(GL_TEXTURE0 + t);
-                shdr->setUniform1i("tex_diffuse" + to_string(t), t);
-                mesh->textures[t]->bind();
-            }
-
-        if (bUsingMaterials) mesh->material.sendToShader(shdr->getProgram());
-
-        if (mesh->twoSided)
-            glEnable(GL_CULL_FACE);
-        else
-            glDisable(GL_CULL_FACE);
-
-        if (mesh->blendMode == AssimpMeshHelper::BLENDMODE_ALPHA)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        else if (mesh->blendMode == AssimpMeshHelper::BLENDMODE_ADD)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-        if (drawIndexed)
-            mesh->vao->drawElements(renderType);
-        else
-            mesh->vao->draw(renderType);
+        auto& mesh = modelMeshes[std::max<uint>(0, std::min<uint>(meshNr, static_cast<uint>(modelMeshes.size() - 1)))];
+        draw(mesh, shdr, renderType, true);
     }
 }
 
 void AssimpData::draw(GLenum renderType, Shaders* shdr) {
     if (glOk) {
-        for (auto mesh : modelMeshes) {
-            if (bUsingTextures && mesh->hasTexture()) {
-                for (uint t = 0; t < int(mesh->textures.size()); t++) {
-                    glActiveTexture(GL_TEXTURE0 + t);
-                    shdr->setUniform1i("tex_diffuse" + to_string(t), static_cast<int>(t));
-                    mesh->textures[t]->bind();
-                }
-            }
-
-            if (bUsingMaterials) mesh->material.sendToShader(shdr->getProgram());
-
-            if (mesh->twoSided)
-                glEnable(GL_CULL_FACE);
-            else
-                glDisable(GL_CULL_FACE);
-
-            if (mesh->blendMode == AssimpMeshHelper::BLENDMODE_ALPHA)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            else if (mesh->blendMode == AssimpMeshHelper::BLENDMODE_ADD)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-            if (drawIndexed)
-                mesh->vao->drawElements(renderType);
-            else
-                mesh->vao->draw(renderType);
+        for (auto& mesh : modelMeshes) {
+            draw(mesh, shdr, renderType, true);
         }
     }
 }
 
-void AssimpData::drawInstanced(GLenum renderType, uint nrInst, Shaders* shdr) {
+void AssimpData::drawInstanced(GLenum renderType, uint nrInst, Shaders* shdr)  {
     if (glOk) {
-        for (auto mesh : modelMeshes) {
-            if (bUsingTextures && mesh->hasTexture()) {
-                for (uint t = 0; t < int(mesh->textures.size()); t++) {
-                    glActiveTexture(GL_TEXTURE0 + t);
-                    shdr->setUniform1i("tex_diffuse" + to_string(t), static_cast<int>(t));
-                    mesh->textures[t]->bind();
-                }
-            }
-
-            if (bUsingMaterials) mesh->material.sendToShader(shdr->getProgram());
-
-            if (mesh->twoSided)
-                glEnable(GL_CULL_FACE);
-            else
-                glDisable(GL_CULL_FACE);
-
-            if (mesh->blendMode == AssimpMeshHelper::BLENDMODE_ALPHA)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            else if (mesh->blendMode == AssimpMeshHelper::BLENDMODE_ADD)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-            if (drawIndexed)
-                mesh->vao->drawElementsInst(renderType, nrInst, nullptr, renderType);
-            else
-                mesh->vao->drawInstanced(renderType, nrInst, nullptr, (float)mesh->mesh->mNumVertices);
+        for (auto& mesh : modelMeshes) {
+            draw(mesh, shdr, renderType, true, nrInst);
         }
     }
 }
 
 void AssimpData::drawNoText(uint meshNr, GLenum renderType, Shaders* shdr) {
     if (glOk) {
-        for (auto mesh : modelMeshes) {
-            if (bUsingMaterials) mesh->material.sendToShader(shdr->getProgram());
-
-            if (mesh->twoSided)
-                glEnable(GL_CULL_FACE);
-            else
-                glDisable(GL_CULL_FACE);
-
-            if (mesh->blendMode == AssimpMeshHelper::BLENDMODE_ALPHA)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            else if (mesh->blendMode == AssimpMeshHelper::BLENDMODE_ADD)
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-            if (drawIndexed)
-                mesh->vao->drawElements(renderType);
-            else
-                mesh->vao->draw(renderType);
+        for (auto& mesh : modelMeshes) {
+            draw(mesh, shdr, renderType, false);
         }
     }
 }
 
 void AssimpData::update(double time) {
     if (glOk) {
-        if (!scene) return;
+        if (!scene) {
+            return;
+        }
         updateAnimations(time);
         updateMeshes(scene->mRootNode, mat4(1.f));
 
-        if (hasAnimations() == false) return;
+        if (hasAnimations() == false) {
+            return;
+        }
 
         updateBones();
         updateGLResources();
@@ -165,7 +141,7 @@ void AssimpData::updateAnimations(double time) {
     }
 }
 
-void AssimpData::updateMeshes(aiNode* node, mat4 parentMatrix) {
+void AssimpData::updateMeshes(const aiNode* node, const mat4 &parentMatrix) {
     if (glOk) {
         aiMatrix4x4 m = node->mTransformation;
         m.Transpose();
@@ -173,21 +149,23 @@ void AssimpData::updateMeshes(aiNode* node, mat4 parentMatrix) {
         matrix *= parentMatrix;
 
         for (uint i = 0; i < node->mNumMeshes; i++) {
-            int               meshIndex = static_cast<int>(node->mMeshes[i]);
-            AssimpMeshHelper* mesh      = modelMeshes[meshIndex];
-            mesh->matrix                = matrix;
+            int   meshIndex = static_cast<int>(node->mMeshes[i]);
+            auto& mesh      = modelMeshes[meshIndex];
+            mesh.matrix     = matrix;
         }
 
-        for (uint i = 0; i < node->mNumChildren; i++) updateMeshes(node->mChildren[i], matrix);
+        for (uint i = 0; i < node->mNumChildren; i++) {
+            updateMeshes(node->mChildren[i], matrix);
+        }
     }
 }
 
 void AssimpData::updateBones() {
     if (glOk) {
         // update mesh position for the animation
-        for (auto & modelMeshe : modelMeshes) {
+        for (auto& modelMesh : modelMeshes) {
             // current mesh we are introspecting
-            const aiMesh* mesh = modelMeshe->mesh;
+            const auto& mesh = modelMesh.mesh;
 
             // calculate bone matrices
             vector<aiMatrix4x4> boneMatrices(mesh->mNumBones);
@@ -212,13 +190,13 @@ void AssimpData::updateBones() {
                     // tempNode->mTransformation;
                     tempNode = tempNode->mParent;
                 }
-                modelMeshe->hasChanged = true;
+                modelMesh.hasChanged = true;
             }
 
-            modelMeshe->animatedPos.assign(modelMeshe->animatedPos.size(), aiVector3D(0.0f));
+            modelMesh.animatedPos.assign(modelMesh.animatedPos.size(), aiVector3D(0.0f));
 
             if (mesh->HasNormals())
-                modelMeshe->animatedNorm.assign(modelMeshe->animatedNorm.size(), aiVector3D(0.0f));
+                modelMesh.animatedNorm.assign(modelMesh.animatedNorm.size(), aiVector3D(0.0f));
 
             // loop through all vertex weights of all bones
             for (uint a = 0; a < mesh->mNumBones; ++a) {
@@ -231,7 +209,7 @@ void AssimpData::updateBones() {
                     size_t            vertexId = weight.mVertexId;
                     const aiVector3D& srcPos   = mesh->mVertices[vertexId];
 
-                    modelMeshe->animatedPos[vertexId] += weight.mWeight * (posTrafo * srcPos);
+                    modelMesh.animatedPos[vertexId] += weight.mWeight * (posTrafo * srcPos);
                 }
 
                 if (mesh->HasNormals()) {
@@ -243,7 +221,7 @@ void AssimpData::updateBones() {
                         size_t                vertexId = weight.mVertexId;
 
                         const aiVector3D& srcNorm = mesh->mNormals[vertexId];
-                        modelMeshe->animatedNorm[vertexId] += weight.mWeight * (normTrafo * srcNorm);
+                        modelMesh.animatedNorm[vertexId] += weight.mWeight * (normTrafo * srcNorm);
                     }
                 }
             }
@@ -275,13 +253,13 @@ void AssimpData::updateGLResources() {
 }
 
 AssimpAnimation& AssimpData::getAnimation(int animationIndex) {
-    animationIndex = (int)glm::clamp((float)animationIndex, 0.f, static_cast<float>(animations.size() - 1));
+    animationIndex = static_cast<int>(glm::clamp(static_cast<float>(animationIndex), 0.f, static_cast<float>(animations.size() - 1)));
     return animations[animationIndex];
 }
 
 vector<string> AssimpData::getMeshNames() const {
     vector<string> names(scene->mNumMeshes);
-    for (int i = 0; i < (int)scene->mNumMeshes; i++) {
+    for (int i = 0; i < static_cast<int>(scene->mNumMeshes); i++) {
         names[i] = scene->mMeshes[i]->mName.data;
     }
     return names;
@@ -290,7 +268,7 @@ vector<string> AssimpData::getMeshNames() const {
 [[maybe_unused]] Mesh* AssimpData::getMesh(const string& name) const {
     aiMesh* aim = nullptr;
 
-    for (int i = 0; i < (int)scene->mNumMeshes; i++) {
+    for (int i = 0; i < static_cast<int>(scene->mNumMeshes); i++) {
         if (string(scene->mMeshes[i]->mName.data) == name) {
             aim = scene->mMeshes[i];
             break;
@@ -318,12 +296,12 @@ Mesh* AssimpData::getMesh(int num) const {
     }
 }
 
-VAO* AssimpData::getVao(int num) {
+VAO* AssimpData::getVao(int num) const {
     if (static_cast<int>(scene->mNumMeshes) <= num) {
         LOGE << "couldn't find mesh " << num << " there's only " << scene->mNumMeshes;
         return nullptr;
     } else {
-        return modelMeshes[num]->vao;
+        return modelMeshes[num].vao.get();
     }
 }
 
@@ -331,8 +309,8 @@ VAO* AssimpData::getVao(int num) {
     Mesh* ptr   = nullptr;
     bool  found = false;
 
-    for (auto & modelMeshe : modelMeshes) {
-        if (string(modelMeshe->mesh->mName.data) == name) {
+    for (const auto & modelMeshe : modelMeshes) {
+        if (string(modelMeshe.mesh->mName.data) == name) {
             /*
              if(!modelMeshes[i]->validCache)
              {
@@ -342,7 +320,7 @@ VAO* AssimpData::getVao(int num) {
              vector<vec3> pos =
              aiVecVecToGlmVecVec(modelMeshes[i]->animatedPos); for(short
              j=0;j<(int)pos.size();j++)
-             modelMeshes[i]->cachedMesh.push_back_positions(&pos[j][0], 3);
+             modelMeshes[i]->cachedMesh.emplace_back_positions(&pos[j][0], 3);
 
              vector<vec3> norm =
              aiVecVecToGlmVecVec(modelMeshes[i]->animatedNorm); for(short
@@ -394,10 +372,10 @@ VAO* AssimpData::getVao(int num) {
     return ptr;
 }
 
-MaterialProperties* AssimpData::getMaterialForMesh(const string& name) {
-    for (auto & modelMeshe : modelMeshes) {
-        if (string(modelMeshe->mesh->mName.data) == name) {
-            return &modelMeshe->material;
+const MaterialProperties *AssimpData::getMaterialForMesh(const string &name) const {
+    for (const auto & modelMesh : modelMeshes) {
+        if (string(modelMesh.mesh->mName.data) == name) {
+            return &modelMesh.material;
         }
     }
 
@@ -405,37 +383,32 @@ MaterialProperties* AssimpData::getMaterialForMesh(const string& name) {
     return nullptr;
 }
 
-MaterialProperties* AssimpData::getMaterialForMesh(int num) {
-    if ((int)modelMeshes.size() <= num) {
-        LOGE << "couldn't find mesh " << num << " there's only " << scene->mNumMeshes;
-        return nullptr;
-    }
-    return &modelMeshes[num]->material;
-}
-
-Texture* AssimpData::getTextureForMesh(const string& name, int ind) {
-    bool     found = false;
-    Texture* ptr   = nullptr;
-
-    for (auto & modelMeshe : modelMeshes)
-        if (string(modelMeshe->mesh->mName.data) == name) {
-            found = true;
-            ptr   = modelMeshe->textures[ind];
-        }
-
-    if (!found) {
-        LOGE << "couldn't find mesh " << name;
-    }
-
-    return ptr;
-}
-
-Texture* AssimpData::getTextureForMesh(int num, int ind) {
+MaterialProperties* AssimpData::getMaterialForMesh(int num)  {
     if (static_cast<int>(modelMeshes.size()) <= num) {
         LOGE << "couldn't find mesh " << num << " there's only " << scene->mNumMeshes;
         return nullptr;
     }
-    return modelMeshes[num]->textures[ind];
+    return &modelMeshes[num].material;
+}
+
+Texture* AssimpData::getTextureForMesh(const string& name, int ind) const {
+    auto r = ranges::find_if(modelMeshes, [&](auto &it) { return string(it.mesh->mName.data) == name; });
+
+    if (r == modelMeshes.end()) {
+        LOGE << "couldn't find mesh " << name;
+        return nullptr;
+    } else {
+        return r->textures[ind].get();
+    }
+
+}
+
+Texture* AssimpData::getTextureForMesh(int num, int ind) const {
+    if (static_cast<int>(modelMeshes.size()) <= num) {
+        LOGE << "couldn't find mesh " << num << " there's only " << scene->mNumMeshes;
+        return nullptr;
+    }
+    return modelMeshes[num].textures[ind].get();
 }
 
 vec3 AssimpData::getDimensions() const {
@@ -452,11 +425,11 @@ vec3 AssimpData::getSceneMax(bool bScaled) const {
      return bScaled ? sceneMax * scale : sceneMax;
 }
 
-vec3 AssimpData::getRotationAxis(int which) {
+vec3 AssimpData::getRotationAxis(int which) const {
     return static_cast<uint>(rotAxis.size()) > static_cast<uint>(which) ? rotAxis[which] : vec3{};
 }
 
-float AssimpData::getRotationAngle(int which) {
+float AssimpData::getRotationAngle(int which) const {
     return (static_cast<uint>(rotAngle.size()) > static_cast<uint>(which)) ? rotAngle[which] : 0.f;
 }
 

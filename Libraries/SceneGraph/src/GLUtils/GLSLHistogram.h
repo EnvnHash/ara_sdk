@@ -61,7 +61,7 @@ public:
         m_getEnergySum     = true;
         return m_energySum;
     }
-    [[nodiscard]] GLint getResult() const { return m_histoFbo->src->getColorImg(); }
+    [[nodiscard]] GLint getResult() const { return m_histoFbo->m_src->getColorImg(); }
     [[nodiscard]] GLint getMinMaxTex() const { return m_minMaxFbo->getColorImg(); }
     [[nodiscard]] float getSubtrMax() const { return m_maxValOfType; }
     void  setSmoothing(float val) { m_smoothing = val; }

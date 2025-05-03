@@ -32,18 +32,35 @@ void DemoView_ScrollView_3::init() {
 void DemoView_ScrollView_3::Unit::init() {
     setPadding(10);
 
-    addChild(make_unique<Label>(LabelInitData{0, 0, 180, 24, m_fontColor, glm::vec4(.1f, .1f, .2f, 1.f), m_Title,
-                                align::center, valign::center, "bold",22}));
+    addChild(make_unique<Label>(LabelInitData{
+        .pos = {0, 0},
+        .size = {180, 24},
+        .text_color = m_fontColor,
+        .bg_color = {.1f, .1f, .2f, 1.f},
+        .text = m_Title,
+        .ax = align::center,
+        .ay = valign::center,
+        .font_type = "bold",
+        .font_height = 22
+    }));
 
     auto img = addChild<Image>();
     img->setSize(110, 110);
-    img->setImg(std::rand()&1 ? "trigrid.png" : "FullHD_Pattern.png",1);
+    img->setImg(std::rand() & 1 ? "trigrid.png" : "FullHD_Pattern.png",1);
     img->setAlign(align::center, valign::center);
 
-    auto l2 = static_cast<Label *>(addChild(make_unique<Label>(LabelInitData{
-        0, 0, 180, 24, glm::vec4(.4f, .4f, .4f, 1.f), getBackgroundColor(), "More text here",
-        align::center, valign::center, "regular", 22
+    auto l2 = dynamic_cast<Label *>(addChild(make_unique<Label>(LabelInitData{
+        .pos = {0, 0},
+        .size = {180, 24},
+        .text_color = {.4f, .4f, .4f, 1.f},
+        .bg_color = getBackgroundColor(),
+        .text = "More text here",
+        .ax = align::center,
+        .ay = valign::center,
+        .font_type = "regular",
+        .font_height = 22
     })));
+
     l2->setAlign(align::center, valign::bottom);
 
 }

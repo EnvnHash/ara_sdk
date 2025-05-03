@@ -5,6 +5,9 @@
 //
 
 #include "Shaders/ShaderPrototype/SPNoLight.h"
+
+#include <SceneNodes/SceneNode.h>
+
 #include "CameraSets/CameraSet.h"
 
 using namespace glm;
@@ -21,15 +24,15 @@ SPNoLight::SPNoLight(sceneData *sd) : ShaderProto(sd) {
     s_useUniformBlock = false;
 #endif
 
-    // init shader
     rebuildShader(1);
 }
 
 void SPNoLight::rebuildShader(uint32_t nrCameras) {
-    if (!nrCameras) return;
+    if (!nrCameras) {
+        return;
+    }
 
-
-    string vert = s_shCol->getShaderHeader() + "// SPNoLight Light Prototype\n";
+    string vert = ShaderCollector::getShaderHeader() + "// SPNoLight Light Prototype\n";
     vert += STRINGIFY(
         layout(location = 0) in vec4 position; \n
         layout(location = 1) in vec4 normal; \n
@@ -63,7 +66,7 @@ void SPNoLight::rebuildShader(uint32_t nrCameras) {
 
     //------------------------------------------------------------------------
 
-    std::string geom = s_glbase->shaderCollector().getShaderHeader() +
+    std::string geom = ara::ShaderCollector::getShaderHeader() +
        "layout(triangles, invocations=" + to_string(nrCameras) + ") in;\n"
        "layout(triangle_strip, max_vertices=3) out;\n"
 
@@ -123,7 +126,7 @@ void SPNoLight::rebuildShader(uint32_t nrCameras) {
 
     //------------------------------------------------------------------
 
-    string frag = s_shCol->getShaderHeader();
+    string frag = ShaderCollector::getShaderHeader();
 
     frag +=
         "uniform sampler2D tex0;\n"
@@ -171,12 +174,12 @@ void SPNoLight::clear(renderPass _pass) {
     }
 }
 
-void SPNoLight::sendPar(CameraSet *cs, double time, SceneNode *node, SceneNode *parent, renderPass _pass, uint loopNr) {
-    ShaderProto::sendPar(cs, time, node, parent, _pass, loopNr);
+void SPNoLight::sendPar(CameraSet *cs, double time, SceneNode *node, SceneNode *parent, renderPass pass, uint loopNr) {
+    ShaderProto::sendPar(cs, time, node, parent, pass, loopNr);
 
-    if ((_pass == GLSG_SCENE_PASS || _pass == GLSG_GIZMO_PASS) && s_shader) {
+    if ((pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) && s_shader) {
         s_shader->setUniform1i("hasTexture", 0);
-        s_shader->setUniform1i("isGizmo", (int)(parent->m_nodeType == GLSG_GIZMO));
+        s_shader->setUniform1i("isGizmo", parent->m_nodeType == GLSG_GIZMO);
     }
 }
 
@@ -184,7 +187,7 @@ bool SPNoLight::begin(CameraSet *cs, renderPass pass, uint loopNr) {
     switch (pass) {
         case GLSG_SCENE_PASS:
             if (s_shader) {
-                glEnable(GL_BLEND);  // something is disabeling blending before randomly...
+                glEnable(GL_BLEND);  // something is disabling blending before randomly...
                 s_shader->begin();
             }
             return true;
@@ -205,7 +208,7 @@ bool SPNoLight::end(renderPass pass, uint loopNr) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
 #endif
         if (s_shader) {
-            ara::Shaders::end();
+            Shaders::end();
         }
     }
 

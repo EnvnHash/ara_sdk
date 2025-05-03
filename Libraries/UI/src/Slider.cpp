@@ -35,7 +35,7 @@ void Slider::adjustKnob() {
     m_knob->setSize(m_knobWidth, m_knobWidth);
     m_knob->setBorderRadius(m_knobWidth / 2);
 
-    m_maxDragWay    = m_size.x - (float)m_knobWidth;
+    m_maxDragWay    = m_size.x - static_cast<float>(m_knobWidth);
     m_maxDragWayRel = m_maxDragWay / m_size.x;
 }
 
@@ -49,10 +49,10 @@ void Slider::updateMatrix() {
 }
 
 UINode* Slider::addChild(std::unique_ptr<UINode> child) {
-    m_children.push_back(std::move(child));
+    m_children.emplace_back(std::move(child));
 
     // if there is a numeric view as a child, use it to display the value
-    if (!strcmp(m_children.back()->getName().c_str(), "NumericView")) {
+    if (m_children.back()->getName() == "NumericView") {
         m_numView = m_children.back().get();
     }
 

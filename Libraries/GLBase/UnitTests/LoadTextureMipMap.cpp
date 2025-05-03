@@ -14,17 +14,16 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
     GLBase m_glbase;
     Texture tex(&m_glbase);
     glWinPar gp{
-        .createHidden = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
-        .width = 64,            // set the windows width
-        .height = 64,            // set the windows height
-        .scaleToMonitor = false,  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
+        .createHidden = false,      // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
+        .size = { 64, 64 },          // set the windows size
+        .scaleToMonitor = false,    // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
     };
     bool didRun = false;
 
     void staticDrawFunc() {
         // set some OpenGL parameters
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                    // clear the screen
-        glViewport(0, 0, (GLsizei) gp.width, (GLsizei) gp.height);        // set the drawable arean
+        glViewport(0, 0, (GLsizei) gp.size.x, (GLsizei) gp.size.y);        // set the drawable arean
 
         texShader->begin();                     // bind the shader
         texShader->setIdentMatrix4fv("m_pvm");  // set the model-view-projection matrix to an indent matrix
@@ -38,14 +37,8 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
         // that's all to draw a quad, now we are reading back the framebuffer and check that everything was drawn correctly
 
         // read back
-        vector<GLubyte> data(gp.width * gp.height * 4);    // make some space to download
-        glReadBuffer(GL_FRONT);
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glReadPixels(0, 0, gp.width, gp.height, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);    // synchronous, blocking command, no swap() needed
-        ASSERT_EQ(postGLError(), GL_NO_ERROR);
-
-        int segStep = gp.width / 4;
+        auto data = readBack(gp.size);
+        int segStep = gp.size.x / 4;
         int segStepHalf = segStep / 2;
 
         // define colors to expect and their position
@@ -71,9 +64,10 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
         checkColors.emplace_back(segStep * 3 + segStepHalf, segStep * 3 + segStepHalf, glm::ivec3(0, 255, 255));
 
         for (auto &it: checkColors) {
-            size_t ptr = (std::get<0>(it) + std::get<1>(it) * gp.width) * 4;
-            for (int i = 0; i < 3; i++)
+            size_t ptr = (std::get<0>(it) + std::get<1>(it) * gp.size.x) * 4;
+            for (int i = 0; i < 3; i++) {
                 ASSERT_EQ((int) data[ptr + i], std::get<2>(it)[i]);
+            }
         }
 
         didRun = true;
@@ -85,10 +79,7 @@ namespace ara::GLBaseUnitTest::LoadTextureMipMap {
         ASSERT_TRUE(gwin.create(gp));    // now pass the arguments and create the window
         ASSERT_EQ(true, initGLEW());
 
-        quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
-                                                glm::vec3(0.f, 0.f, 1.f),
-                                                1.f, 0.f, 0.f,
-                                                1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+        quad = make_unique<Quad>(QuadInitParams{.color = { 1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
         texShader = m_glbase.shaderCollector().getStdTex(); // get a simple standard color shader
 
         // load with mipmaps set

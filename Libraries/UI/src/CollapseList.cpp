@@ -14,8 +14,8 @@ CollapseList::CollapseList() : List()
     setName(getTypeName<CollapseList>());
 }
 
-CollapseList::CollapseList(std::string&& styleClass) :
-List(std::move(styleClass))
+CollapseList::CollapseList(const std::string& styleClass) :
+List(styleClass)
 {
     setName(getTypeName<CollapseList>());
 }

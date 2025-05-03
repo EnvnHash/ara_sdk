@@ -9,13 +9,6 @@
 namespace ara {
 
 bool X11Window::create(const glWinPar &gp) {
-    return create((char *)"", gp.width, gp.height, gp.shiftX, gp.shiftY, gp.bits, gp.fullScreen, gp.createHidden,
-                  gp.decorated, gp.resizeable, gp.floating, gp.transparent, gp.shareCont);
-}
-
-bool X11Window::create(char *title, uint32_t width, uint32_t height, uint32_t m_posX, uint32_t posY, uint32_t bits,
-                       uint32_t nrSamples, bool fullscreenflag, bool hidden, bool decorated, bool resizable,
-                       bool floating, bool transparent, void *shareCtx) {
     XrmInitialize();
 
     m_display = XOpenDisplay(nullptr);
@@ -33,7 +26,7 @@ bool X11Window::create(char *title, uint32_t width, uint32_t height, uint32_t m_
     swa.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask | PointerMotionMask | ButtonPressMask |
                      ButtonReleaseMask | ExposureMask | FocusChangeMask | VisibilityChangeMask | EnterWindowMask |
                      LeaveWindowMask | PropertyChangeMask;
-    m_win = XCreateWindow(m_display, m_parent, 0, 0, width, height, 0, CopyFromParent, InputOutput, CopyFromParent,
+    m_win = XCreateWindow(m_display, m_parent, 0, 0, gp.size.x, gp.size.y, 0, CopyFromParent, InputOutput, CopyFromParent,
                           CWEventMask, &swa);
     s_wmDeleteMessage = XInternAtom(m_display, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(m_display, m_win, &s_wmDeleteMessage, 1);
@@ -49,7 +42,7 @@ bool X11Window::create(char *title, uint32_t width, uint32_t height, uint32_t m_
 
     // make the window visible on the screen
     XMapWindow(m_display, m_win);
-    XStoreName(m_display, m_win, title);
+    XStoreName(m_display, m_win, gp.title.c_str());
 
     // Create a colormap based on the visual used by the current context
     // m_colormap = XCreateColormap(m_display, root, visual, AllocNone);
@@ -59,7 +52,7 @@ bool X11Window::create(char *title, uint32_t width, uint32_t height, uint32_t m_
     if (XSupportsLocale()) {
         XSetLocaleModifiers("");
 
-        m_im = XOpenIM(m_display, 0, nullptr, nullptr);
+        m_im = XOpenIM(m_display, nullptr, nullptr, nullptr);
         if (m_im) {
             if (!hasUsableInputMethodStyle()) {
                 XCloseIM(m_im);

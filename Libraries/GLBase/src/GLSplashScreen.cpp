@@ -45,19 +45,19 @@ void GLSplashScreen::open() {
     gp.floating     = true;
     gp.doInit       = true;
     gp.transparent  = false;
-    gp.width        = static_cast<int>(actDeskWidth * 0.3f);
-    gp.height       = static_cast<int>(static_cast<float>(gp.width) * texAspect);
-    gp.shiftX       = (static_cast<int>(actDeskWidth) - gp.width) / 2;
-    gp.shiftY       = (static_cast<int>(actDeskHeight) - gp.height) / 2;
+    gp.size.x        = static_cast<int>(actDeskWidth * 0.3f);
+    gp.size.y       = static_cast<int>(static_cast<float>(gp.size.x) * texAspect);
+    gp.shift.x       = (static_cast<int>(actDeskWidth) - gp.size.x) / 2;
+    gp.shift.y       = (static_cast<int>(actDeskHeight) - gp.size.y) / 2;
     gp.resizeable   = false;
     m_win.create(gp);
 
-    glViewportIndexedf(0, 0.f, 0.f, static_cast<float>(gp.width), static_cast<float>(gp.height));
+    glViewportIndexedf(0, 0.f, 0.f, static_cast<float>(gp.size.x), static_cast<float>(gp.size.y));
     glClearColor(0.f, 0.f, 0.f, 1.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_shCol  = std::make_unique<ShaderCollector>();
-    m_quad   = std::make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f});
+    m_quad   = std::make_unique<Quad>(QuadInitParams{});
     m_stdTex = m_shCol->getStdTex();
     m_tex.loadTexture2D("data/precision_splash.jpg", 1);
 

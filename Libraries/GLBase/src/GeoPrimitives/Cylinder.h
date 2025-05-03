@@ -14,20 +14,16 @@ namespace ara {
 class Cylinder : public GeoPrimitive {
 public:
     explicit Cylinder(unsigned int nrSegs, std::vector<CoordType> *instAttribs = nullptr, int maxNrInstances = 1);
+    ~Cylinder() override = default;
     void init() override;
 
-    void createTopRings(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, const std::vector<GLfloat>& ringPos,
-                        float cylRadius, unsigned int& ind) const;
-    static void createCapCenters(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, unsigned int& ind);
-    void createCapRings(std::vector<GLfloat>& positions, std::vector<GLfloat>& normals, const std::vector<GLfloat>& ringPos,
-                        float cylRadius, unsigned int& ind) const;
-
-    void remove() {}
+    static void createCapCenters(std::vector<glm::vec3>::iterator& pos, std::vector<glm::vec3>::iterator& norm);
+    static void remove() {}
 
 private:
     std::vector<CoordType> *m_instAttribs    = nullptr;
-    int                     m_maxNrInstances = 1;
-    unsigned int            m_nrSegs         = 0;
+    int32_t                 m_maxNrInstances = 1;
+    int32_t                 m_nrSegs         = 0;
     unsigned int            m_totNrPoints    = 0;
 };
 

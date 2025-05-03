@@ -20,7 +20,7 @@ namespace ara::GLBaseUnitTest::LoadTexture {
     void staticDrawFunc() {
         // set some OpenGL parameters
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);              // clear the screen
-        glViewport(0, 0, gp.width, gp.height);        // set the drawable area
+        glViewport(0, 0, gp.size.x, gp.size.y);        // set the drawable area
 
         texShader->begin();                             // bind the shader
         texShader->setIdentMatrix4fv("m_pvm");      // set the model-view-projection matrix to an indent matrix
@@ -34,14 +34,8 @@ namespace ara::GLBaseUnitTest::LoadTexture {
         // that's all to draw a quad, now we are reading back the framebuffer and check that everything was drawn correctly
 
         // read back
-        vector<GLubyte> data(gp.width * gp.height * 4);    // make some space to download
-        glReadBuffer(GL_FRONT);
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glReadPixels(0, 0, gp.width, gp.height, GL_RGBA, GL_UNSIGNED_BYTE, &data[0]);    // synchronous, blocking command, no swap() needed
-        ASSERT_EQ(postGLError(), GL_NO_ERROR);
-
-        int segStep = gp.width / 4;
+        auto data= readBack(gp.size);
+        int segStep = gp.size.x / 4;
         int segStepHalf = segStep / 2;
 
         // define colors to expect and their position
@@ -67,7 +61,7 @@ namespace ara::GLBaseUnitTest::LoadTexture {
         checkColors.emplace_back(segStep * 3 + segStepHalf, segStep * 3 + segStepHalf, glm::ivec3(0, 255, 255));
 
         for (auto &it: checkColors) {
-            size_t ptr = (std::get<0>(it) + std::get<1>(it) * gp.width) * 4;
+            size_t ptr = (std::get<0>(it) + std::get<1>(it) * gp.size.x) * 4;
             for (int i = 0; i < 3; i++) {
                 ASSERT_EQ(static_cast<int>(data[ptr + i]), std::get<2>(it)[i]);
             }
@@ -79,19 +73,15 @@ namespace ara::GLBaseUnitTest::LoadTexture {
 
     TEST(GLBaseTest, LoadTexture) {
         // direct window creation
-        // gp.debug = true;
-        gp.width = 64;              // set the windows width
-        gp.height = 64;             // set the windows height
+        gp.size.x = 64;              // set the window's width
+        gp.size.y = 64;             // set the window's height
         gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
         gp.createHidden = false;    // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
 
         ASSERT_TRUE(gwin.create(gp));    // now pass the arguments and create the window
         ASSERT_EQ(true, initGLEW());
 
-        quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
-                                                glm::vec3(0.f, 0.f, 1.f),
-                                                1.f, 0.f, 0.f,
-                                                1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+        quad = make_unique<Quad>(QuadInitParams{.color = { 1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
         texShader = m_glbase.shaderCollector().getStdTex(); // get a simple standard color shader
         tex.loadTexture2D("loadTexTest.png", 1);
         staticDrawFunc();

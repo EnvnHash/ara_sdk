@@ -315,7 +315,7 @@ void RestClient::get(json &&params, std::string url, std::function<void(json)> c
 
 void RestClient::call(json &&params, std::string url, restCallType callType, std::function<void(json)> cb) {
     std::unique_lock<std::mutex> l(m_procCallMtx);
-    m_callQueue.push_back(RestCall{std::move(url), callType, std::move(cb), true, std::move(params)});
+    m_callQueue.emplace_back(RestCall{std::move(url), callType, std::move(cb), true, std::move(params)});
     m_procQueueCond.notify();
 }
 

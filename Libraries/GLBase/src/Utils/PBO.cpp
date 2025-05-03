@@ -7,12 +7,11 @@
 namespace ara {
 
 PBO::PBO(uint32_t width, uint32_t height, GLenum internalFormat) :
-    m_width(width),
-    m_height(height),
-    m_nrPboBufs(3),
-    m_type(getPixelType(internalFormat)),
+    m_width(static_cast<GLsizei>(width)),
+    m_height(static_cast<GLsizei>(height)),
+    m_bitCount(getBitCount(internalFormat)),
     m_format(getExtType(internalFormat)),
-    m_bitCount(getBitCount(internalFormat)) {
+    m_type(getPixelType(internalFormat)) {
     getDataSize();
     init();
 }
@@ -28,8 +27,8 @@ void PBO::resizePBOArray(int nrBufs) {
 }
 
 void PBO::resize(uint32_t width, uint32_t height, GLenum internalFormat) {
-    m_width    = width;
-    m_height   = height;
+    m_width    = static_cast<GLsizei>(width);
+    m_height   = static_cast<GLsizei>(height);
     m_bitCount = getBitCount(internalFormat);
     m_type     = getPixelType(internalFormat);
     m_format   = getExtType(internalFormat);
@@ -41,7 +40,7 @@ void PBO::init() {
         m_pbos.resize(m_nrPboBufs, 0);
 
         glGenBuffers(m_nrPboBufs, &m_pbos[0]);
-        for (uint32_t i = 0; i < m_nrPboBufs; i++) {
+        for (auto i = 0; i < m_nrPboBufs; i++) {
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbos[i]);
             glBufferData(GL_PIXEL_UNPACK_BUFFER, m_dataSize, nullptr, GL_STREAM_DRAW);
             glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
@@ -50,7 +49,7 @@ void PBO::init() {
     }
 }
 
-void PBO::upload(GLuint textureId, void *dataPtr) {
+void PBO::upload(GLuint textureId, const void *dataPtr) {
     // "index" is used to copy pixels from a PBO to a texture object
     // "nextIndex" is used to update pixels in the other PBO
     m_uplIdx    = (m_uplIdx + 1) % m_nrPboBufs;
@@ -72,9 +71,8 @@ void PBO::upload(GLuint textureId, void *dataPtr) {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_pbos[m_nextIndex]);
     glBufferData(GL_PIXEL_UNPACK_BUFFER, m_dataSize, nullptr, GL_STREAM_DRAW);  // discard the buffer, avoid waiting
 
-    auto ptr = static_cast<GLubyte*>(glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_dataSize, GL_MAP_WRITE_BIT));
-    if (ptr) {
-        std::copy(static_cast<const uint8_t*>(dataPtr), static_cast<const uint8_t*>(dataPtr) + m_dataSize, ptr);
+    if (auto ptr = static_cast<GLubyte*>(glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_dataSize, GL_MAP_WRITE_BIT))) {
+        std::copy_n(static_cast<const uint8_t*>(dataPtr), m_dataSize, ptr);
         glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);  // release the mapped buffer
     }
 

@@ -13,94 +13,93 @@ using namespace std;
 
 namespace ara {
 
-PingPongFbo::PingPongFbo(const FboInitParams& ip)
-    : flag(0) {
+PingPongFbo::PingPongFbo(const FboInitParams& ip) {
     for (int i = 0; i < 2; i++) {
-        fbos[i] = make_unique<FBO>(ip);
-        fbos[i]->bind();
-        fbos[i]->clearAlpha(1.f);
-        fbos[i]->unbind();
+        m_fbos[i] = make_unique<FBO>(ip);
+        m_fbos[i]->bind();
+        m_fbos[i]->clearAlpha(1.f);
+        m_fbos[i]->unbind();
     }
 
-    src    = fbos[0].get();
-    dst    = fbos[1].get();
-    inited = true;
+    m_src    = m_fbos[0].get();
+    m_dst    = m_fbos[1].get();
+    m_inited = true;
 }
 
 void PingPongFbo::swap() {
-    flag = (flag + 1) % 2;
-    src  = fbos[flag % 2].get();
-    dst  = fbos[(flag + 1) % 2].get();
+    m_flag = (m_flag + 1) % 2;
+    m_src  = m_fbos[m_flag % 2].get();
+    m_dst  = m_fbos[(m_flag + 1) % 2].get();
 }
 
-void PingPongFbo::clear(float _alpha) {
+void PingPongFbo::clear(float _alpha) const {
     for (int i = 0; i < 2; i++) {
-        fbos[i]->bind();
-        fbos[i]->clearAlpha(_alpha);
-        fbos[i]->unbind();
+        m_fbos[i]->bind();
+        m_fbos[i]->clearAlpha(_alpha);
+        m_fbos[i]->unbind();
     }
 }
 
-void PingPongFbo::clearWhite() {
+void PingPongFbo::clearWhite() const {
     for (int i = 0; i < 2; i++) {
-        fbos[i]->bind();
-        fbos[i]->clearWhite();
-        fbos[i]->unbind();
+        m_fbos[i]->bind();
+        m_fbos[i]->clearWhite();
+        m_fbos[i]->unbind();
     }
 }
 
-void PingPongFbo::clearAlpha(float _alpha, float _col) {
+void PingPongFbo::clearAlpha(float alpha, float col) const {
     for (int i = 0; i < 2; i++) {
-        fbos[i]->clearToColor(_col, _col, _col, _alpha);
+        m_fbos[i]->clearToColor(col, col, col, alpha);
     }
 }
 
-void PingPongFbo::setMinFilter(GLenum _type) {
+void PingPongFbo::setMinFilter(GLenum type) const {
     for (int i = 0; i < 2; i++) {
-        fbos[i]->setMinFilter(_type);
+        m_fbos[i]->setMinFilter(type);
     }
 }
 
-void PingPongFbo::setMagFilter(GLenum _type) {
+void PingPongFbo::setMagFilter(GLenum type) const {
     for (int i = 0; i < 2; i++) {
-        fbos[i]->setMagFilter(_type);
+        m_fbos[i]->setMagFilter(type);
     }
 }
 
 GLuint PingPongFbo::getSrcTexId() const {
-    return src ? src->getColorImg() : 0;
+    return m_src ? m_src->getColorImg() : 0;
 }
 
 GLuint PingPongFbo::getDstTexId() const {
-    return dst ? dst->getColorImg() : 0;
+    return m_dst ? m_dst->getColorImg() : 0;
 }
 
 GLuint PingPongFbo::getSrcTexId(int _index) const {
-    return src ? src->getColorImg(_index) : 0;
+    return m_src ? m_src->getColorImg(_index) : 0;
 }
 
 GLuint PingPongFbo::getDstTexId(int _index) const {
-    return dst ? dst->getColorImg(_index) : 0;
+    return m_dst ? m_dst->getColorImg(_index) : 0;
 }
 
 GLuint PingPongFbo::getWidth() const {
-    return src ? src->getWidth() : 0;
+    return m_src ? m_src->getWidth() : 0;
 }
 
 GLuint PingPongFbo::getHeight() const {
-    return src ? src->getHeight() : 0;
+    return m_src ? m_src->getHeight() : 0;
 }
 
 GLuint PingPongFbo::getDepth() const {
-    return src ? src->getDepth() : 0;
+    return m_src ? m_src->getDepth() : 0;
 }
 
 GLuint PingPongFbo::getBitCount() const {
-    return src ? ara::getBitCount(src->getType()) : 0;
+    return m_src ? ara::getBitCount(m_src->getType()) : 0;
 }
 
 GLenum PingPongFbo::getTarget() const {
-    return src ? src->getTarget() : 0;
+    return m_src ? m_src->getTarget() : 0;
 }
 
 }  // namespace ara

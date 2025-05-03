@@ -34,7 +34,7 @@ void UIApplicationBase::destroyGLBase() {
 #endif
 }
 
-void UIApplicationBase::mainWinIterate() {
+void UIApplicationBase::mainWinIterate() const {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     m_mainWindow->getWinHandle()->iterate();
 #endif

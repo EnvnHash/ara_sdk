@@ -10,9 +10,8 @@ namespace ara {
 class SNSurface : public SceneNode {
 public:
     SNSurface(sceneData* sd = nullptr);
-    ~SNSurface();
 
-    void draw(double time, double dt, CameraSet* cs, Shaders* _shader, renderPass _pass, TFO* _tfo = nullptr);
+    void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr);
     bool rebuildMesh();
 
     SurfaceGenerator m_surfGen;

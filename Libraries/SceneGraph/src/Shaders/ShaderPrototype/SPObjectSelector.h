@@ -6,41 +6,38 @@
 
 #pragma once
 
-#include <StopWatch.h>
-
-#include "SceneNodes/SNGizmo.h"
-#include "Shaders/ShaderCollector.h"
 #include "Shaders/ShaderPrototype/ShaderProto.h"
-#include "Utils/FBO.h"
-#include "Utils/VAO.h"
 
 namespace ara {
+
+class FBO;
+class SNGizmo;
+class VAO;
 
 class SPObjectSelector : public ShaderProto {
 public:
     enum class objSelState : int { idle = 0, translating, rotating, scaling };
 
     SPObjectSelector(sceneData* sd);
-    ~SPObjectSelector() = default;
 
     void buildFbo(uint nrCameras);
     void initDepthGenShader(uint nrCameras);
     void initDepthReadShader();
     bool zoomSelectedObject(trackballPreset* camPreset, bool toObjCenter = false, bool adjRotation = false);
-    void zoomToBounds(trackballPreset* camPreset, glm::vec3& bbMin, glm::vec3& bbMax, glm::vec3& transOffs,
+    void zoomToBounds(trackballPreset* camPreset, const glm::vec3& bbMin, const glm::vec3& bbMax, const glm::vec3& transOffs,
                       bool toObjCenter = false, bool adjRotation = false);
 
     void calcGizmoAxisNDC();
     void calcMouseMoveVec(float x, float y, float* mouseMovedSign);
     void calcIntersectPlane(float x, float y, bool skipPlaneSorting);
-    void calcOffsVecTransAndScale(glm::vec3* offsetVec, float* mouseMovedSign);
+    void calcOffsVecTransAndScale(glm::vec3* offsetVec, const float* mouseMovedSign);
     void mouseDownLeft(float x, float y, SceneNode* sceneTree) override;
     void mouseUpLeft(SceneNode* sceneTree) override;
     void mouseUpRight(SceneNode* sceneTree) override;
     void keyDown(hidData* data) override;
     void keyUp(hidData* data) override;
 
-    glm::vec4 unProjectMouse(glm::vec4& inPoint, glm::vec3 camPos, glm::vec3& planeOrig, glm::vec3& planeNormal);
+    glm::vec4 unProjectMouse(const glm::vec4& inPoint, glm::vec3 camPos, const glm::vec3& planeOrig, const glm::vec3& planeNormal);
     void      mouseMove(float x, float y) override;
     void      selectObj(int objId, bool onMouseUp);
     void      addGizmo(transMode gMode);
@@ -50,24 +47,24 @@ public:
     bool begin(CameraSet* cs, renderPass pass, uint loopNr = 0) override;
     bool end(renderPass pass, uint loopNr = 0) override;
 
-    void       clear(renderPass pass) override;
-    void       clearDepth();
-    Shaders*   getShader(renderPass pass, uint loopNr = 0) override { return s_shader; }
-    float      getDepthAtScreen(float x, float y, float near, float far);
-    void       setScreenSize(uint width, uint height) override;
-    void       setTransMode(transMode trMode);
-    void       deselect();
-    SceneNode* getGizmoNode();
+    void                        clear(renderPass pass) override;
+    void                        clearDepth() const;
+    Shaders*                    getShader(renderPass pass, uint loopNr = 0) override { return s_shader; }
+    [[nodiscard]] float         getDepthAtScreen(float x, float y, float near, float far) const;
+    void                        setScreenSize(uint width, uint height) override;
+    void                        setTransMode(transMode trMode);
+    void                        deselect();
+    [[nodiscard]] SceneNode*    getGizmoNode() const;
+    [[nodiscard]] SceneNode*    getLastSceneTree() const { return m_lastSceneTree; }
+    [[nodiscard]] SceneNode*    getSelectedNode() const { return m_selectedNode; }
+    [[nodiscard]] SceneNode*    getSelectedObjectNode() const { return m_selectedObjectNode; }
+    glm::vec4&                  getGizmoMoveVec2D() { return m_gizmoMoveVec2D; }
+    transMode                   getTransMode() override { return m_actTransMode; }
+    objSelState                 getState() { return m_state; }
+    [[nodiscard]] uint64_t      getGizmoselected() const { return m_gizmoselected; }
+    cfState                     getCfState() { return m_cfState; }
+    [[nodiscard]] bool          gizmoWasDragged() const { return m_gizmoDragged; }
 
-    SceneNode*  getLastSceneTree() { return m_lastSceneTree; }
-    SceneNode*  getSelectedNode() { return m_selectedNode; }
-    SceneNode*  getSelectedObjectNode() { return m_selectedObjectNode; }
-    glm::vec4&  getGizmoMoveVec2D() { return m_gizmoMoveVec2D; }
-    transMode   getTransMode() override { return m_actTransMode; }
-    objSelState getState() { return m_state; }
-    uint64_t    getGizmoselected() { return m_gizmoselected; }
-    cfState     getCfState() { return m_cfState; }
-    bool        gizmoWasDragged() { return m_gizmoDragged; }
     void setGizmoNodes(std::vector<SNGizmo*>* gizmos) { m_gizmos = gizmos; }
     void setLastSceneTree(SceneNode* inSceneTree) { m_lastSceneTree = inSceneTree; }
     void setNrCams(int nrCams) override {
@@ -124,11 +121,11 @@ private:
     glm::vec2 m_mouseMoved2D{0.f};
     glm::vec3 m_mouseDownObjTransVec{0.f};
     glm::vec3 m_mouseDownObjScaleVec{0.f};
-    glm::quat m_mouseDownObjRot;
+    glm::quat m_mouseDownObjRot{};
 
     glm::vec3 m_gizmoMouseDownTransVec{0.f};
     glm::vec3 m_gizmoMouseDownScaleVec{0.f};
-    glm::quat m_gizmoMouseDownRot;
+    glm::quat m_gizmoMouseDownRot{};
     glm::mat4 m_gizmoMouseDownModelMat = glm::mat4(1.f);
     glm::vec3 m_newTransVec{0.f};
     glm::vec3 t_planeOrig{0.f};
@@ -153,8 +150,8 @@ private:
     glm::mat4 m_gizmo_projViewMat = glm::mat4(1.f);
     glm::mat4 m_invVP             = glm::mat4(1.f);
 
-    glm::quat m_rotToXAxis;
-    glm::quat m_invRotToXAxis;
+    glm::quat m_rotToXAxis{};
+    glm::quat m_invRotToXAxis{};
 
     std::map<float, glm::vec3> m_sortedNormals;
     std::vector<SNGizmo*>*     m_gizmos = nullptr;

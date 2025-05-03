@@ -17,26 +17,29 @@ SPDirLight::SPDirLight(sceneData* sd) : ShaderProto(sd) {
 
     lightProp.setAmbientColor(0.2f, 0.2f, 0.2f);
 
-    vec3 lightPos = vec3(-3.5f, 1.0f, 0.0f);  // from the object and not to the object
-    lightProp.setPosition(lightPos.x, lightPos.y,
-                          lightPos.z);  // by scaling this, the intensity varies
+    auto lightPos = vec3{-3.5f, 1.0f, 0.0f};  // from the object and not to the object
+    lightProp.setPosition(lightPos.x, lightPos.y, lightPos.z);  // by scaling this, the intensity varies
 
     lightDir = normalize(vec3(0.3f, 1.f, 1.0f));  // from the object and not to the object
-    lightProp.setDirection(lightDir.x, lightDir.y,
-                           lightDir.z);    // by scaling this, the intensity varies
+    lightProp.setDirection(lightDir.x, lightDir.y, lightDir.z);    // by scaling this, the intensity varies
     lightProp.setColor(1.0f, 1.0f, 1.0f);  // LightColor
 
     // vertex shader
-    std::string vert = s_shCol->getShaderHeader();
+    std::string vert = ShaderCollector::getShaderHeader();
     vert += "//SPDirLight Directional Light Prototype\n";
 
-    vert += STRINGIFY(layout(location = 0) in vec4 position; layout(location = 1) in vec4 normal;
-                      layout(location = 2) in vec2 texCoord; layout(location = 3) in vec4 color;);
+    vert += STRINGIFY(layout(location = 0) in vec4 position;
+    	layout(location = 1) in vec4 normal;
+    	layout(location = 2) in vec2 texCoord;
+    	layout(location = 3) in vec4 color;
+    );
 
-    for (uint i = 0; i < 4; i++) vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
+    for (uint i = 0; i < 4; i++) {
+	    vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
+    }
     vert += "uniform mat3 " + getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] + "; \n";
 
-        vert += STRINGIFY(
+    vert += STRINGIFY(
 	out VS_FS {
         vec4    position;
         \n vec3 normal;
@@ -53,7 +56,7 @@ SPDirLight::SPDirLight(sceneData* sd) : ShaderProto(sd) {
 
         vert += getStdPvmMult() + "}";
 
-        std::string frag = s_shCol->getShaderHeader();
+        std::string frag = ShaderCollector::getShaderHeader();
         frag += "//SPDirLight Directional Light Prototype\n";
 
         frag += STRINGIFY(
@@ -108,58 +111,48 @@ SPDirLight::SPDirLight(sceneData* sd) : ShaderProto(sd) {
 		}
 	);
 
-        s_shader = s_shCol->add("SPDirLight", vert, frag);
+    s_shader = s_shCol->add("SPDirLight", vert, frag);
 }
 
 
-void SPDirLight::clear(renderPass _pass) {}
+void SPDirLight::clear(renderPass pass) {
 
+}
 
-void SPDirLight::sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr)
-{
-        halfVector = normalize(lightDir + cs->getViewerVec());
-        lightProp.setHalfVector(halfVector.x, halfVector.y, halfVector.z);
+void SPDirLight::sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr) {
+    halfVector = normalize(lightDir + cs->getViewerVec());
+    lightProp.setHalfVector(halfVector.x, halfVector.y, halfVector.z);
 
-        if (pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) lightProp.sendToShader(s_shader->getProgram());
+    if (pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) {
+	    lightProp.sendToShader(s_shader->getProgram());
+    }
 
-        ShaderProto::sendPar(cs, time, scene, parent, pass, loopNr);
+    ShaderProto::sendPar(cs, time, scene, parent, pass, loopNr);
+}
+
+bool SPDirLight::begin(CameraSet* cs, renderPass pass, uint loopNr) {
+    switch (pass) {
+        case GLSG_SHADOW_MAP_PASS:
+        	return false;
+        case GLSG_SCENE_PASS:
+            s_shader->begin();
+            return true;
+        case GLSG_GIZMO_PASS:
+            s_shader->begin();
+            return true;
+        default:
+        	return false;
+    }
+}
+
+bool SPDirLight::end(renderPass pass, uint loopNr) {
+    Shaders::end();
+    return false;
+}
+
+Shaders* SPDirLight::getShader(renderPass pass, uint loopNr) {
+    return s_shader;
 }
 
 
-bool SPDirLight::begin(CameraSet* cs, renderPass pass, uint loopNr)
-{
-        switch (pass) {
-            case GLSG_SHADOW_MAP_PASS: return false; break;
-
-            case GLSG_SCENE_PASS:
-                s_shader->begin();
-                return true;
-                break;
-
-            case GLSG_GIZMO_PASS:
-                s_shader->begin();
-                return true;
-                break;
-
-            default: return false; break;
-        }
-}
-
-
-bool SPDirLight::end(renderPass pass, uint loopNr)
-{
-        s_shader->end();
-        return false;
-}
-
-
-Shaders* SPDirLight::getShader(renderPass pass, uint loopNr)
-{
-        return s_shader;
-}
-
-
-SPDirLight::~SPDirLight() 
-{
-}
 }

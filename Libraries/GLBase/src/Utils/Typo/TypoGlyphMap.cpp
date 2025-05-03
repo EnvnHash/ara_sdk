@@ -127,7 +127,9 @@ void TypoGlyphMap::loadFont(const char *_file, ShaderCollector *_shCol) {
 
 void TypoGlyphMap::bakeFont(int fontSize) {
     // bake only if not already baked
-    if (m_bakedFonts.find(fontSize) != m_bakedFonts.end() || !m_info.data) return;
+    if (m_bakedFonts.contains(fontSize) || !m_info.data) {
+        return;
+    }
 
     m_bakedFonts[fontSize] = BakedFont();
     m_bakedFonts[fontSize].bitmap.resize(m_tex_width * m_tex_height);
@@ -340,11 +342,11 @@ int TypoGlyphMap::m_print(glm::vec2 offset, const char *text, int font_size, flo
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     int                idx = 0;
-    stbtt_aligned_quad qa;
     int                ro[2];
 
     while (text[0]) {
         if (static_cast<uint8_t>(text[0]) >= 32 && static_cast<uint8_t>(text[0]) < 255) {
+            stbtt_aligned_quad qa;
             float d3d_bias = 0;
             const auto b = &m_bakedFonts[font_size].cdata[static_cast<uint8_t>(text[0]) - 32];
 
@@ -376,7 +378,7 @@ int TypoGlyphMap::m_print(glm::vec2 offset, const char *text, int font_size, flo
         ++text;
     }
 
-    ara::Shaders::end();
+    Shaders::end();
     return idx;
 }
 

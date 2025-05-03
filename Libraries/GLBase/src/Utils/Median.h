@@ -20,9 +20,9 @@ namespace ara {
 template <typename T>
 class Median {
 public:
-    Median(float _medAmt, unsigned int bufferSize = 2) {
+    Median(float medAmt, unsigned int bufferSize = 2) {
         m_bufferSize = bufferSize;
-        m_medAmt     = _medAmt;
+        m_medAmt     = medAmt;
         m_medDiv     = 1.f / (m_medAmt + 1.f);
         m_ptr        = 0;
         m_filled     = false;

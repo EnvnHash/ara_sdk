@@ -24,8 +24,8 @@ class Line : public GeoPrimitive {
 public:
     Line();
     explicit Line(int nrSegments);
-    Line(int nrSegments, float r, float g, float b, float a);
-    Line(int nrSegments, float r, float g, float b, float a, std::vector<CoordType> *instAttribs, int nrInstance);
+    Line(int nrSegments, const glm::vec4& col);
+    Line(int nrSegments, const glm::vec4& col, std::vector<CoordType> *instAttribs, int nrInstance);
 
     void init() override;
 

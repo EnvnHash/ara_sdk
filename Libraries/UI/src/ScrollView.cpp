@@ -22,7 +22,7 @@ ScrollView::ScrollView() : Div() {
     m_content->excludeFromObjMap(true);
 }
 
-ScrollView::ScrollView(std::string&& styleClass) : Div(std::move(styleClass)) {
+ScrollView::ScrollView(const std::string& styleClass) : Div(std::move(styleClass)) {
     setName(getTypeName<ScrollView>());
     setFocusAllowed(false);
     setScissorChildren(true);
@@ -128,8 +128,8 @@ void ScrollView::updtMatrIt(scissorStack* ss) {
     // to have the scroll view keep it's size independent of the scrollbars visibility, we apply a right-/bottom-padding
     // by the size of the scrollbar to have the content area representing the visible part. This keeps the following
     // calculations simple
-    m_newPadd = vec2(m_needV ? (float)m_scrollBarSize + m_origPadding.z : m_origPadding.z,
-                     m_needH ? (float)m_scrollBarSize + m_origPadding.w : m_origPadding.w);
+    m_newPadd = vec2(m_needV ? static_cast<float>(m_scrollBarSize) + m_origPadding.z : m_origPadding.z,
+                     m_needH ? static_cast<float>(m_scrollBarSize) + m_origPadding.w : m_origPadding.w);
 
     // check if we need to update the matrices
     if (m_newPadd.x != m_padding.z || m_newPadd.y != m_padding.w) {

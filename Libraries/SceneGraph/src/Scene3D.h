@@ -16,7 +16,7 @@ public:
     ~Scene3D() override = default;
 
     void initCamSet() override      { Scene3DBase::initCamSet<T>(); }
-    T*           getSceneCamSet()   { return m_sceneRenderCam ?  (T*)m_sceneRenderCam.get() : nullptr; }
+    T*           getSceneCamSet()   { return m_sceneRenderCam ?  static_cast<T *>(m_sceneRenderCam.get()) : nullptr; }
 };
 
 }  // namespace ara

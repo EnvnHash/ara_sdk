@@ -15,20 +15,32 @@
 #include "glsg_common/glsg_common.h"
 
 namespace ara {
+
+enum blurKernelSize { KERNEL_3, KERNEL_5, NUM_BLUR_KERNELS };
+
+struct FastBlurMemParams {
+    GLBase* glbase = nullptr;
+    float alpha;
+    glm::ivec2 blurSize{};
+    GLenum target = GL_TEXTURE_2D;
+    GLenum intFormat = GL_RGBA8;
+    uint nrLayers = 1;
+    bool rot180 = false;
+    blurKernelSize kSize = KERNEL_3;
+    bool singleFbo = false;
+};
+
 class FastBlurMem {
 public:
-    enum blurKernelSize { KERNEL_3, KERNEL_5, NUM_BLUR_KERNELS };
 
-    FastBlurMem(GLBase* glbase, float _alpha, int _blurW, int _blurH, GLenum _target = GL_TEXTURE_2D,
-                GLenum _intFormat = GL_RGBA8, uint _nrLayers = 1, bool _rot180 = false,
-                blurKernelSize _kSize = KERNEL_3, bool singleFbo = false);
+    FastBlurMem(const FastBlurMemParams& params);
 
     void proc(GLint texIn);
     void initFbo();
     void initShader();
 
-    GLint getResult() { return m_pp ? m_pp->getSrcTexId() : 0; }
-    GLint getLastResult() { return m_pp ? m_pp->getDstTexId() : 0; }
+    GLint getResult() const { return m_pp ? m_pp->getSrcTexId() : 0; }
+    GLint getLastResult() const { return m_pp ? m_pp->getDstTexId() : 0; }
     void  setAlpha(float alpha) { m_alpha = alpha; }
     void  setOffsScale(float offsScale) { m_offsScale = offsScale; }
     void  setBright(float bright) { m_bright = bright; }

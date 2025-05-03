@@ -12,6 +12,7 @@
 #include <Utils/Stereo/DistortionMesh.h>
 #include <UIApplication.h>
 #include <UIWindow.h>
+#include <SceneNodes/SceneNode.h>
 
 using namespace glm;
 using namespace std;
@@ -24,7 +25,7 @@ namespace ara {
 CsStereoFbo::CsStereoFbo(sceneData* sd) : CameraSet(sd), m_layerTexShdr(nullptr), m_clearShdr(nullptr) {
     if (!s_sd) return;
 
-    m_quad    = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3{0.f, 0.f, 1.f}, 1.f, 0.f, 1.f, 1.f});
+    m_quad    = make_unique<Quad>(QuadInitParams{ .color = { 1.f, 0.f, 1.f, 1.f} });
     m_plane   = make_unique<VAO>("position:3f", GL_DYNAMIC_DRAW);
     m_colShdr = s_shCol->getStdCol();
 
@@ -39,17 +40,15 @@ CsStereoFbo::CsStereoFbo(sceneData* sd) : CameraSet(sd), m_layerTexShdr(nullptr)
         for (int i = 0; i < 2; i++) {
             auto f = m_stereoRenderer.getFov((StereoEye)i);
 
-            s_intern_cam.push_back(make_unique<TrackBallCam>(
-                Camera::camType::perspective,
-                static_cast<float>(m_stereoRenderer.getFov((StereoEye)i)[0]),
-                static_cast<float>(m_stereoRenderer.getFov((StereoEye)i)[2]),
-                -0.5f, 0.5f, -0.5f, 0.5f,  // left, right, bottom, top
-                m_camPos.x + m_stereoRenderer.getViewEyeOffs((StereoEye)i), m_camPos.y, m_camPos.z,  // s_camPos
-                m_stereoRenderer.getViewEyeOffs((StereoEye)i), 0.f, 0.f,            // s_lookAt
-                0.f, 1.f, 0.f,  // upVec
-                0.1f, 100.f,
-                glm::degrees(m_stereoRenderer.getFov((StereoEye)i)[3] +
-                             m_stereoRenderer.getFov((StereoEye)i)[2])));  // fov
+            s_intern_cam.push_back(make_unique<TrackBallCam>(CameraInitParams{
+                .cTyp = camType::perspective,
+                .screenSize = { m_stereoRenderer.getFov((StereoEye)i)[0], m_stereoRenderer.getFov((StereoEye)i)[2] },
+                .rect = { -0.5f, 0.5f, -0.5f, 0.5f },  // left, right, bottom, top
+                .cp = { m_camPos.x + m_stereoRenderer.getViewEyeOffs((StereoEye)i), m_camPos.y, m_camPos.z },
+                .la = { m_stereoRenderer.getViewEyeOffs((StereoEye)i), 0.f, 0.f},
+                .fov = glm::degrees(m_stereoRenderer.getFov((StereoEye)i)[3] +
+                             m_stereoRenderer.getFov((StereoEye)i)[2])
+            }));  // fov
 
             s_intern_cam.back()->setUseTrackBall(true);
             s_cam.push_back(make_pair(s_intern_cam.back().get(), this));
@@ -181,7 +180,7 @@ void CsStereoFbo::initLayerTexShdr() {
                 \n
             });
 
-    vert = s_shCol->getShaderHeader() + "// CsStereoFbo layer texture shader, vert\n" + vert;
+    vert = ShaderCollector::getShaderHeader() + "// CsStereoFbo layer texture shader, vert\n" + vert;
 
 #ifdef ARA_USE_GLES31
     string frag = "highp uniform sampler2DArray tex; \n";
@@ -219,7 +218,7 @@ void CsStereoFbo::initLayerTexShdr() {
                    0.0, 0.0, 1.0);*/
             });
 
-    frag = s_shCol->getShaderHeader() + "// CsStereoFbo layer texture shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsStereoFbo layer texture shader, frag\n" + frag;
 
     m_layerTexShdr = s_shCol->add(shdrName, vert, frag);
 }
@@ -240,9 +239,9 @@ void CsStereoFbo::initBackTexShdr(size_t nrLayers) {
                 \n
             });
 
-    vert = s_shCol->getShaderHeader() + "// CsStereoFbo backTex shader, vert\n" + vert;
+    vert = ShaderCollector::getShaderHeader() + "// CsStereoFbo backTex shader, vert\n" + vert;
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\nuniform vec4 "
                                 "clearCol[" +
@@ -280,7 +279,7 @@ void CsStereoFbo::initBackTexShdr(size_t nrLayers) {
         "precision highp float;\n // CsStereoFbo backTex shader, frag\n" +
         frag;
 #else
-    frag = s_shCol->getShaderHeader() + "// CsStereoFbo backTex shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsStereoFbo backTex shader, frag\n" + frag;
 #endif
 
     m_backTexShdr = s_shCol->add(shdrName, vert, geom, frag);
@@ -305,7 +304,7 @@ void CsStereoFbo::initPlaneShdr(size_t nrLayers) {
         "CsStereoFbo plane shader, vert\n" +
         vert;
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\n";
     std::string geom = "uniform mat4 mvp[" + std::to_string(nrLayers) + "];";
@@ -389,7 +388,7 @@ void CsStereoFbo::initFocSquareShdr(size_t nrLayers) {
         "CsStereoFbo focus square shader, vert\n" +
         vert;
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\n";
 
@@ -441,11 +440,11 @@ void CsStereoFbo::initClearShader(size_t nrLayers) {
     }
 
     std::string vert = STRINGIFY(layout(location = 0) in vec4 position; void main() { gl_Position = position; });
-    vert             = s_shCol->getShaderHeader() + "// CsStereoFbo clear shader, vert\n" + vert;
+    vert             = ShaderCollector::getShaderHeader() + "// CsStereoFbo clear shader, vert\n" + vert;
 
     //---------------------------------------------------------
 
-    std::string shdr_Header_g = s_shCol->getShaderHeader() +
+    std::string shdr_Header_g = ShaderCollector::getShaderHeader() +
                                 "layout(triangles, invocations=" + std::to_string(nrLayers) +
                                 ") in;\nlayout(triangle_strip, max_vertices = 3) out;\nuniform vec4 "
                                 "clearCol[" +
@@ -470,7 +469,7 @@ void CsStereoFbo::initClearShader(size_t nrLayers) {
     std::string frag =
         "layout (location = 0) out vec4 color; in vec4 o_col;\n void main() { "
         "color = o_col; }";
-    frag = s_shCol->getShaderHeader() + "// CsStereoFbo clear color shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// CsStereoFbo clear color shader, frag\n" + frag;
 
     m_clearShdr = s_shCol->add(shdrName, vert, geom, frag);
 }
@@ -504,9 +503,13 @@ void CsStereoFbo::rebuildFbo() {
         m_fbo.setGlbase(m_glbase);
         m_fbo.init();
 
-        if (!s_updtCb.empty())
-            for (auto& cbList : s_updtCb)
-                for (auto& cb : cbList.second) cb();
+        if (!s_updtCb.empty()) {
+            for (const auto& cbList : s_updtCb | views::values) {
+                for (const auto& cb : cbList) {
+                    cb();
+                }
+            }
+        }
     }
 }
 
@@ -526,7 +529,7 @@ void CsStereoFbo::clearScreen(renderPass pass) {
         m_clearShdr->setUniform4fv("clearCol", &s_clearColors[0][0], (int)s_clearColors.size());
         m_clearShdr->setIdentMatrix4fv("m_pvm");
         m_quad->draw();
-        m_clearShdr->end();
+        Shaders::end();
 
         renderBackground();
 
@@ -536,7 +539,9 @@ void CsStereoFbo::clearScreen(renderPass pass) {
         m_fbo.unbind();
 
     } else if (pass == GLSG_SHADOW_MAP_PASS || pass == GLSG_OBJECT_MAP_PASS) {
-        for (auto& it : s_shaderProto) it.second->clear(pass);
+        for (const auto&[fst, proto] : s_shaderProto) {
+            proto->clear(pass);
+        }
     }
 }
 
@@ -547,7 +552,9 @@ void CsStereoFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr
         s_matrixStack.clear();
     }
 
-    if (pass == GLSG_SCENE_PASS) m_fbo.bind();
+    if (pass == GLSG_SCENE_PASS) {
+        m_fbo.bind();
+    }
 
     iterateNode(node, time, dt, ctxNr, pass, node->m_calcMatrixStack.load());
 
@@ -555,7 +562,9 @@ void CsStereoFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr
         node->m_calcMatrixStack = false;
     }
 
-    if (pass == GLSG_SCENE_PASS) m_fbo.unbind();
+    if (pass == GLSG_SCENE_PASS) {
+        m_fbo.unbind();
+    }
 }
 
 void CsStereoFbo::render(SceneNode* node, SceneNode* parent, double time, double dt, uint ctxNr, renderPass pass) {
@@ -822,24 +831,31 @@ glm::vec3 CsStereoFbo::getPlaneNormal(ArSession* ar_session, ArPose* plane_pose)
 
 #endif
 
-void CsStereoFbo::postRender(renderPass _pass, float* extDrawMatr /*, float* extViewport*/) {
-    for (auto& it : s_shaderProto) it.second->postRender(_pass);
+void CsStereoFbo::postRender(renderPass pass, float* extDrawMatr) {
+    for (const auto& it : s_shaderProto | views::values) {
+        it->postRender(pass);
+    }
 
-    if (_pass == GLSG_SCENE_PASS) renderFbos(extDrawMatr /*, extViewport*/);
+    if (pass == GLSG_SCENE_PASS) {
+        renderFbos(extDrawMatr);
+    }
 }
 
-void CsStereoFbo::renderFbos(float* extDrawMatr /*, float* extViewport*/) {
-    if (m_viewMode == CsStereoViewMode::Stereo) glClear(GL_COLOR_BUFFER_BIT);
+void CsStereoFbo::renderFbos(float* extDrawMatr) {
+    if (m_viewMode == CsStereoViewMode::Stereo) {
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
     m_layerTexShdr->begin();
 
-    if (extDrawMatr)
+    if (extDrawMatr) {
         m_layerTexShdr->setUniformMatrix4fv("m_pvm", extDrawMatr);
-    else
+    } else {
         m_layerTexShdr->setIdentMatrix4fv("m_pvm");
+    }
 
     m_layerTexShdr->setUniform1i("tex", 0);
     m_layerTexShdr->setUniform1i("useBorder", 0);
@@ -851,20 +867,17 @@ void CsStereoFbo::renderFbos(float* extDrawMatr /*, float* extViewport*/) {
 #endif
 
     m_layerTexShdr->setUniform1f("stereoAsp", m_stereoViewAspect);
-    m_layerTexShdr->setUniform1i("viewMode", (int)m_viewMode);
+    m_layerTexShdr->setUniform1i("viewMode", static_cast<int>(m_viewMode));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_fbo.getColorImg());
 
     if (m_viewMode == CsStereoViewMode::Stereo) {
         for (GLsizei i = 0; i < s_cam.size(); i++) {
-            m_layerTexShdr->setUniform1f("layerNr", (float)i);
+            m_layerTexShdr->setUniform1f("layerNr", static_cast<float>(i));
             m_layerTexShdr->setUniform2f("centre", !i ? 0.1f : -0.1f, 0.0f);
             m_layerTexShdr->setUniformMatrix4fv("trans", m_stereoRenderer.getEyeLensTrans((StereoEye)i));
             m_quad->draw();
-
-            // m_stereoRenderer.getVao(i).drawElements(GL_TRIANGLE_STRIP);
-            // m_stereoRenderer.getVao(i).drawElements(GL_TRIANGLE_STRIP);
         }
     } else {
         m_layerTexShdr->setUniform1f("layerNr", 0.f);
@@ -877,12 +890,12 @@ void CsStereoFbo::setViewport(uint x, uint y, uint width, uint height, bool resi
     CameraSet::setViewport(x, y, width, height, resizeProto);
 
     int i = 0;
-    for (auto& c : s_cam) {
-        if (c.first) {
-            c.first->setViewport({i * width / 2, 0, width / 2, height});
-            c.first->setScreenSize(width / 2, height);
+    for (const auto& c : s_cam | views::keys) {
+        if (c) {
+            c->setViewport({i * width / 2, 0, width / 2, height});
+            c->setScreenSize(width / 2, height);
         }
-        i++;
+        ++i;
     }
 
     rebuildFbo();

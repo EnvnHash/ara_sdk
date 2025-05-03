@@ -44,17 +44,17 @@ TEST(UITest, GetPixelPosition_ParentRealtive) {
 
         // read back the x and y position in relation to its parent.
         // if alignment align::left, valign::top, this is in relation to the parents top left corner
-        ASSERT_EQ(div0->getPos().x, (float)div0_pos.x);
-        ASSERT_EQ(div0->getPos().y, (float)div0_pos.y);
+        ASSERT_EQ(div0->getPos().x, static_cast<float>(div0_pos.x));
+        ASSERT_EQ(div0->getPos().y, static_cast<float>(div0_pos.y));
 
-        ASSERT_EQ(div1->getPos().x, (float)div1_pos.x);
-        ASSERT_EQ(div1->getPos().y, (float)div1_pos.y);
+        ASSERT_EQ(div1->getPos().x, static_cast<float>(div1_pos.x));
+        ASSERT_EQ(div1->getPos().y, static_cast<float>(div1_pos.y));
 
-        ASSERT_EQ(div1->getWinPos().x, (float)(div0_pos.x + div1_pos.x));
-        ASSERT_EQ(div1->getWinPos().y, (float)(div0_pos.y + div1_pos.y));
+        ASSERT_EQ(div1->getWinPos().x, static_cast<float>(div0_pos.x + div1_pos.x));
+        ASSERT_EQ(div1->getWinPos().y, static_cast<float>(div0_pos.y + div1_pos.y));
 
-        ASSERT_EQ(div2->getPos().x, std::round((float)div0_size.x * div2_pos.x));
-        ASSERT_EQ(div2->getPos().y, std::round((float)div0_size.y * div2_pos.y));
+        ASSERT_EQ(div2->getPos().x, std::round(static_cast<float>(div0_size.x * div2_pos.x)));
+        ASSERT_EQ(div2->getPos().y, std::round(static_cast<float>(div0_size.y * div2_pos.y)));
     });
 
 

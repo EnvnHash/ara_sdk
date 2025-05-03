@@ -13,7 +13,7 @@ public:
     } e_cell;
 
     UITable();
-    UITable(std::string&& styleClass);
+    UITable(const std::string& styleClass);
     UITable(glm::vec2 pos, glm::vec2 size, glm::ivec2 topology, glm::vec2 margin = {0, 0},
             glm::vec2 padding = {0, 0}, const float* fg_color = nullptr, const float* bg_color = nullptr);
     UITable(float h_margin, float v_margin, float h_padding, float v_padding, const float* fg_color, const float* bg_color);
@@ -56,13 +56,13 @@ public:
     // background color
     virtual void setColor(float r, float g, float b, float a) {
         m_color = glm::vec4(r, g, b, a);
-        for (auto& it : m_Cells) {
+        for (const auto& it : m_Cells) {
             it.ui_node->setBackgroundColor(getColor());
         }
     }
     virtual void setColor(glm::vec4& col) {
         m_color = col;
-        for (auto& it : m_Cells) {
+        for (const auto& it : m_Cells) {
             it.ui_node->setBackgroundColor(getColor());
         }
     }

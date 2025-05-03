@@ -24,22 +24,24 @@ using namespace std;
 using namespace glm;
 
 namespace ara {
-Polygon::Polygon() : GeoPrimitive(), r(1.f), g(1.f), b(1.f), a(1.f), m_subDivFact(0.01f) {
+Polygon::Polygon() : GeoPrimitive(), m_color({1.f, 1.f, 1.f, 1.f}), m_subDivFact(0.01f) {
     m_polygon.emplace_back();  // we need at least one main polygon
 }
 
 Polygon::Polygon(ShaderCollector *shCol)
-    : GeoPrimitive(), m_shCol(shCol), r(1.f), g(1.f), b(1.f), a(1.f), m_subDivFact(0.01f) {
+    : GeoPrimitive(), m_shCol(shCol), m_color({1.f, 1.f, 1.f, 1.f}), m_subDivFact(0.01f) {
     m_polygon.emplace_back();  // we need at least one main polygon
 }
 
 void Polygon::draw(TFO *_tfo) {
-    if (!m_vaoFilled.isInited() || !m_vaoFilled.getElementBuffer()) return;
+    if (!m_vaoFilled.isInited() || !m_vaoFilled.getElementBuffer()) {
+        return;
+    }
 
     m_vaoFilled.enableVertexAttribs();
     m_vaoFilled.bindElementBuffer();
 
-    glDrawElements(GL_TRIANGLES, (int)m_indices.size(), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, static_cast<int>(m_indices.size()), GL_UNSIGNED_INT, nullptr);
 
     VAO::unbindElementBuffer();
     m_vaoFilled.disableVertexAttribs();
@@ -51,7 +53,7 @@ void Polygon::drawAsPatch() {
     glPatchParameteri(GL_PATCH_VERTICES, 4);
 
     m_vaoFilled.enableVertexAttribs();
-    glDrawArrays(GL_PATCHES, 0, (int)m_indices.size());
+    glDrawArrays(GL_PATCHES, 0, static_cast<int>(m_indices.size()));
     m_vaoFilled.disableVertexAttribs();
 #endif
 }
@@ -59,47 +61,48 @@ void Polygon::drawAsPatch() {
 /// ...work in progress
 void Polygon::drawHighRes(float *m_pvm, GLuint texId, float fboWidth, float fboHeight, TFO *_tfo) {
 #ifndef ARA_USE_GLES31
-    if (!m_vaoFilled.isInited() || !m_tessShdr) return;
+    if (!m_vaoFilled.isInited() || !m_tessShdr) {
+        return;
+    }
 
     // setting up a opengl tesselation for catmull-rom interpolation if set
     glPatchParameteri(GL_PATCH_VERTICES, 3);  // interpolation triangles
 
     m_tessShdr->begin();
     m_tessShdr->setUniformMatrix4fv("m_pvm", m_pvm);
-    m_tessShdr->setUniform1i("maxDiff", (int)getTotalNrPoints() - 1);
-    // m_tessShdr->setUniform4fv("color", color);
+    m_tessShdr->setUniform1i("maxDiff", static_cast<int>(getTotalNrPoints()) - 1);
     m_tessShdr->setUniform2f("fboSize", fboWidth, fboHeight);
-    m_tessShdr->setUniform1f("segsPerPixel",
-                             0.05f);  // every 5 pixels a segment
-
+    m_tessShdr->setUniform1f("segsPerPixel", 0.05f);  // every 5 pixels a segment
     m_tessShdr->setUniform1i("tex", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texId);
 
     // m_vaoFilled.bind();
     // m_vaoFilled.enableVertexAttribs();
-    m_vaoFilled.drawElements(GL_PATCHES, _tfo, GL_TRIANGLES, (int)m_indices.size(), 0);
+    m_vaoFilled.drawElements(GL_PATCHES, _tfo, GL_TRIANGLES, static_cast<int>(m_indices.size()), 0);
 
     Shaders::end();
 #endif
 }
 
 void Polygon::drawOutline(GLenum drawMode, TFO *tfo) {
-    if (!m_vaoFilled.isInited()) return;
+    if (!m_vaoFilled.isInited()) {
+        return;
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vaoFilled.getVBO(CoordType::Position));
-    glEnableVertexAttribArray((int)CoordType::Position);
+    glEnableVertexAttribArray(static_cast<int>(CoordType::Position));
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     // draw outlines of all polygon levels
     size_t offs = 0;
     for (auto &p : m_polygonInterpFlat) {
-        glDrawArrays(drawMode, (GLint)offs, (GLsizei)p.size());
+        glDrawArrays(drawMode, static_cast<GLint>(offs), static_cast<GLsizei>(p.size()));
         offs += p.size();
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glDisableVertexAttribArray((int)CoordType::Position);
+    glDisableVertexAttribArray(static_cast<int>(CoordType::Position));
 }
 
 // Note: tesselating non-interpolated polygon on CPU and do catmull-rom
@@ -310,20 +313,20 @@ void Polygon::tesselate() {
                         intr              = point->intrPolMethod == interpolM::CatmullRomCentri ? pointIp->iPolTime
                                                                                                 : 1.f - pointIp->iPolTime;
                         pointIp->position = glm::mix(
-                            (*pointIp).position, glm::mix(point->position, m_next->position, pointIp->iPolTime), intr);
+                            pointIp->position, glm::mix(point->position, m_next->position, pointIp->iPolTime), intr);
                     }
 
                     // limit point to borders
-                    (*pointIp).position = glm::max(glm::min((*pointIp).position, vec2{1.f, 1.f}), vec2{-1.f, -1.f});
+                    pointIp->position = glm::max(glm::min(pointIp->position, vec2{1.f, 1.f}), vec2{-1.f, -1.f});
 
                     // checkNextLineOverlap(pointIp, point, pIt);
 
-                    pointIp++;
+                    ++pointIp;
                 }
             } else {
                 // in case of no interpolation, just copy
-                std::copy_n(&point->position[0], 8, &(*pointIp).position[0]);
-                std::copy_n(&point->refTexCoord[0], 8, &(*pointIp).refTexCoord[0]);
+                std::copy_n(&point->position[0], 8, &pointIp->position[0]);
+                std::copy_n(&point->refTexCoord[0], 8, &pointIp->refTexCoord[0]);
 
                 ++pointIp;
             }
@@ -357,11 +360,11 @@ void Polygon::tesselate() {
         }
 
         m_vaoFilled.init(attribs.c_str());
-        m_vaoFilled.setStaticColor(r, g, b, a);
+        m_vaoFilled.setStaticColor(m_color);
     }
 
     uint32_t nrVert = getTotalNrPoints();
-    if (m_vaoFilled.getNrVertices() != 0 && m_vaoFilled.getNrVertices() < (int)nrVert) {
+    if (m_vaoFilled.getNrVertices() != 0 && m_vaoFilled.getNrVertices() < static_cast<int>(nrVert)) {
         m_vaoFilled.resize(nrVert);
     }
 
@@ -385,7 +388,7 @@ void Polygon::tesselate() {
     }
 
     if (!m_indices.empty()) {
-        m_vaoFilled.setElemIndices((uint32_t)m_indices.size(), &m_indices[0]);
+        m_vaoFilled.setElemIndices(static_cast<uint32_t>(m_indices.size()), &m_indices[0]);
     }
 
     if (nrVert && !m_inited) {
@@ -421,8 +424,7 @@ void Polygon::checkNextLineOverlap(const std::vector<CtrlPoint>::iterator& point
                                    std::vector<CtrlPoint> &polySeg) {
     constexpr size_t nrLinesToCheck = 2;
     vec2             linePoints[nrLinesToCheck][4];
-    auto             ctrlPointIdx = (size_t)(base - polySeg.begin());
-    pair<bool, vec2> intersLinePoint;
+    auto             ctrlPointIdx = static_cast<size_t>(base - polySeg.begin());
 
     // check overlap with following non-interpolated line-segment
     linePoints[0][0] = (polySeg.begin() + ((ctrlPointIdx + 1) % polySeg.size()))->position;
@@ -437,7 +439,7 @@ void Polygon::checkNextLineOverlap(const std::vector<CtrlPoint>::iterator& point
     linePoints[1][3] = point->position;
 
     for (auto &linePoint : linePoints) {
-        intersLinePoint = lineIntersect(linePoint[0], linePoint[1], linePoint[2], linePoint[3]);
+        pair<bool, vec2> intersLinePoint = lineIntersect(linePoint[0], linePoint[1], linePoint[2], linePoint[3]);
         if (intersLinePoint.first) {
             point->position = intersLinePoint.second;
         }
@@ -452,11 +454,10 @@ void Polygon::checkCrossingLines(std::vector<CtrlPoint> *polySeg, const vector<C
     vector<vector<vector<CtrlPoint>::iterator>> linePoints;
     linePoints.resize(nrLinesToCheck);
     for (auto &it : linePoints) it.resize(2);
-    pair<bool, vec2> intersLinePoint;
     vec2             initKvPos = kv->position;
 
     // run through all segments this point is not part of
-    auto ctrlPointIdx = (size_t)(kv - polySeg->begin());
+    auto ctrlPointIdx = static_cast<size_t>(kv - polySeg->begin());
     for (size_t i = 0; i < nrLinesToCheck; i++, ctrlPointIdx++) {
         // calculate two line points
         for (size_t j = 0; j < 2; j++) {
@@ -471,8 +472,9 @@ void Polygon::checkCrossingLines(std::vector<CtrlPoint> *polySeg, const vector<C
                                   {initKvPos, linePoints[nrLinesToCheck - 1][1]->position}};
     for (size_t i = 0; i < nrLinesToCheck; i++, ctrlPointIdx++) {
         for (size_t j = 0; j < 2; j++) {
-            intersLinePoint = lineIntersect(connectingLines[j][0], connectingLines[j][1], linePoints[i][0]->position,
-                                            linePoints[i][1]->position);
+            pair<bool, vec2> intersLinePoint = lineIntersect(connectingLines[j][0], connectingLines[j][1],
+                                                             linePoints[i][0]->position,
+                                                             linePoints[i][1]->position);
 
             if (intersLinePoint.first && glm::length(connectingLines[j][0] - intersLinePoint.second) > 0.0001f &&
                 glm::length(connectingLines[j][1] - intersLinePoint.second) > 0.0001f) {
@@ -485,40 +487,22 @@ void Polygon::checkCrossingLines(std::vector<CtrlPoint> *polySeg, const vector<C
     }
 }
 
-unique_ptr<vector<vec2>> Polygon::getCatmull4PointSeg(vector<CtrlPoint>::iterator &point, vector<CtrlPoint> &polygon) {
-    vec2                        extrPolPoint;
-    int                         pOffs[3]     = {-1, 1, 2};
-    int                         pOffsIndx[3] = {0, 0, 0};
-    int                         outIdx[3]    = {0, 2, 3};
-    vector<CtrlPoint>::iterator pOffsIt[3];
-    auto                        out = make_unique<vector<vec2>>(4);
-    bool                        isCatM;
-    bool                        p1IsCatM = point->intrPolMethod == interpolM::CatmullRomCentri;
+unique_ptr<vector<vec2>> Polygon::getCatmull4PointSeg(const vector<CtrlPoint>::iterator &point, const vector<CtrlPoint> &polygon) {
+    std::array pOffs = {-1, 1, 2};
+    std::array pOffsIndx = {0, 0, 0};
+    auto    out = make_unique<vector<vec2>>(4);
+
+    std::array<vector<CtrlPoint>::const_iterator, 3> pOffsIt;
 
 #pragma omp parallel for
     for (int i = 0; i < 3; i++) {
-        pOffsIndx[i] =
-            (static_cast<int>(point - polygon.begin()) + pOffs[i] + (int)polygon.size()) % (int)polygon.size();
+        pOffsIndx[i] = (static_cast<int>(point - polygon.begin()) + pOffs[i] + static_cast<int>(polygon.size())) % static_cast<int>(polygon.size());
         pOffsIt[i] = polygon.begin() + pOffsIndx[i];
     }
 
 #pragma omp parallel for
     for (int i = 0; i < 3; i++) {
-        isCatM = pOffsIt[i]->intrPolMethod == interpolM::CatmullRomCentri;
-        // in case we are not at P0 or P3, take the found points straight away
-        if (i == 1 || isCatM || (i == 2 && pOffsIt[1]->intrPolMethod == interpolM::CatmullRomCentri) ||
-            (i == 0 && p1IsCatM)) {
-            out->at(outIdx[i]).x = pOffsIt[i]->position.x;
-            out->at(outIdx[i]).y = pOffsIt[i]->position.y;
-        } else {
-            // in case we are at P3 and this point doesn't use cattmull-rom,
-            // extrapolate a new point by mirroring P1 on P2
-            auto p2              = polygon.begin() + pOffsIndx[1];
-            extrPolPoint         = i == 2 ? (p2->position - point->position) + p2->position
-                                          : (point->position - p2->position) + point->position;
-            out->at(outIdx[i]).x = extrPolPoint.x;
-            out->at(outIdx[i]).y = extrPolPoint.y;
-        }
+        extrpSeg(i, pOffsIt, point, polygon, pOffsIndx, out);
     }
 
     out->at(1).x = point->position.x;
@@ -527,23 +511,50 @@ unique_ptr<vector<vec2>> Polygon::getCatmull4PointSeg(vector<CtrlPoint>::iterato
     return out;
 }
 
-// TODO: check for polygons with holes
-void Polygon::updatePosVao(map<uint32_t, CtrlPoint *> *pointMap) {
-    if (m_vaoFilled.isInited()) {
-        vec4 *ptr = (vec4 *)m_vaoFilled.getMapBuffer(CoordType::Position);
-        for (auto &it : *pointMap) {
-            ptr[it.first].x = it.second->position.x;
-            ptr[it.first].y = it.second->position.y;
-        }
-        ara::VAO::unMapBuffer();
+void Polygon::extrpSeg(int i, array<vector<CtrlPoint>::const_iterator, 3>& pOffsIt, const vector<CtrlPoint>::iterator &point,
+                       const vector<CtrlPoint> &polygon, std::array<int, 3>& pOffsIndx, std::unique_ptr<vector<vec2>>& out) {
+    bool p1IsCatM = point->intrPolMethod == interpolM::CatmullRomCentri;
+    bool isCatM = pOffsIt[i]->intrPolMethod == interpolM::CatmullRomCentri;
+    std::array outIdx = {0, 2, 3};
+
+    // in case we are not at P0 or P3, take the found points straight away
+    if (i == 1
+        || isCatM
+        || (i == 2 && pOffsIt[1]->intrPolMethod == interpolM::CatmullRomCentri)
+        || (i == 0 && p1IsCatM))
+    {
+        out->at(outIdx[i]) = pOffsIt[i]->position;
+    } else {
+        // in case we are at P3 and this point doesn't use cattmull-rom,
+        // extrapolate a new point by mirroring P1 on P2
+        auto p2              = polygon.begin() + pOffsIndx[1];
+        vec2 extrPolPoint = i == 2 ? (p2->position - point->position) + p2->position
+                                    : (point->position - p2->position) + point->position;
+        out->at(outIdx[i]) = extrPolPoint;
     }
 }
 
-void Polygon::setMainPolygon(vector<CtrlPoint> &poly) {
+// TODO: check for polygons with holes
+void Polygon::updatePosVao(const map<uint32_t, CtrlPoint *> *pointMap) {
+    try {
+        if (m_vaoFilled.isInited()) {
+            auto ptr = static_cast<vec4 *>(m_vaoFilled.getMapBuffer(CoordType::Position));
+            for (auto &it : *pointMap) {
+                ptr[it.first].x = it.second->position.x;
+                ptr[it.first].y = it.second->position.y;
+            }
+            VAO::unMapBuffer();
+        }
+    } catch(std::runtime_error& e) {
+        LOGE << e.what();
+    }
+}
+
+void Polygon::setMainPolygon(const vector<CtrlPoint> &poly) {
     if (m_polygon[0].size() != poly.size()) {
         m_polygon[0].reserve(poly.size());
     }
-    copy(poly.begin(), poly.end(), m_polygon[0].begin());
+    ranges::copy(poly, m_polygon[0].begin());
 }
 
 vector<CtrlPoint> *Polygon::addHole(vector<CtrlPoint> *poly) {
@@ -615,7 +626,7 @@ vector<CtrlPoint> *Polygon::getPoints(size_t level) {
     }
 }
 
-uint32_t Polygon::getTotalNrPoints() {
+uint32_t Polygon::getTotalNrPoints() const {
     uint32_t nrPoints = 0;
     if (!m_polygonInterpFlat.empty()) {
         for (auto &poly : m_polygonInterpFlat) {
@@ -642,7 +653,7 @@ void Polygon::serializeToXml(pugi::xml_node &parent) {
     }
 }
 
-void Polygon::parseFromXml(pugi::xml_node &node) {
+void Polygon::parseFromXml(const pugi::xml_node &node) {
     pugi::xml_attribute attr;
 
     size_t nrShapes = 0;
@@ -658,7 +669,7 @@ void Polygon::parseFromXml(pugi::xml_node &node) {
     for (auto xmlShp = node.begin(); xmlShp != node.end(); ++xmlShp, ++shpIt) {
         size_t nrPoints = 0;
         if ((attr = xmlShp->attribute("nrPoints"))) {
-            nrPoints = (size_t)attr.as_uint();
+            nrPoints = static_cast<size_t>(attr.as_uint());
         }
 
         if (shpIt->size() != nrPoints) {

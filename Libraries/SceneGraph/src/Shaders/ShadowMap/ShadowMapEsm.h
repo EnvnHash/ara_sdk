@@ -8,23 +8,25 @@
 
 #include "Shaders/ShadowMap/ShadowMap.h"
 
-using namespace glm;
-
 namespace ara {
+
+class sceneData;
+class Camera;
+
 class ShadowMapEsm : public ShadowMap {
 public:
-    ShadowMapEsm(CameraSet* _cs, int _scrWidth, int _scrHeight, vec3 _lightPos, float _near, float _far,
-                 sceneData* _scd);
-    ~ShadowMapEsm();
+    ShadowMapEsm(CameraSet* cs, int scrWidth, int scrHeight, glm::vec3 lightPos, float near_lim, float far_lim,
+                 sceneData* scd);
+    ~ShadowMapEsm() override = default;
 
-    void begin();
-    void end();
-    void setLightPos(vec3 _pos);
-    float  getCoef();
-    GLenum getColorBufType();
+    void                    begin() override;
+    void                    end() override;
+    void                    setLightPos(glm::vec3 pos);
+    float                   getCoef();
+    [[nodiscard]] GLenum    getColorBufType() const;
 
 private:
-    Camera* lightCam;
-    GLenum  colBufType;
+    Camera* lightCam = nullptr;
+    GLenum  colBufType = 0;
 };
 }  // namespace ara

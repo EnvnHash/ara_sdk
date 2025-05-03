@@ -21,15 +21,10 @@
 namespace ara {
 
 struct QuadInitParams {
-    float x{};
-    float y{};
-    float w{};
-    float h{};
+    glm::vec2 pos = {-1.f, -1.f };
+    glm::vec2 size= { 2.f, 2.f };
     glm::vec3 inNormal{0.f, 0.f, 1.f};
-    float r = 1.f;
-    float g = 1.f;
-    float b = 1.f;
-    float a = 1.f;
+    glm::vec4 color { 1.f, 1.f, 1.f, 1.f };
     std::vector<CoordType>* instAttribs = nullptr;
     int nrInstances = 1;
     bool flipHori = false;
@@ -38,31 +33,23 @@ struct QuadInitParams {
 class Quad : public GeoPrimitive {
 public:
     Quad();
-    Quad(const QuadInitParams&);
+    explicit Quad(const QuadInitParams&);
+    ~Quad() override = default;
 
-    virtual ~Quad() = default;
-
-    void init();
-
-    void drawAsShared() {
-        if (!m_vao) return;
-        m_vao->enableVertexAttribs();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        m_vao->disableVertexAttribs();
-    }
+    void init() override;
+    void drawAsShared() const;
 
     std::vector<glm::vec3> *getPositions();
     std::vector<glm::vec3> *getNormals();
     std::vector<glm::vec2> *getTexCoords();
 
 private:
-    float                  width;
-    float                  height;
-    std::vector<glm::vec3> position;
-    std::vector<glm::vec3> normal;
-    std::vector<glm::vec2> texCoords;
+    glm::vec2              m_size{ 2.f, 2.f};
+    std::vector<glm::vec3> m_position;
+    std::vector<glm::vec3> m_normal;
+    std::vector<glm::vec2> m_texCoords;
 
-    std::vector<CoordType> *instAttribs;
-    int                     maxNrInstances;
+    std::vector<CoordType> *m_instAttribs = nullptr;
+    int                     m_maxNrInstances = 1;
 };
 }  // namespace ara

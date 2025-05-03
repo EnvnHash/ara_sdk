@@ -25,7 +25,7 @@ Image::Image() : Div() {
 #endif
 }
 
-Image::Image(std::string&& styleClass) : Div(std::move(styleClass)) {
+Image::Image(const std::string& styleClass) : Div(std::move(styleClass)) {
     setName(getTypeName<Image>());
     setFocusAllowed(false);
     Image::initDefaults();
@@ -74,7 +74,7 @@ void Image::init() {
     }
 }
 
-void Image::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
+void Image::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     if (!m_sharedRes) {
@@ -177,7 +177,7 @@ void Image::setImgAlign(ResNode* node, state st) {
 }
 
 void Image::setImgScale(ResNode* node, state st) {
-    float scale                             = node->value1f("img-scale", 1.f);
+    float scale                             = node->value<float>("img-scale", 1.f);
     m_imgScale                              = scale;
     m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() { m_imgScale = scale; };
 }
@@ -306,7 +306,7 @@ void Image::updateDrawData() {
         auto dIt = m_imgDB.vaoData.begin();
 
         // pre calculate texture coordinates
-        for (auto& it : stdQuadVertices) {
+        for (const auto& it : stdQuadVertices) {
             if (m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) {
                 v = it * (m_size - static_cast<float>(m_borderWidth) * 2.f);
             } else {
@@ -367,7 +367,7 @@ void Image::updateDrawData() {
         m_divRefSize[1] *= -1.f;
 
         int j = 0;
-        for (auto& it : stdQuadVertices) {
+        for (const auto& it : stdQuadVertices) {
             // since scissoring can't be used in indirect draw mode, it has to be done at this point by adjusting
             // positions and texture coordinates
             limitDrawVaoToBounds(dIt, m_divRefSize, m_uvDiff, m_scIndDraw, m_viewPort);  // scissoring
@@ -601,7 +601,7 @@ bool Image::setTexId(GLuint inTexId, int width, int height, int bitCount) {
     m_extTexWidth    = width;
     m_extTexHeight   = height;
     m_extTexBitCount = bitCount;
-    m_texAspect      = (float)width / (float)height;
+    m_texAspect      = static_cast<float>(width) / static_cast<float>(height);
     m_loaded         = true;
 
     if (m_fixAspect != -1.f && (getAspect() != m_texAspect)) {
@@ -683,19 +683,15 @@ PingPongFbo *Image::getUplFbo() {
     }
 }
 
-void Image::initUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-                int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered) {
-    m_uplFbo = std::make_unique<PingPongFbo>(FboInitParams{m_glbase, width, height, 1, type, target, depthBuf, nrAttachments,
-                                             mipMapLevels, nrSamples, wrapMode, layered});
+void Image::initUplFbo(const FboInitParams& params) {
+    m_uplFbo = std::make_unique<PingPongFbo>(params);
 }
 
-void Image::rebuildUplFbo(int width, int height, GLenum type, GLenum target, bool depthBuf, int nrAttachments,
-                   int mipMapLevels, int nrSamples, GLenum wrapMode, bool layered) {
+void Image::rebuildUplFbo(const FboInitParams& params) {
     if (m_uplFbo) {
         m_uplFbo.reset();
     }
-    m_uplFbo = std::make_unique<PingPongFbo>(FboInitParams{m_glbase, width, height, 1, type, target, depthBuf, nrAttachments,
-                                             mipMapLevels, nrSamples, wrapMode, layered});
+    m_uplFbo = std::make_unique<PingPongFbo>(params);
 }
 
 void Image::initUplPbo(int w, int h, GLenum format) {

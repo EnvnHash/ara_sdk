@@ -6,29 +6,33 @@
 
 #pragma once
 
-#include <GLUtils/sceneData.h>
-#include <GeoPrimitives/Quad.h>
-#include <Shaders/ShaderCollector.h>
-#include <Utils/FBO.h>
 #include <glb_common/glb_common.h>
+#include <Shaders/ShaderCollector.h>
 
 namespace ara {
+
+class FBO;
+class sceneData;
+class Quad;
+
 class Noise3DTexGen {
 public:
-    Noise3DTexGen(sceneData* _scd, bool color, int nrOctaves, int _width, int _height, int _depth, float _scaleX,
-                  float _scaleY, float _scaleZ);
-    ~Noise3DTexGen();
-    void          initShdr();
-    ara::Shaders* initBlendShdrH();
-    ara::Shaders* initBlendShdrV();
-    GLuint        getTex();
+    Noise3DTexGen(const sceneData* scd, bool color, int nrOctaves, glm::ivec3 size, glm::vec3 scale);
+    void drawNoise(std::unique_ptr<Quad>& quad, float zPos, int nrOctaves);
+    void blendHorizontal(std::unique_ptr<FBO>& fbo, Shaders* xBlendShaderH, std::unique_ptr<Quad>& quad, float zPos, const glm::ivec3& size);
+    void blendVertical(std::unique_ptr<FBO>& fbo, std::unique_ptr<FBO>& fboH, Shaders* xBlendShaderH, std::unique_ptr<Quad>& quad, float zPos, const glm::ivec3& size);
+    void initShdr();
+
+    [[nodiscard]] Shaders* initBlendShdrH() const;
+    [[nodiscard]] Shaders* initBlendShdrV() const;
+    [[nodiscard]] GLuint   getTex() const;
 
     std::unique_ptr<FBO> fbo;
 
 private:
     Shaders*         m_noiseShdr = nullptr;
     Shaders*         m_stdTexShdr = nullptr;
-    ShaderCollector* m_shCol = nullptr;
+    ShaderCollector& m_shCol;
     GLBase*          m_glbase = nullptr;
 
     float m_scaleX{};

@@ -37,10 +37,10 @@ public:
     virtual int                 *getSectionPos() { return m_nullIntPtr; }
     virtual Type                getType() { return m_type; }
     virtual Dist                getDist() { return m_dist; }
-    int                         getVer(int ver) { return (m_ver.find(ver) != m_ver.end()) ? m_ver[ver] : m_verDefault; }
+    int                         getVer(int ver) { return m_ver.contains(ver) ? m_ver[ver] : m_verDefault; }
 
     std::array<int, 2> getVerPos(int ver);  // returns pos
-    int  getDistPixOffset() const { return m_distPixOffset; }
+    [[nodiscard]] int  getDistPixOffset() const { return m_distPixOffset; }
     int *getSectionSep() { return m_pixSep; }
 
 protected:

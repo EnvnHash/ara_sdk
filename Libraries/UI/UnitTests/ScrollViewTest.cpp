@@ -64,24 +64,29 @@ void addLabels(UITable* nt) {
     }
 }
 
+ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
+    auto scrollView = rootNode->addChild<ScrollView>();
+    scrollView->setAlign(align::center, valign::center);
+    scrollView->setSize(0.7f, 0.7f);
+    scrollView->setBackgroundColor(0.f, 0.f, 0.5f, 1.f);
+
+    glm::vec4 bgColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
+    int chHeight = 40;
+
+    for (int i = 0; i < nrSubElements; i++) {
+        auto ch = scrollView->addChild<Div>();
+        ch->setPos(10, (chHeight +10) * i );
+        ch->setSize(30, chHeight);
+        ch->setBackgroundColor(bgColor);
+    }
+
+    return scrollView;
+}
+
 TEST(UITest, ScrollViewTestNoScrollbar) {
     appBody([&](UIApplication* app){
         auto rootNode = app->getMainWindow()->getRootNode();
-
-        auto scrollView = rootNode->addChild<ScrollView>();
-        scrollView->setAlign(align::center, valign::center);
-        scrollView->setSize(0.7f, 0.7f);
-        scrollView->setBackgroundColor(0.f, 0.f, 0.5f, 1.f);
-
-        glm::vec4 bgColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
-        int chHeight = 40;
-
-        for (int i = 0; i < 5; i++) {
-            auto ch = scrollView->addChild<Div>();
-            ch->setPos(10, (chHeight +10) * i );
-            ch->setSize(30, chHeight);
-            ch->setBackgroundColor(bgColor);
-        }
+        addScrollView(rootNode, 5);
     }, [&](UIApplication* app){
          compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref.png",
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
@@ -91,21 +96,7 @@ TEST(UITest, ScrollViewTestNoScrollbar) {
 TEST(UITest, ScrollViewTestScrollbarVisible) {
     appBody([&](UIApplication* app){
         auto rootNode = app->getMainWindow()->getRootNode();
-
-        auto scrollView = rootNode->addChild<ScrollView>();
-        scrollView->setAlign(align::center, valign::center);
-        scrollView->setSize(0.7f, 0.7f);
-        scrollView->setBackgroundColor(0.f, 0.f, 0.5f, 1.f);
-
-        glm::vec4 bgColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
-        int chHeight = 40;
-
-        for (int i = 0; i < 10; i++) {
-            auto ch = scrollView->addChild<Div>();
-            ch->setPos(10, (chHeight +10) * i );
-            ch->setSize(30, chHeight);
-            ch->setBackgroundColor(bgColor);
-        }
+        addScrollView(rootNode, 10);
     }, [&](UIApplication* app){
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref2.png",
                                   app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
@@ -116,21 +107,7 @@ TEST(UITest, ScrollViewTestScrollBarMoved) {
     appBody([&](UIApplication* app){
         auto mainWin = app->getMainWindow();
         auto rootNode = mainWin->getRootNode();
-
-        auto scrollView = rootNode->addChild<ScrollView>();
-        scrollView->setAlign(align::center, valign::center);
-        scrollView->setSize(0.7f, 0.7f);
-        scrollView->setBackgroundColor(0.f, 0.f, 0.5f, 1.f);
-
-        glm::vec4 bgColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
-        int chHeight = 40;
-
-        for (int i = 0; i < 10; i++) {
-            auto ch = scrollView->addChild<Div>();
-            ch->setPos(10, (chHeight +10) * i );
-            ch->setSize(30, chHeight);
-            ch->setBackgroundColor(bgColor);
-        }
+        auto scrollView = addScrollView(rootNode, 10);
 
         app->getWinBase()->draw(0, 0, 0);
         app->getMainWindow()->swap();

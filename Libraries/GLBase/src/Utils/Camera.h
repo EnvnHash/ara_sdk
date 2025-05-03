@@ -27,17 +27,25 @@
 
 namespace ara {
 
+enum class camType : int { perspective = 0, frustum, ortho };
+enum class camUpt : int { ModelTrans = 0, ModelRot, ModelMat, ViewMat, ProjMat, FrustMult };
+
+struct CameraInitParams {
+    camType cTyp{};
+    glm::vec2 screenSize{};
+    glm::vec4 rect{}; // left, right, bottom, top
+    glm::vec3 cp={0.f, 0.f, 1.f};
+    glm::vec3 la={0.f, 0.f, 0.f};
+    glm::vec3 up = {0.f, 1.f, 0.f};
+    float nearLim = 1.f;
+    float farLim = 1000.f;
+    float fov = 45.f;
+};
+
 class Camera {
 public:
-    enum class camType : int { perspective = 0, frustum, ortho };
-    enum class camUpt : int { ModelTrans = 0, ModelRot, ModelMat, ViewMat, ProjMat, FrustMult };
     Camera() { init(); }
-
-    Camera(camType setup, float screenWidth, float screenHeight, float left, float right, float bottom, float top,
-           float cpX = 0.f, float cpY = 0.f, float cpZ = 1.f, float laX = 0.f, float laY = 0.f, float laZ = 0.f,
-           float upX = 0.f, float upY = 1.f, float upZ = 0.f, float inNear = 1.f, float inFar = 1000.f,
-           float fov = 45.f);
-
+    explicit Camera(const CameraInitParams& params);
     virtual ~Camera() = default;
 
     void init(bool fromChangedScreenSize = false);
@@ -47,68 +55,28 @@ public:
                           int scrHeight = 0.f);
 
     void setScreenSize(uint32_t width, uint32_t height);
-    void setModelMatr(glm::mat4 &modelMatr);
-    void setViewMatr(glm::mat4 &viewMatr);
-    void setProjMatr(glm::mat4 &projMatr);
+    void setModelMatr(const glm::mat4 &modelMatr);
+    void setViewMatr(const glm::mat4 &viewMatr);
+    void setProjMatr(const glm::mat4 &projMatr);
     void setFrustMult(const float *multVal);
     bool setFishEyeParam();
-
     void setType(camType t) { m_type = t; }
     void setCamPos(glm::vec3 pos) { m_camPos = pos; }
     void setLookAt(glm::vec3 lookAt) { m_camLookAt = lookAt; }
     void setUpVec(glm::vec3 upVec) { m_camUpVec = upVec; }
-
-    void setCamPos(float x, float y, float z) {
-        m_camPos.x = x;
-        m_camPos.y = y;
-        m_camPos.z = z;
-    }
-
-    void setLookAt(float x, float y, float z) {
-        m_camLookAt.x = x;
-        m_camLookAt.y = y;
-        m_camLookAt.z = z;
-    }
-
+    void setCamPos(float x, float y, float z);
+    void setLookAt(float x, float y, float z);
     void setClearColor(glm::vec4 col) { m_clearColor = col; }
-
-    void setClearColor(float r, float g, float b, float a) {
-        m_clearColor.r = r;
-        m_clearColor.g = g;
-        m_clearColor.b = b;
-        m_clearColor.a = a;
-    }
-
+    void setClearColor(float r, float g, float b, float a) ;
     void setFloorSwitch(float val) { m_floorSwitch = val; }
     void setFov(float val) { m_fov = val; }
     void setUpdtCb(std::function<void(camUpt)> f) { m_updtCb = std::move(f); }
-
-    void setFisheyeOpenAngle(float openAngle) {
-        m_forceUpdtProjMat = m_openAngle != openAngle;
-        m_openAngle        = openAngle;
-        if (m_useFisheye) setFishEyeParam();
-    }
-
-    void switchFishEye(bool val) {
-        m_forceUpdtProjMat = m_useFisheye != (int)val;
-        m_useFisheye       = (int)val;
-        if (m_useFisheye) setFishEyeParam();
-    }
-
-    void setFishEyeAspect(float val) {
-        m_forceUpdtProjMat = m_feAspect != val;
-        m_feAspect         = val;
-        if (m_useFisheye) setFishEyeParam();
-    }
-
-    void setBorderPix(int val) {
-        m_forceUpdtProjMat = m_borderPix != val;
-        m_borderPix        = val;
-        if (m_useFisheye) setFishEyeParam();
-    }
-
-    void setScreenWidth(int width) { m_screenWidth = (float)width; }
-    void setScreenHeight(int height) { m_screenHeight = (float)height; }
+    void setFisheyeOpenAngle(float openAngle);
+    void switchFishEye(bool val);
+    void setFishEyeAspect(float val);
+    void setBorderPix(int val);
+    void setScreenWidth(int width) { m_screenSize.x = static_cast<float>(width); }
+    void setScreenHeight(int height) { m_screenSize.y = static_cast<float>(height); }
     void setForceUpdtProjMat(bool val) { m_forceUpdtProjMat = val; }
     void setForceUpdtCb(bool val) { m_forceUpdtCb = val; }
     void setFixAspectRatio(float val) { m_fixAspectRatio = val; }
@@ -150,11 +118,10 @@ public:
     [[nodiscard]] bool  getForceUpdtCb() const { return m_forceUpdtCb; }
     glm::vec4          &getViewport() { return m_viewport; }
 
-    void debug();
+    void debug() const;
 
     float     m_floorSwitch  = 1.f;
-    float     m_screenWidth  = 0.f;
-    float     m_screenHeight = 0.f;
+    glm::vec2 m_screenSize{};
     int       m_borderPix    = 0;
     glm::vec4 m_clearColor{0.f, 0.f, 0.f, 0.f};
 
@@ -187,9 +154,10 @@ private:
     float m_right          = 0.5f;
     float m_bottom         = -0.5f;
     float m_top            = 0.5f;
-    float m_frustMult[4]{0.f};
     float m_openAngle = 1.f;
     float m_feAspect  = 1.f;
+
+    glm::vec4 m_frustMult{};
 
     std::function<void(camUpt)> m_updtCb;
 };

@@ -7,6 +7,10 @@
 //
 
 #include "Shaders/ShadowMap/ShadowMap.h"
+#include <Shaders/Shaders.h>
+#include <Utils/FBO.h>
+
+#include "SceneNodes/SceneNode.h"
 
 using namespace glm;
 using namespace std;
@@ -29,39 +33,35 @@ void ShadowMap::bindShadowMap(GLuint texUnit) {
 }
 
 GLuint ShadowMap::getDepthImg() {
-    if (s_fbo)
-        return s_fbo->getDepthImg();
-    else
-        return 0;
+    return s_fbo ? s_fbo->getDepthImg() : 0;
 }
 
 GLuint ShadowMap::getColorImg() {
-    if (s_fbo)
-        return s_fbo->getColorImg();
-    else
-        return 0;
+    return s_fbo ? s_fbo->getColorImg() : 0;
 }
 
 FBO* ShadowMap::getFbo() {
-    if (s_fbo)
-        return s_fbo.get();
-    else
-        return nullptr;
+    return s_fbo ? s_fbo.get() : nullptr;
 }
 
-int ShadowMap::getWidth() { return s_scrWidth; }
-
-int ShadowMap::getHeight() { return s_scrHeight; }
-
-Shaders* ShadowMap::getShader() { return s_shadowShader; }
-
-void ShadowMap::setScreenSize(uint _width, uint _height) {
-    s_scrWidth  = _width;
-    s_scrHeight = _height;
-    if (s_fbo) s_fbo->resize(_width, _height);
+int ShadowMap::getWidth() {
+    return s_scrWidth;
 }
 
-ShadowMap::~ShadowMap() {
-    if (s_shadowShader) delete s_shadowShader;
+int ShadowMap::getHeight() {
+    return s_scrHeight;
 }
+
+Shaders* ShadowMap::getShader() {
+    return s_shadowShader;
+}
+
+void ShadowMap::setScreenSize(uint width, uint height) {
+    s_scrWidth  = width;
+    s_scrHeight = height;
+    if (s_fbo) {
+        s_fbo->resize(width, height);
+    }
+}
+
 }  // namespace ara

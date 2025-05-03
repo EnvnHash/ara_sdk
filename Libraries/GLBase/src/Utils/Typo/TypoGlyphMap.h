@@ -17,12 +17,12 @@ class Quad;
 class BakedFont {
 public:
     GLuint                           tex = 0;
-    float                            scale;
+    float                            scale = 0.f;
     int                              ascent  = 0;
     int                              descent = 0;
     int                              lineGap = 0;
     std::vector<uint8_t>             bitmap;
-    std::array<stbtt_bakedchar, 223> cdata;
+    std::array<stbtt_bakedchar, 223> cdata{};
 };
 
 class TypoGlyphMap {
@@ -41,7 +41,7 @@ public:
 
     // prints in pixel coordinates, origin is left/top
     void      print(int _x, int _y, const std::string &text, int fontSize, float *col);
-    void      print(glm::vec2 &p, const std::string &text, int fontSize, float *col) {
+    void      print(const glm::vec2 &p, const std::string &text, int fontSize, float *col) {
         print(p.x, p.y, text, fontSize, col);
     }
     glm::vec2 getTextWidth(const char *text, int fontSize);
@@ -54,7 +54,7 @@ public:
     void         setScreenSize(uint32_t screenWidth, uint32_t screenHeight);
     unsigned int getScreenWidth() const { return m_screen_width; }
     unsigned int getScreenHeight() const { return m_screen_height; }
-    float        getRelativeLineHeight() const { return (float)m_heightPix / (float)m_screen_height; };
+    float        getRelativeLineHeight() const { return static_cast<float>(m_heightPix) / static_cast<float>(m_screen_height); };
     int32_t      getDescent(int fontSize) { return m_bakedFonts[fontSize].descent; }
 
     std::vector<glm::vec2>           m_charOffs;

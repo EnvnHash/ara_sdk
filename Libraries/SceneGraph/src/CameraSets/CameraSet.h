@@ -80,7 +80,7 @@ public:
     virtual GLBase* getGLBase() { return m_glbase; }
 
     virtual void setMask(glm::vec3 scale, glm::vec3 trans);
-    void         addUpdtCb(const std::function<void()>& cb, void* name) { s_updtCb[name].push_back(cb); }
+    void         addUpdtCb(const std::function<void()>& cb, void* name) { s_updtCb[name].emplace_back(cb); }
 
     std::map<std::string, std::unique_ptr<ShaderProto>> s_shaderProto;
     std::vector<std::pair<TrackBallCam*, void*>>        s_cam;

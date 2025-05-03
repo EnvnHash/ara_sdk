@@ -358,30 +358,6 @@ float map(float value, float inputMin, float inputMax, float outputMin, float ou
     }
 }
 
-void makeMatr(glm::mat4 *_matr, bool *_inited, float xOffs, float yOffs, float zOffs, float rotX, float rotY,
-              float rotZ, float scaleX, float scaleY, float scaleZ) {
-    /*
-     glm::mat4 rotM, transScaleM, matrix;
-
-     rotM = rotM.createRotationAroundAxis(
-     rotX / 360.0f * TWO_PI,
-     rotY / 360.0f * TWO_PI,
-     rotZ / 360.0f * TWO_PI
-     );
-     transScaleM.setTranslation(xOffs, yOffs, zOffs);
-     transScaleM.setScaling(scaleX, scaleY, scaleZ);
-     rotM = rotM * transScaleM;
-
-     *_matr = vmath::Matrix4f(rotM);
-
-     if ( xOffs != 0.0f || yOffs != 0.0f || zOffs != 0.0f
-     || rotX != 0.0f || rotY != 0.0f || rotZ != 0.0f
-     || scaleX != 1.0f || scaleY != 1.0f || scaleZ != 1.0f
-     )
-     *_inited = true;
-     */
-}
-
 // Function to generate a random point within a plane defined by three points
 glm::vec3 getRandomPointOnPlane(const glm::vec3& base, const glm::vec3& v0, const glm::vec3& v1) {
     return base + v0 * getRandF(0.05f, 0.95f) + v1 * getRandF(0.05f, 0.95f);
@@ -912,18 +888,16 @@ void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pix
     glDeleteFramebuffers(1, &fbo);
 }
 
-vector<GLfloat> get2DRing(int nrPoints) {
-    vector<GLfloat> ringPos(nrPoints * 2);
+vector<vec2> get2DRing(int nrPoints) {
+    vector<vec2> ringPos(nrPoints);
 
     for (int i = 0; i < nrPoints; i++) {
         // define a circle with n points
         float fInd = static_cast<float>(i) / static_cast<float>(nrPoints);
-        float x = std::cos(fInd * static_cast<float>(M_PI) * 2.f);
-        float z = std::sin(fInd * static_cast<float>(M_PI) * 2.f);
 
         // tip and cap
-        ringPos[i * 2]     = x;
-        ringPos[i * 2 + 1] = z;
+        ringPos[i].x = std::cos(fInd * static_cast<float>(M_PI) * 2.f);
+        ringPos[i].y = std::sin(fInd * static_cast<float>(M_PI) * 2.f);
     }
 
     return ringPos;
@@ -934,7 +908,7 @@ bool initGLEW() {
     glewExperimental = GL_TRUE;
     GLuint err       = glewInit();
     if (GLEW_OK != err) {
-        fprintf(stderr, "Error couldn't init GLEW : %s\n", glewGetErrorString(err));
+        LOGE << "Error couldn't init GLEW : " << glewGetErrorString(err);
         return false;
     }
     glGetError();  // delete glew standard error (bug in glew)

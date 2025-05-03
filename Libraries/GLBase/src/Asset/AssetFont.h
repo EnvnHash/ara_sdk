@@ -30,7 +30,7 @@ public:
     unsigned    m_Flags = none;
     std::string m_FontPath;
 
-    AssetFont(std::string name, GLBase *glbase) : ResNode(std::move(name), glbase) {}
+    AssetFont(std::string name, GLBase *glbase) : ResNode(name, glbase) {}
 
     void onProcess() override;
     bool onResourceChange(bool deleted, const std::string &res_fpath) override;

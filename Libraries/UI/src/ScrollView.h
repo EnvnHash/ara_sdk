@@ -7,7 +7,7 @@ namespace ara {
 class ScrollView : public Div {
 public:
     ScrollView();
-    explicit ScrollView(std::string&& styleClass);
+    explicit ScrollView(const std::string& styleClass);
     ~ScrollView() override = default;
 
     void init() override;
@@ -46,42 +46,22 @@ public:
     }
 
     template <typename T>
-    T* addChild(std::string* styleClass) {
+    T* addChild(const std::string& styleClass) {
         if (!m_content) {
             return nullptr;
         }
-        T* nc = m_content->addChild<T>();
-        nc->addStyleClass(std::move(*styleClass));
+        auto nc = m_content->addChild<T>();
+        nc->addStyleClass(styleClass);
         return nc;
     }
 
-    template <typename T>
-    T* addChild(std::string&& styleClass) {
-        if (!m_content) {
-            return nullptr;
-        }
-        T* nc = m_content->addChild<T>();
-        nc->addStyleClass(std::move(styleClass));
-        return nc;
-    }
 
-    template <typename T>
-    T* addChild(int x, int y, int w, int h) {
+    template <typename T, CoordinateType C>
+    T* addChild(C x, C y, C w, C h) {
         if (!m_content) {
             return nullptr;
         }
-        T* nc = m_content->addChild<T>();
-        nc->setPos(x, y);
-        nc->setSize(w, h);
-        return nc;
-    }
-
-    template <typename T>
-    T* addChild(float x, float y, float w, float h) {
-        if (!m_content) {
-            return nullptr;
-        }
-        T* nc = m_content->addChild<T>();
+        auto nc = m_content->addChild<T>();
         nc->setPos(x, y);
         nc->setSize(w, h);
         return nc;
@@ -89,43 +69,29 @@ public:
 
     template <typename T>
     T* addChild(int x, int y, int w, int h, const float* fgcolor, const float* bkcolor) {
-        if (!m_content) {
-            return nullptr;
+        auto n = addChild<T>(x, y, w, h);
+        if (fgcolor != nullptr) {
+            n->setColor(fgcolor[0], fgcolor[1], fgcolor[2], fgcolor[3]);
         }
-        T*    nc = m_content->addChild<T>();
-        auto* n  = static_cast<UINode*>(nc);
-        n->setPos(x, y);
-        n->setSize(w, h);
-        if (fgcolor != nullptr) n->setColor(fgcolor[0], fgcolor[1], fgcolor[2], fgcolor[3]);
-        if (bkcolor != nullptr) n->setBackgroundColor(bkcolor[0], bkcolor[1], bkcolor[2], bkcolor[3]);
-        return nc;
+        if (bkcolor != nullptr) {
+            n->setBackgroundColor(bkcolor[0], bkcolor[1], bkcolor[2], bkcolor[3]);
+        }
+        return n;
     }
 
     template <typename T>
     T* addChild(int x, int y, int w, int h, glm::vec4 fgcolor, glm::vec4 bkcolor) {
-        if (!m_content) {
-            return nullptr;
-        }
-        T*    nc = m_content->addChild<T>();
-        auto* n  = static_cast<UINode*>(nc);
-        n->setPos(x, y);
-        n->setSize(w, h);
+        auto n = addChild<T>(x, y, w, h);
         n->setColor(fgcolor);
         n->setBackgroundColor(bkcolor);
-        return nc;
+        return n;
     }
 
     template <typename T>
     T* addChild(int x, int y, int w, int h, std::filesystem::path path) {
-        if (!m_content) {
-            return nullptr;
-        }
-        T*    nc = m_content->addChild<T>();
-        auto* n  = static_cast<UINode*>(nc);
-        n->setPos(x, y);
-        n->setSize(w, h);
+        auto n = addChild<T>(x, y, w, h);
         n->setPath(std::move(path));
-        return nc;
+        return n;
     }
 
     int m_scrollBarSize = 16;

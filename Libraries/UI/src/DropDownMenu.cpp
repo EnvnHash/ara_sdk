@@ -20,7 +20,7 @@ DropDownMenu::DropDownMenu() : Div() {
     loadStyleDefaults();
 }
 
-DropDownMenu::DropDownMenu(std::string&& styleClass) : Div(std::move(styleClass)) {
+DropDownMenu::DropDownMenu(const std::string& styleClass) : Div(styleClass) {
     setName(getTypeName<DropDownMenu>());
     setFocusAllowed(false);
     loadStyleDefaults();
@@ -96,7 +96,7 @@ void DropDownMenu::init() {
         }
 
         if (m_entryList) {
-            for (auto& butt : m_entryButts) {
+            for (const auto& butt : m_entryButts) {
                 butt->addStyleClass(getStyleClass() + ".entries");
             }
         }
@@ -169,9 +169,9 @@ void DropDownMenu::rebuildEntryList() {
     m_entryButts.clear();
 
     int i = 0;
-    for (auto& entry : m_entries) {
+    for (const auto& entry : m_entries) {
         auto butt = m_entryList->addChild<Button>();
-        m_entryButts.push_back(butt);  // maintain a separate list of entry button since m_entries
+        m_entryButts.emplace_back(butt);  // maintain a separate list of entry button since m_entries
                                        // may contain other elements
 
         // default

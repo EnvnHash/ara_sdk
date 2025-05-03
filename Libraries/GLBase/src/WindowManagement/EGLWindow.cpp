@@ -20,10 +20,10 @@ std::unique_ptr<GLWindowBase> EGLWindow::m_osWin;        // EGL display connecti
 EGLDisplay                    EGLWindow::m_display = 0;  // EGL display connection
 
 int EGLWindow::init(glWinPar& gp) {
-    m_widthVirt   = gp.width;
-    m_heightVirt  = gp.height;
-    m_widthReal   = gp.width;
-    m_heightReal  = gp.height;
+    m_widthVirt   = gp.size.x;
+    m_heightVirt  = gp.size.y;
+    m_widthReal   = gp.size.x;
+    m_heightReal  = gp.size.y;
     m_orientation = orientation::default_ori;
     m_glbase      = (GLBase*)gp.glbase;
 
@@ -33,15 +33,11 @@ int EGLWindow::init(glWinPar& gp) {
 
 #ifdef __ANDROID__
     m_esContext.eglNativeWindow = (ANativeWindow*)gp.extWinHandle;
-    // For Android, get the width/height from the window rather than what the
-    // application requested.
+    // For Android, get the width/height from the window rather than what the application requested.
     m_esContext.width  = ANativeWindow_getWidth(m_esContext.eglNativeWindow);
     m_esContext.height = ANativeWindow_getHeight(m_esContext.eglNativeWindow);
 
-    // calculate a scaling factor for the devices dpi setting (is set in
-    // UIApplication::android_handle_cmd)
-    // m_contentScale = glm::vec2{(float)m_glbase->g_hwDpi /
-    // m_androidDefaultDpi};
+    // calculate a scaling factor for the devices dpi setting (is set in UIApplication::android_handle_cmd)
     m_contentScale = glm::vec2{m_glbase->g_androidDensity, m_glbase->g_androidDensity};
 
 #else
@@ -155,8 +151,8 @@ int EGLWindow::init(glWinPar& gp) {
     int w, h;
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_WIDTH, &w);
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_HEIGHT, &h);
-    m_widthVirt  = (uint32_t)std::round((float)w / m_contentScale.x);
-    m_heightVirt = (uint32_t)std::round((float)h / m_contentScale.y);
+    m_widthVirt  = static_cast<uint32_t>(std::round(static_cast<float>(w) / m_contentScale.x));
+    m_heightVirt = static_cast<uint32_t>(std::round(static_cast<float>(h) / m_contentScale.y));
     m_widthReal  = w;
     m_heightReal = h;
     LOG << " EGLWindow virtual size: " << m_widthVirt << "x" << m_heightVirt << " hw size: " << m_widthReal << "x"
@@ -297,8 +293,8 @@ void EGLWindow::checkSize() {
 
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_WIDTH, &w);
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_HEIGHT, &h);
-    m_widthVirt  = (uint32_t)std::round((float)w / m_contentScale.x);
-    m_heightVirt = (uint32_t)std::round((float)h / m_contentScale.y);
+    m_widthVirt  = (uint32_t)std::round(static_cast<float>(w) / m_contentScale.x);
+    m_heightVirt = (uint32_t)std::round(static_cast<float>(h) / m_contentScale.y);
     m_widthReal  = (uint32_t)w;
     m_heightReal = (uint32_t)h;
 

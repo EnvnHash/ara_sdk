@@ -13,7 +13,7 @@ class Image;
 class ComboBox : public DropDownMenu {
 public:
     ComboBox() : DropDownMenu() { setName(getTypeName<ComboBox>()); }
-    ComboBox(std::string&& styleClass) : DropDownMenu(std::move(styleClass)) { setName(getTypeName<ComboBox>()); }
+    ComboBox(const std::string& styleClass) : DropDownMenu(styleClass) { setName(getTypeName<ComboBox>()); }
     virtual ~ComboBox() = default;
 
     virtual void init();

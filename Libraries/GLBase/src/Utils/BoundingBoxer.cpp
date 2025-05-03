@@ -72,7 +72,7 @@ void BoundingBoxer::initShader() {
     boxCalcShader = m_shCol.add("BoundingBoxer", vert, geom, frag);
 }
 
-void BoundingBoxer::begin() {
+void BoundingBoxer::begin() const {
     if (!fbo) {
         LOGE << "BoundingBoxer no s_fbo";
         return;
@@ -96,7 +96,7 @@ void BoundingBoxer::begin() {
 }
 
 void BoundingBoxer::end() {
-    ara::Shaders::end();
+    Shaders::end();
     if (!fbo) {
         LOGE << "BoundingBoxer no s_fbo";
         return;

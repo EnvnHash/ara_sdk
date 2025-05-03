@@ -16,34 +16,34 @@ using namespace std;
 
 namespace ara {
 
-ShadowMapVsmArray::ShadowMapVsmArray(CameraSet* _cs, int _scrWidth, int _scrHeight, uint _initNrLights)
-    : ShadowMap(_cs->getGLBase()), shCol(&_cs->getGLBase()->shaderCollector()), nrLights(_initNrLights),
-      blurAlpha(1.f) {
-    s_cs              = _cs;
-    s_scrWidth        = _scrWidth;
-    s_scrHeight       = _scrHeight;
+ShadowMapVsmArray::ShadowMapVsmArray(CameraSet* cs, int scrWidth, int scrHeight, int32_t initNrLights)
+    : ShadowMap(cs->getGLBase()), m_blurAlpha(1.f), m_shCol(&cs->getGLBase()->shaderCollector()),
+      m_nrLights(initNrLights) {
+    s_cs              = cs;
+    s_scrWidth        = scrWidth;
+    s_scrHeight       = scrHeight;
     s_shadow_map_coef = 1.f;
-    max_shader_invoc  = s_glbase->maxShaderInvocations();
+    m_maxShaderInvoc  = s_glbase->maxShaderInvocations();
 
-    rebuildFbo(_initNrLights);
-    rebuildShader(_initNrLights);
+    rebuildFbo(initNrLights);
+    rebuildShader(initNrLights);
 }
 
-void ShadowMapVsmArray::rebuildShader(uint _nrLights) {
-    if (_nrLights > 0) {
+void ShadowMapVsmArray::rebuildShader(uint nrLights) {
+    if (nrLights > 0) {
         // since the number of lights used in the scene will vary during runtime
         // we will use ShaderBufferObjects to not have to recompile the shader
         // every time
         // ...and they are faster anyway
-        uint limitNrLights = std::max<uint>(std::min<uint>(_nrLights, (uint)max_shader_invoc), 1);
+        uint limitNrLights = std::max<uint>(std::min<uint>(nrLights, static_cast<uint>(m_maxShaderInvoc)), 1);
 
-        string vert = shCol->getShaderHeader() + "// ShadowMapVsmArray vertex Shader\n";
-        vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main(void) {
+        string vert = ShaderCollector::getShaderHeader() + "// ShadowMapVsmArray vertex Shader\n";
+        vert += STRINGIFY(layout(location = 0) in vec4 position; \n void main() {
             \n gl_Position = position;
             \n
         });
 
-        std::string geom = shCol->getShaderHeader() + "// ShadowMapVsmArray geom Shader\n";
+        std::string geom = ShaderCollector::getShaderHeader() + "// ShadowMapVsmArray geom Shader\n";
         geom += "layout(triangles, invocations= " + std::to_string(limitNrLights) +
                 ") in;\n"
                 "layout(triangle_strip, max_vertices = 3) out;\n"
@@ -69,11 +69,11 @@ void ShadowMapVsmArray::rebuildShader(uint _nrLights) {
             }
         });
 
-        std::string frag = shCol->getShaderHeader() + "// ShadowMapVsmArray fragment Shader\n";
+        std::string frag = ShaderCollector::getShaderHeader() + "// ShadowMapVsmArray fragment Shader\n";
 
         frag += STRINGIFY(
             in GS_FS { vec4 position; } v_in; \n
-			\n layout(location = 0) out vec4 color; \n void main(void) {
+			\n layout(location = 0) out vec4 color; \n void main() {
                 float depth   = v_in.position.z / v_in.position.w;
                 depth         = depth * 0.5 + 0.5;  // from NDC z [-1,1] to [0,1]
                 float moment1 = depth;
@@ -85,39 +85,56 @@ void ShadowMapVsmArray::rebuildShader(uint _nrLights) {
                 color         = vec4(moment1, moment2, 0.0, 1.0);
             });
 
-        if (s_shadowShader) shCol->deleteShader("ShadowMapVsmArray");
+        if (s_shadowShader) m_shCol->deleteShader("ShadowMapVsmArray");
 
-        s_shadowShader = shCol->add("ShadowMapVsmArray", vert.c_str(), geom.c_str(), frag.c_str());
+        s_shadowShader = m_shCol->add("ShadowMapVsmArray", vert, geom, frag);
     }
 }
 
-void ShadowMapVsmArray::rebuildFbo(uint _nrLights) {
-    if (_nrLights > 0) {
+void ShadowMapVsmArray::rebuildFbo(uint nrLights) {
+    if (nrLights > 0) {
         if (s_fbo) {
             s_fbo.reset();
-            fboBlur.reset();
+            m_fboBlur.reset();
         }
 
         // s_fbo for saving the depth information
-        s_fbo = make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, std::max<int>(_nrLights, 1), GL_RG32F,
-                                 GL_TEXTURE_2D_ARRAY, true, 1, 1, 1, GL_CLAMP_TO_BORDER, true});
+        s_fbo = make_unique<FBO>(FboInitParams{
+            .glbase = s_glbase,
+            .width = s_scrWidth,
+            .height = s_scrHeight,
+            .depth = std::max<int>(nrLights, 1),
+            .type = GL_RG32F,
+            .target = GL_TEXTURE_2D_ARRAY,
+            .depthBuf = true,
+            .wrapMode =  GL_CLAMP_TO_BORDER,
+            .layered = true
+        });
 
-        fboBlur = make_unique<FastBlurMem>(s_glbase, blurAlpha, s_scrWidth, s_scrHeight, GL_TEXTURE_2D_ARRAY, GL_RG32F,
-                                           std::max<uint>(_nrLights, 1), false, FastBlurMem::KERNEL_3, true);
-        fboBlur->setOffsScale(0.8f);
+        m_fboBlur = make_unique<FastBlurMem>(FastBlurMemParams{
+            .glbase = s_glbase,
+            .alpha = m_blurAlpha,
+            .blurSize = {s_scrWidth, s_scrHeight},
+            .target = GL_TEXTURE_2D_ARRAY,
+            .intFormat = GL_RG32F,
+            .nrLayers = std::max<uint>(nrLights, 1),
+            .kSize = KERNEL_3,
+            .singleFbo = true
+        });
+        m_fboBlur->setOffsScale(0.8f);
 
         // set the necessary texture parameters for the depth textures
         // get last bound texture
         int lastBound = 0;
         glGetIntegerv(GL_TEXTURE_BINDING_2D_ARRAY, &lastBound);
 
-        glBindTexture(GL_TEXTURE_2D_ARRAY, fboBlur->getLastResult());
+        glBindTexture(GL_TEXTURE_2D_ARRAY, m_fboBlur->getLastResult());
         setShadowTexPar(GL_TEXTURE_2D_ARRAY);
 
         // bind last bound again
         glBindTexture(GL_TEXTURE_2D_ARRAY, lastBound);
     }
-    nrLights = _nrLights;
+    m_nrLights = nrLights;
 }
 
 void ShadowMapVsmArray::setShadowTexPar(GLenum type) {
@@ -132,7 +149,9 @@ void ShadowMapVsmArray::setShadowTexPar(GLenum type) {
 }
 
 void ShadowMapVsmArray::begin() {
-    if (s_fbo) s_fbo->bind();
+    if (s_fbo) {
+        s_fbo->bind();
+    }
     s_shadowShader->begin();
 
     // by default render all scenes, this can be set to a light id, to avoid
@@ -141,34 +160,37 @@ void ShadowMapVsmArray::begin() {
 }
 
 void ShadowMapVsmArray::end() {
-    s_shadowShader->end();
-    if (s_fbo) s_fbo->unbind();
-}
-
-void ShadowMapVsmArray::setNrLights(uint _nrLights) {
-    if (nrLights != _nrLights) {
-        rebuildFbo(_nrLights);
-        rebuildShader(_nrLights);
+    Shaders::end();
+    if (s_fbo) {
+        s_fbo->unbind();
     }
-
-    nrLights = _nrLights;
 }
 
-void ShadowMapVsmArray::setScreenSize(uint _width, uint _height) {
-    s_scrWidth  = _width;
-    s_scrHeight = _height;
-    rebuildFbo(nrLights);
+void ShadowMapVsmArray::setNrLights(uint num) {
+    if (m_nrLights != num) {
+        rebuildFbo(num);
+        rebuildShader(m_nrLights);
+    }
+    m_nrLights = num;
 }
 
-void ShadowMapVsmArray::bindDepthTexViews(GLuint baseTexUnit, uint nrTexs, uint texOffs) {
+void ShadowMapVsmArray::setScreenSize(uint width, uint height) {
+    s_scrWidth  = static_cast<int32_t>(width);
+    s_scrHeight = static_cast<int32_t>(height);
+    rebuildFbo(m_nrLights);
+}
+
+void ShadowMapVsmArray::bindDepthTexViews(GLuint baseTexUnit, uint nrTexs, uint texOffs) const {
     for (uint i = 0; i < nrTexs; i++) {
         glActiveTexture(GL_TEXTURE0 + baseTexUnit + i);
-        glBindTexture(GL_TEXTURE_2D, depthTexViews[texOffs + i]);
+        glBindTexture(GL_TEXTURE_2D, m_depthTexViews[texOffs + i]);
     }
 }
 
-void ShadowMapVsmArray::blur() {
-    if (s_fbo && fboBlur) fboBlur->proc(s_fbo->getColorImg());  // blur
+void ShadowMapVsmArray::blur() const {
+    if (s_fbo && m_fboBlur) {
+        m_fboBlur->proc(s_fbo->getColorImg());  // blur
+    }
 }
 
 void ShadowMapVsmArray::clear() {

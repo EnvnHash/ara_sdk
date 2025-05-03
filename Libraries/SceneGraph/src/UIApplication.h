@@ -30,15 +30,14 @@ public:
     UIApplication();
     virtual ~UIApplication() = default;
 
-    virtual void init(std::function<void()> func);
+    void init(std::function<void()> func) override;
 
     /// \brief initialization function for sequential rendering. A loop which calls the WindowManager's iterate function,
     /// which will call all window's draw functions on after another
     virtual void initThread(const std::function<void()>& initCb);
 
     template <class T>
-    T* addWindow(int width, int height, int posX, int posY, bool osDecoration, bool transparentFB = false,
-                 bool multisample = true, bool scaleToMonitor = false) {
+    T* addWindow(const UIWindowParams& params) {
 #ifndef ARA_USE_EGL
         if (!m_glbase.isInited()) {
             m_glbase.init(m_initRes);
@@ -48,7 +47,7 @@ public:
             // needed in debug mode, when the resources can change during runtime
             if (m_glbase.getAssetManager() && !m_glbase.getAssetManager()->usingComp()) {
                 m_glbase.setUpdtResCb([this] {
-                    for (auto& it : m_uiWindows) {
+                    for (const auto& it : m_uiWindows) {
                         it->setResChanged(true);
                         it->update();
                     }
@@ -58,22 +57,18 @@ public:
 #endif
         // no context bound at this point
 
-        // create a unique_ptr and push it to the ui_Windows array in the UIWindow ctor
-        // "m_glbase.getWinMan().addWin(..." is called, so the UIWindow's GLFWWindow is part of the GLFWWindowManager's
-        // m_windows vector
+        UIWindowParams p = params;
+        p.glbase        = &m_glbase;
 #if defined(__ANDROID__) && defined(ARA_ANDROID_PURE_NATIVE_APP)
-        m_uiWindows.push_back(std::make_unique<T>(&m_glbase, width, height, posX, posY, osDecoration, transparentFB,
-                                                  false, false, multisample, (void*)m_androidNativeWin));
+        p.extWinHandle = static_cast<void*>(m_androidNativeWin);
+        m_uiWindows.emplace_back(std::make_unique<T>(p));
 #elif defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
-        m_uiWindows.push_back(std::make_unique<T>(&m_glbase, width, height, posX, posY, osDecoration, transparentFB,
-                                                  false, true, multisample, nullptr));
+        m_uiWindows.emplace_back(std::make_unique<T>(p));
 #else
-        m_uiWindows.emplace_back(std::make_unique<T>(&m_glbase, width, height, posX, posY, osDecoration, transparentFB,
-                                                     false, false, multisample, nullptr, scaleToMonitor));
+        m_uiWindows.emplace_back(std::make_unique<T>(p));
 #endif
 
         auto newWindow = m_uiWindows.back().get();
-
         if (newWindow->getProcSteps()) {
             newWindow->getProcSteps()->at(Draw).active = true;
         }
@@ -84,18 +79,17 @@ public:
             m_mainWindow = newWindow;
         }
 
-        return (T*)m_uiWindows.back().get();
+        return dynamic_cast<T*>(m_uiWindows.back().get());
     }
 
-    UIWindow* addWindow(int width, int height, int posX, int posY, bool osDecoration, bool transparentFB = false,
-                        bool multisample = true, bool scaleToMonitor = false) {
-        return addWindow<UIWindow>(width, height, posX, posY, osDecoration, transparentFB, multisample, scaleToMonitor);
+    UIWindow* addWindow(const UIWindowParams& params) {
+        return addWindow<UIWindow>(params);
     }
 
     // called from UIWindow::close() when the removeFromApp bool is set
     void removeWindow(UIWindow* win) {
-        auto ptr = std::find_if(m_uiWindows.begin(), m_uiWindows.end(),
-                                [win](const std::unique_ptr<UIWindow>& w) { return w.get() == win; });
+        auto ptr = std::ranges::find_if(m_uiWindows,
+                                        [win](const std::unique_ptr<UIWindow>& w) { return w.get() == win; });
 
         if (ptr != m_uiWindows.end()) {
             m_uiWindows.erase(ptr);
@@ -119,17 +113,15 @@ public:
     virtual void update() { m_iterate.notify(); }
 
     // Info dialoges
-    virtual void openInfoDiag(int x, int y, int width, int height, infoDiagType tp, const std::string& msg,
-                              bool isModal = true, long minStayTime = 500, const std::function<bool()>& onConfirm = nullptr,
-                              const std::function<void()>& onClose = nullptr, const std::function<bool()>& onCancel = nullptr);
-    virtual void openInfoDiag(infoDiagType tp, std::string msg, std::function<bool()> onConfirm);
-    virtual void showInfo(std::string msg, long minStayTime = 500, int width = 250, int height = 100,
+    virtual void openInfoDiag(const InfoDiagParams& params);
+    virtual void openInfoDiag(infoDiagType tp, const std::string& msg, const std::function<bool()>& onConfirm);
+    virtual void showInfo(const std::string& msg, long minStayTime = 500, int width = 250, int height = 100,
                           bool isModal = true, std::function<void()> onClose = nullptr,
                           std::function<void()> onInfoOpen = nullptr);
     virtual void showCancel(std::string msg, long minStayTime, int width, int height, bool isModal, std::function<bool()> cancelCb);
     virtual void closeInfoDiag();
 
-    UIWindow* getInfoDiag() { return m_infoDiag; }
+    UIWindow* getInfoDiag() const { return m_infoDiag; }
     void      waitForExit() { m_exitSema.wait(0); }
     void      startEventLoop(); // run a pure event loop inside WindowManager, -> event will be distributed to all registered windows
 
@@ -147,9 +139,9 @@ public:
     virtual UINode* getRootNode(uint winIdx = 0) { return (m_uiWindows.size() > winIdx) ? m_uiWindows[winIdx]->getRootNode() : nullptr; }
     virtual UIWindow* getWinBase(uint winIdx = 0) { return m_uiWindows.size() > winIdx ? m_uiWindows[winIdx].get() : nullptr; }
 
-    UIWindow*                               getMainWindow() { return m_mainWindow; }
+    UIWindow*                               getMainWindow() const { return m_mainWindow; }
     std::vector<std::unique_ptr<UIWindow>>* getUIWindows() { return &m_uiWindows; }
-    void*                                   getDataModel() { return m_dataModel; }
+    void*                                   getDataModel() const { return m_dataModel; }
 
     void stop();            /// for single threaded mode
     virtual void exit();    /// exit the application, must called from the main thread in multi-thread setups

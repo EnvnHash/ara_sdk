@@ -7,24 +7,29 @@
 //
 
 #include "SkyBoxBlend.h"
+#include "GeoPrimitives/Sphere.h"
+#include "SceneNodes/SceneNode.h"
+#include "Shaders/Shaders.h"
+#include "CameraSets/CameraSet.h"
+#include "Utils/TFO.h"
+#include "Utils/Texture.h"
+
 
 using namespace glm;
 using namespace std;
 
 namespace ara {
 
-SkyBoxBlend::SkyBoxBlend(std::string textureFile, unsigned _nrCams, sceneData* sd) {
-    init(textureFile.c_str(), _nrCams, sd);
-}
+SkyBoxBlend::SkyBoxBlend(const std::string &textureFile, unsigned nrCams, sceneData* sd) {
+    m_vShader = STRINGIFY(layout(location = 0) in vec4 position;
+        out vec4 pos;
+        void main() {
+            pos = position;
+        });
+    m_vShader = ShaderCollector::getShaderHeader() + m_vShader;
 
-SkyBoxBlend::SkyBoxBlend(const char* textureFile, unsigned _nrCams, sceneData* sd) { init(textureFile, _nrCams, sd); }
-
-void SkyBoxBlend::init(const char* textureFile, unsigned _nrCams, sceneData* sd) {
-    vShader = STRINGIFY(layout(location = 0) in vec4 position; out vec4 pos; void main(void) { pos = position; });
-    vShader = "#version 410\n" + vShader;
-
-    gShader = STRINGIFY(in vec4 pos[]; out vec3 tex_coord; out vec3 tex_coord_2; out vec3 tex_coord_3;
-                        uniform mat4 tc_rot; uniform mat4 tc_rot2; uniform mat4 tc_rot3; void main(void) {
+    m_gShader = STRINGIFY(in vec4 pos[]; out vec3 tex_coord; out vec3 tex_coord_2; out vec3 tex_coord_3;
+                        uniform mat4 tc_rot; uniform mat4 tc_rot2; uniform mat4 tc_rot3; void main() {
                             gl_ViewportIndex = gl_InvocationID;
                             for (int i = 0; i < gl_in.length(); i++) {
                                 tex_coord   = normalize((tc_rot * pos[i]).xyz);
@@ -36,13 +41,13 @@ void SkyBoxBlend::init(const char* textureFile, unsigned _nrCams, sceneData* sd)
                             EndPrimitive();
                         });
 
-    std::string gHeader = "#version 410\n";
-    gHeader += "layout(triangles, invocations=" + std::to_string(_nrCams) + ") in;\n";
+    std::string gHeader = ShaderCollector::getShaderHeader();
+    gHeader += "layout(triangles, invocations=" + std::to_string(nrCams) + ") in;\n";
     gHeader += "layout(triangle_strip, max_vertices=3) out;\n";
-    gHeader += "uniform mat4 m_pvm[" + std::to_string(_nrCams) + "];\n";
-    gShader = gHeader + gShader;
+    gHeader += "uniform mat4 m_pvm[" + std::to_string(nrCams) + "];\n";
+    m_gShader = gHeader + m_gShader;
 
-    fShader = STRINGIFY(
+    m_fShader = STRINGIFY(
         uniform vec2 noiseScale; uniform float width; uniform float height; uniform float time; uniform float time2;
         in vec3 tex_coord; in vec3 tex_coord_2; in vec3 tex_coord_3; layout(location = 0) out vec4 color;
         uniform samplerCube                                                                        tex;
@@ -132,7 +137,7 @@ void SkyBoxBlend::init(const char* textureFile, unsigned _nrCams, sceneData* sd)
         float noiseC2 = 0.0; const vec3 LumCoeff = vec3(0.2125, 0.7154, 0.0721);
         const vec3                      AvgLumin = vec3(0.5, 0.5, 0.5);
 
-        void main(void) {
+        void main() {
             vec2 posCo = vec2(gl_FragCoord) / vec2(width, height) * noiseScale;
 
             noiseC = (cnoise(vec3(posCo * 32.0, time)) + 1.0) * 0.5;
@@ -158,43 +163,41 @@ void SkyBoxBlend::init(const char* textureFile, unsigned _nrCams, sceneData* sd)
 
             color = vec4(conColor, 1);
         });
-    fShader = "#version 410\n" + fShader;
+    m_fShader = ShaderCollector::getShaderHeader() + m_fShader;
 
-    sbShader = new Shaders(vShader.c_str(), gShader.c_str(), fShader.c_str());
-    sbShader->link();
+    m_sbShader = sd->glbase->shaderCollector().add("SkyBoxBlend", m_vShader, m_gShader, m_fShader);
+    m_sbShader->link();
 
-    cubeTex = new Texture(m_glbase);
-    cubeTex->loadTextureCube(textureFile);
+    m_cubeTex = make_unique<Texture>(m_glbase);
+    m_cubeTex->loadTextureCube(textureFile);
 
-    sphere = new Sphere(4.f, 32);
-
-    pvm = glm::mat4();
+    m_sphere = make_unique<Sphere>(4.f, 32);
 }
 
-void SkyBoxBlend::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo) {
+void SkyBoxBlend::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo) const {
     glDisable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
     glDisable(GL_CULL_FACE);
-    glFrontFace(GL_CW);  // vermurkst die darstellung, wenn von aussen drauf gesehen
+    glFrontFace(GL_CW);
 
-    glm::mat4 rotMat  = glm::rotate(mat4(1.f), float(time) * 0.3f, vec3(0.f, 1.f, 0.f));
-    glm::mat4 rotMat2 = glm::rotate(rotMat, float(M_PI), vec3(std::sin(time * 0.8f) * 0.4f, 0.8f, 0.2f));
-    glm::mat4 rotMat3 = glm::rotate(rotMat, float(M_PI) * 0.3f, vec3(std::sin(time * 0.6f) * -0.4f, 0.8f, 0.f));
+    glm::mat4 rotMat  = glm::rotate(mat4(1.f), static_cast<float>(time) * 0.3f, vec3(0.f, 1.f, 0.f));
+    glm::mat4 rotMat2 = glm::rotate(rotMat, static_cast<float>(M_PI), vec3(std::sin(time * 0.8f) * 0.4f, 0.8f, 0.2f));
+    glm::mat4 rotMat3 = glm::rotate(rotMat, static_cast<float>(M_PI) * 0.3f, vec3(std::sin(time * 0.6f) * -0.4f, 0.8f, 0.f));
 
-    sbShader->begin();
-    sbShader->setUniformMatrix4fv("tc_rot", (GLfloat*)&rotMat[0][0]);
-    sbShader->setUniformMatrix4fv("tc_rot2", (GLfloat*)&rotMat2[0][0]);
-    sbShader->setUniformMatrix4fv("tc_rot3", (GLfloat*)&rotMat3[0][0]);
-    sbShader->setUniformMatrix4fv("m_pvm", cs->getSetModelMatrPtr(), cs->getNrCameras());
-    sbShader->setUniform1ui("samplerCube", 0);
-    sbShader->setUniform2f("noiseScale", 0.04f, 0.04f);
-    sbShader->setUniform1f("width", 1280.f);
-    sbShader->setUniform1f("height", 720.f);
-    sbShader->setUniform1f("time", (float)time);
-    sbShader->setUniform1f("time2", (float)time * 2.f);
-    cubeTex->bind(0);
+    m_sbShader->begin();
+    m_sbShader->setUniformMatrix4fv("tc_rot", (GLfloat*)&rotMat[0][0]);
+    m_sbShader->setUniformMatrix4fv("tc_rot2", (GLfloat*)&rotMat2[0][0]);
+    m_sbShader->setUniformMatrix4fv("tc_rot3", (GLfloat*)&rotMat3[0][0]);
+    m_sbShader->setUniformMatrix4fv("m_pvm", cs->getSetModelMatrPtr(), cs->getNrCameras());
+    m_sbShader->setUniform1ui("samplerCube", 0);
+    m_sbShader->setUniform2f("noiseScale", 0.04f, 0.04f);
+    m_sbShader->setUniform1f("width", 1280.f);
+    m_sbShader->setUniform1f("height", 720.f);
+    m_sbShader->setUniform1f("time", static_cast<float>(time));
+    m_sbShader->setUniform1f("time2", static_cast<float>(time) * 2.f);
+    m_cubeTex->bind(0);
 
-    sphere->draw();
+    m_sphere->draw();
 
     glFrontFace(GL_CCW);  // counter clockwise definition means front, as default
     glDepthMask(GL_TRUE);
@@ -203,15 +206,9 @@ void SkyBoxBlend::draw(double time, double dt, CameraSet* cs, Shaders* shader, r
     shader->begin();
 }
 
-void SkyBoxBlend::remove() {
-    cubeTex->releaseTexture();
-    sphere->remove();
-}
-
-SkyBoxBlend::~SkyBoxBlend() {
-    delete sphere;
-    delete sbShader;
-    delete cubeTex;
+void SkyBoxBlend::remove() const {
+    m_cubeTex->releaseTexture();
+    Sphere::remove();
 }
 
 }  // namespace ara

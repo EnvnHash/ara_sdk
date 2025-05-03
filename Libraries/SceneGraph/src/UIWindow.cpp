@@ -18,24 +18,25 @@ namespace ph = std::placeholders;
 
 namespace ara {
 
-UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY, bool osDecoration, bool transparentFB,
-                   bool floating, bool initToCurrentCtx, bool multisample, void *extWinHandle, bool scaleToMonitor)
-    : WindowBase(), m_glbase(glbase), m_drawMan(make_unique<DrawManager>(glbase)),
+UIWindow::UIWindow(const UIWindowParams& par)
+    : WindowBase(),
+    m_glbase(par.glbase),
+    m_drawMan{make_unique<DrawManager>(par.glbase)},
 #ifdef ARA_USE_GLES31
     m_multisample(false),
 #else
-    m_multisample(multisample),
+    m_multisample(par.multisample),
 #endif
-    m_selfManagedCtx(!initToCurrentCtx) {
-    uint32_t rWidth  = width;
-    uint32_t rHeight = height;
-    uint32_t vWidth  = width;
-    uint32_t vHeight = height;
+    m_selfManagedCtx(!par.initToCurrentCtx) {
+    uint32_t rWidth  = par.size.x;
+    uint32_t rHeight = par.size.y;
+    uint32_t vWidth  = par.size.x;
+    uint32_t vHeight = par.size.y;
 
     bool restartGlBaseLoop = false;
 
     // init a UIWindow, using the GLFWWindowManager and GLbase in a separate thread
-    if (!initToCurrentCtx) {
+    if (!par.initToCurrentCtx) {
 #ifndef ARA_USE_EGL
         // check if GLBase render loop is running, if this is the case, stop it and start it later again. Otherwise,
         // context sharing will fail
@@ -47,17 +48,15 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
 #endif
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
         m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{
-            .decorated = osDecoration,
-            .floating = floating,
+            .decorated = par.osDecoration,
+            .floating = par.floating,
             .debug = m_debugGLFWwin,
-            .shiftX = shiftX,
-            .shiftY = shiftY,
-            .width = width,
-            .height = height,
-            .scaleToMonitor = scaleToMonitor,
+            .shift = par.shift,
+            .size = par.size,
+            .scaleToMonitor = par.scaleToMonitor,
             .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
-            .transparentFramebuffer = transparentFB,
-            .extWinHandle = extWinHandle,
+            .transparentFramebuffer = par.transparentFB,
+            .extWinHandle = par.extWinHandle,
         });
 
         if (!m_winHandle) {
@@ -133,18 +132,22 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         }
         s_shCol.setShaderHeader(m_glbase->getShaderHeader());
 
-        m_quad = make_unique<Quad>(QuadInitParams{0.f, 0.f, 1.f, 1.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false});
-        m_normQuad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 1.f, 0.f, 0.f, 1.f, nullptr, 1, false});
+        m_quad = make_unique<Quad>(QuadInitParams{
+            .pos = {0.f, 0.f},
+            .size = {1.f, 1.f},
+            .color = { 1.f, 0.f, 0.f, 1.f }
+        });
+        m_normQuad = make_unique<Quad>(QuadInitParams{ .color = {1.f, 0.f, 0.f, 1.f} });
         glGenVertexArrays(1, &m_nullVao);
 
         m_objSel = make_unique<ObjectMapInteraction>(&s_shCol, rWidth, rHeight, m_sceneFbo.get(), m_multisample);
-        m_drawMan->setMaxObjId((uint32_t)m_objSel->getMaxObjId());
+        m_drawMan->setMaxObjId(static_cast<uint32_t>(m_objSel->getMaxObjId()));
         m_drawMan->setShaderCollector(&s_shCol);
 
         //-------------------------------------------------------------------------------------------
 
 #ifdef ARA_USE_GLFW
-        if (!initToCurrentCtx) {
+        if (!par.initToCurrentCtx) {
             // pass the newly created cursors to the GLFWWindow handle
             m_winHandle->setMouseCursorIcon(m_glbase->getWinMan()->m_diagResizeAscCursor, WinMouseIcon::lbtrResize);
             m_winHandle->setMouseCursorIcon(m_glbase->getWinMan()->m_diagResizeDescCursor, WinMouseIcon::ltbrResize);
@@ -170,7 +173,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         m_colors[uiColors::white]          = glm::vec4(1.f, 1.f, 1.f, 1.f);
 
         m_minWinSize = ivec2(300, 300);
-        m_sharedRes  = UISharedRes{(void *)this,
+        m_sharedRes  = UISharedRes{static_cast<void *>(this),
                                   &s_shCol,
                                   m_winHandle,
                                   m_objSel.get(),
@@ -188,7 +191,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
                                   m_glbase->getAssetManager(),
                                   &m_nullVao,
                                   m_drawMan.get(),
-                                  glbase};
+                                  m_glbase};
 
         //-------------------------------------------------------------------------------------------
         // UI ELEMENTS
@@ -196,7 +199,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         m_uiRoot->setSharedRes(&m_sharedRes);
         m_uiRoot->setName("root");  // set the name of this UINode
 
-        if (!initToCurrentCtx) {
+        if (!par.initToCurrentCtx) {
             m_contentRoot = m_uiRoot->addChild<UINode>();
             m_contentRoot->setName("ContentRoot");
             m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2));
@@ -207,7 +210,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
             m_menuBar = m_uiRoot->addChild<MenuBar>();
             m_menuBar->setPadding(m_stdPadding * 3, m_stdPadding, m_stdPadding * 3, m_stdPadding);
             m_menuBar->setAlignY(valign::top);
-            m_menuBar->setSize(1.f, m_sharedRes.gridSize.y + (int)m_stdPadding * 2);
+            m_menuBar->setSize(1.f, m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2);
             m_menuBar->setBackgroundColor(m_colors[uiColors::background]);
             m_menuBar->setWindowHandle(m_winHandle);
 
@@ -225,13 +228,19 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
                         diagPos.y = (m_winHandle->getSize().y - diagSize.y) / 2 + m_winHandle->getPosition().y;
                     }
 
-                    m_appHandle->openInfoDiag(diagPos.x, diagPos.y, diagSize.x, diagSize.y, infoDiagType::confirm,
-                                              "Do you really want to quit?", true, 0, [this] {
-                                                  m_winHandle->hide();
-                                                  m_appHandle->exit();
-                                                  return false;  // don't close the window, stop after
-                                                                 // immediately after this point
-                                              });
+                    m_appHandle->openInfoDiag((InfoDiagParams{
+                        .pos = diagPos,
+                        .size = diagSize,
+                        .tp = infoDiagType::confirm,
+                        .msg = "Do you really want to quit?",
+                        .minStayTime =  0,
+                        .isModal = true,
+                        .onConfirm = [this] {
+                            m_winHandle->hide();
+                            m_appHandle->exit();
+                            return false;  // don't close the window, stop after immediately after this point
+                        }
+                    }));
                 }
             });
 
@@ -259,7 +268,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
         //-------------------------------------------------------------------------------------------
 
         initGL();
-        onSetViewport(0, 0, static_cast<int>(vWidth), static_cast<int>(vHeight));
+        UIWindow::onSetViewport(0, 0, static_cast<int>(vWidth), static_cast<int>(vHeight));
 
         m_stdTex = s_shCol.getStdTex();
         if (m_multisample) {
@@ -270,7 +279,7 @@ UIWindow::UIWindow(GLBase *glbase, int width, int height, int shiftX, int shiftY
     }
 
 #ifdef ARA_USE_GLFW
-    if (!initToCurrentCtx && restartGlBaseLoop) {
+    if (!par.initToCurrentCtx && restartGlBaseLoop) {
         GLWindow::makeNoneCurrent();
         m_glbase->startRenderLoop();
         // no context bound at this point
@@ -368,7 +377,7 @@ bool UIWindow::closeEvtLoopCb() {
     // removes the window from the GLFWWindowsManager's m_windows array, i.e. destroys the Window and its context
     // m_winHandle is invalid afterward
 #ifdef ARA_USE_GLFW
-    if (m_selfManagedCtx) {
+    if (m_selfManagedCtx && m_winHandle) {
         if (m_winHandle->getOnCloseCb()) {
             m_winHandle->getOnCloseCb()();
         }
@@ -378,7 +387,6 @@ bool UIWindow::closeEvtLoopCb() {
 
     m_winHandle = nullptr;
     s_inited    = false;
-
     return true;
 }
 
@@ -416,13 +424,13 @@ bool UIWindow::draw(double time, double dt, int ctxNr) {
         }
         s_isDrawing = true;
 
-        // process all steps which have the first and second bool set to true
-        for (auto &it : m_procSteps) {
-            if (it.second.active) {
-                if (it.second.func) {
-                    it.second.func();
+        // process all steps that have the first and second bool set to true
+        for (auto &val: m_procSteps | views::values) {
+            if (val.active) {
+                if (val.func) {
+                    val.func();
                 }
-                it.second.active = false;
+                val.active = false;
             }
         }
 
@@ -474,7 +482,7 @@ void UIWindow::drawNodeTree() {
     copyToScreen();  // --- blit the result. Binds draw framebuffer 0 which is the same as m_sceneFbo->unbind()
 }
 
-void UIWindow::copyToScreen() {
+void UIWindow::copyToScreen() const {
     if (m_multisample) {
         if (m_doSwap) {
 #ifdef __APPLE__
@@ -540,7 +548,7 @@ void UIWindow::update() {
 #endif
 }
 
-void UIWindow::iterate() {
+void UIWindow::iterate() const {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     if (m_selfManagedCtx && m_winHandle->isRunning() && m_winHandle->isInited()) m_winHandle->iterate();
 #endif
@@ -605,8 +613,7 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
                     m_appHandle->exit();
                     return true;
                 },
-                true);  // since we are on the main thread here, force pushing
-                        // to the queue
+                true);  // since we are on the main thread here, force pushing to the queue
 #else
             // this is called from GL HID queue
             ivec2 diagPos{0};
@@ -614,11 +621,15 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
             diagPos.x = (getWidth() - diagSize.x) / 2 + getPosition().x;
             diagPos.y = (getHeight() - diagSize.y) / 2 + getPosition().y;
 
-            m_appHandle->openInfoDiag(diagPos.x, diagPos.y, diagSize.x, diagSize.y, infoDiagType::confirm,
-                                      "Do you really want to quit?", true, 0, [this] {
-                                          m_appHandle->exit();
-                                          return false;
-                                      });
+            m_appHandle->openInfoDiag(InfoDiagParams{
+                .pos = diagPos,
+                .size = diagSize,
+                .tp = infoDiagType::confirm,
+                .msg = "Do you really want to quit?",
+                .minStayTime =  0,
+                .isModal = true,
+                .onClose = [this] { m_appHandle->exit(); return false; }
+            });
 #endif
         }
     }
@@ -642,7 +653,7 @@ void UIWindow::cursor_callback(double xpos, double ypos) {
 
     if (!m_winHandle->isRunning() || !m_winHandle->isInited()) return;
 
-    WindowBase::osMouseMove((float)xpos, (float)ypos, 0);
+    WindowBase::osMouseMove(static_cast<float>(xpos), static_cast<float>(ypos), 0);
     iterate();  // -> procHID
 #endif
 }
@@ -660,13 +671,13 @@ void UIWindow::mouseBut_callback(int button, int action, int mods) {
 #endif
 
     if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_PRESS)
-        WindowBase::osMouseDownLeft((float)m_lastMouseX, (float)m_lastMouseY, mods & GLSG_MOD_SHIFT,
+        WindowBase::osMouseDownLeft(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & GLSG_MOD_SHIFT,
                                     mods & GLSG_MOD_CONTROL, mods & GLSG_MOD_ALT);
 
     if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_RELEASE) WindowBase::osMouseUpLeft();
 
     if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_PRESS)
-        WindowBase::osMouseDownRight((float)m_lastMouseX, (float)m_lastMouseY, mods & GLSG_MOD_SHIFT,
+        WindowBase::osMouseDownRight(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & GLSG_MOD_SHIFT,
                                      mods & GLSG_MOD_CONTROL, mods & GLSG_MOD_ALT);
 
     if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_RELEASE) WindowBase::osMouseUpRight();
@@ -678,7 +689,7 @@ void UIWindow::mouseBut_callback(int button, int action, int mods) {
 }
 
 void UIWindow::scroll_callback(double xoffset, double yoffset) {
-    WindowBase::osWheel((float)yoffset);  // degree
+    WindowBase::osWheel(static_cast<float>(yoffset));  // degree
     iterate();
 }
 
@@ -690,7 +701,7 @@ void UIWindow::window_pos_callback(int xpos, int ypos) {
         // since there are invalid numbers, we have to filter those calls
 
         // check if the window will be completely invisible
-        int *wa = m_winHandle->getWorkArea();
+        auto wa = m_winHandle->getWorkArea();
         if (wa && wa[2] && wa[3] &&
             !(xpos > wa[2]                                   // outside right bounds
               || xpos > wa[3]                                // outside bottom bounds
@@ -698,7 +709,9 @@ void UIWindow::window_pos_callback(int xpos, int ypos) {
               || (ypos + m_winHandle->getSize().y < wa[1]))  // outside top bounds
         ) {
             getActualMonitorMaxArea(xpos, ypos);
-            for (auto &it : m_globalWinPosCb) it.second(xpos, ypos);
+            for (auto &val: m_globalWinPosCb | views::values) {
+                val(xpos, ypos);
+            }
 
             iterate();  // -> procHID
         }
@@ -771,7 +784,7 @@ void UIWindow::window_size_callback(int width, int height) {
 void UIWindow::window_close_callback() {
 #ifdef ARA_USE_GLFW
     // when alt+F4 pressed on windows, prevent to close -> there should be a dialog before
-    glfwSetWindowShouldClose((GLFWwindow *)m_winHandle->getWin(), GLFW_FALSE);
+    glfwSetWindowShouldClose(static_cast<GLFWwindow *>(m_winHandle->getWin()), GLFW_FALSE);
 #endif
 }
 
@@ -911,7 +924,7 @@ void UIWindow::onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool c
     }
 
     m_draggingNodeTree.clear();
-    std::copy(m_opi.localTree.begin(), m_opi.localTree.end(), std::back_inserter(m_draggingNodeTree));
+    ranges::copy(m_opi.localTree, std::back_inserter(m_draggingNodeTree));
 
     // iterate mouse click through UINode - Tree
     m_hidData.reset();
@@ -963,8 +976,8 @@ void UIWindow::onMouseUpLeft() {
     // in case an object id changed during mouseDrag explicitly call the mouseup on this element
     if (m_hidData.dragging && m_draggingNode && !m_draggingNode->isHIDBlocked()) {
         m_draggingNode->mouseUp(&m_hidData);
-        for (auto &it : m_draggingNode->getMouseUpCb()) {
-            it.first(&m_hidData);
+        for (auto &key: m_draggingNode->getMouseUpCb() | views::keys) {
+            key(&m_hidData);
         }
     } else {
         m_hidData.reset();
@@ -996,7 +1009,7 @@ void UIWindow::onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool 
     }
 
     m_draggingNodeTree.clear();
-    std::copy(m_opi.localTree.begin(), m_opi.localTree.end(), std::back_inserter(m_draggingNodeTree));
+    ranges::copy(m_opi.localTree, std::back_inserter(m_draggingNodeTree));
 
     // iterate mouse click through UINode - Tree
     m_hidData.reset();
@@ -1011,8 +1024,8 @@ void UIWindow::onMouseUpRight() {
     // in case an object id changed during mouseDrag explicitly call the mouseup on this element
     if (m_hidData.dragging && m_draggingNode && !m_draggingNode->isHIDBlocked()) {
         m_draggingNode->mouseUpRight(&m_hidData);
-        for (auto &it : m_draggingNode->getMouseUpRightCb()) {
-            it.first(&m_hidData);
+        for (auto &key: m_draggingNode->getMouseUpRightCb() | views::keys) {
+            key(&m_hidData);
         }
     }
 
@@ -1043,7 +1056,7 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
         UINode::hidIt(&m_hidData, hidEvent::MouseMove, m_opi.localTree.begin(), m_opi.localTree);
     }
 
-    m_hidData.newNode = (void *)foundNode;
+    m_hidData.newNode = static_cast<void *>(foundNode);
 
     for (auto &it : m_globalMouseMoveCb) {
         it.second(&m_hidData);
@@ -1124,17 +1137,17 @@ void UIWindow::onSetViewport(int x, int y, int width, int height) {
     s_windowViewport.w = static_cast<float>(height);
 
     // in hardware pixels
-    s_viewPort = glm::round(s_windowViewport * s_devicePixelRatio);
+    s_viewPort = round(s_windowViewport * s_devicePixelRatio);
 
     // update orthoMat
-    s_orthoMat = glm::ortho(0.f, s_windowViewport.z, s_windowViewport.w, 0.f);
-    m_sceneFbo->resize((uint32_t)s_viewPort.z, (uint32_t)s_viewPort.w);
+    s_orthoMat = ortho(0.f, s_windowViewport.z, s_windowViewport.w, 0.f);
+    m_sceneFbo->resize(s_viewPort.z, s_viewPort.w);
 
     if (m_uiRoot) {
         m_uiRoot->setViewport(0.f, 0.f, s_windowViewport.z, s_windowViewport.w);
     }
 
-    glViewport(0, 0, (GLsizei)s_viewPort.z, (GLsizei)s_viewPort.w);
+    glViewport(0, 0, static_cast<GLsizei>(s_viewPort.z), static_cast<GLsizei>(s_viewPort.w));
 
     if (clearFonts && m_sharedRes.res && m_sharedRes.drawMan) {
         m_sharedRes.res->clearGLFont();
@@ -1144,7 +1157,9 @@ void UIWindow::onSetViewport(int x, int y, int width, int height) {
     update();
 
     // callbacks that are not related to a specific UINode
-    for (auto &it : m_globalSetViewportCb) it.second(x, y, (int)((float)width), (int)((float)height));
+    for (auto &it : m_globalSetViewportCb) {
+        it.second(x, y, width, height);
+    }
 }
 
 void UIWindow::onNodeRemove(UINode *node) {
@@ -1258,14 +1273,16 @@ void UIWindow::setAppIcon(std::string &path) {
 #if defined(ARA_USE_GLFW) && defined(ARA_USE_FREEIMAGE)
     // set app icon
     std::vector<uint8_t> vp;
-    m_glbase->getAssetManager()->loadResource(nullptr, vp, "precision/vioso6_48x48.png");
+    // m_glbase->getAssetManager()->loadResource(nullptr, vp, "precision/vioso6_48x48.png");
 
     if (vp.empty()) return;
 
     FIBITMAP          *pBitmap;
     FreeImg_MemHandler mh(&vp[0], vp.size());
-    FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
-    if (!(pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0))) return;
+    FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), &mh, 0);
+    if (!(pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), &mh, 0))) {
+        return;
+    }
 
     FreeImage_FlipVertical(pBitmap);
 
@@ -1273,15 +1290,13 @@ void UIWindow::setAppIcon(std::string &path) {
     logo.width  = 48;
     logo.height = 48;
     // logo.pixels = (uint8_t*)pBitmap->data;
-    logo.pixels = (uint8_t *)pBitmap->data + logo.width * 8;
-
-    int nrChan = 4;
+    logo.pixels = static_cast<uint8_t *>(pBitmap->data) + logo.width * 8;
 
     // convert to bgra
     std::array<uint8_t, 4> t{};
-    int                    x, y;
-    for (y = 0; y < (logo.height); y++) {
-        for (x = 0; x < logo.width; x++) {
+    for (int y = 0; y < (logo.height); y++) {
+        for (int x = 0; x < logo.width; x++) {
+            int nrChan = 4;
             int idx = ((y * logo.width) + x) * nrChan;
 
             t[0] = logo.pixels[idx + 2];
@@ -1289,11 +1304,11 @@ void UIWindow::setAppIcon(std::string &path) {
             t[2] = logo.pixels[idx + 0];
             t[3] = logo.pixels[idx + 3];
 
-            std::copy(&t[0], &t[0] + nrChan, &logo.pixels[idx]);
+            std::copy_n(&t[0], nrChan, &logo.pixels[idx]);
         }
     }
 
-    glfwSetWindowIcon((GLFWwindow *)getWinHandle()->getWin(), 1, &logo);
+    glfwSetWindowIcon(static_cast<GLFWwindow *>(getWinHandle()->getWin()), 1, &logo);
 #endif
 }
 
@@ -1461,7 +1476,7 @@ void UIWindow::addGlCb(void* cbName, const std::string& fName, const std::functi
 // wrapping up the util filedialog, since in combination with MFC this causes
 // issues which have to be addressed
 #ifdef _WIN32
-std::string UIWindow::OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuffix) {
+std::string UIWindow::OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuffix) const {
 #ifdef _WIN32
 #ifdef ARA_USE_GLFW
     HWND owner = getWinHandle()->getHwndHandle();
@@ -1486,7 +1501,7 @@ std::string UIWindow::OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuff
     return out;
 }
 
-std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
+std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const {
 #ifdef _WIN32
 #ifdef ARA_USE_GLFW
     HWND owner = getWinHandle()->getHwndHandle();

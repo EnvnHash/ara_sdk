@@ -174,7 +174,7 @@ const char *SrcFile::clearSpaces(const char *e) {
 
 const char *SrcFile::processRawText(std::string &dest, const char *e, std::vector<SrcLine>::iterator &line,
                                     const std::vector<SrcLine>::iterator &src_end) {
-    if (strncmp(e, "!<[[", 4)) {
+    if (strncmp(e, "!<[[", 4) != 0) {
         return e;
     }
 

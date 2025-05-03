@@ -17,32 +17,22 @@ public:
     enum blendMode { BLENDMODE_ALPHA, BLENDMODE_ADD };
     enum meshMode { PRIMITIVE_TRIANGLES };
 
-    AssimpMeshHelper();
-    virtual ~AssimpMeshHelper();
+    bool                   hasTexture() const { return !textures.empty(); }
+    std::vector<std::unique_ptr<Texture>> & getTextureRef() { return textures; }
 
-    bool                   hasTexture();
-    std::vector<Texture*>* getTextureRef();
-
-    aiMesh* mesh;  // pointer to the aiMesh we represent.
-    VAO*    vao;
-
-    // texture
-    std::vector<Texture*> textures;
-    std::vector<GLuint>   indices;
-
-    // Material
-    MaterialProperties material;
-    blendMode          blendMode;
-
-    bool twoSided;
-    bool hasChanged;
-
-    std::vector<aiVector3D> animatedPos;
-    std::vector<aiVector3D> animatedNorm;
-
-    glm::mat4 matrix;
-    glm::vec3 scaling;
-    glm::vec3 translation;
+    std::unique_ptr<aiMesh>                 mesh;
+    std::unique_ptr<VAO>                    vao;
+    std::vector<std::unique_ptr<Texture>>   textures;
+    std::vector<GLuint>                     indices;
+    MaterialProperties                      material{};
+    blendMode                               blendMode = BLENDMODE_ALPHA;
+    bool                                    twoSided = false;
+    bool                                    hasChanged = false;
+    std::vector<aiVector3D>                 animatedPos;
+    std::vector<aiVector3D>                 animatedNorm;
+    glm::mat4                               matrix{};
+    glm::vec3                               scaling{};
+    glm::vec3                               translation{};
 };
 }  // namespace ara
 

@@ -8,15 +8,6 @@ using namespace std;
 
 namespace ara::GLBaseUnitTest::ContextSharing {
 
-std::vector<GLubyte> readBack() {
-    std::vector<GLubyte> data(4);    // make some space to download
-    glReadBuffer(GL_FRONT);
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data.data());    // synchronous, blocking command, no swap() needed
-    return data;
-}
-
 std::function<void()> renderLambda(vector<GLFWWindow>& windows, GLBase& m_glBase, int i) {
     return [&windows, &m_glBase, i]() {
         windows[i].makeCurrent();
@@ -27,16 +18,12 @@ std::function<void()> renderLambda(vector<GLFWWindow>& windows, GLBase& m_glBase
         // since we are using the same resource, we need to acquire a lock to the GLBase
         unique_lock<mutex> lock(*m_glBase.glMtx());
 
-        // unfortunately VAOs can't be shared since they are just a set of states, but don't contain actual data
-        unique_ptr<Quad> quad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f,
-                                                                 glm::vec3(0.f, 0.f, 1.f),
-                                                                 1.f, 0.f, 0.f,
-                                                                 1.f});  // create a Quad, standard width and height (normalized into -1|1), static red
+        // unfortunately, VAOs can't be shared since they are just a set of states, but don't contain actual data
+        unique_ptr<Quad> quad = make_unique<Quad>(QuadInitParams{ .color = { 1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
 
         // set some OpenGL parameters
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                    // clear the screen
-        glViewport(0, 0, (GLsizei) windows[i].getWidth(),
-                   (GLsizei) windows[i].getHeight());        // set the drawable arean
+        glViewport(0, 0, (GLsizei) windows[i].getWidth(), (GLsizei) windows[i].getHeight());        // set the drawable arean
 
         auto colShader = m_glBase.shaderCollector().getStdCol(); // get the shared color shader
         colShader->begin();                                // bind the shader
@@ -48,7 +35,7 @@ std::function<void()> renderLambda(vector<GLFWWindow>& windows, GLBase& m_glBase
         windows[i].swap();                            // execute the opengl command queue by swapping the framebuffers, runLoop() does this automatically, but we want to quit immediately so do the swap manually here
 
         // that's all to draw a quad, now we are reading back the framebuffer and check that everything was drawn correctly
-        auto data = readBack();
+        auto data = readBack({1, 1});
 
         // check that it's really red
         ASSERT_EQ(postGLError(), GL_NO_ERROR);
@@ -68,22 +55,8 @@ TEST(GLBaseTest, ContextSharing) {
     // prepare separate rendering threads
     int nrThreads = 4;
     vector<thread> threads;
-    vector<GLFWWindow> windows = vector<GLFWWindow>(nrThreads);
-
-    // create windows, must be not threaded
-    for (int i = 0; i < nrThreads; i++) {
-        ASSERT_TRUE(windows[i].init(
-            glWinPar{
-                .doInit = false,            // don't init glfw, this needs to be done on the main thread only once
-                .shiftX = 300 * i,          // x offset relative to OS screen canvas
-                .shiftY = 100,              // y offset relative to OS screen canvas
-                .width = 200,               // set the window's width
-                .height = 200,              // set the window's height
-                .scaleToMonitor = false,    // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
-                .shareCont = (void *) m_glbase.getGlfwHnd(),          // share the GLBase context
-            })
-        );
-    }
+    auto windows = vector<GLFWWindow>(nrThreads);
+    createThreads(nrThreads, windows, &m_glbase);
 
     // make no context current
     glfwMakeContextCurrent(nullptr);

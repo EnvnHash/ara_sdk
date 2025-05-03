@@ -49,7 +49,7 @@ void LIStandardSpot::setup(bool force) {
         vec3 upVec = normalize(vec3(m_rotMat * vec4(0.f, 1.f, 0.f, 0.f)));
         s_view_mat = glm::lookAt(m_transVec, lightCenter, upVec);
 
-        float aspect = float(s_sd->winViewport.z) / float(s_sd->winViewport.w);
+        float aspect = static_cast<float>(s_sd->winViewport.z) / static_cast<float>(s_sd->winViewport.w);
         s_proj_mat   = perspective(radians(s_fov), aspect, s_near, s_far);
         s_pvm_mat    = s_proj_mat * s_view_mat;
 

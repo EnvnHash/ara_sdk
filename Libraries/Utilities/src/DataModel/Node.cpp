@@ -49,7 +49,7 @@ void Node::pop() {
             it();
         }
         {
-            std::unique_lock<std::mutex> l(m_mtx);
+            std::unique_lock l(m_mtx);
             m_children.pop_back();
         }
         for (auto &it : postRemoveCbs) {
@@ -64,8 +64,8 @@ void Node::remove(Node* node) {
     }
 
     if (!m_children.empty()) {
-        auto res = std::find_if(m_children.begin(), m_children.end(),
-                                [&](auto& it) { return it.get() == node; });
+        auto res = std::ranges::find_if(m_children,
+                                        [&](auto& it) { return it.get() == node; });
         if (res != m_children.end()) {
             auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
             auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
@@ -94,7 +94,7 @@ void Node::clearChildren() {
         it();
     }
     {
-        std::unique_lock<std::mutex> l(m_mtx);
+        std::unique_lock l(m_mtx);
         children().clear();
     }
     for (auto &it : postRemoveCbs) {
@@ -131,7 +131,7 @@ void Node::signalChange(Node::cbType cbType) {
 json Node::asJson() {
     json root;
     {
-        std::unique_lock<std::mutex> l(m_mtx);
+        std::unique_lock l(m_mtx);
         serialize(root);
     }
     return root;
@@ -150,7 +150,7 @@ void Node::serialize(json& j)  {
     if (!m_children.empty()) {
         j["children"] = json::array();
         for (const auto& child : m_children) {
-            j["children"].push_back(json{});
+            j["children"].emplace_back(json{});
             child->serialize(j["children"].back());
         }
     }
@@ -164,13 +164,13 @@ void Node::deserialize(const std::string& str) {
 void Node::deserialize(const json& j) {
     if (serializeValues() != getValues(j)) {
         deserializeValues(j);
-        for (auto& it: m_changeCb[cbType::postChange]) {
+        for (const auto& it: m_changeCb[cbType::postChange]) {
             it.second();
         }
     }
 
     std::unordered_map<std::string, Node*> existingChildren;
-    for (auto& child : m_children) {
+    for (const auto& child : m_children) {
         existingChildren[child->uuid()] = child.get();
     }
 
@@ -199,7 +199,7 @@ void Node::deserialize(const json& j) {
     }
 
     // Remove remaining existing children that were not found in the JSON input
-    for (auto& pair : existingChildren) {
+    for (const auto& pair : existingChildren) {
         remove(pair.second);
     }
 }
@@ -310,7 +310,7 @@ void Node::redo() {
 
 void Node::iterateChildren(Node& node, const std::function<void(Node&)>& f) {
     f(node);
-    for (auto& it: node.children()) {
+    for (const auto& it: node.children()) {
         iterateChildren(*it, f);
     }
 }
@@ -335,7 +335,7 @@ std::deque<std::function<void()>> Node::collectCallbacks(cbType cbType, bool wit
 }
 
 Node* Node::root() {
-    std::unique_lock<std::mutex> l(m_mtx);
+    std::unique_lock l(m_mtx);
     auto currentParent = m_parent;
     if (!currentParent) {
         return this;
@@ -351,17 +351,17 @@ void Node::changeVal(const std::function<void()>& f) {
         m_undoBufRoot->saveState();
     }
 
-    for (auto & it: m_changeCb[cbType::preChange]) {
-        it.second();
+    for (auto &val: m_changeCb[cbType::preChange] | std::views::values) {
+        val();
     }
 
     {
-        std::unique_lock<std::mutex> l(m_mtx);
+        std::unique_lock l(m_mtx);
         f();
     }
 
-    for (auto & it: m_changeCb[cbType::postChange]) {
-        it.second();
+    for (auto &val: m_changeCb[cbType::postChange] | std::views::values) {
+        val();
     }
 }
 

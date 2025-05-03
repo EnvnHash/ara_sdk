@@ -17,7 +17,6 @@ namespace ara {
 class SPSpotLightShadowVsm : public ShaderProto {
 public:
     SPSpotLightShadowVsm(sceneData* sd);
-    ~SPSpotLightShadowVsm() = default;
 
     void rebuildShader(uint nrCameras);
 
@@ -32,7 +31,6 @@ public:
     bool end(renderPass pass, uint loopNr = 0) override;
     void postRender(renderPass pass) override;
 
-    // std::string getLightBufferBlock(uint nrLights);
     Shaders* getShader(renderPass pass, uint loopNr = 0) override;
 
     void setScreenSize(uint width, uint height) override;
@@ -41,18 +39,18 @@ public:
     std::string getUbPar(uint32_t nrCameras) override;
 
 private:
-    std::unique_ptr<ShadowMapVsmArray>      shadowGen;
-    std::unique_ptr<ShaderBuffer<LightPar>> lightSb;
+    std::unique_ptr<ShadowMapVsmArray>      m_shadowGen;
+    std::unique_ptr<ShaderBuffer<LightPar>> m_lightSb;
 
-    glm::vec3              halfVector{0.f};
-    std::vector<glm::mat4> pv_mats;
-    std::vector<glm::mat4> shadowMat;
-    std::vector<GLint>     depthTexUnits;
-    std::vector<GLint>     lightColTexUnits;
+    glm::vec3              m_halfVector{0.f};
+    std::vector<glm::mat4> m_pv_mats;
+    std::vector<glm::mat4> m_shadowMat;
+    std::vector<GLint>     m_depthTexUnits;
+    std::vector<GLint>     m_lightColTexUnits;
 
-    uint nrActSurfPasses = 0;
-    uint nrLightPasses   = 0;
-    uint maxNrParLights  = 0;
+    uint m_nrActSurfPasses = 0;
+    uint m_nrLightPasses   = 0;
+    uint m_maxNrParLights  = 0;
 
     bool m_shineThrough   = false;
     bool m_shadowGenBound = false;

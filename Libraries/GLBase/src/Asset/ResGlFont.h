@@ -37,8 +37,8 @@ public:
     void  update3DLayers();
 
     void  setGlbase(GLBase *glbase) { m_glbase = glbase; }
-    int   getCount() const { return static_cast<int>(m_FontList.size()); }
-    Font *get(int index) const { return (index < 0 || index >= getCount()) ? nullptr : m_FontList[index].get(); }
+    [[nodiscard]] int   getCount() const { return static_cast<int>(m_FontList.size()); }
+    [[nodiscard]] Font *get(int index) const { return (index < 0 || index >= getCount()) ? nullptr : m_FontList[index].get(); }
     void  clear() { m_FontList.clear(); }
 
 private:

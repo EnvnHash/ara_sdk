@@ -45,7 +45,7 @@ void AssetImageSource::onProcess() {
         throw runtime_error("imgsrc: No path");
     }
 
-    m_mipMaps = value1i("mipmaps", 1);
+    m_mipMaps = value<int32_t>("mipmaps", 1);
     m_type = AssetImageBase::Type::simple;
 }
 

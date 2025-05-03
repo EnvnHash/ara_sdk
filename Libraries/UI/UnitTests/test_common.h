@@ -44,7 +44,7 @@ static std::vector<GLubyte> getPixels(int x, int y, uint32_t width, uint32_t hei
     return data;
 }
 
-static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesystem::path& p, uint32_t width, uint32_t height) {
+static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesystem::path& p, uint32_t width, uint32_t height, uint8_t eps) {
     if (!std::filesystem::exists(p)) {
         LOGE << "compareBitmaps error, couldn't load " << p.string();
         return;
@@ -57,7 +57,7 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
     uint32_t ySlices = height / tc;
     
     for (uint32_t i=0; i<tc; i++) {
-        futures.emplace_back(g_thread_pool.submit([&data, pBitmap, width, ySlices, i]() {
+        futures.emplace_back(g_thread_pool.submit([&data, pBitmap, width, ySlices, i, eps]() {
             auto texData = &data[0];
             auto refTex = FreeImage_GetBits(pBitmap);
 
@@ -68,10 +68,10 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
             for (uint32_t y = 0; y < ySlices; y++) {
                 for (uint32_t x = 0; x < width; x++) {
                     // freeimage reads in BGRA format, but textures are supposed to be in RGBA
-                    ASSERT_EQ(*(refTex+2),  *(texData));
-                    ASSERT_EQ(*(refTex+1),  *(texData +1));
-                    ASSERT_EQ(*(refTex),    *(texData +2));
-                    ASSERT_EQ(*(refTex+3),  *(texData +3));
+                    EXPECT_NEAR(*(refTex+2),  *(texData), eps);
+                    EXPECT_NEAR(*(refTex+1),  *(texData +1), eps);
+                    EXPECT_NEAR(*(refTex),    *(texData +2), eps);
+                    EXPECT_NEAR(*(refTex+3),  *(texData +3), eps);
 
                     refTex += 4;
                     texData += 4;
@@ -87,7 +87,7 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
     };
 }
 
-static void compareFrameBufferToImage(const std::filesystem::path& p, uint32_t width, uint32_t height) {
+static void compareFrameBufferToImage(const std::filesystem::path& p, uint32_t width, uint32_t height, uint8_t eps=0) {
     auto data = getPixels(0, 0, width, height);
-    compareBitmaps(data, p, width, height);
+    compareBitmaps(data, p, width, height, eps);
 }

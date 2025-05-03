@@ -2,7 +2,6 @@
 
 #include <GLBase.h>
 #include <GeoPrimitives/Quad.h>
-#include <Shaders/ShaderCollector.h>
 
 #include "glsg_common/glsg_common.h"
 
@@ -10,18 +9,9 @@ namespace ara {
 
 class sceneData {
 public:
-    sceneData() = default;
-    ~sceneData() {}
-
-    // inline static sceneData* inst() { if (!m_inst) m_inst = new sceneData();
-    // return m_inst; }
-    // static void deleteInst() { if (m_inst) { delete m_inst; m_inst = nullptr;
-    // } }
-    // GLSG_BIND static sceneData* m_inst;
-
-    void *getCtxName() {
+    static void *getCtxName() {
 #ifdef _WIN32
-        return (void *)wglGetCurrentContext();
+        return wglGetCurrentContext();
 #elif __linux__
 #ifndef ARA_USE_GLES31
         return (void *)glXGetCurrentContext();
@@ -34,26 +24,26 @@ public:
     }
 
     Quad *getStdQuad() {
-        void *ctxName = getCtxName();
-        if (!stdQuad[ctxName])
-            stdQuad[ctxName] =
-                std::make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
+        auto ctxName = getCtxName();
+        if (!stdQuad[ctxName]) {
+            stdQuad[ctxName] = std::make_unique<Quad>(QuadInitParams{});
+        }
         return stdQuad[ctxName].get();
     }
 
     Quad *getStdHFlipQuad() {
-        void *ctxName = getCtxName();
-        if (!stdHFlipQuad[ctxName])
-            stdHFlipQuad[ctxName] = std::make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f,
-                                                                          0.f, 0.f, nullptr, 1, true});
+        auto ctxName = getCtxName();
+        if (!stdHFlipQuad[ctxName]) {
+            stdHFlipQuad[ctxName] = std::make_unique<Quad>(QuadInitParams{.color = {0.f, 0.f, 0.f, 0.f}, .flipHori = true});
+        }
         return stdHFlipQuad[ctxName].get();
     }
 
     Quad *getStdHalfQuad() {
-        void *ctxName = getCtxName();
-        if (!stdHalfQuad[ctxName])
-            stdHalfQuad[ctxName] =
-                std::make_unique<Quad>(QuadInitParams{-0.5f, -0.5f, 1.f, 1.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f});
+        auto ctxName = getCtxName();
+        if (!stdHalfQuad[ctxName]) {
+            stdHalfQuad[ctxName] = std::make_unique<Quad>(QuadInitParams{ {-0.5f, -0.5f}, {1.f, 1.f} });
+        }
         return stdHalfQuad[ctxName].get();
     }
 

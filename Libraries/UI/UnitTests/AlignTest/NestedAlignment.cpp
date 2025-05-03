@@ -32,7 +32,7 @@ namespace ara::SceneGraphUnitTest::NestedAlignment{
             vector<UINode*> children;
             int nrElements = 15;
             int nrElementsPerRow = 5;
-            int nrRows = (int)std::ceil((float)nrElements / (float)nrElementsPerRow);
+            int nrRows = (int)std::ceil(static_cast<float>(nrElements) / static_cast<float>(nrElementsPerRow));
             int margin = 20;
             glm::ivec2 elementSize = glm::ivec2( (app.getWinBase()->getWidth() - margin * (1 + nrElementsPerRow)) / nrElementsPerRow,
                                                  (app.getWinBase()->getHeight() - margin * (1 + nrRows)) / nrRows);
@@ -61,10 +61,10 @@ namespace ara::SceneGraphUnitTest::NestedAlignment{
 
             // x=left, y=top, z=right, w=bottom
             vector<glm::vec4> padding;
-            for(int i=0; i<10;i++) padding.push_back(glm::vec4{0});
+            for(int i=0; i<10;i++) padding.emplace_back(glm::vec4{0});
 
-            padding.push_back(glm::vec4(0.f,0.f,0.f,0.f));
-            padding.push_back(glm::vec4(10.f,10.f,0.f,0.f));
+            padding.emplace_back(glm::vec4(0.f,0.f,0.f,0.f));
+            padding.emplace_back(glm::vec4(10.f,10.f,0.f,0.f));
             padding.push_back(glm::vec4(0.f,10.f,10.f,0.f));
             padding.push_back(glm::vec4(0.f,0.f,10.f,10.f));
             padding.push_back(glm::vec4(10.f,0.f,0.f,10.f));

@@ -16,13 +16,13 @@ using namespace std;
 
 namespace ara {
 
-ShadowMapStd::ShadowMapStd(CameraSet* _cs, int _scrWidth, int _scrHeight, sceneData* _scd)
-    : ShadowMap(_cs->getGLBase()) {
-    s_cs              = _cs;
+ShadowMapStd::ShadowMapStd(CameraSet* cs, int scrWidth, int scrHeight, sceneData* scd)
+    : ShadowMap(cs->getGLBase()) {
+    s_cs              = cs;
     s_shadow_map_coef = 1.f;
 
-    s_scrWidth  = static_cast<int>((float)_scrWidth);
-    s_scrHeight = static_cast<int>((float)_scrHeight);
+    s_scrWidth  = static_cast<int>(static_cast<float>(scrWidth));
+    s_scrHeight = static_cast<int>(static_cast<float>(scrHeight));
 
     // s_fbo for saving the depth information
     s_fbo = make_unique<FBO>(FboInitParams{s_glbase, s_scrWidth, s_scrHeight, 1, GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_REPEAT, false});
@@ -40,37 +40,35 @@ ShadowMapStd::ShadowMapStd(CameraSet* _cs, int _scrWidth, int _scrHeight, sceneD
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    std::string vert = s_glbase->shaderCollector().getShaderHeader();
+    std::string vert = ara::ShaderCollector::getShaderHeader();
     vert += "// ShadowMapStd vertex Shader\n";
     vert += "layout(location = 0) in vec4 position; \n";
 
-    for (unsigned int i = 0; i < 4; i++) vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
+    for (unsigned int i = 0; i < 4; i++) {
+        vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
+    }
 
-    vert += "void main(void) { \n ";
+    vert += "void main() { \n ";
     vert += getStdPvmMult() + "}";
 
-    std::string frag = s_glbase->shaderCollector().getShaderHeader();
+    std::string frag = ara::ShaderCollector::getShaderHeader();
     frag += "// ShadowMapStd fragment Shader\n";
 
-    frag += STRINGIFY(layout(location = 0) out vec4 color; void main(void) { color = vec4(1.0); });
+    frag += STRINGIFY(layout(location = 0) out vec4 color; void main() { color = vec4(1.0); });
 
-    s_shadowShader = s_glbase->shaderCollector().add("ShadowMapStd", vert.c_str(), frag.c_str());
+    s_shadowShader = s_glbase->shaderCollector().add("ShadowMapStd", vert, frag);
 }
-
-ShadowMapStd::~ShadowMapStd() {}
 
 void ShadowMapStd::begin() {
     s_fbo->bind();
     s_shadowShader->begin();
-
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(4.1f, 4.f);
 }
 
 void ShadowMapStd::end() {
     glDisable(GL_POLYGON_OFFSET_FILL);
-
-    s_shadowShader->end();
+    Shaders::end();
     s_fbo->unbind();
 }
 

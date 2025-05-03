@@ -41,7 +41,7 @@ TEST(Functional_Property, PropertyTest) {
     EXPECT_TRUE(2.f == prop2());
 
     ara::Property<std::vector<int>> prop3;
-    prop3().push_back(20);
+    prop3().emplace_back(20);
     EXPECT_TRUE(1 == prop3().size());
     EXPECT_TRUE(prop3().back() == 20);
 }

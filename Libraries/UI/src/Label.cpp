@@ -16,7 +16,7 @@ Label::Label() {
     setFocusAllowed(false);
 }
 
-Label::Label(std::string&& styleClass) : Div(std::move(styleClass)) {
+Label::Label(const std::string& styleClass) : Div(std::move(styleClass)) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
@@ -30,8 +30,8 @@ Label::Label(LabelInitData initData) {
 #endif
     setFocusAllowed(false);
     setName(getTypeName<Label>());
-    setPos(initData.x, initData.y);
-    setSize(initData.w, initData.h);
+    setPos(initData.pos.x, initData.pos.y);
+    setSize(initData.size.x, initData.size.y);
     Div::setBackgroundColor(initData.bg_color);
     Div::setColor(initData.text_color);
     setText(initData.text);
@@ -49,7 +49,7 @@ void Label::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::labelOptions] = [this]() { m_tOpt = 0; };
 }
 
-void Label::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
+void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     auto color = node->findNode<AssetColor>("text-color");
@@ -145,7 +145,7 @@ void Label::updateStyleIt(ResNode* node, state st, std::string& styleClass) {
 
     auto f = node->findNode<AssetFont>("font");
     if (f) {
-        int         size = ((ResNode*)f)->value1i("size", 0);
+        int         size = ((ResNode*)f)->value<int32_t>("size", 0);
         std::string font = ((ResNode*)f)->getValue("font");
 
         m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size]() { setFontSize(size); };
@@ -222,7 +222,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
                 rightLimit = m_FontDGV.getRightLimit();
 
                 // sum up char until the max bounds is reached
-                for (auto& g : m_FontDGV.v)
+                for (const auto& g : m_FontDGV.v)
                     if (g.gptr) {
                         if (hasOpt(end_ellipsis)) {
                             if (g.getRightLimit() > limit) {
@@ -420,7 +420,7 @@ void Label::prepareVao(bool checkFontTex) {
         size_t elmInd = 0;
         for (e_fontdglyph& g : m_FontDGV.v) {
             if (g.gptr) {
-                for (auto& v : m_vtxPos) {
+                for (const auto& v : m_vtxPos) {
                     tuv                = glm::floor(m_bo + g.opos + v * g.osize);
                     m_positions[ind].x = tuv.x;
                     m_positions[ind].y = tuv.y;
@@ -462,7 +462,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
     // check if the layerTexture containing this font was already collected, if not append it (must happen before Glyph
     // updating in order to have the correct texUnit value set to the vao data)
     if (m_riFont && checkFontTex) {
-        m_fontTexUnit = m_sharedRes->drawMan->pushFont(m_riFont->getLayerTexId(), (float)m_riFont->getLayerTexSize());
+        m_fontTexUnit = m_sharedRes->drawMan->pushFont(m_riFont->getLayerTexId(), static_cast<float>(m_riFont->getLayerTexSize()));
     }
 
     auto ld = m_lblDB.vaoData.begin();
@@ -478,7 +478,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
             continue;
         }
 
-        for (auto& v : stdQuadVertices) {
+        for (const auto& v : stdQuadVertices) {
             if (ld == m_lblDB.vaoData.end()) {
                 break;
             }
@@ -496,8 +496,8 @@ void Label::updateIndDrawData(bool checkFontTex) {
             ld->color    = m_color;
 
             ld->aux2.x = m_fontTexUnit;                          // layerTex Id
-            ld->aux2.y = (float)m_riFont->getLayerTexLayerId();  // layer Id
-            ld->aux2.z = m_excludeFromObjMap ? 0.f : (float)m_objIdMin;
+            ld->aux2.y = static_cast<float>(m_riFont->getLayerTexLayerId());  // layer Id
+            ld->aux2.z = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
             ld->aux2.w = m_zPos;
             ld->aux3.x = 1.f;  // type indicator (1=Label)
             ld->aux3.w = m_absoluteAlpha;
@@ -510,7 +510,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
         m_charSizePix = g.osize / getWindow()->getPixelRatio();
 
         int i = 0;
-        for (auto& v : stdQuadVertices) {
+        for (const auto& v : stdQuadVertices) {
             if (ld == m_lblDB.vaoData.end()) {
                 break;
             }
@@ -570,10 +570,10 @@ void Label::setFont(std::string fontType, uint32_t fontSize, align ax, valign ay
 }
 
 void Label::setColor(float r, float g, float b, float a, state st)  {
-    UINode::setColor(r, g, b, a, st);
+    Label::setColor({r, g, b, a}, st);
 }
 
-void Label::setColor(glm::vec4 &col, state st)  {
+void Label::setColor(const glm::vec4 &col, state st)  {
     UINode::setColor(col, st);
 }
 

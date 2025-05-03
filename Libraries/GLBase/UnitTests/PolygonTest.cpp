@@ -17,7 +17,7 @@ namespace ara::GLBaseUnitTest::PolygonTest {
 
         colShader = shCol.getStdCol(); // get a simple standard color shader
         poly = make_unique<Polygon>(&shCol);
-        poly->setColor(1.f, 0.f, 0.f, 1.f);
+        poly->setColor({1.f, 0.f, 0.f, 1.f});
 
         // create a test polygon
         poly->addPoint(0, -0.7f, -0.7f);
@@ -36,7 +36,7 @@ namespace ara::GLBaseUnitTest::PolygonTest {
         // set some OpenGL parameters
         glClearColor(0.f, 0.f, 0.f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                    // clear the screen
-        glViewport(0, 0, (GLsizei) gp.width, (GLsizei) gp.height);        // set the drawable arean
+        glViewport(0, 0, (GLsizei) gp.size.x, (GLsizei) gp.size.y);        // set the drawable arean
 
         EXPECT_EQ(postGLError(), GL_NO_ERROR);
 
@@ -87,10 +87,10 @@ namespace ara::GLBaseUnitTest::PolygonTest {
     TEST(GLBaseTest, PolygonTest) {
         // direct window creation
         // gp.debug = true;
-        gp.width = 1024;            // set the windows width
-        gp.height = 768;            // set the windows height
-        gp.shiftX = 100;            // x offset relative to OS screen canvas
-        gp.shiftY = 100;            // y offset relative to OS screen canvas
+        gp.size.x = 1024;            // set the windows width
+        gp.size.y = 768;            // set the windows height
+        gp.shift.x = 100;            // x offset relative to OS screen canvas
+        gp.shift.y = 100;            // y offset relative to OS screen canvas
         gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling accours
         gp.transparent = false;
 

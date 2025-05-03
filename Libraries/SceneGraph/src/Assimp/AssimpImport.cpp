@@ -12,6 +12,8 @@
 #include <Utils/BoundingBoxer.h>
 #include <Utils/Texture.h>
 
+#include <utility>
+
 #define aisgl_min(x, y) (x < y ? x : y)
 #define aisgl_max(x, y) (y > x ? y : x)
 
@@ -27,7 +29,8 @@ namespace fs = std::filesystem;
 
 namespace ara {
 
-AssimpImport::AssimpImport(GLBase* glbase) : m_glbase(glbase), m_shCol(&glbase->shaderCollector()) {}
+AssimpImport::AssimpImport(GLBase* glbase) : m_sd(), m_glbase(glbase), m_shCol(&glbase->shaderCollector()) {
+}
 
 SceneNode* AssimpImport::load(Scene3DBase* scene3D, std::string& filePath, const std::function<void(SceneNode*)>& cb,
                               bool singleObjId, bool forceOSLoad) {
@@ -66,7 +69,9 @@ void AssimpImport::load(string& filePath, SceneNode* root, function<void(SceneNo
         setFileBufferExtension(ext);
 
         SNIdGroup* idGroup = nullptr;
-        if (singleObjId) idGroup = root->createIdGroup();
+        if (singleObjId) {
+            idGroup = root->createIdGroup();
+        }
 
         loadThread(root, cb, idGroup, false);
     } else {
@@ -110,9 +115,11 @@ void AssimpImport::loadFromBuffer(std::string* fileBuffer, SceneNode* root, std:
 
     m_fileBuffer       = fileBuffer;
     SNIdGroup* idGroup = nullptr;
-    if (singleObjId) idGroup = root->createIdGroup();
+    if (singleObjId) {
+        idGroup = root->createIdGroup();
+    }
 
-    loadThread(root, cb, idGroup, false);
+    loadThread(root, std::move(cb), idGroup, false);
 }
 
 void AssimpImport::loadThread(SceneNode* root, function<void(SceneNode*)> cb, SNIdGroup* idGroup, bool optimize) {
@@ -151,17 +158,22 @@ void AssimpImport::loadThread(SceneNode* root, function<void(SceneNode*)> cb, SN
     {
         m_sd.fileAbsolutePath = GetDirectory(m_filePath);
 
-        if (s_sd && s_sd->debug)
+        if (s_sd && s_sd->debug) {
             LOG << " AssimpImport::loadThread: loadModel " << m_filePath.c_str() << " \n fileAbsolutePath "
                 << m_sd.fileAbsolutePath.c_str();
+        }
 
         // aiProcess_FlipUVs is for VAR code. Not needed otherwise.
         unsigned int flags = aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType |
                              aiProcess_CalcTangentSpace | aiProcess_GenUVCoords | aiProcess_GenNormals | 0;
 
-        if (m_preTransformVertices && !m_suppressRootTransform) flags |= aiProcess_PreTransformVertices;
+        if (m_preTransformVertices && !m_suppressRootTransform) {
+            flags |= aiProcess_PreTransformVertices;
+        }
 
-        if (m_sd.scene) m_sd.import.FreeScene();
+        if (m_sd.scene) {
+            m_sd.import.FreeScene();
+        }
 
         // if there is a filebuffer set -> load from memory, otherwise from file
         if (m_fileBuffer) {
@@ -223,13 +235,14 @@ void AssimpImport::loadThread(SceneNode* root, function<void(SceneNode*)> cb, SN
 
             // add a call the sceneData openGlCbs vector with the local
             // uploadToGl() method
-            if (m_scene)
-                m_scene->addGlCb(this, m_filePath, bind(&AssimpImport::uploadToGL, this));
-            else if (m_scene3D)
+            if (m_scene) {
+                m_scene->addGlCb(this, m_filePath, [this] { return uploadToGL(); });
+            } else if (m_scene3D) {
                 m_scene3D->addGlCb(m_filePath, [this] {
                     uploadToGL();
                     return true;
                 });
+            }
         } else {
             LOGE << this << "ERROR::ASSIMP " << m_sd.import.GetErrorString();
         }
@@ -253,7 +266,9 @@ bool AssimpImport::loadGLResources() {
                                    m_sd.scene_min.y * m_rootScaleFact.y, m_sd.scene_max.y * m_rootScaleFact.y,
                                    m_sd.scene_min.z * m_rootScaleFact.z, m_sd.scene_max.z * m_rootScaleFact.z);
 
-    if (!m_sd.scene->mRootNode || !m_sd.sceneRoot) return false;
+    if (!m_sd.scene->mRootNode || !m_sd.sceneRoot) {
+        return false;
+    }
     m_sd.sceneRoot->setVisibility(true);
 
     // convert the rootTransMat to aiMatrix4x4 and start loading nodes
@@ -297,7 +312,7 @@ void AssimpImport::loadSubMeshes(aiScene const* scene, aiNode* node, SceneNode* 
     // if this is the scene root
     if (scene->mRootNode == node) {
         // initial root transformation matrix for optional transformations coming from outside the class
-        glm::mat4 rootTransMat(1.f);
+        mat4 rootTransMat(1.f);
 
         // optional rotation
         if (abs(m_rootRotateYawPitchRoll.x) > 0.0001f || abs(m_rootRotateYawPitchRoll.y) > 0.0001f ||
@@ -314,19 +329,14 @@ void AssimpImport::loadSubMeshes(aiScene const* scene, aiNode* node, SceneNode* 
         }
 
         // start off with the rootTransMat as is, or multiply it with the scene root Matrix coming from the file to load
-        glm::mat4 transMat;
+        mat4 transMat;
 
         if (!m_suppressRootTransform && !m_preTransformVertices) {
             transMat = rootTransMat * aiMatrix4x4ToGlm(&m_sd.scene->mRootNode->mTransformation);
         } else if (m_suppressRootTransform && m_preTransformVertices) {
             // in case the root Transformation should be suppressed and the
-            // vertices should be pretransformed, apply the scene's root matrix
-            // inverted
-            transMat = rootTransMat *
-                glm::inverse(aiMatrix4x4ToGlm(&m_sd.scene->mRootNode->mTransformation));  // eigentlich quatsch ... wenn
-                                                                                          // preTransform an ist, ist
-                                                                                          // mRootNode->mTransformation
-                                                                                          // identity
+            // vertices should be pretransformed, apply the scene's root matrix inverted
+            transMat = rootTransMat * inverse(aiMatrix4x4ToGlm(&m_sd.scene->mRootNode->mTransformation));
         } else {
             transMat = rootTransMat;
         }
@@ -336,10 +346,10 @@ void AssimpImport::loadSubMeshes(aiScene const* scene, aiNode* node, SceneNode* 
     } else {
         glm::mat4 nodeMat = aiMatrix4x4ToGlm(&node->mTransformation);
         if (glm::decompose(aiMatrix4x4ToGlm(&node->mTransformation), dcScale, dcOri, dcTrans, dcSkew, dcPersp)) {
-            newNode->scale(&dcScale);
-            auto rotMat = glm::mat4(dcOri);
+            newNode->scale(dcScale);
+            auto rotMat = mat4(dcOri);
             newNode->rotate(rotMat);
-            newNode->translate(&dcTrans);
+            newNode->translate(dcTrans);
         } else {
             newNode->m_usefixedModelMat = true;
             newNode->setModelMat(nodeMat);
@@ -360,7 +370,9 @@ void AssimpImport::loadSubMeshes(aiScene const* scene, aiNode* node, SceneNode* 
 }
 
 void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* parent) {
-    if (!s_sd) return;
+    if (!s_sd) {
+        return;
+    }
     aiColor4D dcolor, scolor, acolor, ecolor;
     auto bbox = static_cast<BoundingBoxer*>(s_sd->boundBoxer);
 
@@ -368,7 +380,9 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
     for (uint i = 0; i < node->mNumMeshes; ++i) {
         // current mesh we are introspecting
         auto idx = node->mMeshes[i];
-        if (idx >= scene->mNumMeshes) continue;
+        if (idx >= scene->mNumMeshes) {
+            continue;
+        }
 
         auto mesh = scene->mMeshes[idx];
 
@@ -390,21 +404,26 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
             aiGetMaterialString(mtl, AI_MATKEY_NAME, &mat_name);
 
             // load materials
-            if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &dcolor))
+            if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_DIFFUSE, &dcolor)) {
                 meshSN->getMaterial()->setDiffuse(dcolor.r, dcolor.g, dcolor.b, dcolor.a);
+            }
 
-            if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_SPECULAR, &scolor))
+            if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_SPECULAR, &scolor)){
                 meshSN->getMaterial()->setSpecular(scolor.r, scolor.g, scolor.b, scolor.a);
+            }
 
-            if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_AMBIENT, &acolor))
+            if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_AMBIENT, &acolor)) {
                 meshSN->getMaterial()->setAmbient(acolor.r, acolor.g, acolor.b, acolor.a);
+            }
 
-            if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &ecolor))
+            if (AI_SUCCESS == aiGetMaterialColor(mtl, AI_MATKEY_COLOR_EMISSIVE, &ecolor)) {
                 meshSN->getMaterial()->setEmissive(ecolor.r, ecolor.g, ecolor.b, ecolor.a);
+            }
 
             float shininess;
-            if (AI_SUCCESS == aiGetMaterialFloat(mtl, AI_MATKEY_SHININESS, &shininess))
+            if (AI_SUCCESS == aiGetMaterialFloat(mtl, AI_MATKEY_SHININESS, &shininess)) {
                 meshSN->getMaterial()->setShininess(shininess);
+            }
 
             int blendMode;
             if (AI_SUCCESS == aiGetMaterialInteger(mtl, AI_MATKEY_BLEND_FUNC, &blendMode)) {
@@ -473,22 +492,22 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
             }
         }
 
-        int usage = GL_STREAM_DRAW;
-
-        if (m_sd.getAnimationCount())
-            usage = GL_STREAM_DRAW;
-        else
-            usage = GL_STATIC_DRAW;
+        int usage = m_sd.getAnimationCount() ? GL_STREAM_DRAW : GL_STATIC_DRAW;
 
         // now upload all data to a vao.
         // init vao, check format
         string format = "position:3f";
-        if (mesh->HasNormals()) format += ",normal:3f";
-        if (mesh->HasTextureCoords(0)) format += ",texCoord:2f";
-        format += ",color:4f";  // also if there are no colors, assign a static
-                                // color for debugging reasons
+        if (mesh->HasNormals()) {
+            format += ",normal:3f";
+        }
 
-        meshSN->m_vao = new VAO(format.c_str(), GL_DYNAMIC_DRAW);
+        if (mesh->HasTextureCoords(0)) {
+            format += ",texCoord:2f";
+        }
+
+        format += ",color:4f";  // also if there are no colors, assign a static color for debugging reasons
+
+        meshSN->m_vao = std::make_unique<VAO>(format.c_str(), GL_DYNAMIC_DRAW);
         meshSN->m_vao->upload(CoordType::Position, &mesh->mVertices[0].x, mesh->mNumVertices);
 
         if (mesh->HasNormals()) {
@@ -507,10 +526,21 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
                     vec[tc].y = mesh->mTextureCoords[0][tc].y;
 
                     // min/max calculation
-                    if (meshSN->m_minTexC.x > vec[tc].x) meshSN->m_minTexC.x = vec[tc].x;
-                    if (meshSN->m_minTexC.y > vec[tc].y) meshSN->m_minTexC.y = vec[tc].y;
-                    if (meshSN->m_maxTexC.x < vec[tc].x) meshSN->m_maxTexC.x = vec[tc].x;
-                    if (meshSN->m_maxTexC.y < vec[tc].y) meshSN->m_maxTexC.y = vec[tc].y;
+                    if (meshSN->m_minTexC.x > vec[tc].x) {
+                        meshSN->m_minTexC.x = vec[tc].x;
+                    }
+
+                    if (meshSN->m_minTexC.y > vec[tc].y) {
+                        meshSN->m_minTexC.y = vec[tc].y;
+                    }
+
+                    if (meshSN->m_maxTexC.x < vec[tc].x) {
+                        meshSN->m_maxTexC.x = vec[tc].x;
+                    }
+
+                    if (meshSN->m_maxTexC.y < vec[tc].y) {
+                        meshSN->m_maxTexC.y = vec[tc].y;
+                    }
                 }
             }
 
@@ -519,9 +549,9 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
 
         if (!mesh->HasVertexColors(0)) {
             if (mesh->mTextureCoords[0] && loadedTextures) {
-                meshSN->m_vao->setStaticColor(0.f, 0.f, 0.f, 1.f);
+                meshSN->m_vao->setStaticColor({ 0.f, 0.f, 0.f, 1.f });
             } else {
-                meshSN->m_vao->setStaticColor(1.f, 1.f, 1.f, 1.f);
+                meshSN->m_vao->setStaticColor({ 1.f, 1.f, 1.f, 1.f });
             }
         } else {
             meshSN->m_vao->upload(CoordType::Color, &mesh->mColors[0][0].r, mesh->mNumVertices);
@@ -530,14 +560,14 @@ void AssimpImport::copyMeshes(aiScene const* scene, aiNode* node, SceneNode* par
         if (mesh->mNumFaces != 0) {
             for (uint k = 0; k < mesh->mNumFaces; k++) {
                 for (uint j = 0; j < mesh->mFaces[k].mNumIndices; j++) {
-                    meshSN->m_indices.push_back(mesh->mFaces[k].mIndices[j]);
+                    meshSN->m_indices.emplace_back(mesh->mFaces[k].mIndices[j]);
                 }
             }
         } else {
             continue;
         }
 
-        meshSN->m_vao->setElemIndices((int)meshSN->m_indices.size(), (GLuint*)&meshSN->m_indices[0]);
+        meshSN->m_vao->setElemIndices(static_cast<int>(meshSN->m_indices.size()), &meshSN->m_indices[0]);
 
         // Assimp only calculates the bounding box of the whole scene, but not of the separate meshs do this here per
         // Mesh via the BoundingBox on the GPU
@@ -572,18 +602,19 @@ void AssimpImport::initNormShader() {
             Position pos[];
             \n
         }\n;
-        layout(local_size_x = 128, local_size_y = 1, local_size_z = 1) in;\n uniform uint numVertices;\n uniform vec3 center;\n uniform vec3 bBoxSize;\n void
-            main() {
-                uint i = gl_GlobalInvocationID.x;
-                // thread block size may not be exact multiple of number of
-                // particles
-                if (i >= numVertices) return;
-                vec3 p      = (vec3(pos[i].x, pos[i].y, pos[i].z) - center);
-                pos[i].x    = p.x;
-                \n pos[i].y = p.y;
-                \n pos[i].z = p.z;
-                \n
-            });
+        layout(local_size_x = 128, local_size_y = 1, local_size_z = 1) in;\n
+        uniform uint numVertices;\n
+        uniform vec3 center;\n
+        uniform vec3 bBoxSize;\n
+        void main() {
+            uint i = gl_GlobalInvocationID.x;
+            // thread block size may not be exact multiple of number of particles
+            if (i >= numVertices) return;
+            vec3 p   = (vec3(pos[i].x, pos[i].y, pos[i].z) - center);
+            pos[i].x = p.x; \n
+            pos[i].y = p.y;\n
+            pos[i].z = p.z;\n
+        });
 
     normShader = m_shCol->add("AssimpImportNorm", src.c_str());
 }
@@ -618,7 +649,9 @@ void AssimpImport::get_bounding_box_for_node(const aiNode* nd, aiVector3D* min, 
         }
     }
 
-    for (uint n = 0; n < nd->mNumChildren; ++n) get_bounding_box_for_node(nd->mChildren[n], min, max, trafo);
+    for (uint n = 0; n < nd->mNumChildren; ++n) {
+        get_bounding_box_for_node(nd->mChildren[n], min, max, trafo);
+    }
 
     *trafo = prev;
 }
@@ -627,7 +660,9 @@ AssimpImport::~AssimpImport() {
 #ifdef __ANDROID__
     // if (m_ioSystem)        delete m_ioSystem;
 #endif
-    if (m_scene) m_scene->eraseGlCb(this);
+    if (m_scene) {
+        m_scene->eraseGlCb(this);
+    }
 }
 
 }  // namespace ara

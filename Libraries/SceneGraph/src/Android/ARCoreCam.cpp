@@ -15,7 +15,7 @@ namespace ara {
 
 ARCoreCam::ARCoreCam() : Image() { setName(getTypeName<ARCoreCam>()); }
 
-ARCoreCam::ARCoreCam(std::string&& styleClass) : Image(std::move(styleClass)) { setName(getTypeName<ARCoreCam>()); }
+ARCoreCam::ARCoreCam(const std::string& styleClass) : Image(styleClass) { setName(getTypeName<ARCoreCam>()); }
 
 void ARCoreCam::createArSession() {
     auto app = (UIApplication*)getApp();

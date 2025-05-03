@@ -14,12 +14,11 @@ LICamera::LICamera(sceneData* sd) : Light() {
     s_near       = 0.1f;
     s_far        = 1000.f;
 
-    m_camDef = make_unique<TrackBallCam>(Camera::camType::perspective, 200.f, 200.f, -m_aspect, m_aspect, -1.0f,
-                                         1.0f,           // left, right, bottom, top
-                                         0.f, 0.f, 1.f,  // s_camPos
-                                         0.f, 0.f, 0.f,  // s_lookAt
-                                         0.f, 1.f, 0.f,  // upVec
-                                         0.1f, 100.f);
+    m_camDef = make_unique<TrackBallCam>(CameraInitParams{
+        .cTyp = camType::perspective,
+        .screenSize = {200.f, 200.f},
+        .rect = {-m_aspect, m_aspect, -1.0f, 1.0f},    // left, right, bottom, top
+    });
 }
 
 void LICamera::setup(bool callSetupCb) {
@@ -54,7 +53,7 @@ void LICamera::setup(bool callSetupCb) {
         }
     }
 
-    s_fov        = m_forceFov ? m_forceFov : (float)atan(1.0 / (double)(2.0 * m_throwRatio * m_aspect));
+    s_fov        = m_forceFov ? m_forceFov : static_cast<float>(atan(1.0 / (double) (2.0 * m_throwRatio * m_aspect)));
     m_newProjMat = perspective(s_fov, m_aspect, s_near, s_far);
 
     // only update if necessary
@@ -66,8 +65,9 @@ void LICamera::setup(bool callSetupCb) {
 
         // calls m_sceneCamSet->buildCamMatrixArrays();
         if (callSetupCb || m_camDef->getForceUpdtCb()) {
-            for (auto& it : m_setupCb) it();
-
+            for (const auto& it : m_setupCb) {
+                it();
+            }
             m_camDef->setForceUpdtCb(false);
         }
     }
@@ -76,12 +76,15 @@ void LICamera::setup(bool callSetupCb) {
 /** \brief create a shadered FBO from the pointer received here, create a
  * textureview on the specific layer, if there are more than one */
 void LICamera::setCsFboPtr(FBO* fbo, int layerNr) {
-    if (m_sceneCamFbo.isInited()) m_sceneCamFbo.remove();
+    if (m_sceneCamFbo.isInited()) {
+        m_sceneCamFbo.remove();
+    }
 
-    if (layerNr > -1)
+    if (layerNr > -1) {
         m_sceneCamFbo.fromSharedExtractLayer(fbo, layerNr);
-    else
+    } else {
         m_sceneCamFbo.fromShared(fbo);
+    }
 }
 
 }  // namespace ara

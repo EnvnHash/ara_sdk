@@ -10,7 +10,7 @@ CarrouselSlide::CarrouselSlide() : Div() {
     setName(getTypeName<CarrouselSlide>());
 }
 
-CarrouselSlide::CarrouselSlide(std::string &&styleClass) : Div() {
+CarrouselSlide::CarrouselSlide(const std::string& styleClass) : Div() {
     setName(getTypeName<CarrouselSlide>());
     addStyleClass(std::move(styleClass));
 }
@@ -20,7 +20,7 @@ Carrousel::Carrousel() : Div() {
     initFixedChildren();
 }
 
-Carrousel::Carrousel(std::string &&styleClass)  {
+Carrousel::Carrousel(const std::string& styleClass)  {
     setName(getTypeName<Carrousel>());
     addStyleClass(std::move(styleClass));
     initFixedChildren();
@@ -108,7 +108,7 @@ void Carrousel::rotate(float pos) {
     float relSlideWidth = 1.f / static_cast<float>(m_slides.size());
     m_selector->setWidth(relSlideWidth);
 
-    for (auto& slid : m_slides) {
+    for (const auto& slid : m_slides) {
         slid->setSize(relSlideWidth, 1.f);
         slid->setX((static_cast<float>(i) - (static_cast<float>(m_slides.size() -1) * pos)) * relSlideWidth);
         i++;

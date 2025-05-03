@@ -6,17 +6,17 @@
 
 #pragma once
 
-#include <GeoPrimitives/Quad.h>
-#include <Shaders/ShaderUtils/ShaderBuffer.h>
-#include <Utils/FBO.h>
-#include <Utils/Geometry.h>
-#include <Utils/MersenneTwister.h>
-#include <Utils/Texture.h>
-#include <Utils/Vertex.h>
+//#include <GeoPrimitives/Quad.h>
+//#include <Shaders/ShaderUtils/ShaderBuffer.h>
+//#include <Utils/FBO.h>
+//#include <Utils/Geometry.h>
+//#include <Utils/MersenneTwister.h>
+//#include <Utils/Texture.h>
+//#include <Utils/Vertex.h>
 #include <glb_common/glb_common.h>
 
-#include "GLUtils/Noise3DTexGen.h"
-#include "SceneNodes/SceneNode.h"
+//#include "GLUtils/Noise3DTexGen.h"
+//#include "SceneNodes/SceneNode.h"
 
 // optimizes blur, by storing depth along with ssao calculation
 // avoids accessing two different textures
@@ -33,6 +33,15 @@
 
 namespace ara {
 
+class CameraSet;
+class Quad;
+class Shaders;
+class ShaderCollector;
+class FBO;
+
+template <class T>
+class ShaderBuffer;
+
 class SSAO {
 public:
     static const int  NUM_MRT              = 8;
@@ -48,49 +57,49 @@ public:
     };
 
     struct ssaoFbos {
-        GLuint scene, depthlinear, viewnormal, hbao_calc, hbao2_deinterleave, hbao2_calc;
-
-        ssaoFbos() : scene(0), depthlinear(0), viewnormal(0), hbao_calc(0), hbao2_deinterleave(0), hbao2_calc(0) {}
+        GLuint scene = 0;
+        GLuint depthlinear = 0;
+        GLuint viewnormal = 0;
+        GLuint hbao_calc = 0;
+        GLuint hbao2_deinterleave = 0;
+        GLuint hbao2_calc = 0;
     };
 
     struct ssaoTextures {
-        GLuint scene_color, scene_depthstencil, scene_depthlinear, scene_viewnormal, hbao_result, hbao_blur,
-            hbao_random, hbao_randomview[MAX_SAMPLES], hbao2_deptharray, hbao2_depthview[HBAO_RANDOM_ELEMENTS],
-            hbao2_resultarray;
-
-        // ara::Texture
-        //	hbao_random;
-
-        ssaoTextures()
-            : scene_color(0), scene_depthstencil(0), scene_depthlinear(0), scene_viewnormal(0), hbao_result(0),
-              hbao_blur(0), hbao_random(0), hbao2_deptharray(0), hbao2_resultarray(0) {
-            for (auto i = 0; i < MAX_SAMPLES; i++) hbao_randomview[i] = 0;
-
-            for (auto i = 0; i < HBAO_RANDOM_ELEMENTS; i++) hbao2_depthview[i] = 0;
-        }
+        GLuint scene_color = 0;
+        GLuint scene_depthstencil = 0;
+        GLuint scene_depthlinear = 0;
+        GLuint scene_viewnormal = 0;
+        GLuint hbao_result = 0;
+        GLuint hbao_blur = 0;
+        GLuint hbao_random = 0;
+        std::array<GLuint, MAX_SAMPLES> hbao_randomview{};
+        GLuint hbao2_deptharray = 0;
+        std::array<GLuint, HBAO_RANDOM_ELEMENTS> hbao2_depthview{};
+        GLuint hbao2_resultarray = 0;
     };
 
     // corresponds to the uniform block
     struct HBAOData {
-        float RadiusToScreen;  // radius
-        float R2;              // 1/radius
-        float NegInvR2;        // radius * radius
-        float NDotVBias;
+        float RadiusToScreen = 0;  // radius
+        float R2 = 0;              // 1/radius
+        float NegInvR2 = 0;        // radius * radius
+        float NDotVBias = 0;
 
-        glm::vec2 InvFullResolution;
-        glm::vec2 InvQuarterResolution;
+        glm::vec2 InvFullResolution{};
+        glm::vec2 InvQuarterResolution{};
 
-        float     AOMultiplier;
-        float     PowExponent;
-        glm::vec2 _pad0;
+        float     AOMultiplier = 0;
+        float     PowExponent = 0;
+        glm::vec2 _pad0{};
 
-        glm::vec4 projInfo;
-        glm::vec2 projScale;
-        int       projOrtho;
-        int       _pad1;
+        glm::vec4 projInfo{};
+        glm::vec2 projScale{};
+        int       projOrtho = 0;
+        int       _pad1 = 0;
 
-        glm::vec4 float2Offsets[AO_RANDOMTEX_SIZE * AO_RANDOMTEX_SIZE];
-        glm::vec4 jitters[AO_RANDOMTEX_SIZE * AO_RANDOMTEX_SIZE];
+        std::array<glm::vec4, AO_RANDOMTEX_SIZE * AO_RANDOMTEX_SIZE> float2Offsets;
+        std::array<glm::vec4, AO_RANDOMTEX_SIZE * AO_RANDOMTEX_SIZE> jitters;
     };
 
     SSAO(GLBase* glbase, uint inFboWidth, uint inFboHeight, AlgorithmType _algorithm = ALGORITHM_HBAO_CACHEAWARE,
@@ -98,7 +107,7 @@ public:
     ~SSAO();
 
     void bind();
-    void clear(glm::vec4 clearCol = glm::vec4(0.f));
+    static void clear(glm::vec4 clearCol = glm::vec4(0.f));
     void unbind();
     void copyFbo(CameraSet* cs);
     void proc(CameraSet* cs);
@@ -115,7 +124,8 @@ public:
     void        initDeinterleave();
     Shaders*    initDebugDepth();
     std::string initReinterleave(int _blur);
-    GLuint      createShaderPipelineProgram(GLuint target, const char* src);
+    //GLuint      createShaderPipelineProgram(GLuint target, const char* src);
+
     void prepareHbaoData(CameraSet* cs, int width, int height);
     void drawLinearDepth(CameraSet* cs, int width, int height, int sampleIdx);
     void drawHbaoBlur(int width, int height, int sampleIdx);
@@ -124,29 +134,9 @@ public:
     bool initMisc();
     bool initFramebuffers(int width, int height, int samples);
 
-    void newBuffer(GLuint& glid) {
-        if (glid) {
-            glDeleteBuffers(1, &glid);
-        }
-        glGenBuffers(1, &glid);
-    }
-
-    void newTexture(GLuint& glid) {
-        if (glid) {
-#ifndef ARA_USE_GLES31
-            glInvalidateTexImage(glid, 0);
-#endif
-            glDeleteTextures(1, &glid);
-        }
-        glGenTextures(1, &glid);
-    }
-
-    void newFramebuffer(GLuint& glid) {
-        if (glid) {
-            glDeleteFramebuffers(1, &glid);
-        }
-        glGenFramebuffers(1, &glid);
-    }
+    void newBuffer(GLuint& glid);
+    void newTexture(GLuint& glid);
+    void newFramebuffer(GLuint& glid);
 
     GLuint getSceneFboColorTex();
     void   resize(uint _width, uint _height);
@@ -156,8 +146,8 @@ private:
     bool          blur;
     float         blurSharpness;
     float         intensity;
-    float         bias;
-    float         radius;
+    float         bias = 0.1f;
+    float         radius = 0.2f;
     int           samples;
     uint          fboWidth;
     uint          fboHeight;
@@ -167,7 +157,7 @@ private:
     ssaoFbos     fbos;
     ssaoTextures textures;
 
-    ShaderCollector* shCol;
+    ShaderCollector& shCol;
     GLBase*          m_glbase = nullptr;
 
     HBAOData  hbaoUbo;
@@ -179,42 +169,41 @@ private:
     ShaderBuffer<glm::vec4>* m_vel;
     ShaderBuffer<glm::vec4>* ref_pos;
 
-    Shaders* depth_linearize;
-    Shaders* depth_linearize_msaa;
-    Shaders* viewnormal;
-    Shaders* bilateralblur;
-    Shaders* texShdr;
-    Shaders* texNoAlpha;
+    Shaders* depth_linearize = nullptr;
+    Shaders* depth_linearize_msaa = nullptr;
+    Shaders* viewnormal = nullptr;
+    Shaders* bilateralblur = nullptr;
+    Shaders* texShdr = nullptr;
+    Shaders* texNoAlpha = nullptr;
 
-    Shaders* hbao_calc;
-    Shaders* hbao_calc_blur;
-    Shaders* hbao_blur;
-    Shaders* hbao_blur2;
+    Shaders* hbao_calc = nullptr;
+    Shaders* hbao_calc_blur = nullptr;
+    Shaders* hbao_blur = nullptr;
+    Shaders* hbao_blur2 = nullptr;
 
-    Shaders* hbao2_deinterleave;
-    Shaders* hbao2_calc;
-    Shaders* hbao2_calc_blur;
-    Shaders* hbao2_reinterleave;
-    Shaders* hbao2_reinterleave_blur;
+    Shaders* hbao2_deinterleave = nullptr;
+    Shaders* hbao2_calc = nullptr;
+    Shaders* hbao2_calc_blur = nullptr;
+    Shaders* hbao2_reinterleave = nullptr;
+    Shaders* hbao2_reinterleave_blur = nullptr;
 
-    Shaders* debugDepth;
+    Shaders* debugDepth = nullptr;
 
     std::unique_ptr<FBO> sceneFbo;
 
-    bool inited;
+    bool inited = false;
 
     std::string vertShdr;
     std::string basicVert;
     std::string com;
     std::string fullScrQuad;
     std::string fullScrQuadGeo;
-    std::string shdr_Header;
 
-    GLint     lastBoundFbo;
-    GLboolean lastMultiSample;
-    GLuint    defaultVAO;
-    GLuint    hbao_ubo;
+    GLint     lastBoundFbo{};
+    GLboolean lastMultiSample{};
+    GLuint    defaultVAO{};
+    GLuint    hbao_ubo{};
 
-    double lastUpdt;
+    double lastUpdt=0;
 };
 }  // namespace ara

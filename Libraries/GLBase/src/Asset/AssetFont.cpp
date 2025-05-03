@@ -21,7 +21,7 @@ using namespace std;
 namespace ara {
 
 void AssetFont::onProcess() {
-    if ((m_Size = value1i("size", 0)) <= 0) {
+    if ((m_Size = value<int32_t>("size", 0)) <= 0) {
         throw runtime_error("ResFont::OnProcess Error: Invalid size ("+std::to_string(m_Size)+")");
     }
 

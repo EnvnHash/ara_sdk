@@ -67,7 +67,7 @@ UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode
         underline->setVisibility(false);
 
         // create a Tab Object, with the title, the content node and the Tab-Button
-        m_Tab.push_back(e_tab{title, pushedNode, tab, underline, m_Tab.empty()});
+        m_Tab.emplace_back(e_tab{title, pushedNode, tab, underline, m_Tab.empty()});
 
         arrangeTabs();
         m_geoChanged = true;
@@ -102,8 +102,8 @@ void TabView::arrangeTabs() {
     for (e_tab& t : m_Tab) {
         if (m_Tab.getCellGeo(cg, i++)) {
             if (cg.pixSize[0] > 0) {
-                t.tab->setPos((int)cg.pixPos[0], (int)cg.pixPos[1]);
-                t.tab->setSize((int)cg.pixSize[0], (int)cg.pixSize[1]);
+                t.tab->setPos(static_cast<int>(cg.pixPos[0]), static_cast<int>(cg.pixPos[1]));
+                t.tab->setSize(static_cast<int>(cg.pixSize[0]), static_cast<int>(cg.pixSize[1]));
                 t.tab->setBackgroundColor(t.selected ? m_tabButtBgColSel : m_tabButtBgColDeSel);
             }
         }
@@ -137,7 +137,6 @@ bool TabView::setActivateTab(int idx) {
 
 void TabView::setTabSelected(bool val, e_tab* tab) {
     tab->selected = val;
-
     tab->tab->setColor(m_sharedRes->colors->at(val ? uiColors::blue : uiColors::white));
     tab->ui_Node->setVisibility(val);
     tab->underline->setVisibility(val);

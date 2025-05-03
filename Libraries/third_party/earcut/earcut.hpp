@@ -430,7 +430,7 @@ Earcut<N>::eliminateHoles(const Polygon& points, Node* outerNode) {
         Node* list = linkedList(points[i], false);
         if (list) {
             if (list == list->next) list->steiner = true;
-            queue.push_back(getLeftmost(list));
+            queue.emplace_back(getLeftmost(list));
         }
     }
     std::sort(queue.begin(), queue.end(), [](const Node* a, const Node* b) {

@@ -23,7 +23,7 @@ class NoiseTexNV {
 public:
     NoiseTexNV(int w, int h, int d, GLint _internalFormat);
     ~NoiseTexNV();
-    GLuint getTex();
+    GLuint getTex() const;
 
 private:
     int    m_width          = 0;

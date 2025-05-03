@@ -25,7 +25,7 @@ namespace ara::GLBaseUnitTest::TypoGlyphMapTest {
         didRun = true;
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);       // clear the screen
-        glViewport(0, 0, (GLsizei) gp.width, (GLsizei) gp.height); // set the drawable arean
+        glViewport(0, 0, static_cast<GLsizei>(gp.size.x), static_cast<GLsizei>(gp.size.y)); // set the drawable arean
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -41,26 +41,19 @@ namespace ara::GLBaseUnitTest::TypoGlyphMapTest {
                   GL_NO_ERROR);    // be sure that there are no GL errors, just for testing, normally not needed
 
         // read back
-        vector<GLubyte> data(gp.width * gp.height * 4);    // make some space to download
-        glReadBuffer(GL_FRONT);
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glReadPixels(0, 0, gp.width, gp.height, GL_RGBA, GL_UNSIGNED_BYTE,
-                     &data[0]);    // synchronous, blocking command, no swap() needed
-
-        EXPECT_EQ(postGLError(), GL_NO_ERROR);
+        auto data = readBack(gp.size);
 
         // compare generated and reference image pixel by pixel
         uint8_t *texData = &data[0];
         auto *refTex = (uint8_t *) FreeImage_GetBits(pBitmap);
 
-        for (int y = 0; y < gp.height; y++) {
-            for (int x = 0; x < gp.width; x++) {
+        for (int y = 0; y < gp.size.y; y++) {
+            for (int x = 0; x < gp.size.x; x++) {
                 for (int i = 0; i < 3; i++)
                     EXPECT_EQ(*(refTex++), *(texData++));
 
-                texData++;
-                refTex++;
+                ++texData;
+                ++refTex;
             }
         }
 
@@ -70,10 +63,10 @@ namespace ara::GLBaseUnitTest::TypoGlyphMapTest {
 
     TEST(GLBaseTest, TypoGlyphMapTest) {
         // direct window creation
-        gp.width = 168;        // set the windows width
-        gp.height = 25;       // set the windows height
-        gp.shiftX = 100;        // x offset relative to OS screen canvas
-        gp.shiftY = 100;        // y offset relative to OS screen canvas
+        gp.size.x = 168;        // set the windows width
+        gp.size.y = 25;       // set the windows height
+        gp.shift.x = 100;        // x offset relative to OS screen canvas
+        gp.shift.y = 100;        // y offset relative to OS screen canvas
 
         ASSERT_TRUE(gwin.init(gp));    // now pass the arguments and create the window
         ASSERT_EQ(true, initGLEW());
@@ -81,7 +74,7 @@ namespace ara::GLBaseUnitTest::TypoGlyphMapTest {
         pBitmap = m_texture.ImageLoader((filesystem::current_path() / "typoGlyphTest.png").string().c_str(), 0);
         ASSERT_TRUE(pBitmap);
 
-        typo = make_unique<TypoGlyphMap>(gp.width, gp.height);
+        typo = make_unique<TypoGlyphMap>(gp.size.x, gp.size.y);
         typo->loadFont((filesystem::current_path() / "OpenSans-Light.ttf").string().c_str(), &shCol);
         gwin.swap();
 

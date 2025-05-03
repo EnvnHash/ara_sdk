@@ -27,99 +27,86 @@ using namespace glm;
 namespace ara {
 
 Quad::Quad() : GeoPrimitive() {
-    width  = 1.f;
-    height = 1.f;
-
-    instAttribs    = nullptr;
-    maxNrInstances = 1;
-
-    m_r = 1.0f;
-    m_g = 1.0f;
-    m_b = 1.0f;
-    m_a = 1.0f;
+    m_size              = {1.f, 1.f};
+    m_instAttribs       = nullptr;
+    m_maxNrInstances    = 1;
+    m_color             = { 1.f, 1.f, 1.f, 1.f };
 
     // first triangle, lower left, starting in the upper left corner,/ counterclockwise
-    position.reserve(6);
-    texCoords.reserve(6);
-    normal.reserve(6);
+    m_position.reserve(6);
+    m_texCoords.reserve(6);
+    m_normal.reserve(6);
 
-    position.emplace_back(-0.5f, 0.5f, 0.f);
-    texCoords.emplace_back(0.f, 1.f);
+    m_position.emplace_back(-0.5f, 0.5f, 0.f);
+    m_texCoords.emplace_back(0.f, 1.f);
 
-    position.emplace_back(-0.5f, -0.5f, 0.f);
-    texCoords.emplace_back(0.f, 0.f);
+    m_position.emplace_back(-0.5f, -0.5f, 0.f);
+    m_texCoords.emplace_back(0.f, 0.f);
 
-    position.emplace_back(0.5f, -0.5f, 0.f);
-    texCoords.emplace_back(1.f, 0.f);
+    m_position.emplace_back(0.5f, -0.5f, 0.f);
+    m_texCoords.emplace_back(1.f, 0.f);
 
     // second triangle, right upper, starting in the lower right corner, counterclockwise
-    position.emplace_back(0.5f, -0.5f, 0.f);
-    texCoords.emplace_back(0.f, 0.f);
+    m_position.emplace_back(0.5f, -0.5f, 0.f);
+    m_texCoords.emplace_back(0.f, 0.f);
 
-    position.emplace_back(0.5f, 0.5f, 0.f);
-    texCoords.emplace_back(1.f, 1.f);
+    m_position.emplace_back(0.5f, 0.5f, 0.f);
+    m_texCoords.emplace_back(1.f, 1.f);
 
-    position.emplace_back(-0.5f, 0.5f, 0.f);
-    texCoords.emplace_back(0.f, 1.f);
+    m_position.emplace_back(-0.5f, 0.5f, 0.f);
+    m_texCoords.emplace_back(0.f, 1.f);
 
     // set normal facing outwards of the screen
     for (auto i = 0; i < 6; i++) {
-        normal.emplace_back(0.f, 0.f, 1.f);
+        m_normal.emplace_back(0.f, 0.f, 1.f);
     }
 
-    init();
+    Quad::init();
 }
 
 Quad::Quad(const QuadInitParams& qd)
-    : GeoPrimitive() {
-    width  = qd.w;
-    height = qd.h;
+    : GeoPrimitive(),
+        m_size(qd.size),
+        m_instAttribs(qd.instAttribs),
+        m_maxNrInstances(qd.nrInstances) {
 
-    instAttribs    = qd.instAttribs;
-    maxNrInstances = qd.nrInstances;
+    m_color = qd.color;
 
-    m_r = qd.r;
-    m_g = qd.g;
-    m_b = qd.b;
-    m_a = qd.a;
+    glm::vec3 upperLeft{qd.pos.x, qd.pos.y + qd.size.y, 0.f};
+    glm::vec3 lowerLeft{qd.pos.x, qd.pos.y, 0.f};
+    glm::vec3 lowerRight{qd.pos.x + qd.size.x, qd.pos.y, 0.f};
+    glm::vec3 upperRight{qd.pos.x + qd.size.x, qd.pos.y + qd.size.y, 0.f};
 
-    glm::vec3 upperLeft{qd.x, qd.y + qd.h, 0.f};
-    glm::vec3 lowerLeft{qd.x, qd.y, 0.f};
-    glm::vec3 lowerRight{qd.x + qd.w, qd.y, 0.f};
-    glm::vec3 upperRight{qd.x + qd.w, qd.y + qd.h, 0.f};
+    // first triangle, lower left, starting in the upper left corner, counterclockwise
+    m_position.reserve(6);
+    m_texCoords.reserve(6);
+    m_normal.reserve(6);
 
-    // first triangle, lower left, starting in the upper left corner,
-    // counterclockwise
-    position.reserve(6);
-    texCoords.reserve(6);
-    normal.reserve(6);
+    m_position.emplace_back(upperLeft);
+    m_texCoords.emplace_back(0.f, !qd.flipHori ? 1.f : 0.f);
 
-    position.emplace_back(upperLeft);
-    texCoords.emplace_back(0.f, !qd.flipHori ? 1.f : 0.f);
+    m_position.emplace_back(lowerLeft);
+    m_texCoords.emplace_back(0.f, !qd.flipHori ? 0.f : 1.f);
 
-    position.emplace_back(lowerLeft);
-    texCoords.emplace_back(0.f, !qd.flipHori ? 0.f : 1.f);
+    m_position.emplace_back(lowerRight);
+    m_texCoords.emplace_back(1.f, !qd.flipHori ? 0.f : 1.f);
 
-    position.emplace_back(lowerRight);
-    texCoords.emplace_back(1.f, !qd.flipHori ? 0.f : 1.f);
+    // second triangle, right upper, starting in the lower right corner, counterclockwise
+    m_position.emplace_back(lowerRight);
+    m_texCoords.emplace_back(1.f, !qd.flipHori ? 0.f : 1.f);
 
-    // second triangle, right upper, starting in the lower right corner,
-    // counterclockwise
-    position.emplace_back(lowerRight);
-    texCoords.emplace_back(1.f, !qd.flipHori ? 0.f : 1.f);
+    m_position.emplace_back(upperRight);
+    m_texCoords.emplace_back(1.f, !qd.flipHori ? 1.f : 0.f);
 
-    position.emplace_back(upperRight);
-    texCoords.emplace_back(1.f, !qd.flipHori ? 1.f : 0.f);
-
-    position.emplace_back(upperLeft);
-    texCoords.emplace_back(0.f, !qd.flipHori ? 1.f : 0.f);
+    m_position.emplace_back(upperLeft);
+    m_texCoords.emplace_back(0.f, !qd.flipHori ? 1.f : 0.f);
 
     // set normal facing outwards of the screen
     for (auto i = 0; i < 6; i++) {
-        normal.push_back(qd.inNormal);
+        m_normal.emplace_back(qd.inNormal);
     }
 
-    init();
+    Quad::init();
 }
 
 void Quad::init() {
@@ -127,36 +114,40 @@ void Quad::init() {
 
     // move the quad to the correct position, in relation to the dimensions
     for (unsigned short i = 0; i < 6; i++) {
-        GLfloat v[3] = {position[i].x, position[i].y, position[i].z};
-        m.push_back_positions(v, 3);
-
-        GLfloat n[3] = {normal[i].x, normal[i].y, normal[i].z};
-        m.push_back_normals(n, 3);
-
-        GLfloat t[2] = {texCoords[i].x, texCoords[i].y};
-        m.push_back_texCoords(t, 2);
+        m.push_back_positions(&m_position[i][0], 3);
+        m.push_back_normals(&m_normal[i][0], 3);
+        m.push_back_texCoords(&m_texCoords[i][0], 2);
     }
 
     GLenum usage = GL_DYNAMIC_DRAW;
-    if (instAttribs) {
+    if (m_instAttribs) {
         usage = GL_DYNAMIC_DRAW;
     }
 
-    m_vao = make_unique<VAO>("position:3f,normal:3f,texCoord:2f,color:4f", usage, instAttribs, maxNrInstances);
-    m_vao->setStaticColor(m_r, m_g, m_b, m_a);
+    m_vao = make_unique<VAO>("position:3f,normal:3f,texCoord:2f,color:4f", usage, m_instAttribs, m_maxNrInstances);
+    m_vao->setStaticColor(m_color);
     m_vao->uploadMesh(&m);
 }
 
+void Quad::drawAsShared() const {
+    if (!m_vao) {
+        return;
+    }
+    m_vao->enableVertexAttribs();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    m_vao->disableVertexAttribs();
+}
+
 std::vector<glm::vec3> *Quad::getPositions() {
-    return &position;
+    return &m_position;
 }
 
 std::vector<glm::vec3> *Quad::getNormals() {
-    return &normal;
+    return &m_normal;
 }
 
 std::vector<glm::vec2> *Quad::getTexCoords() {
-    return &texCoords;
+    return &m_texCoords;
 }
 
 }  // namespace ara

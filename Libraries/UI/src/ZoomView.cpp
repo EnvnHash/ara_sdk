@@ -2,13 +2,12 @@
 // Created by user on 03.03.2021.
 //
 
+#include <DataModel/PropertyItemUi.h>
 #include "ZoomView.h"
-
 #include "UIWindow.h"
 
 using namespace std;
 using namespace glm;
-using namespace pugi;
 
 namespace fs = std::filesystem;
 
@@ -16,7 +15,7 @@ namespace ara {
 
 ZoomView::ZoomView() : Div() { setName(getTypeName<ZoomView>()); }
 
-ZoomView::ZoomView(std::string&& styleClass) : Div(std::move(styleClass)) { setName(getTypeName<ZoomView>()); }
+ZoomView::ZoomView(const std::string& styleClass) : Div(std::move(styleClass)) { setName(getTypeName<ZoomView>()); }
 
 void ZoomView::init() {
     Div::init();
@@ -58,7 +57,7 @@ void ZoomView::init() {
                 ui_workingArea->setZoomNormMat(std::any_cast<float>(val) * 0.01f);
         }
 
-        for (auto& it : m_onChangedCb) it();
+        for (const auto& it : m_onChangedCb) it();
     });
 
     ui_zoomSlider->addStyleClass("zoom_view.zoom_slider");
@@ -89,7 +88,7 @@ void ZoomView::setDisplaySize(int w, int h) {
     m_displaySize.y = h;
 
     if (ui_content) {
-        ui_content->setFixAspect((float)w / (float)h);
+        ui_content->setFixAspect(static_cast<float>(w) / static_cast<float>(h));
         ui_content->updateMatrix();
     }
 }
@@ -124,7 +123,7 @@ void ZoomView::mouseWheel(hidData* data) {
     if (getWindow()->isMousePressed()) return;
 
     if (m_zoomProp) {
-        float newVal   = m_zoomProp() * 0.01f * (1.f + (float)data->degrees * (data->ctrlPressed ? 0.01f : 0.1f));
+        float newVal   = m_zoomProp() * 0.01f * (1.f + data->degrees * (data->ctrlPressed ? 0.01f : 0.1f));
         m_zoomUseWheel = true;
         m_zoomProp.setClamp(newVal * 100.f);
     }

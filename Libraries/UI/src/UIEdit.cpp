@@ -1,8 +1,6 @@
-#include "UIEdit.h"
-
 #include <Asset/AssetColor.h>
-
-#include "DataModel/Item.h"
+#include <DataModel/PropertyItemUi.h>
+#include "UIEdit.h"
 #include "UIWindow.h"
 
 using namespace glm;
@@ -185,7 +183,7 @@ void UIEdit::drawCaret(bool forceCaretVaoUpdt) {
     if (m_state == state::selected) {
         if (!m_caret->isVisible()) {
             m_caret->setVisibility(true);
-            m_caret->setSize((int)((float)m_caretWidth / getParentContentScale().x), (int)m_riFont->getPixHeight());
+            m_caret->setSize(static_cast<int>(static_cast<float>(m_caretWidth) / getParentContentScale().x), static_cast<int>(m_riFont->getPixHeight()));
             m_caret->setBackgroundColor(m_caretColor);
             updtTree = true;
         }
@@ -201,7 +199,7 @@ void UIEdit::drawCaret(bool forceCaretVaoUpdt) {
                 m_tCaretPos.x = getContentSize().x * 0.5f;
         }
 
-        for (int i = 0; i < 2; i++) posLimit[i] = m_size[i] - (m_padding[i + 2] + (float)m_borderWidth);
+        for (int i = 0; i < 2; i++) posLimit[i] = m_size[i] - (m_padding[i + 2] + static_cast<float>(m_borderWidth));
 
         if (!glm::all(glm::equal(m_caret->getPos(), m_tCaretPos)))
             m_caret->setPos((int)std::min(m_tCaretPos.x, posLimit.x), (int)std::min(m_tCaretPos.y, posLimit.y));
@@ -285,11 +283,11 @@ void UIEdit::updateFontGeo() {
     if (m_tAlign_Y == valign::bottom) {
         m_bs            = m_FontDGV.getPixSize();
         m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
-        m_alignOffset.y = (float)m_tContSize.y - m_bs.y;
+        m_alignOffset.y = static_cast<float>(m_tContSize.y) - m_bs.y;
     } else if (m_tAlign_Y == valign::center) {
         m_bs            = m_FontDGV.getPixSize();
         m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
-        m_alignOffset.y = (float)m_tContSize.y * 0.5f - m_bs.y * 0.5f;
+        m_alignOffset.y = static_cast<float>(m_tContSize.y) * 0.5f - m_bs.y * 0.5f;
     }
 
     // take the matrix of the helper content Div, since this will use the
@@ -640,7 +638,7 @@ void UIEdit::mouseWheel(hidData *data) {
     if (m_blockEdit) return;
 
     if (m_useWheel)
-        incValue((float)data->degrees, data->shiftPressed  ? cfState::coarse
+        incValue(static_cast<float>(data->degrees), data->shiftPressed  ? cfState::coarse
                                        : data->ctrlPressed ? cfState::fine
                                                            : cfState::normal);
 
@@ -650,10 +648,10 @@ void UIEdit::mouseWheel(hidData *data) {
 }
 
 void UIEdit::incValue(float amt, cfState cf) {
-    float mAmt = (float)amt * (cf == cfState::coarse ? 10.f : cf == cfState::normal ? 1.f : 0.1f);
+    float mAmt = static_cast<float>(amt) * (cf == cfState::coarse ? 10.f : cf == cfState::normal ? 1.f : 0.1f);
 
     if (hasOpt(num_int)) {
-        setValue(std::min(std::max(m_iValue + (int)((float)m_stepI * mAmt), m_minInt), m_maxInt));
+        setValue(std::min(std::max(m_iValue + static_cast<int>(static_cast<float>(m_stepI) * mAmt), m_minInt), m_maxInt));
 
         for (auto &it : m_onEnterCb) it.second(m_Text);
 
@@ -901,7 +899,7 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
     return position + 1;
 }
 
-void UIEdit::updateStyleIt(ResNode *node, state st, std::string &styleClass) {
+void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClass) {
     Label::updateStyleIt(node, st, styleClass);
 
     if (node->hasValue("edit-opt")) {
@@ -947,19 +945,10 @@ void UIEdit::updateStyleIt(ResNode *node, state st, std::string &styleClass) {
         m_setStyleFunc[st][styleInit::textValign] = [this]() { m_tAlign_Y = l_auxAlign; };
     }
 
-    /*if (node->has("font-size")){
-
-        int size = node->value1i("font-size", 18);
-
-        m_setStyleFunc[st][styleInit::fontSize] = [this,
-    size](){setFontSize(size); };
-
-    }*/
-
     auto f = node->findNode<AssetFont>("font");
     if (f) {
-        int         size = ((ResNode *)f)->value1i("size", 0);
-        std::string font = ((ResNode *)f)->getValue("font");
+        int         size = f->value<int32_t>("size", 0);
+        std::string font = f->getValue("font");
 
         m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size]() { setFontSize(size); };
         m_setStyleFunc[st][styleInit::fontFontFamily] = [this, font]() { setFontType(font); };
@@ -976,6 +965,7 @@ void UIEdit::changeValType(unsigned long t) {
     if (t != num_int && t != num_fp) {
         return;
     }
+
     // remove any numeric type
     m_tOpt &= ~num_int;
     m_tOpt &= ~num_fp;
@@ -1024,8 +1014,8 @@ void UIEdit::setProp(Property<float> *prop) {
     setOpt(UIEdit::single_line | UIEdit::num_fp);
 
     onChanged<float>(prop, [this](std::any val) { setValue(std::any_cast<float>(val)); });
-    addEnterCb([prop](const std::string &txt) { *prop = (float)atof(txt.c_str()); }, prop);
-    setOnLostFocusCb([this, prop] { *prop = (float)atof(m_Text.c_str()); });
+    addEnterCb([prop](const std::string &txt) { *prop = static_cast<float>(atof(txt.c_str())); }, prop);
+    setOnLostFocusCb([this, prop] { *prop = static_cast<float>(atof(m_Text.c_str())); });
     setMinMax(prop->getMin(), prop->getMax());
     setStep(prop->getStep());
     setValue((*prop)());
@@ -1059,13 +1049,13 @@ void UIEdit::setProp(Property<glm::vec2> *prop, int idx) {
     addEnterCb(
         [prop, idx](const std::string &txt) {
             glm::vec2 newVal = (*prop)();
-            newVal[idx]      = (float)atof(txt.c_str());
+            newVal[idx]      = static_cast<float>(atof(txt.c_str()));
             (*prop)          = newVal;
         },
         prop);
     setOnLostFocusCb([this, prop, idx] {
         glm::vec2 newVal = (*prop)();
-        newVal[idx]      = (float)atof(m_Text.c_str());
+        newVal[idx]      = static_cast<float>(atof(m_Text.c_str()));
         (*prop)          = newVal;
     });
 
@@ -1080,13 +1070,13 @@ void UIEdit::setProp(Property<glm::vec3> *prop, int idx) {
     addEnterCb(
         [prop, idx](const std::string &txt) {
             glm::vec3 newVal = (*prop)();
-            newVal[idx]      = (float)atof(txt.c_str());
+            newVal[idx]      = static_cast<float>(atof(txt.c_str()));
             (*prop)          = newVal;
         },
         prop);
     setOnLostFocusCb([this, prop, idx] {
         glm::vec3 newVal = (*prop)();
-        newVal[idx]      = (float)atof(m_Text.c_str());
+        newVal[idx]      = static_cast<float>(atof(m_Text.c_str()));
         (*prop)          = newVal;
     });
 

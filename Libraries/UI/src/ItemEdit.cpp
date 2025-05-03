@@ -2,8 +2,8 @@
 // Created by user on 13.08.2021.
 //
 
+#include <DataModel/PropertyItemUi.h>
 #include "ItemEdit.h"
-
 #include "Button/Button.h"
 
 using namespace std;
@@ -15,7 +15,7 @@ ItemEdit::ItemEdit() : UITable(), m_rowHeight(30.f) {
     setFocusAllowed(false);
 }
 
-ItemEdit::ItemEdit(std::string&& styleClass) : UITable(std::move(styleClass)) {
+ItemEdit::ItemEdit(const std::string& styleClass) : UITable(std::move(styleClass)) {
     setName(getTypeName<ItemEdit>());
     setFocusAllowed(false);
 }
@@ -39,7 +39,7 @@ void ItemEdit::init() {
         head->addStyleClass(getStyleClass() + ".head");
 
         int row = 1;
-        for (auto& it: ui_children) {
+        for (const auto& it: ui_children) {
             if (it->isPropertyItem && it->visible()) {
                 auto lbl = setCell<Label>(row, 0);
                 lbl->setText(!it->displayName().empty() ? it->displayName() : it->name());

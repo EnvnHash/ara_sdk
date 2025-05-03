@@ -16,7 +16,7 @@ GizmoAxisLabel::GizmoAxisLabel() : Image() {
     m_drawImmediate = true;
 }
 
-GizmoAxisLabel::GizmoAxisLabel(std::string&& styleClass) : Image(std::move(styleClass)) {
+GizmoAxisLabel::GizmoAxisLabel(const std::string& styleClass) : Image(std::move(styleClass)) {
     setName(getTypeName<GizmoAxisLabel>());
     m_drawImmediate = true;
 }

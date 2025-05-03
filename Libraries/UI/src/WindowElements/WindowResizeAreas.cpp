@@ -26,7 +26,7 @@ void WindowResizeAreas::init() {
     // there are no grabbers to resize the window ... so we also have to build
     // those by ourselves
     int dragAreaSize = 10;
-    for (int i = 0; i < 8; i++) m_winResizeAreas.push_back(addChild<WindowResizeArea>());
+    for (int i = 0; i < 8; i++) m_winResizeAreas.emplace_back(addChild<WindowResizeArea>());
 
     // top
     m_winResizeAreas[0]->setAreaType(WindowResizeArea::AreaType::top);  // top

@@ -17,7 +17,6 @@
 
 #include "Asset/AssetFont.h"
 #include "Asset/ResGlFont.h"
-#include <RwBinFile.h>
 #include <AssetLoader.h>
 
 namespace ara {
@@ -40,8 +39,8 @@ public:
 
     bool     Load(const std::string &path);
     bool     Reload();
-    ResNode *getRoot() { return m_rootNode.get(); }
-    ResNode *findNode(const std::string &path) { return m_rootNode->findNode(path); }
+    [[nodiscard]] ResNode *getRoot() const { return m_rootNode.get(); }
+    [[nodiscard]] ResNode *findNode(const std::string &path) const { return m_rootNode->findNode(path); }
 
     template <typename T>
     T *findNode(const std::string& path) {
@@ -57,10 +56,40 @@ public:
 
     std::string value(const std::string &path);
     std::string value(const std::string &path, const std::string& def);
-    int         value1i(const std::string &path, int def);
-    float       value1f(const std::string &path, float def);
-    bool        valueiv(std::vector<int> &v, const std::string &path, int fcount = 0, int def = 0);
-    bool        valuefv(std::vector<float> &v, const std::string &path, int fcount = 0, float def = 0);
+
+    template<CoordinateType32Signed T>
+    T value(const std::string &path, T def) {
+        std::string s;
+        if (!getvalue(s, path)) {
+            return def;
+        }
+
+        try {
+            return typeid(T) == typeid(int32_t) ? stoi(s) : stof(s);
+        } catch (...) {
+            return def;
+        }
+    }
+
+    template<CoordinateType32Signed T>
+    bool value_v(std::vector<T> &v, const std::string &path, int fcount = 0, T def = 0) {
+        v.clear();
+
+        auto *node = findNode<AssetFont>(path);
+        if (node == nullptr) {
+            return false;
+        }
+
+        ParVec tok = node->splitValue();
+        fcount     = fcount > 0 ? fcount : tok.getParCount();
+
+        for (int i = 0; i < fcount; i++) {
+            v.emplace_back(tok.getFloatPar(i, static_cast<T>(def)));
+        }
+
+        return true;
+    }
+
 
     float   *color(const std::string& path);
     Font    *font(const std::string& path, float pixRatio);
@@ -70,7 +99,7 @@ public:
     Font           *loadFont(const std::string& path, int size, float pixRatio);
     AssetImageBase *img(const std::string& path);
 
-    bool isOK() const { return m_loadState; }
+    [[nodiscard]] bool isOK() const { return m_loadState; }
     bool usingComp() { return m_assetLoader.usingCmrc(); }
 
     bool checkForResSourceChange();
@@ -78,8 +107,8 @@ public:
     void callResSourceChange();
     void callForChangesInFolderFiles();
 
-    void         setPreContent(std::string &str) { m_preContent = str; }
-    void         setPostContent(std::string &str) { m_postContent = str; }
+    void         setPreContent(const std::string &str) { m_preContent = str; }
+    void         setPostContent(const std::string &str) { m_postContent = str; }
     void         setPostContent(std::string str) { m_postContent = std::move(str); }
     std::string &getPreContent() { return m_preContent; }
     std::string &getPostContent() { return m_postContent; }

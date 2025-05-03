@@ -19,18 +19,9 @@ CrossHair::CrossHair() : Div() {
 #endif
 }
 
-CrossHair::CrossHair(std::string* styleClass) : Div() {
+CrossHair::CrossHair(const std::string& styleClass) : Div() {
     setName(getTypeName<CrossHair>());
-    addStyleClass(std::move(*styleClass));
-    excludeFromObjMap(true);
-#ifndef FORCE_INMEDIATEMODE_RENDERING
-    m_drawImmediate = false;
-#endif
-}
-
-CrossHair::CrossHair(std::string&& styleClass) : Div() {
-    setName(getTypeName<CrossHair>());
-    addStyleClass(std::move(styleClass));
+    addStyleClass(styleClass);
     excludeFromObjMap(true);
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;

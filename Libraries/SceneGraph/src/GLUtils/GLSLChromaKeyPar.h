@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <DataModel/Item.h>
+#include <DataModel/PropertyItemUi.h>
 #include <DataModel/ItemRef.h>
 #include <Property.h>
 
@@ -13,7 +13,7 @@ namespace ara {
 class GLSLChromaKeyPar : public ItemRef, public ItemUi {
 public:
     GLSLChromaKeyPar();
-    virtual ~GLSLChromaKeyPar() = default;
+    ~GLSLChromaKeyPar() override = default;
 
     PropertyPtr<bool>        freeze;
     PropertyPtr<bool>        chromaKey;

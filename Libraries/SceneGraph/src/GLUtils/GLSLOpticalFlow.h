@@ -8,13 +8,15 @@
 
 #pragma once
 
-#include <GLBase.h>
-#include <GeoPrimitives/Quad.h>
-#include <Shaders/ShaderCollector.h>
-#include <Utils/PingPongFbo.h>
-#include <Utils/Texture.h>
+#include <glb_common/glb_common.h>
 
 namespace ara {
+
+class GLBase;
+class ShaderCollector;
+class Shaders;
+class Quad;
+class PingPongFbo;
 
 class GLSLOpticalFlow {
 public:
@@ -23,10 +25,10 @@ public:
     void initShader(ShaderCollector* shCol);
     void update(GLint tex1, GLint tex2, float fdbk = 0.f);
 
-    void   setMedian(float median) { median = median; }
-    void   setBright(float val) { bright = val; }
-    void   setPVM(GLfloat* pvm_ptr) { pvm_ptr = pvm_ptr; }
-    GLuint getResTexId() { return m_texture->getSrcTexId(); }
+    void   setMedian(float med) { m_median = med; }
+    void   setBright(float val) { m_bright = val; }
+    void   setPVM(GLfloat* ptr) { m_pvm_ptr = ptr; }
+    [[nodiscard]] GLuint getResTexId() const;
 
 private:
     GLBase*          m_glbase   = nullptr;
@@ -37,15 +39,15 @@ private:
     std::unique_ptr<Quad>            m_quad;
     std::unique_ptr<PingPongFbo>     m_texture;
 
-    int          width    = 0;
-    int          height   = 0;
-    unsigned int isInited = 0;
+    int          m_width    = 0;
+    int          m_height   = 0;
+    unsigned int m_isInited = 0;
 
-    GLuint   srcId     = 0;
-    GLuint   lastSrcId = 0;
-    GLfloat* pvm_ptr   = 0;
-    float    lambda    = 0.f;
-    float    median    = 0.f;
-    float    bright    = 0.f;
+    GLuint   m_srcId     = 0;
+    GLuint   m_lastSrcId = 0;
+    GLfloat* m_pvm_ptr   = nullptr;
+    float    m_lambda    = 0.1f;
+    float    m_median    = 3.f;
+    float    m_bright    = 4.f;
 };
 }  // namespace ara

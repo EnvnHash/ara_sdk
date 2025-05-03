@@ -15,7 +15,7 @@ namespace ara {
 class ItemEdit : public UITable, public ItemRef {
 public:
     ItemEdit();
-    ItemEdit(std::string&& styleClass);
+    ItemEdit(const std::string& styleClass);
     virtual ~ItemEdit() = default;
     void init();
 

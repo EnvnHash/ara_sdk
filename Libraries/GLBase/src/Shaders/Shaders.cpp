@@ -149,13 +149,13 @@ void Shaders::checkStatusLink(GLuint obj) {
         GLsizei length;
         for (int i = 0; i < numUniforms; i++) {
             GLchar name[m_uniNameBufSize];
-            glGetActiveUniform(m_program, (GLuint)i, m_uniNameBufSize, &length, &size, &type, name);
+            glGetActiveUniform(m_program, static_cast<GLuint>(i), m_uniNameBufSize, &length, &size, &type, name);
             m_locations[std::string(name)] = glGetUniformLocation(m_program, name);
         }
     }
 }
 
-void Shaders::checkStatusCompile(GLuint obj) {
+void Shaders::checkStatusCompile(GLuint obj) const {
     GLint status = GL_FALSE, len = 10;
     if (glIsShader(obj)) glGetShaderiv(obj, GL_COMPILE_STATUS, &status);
 
@@ -184,7 +184,7 @@ void Shaders::checkStatusCompile(GLuint obj) {
     }
 }
 
-void Shaders::attachShader(GLuint program, GLenum type, const string &src) {
+void Shaders::attachShader(GLuint program, GLenum type, const string &src) const {
     if (debug) {
         LOG << "attach \n";
         switch (type) {
@@ -215,7 +215,7 @@ void Shaders::attachShader(GLuint program, GLenum type, const string &src) {
 std::string Shaders::textFileRead(const std::string &filename) {
     if (std::filesystem::exists(filename)) {
         std::ifstream t(filename);
-        return std::string(std::istreambuf_iterator<char>(t), std::istreambuf_iterator<char>());
+        return {std::istreambuf_iterator<char>(t), std::istreambuf_iterator<char>()};
     } else {
         LOGE << "pd3d::Shaders Error: file " << filename << " not found ";
         return "";

@@ -38,7 +38,7 @@ TEST(Utilities_UnitTests, ConditionalTest) {
     // all threads received the notify?
     for (int j = 0; j < nrLoops; j++) {
         for (int i = 0; i < nrThreads; i++)
-            threads.push_back(std::thread([&sema, &mock, &readyThreads] {
+            threads.emplace_back(std::thread([&sema, &mock, &readyThreads] {
                 readyThreads++;
                 sema.wait(0);
                 mock.doThing();

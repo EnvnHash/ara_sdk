@@ -18,7 +18,6 @@ namespace ara {
 class SPNoLight : public ShaderProto {
 public:
     SPNoLight(sceneData* sd);
-    ~SPNoLight() = default;
 
     void rebuildShader(uint nrCameras);
     void clear(renderPass pass) override;

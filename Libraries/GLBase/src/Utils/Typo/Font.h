@@ -24,17 +24,18 @@ class Shaders;
 class Font {
 public:
     Font() = default;
-    Font(std::string font_path, int size, float pixRatio);
-    Font(std::vector<uint8_t> &vp, const std::string &font_path, int size, float pixRatio);
+
+    Font(const std::string& font_path, int size, float pixRatio);
+    Font(const std::vector<uint8_t> &vp, const std::string &font_path, int size, float pixRatio);
 
     virtual ~Font() = default;
 
     bool createFromMem(const std::vector<uint8_t>& vp, const std::string &name, int font_size, float pixRatio);
     bool create(const std::string &font_path, int size, float pixRatio);
     bool create(const std::vector<uint8_t> &vp, const std::string &font_path, int size, float pixRatio);
-    void pushGlyph(int ch_count, int ch_off, int wh, std::vector<uint8_t>& bmp);
-    int drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float off_x,
-                    float off_y, float mask_x, float mask_y, float mask_w, float mask_h) const;
+    void pushGlyph(int ch_count, int ch_off, int wh, const std::vector<uint8_t>& bmp);
+    int drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, glm::vec2 off,
+                    glm::vec2 maskPos, glm::vec2 maskSize) const;
 
     int write(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float x, float y, const std::string &str);
     int writeFormat(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float x, float y, char *f, ...);

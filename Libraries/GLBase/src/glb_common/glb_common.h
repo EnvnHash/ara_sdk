@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <unordered_map>
 #include <utility>
-#include <random>  // for random number generation
 
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
@@ -440,6 +439,12 @@ public:
     float z = 0.f;
 };
 
+template<typename T>
+concept CoordinateType = std::is_integral_v<T> || std::is_floating_point_v<T>;
+
+template<typename T>
+concept CoordinateType32Signed = std::is_same_v<T, int32_t> || std::is_same_v<T, float> ;
+
 // shortcut for strongly typed enums to be cast to their underlying type
 template <typename E>
 constexpr typename std::underlying_type<E>::type toType(E e) {
@@ -524,9 +529,6 @@ bool  pointInTriangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3);
 float angleBetweenVectors(const glm::vec3& a, const glm::vec3& b);
 glm::vec3 getRandomPointOnPlane(const glm::vec3&, const glm::vec3&, const glm::vec3&);
 
-void makeMatr(glm::mat4 *_matr, bool *_inited, float xOffs, float yOffs, float zOffs, float rotX, float rotY,
-              float rotZ, float scaleX, float scaleY, float scaleZ);
-
 double matrix_get_var(matrix* m, int row, int col);
 void matrix_set_var(matrix* m, int row, int col, double value);
 void fill_matrix_a(matrix* a, const double *x, const double *y, const double *_x, const double *_y);
@@ -569,7 +571,7 @@ static const inline int                stdQuadInd[6]{0, 1, 3, 3, 2, 0};  // two 
 void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pixelType, int width, int height,
                      GLubyte *pixels);
 
-std::vector<GLfloat> get2DRing(int nrPoints);
+std::vector<glm::vec2> get2DRing(int nrPoints);
 
 bool initGLEW();
 

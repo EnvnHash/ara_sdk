@@ -7,19 +7,17 @@
 
 #pragma once
 
-#include <Shaders/Shaders.h>
-#include <Utils/Camera.h>
-#include <Utils/FBO.h>
-
-#include "SceneNodes/SceneNode.h"
+#include <glsg_common/glsg_common.h>
 
 namespace ara {
 class CameraSet;
+class FBO;
+class Shaders;
 
 class ShadowMap {
 public:
-    ShadowMap(GLBase*);
-    virtual ~ShadowMap();
+    explicit ShadowMap(GLBase*);
+    virtual ~ShadowMap() = default;
 
     virtual void begin() = 0;
     virtual void end()   = 0;
@@ -34,7 +32,7 @@ public:
     virtual int      getWidth();
     virtual int      getHeight();
 
-    virtual void setScreenSize(uint _width, uint _height);
+    virtual void setScreenSize(uint width, uint height);
 
     GLBase*              s_glbase       = nullptr;
     Shaders*             s_shadowShader = nullptr;

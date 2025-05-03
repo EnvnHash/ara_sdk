@@ -32,10 +32,10 @@ void Mesh::init(const char *format) {
         m_bUsing[i] = false;
     }
 
-    m_allCoords.push_back(&m_positions);
-    m_allCoords.push_back(&m_normals);
-    m_allCoords.push_back(&m_texCoords);
-    m_allCoords.push_back(&m_colors);
+    m_allCoords.emplace_back(&m_positions);
+    m_allCoords.emplace_back(&m_normals);
+    m_allCoords.emplace_back(&m_texCoords);
+    m_allCoords.emplace_back(&m_colors);
 
     // init coord sizes
     m_coordTypeSize.resize(toType(CoordType::Count));
@@ -63,8 +63,8 @@ void Mesh::init(const char *format) {
     }
 }
 
-void Mesh::scale(float scaleX, float scaleY, float scaleZ) {
-    m_transfMatr = glm::scale(glm::vec3(scaleX, scaleY, scaleZ));
+void Mesh::scale(glm::vec3 scale) {
+    m_transfMatr = glm::scale(scale);
     doTransform(false);
 }
 
@@ -73,8 +73,8 @@ void Mesh::rotate(float angle, float rotX, float rotY, float rotZ) {
     doTransform(true);
 }
 
-void Mesh::translate(float x, float y, float z) {
-    m_transfMatr = glm::translate(glm::vec3(x, y, z));
+void Mesh::translate(glm::vec3 trans) {
+    m_transfMatr = glm::translate(trans);
     doTransform(false);
 }
 
@@ -137,7 +137,7 @@ void Mesh::calcNormals() {
             for (int j = 0; j < 3; j++) {
                 if (static_cast<uint>(m_normals.size()) <
                     (((i * 3) + j + 1) * m_coordTypeSize[toType(CoordType::Normal)])) {
-                    m_normals.push_back(normal.x);
+                    m_normals.emplace_back(normal.x);
                     m_normals.push_back(normal.y);
                     m_normals.push_back(normal.z);
                 } else {
@@ -435,15 +435,15 @@ void Mesh::setStaticColor(float _r, float _g, float _b, float _a) {
     }
 }
 
-void Mesh::setStaticNormal(float _x, float _y, float _z) {
+void Mesh::setStaticNormal(glm::vec3 norm) {
     if (static_cast<int>(m_statNormal.size()) == 0) {
-        m_statNormal.push_back(_x);
-        m_statNormal.push_back(_y);
-        m_statNormal.push_back(_z);
+        m_statNormal.push_back(norm.x);
+        m_statNormal.push_back(norm.y);
+        m_statNormal.push_back(norm.z);
     } else {
-        m_statNormal[0] = _x;
-        m_statNormal[1] = _y;
-        m_statNormal[2] = _z;
+        m_statNormal[0] = norm.x;
+        m_statNormal[1] = norm.y;
+        m_statNormal[2] = norm.z;
     }
 }
 

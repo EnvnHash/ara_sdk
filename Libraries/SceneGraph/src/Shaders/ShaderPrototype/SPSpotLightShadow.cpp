@@ -4,46 +4,53 @@
 //  Created by Sven Hahne on 11.08.17.
 //
 
-#include "Shaders/ShaderPrototype/SPSpotLightShadow.h"
-
-#include "CameraSets/CameraSet.h"
+#include <Shaders/ShaderPrototype/SPSpotLightShadow.h>
+#include <Lights/Light.h>
+#include <CameraSets/CameraSet.h>
 
 using namespace glm;
 using namespace std;
 
 namespace ara {
 
-SPSpotLightShadow::SPSpotLightShadow(sceneData *sd) : ShaderProto(sd), nrActSurfPasses(0), nrLightPasses(0) {
+SPSpotLightShadow::SPSpotLightShadow(sceneData *sd) : ShaderProto(sd), m_nrActSurfPasses(0), m_nrLightPasses(0) {
     s_name = getTypeName<SPSpotLightShadow>();
 
     // use a ShaderBuffer to transfer the LighParameters
-    lightSb = make_unique<ShaderBuffer<LightPar>>(1);
+    m_lightSb = make_unique<ShaderBuffer<LightPar>>(1);
 
     // get max nr Texture Binds
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_tex_units);
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &m_max_tex_units);
 
-    maxNrParLights = (max_tex_units - 1) / 2;
+    m_maxNrParLights = (m_max_tex_units - 1) / 2;
 }
 
 void SPSpotLightShadow::rebuildShader() {
-    string vert = s_shCol->getShaderHeader() + "// SPSpotLightShadow Light Prototype\n";
+    string vert = ara::ShaderCollector::getShaderHeader() + "// SPSpotLightShadow Light Prototype\n";
     vert += STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 1) in vec4 normal; \n layout(location = 2) in vec2 texCoord; \n layout(location = 3) in vec4 color; \n);
+        layout(location = 0) in vec4 position; \n
+        layout(location = 1) in vec4 normal; \n
+        layout(location = 2) in vec2 texCoord; \n
+        layout(location = 3) in vec4 color; \n);
 
-    if (s_lights.size() > 0) vert += s_lights[0]->getLightShaderBlock();  // add LightPar BufferBlock
+    if (!s_lights.empty()) {
+        vert += s_lights[0]->getLightShaderBlock();  // add LightPar BufferBlock
+    }
 
-    for (uint i = 0; i < 4; i++) vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
+    for (uint i = 0; i < 4; i++) {
+        vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
+    }
 
     vert += "uniform mat3 " + getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] +
             "; \n"
             "uniform mat4 shadow_matrix[" +
-            to_string(maxNrParLights) +
+            to_string(m_maxNrParLights) +
             "]; \n"
             "uniform int nrLights;\n"
             "\n"
             "out VS_FS { \n"
             "vec4 shadow_coord[" +
-            to_string(maxNrParLights) +
+            to_string(m_maxNrParLights) +
             "]; \n"
             "vec4 rawPos; \n"
             "vec3 normal; \n"
@@ -76,8 +83,10 @@ void SPSpotLightShadow::rebuildShader() {
 
     //------------------------------------------------------------------
 
-    string frag = s_shCol->getShaderHeader();
-    if (s_lights.size() > 0) frag += s_lights[0]->getLightShaderBlock();  // add LightPar BufferBlock
+    string frag = ShaderCollector::getShaderHeader();
+    if (!s_lights.empty()) {
+        frag += s_lights[0]->getLightShaderBlock();  // add LightPar BufferBlock
+    }
 
     frag +=
         "uniform vec4 ambient; \n"     // material parameter, ambient amount
@@ -89,10 +98,10 @@ void SPSpotLightShadow::rebuildShader() {
         "uniform int nrLights;\n"
         "uniform sampler2D tex;\n"
         "uniform sampler2DShadow depth_tex[" +
-        to_string(maxNrParLights) +
+        to_string(m_maxNrParLights) +
         "];\n"
         "uniform sampler2D light_col_tex[" +
-        to_string(maxNrParLights) +
+        to_string(m_maxNrParLights) +
         "];\n"
         "uniform int hasTexture;\n"
         "uniform int lightMode;\n"
@@ -101,7 +110,7 @@ void SPSpotLightShadow::rebuildShader() {
 
         "in VS_FS {\n"
         "vec4 shadow_coord[" +
-        to_string(maxNrParLights) +
+        to_string(m_maxNrParLights) +
         "]; \n"
         "vec4 rawPos; \n"
         "vec3 normal; \n"
@@ -223,34 +232,36 @@ void SPSpotLightShadow::rebuildShader() {
 ///< called every time when a new light is added with proto
 
 void SPSpotLightShadow::calcLights(CameraSet *cs, renderPass pass) {
-    if ((uint)s_lights.size() != s_nrLights || !s_shader) {
-        if (shadowGen) {
-            shadowGen->rebuildFbo((uint)s_lights.size());
-            shadowGen->rebuildShader((uint)s_lights.size());
-            if (pass == GLSG_SHADOW_MAP_PASS)
-                shadowGen->begin();  // when the shader is rebuilt it is also
-                                     // unbound - so bind it again.
+    if (static_cast<uint>(s_lights.size()) != s_nrLights || !s_shader) {
+        if (m_shadowGen) {
+            m_shadowGen->rebuildFbo(static_cast<uint>(s_lights.size()));
+            m_shadowGen->rebuildShader(static_cast<uint>(s_lights.size()));
+            if (pass == GLSG_SHADOW_MAP_PASS) {
+                m_shadowGen->begin();  // when the shader is rebuilt it is also unbound - so bind it again.
+            }
         }
 
-        if (!s_shader) rebuildShader();
+        if (!s_shader) {
+            rebuildShader();
+        }
 
-        lightSb->resize((uint)s_lights.size());
+        m_lightSb->resize(static_cast<uint>(s_lights.size()));
     }
 
     s_nrLights = static_cast<uint>(s_lights.size());
 
     // update ShaderBuffer
-    LightPar *ptr = (LightPar *)lightSb->map(GL_MAP_WRITE_BIT);
-    for (auto &it : s_lights) {
+    auto ptr = m_lightSb->map(GL_MAP_WRITE_BIT);
+    for (const auto &it : s_lights) {
         calcLight(cs, it, ptr);
-        ptr++;
+        ++ptr;
     }
-    lightSb->unmap();
+    m_lightSb->unmap();
 }
 
 void SPSpotLightShadow::calcLight(CameraSet *cs, Light *lightPtr, LightPar *lightParPtr) {
-    halfVector = glm::normalize(lightPtr->s_direction + cs->getViewerVec());
-    lightPtr->getLightShdrProp()->setHalfVector(halfVector.x, halfVector.y, halfVector.z);
+    m_halfVector = glm::normalize(lightPtr->s_direction + cs->getViewerVec());
+    lightPtr->getLightShdrProp()->setHalfVector(m_halfVector.x, m_halfVector.y, m_halfVector.z);
 
     lightParPtr->ambientColor         = *((vec4 *)lightPtr->getPtr("ambientColor"));
     lightParPtr->LColor               = *((vec4 *)lightPtr->getPtr("LColor"));
@@ -270,7 +281,9 @@ void SPSpotLightShadow::calcLight(CameraSet *cs, Light *lightPtr, LightPar *ligh
 }
 
 void SPSpotLightShadow::clear(renderPass pass) {
-    if (pass == GLSG_SHADOW_MAP_PASS && shadowGen) shadowGen->clear();
+    if (pass == GLSG_SHADOW_MAP_PASS && m_shadowGen) {
+        m_shadowGen->clear();
+    }
 }
 
 void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, SceneNode *parent, renderPass pass,
@@ -281,14 +294,13 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
         s_reqCalcLights = false;
     }
 
-    // check if it is necessary to rebuild a individual light (parameters and
-    // shadow maps)
+    // check if it is necessary to rebuild a individual light (parameters and shadow maps)
     for (size_t i = 0; i < s_lights.size(); i++)
         if (s_lights[i]->s_needsRecalc.load()) {
-            auto ptr = (LightPar *)lightSb->map(GL_MAP_WRITE_BIT);
+            auto ptr = m_lightSb->map(GL_MAP_WRITE_BIT);
             ptr += i;
             calcLight(cs, s_lights[i], ptr);
-            lightSb->unmap();
+            m_lightSb->unmap();
 
             s_lights[i]->s_needsRecalc = false;
         }
@@ -297,20 +309,22 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
 
     if (pass == GLSG_SHADOW_MAP_PASS) {
         // send projection/view matrices for all lights
-        if (pv_mats.size() != s_lights.size()) pv_mats.resize(s_lights.size());
-
-        for (uint i = 0; i < s_lights.size(); i++) {
-            pv_mats[i] = s_lights[i]->s_proj_mat * s_lights[i]->s_view_mat;
-
-            // check if we are rendering a light source, in this case, avoid
-            // that it casts light onto itself
-            if (node->m_nodeType == GLSG_SNT_LIGHT_SCENE_MESH && s_lights[i] == parent)
-                shadowGen->getShader()->setUniform1i("lightIndIsActMesh", i);
+        if (m_pv_mats.size() != s_lights.size()) {
+            m_pv_mats.resize(s_lights.size());
         }
 
-        shadowGen->getShader()->setUniformMatrix4fv("m_pv", &pv_mats[0][0][0], (uint)s_lights.size());
-        shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)],
-                                                    value_ptr(*node->getModelMat(parent)));
+        for (uint i = 0; i < s_lights.size(); i++) {
+            m_pv_mats[i] = s_lights[i]->s_proj_mat * s_lights[i]->s_view_mat;
+
+            // check if we are rendering a light source, in this case, avoid that it casts light onto itself
+            if (node->m_nodeType == GLSG_SNT_LIGHT_SCENE_MESH && s_lights[i] == parent) {
+                m_shadowGen->getShader()->setUniform1i("lightIndIsActMesh", i);
+            }
+        }
+
+        m_shadowGen->getShader()->setUniformMatrix4fv("m_pv", &m_pv_mats[0][0][0], static_cast<uint>(s_lights.size()));
+        m_shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)],
+                                                    value_ptr(node->getModelMat(parent)));
 
     } else if ((pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) && s_shader) {
         // estimate nr passes to render all active surfaces and lights
@@ -318,76 +332,68 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
         // active surfacs textures bound is one
         if (loopNr == 0) {
             // nr of active surfaces
-            if (s_lights.size() <= maxNrParLights) {
+            if (s_lights.size() <= m_maxNrParLights) {
                 s_nrPasses = 1;
             } else {
-                float div  = float(s_lights.size()) / float(maxNrParLights);
-                float frac = fmod(div, 1.f);
+                auto div  = static_cast<float>(s_lights.size()) / static_cast<float>(m_maxNrParLights);
+                auto frac = fmod(div, 1.f);
                 s_nrPasses = static_cast<uint>(round(div + (frac > 0.f ? 0.5f : 0.f)));
             }
         }
 
         //-------------------------------------------------------------------------------
 
-        uint lightOffs        = loopNr * (int)maxNrParLights;
-        uint nrLightsThisPass = std::min<int>(int(s_lights.size() - lightOffs), (int)maxNrParLights);
+        uint lightOffs        = loopNr * static_cast<int>(m_maxNrParLights);
+        uint nrLightsThisPass = std::min<int>(static_cast<int>(s_lights.size() - lightOffs), static_cast<int>(m_maxNrParLights));
         s_shader->setUniform1i("lightIndIsActMesh", -1);
 
-        if (shadowMat.size() != nrLightsThisPass) {
-            shadowMat.resize(nrLightsThisPass);
-            depthTexUnits.resize(nrLightsThisPass);
-            lightColTexUnits.resize(nrLightsThisPass);
+        if (m_shadowMat.size() != nrLightsThisPass) {
+            m_shadowMat.resize(nrLightsThisPass);
+            m_depthTexUnits.resize(nrLightsThisPass);
+            m_lightColTexUnits.resize(nrLightsThisPass);
         }
 
         for (uint i = 0; i < nrLightsThisPass; i++) {
-            shadowMat[i]        = s_lights[i + lightOffs]->s_shadow_mat * *node->getModelMat(parent);
-            depthTexUnits[i]    = i + 1;
-            lightColTexUnits[i] = maxNrParLights + i + 1;
+            m_shadowMat[i]        = s_lights[i + lightOffs]->s_shadow_mat * node->getModelMat(parent);
+            m_depthTexUnits[i]    = i + 1;
+            m_lightColTexUnits[i] = m_maxNrParLights + i + 1;
 
-            // check if we are rendering a light source, in this case, avoid
-            // that it casts light onto itself
+            // check if we are rendering a light source, in this case, avoid that it casts light onto itself
             if (node->m_nodeType == GLSG_SNT_LIGHT_SCENE_MESH && s_lights[i + lightOffs] == parent)
                 s_shader->setUniform1i("lightIndIsActMesh", i);
 
             // bind light color textures
             if (s_lights[i + lightOffs]->getColTex() != 0) {
-                glActiveTexture(GL_TEXTURE0 + (maxNrParLights + i + 1));
+                glActiveTexture(GL_TEXTURE0 + (m_maxNrParLights + i + 1));
                 glBindTexture(GL_TEXTURE_2D, s_lights[i + lightOffs]->getColTex());
-            } else {
-                //	LOG << ( " light_col_tex == 0 !!! \n");
             }
         }
 
-        s_shader->setUniformMatrix4fv("shadow_matrix", &shadowMat[0][0][0], nrLightsThisPass);
-        s_shader->setUniform1iv("depth_tex", &depthTexUnits[0], nrLightsThisPass);
-        s_shader->setUniform1iv("light_col_tex", &lightColTexUnits[0], nrLightsThisPass);
+        s_shader->setUniformMatrix4fv("shadow_matrix", &m_shadowMat[0][0][0], nrLightsThisPass);
+        s_shader->setUniform1iv("depth_tex", &m_depthTexUnits[0], nrLightsThisPass);
+        s_shader->setUniform1iv("light_col_tex", &m_lightColTexUnits[0], nrLightsThisPass);
         s_shader->setUniform1i("nrLights", (int)nrLightsThisPass);
         s_shader->setUniform1i("lightMode", 1);
 
         // bind depth textures
-        shadowGen->bindDepthTexViews(1, nrLightsThisPass, lightOffs);
+        m_shadowGen->bindDepthTexViews(1, nrLightsThisPass, lightOffs);
 
         // bind Light Parameters
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, lightSb->getBuffer());
-
-        if (s_nrPasses > 1 && loopNr < (s_nrPasses - 1))
-            glDepthMask(false);
-        else
-            glDepthMask(true);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_lightSb->getBuffer());
+        glDepthMask(!(s_nrPasses > 1 && loopNr < s_nrPasses - 1));
     }
 }
 
 bool SPSpotLightShadow::begin(CameraSet *cs, renderPass pass, uint loopNr) {
-    // init a ShadowMap Generator. Has to be done here, since the FboSize is not
-    // known before ShadowMapArray -> one ShadowMap generates all ShadowMaps for
-    // all lights
-    if (!shadowGen)
-        shadowGen = make_unique<ShadowMapArray>(cs, (int)cs->getActFboSize()->x, (int)cs->getActFboSize()->y,
+    // init a ShadowMap Generator. Has to be done here, since the FboSize is not known before ShadowMapArray ->
+    // one ShadowMap generates all ShadowMaps for all lights
+    if (!m_shadowGen)
+        m_shadowGen = make_unique<ShadowMapArray>(cs, (int)cs->getActFboSize()->x, (int)cs->getActFboSize()->y,
                                                 static_cast<uint>(s_lights.size()));
 
     switch (pass) {
         case GLSG_SHADOW_MAP_PASS:
-            shadowGen->begin();
+            m_shadowGen->begin();
             return true;
             break;
 
@@ -407,33 +413,35 @@ bool SPSpotLightShadow::begin(CameraSet *cs, renderPass pass, uint loopNr) {
 
 bool SPSpotLightShadow::end(renderPass pass, uint loopNr) {
     if (pass == GLSG_SHADOW_MAP_PASS) {
-        shadowGen->end();
+        m_shadowGen->end();
     } else if (pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
-        if (s_shader) s_shader->end();
+        if (s_shader) {
+            s_shader->end();
+        }
     }
 
     return loopNr < (s_nrPasses - 1);
 }
 
-ara::Shaders *SPSpotLightShadow::getShader(renderPass pass, uint loopNr) {
+Shaders *SPSpotLightShadow::getShader(renderPass pass, uint loopNr) {
     switch (pass) {
-        case GLSG_SHADOW_MAP_PASS: return shadowGen->getShader(); break;
-
-        case GLSG_SCENE_PASS: return s_shader ? s_shader : nullptr; break;
-
-        case GLSG_GIZMO_PASS: return s_shader ? s_shader : nullptr; break;
-
+        case GLSG_SHADOW_MAP_PASS:
+            return m_shadowGen->getShader();
+        case GLSG_SCENE_PASS:
+            return s_shader ? s_shader : nullptr;
+        case GLSG_GIZMO_PASS:
+            return s_shader ? s_shader : nullptr;
         default: return nullptr; break;
     }
 }
 
-void SPSpotLightShadow::setScreenSize(uint _width, uint _height) {
-    s_scrWidth = _width, s_scrHeight = _height;
-    shadowGen->setScreenSize(_width, _height);
-    if (s_sd) s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
+void SPSpotLightShadow::setScreenSize(uint width, uint height) {
+    s_scrWidth = width, s_scrHeight = height;
+    m_shadowGen->setScreenSize(width, height);
+    if (s_sd) {
+        s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
+    }
 }
-
-SPSpotLightShadow::~SPSpotLightShadow() {}
 
 }  // namespace ara

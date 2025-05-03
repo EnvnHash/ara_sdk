@@ -15,36 +15,35 @@ namespace ara {
 class SPSpotLightShadow : public ShaderProto {
 public:
     SPSpotLightShadow(sceneData* sd);
-    ~SPSpotLightShadow();
 
     void rebuildShader();
 
     void calcActSurfaces() {}
     void calcLights(CameraSet* cs, renderPass pass);
     void calcLight(CameraSet* cs, Light* lightPtr, LightPar* lightParPtr);
-    void clear(renderPass pass);
-    void sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr = 0);
-    bool begin(CameraSet* cs, renderPass pass, uint loopNr = 0);
-    bool end(renderPass pass, uint loopNr = 0);
+    void clear(renderPass pass) override;
+    void sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr = 0) override;
+    bool begin(CameraSet* cs, renderPass pass, uint loopNr = 0) override;
+    bool end(renderPass pass, uint loopNr = 0) override;
 
     std::string getLightBufferBlock(uint nrLights);
-    Shaders*    getShader(renderPass pass, uint loopNr = 0);
+    Shaders*    getShader(renderPass pass, uint loopNr = 0) override;
 
-    void setScreenSize(uint width, uint height);
+    void setScreenSize(uint width, uint height) override;
 
 private:
-    GLint                                   max_tex_units = 0;
-    std::unique_ptr<ShadowMapArray>         shadowGen;
-    std::unique_ptr<ShaderBuffer<LightPar>> lightSb;
+    GLint                                   m_max_tex_units = 0;
+    std::unique_ptr<ShadowMapArray>         m_shadowGen;
+    std::unique_ptr<ShaderBuffer<LightPar>> m_lightSb;
 
-    glm::vec3              halfVector{0.f};
-    std::vector<glm::mat4> pv_mats;
-    std::vector<glm::mat4> shadowMat;
-    std::vector<GLint>     depthTexUnits;
-    std::vector<GLint>     lightColTexUnits;
+    glm::vec3              m_halfVector{0.f};
+    std::vector<glm::mat4> m_pv_mats;
+    std::vector<glm::mat4> m_shadowMat;
+    std::vector<GLint>     m_depthTexUnits;
+    std::vector<GLint>     m_lightColTexUnits;
 
-    uint nrActSurfPasses = 0;
-    uint nrLightPasses   = 0;
-    uint maxNrParLights  = 0;
+    uint m_nrActSurfPasses = 0;
+    uint m_nrLightPasses   = 0;
+    uint m_maxNrParLights  = 0;
 };
 }  // namespace ara

@@ -49,7 +49,7 @@ std::vector<std::string> splitByNewline(const std::string &s) {
     std::istringstream       ss;
     ss.str(s);
     for (std::string line; std::getline(ss, line);) {
-        elems.push_back(line);
+        elems.emplace_back(line);
     }
     return elems;
 }
@@ -59,7 +59,7 @@ std::vector<std::string> split(const std::string &s, char delim) {
     std::stringstream        ss(s);
     std::string              item;
     while (std::getline(ss, item, delim)) {
-        elems.push_back(item);
+        elems.emplace_back(item);
     }
     return elems;
 }
@@ -70,12 +70,12 @@ std::vector<std::string> split(const std::string &s, const std::string& delim) {
     size_t                   fPos = strCpy.find(delim);
 
     while (fPos != std::string::npos) {
-        elems.push_back(strCpy.substr(0, fPos));
+        elems.emplace_back(strCpy.substr(0, fPos));
         strCpy = strCpy.substr(fPos + delim.length(), strCpy.length() - 1);
         fPos   = strCpy.find(delim);
     }
 
-    elems.push_back(strCpy);
+    elems.emplace_back(strCpy);
 
     return elems;
 }

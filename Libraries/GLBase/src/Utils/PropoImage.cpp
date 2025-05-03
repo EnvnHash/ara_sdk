@@ -15,9 +15,9 @@ PropoImage::PropoImage(GLBase* glbase) : imgTex(std::make_unique<Texture>(glbase
 
 PropoImage::PropoImage(const std::string& fileName, int _screenW, int _screenH, float _logoWidth, propoImagePos _pos,
                        float _border)
-    : imgWidth(_logoWidth), border(_border), pos(_pos) {
-    screenW = float(_screenW);
-    screenH = float(_screenH);
+    : pos(_pos), imgWidth(_logoWidth), border(_border) {
+    screenW = static_cast<float>(_screenW);
+    screenH = static_cast<float>(_screenH);
 
     imgTex->loadTexture2D(fileName, 1);
 
@@ -44,24 +44,24 @@ void PropoImage::setupQuad() {
 
     // position to the right upper corner for fullscreen
     if (imgQuad) {
-        imgQuad->scale(imgWidth / oldImgWidth, imgHeight / oldImgHeight, 1.f);
+        imgQuad->scale({imgWidth / oldImgWidth, imgHeight / oldImgHeight, 1.f});
     } else {
-        imgQuad = std::make_unique<Quad>(QuadInitParams{imgLowerLeftCorner.x, imgLowerLeftCorner.y, imgWidth, imgHeight,
-                                                        glm::vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 0.f});
+        imgQuad = std::make_unique<Quad>(QuadInitParams{.pos = imgLowerLeftCorner,
+                                                        .size = {imgWidth, imgHeight},
+                                                        .color = {0.f, 0.f, 0.f, 0.f} });
     }
 }
 
-void PropoImage::draw() {
+void PropoImage::draw() const {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, imgTex->getId());
     imgQuad->draw();
 }
 
-void PropoImage::setWidth(float _newWidth) {
-    oldImgWidth  = imgWidth;
-    oldImgHeight = imgHeight;
-
-    imgWidth = _newWidth;
+void PropoImage::setWidth(float newWidth) {
+    oldImgWidth     = imgWidth;
+    oldImgHeight    = imgHeight;
+    imgWidth        = newWidth;
     setupQuad();
 }
 

@@ -69,8 +69,8 @@ public:
     T& push() {
         prePush();
         {
-            std::unique_lock<std::mutex> l(m_mtx);
-            m_children.push_back(std::make_shared<T>());
+            std::unique_lock l(m_mtx);
+            m_children.emplace_back(std::make_shared<T>());
             setDefault(m_children.back());
         }
         signalChange(cbType::postAddChild);
@@ -81,8 +81,8 @@ public:
     T& push(std::shared_ptr<T>&& ptr) {
         prePush();
         {
-            std::unique_lock<std::mutex> l(m_mtx);
-            m_children.push_back(ptr);
+            std::unique_lock l(m_mtx);
+            m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
         signalChange(cbType::postAddChild);
@@ -93,8 +93,8 @@ public:
     T& push(const std::shared_ptr<T>& ptr) {
         prePush();
         {
-            std::unique_lock<std::mutex> l(m_mtx);
-            m_children.push_back(ptr);
+            std::unique_lock l(m_mtx);
+            m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
         signalChange(cbType::postAddChild);
@@ -203,7 +203,7 @@ public:
 
     static nlohmann::json getValues(const nlohmann::json& j) {
         nlohmann::json valueJson;
-        for (auto& [key, value] : j.items()) {
+        for (const auto& [key, value] : j.items()) {
             if (!value.is_object() && !value.is_array()) {
                 valueJson.emplace(key, value);
             }

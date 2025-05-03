@@ -12,11 +12,21 @@ using namespace glm;
 using namespace std;
 
 namespace ara {
-FastBlurMem::FastBlurMem(GLBase* glbase, float alpha, int blurW, int blurH, GLenum target, GLenum intFormat,
-                         uint nrLayers, bool rot180, blurKernelSize kSize, bool singleFbo)
-    : m_glbase(glbase), m_alpha(alpha), m_blurW(blurW), m_blurH(blurH), m_bright(1.f), m_intFormat(intFormat), m_kSize(kSize),
-      m_nrLayers(nrLayers), m_rot180(rot180), m_pp(nullptr), m_firstPassFbo(nullptr), m_singleFbo(singleFbo), m_target(target) {
-    m_fboQuad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f});
+FastBlurMem::FastBlurMem(const FastBlurMemParams& p)
+    : m_glbase(p.glbase),
+    m_firstPassFbo(nullptr),
+    m_pp(nullptr),
+    m_blurW(p.blurSize.x),
+    m_blurH(p.blurSize.y),
+    m_nrLayers(p.nrLayers),
+    m_target(p.target),
+    m_intFormat(p.intFormat),
+    m_alpha(p.alpha),
+    m_bright(1.f),
+    m_rot180(p.rot180),
+    m_singleFbo(p.singleFbo),
+    m_kSize(p.kSize) {
+    m_fboQuad = make_unique<Quad>(QuadInitParams{});
 
     if (m_nrLayers > 0) {
         initShader();
@@ -32,7 +42,7 @@ void FastBlurMem::initFbo() {
 
     m_blurOffs.resize(m_actKernelSize);
     for (uint i = 0; i < m_actKernelSize; i++) {
-        m_blurOffs[i] = float(i) / m_fWidth;
+        m_blurOffs[i] = static_cast<float>(i) / m_fWidth;
     }
 
     m_blurOffsScale.resize(m_actKernelSize);
@@ -106,15 +116,15 @@ void FastBlurMem::proc(GLint texIn) {
     glBindTexture(m_target, texIn);
 
     m_fboQuad->draw();
-    m_linearV->end();
+    Shaders::end();
 
     m_firstPassFbo->unbind();
 
     //-----------------------------------------------------------------
 
     // linear horizontal blur
-    m_pp->dst->bind();
-    m_pp->dst->clear();
+    m_pp->m_dst->bind();
+    m_pp->m_dst->clear();
 
     glBlendFunc(GL_SRC_ALPHA, GL_ZERO);
 
@@ -128,9 +138,9 @@ void FastBlurMem::proc(GLint texIn) {
     glBindTexture(m_target, m_firstPassFbo->getColorImg());
 
     m_fboQuad->draw();
-    m_linearH->end();
+    Shaders::end();
 
-    m_pp->dst->unbind();
+    m_pp->m_dst->unbind();
 
     if (!m_singleFbo) {
         m_pp->swap();
@@ -140,57 +150,62 @@ void FastBlurMem::proc(GLint texIn) {
 void FastBlurMem::initShader() {
     std::string vert;
 
-    if (m_target == GL_TEXTURE_2D_ARRAY)
+    if (m_target == GL_TEXTURE_2D_ARRAY) {
         vert = STRINGIFY(
-            layout(location = 0) in vec4 position;\n layout(location = 2) in vec2 texCoord;\n out vec2 gs_tex_coord;\n void
-                main() {
-                    \n
-		\t gs_tex_coord = texCoord;
-                    \n
-		\t gl_Position  = vec4(position.xy, 0.0, 1.0);
-                    \n
-                });
-    else
+                layout(location = 0) in vec4 position;\n
+                layout(location = 2) in vec2 texCoord;\n
+                out vec2 gs_tex_coord;\n
+                void main() { \n
+                \t gs_tex_coord = texCoord; \n
+                \t gl_Position  = vec4(position.xy, 0.0, 1.0); \n
+        });
+    } else {
         vert = STRINGIFY(
-            layout(location = 0) in vec4 position;\n layout(location = 2) in vec2 texCoord;\n out vec2 tex_coord;\n void
-                                                                                                       main() {
-                    \n
-		\t tex_coord = texCoord;
-                    \n
-		\t gl_Position = vec4(position.xy, 0.0, 1.0);
-                    \n
-                });
+                layout(location = 0) in vec4 position;\n
+                layout(location = 2) in vec2 texCoord;\n
+                out vec2 tex_coord;\n
+                void main() { \n
+                \t tex_coord = texCoord;\n
+                \t gl_Position = vec4(position.xy, 0.0, 1.0);\n
+        });
+    }
 
-    vert = "// FastBlur vertex shader\n" + m_glbase->shaderCollector().getShaderHeader() + vert;
+    vert = "// FastBlur vertex shader\n" + ara::ShaderCollector::getShaderHeader() + vert;
 
     std::string geom;
     if (m_target == GL_TEXTURE_2D_ARRAY) {
-        geom = m_glbase->shaderCollector().getShaderHeader() + "// FastBlurmem geom Shader\n";
+        geom = ara::ShaderCollector::getShaderHeader() + "// FastBlurmem geom Shader\n";
         geom += "layout(triangles, invocations=" + std::to_string(m_nrLayers) + ") in;\n";
 
         geom += STRINGIFY(
-            layout(triangle_strip, max_vertices = 3) out;\n in vec2 gs_tex_coord[];\n out vec2 tex_coord;\n void
-                                                                                               main()  \n {
-                    \n for (int i = 0; i < gl_in.length(); i++) \n {
-                        \n gl_Layer = gl_InvocationID;
-                        \n gl_Position = gl_in[i].gl_Position;
-                        \n tex_coord = gs_tex_coord[i];
-                        \n EmitVertex();
-                        \n
-                    }
-                    \n EndPrimitive();
-                    \n
-                } \n);
+            layout(triangle_strip, max_vertices = 3) out;\n
+            in vec2 gs_tex_coord[];\n
+            out vec2 tex_coord;\n
+            void main() \n {
+                for (int i = 0; i < gl_in.length(); i++) \n {
+                    gl_Layer = gl_InvocationID; \n
+                    gl_Position = gl_in[i].gl_Position; \n
+                    tex_coord = gs_tex_coord[i]; \n
+                    EmitVertex();\n
+                } \n
+                EndPrimitive(); \n
+            } \n);
     }
 
     std::string frag;
-    if (m_target != GL_TEXTURE_2D_ARRAY)
+    if (m_target != GL_TEXTURE_2D_ARRAY) {
         frag = "uniform sampler2D image;\n";
-    else
+    } else {
         frag = "uniform sampler2DArray image;\n";
+    }
 
     frag += STRINGIFY(
-        uniform float rot180;\n uniform float weightScale;\n vec2 flipTexCoord;\n vec4 col;\n in vec2 tex_coord;\n out vec4 FragmentColor;\n);
+        uniform float rot180;\n
+        uniform float weightScale;\n
+        vec2 flipTexCoord;\n
+        vec4 col;\n
+        in vec2 tex_coord;\n
+        out vec4 FragmentColor;\n);
 
     if (m_kSize == KERNEL_3) {
         frag +=
@@ -208,17 +223,19 @@ void FastBlurMem::initShader() {
         "void main(){ \n"
         "\t flipTexCoord = vec2(tex_coord.x * rot180, tex_coord.y * rot180);\n";
 
-    if (m_target == GL_TEXTURE_2D_ARRAY)
+    if (m_target == GL_TEXTURE_2D_ARRAY) {
         frag += "\t col = texture(image, vec3(flipTexCoord, float(gl_Layer)));\n";
-    else
+    } else {
         frag += "\t col = texture(image, flipTexCoord);\n";
+    }
 
     frag += "\t FragmentColor = col * weight[0] * weightScale;\n";
 
-    if (m_kSize == KERNEL_3)
+    if (m_kSize == KERNEL_3) {
         frag += "\t for (int i=1; i<3; i++) {\n";
-    else if (m_kSize == KERNEL_5)
+    } else if (m_kSize == KERNEL_5) {
         frag += "\t for (int i=1; i<5; i++) {\n";
+    }
 
     if (m_target == GL_TEXTURE_2D_ARRAY)
         frag +=
@@ -235,13 +252,14 @@ void FastBlurMem::initShader() {
             "\t\t FragmentColor += texture(image, flipTexCoord - vec2(0.0, "
             "offset[i])) * weight[i] * weightScale;\n \t} \n}";
 
-    frag = "// FastBlurMem Vertical fragment shader\n" + m_glbase->shaderCollector().getShaderHeader() + frag;
+    frag = "// FastBlurMem Vertical fragment shader\n" + ara::ShaderCollector::getShaderHeader() + frag;
 
-    if (m_target == GL_TEXTURE_2D_ARRAY)
-        m_linearV = m_glbase->shaderCollector().add("FastBlurMemVShader_" + std::to_string(m_nrLayers), vert.c_str(),
-                                                    geom.c_str(), frag.c_str());
-    else
-        m_linearV = m_glbase->shaderCollector().add("FastBlurMemVShader", vert.c_str(), frag.c_str());
+    if (m_target == GL_TEXTURE_2D_ARRAY) {
+        m_linearV = m_glbase->shaderCollector().add("FastBlurMemVShader_" + std::to_string(m_nrLayers), vert,
+                                                    geom, frag);
+    } else {
+        m_linearV = m_glbase->shaderCollector().add("FastBlurMemVShader", vert, frag);
+    }
 
     //===================================================================================
 
@@ -266,7 +284,7 @@ void FastBlurMem::initShader() {
 
     if (m_target == GL_TEXTURE_2D_ARRAY) {
         frag +=
-            "void main(void){\n"
+            "void main(){\n"
             "FragmentColor = texture( image, vec3( tex_coord, float(gl_Layer) "
             ") ) * weight[0] * weightScale;\n";
     } else {
@@ -300,13 +318,12 @@ void FastBlurMem::initShader() {
     frag += "FragmentColor = FragmentColor * bright; \n";
     frag += "}\n";
 
-    frag = "// FastBlurMem horizontal fragment shader\n" + m_glbase->shaderCollector().getShaderHeader() + frag;
+    frag = "// FastBlurMem horizontal fragment shader\n" + ara::ShaderCollector::getShaderHeader() + frag;
 
     if (m_target == GL_TEXTURE_2D_ARRAY) {
-        m_linearH = m_glbase->shaderCollector().add("FastBlurMemHShader_" + std::to_string(m_nrLayers), vert.c_str(),
-                                                    geom.c_str(), frag.c_str());
+        m_linearH = m_glbase->shaderCollector().add("FastBlurMemHShader_" + std::to_string(m_nrLayers), vert, geom, frag);
     } else {
-        m_linearH = m_glbase->shaderCollector().add("FastBlurMemHShader", vert.c_str(), frag.c_str());
+        m_linearH = m_glbase->shaderCollector().add("FastBlurMemHShader", vert, frag);
     }
 }
 

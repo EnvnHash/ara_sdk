@@ -1,6 +1,7 @@
 #include "Gizmo.h"
 
 #include <Asset/AssetImageBase.h>
+#include <SceneNodes/SNGizmoRotAxisLetter.h>
 
 #include "UIWindow.h"
 
@@ -16,7 +17,7 @@ Gizmo::Gizmo() : Image() {
     setScissorChildren(false);
 }
 
-Gizmo::Gizmo(std::string&& styleClass) : Image(std::move(styleClass)) {
+Gizmo::Gizmo(const std::string& styleClass) : Image(std::move(styleClass)) {
     m_canReceiveDrag = true;
     setName(getTypeName<Gizmo>());
     setFocusAllowed(false);
@@ -38,22 +39,22 @@ void Gizmo::init() {
     }
 
     // get width height from stylesheets
-    auto node      = getSharedRes()->res->findNode(getStyleClass());
-    int  viewWidth = 120, viewHeight = 120;
+    auto node           = getSharedRes()->res->findNode(getStyleClass());
+    int32_t viewWidth   = 120, viewHeight = 120;
     if (node) {
-        viewWidth  = node->value1i("width", 120);
-        viewHeight = node->value1i("height", 120);
+        viewWidth  = node->value<int32_t>("width", 120);
+        viewHeight = node->value<int32_t>("height", 120);
     }
 
     // get drag handle size
     node = getSharedRes()->res->findNode("defaults");
     if (node) {
-        m_axisLabelSize.x = node->value1i("gizmoDragHandleSize", 20);
+        m_axisLabelSize.x = node->value<int32_t>("gizmoDragHandleSize", 20);
         m_axisLabelSize.y = m_axisLabelSize.x;
     }
 
-    m_cam.setType(Camera::camType::perspective);
-    m_cam.setFov((float)M_PI * 0.3f);
+    m_cam.setType(camType::perspective);
+    m_cam.setFov(static_cast<float>(M_PI * 0.3f));
     m_cam.setScreenWidth(viewWidth);
     m_cam.setScreenHeight(viewHeight);
     m_cam.setCamPos(0.f, 0.f, 3.f); // gizmo size is [2,2,2], camPos.z = 2.f would result in the gizmo fitting
@@ -71,7 +72,9 @@ void Gizmo::init() {
     // register a function to unblock HID events, on camera fade end
     m_cam.getAnimTrans().setEndFunc([this] {
         m_blockHID = false;
-        for (auto& it : m_axisLabels) it->setHIDBlocked(false);
+        for (const auto& it : m_axisLabels) {
+            it->setHIDBlocked(false);
+        }
     });
 
     // if there was a model camera set, sync now
@@ -81,16 +84,13 @@ void Gizmo::init() {
     }
 
     m_drawMan->setShaderCollector(m_shCol);
-
     m_stdTex = initTexDepthShdr();
-    // m_DrawShader=initLineShdr();
     m_DrawShader = initLineShdr2();
-    // m_objMapTexShdr=initObjMapTexShdr();
 
     for (auto& it : m_fbo) {
         it = make_unique<FBO>(FboInitParams{m_glbase,
-                                            (int)(viewWidth * getWindow()->getPixelRatio()),
-                                            (int)(viewHeight * getWindow()->getPixelRatio()),
+                                            static_cast<int>(viewWidth * getWindow()->getPixelRatio()),
+                                            static_cast<int>(viewHeight * getWindow()->getPixelRatio()),
                                             1,
                                             GL_RGBA8, GL_TEXTURE_2D, true, 2, 1, 1,
                                             GL_REPEAT, false});
@@ -99,7 +99,7 @@ void Gizmo::init() {
     }
 
     m_sd.glbase       = m_glbase;
-    m_sd.uiWindow     = (void*)getWindow();
+    m_sd.uiWindow     = static_cast<void *>(getWindow());
     m_sd.contentScale = vec2{getWindow()->getPixelRatio(), getWindow()->getPixelRatio()};
     m_sd.debug        = false;
     m_sd.dataPath     = m_sharedRes->dataPath.string() + "/";
@@ -114,7 +114,7 @@ void Gizmo::init() {
     m_rootNode.setSceneData(&m_sd);
     m_rootNode.m_calcMatrixStack = true;
 
-    m_gizmoSN = (SNGizmo*)m_rootNode.addChild(make_unique<SNGizmo>(transMode::rotate_axis, &m_sd));
+    m_gizmoSN = static_cast<SNGizmo *>(m_rootNode.addChild(make_unique<SNGizmo>(transMode::rotate_axis, &m_sd)));
 
     // arrays for the basic axis cross
     m_crossPos.resize(12);
@@ -135,7 +135,7 @@ void Gizmo::init() {
                                         : glm::vec4{float(j == 1) * dir, float(j == 2) * dir, float(j == 0) * dir, 1.f};
 
                 m_crossAux0[ind]   = glm::vec4{0.f};
-                m_crossAux0[ind].x = (1.f + (float)(j == 1 ? (i * 3) : (j == 2 ? (i * 3 + 1) : (i * 3 + 2)))) * 0.1f;
+                m_crossAux0[ind].x = (1.f + static_cast<float>(j == 1 ? i * 3 : j == 2 ? i * 3 + 1 : i * 3 + 2)) * 0.1f;
             }
         }
     }
@@ -148,7 +148,7 @@ void Gizmo::init() {
     m_auxViewport = vec4(0, 0, viewWidth, viewHeight);
     m_auxUIRoot.setViewport(&m_auxViewport);
     m_auxSharedRes          = UISharedRes(*getSharedRes());
-    m_auxOrtho              = glm::ortho(0.f, (float)viewWidth, (float)viewHeight, 0.f);
+    m_auxOrtho              = glm::ortho(0.f, static_cast<float>(viewWidth), static_cast<float>(viewHeight), 0.f);
     m_auxSharedRes.orthoMat = &m_auxOrtho;
     m_auxUIRoot.setSharedRes(&m_auxSharedRes);
 
@@ -179,13 +179,13 @@ void Gizmo::init() {
     m_axisLabels.emplace_back(m_axisLabelZNeg);
 
     uint32_t i = 1;
-    for (auto& it : m_axisLabels) {
+    for (const auto& it : m_axisLabels) {
         it->setGizmoParent(this);
         it->setSize(m_axisLabelSize.x, m_axisLabelSize.y);
-        it->setAxisFlag((TrackBallCam::snap)(i - 1));
+        it->setAxisFlag(static_cast<TrackBallCam::snap>(i - 1));
         it->updtMatrIt(nullptr);
         it->setDrawInmediate(false);
-        it->m_presetObjId = (i++);  // preset objid
+        it->m_presetObjId = ++i;  // preset objid
     }
 
     // add a callback for including the axisLabels into the id tree iteration
@@ -197,7 +197,7 @@ void Gizmo::init() {
 
         std::list<GizmoAxisLabel*> inBounds;
 
-        for (auto& it : m_axisLabels)
+        for (const auto& it : m_axisLabels)
             if (glm::all(glm::greaterThanEqual(gsPos, it->getPos())) &&
                 glm::all(glm::lessThanEqual(gsPos, it->getPos() + it->getSize())))
                 inBounds.emplace_back(it);
@@ -248,7 +248,7 @@ void Gizmo::cbUpdt(TrackBallCam* cam, TbModData& data, bool mapByMouseRot) {
             if (data.fadeStart) {
                 // block all HID input
                 m_blockHID = true;
-                for (auto& it : m_axisLabels) it->setHIDBlocked(true);
+                for (const auto& it : m_axisLabels) it->setHIDBlocked(true);
 
                 cam->setLookAtBlendSrcPos(&cam->getTrackBallTrans());
                 cam->setLookAtBlendSrcLookAt(cam->getLookAtBlendSrcCamPos() +
@@ -394,17 +394,21 @@ bool Gizmo::drawIndirect(uint32_t *objId) {
 }
 
 bool Gizmo::drawToFbo(uint32_t* objId) {
-    if (!m_DrawShader || !m_fbo[0] || !m_fbo[1]) return false;
+    if (!m_DrawShader || !m_fbo[0] || !m_fbo[1]) {
+        return false;
+    }
 
     // update camera fade if necessary
-    for (auto& it : m_axisLabels) it->updateCamFade();
+    for (const auto& it : m_axisLabels) {
+        it->updateCamFade();
+    }
 
     // first pass cpu only, update matrices
     if (m_camChanged && m_gizmoSN->getChildren() && !m_gizmoSN->getChildren()->empty()) {
-        for (auto& it : *m_gizmoSN->getChildren()) {
+        for (const auto& it : *m_gizmoSN->getChildren()) {
             auto gixAx = dynamic_cast<SNGizmoRotAxisLetter*>(it);
-            if (gixAx && gixAx->gizVao) {
-                m_pvm = m_cam.getMVP() * *gixAx->getRotMat();
+            if (gixAx && gixAx->m_gizVao) {
+                m_pvm = m_cam.getMVP() * gixAx->getRotMat();
 
                 for (int i = 0; i < 2; i++) {
                     // update labels
@@ -415,16 +419,15 @@ bool Gizmo::drawToFbo(uint32_t* objId) {
                     axIndx   = i == 0 ? axIndx : axIndx + 3;
 
                     if (!glm::all(glm::equal(m_axisLabels[axIndx]->getPos(), vec2(m_axlPos)))) {
-                        m_axisLabels[axIndx]->setPos((int)m_axlPos.x, (int)m_axlPos.y, state::none);
-                        m_axisLabels[axIndx]->setPos((int)m_axlPos.x, (int)m_axlPos.y, state::highlighted);
-                        m_axisLabels[axIndx]->setPos((int)m_axlPos.x, (int)m_axlPos.y, state::selected);
+                        m_axisLabels[axIndx]->setPos(static_cast<int>(m_axlPos.x), static_cast<int>(m_axlPos.y), state::none);
+                        m_axisLabels[axIndx]->setPos(static_cast<int>(m_axlPos.x), static_cast<int>(m_axlPos.y), state::highlighted);
+                        m_axisLabels[axIndx]->setPos(static_cast<int>(m_axlPos.x), static_cast<int>(m_axlPos.y), state::selected);
                     }
 
                     if (m_axisLabels[axIndx]->getZPos() != m_axlPos.z) m_axisLabels[axIndx]->setZPos(m_axlPos.z);
 
                     m_tempObjId = m_axisLabels[axIndx]->m_presetObjId + m_objIdMin;
                     m_axisLabels[axIndx]->setId(m_tempObjId);
-                    // m_styleChanged = true; // out of tree rendering
                 }
             }
         }
@@ -443,7 +446,7 @@ bool Gizmo::drawToFbo(uint32_t* objId) {
             m_drawMan->clear();
             m_drawMan->addSet();
 
-            for (auto& it : m_zSortedAxisLabels) {
+            for (const auto& it : m_zSortedAxisLabels) {
                 if (it->getImgBase()) {
                     it->m_texUnit = m_drawMan->pushTexture(it->getImgBase()->getTexID());
                 }
@@ -466,7 +469,7 @@ bool Gizmo::drawToFbo(uint32_t* objId) {
 
     if (m_updtDrawData) {
         // update only
-        for (auto& it : m_zSortedAxisLabels) {
+        for (const auto& it : m_zSortedAxisLabels) {
             it->updateDrawData();
             it->pushVaoUpdtOffsets();
         }
@@ -570,8 +573,8 @@ glm::vec3 Gizmo::getAxisEnd(glm::mat4& pvm, float yVal) {
     axlPos.z = axlPos.z * 0.5f + 0.5f;  // for directly writing depth buffer
                                         // values in fragment shader
 
-    return glm::vec3((axlPos.x * getSize().x) - (float)m_axisLabelSize.x * 0.5f,
-                     (axlPos.y * getSize().y) - (float)m_axisLabelSize.y * 0.5f, axlPos.z);
+    return glm::vec3(axlPos.x * getSize().x - static_cast<float>(m_axisLabelSize.x) * 0.5f,
+                     axlPos.y * getSize().y - static_cast<float>(m_axisLabelSize.y) * 0.5f, axlPos.z);
 }
 
 void Gizmo::mouseDrag(hidData* data) {
@@ -581,7 +584,7 @@ void Gizmo::mouseDrag(hidData* data) {
 
     // check if the clicked object id is within this UINode (the same node
     // or any of its children)
-    for (auto& it : m_axisLabels) {
+    for (const auto& it : m_axisLabels) {
         if (data->clickedObjId == it->getId()) {
             it->mouseDrag(data);
         }
@@ -600,7 +603,8 @@ void Gizmo::drag(hidData* data)
         m_resetExcludeFromStyles = true;
     }
 
-    m_cam.mouseDrag((float)data->mousePosNodeRel.x / getSize().x, (float)data->mousePosNodeRel.y / getSize().y,
+    m_cam.mouseDrag(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                    static_cast<float>(data->mousePosNodeRel.y) / getSize().y,
                     data->shiftPressed, data->altPressed, data->ctrlPressed, m_rotScale);
 
     getSharedRes()->requestRedraw = true;
@@ -611,7 +615,7 @@ void Gizmo::mouseUp(hidData* data) {
         return;
     }
 
-    for (auto& it : m_axisLabels) {
+    for (const auto& it : m_axisLabels) {
         it->mouseUp(data);
         if (data->consumed && getSharedRes()) {
             getSharedRes()->requestRedraw = true;
@@ -619,7 +623,8 @@ void Gizmo::mouseUp(hidData* data) {
         }
     }
 
-    m_cam.mouseUpLeft((float)data->mousePosNodeRel.x / getSize().x, (float)data->mousePosNodeRel.y / getSize().y);
+    m_cam.mouseUpLeft(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
 
     if (getWindow()) {
         getWindow()->setMouseCursorVisible(true);
@@ -655,7 +660,7 @@ void Gizmo::mouseUp(hidData* data) {
 
 void Gizmo::mouseDownRight(hidData* data) {
     // check if the clicked object id is within this UINode (the same node or any of its children)
-    for (auto& it : m_axisLabels) {
+    for (const auto& it : m_axisLabels) {
         it->mouseDownRight(data);
         if (data->consumed) {
             if (m_auxSharedRes.requestRedraw) {
@@ -669,8 +674,8 @@ void Gizmo::mouseDownRight(hidData* data) {
         getWindow()->setMouseCursorVisible(true);
     }
 
-    m_cam.mouseDownRight((float)data->mousePosNodeRel.x / getSize().x,
-                         (float)data->mousePosNodeRel.y / getSize().y);
+    m_cam.mouseDownRight(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                         static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
     data->consumed = true;
     m_rightPressed = true;
 }
@@ -683,7 +688,7 @@ void Gizmo::mouseUpRight(hidData* data)
 
     // check if the clicked object id is within this UINode (the same node
     // or any of its children)
-    for (auto& it : m_axisLabels) {
+    for (const auto& it : m_axisLabels) {
         it->mouseUpRight(data);
         if (data->consumed) {
             if (m_auxSharedRes.requestRedraw) {
@@ -697,13 +702,14 @@ void Gizmo::mouseUpRight(hidData* data)
         getWindow()->setMouseCursorVisible(true);
     }
 
-    m_cam.mouseUpRight((float)data->mousePosNodeRel.x / getSize().x, (float)data->mousePosNodeRel.y / getSize().y);
+    m_cam.mouseUpRight(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                    static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
     data->consumed = true;
     m_rightPressed = false;
 }
 
 void Gizmo::mouseMove(hidData* data) {
-    for (auto& it : m_axisLabels) {
+    for (const auto& it : m_axisLabels) {
         it->mouseMove(data);
         if (data->consumed) {
             if (getSharedRes()) getSharedRes()->requestRedraw = true;
@@ -715,13 +721,14 @@ void Gizmo::mouseMove(hidData* data) {
 }
 
 void Gizmo::mouseDown(hidData* data) {
-    m_cam.mouseDownLeft((float)data->mousePosNodeRel.x / getSize().x, (float)data->mousePosNodeRel.y / getSize().y);
+    m_cam.mouseDownLeft(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
+                        static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
     data->consumed = true;
     m_leftPressed  = true;
 }
 
 void Gizmo::excludeLabelsFromStyles(bool val) {
-    for (auto& lbl : m_axisLabels) {
+    for (const auto& lbl : m_axisLabels) {
         lbl->excludeFromStyles(val);
     }
 

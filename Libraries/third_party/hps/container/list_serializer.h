@@ -26,7 +26,7 @@ class Serializer<std::list<T>, B> {
     T elem;
     for (size_t i = 0; i < n_elems; i++) {
       Serializer<T, B>::parse(elem, ib);
-      container.push_back(std::move(elem));
+      container.emplace_back(std::move(elem));
     }
   }
 };

@@ -43,10 +43,6 @@ public:
     FBO*      getDownFbo() { return m_downFbo; }
     Shaders*  getNormShdr() { return m_normObjIdShdr; }
 
-    // void setIdUniform()          { m_objIdShdr->setUniform1f("objId",
-    // (float)m_idCtr / m_maxNrGuiObjects); } void setIdUniformNormShdr()  {
-    // m_normObjIdShdr->setUniform1f("objId", (float)m_idCtr /
-    // m_maxNrGuiObjects); }
     void reset() { m_idCtr = 1; }
 
 private:

@@ -48,7 +48,9 @@ void SNGridFloor::draw(double time, double dt, CameraSet* cs, Shaders* shader, r
         shader->setUniform2fv("floorGridSize", &m_gridSize[0]);
         m_quad->draw();
 
-        if (!m_depthMask) glDepthMask(true);
+        if (!m_depthMask) {
+            glDepthMask(true);
+        }
     }
 }
 

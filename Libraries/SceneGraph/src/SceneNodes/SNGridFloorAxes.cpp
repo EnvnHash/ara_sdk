@@ -34,7 +34,9 @@ void SNGridFloorAxes::draw(double time, double dt, CameraSet* cs, Shaders* shade
     shader->setUniform4fv("lineCol", &m_lineCol[0][0], 2);
     m_lineVao->draw(GL_LINES);
 
-    if (!m_depthMask) glDepthMask(true);
+    if (!m_depthMask) {
+        glDepthMask(true);
+    }
 
     glLineWidth(1.f);
 }

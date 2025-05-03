@@ -29,10 +29,8 @@ bool GLRenderer::init(const std::string& name, glm::ivec2 pos, glm::ivec2 dimens
     // add a new window through the GWindowManager
     m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{
         .createHidden = hidden,
-        .shiftX = static_cast<int>(m_pos.x),
-        .shiftY = static_cast<int>(m_pos.y),
-        .width = static_cast<int>(m_dim.x),
-        .height = static_cast<int>(m_dim.y),
+        .shift = static_cast<ivec2>(m_pos),
+        .size = static_cast<ivec2>(m_dim),
         .scaleToMonitor = true,
         .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
     });
@@ -88,10 +86,8 @@ void GLRenderer::initGL() {
     m_stdCol = s_shCol.getStdCol();
     m_stdTex = s_shCol.getStdTex();
 
-    m_stdQuad = make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, vec3(0.f, 0.f, 1.f), 0.f, 0.f, 0.f, 1.f});
-    m_flipQuad =
-        make_unique<Quad>(QuadInitParams{-1.f, -1.f, 2.f, 2.f, glm::vec3(0.f, 0.f, 1.f), 1.f, 1.f, 1.f, 1.f, nullptr, 1, true});
-
+    m_stdQuad = make_unique<Quad>(QuadInitParams{ .color = { 0.f, 0.f, 0.f, 1.f} });
+    m_flipQuad = make_unique<Quad>(QuadInitParams{ .flipHori = true });
     glGenVertexArrays(1, &m_nullVao);
 
     m_vwfShader         = initVwfRenderShdr();
@@ -108,17 +104,32 @@ void GLRenderer::initGL() {
 Shaders *GLRenderer::initVwfRenderShdr() {
     string vert = s_shCol.getShaderHeader();
     vert += STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 2) in vec2 texCoord; \n out vec2 tex_coord; \n void
-                                                                                                     main() {
-                \n tex_coord = texCoord;
-                \n tex_coord.y = 1.0 - tex_coord.y;
-                \n gl_Position = position;
-                \n
-            });
+        layout(location = 0) in vec4 position; \n
+        layout(location = 2) in vec2 texCoord; \n
+        out vec2 tex_coord; \n
+        void main() {\n
+            tex_coord = texCoord;\n
+            tex_coord.y = 1.0 - tex_coord.y;\n
+            gl_Position = position;\n
+        });
 
     string frag = s_shCol.getShaderHeader();
-    frag += STRINGIFY(layout(location = 0) out vec4 fragColor; \n uniform sampler2D samContent; \n uniform sampler2D samWarp; \n uniform sampler2D samBlend; \n uniform sampler2D mask; \n uniform uint bBorder; \n uniform uint bDoNotBlend; \n uniform uint bFlipWarpH; \n uniform uint useMask; \n uniform vec3 colorCorr; \n uniform vec3 gradient; \n uniform vec3 gamma; \n uniform vec3 gammaP; \n uniform vec3 plateau; \n in vec2 tex_coord; \n void
-                          main()\n {
+    frag += STRINGIFY(layout(location = 0) out vec4 fragColor; \n
+        uniform sampler2D samContent; \n
+        uniform sampler2D samWarp; \n
+        uniform sampler2D samBlend; \n
+        uniform sampler2D mask; \n
+        uniform uint bBorder; \n
+        uniform uint bDoNotBlend; \n
+        uniform uint bFlipWarpH; \n
+        uniform uint useMask; \n
+        uniform vec3 colorCorr; \n
+        uniform vec3 gradient; \n
+        uniform vec3 gamma; \n
+        uniform vec3 gammaP; \n
+        uniform vec3 plateau; \n
+        in vec2 tex_coord; \n
+        void main()\n {
                               \n vec4 blend;
                               vec4    tex = texture(samWarp, tex_coord);
                               \n
@@ -273,14 +284,12 @@ void GLRenderer::freeGLResources() {
 
 void GLRenderer::loadTypo(filesystem::path typoPath) {
     if (!m_typo && s_inited) {
-        m_typo = make_unique<TypoGlyphMap>((uint)m_dim.x, (uint)m_dim.y);
-        // m_typo->setFontHeight(45);
+        m_typo = make_unique<TypoGlyphMap>(static_cast<uint>(m_dim.x), static_cast<uint>(m_dim.y));
         m_typo->loadFont((m_dataPath / typoPath).string().c_str(), &s_shCol);
     }
 }
 
 bool GLRenderer::draw(double time, double dt, int ctxNr) {
-    // std::unique_lock<std::mutex> l( *m_glbase->glMtx() );
     m_doSwap = m_procSteps[Draw].active;
 
     if (s_inited) {
@@ -297,10 +306,6 @@ bool GLRenderer::draw(double time, double dt, int ctxNr) {
         }
         s_drawMtx.unlock();
     }
-
-    // m_drawWatch.setStart();
-    // m_drawWatch.setEnd();
-    // m_drawWatch.print(" draw fps:");
 
     return m_doSwap;  // GLFWWindow will call glfwSwapBuffers when swap is true
 }
@@ -321,30 +326,33 @@ void GLRenderer::iterate() {
 }
 
 void GLRenderer::close(bool direct) {
-    if (!s_inited) return;
+    if (!s_inited) {
+        return;
+    }
 
-    if (!direct)
+    if (!direct) {
         m_glbase->runOnMainThread([this] {
             closeEvtLoopCb();
             return true;
         });
-    else
+    } else {
         closeEvtLoopCb();
+    }
 }
 
 bool GLRenderer::closeEvtLoopCb() {
 #ifdef ARA_USE_GLFW
-
-    // LOG << "GLRenderer::closeEvtLoopCb";
-
     // check if the window was already closed;
-    if (!s_inited) return true;
+    if (!s_inited) {
+        return true;
+    }
 
-    if (m_winHandle) m_winHandle->stopDrawThread();  // also calls close() on GLFWWindow
+    if (m_winHandle) {
+        m_winHandle->stopDrawThread();  // also calls close() on GLFWWindow
+    }
 
     if (m_glbase) {
-        // remove all gl resources, since all gl contexts are shared, this can
-        // be done on any context
+        // remove all gl resources, since all gl contexts are shared, this can be done on any context
         m_glbase->addGlCbSync([this]() {
             m_stdQuad.reset();
             m_flipQuad.reset();
@@ -355,15 +363,12 @@ bool GLRenderer::closeEvtLoopCb() {
 
         clearGlCbQueue();
 
-        // if this was called from key event callback, it will cause a crash,
-        // because we are still iterating through GLFWWindow member variables
-        m_glbase->getWinMan()->removeWin(m_winHandle,
-                                         false);  // removes the window from the ui_windows array
+        // if this was called from key event callback, it will cause a crash, because we are still iterating through
+        // GLFWWindow member variables
+        m_glbase->getWinMan()->removeWin(m_winHandle, false);  // removes the window from the ui_windows array
     }
-
     s_inited = false;
 #endif
-
     return true;
 }
 

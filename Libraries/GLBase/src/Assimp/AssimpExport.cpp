@@ -32,7 +32,7 @@ using namespace Assimp;
 namespace ara {
 void AssimpExport::singleMeshExport(uint32_t nrVert, uint32_t nrIndices, ShaderBuffer<custVec3> *pos,
                                     ShaderBuffer<custVec3> *norm, ShaderBuffer<custVec3> *texc,
-                                    ShaderBuffer<uint32_t> *indices, string &path, string &formatId) {
+                                    ShaderBuffer<uint32_t> *indices, const string &path, const string &formatId) {
     auto scene = std::make_unique<aiScene>();
 
     scene->mRootNode = new aiNode();
@@ -66,15 +66,15 @@ void AssimpExport::singleMeshExport(uint32_t nrVert, uint32_t nrIndices, ShaderB
     // unfortunately there is no possibility to have a vec3 as a shader storage buffer could be further optimized by
     // using PBOs and async download, storages buffer would have to be copied on gpu to PBO
     auto posPtr = pos->map(GL_MAP_READ_BIT);
-    std::copy(reinterpret_cast<uint8_t*>(posPtr), reinterpret_cast<uint8_t*>(posPtr) + nrVert * sizeof(custVec3), reinterpret_cast<uint8_t*>(pMesh->mVertices));
+    std::copy_n(reinterpret_cast<uint8_t*>(posPtr), nrVert * sizeof(custVec3), reinterpret_cast<uint8_t*>(pMesh->mVertices));
     pos->unmap();
 
     auto normPtr = norm->map(GL_MAP_READ_BIT);
-    std::copy(reinterpret_cast<uint8_t*>(normPtr), reinterpret_cast<uint8_t*>(normPtr) + nrVert * sizeof(custVec3), reinterpret_cast<uint8_t*>(pMesh->mNormals));
+    std::copy_n(reinterpret_cast<uint8_t*>(normPtr), nrVert * sizeof(custVec3), reinterpret_cast<uint8_t*>(pMesh->mNormals));
     norm->unmap();
 
     auto texPtr = texc->map(GL_MAP_READ_BIT);
-    std::copy(reinterpret_cast<uint8_t*>(texPtr), reinterpret_cast<uint8_t*>(texPtr) + nrVert * sizeof(custVec3), reinterpret_cast<uint8_t*>(pMesh->mTextureCoords[0]));
+    std::copy_n(reinterpret_cast<uint8_t*>(texPtr), nrVert * sizeof(custVec3), reinterpret_cast<uint8_t*>(pMesh->mTextureCoords[0]));
     texc->unmap();
 
     // create faces (=triangles in this case), each face has 3 vertices

@@ -53,8 +53,8 @@ void UIAppAndroidJNI::OnDisplayGeometryChanged(int display_rotation, int width, 
     m_cmd_data.width            = width;
     m_cmd_data.height           = height;
     m_cmd_data.display_rotation = display_rotation;
-    m_cmd_data.vWidth           = static_cast<int>((float)width / m_cmd_data.density + 0.5f);
-    m_cmd_data.vHeight          = static_cast<int>((float)height / m_cmd_data.density);
+    m_cmd_data.vWidth           = static_cast<int>(static_cast<float>(width) / m_cmd_data.density + 0.5f);
+    m_cmd_data.vHeight          = static_cast<int>(static_cast<float>(height) / m_cmd_data.density);
 
     if (m_mainWindow) m_mainWindow->osSetViewport(0, 0, m_cmd_data.vWidth, m_cmd_data.vHeight);
 
