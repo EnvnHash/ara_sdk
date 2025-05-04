@@ -2,7 +2,7 @@
 
 #include <Log.h>
 #include <TypeName.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 #include <regex>
 

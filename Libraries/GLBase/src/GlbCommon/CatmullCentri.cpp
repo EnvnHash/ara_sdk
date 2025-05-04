@@ -1,4 +1,4 @@
-#include "catmull_centri.h"
+#include "CatmullCentri.h"
 
 using namespace glm;
 using namespace std;

@@ -19,7 +19,7 @@
 
 #if defined(ARA_USE_FREEIMAGE) && !defined(__EMSCRIPTEN__)
 
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 #include <FreeImage.h>
 
 namespace ara {

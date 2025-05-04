@@ -1,6 +1,6 @@
 #pragma once
 
-#include "glb_common/glb_common.h"
+#include "GlbCommon/GlbCommon.h"
 
 #ifdef __APPLE__
 #include "CoreFoundation/CoreFoundation.h"

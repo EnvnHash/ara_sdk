@@ -554,6 +554,10 @@ void SPSpotLightShadowVsm::clear(renderPass pass) {
 
 void SPSpotLightShadowVsm::sendPar(CameraSet *cs, double time, SceneNode *node, SceneNode *parent, renderPass pass,
                                    uint loopNr) {
+    if (!m_shadowGen) {
+        return;
+    }
+
     // check if it is necessary to rebuild all light parameters and shadow maps
     if (s_reqCalcLights) {
         calcLights(cs, pass);
@@ -586,16 +590,16 @@ void SPSpotLightShadowVsm::sendParShadowMapPass(SceneNode *node, SceneNode *pare
         m_pv_mats.resize(s_lights.size());
     }
 
-    for (uint i = 0; i < s_lights.size(); i++) {
+    for (uint i = 0; i < s_lights.size(); ++i) {
         m_pv_mats[i] = s_lights[i]->s_proj_mat * s_lights[i]->s_view_mat;
 
         // check if we are rendering a light source, in this case, avoid that it casts light onto itself
-        if (node->m_nodeType == sceneNodeType::lightSceneMesh && s_lights[i] == parent && m_shadowGen) {
+        if (node->m_nodeType == sceneNodeType::lightSceneMesh && s_lights[i] == parent) {
             m_shadowGen->getShader()->setUniform1i("lightIndIsActMesh", i);
         }
     }
 
-    if (m_shadowGen && !s_lights.empty() && m_shadowGen->getShader()) {
+    if (!s_lights.empty() && m_shadowGen->getShader()) {
         m_shadowGen->getShader()->setUniformMatrix4fv("m_pv", &m_pv_mats[0][0][0], static_cast<int>(s_lights.size()));
         m_shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)], value_ptr(node->getModelMat(parent)));
     }
@@ -618,7 +622,7 @@ void SPSpotLightShadowVsm::estimateNumPasses(uint loopNr) {
 void SPSpotLightShadowVsm::sendParSceneAndGizmoPass(SceneNode *node, SceneNode *parent, uint loopNr) {
     estimateNumPasses(loopNr);
 
-    if (s_shader && m_shadowGen && !s_lights.empty()) {
+    if (s_shader && !s_lights.empty()) {
         uint lightOffs        = loopNr * static_cast<int>(m_maxNrParLights);
         int nrLightsThisPass = std::min<int>(static_cast<int>(s_lights.size() - lightOffs), static_cast<int>(m_maxNrParLights));
         s_shader->setUniform1i("lightIndIsActMesh", -1);

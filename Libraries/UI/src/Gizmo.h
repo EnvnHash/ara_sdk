@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Image.h>
-#include <Utils/TrackballCam.h>
+#include <Utils/TrackBallCam.h>
 #include <GLUtils/sceneData.h>
 #include <SceneNodes/SceneNode.h>
 

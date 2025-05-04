@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 #ifdef ARA_USE_FREEIMAGE
 struct FIBITMAP;

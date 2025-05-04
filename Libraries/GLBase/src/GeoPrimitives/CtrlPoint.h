@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <glb_common/catmull_centri.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/CatmullCentri.h>
+#include <GlbCommon/GlbCommon.h>
 
 #include <earcut/earcut.hpp>
 #include <pugixml/pugixml.hpp>

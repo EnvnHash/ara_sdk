@@ -3,7 +3,7 @@
 #include <SceneNodes/SNGizmo.h>
 #include <UIWindow.h>
 #include <WindowManagement/WindowBase.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 #if !defined(ARA_USE_GLFW) && defined(_WIN32)
 #include <Windows/DisplayScaling.h>

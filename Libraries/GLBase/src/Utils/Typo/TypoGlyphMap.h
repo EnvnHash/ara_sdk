@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 // in build settings preprocessor flags: STB_TRUETYPE_IMPLEMENTATION
 #define STB_TRUETYPE_IMPLEMENTATION

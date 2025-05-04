@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef ARA_USE_EGL
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 namespace ara {
 /// esCreateWindow flag - RGB color m_buffer

@@ -17,7 +17,7 @@
 #include <Shaders/ShaderPrototype/SPObjectSelector.h>
 #include <StopWatch.h>
 #include <Div.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 #include "SceneNodes/SNWorldAxes.h"
 
