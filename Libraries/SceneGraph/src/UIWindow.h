@@ -130,21 +130,21 @@ protected:
     std::unordered_map<void*, std::function<void(hidData*)>>           m_globalKeyUpCb;
 
 public:
-    void addGlobalWinPosCb(void* ptr, std::function<void(int, int)> f);
+    void addGlobalWinPosCb(void* ptr, const std::function<void(int, int)>& f);
     void removeGlobalWinPosCb(void* ptr);
-    void addGlobalSetViewportCb(void* ptr, std::function<void(int, int, int, int)> f);
+    void addGlobalSetViewportCb(void* ptr, const std::function<void(int, int, int, int)>& f);
     void removeGlobalSetViewportCb(void* ptr);
-    void addGlobalMouseDownLeftCb(void* ptr, std::function<void(hidData*)> f);
+    void addGlobalMouseDownLeftCb(void* ptr, const std::function<void(hidData*)>& f);
     void removeGlobalMouseDownLeftCb(void* ptr);
-    void addGlobalMouseUpLeftCb(void* ptr, std::function<void(hidData*)> f);
+    void addGlobalMouseUpLeftCb(void* ptr, const std::function<void(hidData*)>& f);
     void removeGlobalMouseUpLeftCb(void* ptr);
-    void addGlobalMouseDownRightCb(void* ptr, std::function<void(hidData*)> f);
+    void addGlobalMouseDownRightCb(void* ptr, const std::function<void(hidData*)>& f);
     void removeGlobalMouseDownRightCb(void* ptr);
-    void addGlobalMouseMoveCb(void* ptr, std::function<void(hidData*)> f);
+    void addGlobalMouseMoveCb(void* ptr, const std::function<void(hidData*)>& f);
     void removeGlobalMouseMoveCb(void* ptr);
-    void addGlobalKeyDownCb(void* ptr, std::function<void(hidData*)> f);
+    void addGlobalKeyDownCb(void* ptr, const std::function<void(hidData*)>& f);
     void removeGlobalKeyDownCb(void* ptr);
-    void addGlobalKeyUpCb(void* ptr, std::function<void(hidData*)> f);
+    void addGlobalKeyUpCb(void* ptr, const std::function<void(hidData*)>& f);
     void removeGlobalKeyUpCb(void* ptr);
 
     // ------------------------------------------------------------------------------------------
@@ -227,9 +227,7 @@ public:
     void setApplicationHandle(UIApplication* ptr) { m_appHandle = ptr; }
     void setToMainWindow() { m_isMainWindow = true; }
     void setWindowMinSize(int32_t x, int32_t y) { m_minWinSize.x = x; m_minWinSize.y = y; }
-    void setCloseFunc(std::function<void(UIWindow*)> f) {
-        m_closeFunc = std::move(f);
-    }
+    void setCloseFunc(const std::function<void(UIWindow*)>& f) { m_closeFunc = f; }
     std::function<void(UIWindow*)>& getCloseFunc() { return m_closeFunc; }
 
     void         addWinCb(const std::function<void()>& f) { m_winProcCb.emplace_back(f); }
@@ -316,14 +314,14 @@ protected:
     double m_lastMouseX = 0.0;
     double m_lastMouseY = 0.0;
 
-    bool m_blockDraw           = false;
-    bool m_blockHID            = false;
-    bool m_blockWindowResizeCb = false;
-    bool m_cursorVisible       = true;
-    bool m_doSwap              = false;
-    bool m_debugGLFWwin        = true;
-    bool m_isMainWindow        = false;
-    bool m_isModal             = false;
+    bool m_blockDraw                  = false;
+    bool m_blockHID                   = false;
+    bool m_blockWindowResizeCb        = false;
+    bool m_cursorVisible              = true;
+    bool m_doSwap                     = false;
+    bool m_debugGLFWwin               = true;
+    bool m_isMainWindow               = false;
+    bool m_isModal                    = false;
     bool m_multisample;
     bool m_menuBarEnabled             = true;
     bool m_resChanged                 = false;

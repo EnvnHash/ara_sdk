@@ -7,6 +7,7 @@
 #include "UITable.h"
 #include <ScrollView.h>
 #include <Div.h>
+#include <Label.h>
 
 
 using namespace glm;
@@ -57,7 +58,7 @@ void addLabels(UITable* nt) {
         ss << std::setw(2) << std::setfill('0') << i;
 
         nt->insertRow(-1, 1, 100, false, false);						// fixed row
-        Label* l = nt->setCell(i, 0, make_unique<Label>() );
+        auto l = nt->setCell(i, 0, make_unique<Label>() );
         l->setFont("regular", 22,  align::center, valign::center, color_text);
         l->setBackgroundColor(color_bg);
         l->setText(ss.str());
@@ -70,7 +71,7 @@ ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
     scrollView->setSize(0.7f, 0.7f);
     scrollView->setBackgroundColor(0.f, 0.f, 0.5f, 1.f);
 
-    glm::vec4 bgColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.f);
+    vec4 bgColor = {0.7f, 0.7f, 0.7f, 1.f};
     int chHeight = 40;
 
     for (int i = 0; i < nrSubElements; i++) {

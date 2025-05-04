@@ -1274,14 +1274,14 @@ void UIWindow::setAppIcon(std::string &path) {
 #if defined(ARA_USE_GLFW) && defined(ARA_USE_FREEIMAGE)
     // set app icon
     std::vector<uint8_t> vp;
-    // m_glbase->getAssetManager()->loadResource(nullptr, vp, "precision/vioso6_48x48.png");
+    m_glbase->getAssetManager()->loadResource(nullptr, vp, "app_icon_placeholder.png");
 
     if (vp.empty()) return;
 
     FIBITMAP          *pBitmap;
     FreeImg_MemHandler mh(&vp[0], vp.size());
     FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), &mh, 0);
-    if (!(pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), &mh, 0))) {
+    if (!((pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), &mh, 0)))) {
         return;
     }
 
@@ -1330,44 +1330,47 @@ void UIWindow::setMouseCursorVisible(bool val) {
 #endif
 }
 
-void UIWindow::addGlobalWinPosCb(void* ptr, std::function<void(int, int)> f) {
-    m_globalWinPosCb[ptr] = std::move(f);
+void UIWindow::addGlobalWinPosCb(void* ptr, const std::function<void(int, int)>& f) {
+    m_globalWinPosCb[ptr] = f;
 }
 
 void UIWindow::removeGlobalWinPosCb(void* ptr) {
-    if (m_globalWinPosCb.empty()) return;
-    auto it = m_globalWinPosCb.find(ptr);
-    if (it != m_globalWinPosCb.end()) {
+    if (m_globalWinPosCb.empty()) {
+        return;
+    }
+    if (const auto it = m_globalWinPosCb.find(ptr); it != m_globalWinPosCb.end()) {
         m_globalWinPosCb.erase(it);
     }
 }
 
-void UIWindow::addGlobalSetViewportCb(void* ptr, std::function<void(int, int, int, int)> f) {
-    m_globalSetViewportCb[ptr] = std::move(f);
+void UIWindow::addGlobalSetViewportCb(void* ptr, const std::function<void(int, int, int, int)>& f) {
+    m_globalSetViewportCb[ptr] = f;
 }
 
 void UIWindow::removeGlobalSetViewportCb(void* ptr) {
-    if (m_globalSetViewportCb.empty()) return;
-    auto it = m_globalSetViewportCb.find(ptr);
-    if (it != m_globalSetViewportCb.end()) {
+    if (m_globalSetViewportCb.empty()) {
+        return;
+    }
+    if (auto it = m_globalSetViewportCb.find(ptr); it != m_globalSetViewportCb.end()) {
         m_globalSetViewportCb.erase(it);
     }
 }
 
-void UIWindow::addGlobalMouseDownLeftCb(void* ptr, std::function<void(hidData*)> f) {
-    m_globalMouseDownLeftCb[ptr] = std::move(f);
+void UIWindow::addGlobalMouseDownLeftCb(void* ptr, const std::function<void(hidData*)>& f) {
+    m_globalMouseDownLeftCb[ptr] = f;
 }
 
 void UIWindow::removeGlobalMouseDownLeftCb(void* ptr) {
-    if (m_globalMouseDownLeftCb.empty()) return;
-    auto it = m_globalMouseDownLeftCb.find(ptr);
-    if (it != m_globalMouseDownLeftCb.end()) {
+    if (m_globalMouseDownLeftCb.empty()) {
+        return;
+    }
+    if (const auto it = m_globalMouseDownLeftCb.find(ptr); it != m_globalMouseDownLeftCb.end()) {
         m_globalMouseDownLeftCb.erase(it);
     }
 }
 
-void UIWindow::addGlobalMouseUpLeftCb(void* ptr, std::function<void(hidData*)> f) {
-    m_globalMouseUpLeftCb[ptr] = std::move(f);
+void UIWindow::addGlobalMouseUpLeftCb(void* ptr, const std::function<void(hidData*)>& f) {
+    m_globalMouseUpLeftCb[ptr] = f;
 }
 
 void UIWindow::removeGlobalMouseUpLeftCb(void* ptr) {
@@ -1378,20 +1381,21 @@ void UIWindow::removeGlobalMouseUpLeftCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalMouseDownRightCb(void* ptr, std::function<void(hidData*)> f) {
-    m_globalMouseDownRightCb[ptr] = std::move(f);
+void UIWindow::addGlobalMouseDownRightCb(void* ptr, const std::function<void(hidData*)>& f) {
+    m_globalMouseDownRightCb[ptr] = f;
 }
 
 void UIWindow::removeGlobalMouseDownRightCb(void* ptr) {
-    if (m_globalMouseDownLeftCb.empty()) return;
-    auto it = m_globalMouseDownRightCb.find(ptr);
-    if (it != m_globalMouseDownRightCb.end()) {
+    if (m_globalMouseDownLeftCb.empty()) {
+        return;
+    }
+    if (const auto it = m_globalMouseDownRightCb.find(ptr); it != m_globalMouseDownRightCb.end()) {
         m_globalMouseDownRightCb.erase(it);
     }
 }
 
-void UIWindow::addGlobalMouseMoveCb(void* ptr, std::function<void(hidData*)> f) {
-    m_globalMouseMoveCb[ptr] = std::move(f);
+void UIWindow::addGlobalMouseMoveCb(void* ptr, const std::function<void(hidData*)>& f) {
+    m_globalMouseMoveCb[ptr] = f;
 }
 
 void UIWindow::removeGlobalMouseMoveCb(void* ptr) {
@@ -1402,8 +1406,8 @@ void UIWindow::removeGlobalMouseMoveCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalKeyDownCb(void* ptr, std::function<void(hidData*)> f) {
-    m_globalKeyDownCb[ptr] = std::move(f);
+void UIWindow::addGlobalKeyDownCb(void* ptr, const std::function<void(hidData*)>& f) {
+    m_globalKeyDownCb[ptr] = f;
 }
 
 void UIWindow::removeGlobalKeyDownCb(void* ptr) {
@@ -1414,8 +1418,8 @@ void UIWindow::removeGlobalKeyDownCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalKeyUpCb(void* ptr, std::function<void(hidData*)> f) {
-    m_globalKeyUpCb[ptr] = std::move(f);
+void UIWindow::addGlobalKeyUpCb(void* ptr, const std::function<void(hidData*)>& f) {
+    m_globalKeyUpCb[ptr] = f;
 }
 
 void UIWindow::removeGlobalKeyUpCb(void* ptr) {
