@@ -419,17 +419,17 @@ void ImageButton::setVisibility(bool val) {
 }
 
 void ImageButton::applyToggleState() const {
-    for (auto &it : m_tex) {
+    for (auto it : m_tex) {
         if (it) {
             it->setVisibility(false);
         }
     }
 
-    if (!m_tex.empty() && m_tex[0] && (!m_isToggle || (m_isToggle && m_tex.size() == 1))) {
+    if (!m_tex.empty() && m_tex[0] && (!m_isToggle || m_tex.size() == 1)) {
         m_tex[0]->setVisibility(true);
     }
 
-    if (m_isToggle && m_tex.size() > 1 && m_tex.size() > m_toggleState && m_tex[m_toggleState]) {
+    if (m_isToggle &&  m_tex.size() > std::max<uint32_t>(1, m_toggleState) && m_tex[m_toggleState]) {
         m_tex[m_toggleState]->setVisibility(true);
     }
 
