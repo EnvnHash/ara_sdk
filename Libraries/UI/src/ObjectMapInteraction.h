@@ -36,12 +36,12 @@ public:
     // this is called from procHID(), no FBO is bound. x and y must be in hardware pixels
     uint32_t getObjAtPos(float x, float y) { return 0; }
 
-    bool      usesExtFbo() { return m_extFbo; }
-    float     getMaxObjId() const { return m_maxNrGuiObjects - 1.f; };
+    [[nodiscard]] bool      usesExtFbo() const { return m_extFbo; }
+    [[nodiscard]] float     getMaxObjId() const { return m_maxNrGuiObjects - 1.f; };
     uint32_t* getIdCtr() { return &m_idCtr; }
-    FBO*      getFbo() { return m_extFbo ? m_extFbo : m_objIDFBO; }
-    FBO*      getDownFbo() { return m_downFbo; }
-    Shaders*  getNormShdr() { return m_normObjIdShdr; }
+    [[nodiscard]] FBO*      getFbo() const { return m_extFbo ? m_extFbo : m_objIDFBO; }
+    [[nodiscard]] FBO*      getDownFbo() const { return m_downFbo; }
+    [[nodiscard]] Shaders*  getNormShdr() const { return m_normObjIdShdr; }
 
     void reset() { m_idCtr = 1; }
 
@@ -61,12 +61,12 @@ private:
 
     GLuint* m_pbos    = nullptr;
     GLuint  m_nullVao = 0;
-    GLubyte m_pixels[4];
+    std::array<GLubyte, 4> m_pixels;
 
     glm::ivec2 m_guiFboSize{0};
     glm::ivec2 m_mousePosPix{0};
     uint32_t   m_idCtr           = 0;
-    uint32_t   m_nrPboBufs       = 0;
+    uint32_t   m_nrPboBufs       = 3;
     uint32_t   m_pboIndex        = 0;
     uint32_t   m_downId          = 0;
     float      m_maxNrGuiObjects = 16777216.f;  // "only" 2^24 due to limitation in
@@ -77,8 +77,8 @@ private:
 
     GLubyte* m_ptr = nullptr;
 
-    ShaderBuffer<GLuint>* m_sb;
-    std::array<GLuint, 1> m_int;
+    ShaderBuffer<GLuint>* m_sb = nullptr;
+    std::array<GLuint, 1> m_int{};
 };
 
 }  // namespace ara

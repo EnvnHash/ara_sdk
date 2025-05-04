@@ -35,10 +35,9 @@ bool DrawManager::rebuildVaos() {
 
         // divVao is arranged as interleave data, so just run through the DivData and upload
         try {
-            auto ptr = (DivVaoData *)ds.vao.getMapBuffer(CoordType::Position);
-            if (ptr) {
-                for (auto &it : ds.divData) {
-                    std::copy((*it).begin(), (*it).end(), ptr);
+            if (auto ptr = static_cast<DivVaoData *>(ds.vao.getMapBuffer(CoordType::Position))) {
+                for (const auto it : ds.divData) {
+                    ranges::copy((*it), ptr);
                     ptr += it->size();
                 }
 
@@ -46,10 +45,9 @@ bool DrawManager::rebuildVaos() {
             }
 
             // build the indices
-            auto ip = (GLuint *)ds.vao.mapElementBuffer();
-            if (ip) {
-                for (auto &it : ds.divIndices) {
-                    std::copy(it->begin(), it->end(), ip);
+            if (auto ip = static_cast<GLuint *>(ds.vao.mapElementBuffer())) {
+                for (auto it : ds.divIndices) {
+                    ranges::copy(*it, ip);
                     ip += it->size();
                 }
 
@@ -71,12 +69,11 @@ void DrawManager::update() {
 
         // update VBO
         try {
-            auto ptr = static_cast<DivVaoData*>(ds.vao.getMapBuffer(CoordType::Position));
-            if (ptr) {
+            if (auto ptr = static_cast<DivVaoData*>(ds.vao.getMapBuffer(CoordType::Position))) {
                 for (auto &it : ds.updtNodes) {
                     ptr += it.second;
                     if (it.first) {
-                        std::copy(it.first->begin(), it.first->end(), ptr);
+                        ranges::copy(*it.first, ptr);
                     }
                     ptr -= it.second;
                 }
@@ -122,7 +119,7 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
         \t   gl_Position = position;            \n
         });
 
-    vert = m_shCol->getShaderHeader() + "// " + shdrName + ", vert\n" + vert;
+    vert = ara::ShaderCollector::getShaderHeader() + "// " + shdrName + ", vert\n" + vert;
 
     std::string frag = "layout(location = 0) out vec4 fragColor;\n";
     frag += STRINGIFY(
@@ -137,12 +134,12 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
         uniform float maxObjId; \n);
 
     if (!ds.fontTex.empty()) {
-        frag += "uniform sampler3D fontTex[" + std::to_string(std::max<int>(1, (int)ds.fontTex.size())) + "]; \n";
-        frag += "uniform float fontTexSize[" + std::to_string(std::max<int>(1, (int)ds.fontTex.size())) + "]; \n";
+        frag += "uniform sampler3D fontTex[" + std::to_string(std::max<int>(1, static_cast<int>(ds.fontTex.size()))) + "]; \n";
+        frag += "uniform float fontTexSize[" + std::to_string(std::max<int>(1, static_cast<int>(ds.fontTex.size()))) + "]; \n";
     }
 
     if (!ds.textures.empty()) {
-        frag += "uniform sampler2D textures[" + std::to_string(std::max<int>(1, (int)ds.textures.size())) + "]; \n";
+        frag += "uniform sampler2D textures[" + std::to_string(std::max<int>(1, static_cast<int>(ds.textures.size()))) + "]; \n";
     }
 
     frag += STRINGIFY(
@@ -240,7 +237,7 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
     frag += "\tfragColor = vec4(out_col.rgb, out_col.a * vin.aux3.w);\n";
     frag += "}\n";
 
-    frag = m_shCol->getShaderHeader() + "// " + shdrName + " shader, frag\n" + frag;
+    frag = ara::ShaderCollector::getShaderHeader() + "// " + shdrName + " shader, frag\n" + frag;
 
     return m_shCol->add(shdrName, vert, frag);
 }
@@ -298,15 +295,15 @@ list<DrawSet>::reference DrawManager::push(IndDrawBlock &block, UINode *node) {
 
     // save the actual position in the DrawSets VBO for later update
     m_vaoOffset = m_drawSets.back().vaoSize;
-    m_drawSets.back().vaoSize += (GLuint)block.vaoData.size();
+    m_drawSets.back().vaoSize += static_cast<GLuint>(block.vaoData.size());
 
     // update indices
     for (int i = 0; i < block.indices.size(); i++) {
-        block.indices[i] = stdQuadInd[i % 6] + int(static_cast<float>(i) / 6.f) * 4 + m_vaoOffset;
+        block.indices[i] = stdQuadInd[i % 6] + static_cast<int>(static_cast<float>(i) / 6.f) * 4 + m_vaoOffset;
     }
 
     m_drawSets.back().divIndices.emplace_back(&block.indices);
-    m_drawSets.back().indOffs += (GLuint)block.indices.size();
+    m_drawSets.back().indOffs += static_cast<GLuint>(block.indices.size());
 
     block.vaoOffset = m_vaoOffset;
 
@@ -322,13 +319,13 @@ float DrawManager::pushFont(GLuint texId, float nrLayers) {
     }
 
     size_t newFontTexSize = m_drawSets.back().fontTex.size() +
-        static_cast<size_t>(m_drawSets.back().fontTex.find(texId) == m_drawSets.back().fontTex.end());
+        static_cast<size_t>(!m_drawSets.back().fontTex.contains(texId));
 
     // check if the maximum number of parallel texture units are used if this is the case, create a new draw set
     if (newFontTexSize + m_drawSets.back().textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) m_drawSets.emplace_back();
 
     // in case this is a new texId or the nrLayers has changed
-    if (m_drawSets.back().fontTex.find(texId) == m_drawSets.back().fontTex.end()) {
+    if (!m_drawSets.back().fontTex.contains(texId)) {
         m_drawSets.back().fontTex[texId] = static_cast<int>(m_drawSets.back().fontTex.size());  // associate a texUnit to this new texId
 
         if (m_drawSets.back().layerSizes.size() < m_drawSets.back().fontTex.size()) {
@@ -350,7 +347,7 @@ float DrawManager::pushTexture(GLuint texId) {
 }
 
 float DrawManager::pushTexture(DrawSet &ds, GLuint texId) {
-    size_t newTexSize = ds.textures.size() + static_cast<size_t>(ds.textures.find(texId) == ds.textures.end());
+    size_t newTexSize = ds.textures.size() + static_cast<size_t>(!ds.textures.contains(texId));
 
     // check if the maximum number of parallel texture units are used if this is the case, create a new draw set
     if (newTexSize + ds.textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
@@ -358,7 +355,7 @@ float DrawManager::pushTexture(DrawSet &ds, GLuint texId) {
     }
 
     // in case this is a new texId or the nrLayers has changed
-    if (ds.textures.find(texId) == ds.textures.end()) {
+    if (!ds.textures.contains(texId)) {
         ds.textures[texId] = static_cast<int>(ds.textures.size());  // associate a texUnit to this new texId
     }
 
@@ -366,7 +363,7 @@ float DrawManager::pushTexture(DrawSet &ds, GLuint texId) {
 }
 
 void DrawManager::popTexture(DrawSet &ds, GLuint texId) {
-    if (ds.textures.find(texId) != ds.textures.end()) {
+    if (ds.textures.contains(texId)) {
         ds.textures.erase(texId);
     }
 }

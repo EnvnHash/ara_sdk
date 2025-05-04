@@ -7,7 +7,7 @@
 namespace ara {
 
 void UIBlendStack::show(const std::string& name) {
-    if (m_nodes.find(name) == m_nodes.end()) {
+    if (!m_nodes.contains(name)) {
         return;
     }
 

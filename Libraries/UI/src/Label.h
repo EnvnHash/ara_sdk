@@ -34,7 +34,7 @@ public:
 
     Label();
     Label(const std::string& styleClass);
-    Label(LabelInitData initData);
+    Label(const LabelInitData& initData);
     ~Label() override = default;
 
     unsigned long getOpt() const { return m_tOpt; }
@@ -59,7 +59,7 @@ public:
     virtual void  setProp(Property<std::string> *prop);
     virtual void  setProp(Property<std::filesystem::path> *prop);
 
-    void setFont(std::string fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st = state::m_state);
+    void setFont(const std::string& fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st = state::m_state);
     void setColor(float r, float g, float b, float a, state st = state::m_state) override;
     void setColor(const glm::vec4 &col, state st = state::m_state) override;
     void setTextAlign(align ax, valign ay, state st = state::m_state);
@@ -74,7 +74,7 @@ public:
 protected:
     void setEditPixSpace(float width, float height, bool set_flag = true);
 
-    glm::vec4 calculateMask();
+    glm::vec4 calculateMask() const;
 
     int         m_fontSize = 17;
     std::string m_fontType = "regular";

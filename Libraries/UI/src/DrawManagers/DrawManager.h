@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Utils/VAO.h"
-#include "ui_common.h"
+#include "UiCommon.h"
 
 namespace ara {
 
@@ -36,7 +36,7 @@ public:
 
 class DrawManager {
 public:
-    DrawManager(GLBase* glbase) : m_glbase(glbase) {};
+    explicit DrawManager(GLBase* glbase) : m_glbase(glbase) {};
     virtual ~DrawManager() = default;
 
     virtual Shaders*                getShader(DrawSet& ds);

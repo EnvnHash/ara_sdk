@@ -20,23 +20,23 @@ public:
 
     void init() override;
 
-    Shaders *initLineShdr();
-    Shaders *initLineShdr2();
-    Shaders *initTexDepthShdr();
-    Shaders *initObjMapTexShdr();
+    Shaders *initLineShdr() const;
+    Shaders *initLineShdr2() const;
+    Shaders *initTexDepthShdr() const;
+    Shaders *initObjMapTexShdr() const;
 
     void setModelCam(TrackBallCam *cam);
     void cbUpdt(TrackBallCam *cam, TbModData &data, bool mapByMouseRot);
 
     bool draw(uint32_t *objId) override;
     bool drawIndirect(uint32_t *objId) override;
-    bool drawToFbo(uint32_t *objId);
+    bool drawToFbo(const uint32_t *objId);
     bool drawToFbo2(uint32_t *objId);
 
-    glm::vec3 getAxisEnd(glm::mat4 &pvm, float yVal);
+    glm::vec3 getAxisEnd(const glm::mat4 &pvm, float yVal);
 
     void mouseDrag(hidData *data) override;
-    void drag(hidData *data);
+    void drag(const hidData *data);
     void mouseUp(hidData *data) override;
     void mouseDownRight(hidData *data) override;
     void mouseUpRight(hidData *data) override;
@@ -54,8 +54,8 @@ public:
 
     std::vector<GizmoAxisLabel *> *getAxisLabels() { return &m_axisLabels; }
     TrackBallCam                  *getCamera() { return &m_cam; }
-    TrackBallCam                  *getModelCam() { return m_modelCam; }
-    glm::vec2    getGizmoRelMousePos(glm::vec2 &mousePos) { return (mousePos - getPos()) / getSize(); }
+    TrackBallCam                  *getModelCam() const { return m_modelCam; }
+    glm::vec2    getGizmoRelMousePos(const glm::vec2 &mousePos) { return (mousePos - getPos()) / getSize(); }
     UISharedRes *getAuxSharedRes() { return &m_auxSharedRes; }
 
     hidData  *m_lastMouseHoverData = nullptr;

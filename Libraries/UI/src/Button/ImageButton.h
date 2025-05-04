@@ -34,10 +34,10 @@ public:
     void setDisabledSelected(bool val, bool forceStyleUpdt = false) override;
     void setVisibility(bool val);
     void setIsToggle(bool val, bool multiToggle = false);
-    void setColor(float r, float g, float b, float a, state st = state::m_state, bool rebuildStyle = true);
-    void setColor(glm::vec4 col, state st = state::m_state, bool rebuildStyle = true);
-    void applyToggleState();
-    void setImgByStyle(std::string&& style);
+    void setColor(float r, float g, float b, float a, state st = state::m_state, bool rebuildStyle = true) const;
+    void setColor(glm::vec4 col, state st = state::m_state, bool rebuildStyle = true) const;
+    void applyToggleState() const;
+    void setImgByStyle(const std::string& style);
     void setImgAlign(align ax, valign ay);
     void setImg(const std::string& file, int mipMapLevel = 8);
     void setSelectedDoAction(bool val);
@@ -50,13 +50,13 @@ public:
     void setToggleCb(std::function<void(bool)> cbFunc) { m_toggleCbFunc = std::move(cbFunc); }
     void setClickedCb(std::function<void()> cbFunc) { m_clickedFunc = std::move(cbFunc); }
     void setOnStateImg(const std::string& file, int mipMapLevel) { setStateImg(file, imgType::On, mipMapLevel); }
-    void setOnStateBackImg(const std::string& file, int mipMapLevel = 8);
+    void setOnStateBackImg(const std::string& file, int mipMapLevel = 8) const;
 
-    Image* getImg();
+    Image* getImg() const;
 
     std::string&           getImgFile() { return m_imgFile; }
     [[nodiscard]] uint32_t getToggleState() const { return m_toggleState; }
-    bool                   getToggle() const { return m_isToggle; }
+    [[nodiscard]] bool     getToggle() const { return m_isToggle; }
 
 protected:
     bool m_mouseIsIn       = false;

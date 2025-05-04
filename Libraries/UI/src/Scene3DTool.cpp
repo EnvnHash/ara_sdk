@@ -74,7 +74,7 @@ void Scene3DTool::connectUINodes() {
     }
 
     // callbacks are defined inside class constructor
-    m_scene3D = (Scene3D<CsPerspFbo> *)this->getNode("scene3D");
+    m_scene3D = static_cast<Scene3D<CsPerspFbo> *>(this->getNode("scene3D"));
     if (!m_scene3D)
         LOGE << "ERROR in config.xml, Missing Entry with ID \"scene3D\"";
     else {

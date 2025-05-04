@@ -17,11 +17,11 @@ public:
     ~InfoDialog() override = default;
 
     void open(bool isModal);
-    void close(std::function<bool()> cb = nullptr);
-    void addCloseEvent(std::function<bool()> cb);
+    void close(const std::function<bool()>& cb = nullptr);
+    void addCloseEvent(const std::function<bool()>& cb);
     void setType(infoDiagType tp);
 
-    void setInfoMsg(std::string msg);
+    void setInfoMsg(const std::string& msg);
     void setMinStayTime(int ms) { m_minStayTime = ms; }
     void setConfirmCb(const std::function<bool()>& f) { m_confirmCb = f; }
     void setCloseCb(const std::function<void()>& f) { m_closeCb = f; }

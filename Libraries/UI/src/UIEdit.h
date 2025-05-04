@@ -60,8 +60,9 @@ public:
     void setTextCb(std::function<void(std::string)> func) { m_setTextCb = std::move(func); }
     void addEnterCb(std::function<void(std::string)> func, void* ptr) { m_onEnterCb[ptr] = std::move(func); }
     void removeEnterCb(void* ptr) {
-        auto it = m_onEnterCb.find(ptr);
-        if (it != m_onEnterCb.end()) m_onEnterCb.erase(it);
+        if (auto it = m_onEnterCb.find(ptr); it != m_onEnterCb.end()) {
+            m_onEnterCb.erase(it);
+        }
     }
     void clearEnterCb() { m_onEnterCb.clear(); }
     void setMin(int min) { m_minInt = min; }
@@ -88,7 +89,7 @@ public:
     void        setPrecision(int prec) { m_precision = prec; }
     void        incValue(float amt, cfState cf);
     void        clampValue();
-    static bool isValidIntInput(std::string& str) {
+    static bool isValidIntInput(const std::string& str) {
         return std::regex_match(str, std::regex("[-+]|(\\+|-)?[[:digit:]]+"));
     }
     static bool isValidFloatInput(std::string& str) {
@@ -145,10 +146,10 @@ protected:
     void         mouseWheel(hidData* data) override;
     virtual void globalMouseDown(hidData* data);
 
-    bool validateInputToString(int ch);
+    bool validateInputToString(int ch) const;
     void checkLimits();
     int getCaretByPixPos(float px, float py);
-    int validateCaretPos(int cpos);
+    int validateCaretPos(int cpos) const;
 
     int insertChar(int ch, int position,
                    bool call_cb = true);  // returns new caret position
@@ -211,7 +212,7 @@ protected:
 
     // temporary local variables
     glm::vec2 m_tCaretPos{0.f};
-    int       m_tCi[2]{0};  /// first and last character index
+    int       m_tCi[2]{};  /// first and last character index
     glm::vec2 cp{0.f}, aux{0.f};
     glm::vec2 posLimit{0.f};
     glm::vec2 m_posLT{0.f};
@@ -223,7 +224,7 @@ protected:
     float     m_y2   = 0.f;
     int       l_cpos = 0;
 
-    valign l_auxAlign;
+    valign l_auxAlign{};
 };
 
 }  // namespace ara

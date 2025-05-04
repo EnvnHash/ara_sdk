@@ -30,7 +30,7 @@ public:
 
     Scene3DTool();
     explicit Scene3DTool(const std::string& styleClass);
-    ~Scene3DTool();
+    ~Scene3DTool() override;
 
     void init() override;
     void connectUINodes();
@@ -48,34 +48,36 @@ public:
     void setKeyRotStep(float fine, float normal, float coarse);
     void enableNetCamHighlight(bool val);
 
-    float*               getKeyTransStep() { return m_keyTransStep; }
-    float*               getKeyRotStep() { return m_keyRotStep; }
-    Scene3D<CsPerspFbo>* getScene3D() { return m_scene3D; }
-    Gizmo*               getGizmoWidget() { return m_axesGizmo; }
-    TransformWidget*     getTransWidget() { return m_transWidget; }
-    Div*                 getToolBar() { return m_toolBar; }
-    Div*                 getScene3DCont() { return m_sceneContainer; }
-    TrackBallCam*        getSceneCam() { return m_scene3D ? m_scene3D->getSceneCamDef() : nullptr; }
-    Div*                 getRightSideCont() { return m_rightSide; }
-    Div*                 getSceneContainer() { return m_sceneContainer; }
-    Image*               getSceneBackImg() { return m_sceneBackImg; }
-    transMode            getTransMode() {
+    float*  getKeyTransStep() { return m_keyTransStep.data(); }
+    float*  getKeyRotStep() { return m_keyRotStep.data(); }
+
+    [[nodiscard]] Scene3D<CsPerspFbo>* getScene3D() const { return m_scene3D; }
+    [[nodiscard]] Gizmo*               getGizmoWidget() const { return m_axesGizmo; }
+    [[nodiscard]] TransformWidget*     getTransWidget() const { return m_transWidget; }
+    [[nodiscard]] Div*                 getToolBar() const { return m_toolBar; }
+    [[nodiscard]] Div*                 getScene3DCont() const { return m_sceneContainer; }
+    [[nodiscard]] TrackBallCam*        getSceneCam() const { return m_scene3D ? m_scene3D->getSceneCamDef() : nullptr; }
+    [[nodiscard]] Div*                 getRightSideCont() const { return m_rightSide; }
+    [[nodiscard]] Div*                 getSceneContainer() const { return m_sceneContainer; }
+    [[nodiscard]] Image*               getSceneBackImg() const { return m_sceneBackImg; }
+    [[nodiscard]] transMode            getTransMode() const {
         if (m_scene3D && m_scene3D->getObjectSelector()) {
             return m_toolState == toolState::objToolBlocked ? transMode::none
                                                             : m_scene3D->getObjectSelector()->getTransMode();
-        } else {
-            return transMode::none;
         }
+        return transMode::none;
     }
 
-    /** for resetZoom option, view will aligned to view to be behind
+    /** for resetZoom option, view will be aligned to view to be behind
      * m_aimingNode looking towards m_focusNode, using the basePlane upvector */
     void setFocusNode(SceneNode* node) { m_focusNode = node; }
     void setAimingNode(SceneNode* node) { m_aimingNode = node; }
     /** shortcut for setFixAspect on sceneContainer */
     void setSceneAspect(float aspect) {
         m_sceneAspect = aspect;
-        if (m_sceneContainer) m_sceneContainer->setFixAspect(aspect);
+        if (m_sceneContainer) {
+            m_sceneContainer->setFixAspect(aspect);
+        }
     }
 
 private:
@@ -91,20 +93,20 @@ private:
 
     glm::vec2 m_dragStartPos{0.f};
     glm::vec2 m_mouseRotScale{1.5f, 1.5f};
-    glm::vec3 m_bb[2];
+    std::array<glm::vec3, 2> m_bb{};
     glm::vec3 m_modelCenter{0.f};
     glm::vec3 m_modelCamVec{0.f};
     glm::vec3 m_stdCamVec{0.f, 0.f, -1.f};
     glm::vec3 m_stdUpVec{0.f, 1.f, 0.f};
     glm::vec3 m_upVec{0.f};
-    glm::quat m_rot;
+    glm::quat m_rot{};
     glm::mat4 m_rzViewMat = glm::mat4(1.f);
-    glm::vec3 m_newBb[2];
+    std::array<glm::vec3, 2> m_newBb{};
 
     float m_sceneAspect = 1.777f;
     float m_mouseRotExp = 1.f;
-    float m_keyTransStep[3]{0.01f, 0.1f, 1.f};
-    float m_keyRotStep[3]{0.1f, 1.f, 10.f};
+    std::array<float, 3> m_keyTransStep{0.01f, 0.1f, 1.f};
+    std::array<float, 3> m_keyRotStep{0.1f, 1.f, 10.f};
 
     toolState m_toolState           = toolState::objToolBlocked;
     bool      m_preventObjToolClick = false;

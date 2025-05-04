@@ -15,43 +15,43 @@ namespace ara {
 class ZoomView : public Div {
 public:
     ZoomView();
-    ZoomView(const std::string& styleClass);
-    virtual ~ZoomView() = default;
+    explicit ZoomView(const std::string& styleClass);
+    ~ZoomView() override = default;
 
-    void init();
+    void init() override;
 
     template <class T>
     T* setContent() {
-        if (!ui_content) remove_child(ui_content);
+        if (!ui_content) {
+            remove_child(ui_content);
+        }
 
-        if (ui_workingArea)
+        if (ui_workingArea) {
             ui_content = ui_workingArea->addChild<T>();
-        else
+        } else {
             ui_content = addChild<T>();
+        }
 
-        // ui_content->setCanReceiveDrag(true);
-        // ui_content->addMouseDragCb(m_uiWorkDragAreaCb);
-        // ui_content->addMouseUpCb([this](hidData *data) { });
-
-        return (T*)ui_content;
+        return static_cast<T *>(ui_content);
     }
 
     void setDisplaySize(int w, int h);
-    void keyDown(hidData* data);
-    void mouseDown(hidData* data);
-    void mouseUp(hidData* data);
-    void mouseWheel(hidData* data);
+    void keyDown(hidData* data) override;
+    void mouseDown(hidData* data) override;
+    void mouseUp(hidData* data) override;
+    void mouseWheel(hidData* data) override;
 
-    UINode* getWorkingArea() { return ui_workingArea; }
-    UINode* getContent() { return ui_content; }
-    float   getInitZoomPropVal() { return m_initZoomPropVal; }
-    void    hideContent() {
+    [[nodiscard]] UINode* getWorkingArea() const { return ui_workingArea; }
+    [[nodiscard]] UINode* getContent() const { return ui_content; }
+    [[nodiscard]] float   getInitZoomPropVal() const { return m_initZoomPropVal; }
+
+    void    hideContent() const {
         if (ui_content) {
             ui_content->setVisibility(false);
         }
     }
     void initContent(std::function<void(UINode*)> f) { m_initContFunc = std::move(f); }
-    void addChangeCb(std::function<void()> f) { m_onChangedCb.emplace_back(f); }
+    void addChangeCb(const std::function<void()>& f) { m_onChangedCb.emplace_back(f); }
 
 private:
     // UI Elements
@@ -64,8 +64,8 @@ private:
 
     glm::mat4  m_identMat = glm::mat4(1.f);
     glm::ivec2 m_displaySize{0};
-    glm::vec2  s_mouseDownPos;
-    glm::vec3  m_mouseDownViewTrans;
+    glm::vec2  s_mouseDownPos{};
+    glm::vec3  m_mouseDownViewTrans{};
 
     int   m_bottMenHeight   = 25;
     float m_initZoomPropVal = 100.f;

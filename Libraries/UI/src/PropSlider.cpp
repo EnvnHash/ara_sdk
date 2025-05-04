@@ -13,8 +13,7 @@ PropSlider::PropSlider() : Div() {
     setName(getTypeName<PropSlider>());
     setFocusAllowed(false);
     setScissorChildren(true);
-    addStyleClass("propertySlider");  // NOTE: there must be a valid entry of
-                                      // this in the res.txt !!!!
+    PropSlider::addStyleClass("propertySlider");  // NOTE: there must be a valid entry of this in the res.txt !!!!
 
     m_label = addChild<Label>(getStyleClass() + ".label");
     m_label->setWidth(0.15f);
@@ -26,21 +25,25 @@ PropSlider::PropSlider() : Div() {
     m_Slider->setKnobProportion(.8f);
     m_Slider->setValue(0.f);
 
-    m_Edit = (UIEdit*)addChild(make_unique<UIEdit>(UIEdit::num_fp));
+    m_Edit = dynamic_cast<UIEdit *>(UINode::addChild(make_unique<UIEdit>(UIEdit::num_fp)));
     m_Edit->addStyleClass(getStyleClass() + ".edit");
     m_Edit->setUseWheel(true);
     m_Edit->setOnLostFocusCb([this] {
-        if (m_onLostFocusCb) m_onLostFocusCb();
+        if (m_onLostFocusCb) {
+            m_onLostFocusCb();
+        }
     });
 
     m_Slider->setNumEdit(m_Edit);
 }
 
 void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
-    if (!prop) return;
+    if (!prop) {
+        return;
+    }
 
     // update elements when property changes
-    onChanged<glm::vec2>(prop, [this, prop, idx](std::any val) {
+    onChanged<glm::vec2>(prop, [this, prop, idx](const std::any &val) {
         glm::vec2 v = std::any_cast<glm::vec2>(val);
         m_Slider->setValue((v[idx] - prop->getMin()[idx]) / (prop->getMax()[idx] - prop->getMin()[idx]));
         m_Edit->setValue(v[idx]);
@@ -85,7 +88,7 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
 }
 
 void PropSlider::addStyleClass(const std::string& styleClass) {
-    UINode::addStyleClass(std::move(styleClass));
+    UINode::addStyleClass(styleClass);
 
     if (m_Edit && m_Slider && m_label) {
         m_Edit->addStyleClass(getStyleClass() + ".edit");

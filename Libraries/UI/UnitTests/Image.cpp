@@ -3,9 +3,9 @@
 //
 
 #include "test_common.h"
-
 #include "UIApplication.h"
 #include "Image.h"
+#include <Utils/PingPongFbo.h>
 
 using namespace std;
 

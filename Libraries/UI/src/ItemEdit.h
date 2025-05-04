@@ -12,9 +12,9 @@ namespace ara {
 class ItemEdit : public UITable, public ItemRef {
 public:
     ItemEdit();
-    ItemEdit(const std::string& styleClass);
-    virtual ~ItemEdit() = default;
-    void init();
+    explicit ItemEdit(const std::string& styleClass);
+    ~ItemEdit() override = default;
+    void init() override;
 
 protected:
     float m_rowHeight=0.f;

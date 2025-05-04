@@ -34,11 +34,12 @@ public:
         m_scrollOffset.x = offsX;
         m_scrollOffset.y = offsY;
     }
-    UIScrollBarDragArea* getDragArea() { return m_dragArea; }
-    glm::vec2            getMaxDragWay() { return m_maxScrollBarDragWay; }
-    glm::vec2            getMaxScrollOffset() { return m_maxScrollOffset; }
 
-    ScrollBar::e_stype s_Type = vertical;
+    [[nodiscard]] UIScrollBarDragArea* getDragArea() const { return m_dragArea; }
+    [[nodiscard]] glm::vec2            getMaxDragWay() const { return m_maxScrollBarDragWay; }
+    [[nodiscard]] glm::vec2            getMaxScrollOffset() const { return m_maxScrollOffset; }
+
+    e_stype s_Type = vertical;
 
 protected:
     UIScrollBarDragArea* m_dragArea = nullptr;

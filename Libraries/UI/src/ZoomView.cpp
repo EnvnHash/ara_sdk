@@ -32,7 +32,7 @@ void ZoomView::init() {
             // translate the working area view
             if (data->mousePressed && !data->altPressed && !data->shiftPressed) {
                 vec2 moved    = vec2(data->mousePos) - s_mouseDownPos;
-                vec2 resTrans = (vec2)m_mouseDownViewTrans + moved / (vec2)ui_workingArea->getContentTransScale();
+                vec2 resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(ui_workingArea->getContentTransScale());
                 ui_workingArea->setContentTransTransl(resTrans.x, resTrans.y);
                 setDrawFlag();
             }
@@ -49,15 +49,18 @@ void ZoomView::init() {
 
     ui_zoomSlider = ui_bottomMenu->addChild<PropSlider>();
     ui_zoomSlider->setProp(&m_zoomProp);
-    onChanged<float>(&m_zoomProp, [this](std::any val) {
+    onChanged<float>(&m_zoomProp, [this](const std::any& val) {
         if (ui_workingArea) {
-            if (m_zoomUseWheel)
+            if (m_zoomUseWheel) {
                 ui_workingArea->setZoomWithCenter(std::any_cast<float>(val) * 0.01f, getWindow()->getActMousePos());
-            else
+            } else {
                 ui_workingArea->setZoomNormMat(std::any_cast<float>(val) * 0.01f);
+            }
         }
 
-        for (const auto& it : m_onChangedCb) it();
+        for (const auto& it : m_onChangedCb) {
+            it();
+        }
     });
 
     ui_zoomSlider->addStyleClass("zoom_view.zoom_slider");

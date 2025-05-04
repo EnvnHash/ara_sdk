@@ -63,7 +63,7 @@ void UINodeBlender::transition(transType tt, double dur) {
                 m_blendPos.getEndFunc()();
             }
         } else {
-            m_blendPos.start(0.f, 1.f, dur, false, [&](float& v){
+            m_blendPos.start(0.f, 1.f, dur, false, [&](const float& v){
                 blend(v);
                 if (v == 1.f) {
                     m_nodes[type::front]->setVisibility(false);

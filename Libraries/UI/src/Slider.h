@@ -71,7 +71,7 @@ private:
     Div*        m_horLine   = nullptr;
     SliderKnob* m_knob      = nullptr;
     glm::vec4   m_lineColor = glm::vec4{1.f};
-    glm::mat4   m_knobMat;
+    glm::mat4   m_knobMat{};
 
     std::string m_valueAsString;
 

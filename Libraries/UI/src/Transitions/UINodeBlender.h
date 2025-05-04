@@ -39,7 +39,7 @@ public:
 
     UINode*     get(type t);
     bool        stopped() { return m_blendPos.stopped(); }
-    transType   getTransType() { return m_transType; }
+    transType   getTransType() const { return m_transType; }
 
 private:
     std::unordered_map<type, ara::UINode*>  m_nodes;

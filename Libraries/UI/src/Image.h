@@ -17,7 +17,7 @@ class Texture;
 class Image : public Div {
 public:
     Image();
-    Image(const std::string& styleClass);
+    explicit Image(const std::string& styleClass);
     Image(const std::string& file, int mipMapLevel, bool keep_aspect, align ax = align::center, valign ay = valign::center);
     ~Image() override = default;
 
@@ -43,7 +43,7 @@ public:
     void            clearDs() override;
     bool            isInBounds(glm::vec2& pos) override;
 
-    virtual void    setImg(const std::string& file, int mipMapLevel = 1) ;
+    virtual void    setImg(const std::string& file, int mipMapLevel = 1);
     unsigned        setImgFlags(unsigned flags);
     void            setImgScale(float scale);
 
@@ -62,27 +62,27 @@ public:
     void            setTextureSize(const glm::ivec2& tsz) { m_texSize = tsz; }
     void            setZOffsPos(float z) { m_offsZPos = z; }
 
-    AssetImageBase *getImgBase() { return m_imgBase; }
-    Texture        *getTexture() { return tex; }
-    GLuint          getTexID();
-    unsigned        getImgFlags() const { return m_imgFlags; }
-    GLuint          getExtTexId() const { return m_texId; }
-    glm::ivec2      getExtTexSize() const { return {m_extTexWidth, m_extTexHeight}; }
-    int             getExtTexBitCount() const { return m_extTexBitCount; }
-    bool            isLoaded() { return m_loaded; }
-    int            *getImgBasePos() { return m_ppos; }
-    int             getSectIdx() { return m_sectIndex; }
-    PBO            *getUplPbo() { return &m_uplPbo; }
+    [[nodiscard]] AssetImageBase    *getImgBase() const { return m_imgBase; }
+    [[nodiscard]] Texture           *getTexture() const { return tex; }
+    GLuint                          getTexID() const;
+    [[nodiscard]]  unsigned         getImgFlags() const { return m_imgFlags; }
+    [[nodiscard]]  GLuint           getExtTexId() const { return m_texId; }
+    [[nodiscard]]  glm::ivec2       getExtTexSize() const { return {m_extTexWidth, m_extTexHeight}; }
+    [[nodiscard]]  int              getExtTexBitCount() const { return m_extTexBitCount; }
+    [[nodiscard]]  bool             isLoaded() const { return m_loaded; }
+    int                            *getImgBasePos() { return m_ppos; }
+    [[nodiscard]] int               getSectIdx() const { return m_sectIndex; }
+    PBO                            *getUplPbo() { return &m_uplPbo; }
 
     void            resizeUplPbo(int w, int h, GLenum format) { m_uplPbo.resize(w, h, format); }
-    PingPongFbo    *getUplFbo();
+    PingPongFbo    *getUplFbo() const;
     void            initUplPbo(int w, int h, GLenum format);
     void            initUplFbo(const FboInitParams& params);
     void            rebuildUplFbo(const FboInitParams& params);
 
     unsigned     m_imgFlags    = 0;
     float        m_imgScale    = 1;
-    unsigned     m_imgAlign[2] = {1, 1};  // center,vcenter
+    glm::u8vec2  m_imgAlign = {1, 1};  // center,vcenter
     IndDrawBlock m_imgDB;
     float        m_texUnit = -1.f;
 

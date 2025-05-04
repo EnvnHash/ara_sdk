@@ -22,7 +22,7 @@ public:
     void         addEntry(const std::string& name, const std::function<void()>& f) {
         m_entries.emplace_back(name, f);
     }
-    virtual void setMenuName(std::string str);
+    virtual void setMenuName(const std::string& str);
 
 protected:
     /** called when the DropDown Menu is opened. It's not needed and not necessary to call this from outside */

@@ -12,11 +12,11 @@ class CrossHair : public Div {
 public:
     CrossHair();
     CrossHair(const std::string& styleClass);
-    virtual ~CrossHair() = default;
+    ~CrossHair() override = default;
 
-    void init();
-    bool draw(uint32_t* objId);
-    bool drawIndirect(uint32_t* objId);
+    void init() override;
+    bool draw(uint32_t* objId) override;
+    bool drawIndirect(uint32_t* objId) override;
     bool drawFunc(uint32_t* objId);
 
 private:

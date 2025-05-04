@@ -13,7 +13,7 @@ namespace ara {
 class PropSlider : public Div {
 public:
     PropSlider();
-    virtual ~PropSlider() = default;
+    ~PropSlider() override = default;
 
     template <class T>
     void setProp(Property<T>* prop) {
@@ -27,10 +27,10 @@ public:
 
         if (typeid(T) == typeid(int)) {
             m_Edit->changeValType(UIEdit::num_int);
-            m_Edit->addEnterCb([prop](std::string txt) { (*prop) = (T)atoi(txt.c_str()); }, prop);
+            m_Edit->addEnterCb([prop](const std::string& txt) { (*prop) = static_cast<T>(atoi(txt.c_str())); }, prop);
         } else if (typeid(T) == typeid(float) || typeid(T) == typeid(double)) {
             m_Edit->changeValType(UIEdit::num_fp);
-            m_Edit->addEnterCb([prop](std::string txt) { (*prop) = (T)atof(txt.c_str()); }, prop);
+            m_Edit->addEnterCb([prop](const std::string& txt) { (*prop) = static_cast<T>(atof(txt.c_str())); }, prop);
         }
 
         m_Edit->setMinMax(prop->getMin(), prop->getMax());
@@ -41,10 +41,11 @@ public:
             auto newValue = static_cast<T>(m_Slider->getValue() * (static_cast<float>(prop->getMax()) - static_cast<float>(prop->getMin())) +
                                static_cast<float>(prop->getMin()));
             newValue = static_cast<T>(static_cast<int>(static_cast<float>(newValue) / static_cast<float>(prop->getStep()))) * prop->getStep();
-            if (!m_onMouseUpUpdtMode)
+            if (!m_onMouseUpUpdtMode) {
                 (*prop) = newValue;
-            else
+            } else {
                 m_Edit->setValue(newValue);
+            }
             data->consumed = true;
         });
 
@@ -82,7 +83,7 @@ public:
     }
     void setSliderOnMouseUpUpdtMode(bool val) { m_onMouseUpUpdtMode = val; }
     void setValueChgCb(const std::function<void()>& f) { m_valChangeCb = f; }
-    UIEdit* getEdit() const { return m_Edit; }
+    [[nodiscard]] UIEdit* getEdit() const { return m_Edit; }
 
 private:
     Label*                m_label             = nullptr;

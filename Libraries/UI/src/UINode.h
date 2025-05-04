@@ -2,7 +2,7 @@
 
 #include <GLBase.h>
 #include <Property.h>
-#include <ui_common.h>
+#include <UiCommon.h>
 #include <Utils/UniformBlock.h>
 
 #include "ListProperty.h"
@@ -280,9 +280,9 @@ public:
     [[nodiscard]] bool      getScissorChildren() const { return m_ScissorChildren; }
     std::filesystem::path   dataPath() { return m_sharedRes ? m_sharedRes->dataPath : std::filesystem::current_path(); }
     UISharedRes*            getSharedRes() { return m_sharedRes; }
-    UIWindow*               getWindow();
-    UIApplication*          getApp();
-    float                   getPixRatio();
+    UIWindow*               getWindow() const;
+    UIApplication*          getApp() const;
+    float                   getPixRatio() const;
 
     // functional
     virtual void setSharedRes(UISharedRes* sharedRes);
@@ -561,7 +561,7 @@ public:
     void setFixAspect(float val);
     void setChangeCb(std::function<void()> f) { m_changeCb = std::move(f); }
     void reqTreeChanged(bool val) { m_reqTreeChanged = true; }
-    void reqUpdtTree();
+    void reqUpdtTree() const;
 
     virtual void setSelected(bool val, bool forceStyleUpdt = false);
     virtual void setDisabled(bool val, bool forceStyleUpdt = false);
@@ -645,7 +645,7 @@ public:
     virtual void             pushVaoUpdtOffsets() {}
     virtual void             clearDs() { m_indDrawBlock.drawSet = nullptr; }
 
-    static void limitDrawVaoToBounds(std::vector<DivVaoData>::iterator& dIt, glm::vec2& size, glm::vec2& uvDiff,
+    static void limitDrawVaoToBounds(const std::vector<DivVaoData>::iterator& dIt, glm::vec2& size, glm::vec2& uvDiff,
                                      glm::vec4& scIndDraw, glm::vec4& vp);
     static void limitTexCoordsToBounds(float* tc, int32_t stdQuadVertInd, const glm::vec2& tvSize, const glm::vec2& uvSize);
 
@@ -669,7 +669,7 @@ public:
     void               excludeFromStyles(bool val) { m_excludeFromStyles = val; }
     void               excludeFromOutOfBorderCheck(bool val) { m_skipBoundCheck = val; }
 
-    void setDrawFlag();
+    void setDrawFlag() const;
     void setSelectedCb(std::function<void(bool)> f) { m_selectedCb = std::move(f); }
     void setDrawInmediate(bool val) { m_drawImmediate = val; }
     void setAlpha(float val) { m_alpha = val; setChanged(true); }
@@ -683,7 +683,7 @@ public:
     void  setState(state st);
 
     // glbase - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    void            runOnMainThread(const std::function<bool()>& func, bool forcePush = false);
+    void            runOnMainThread(const std::function<bool()>& func, bool forcePush = false) const;
     WindowManager*  getWinMan() { return m_glbase->getWinMan(); }
     void            addGlCbSync(const std::function<bool()>& func) const;
 

@@ -45,7 +45,7 @@ Shaders* DrawManagerGizmo::getShader(DrawSet& ds) {
             gl_Position = position;\n
         });
 
-    vert = "// DrawManagerGizmo div shader, vert\n" + m_shCol->getShaderHeader() + vert;
+    vert = "// DrawManagerGizmo div shader, vert\n" + ShaderCollector::getShaderHeader() + vert;
 
     std::string frag = "layout(location = 0) out vec4 fragColor;\n";
 
@@ -61,103 +61,88 @@ Shaders* DrawManagerGizmo::getShader(DrawSet& ds) {
     uniform sampler2D optTex; \n
     uniform float maxObjId; \n);
 
-    if (!ds.textures.empty()) frag += "uniform sampler2D textures[" + std::to_string(ds.textures.size()) + "]; \n";
+    if (!ds.textures.empty()) {
+        frag += "uniform sampler2D textures[" + std::to_string(ds.textures.size()) + "]; \n";
+    }
 
-    frag += STRINGIFY(vec4 div() {
-        \n
-            // origin to center, map all quadrants to the first quadrant
-            vec2 tn = abs(vin.tex_coord - 0.5);
-        \n
+    frag += STRINGIFY(vec4 div() {\n
+        // origin to center, map all quadrants to the first quadrant
+        vec2 tn = abs(vin.tex_coord - 0.5);\n
 
-            // check if inside border and or corner area
-            bool isBorder = tn.x >= (0.5 - vin.aux1.x) || tn.y >= (0.5 - vin.aux1.y);
-        \n bool  isCorner = tn.x >= (0.5 - vin.aux1.z) && tn.y >= (0.5 - vin.aux1.w);
-        \n bool  validBr  = vin.aux1.z != 0.0 && vin.aux1.w != 0.0;
-        \n  // check if the borderRadius is not 0
-            bool validBw = vin.aux1.x != 0.0 && vin.aux1.y != 0.0;
-        \n  // check if the borderRadius is not 0
+        // check if inside border and or corner area
+        bool isBorder = tn.x >= (0.5 - vin.aux1.x) || tn.y >= (0.5 - vin.aux1.y);\n
+        bool  isCorner = tn.x >= (0.5 - vin.aux1.z) && tn.y >= (0.5 - vin.aux1.w);\n
+        bool  validBr  = vin.aux1.z != 0.0 && vin.aux1.w != 0.0;\n  // check if the borderRadius is not 0
+        bool validBw = vin.aux1.x != 0.0 && vin.aux1.y != 0.0;\n  // check if the borderRadius is not 0
 
-            // corner calculation, move left lower corner edge to the center
-            // and scale by the size of the borderRadius
-            // corner size = borderRadius
-            vec2 cc    = (tn - (0.5 - vin.aux1.zw)) / vin.aux1.zw;
-        \n float r     = length(cc);
-        \n float angle = atan(cc.y, cc.x);
-        \n
+        // corner calculation, move left lower corner edge to the center
+        // and scale by the size of the borderRadius
+        // corner size = borderRadius
+        vec2 cc    = (tn - (0.5 - vin.aux1.zw)) / vin.aux1.zw;\n
+        float r     = length(cc);\n
+        float angle = atan(cc.y, cc.x);\n
 
-            // since borderRadius pixels translate to different normalized
-            // values for x and y we have to calculate a normalized radius and
-            // scale it by borderWidth
-            vec2 rr = vec2(cos(angle), sin(angle));
-        \n
+        // since borderRadius pixels translate to different normalized
+        // values for x and y we have to calculate a normalized radius and
+        // scale it by borderWidth
+        vec2 rr = vec2(cos(angle), sin(angle)):\n
 
-            // borderWidth in corner area coordinates (ignored if borderRadius
-            // == 0)
-            vec2 bw = vin.aux1.xy / (validBr ? vin.aux1.zw : vec2(1.0));
-        \n
+        // borderWidth in corner area coordinates (ignored if borderRadius == 0)
+        vec2 bw = vin.aux1.xy / (validBr ? vin.aux1.zw : vec2(1.0));\n
 
-            // aliasWidth in corner area coordinates (ignored if borderRadius ==
-            // 0)
-            vec2 aw  = vin.aux2.xy / (validBr ? vin.aux1.zw : vec2(1.0));
-        \n vec2  awH = aw * vec2(0.5);
-        \n
+        // aliasWidth in corner area coordinates (ignored if borderRadius == 0)
+        vec2 aw  = vin.aux2.xy / (validBr ? vin.aux1.zw : vec2(1.0));\n
+        vec2  awH = aw * vec2(0.5);\n
 
-            // standard border (not corner)
-            vec4 fc = isBorder ? vin.aux0 : vin.color;
-        \n
+        // standard border (not corner)
+        vec4 fc = isBorder ? vin.aux0 : vin.color;\n
 
-            // inner edge
-            // fc = isBorder && validBw ? mix(color, aux0,
-            // smoothstep(length(rr*(1.0-bw-aw)), length(rr*(1.0-bw)), r) ) :
-            // fc;
-            fc = isCorner && validBw
-                     ? mix(vin.color, vin.aux0,
-                           smoothstep(length(rr * (max(1.0 - bw - aw, 0.0))), length(rr * max(1.0 - bw, 0.0)), r))
-                     : fc;
-        \n
+        // inner edge
+        // fc = isBorder && validBw ? mix(color, aux0,
+        // smoothstep(length(rr*(1.0-bw-aw)), length(rr*(1.0-bw)), r) ) : fc;
+        fc = isCorner && validBw
+                    ? mix(vin.color, vin.aux0,
+                        smoothstep(length(rr * (max(1.0 - bw - aw, 0.0))), length(rr * max(1.0 - bw, 0.0)), r))
+                    : fc;\n
 
-            // outer edge
-            return mix(fc, vec4(0.0),
-                       isCorner ? smoothstep(length(rr * (1.0 - awH)), length(rr * (1.0 + awH)), r) : 0.0);
-        \n
+        // outer edge
+        return mix(fc, vec4(0.0),
+                    isCorner ? smoothstep(length(rr * (1.0 - awH)), length(rr * (1.0 + awH)), r) : 0.0);\n
     }\n
     \n);
 
     if (!ds.textures.empty()) {
         frag += STRINGIFY(vec4 image() {
-            bool valid = vin.aux0.x >= 0.0 && vin.aux0.x < 1.0 && vin.aux0.y >= 0.0 && vin.aux0.y < 1.0;
-            \n if (!valid) discard;
-            \n ivec2 texSize = textureSize(textures[int(vin.aux1.y)], 0);
-            \n bool  tp      = int(int(vin.aux1.x) & 16) != 0;
-            \n int   texSel  = int(vin.aux1.y);
-            \n vec4  procCol = tp ? texelFetch(textures[texSel], ivec2(vin.aux0.zw * vec2(texSize)), 0)
-                                  : textureLod(textures[texSel], vec2(vin.aux0.z, 1.0 - vin.aux0.w), vin.aux1.w);
-            \n       procCol.rgb *= vin.color.rgb;
-            \n       procCol = (int(vin.aux3.y) == 8) ? vec4(procCol.r, procCol.r, procCol.r, procCol.a) : procCol;
-            \n if (procCol.a < 0.001) discard;
-            \n return procCol;
-            \n
+            bool valid = vin.aux0.x >= 0.0 && vin.aux0.x < 1.0 && vin.aux0.y >= 0.0 && vin.aux0.y < 1.0;\n
+            if (!valid) discard;\n
+            ivec2 texSize = textureSize(textures[int(vin.aux1.y)], 0);\n
+            bool  tp      = int(int(vin.aux1.x) & 16) != 0;\n
+            int   texSel  = int(vin.aux1.y);\n
+            vec4  procCol = tp ? texelFetch(textures[texSel], ivec2(vin.aux0.zw * vec2(texSize)), 0)
+                                  : textureLod(textures[texSel], vec2(vin.aux0.z, 1.0 - vin.aux0.w), vin.aux1.w);\n
+            procCol.rgb *= vin.color.rgb;\n
+            procCol = (int(vin.aux3.y) == 8) ? vec4(procCol.r, procCol.r, procCol.r, procCol.a) : procCol;\n
+            if (procCol.a < 0.001) discard;\n
+            return procCol;\n
         }\n);
     } else {
         frag += "vec4 image() { return vec4(0.0); }\n";
     }
 
-    frag += STRINGIFY(void main() {
-        \n int nodeType = int(vin.aux3.x);
-        \n
+    frag += STRINGIFY(void main() {\n
+        int nodeType = int(vin.aux3.x);\n
 
-            vec4 pc = nodeType == 0 ? div() : (nodeType == 2 ? image() : vec4(0.0));
-        \n vec4  op = texelFetch(optTex, ivec2(gl_FragCoord.xy), 0);
+        vec4 pc = nodeType == 0 ? div() : (nodeType == 2 ? image() : vec4(0.0));\n
+        vec4  op = texelFetch(optTex, ivec2(gl_FragCoord.xy), 0);
         // compare depth
         bool depthSkip = vin.aux2.w > op.y;
         // compare ids
         bool sameAxis = int(vin.aux3.z) == int(round(op.x * 10.0));
         if (depthSkip && !sameAxis) discard;
-        fragColor = pc;
-        \n
+        fragColor = pc;\n
     });
 
-    frag = "// DrawManagerGizmo div shader, frag\n" + m_shCol->getShaderHeader() + frag;
+    frag = "// DrawManagerGizmo div shader, frag\n" + ShaderCollector::getShaderHeader() + frag;
 
     return m_shCol->add(shdrName, vert, frag);
 }

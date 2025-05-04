@@ -43,9 +43,9 @@ private:
 #else
     void* m_win = nullptr;
 #endif
-    glm::ivec2                      m_dragStartWinPos;
-    glm::ivec2                      m_mouseDownPixelPos;
-    glm::vec4                       m_brightAdjCol;
+    glm::ivec2                      m_dragStartWinPos{};
+    glm::ivec2                      m_mouseDownPixelPos{};
+    glm::vec4                       m_brightAdjCol{};
     std::vector<Div*>               m_buttContainers;
     std::map<butType, ImageButton*> m_menButtons;
     float                           m_brightAdj           = -1.f;

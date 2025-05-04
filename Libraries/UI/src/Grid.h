@@ -12,7 +12,7 @@ class Grid : public Div {
 public:
     Grid();
     explicit Grid(const std::string& styleClass);
-    virtual ~Grid() = default;
+    ~Grid() override = default;
 
     void init() override;
     bool draw(uint32_t *objId) override;

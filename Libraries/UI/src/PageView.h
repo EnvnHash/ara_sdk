@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Table.h"
 #include "Button/Button.h"
 
 namespace ara {
@@ -8,11 +7,13 @@ namespace ara {
 class PageView : public Div {
 public:
     PageView();
-    virtual ~PageView() = default;
+
+    ~PageView() override = default;
 
     virtual UINode* addPage(std::unique_ptr<UINode> child);
     virtual void    showPage(int idx);
-    size_t          getNrPages() { return m_pages.size(); }
+
+    [[nodiscard]] size_t getNrPages() const { return m_pages.size(); }
 
     template <class T>
     T* addPage(const std::string& styleClass) {

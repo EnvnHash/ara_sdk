@@ -46,8 +46,8 @@ UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode
         tab->setText(title);
         tab->setTextAlignX(align::center);
         tab->setTextAlignY(valign::center);
-        tab->addMouseClickCb([this, tab, title](hidData* data) {
-            for (int i = 0; i < (int)m_tabArea->getChildren().size(); i++) {
+        tab->addMouseClickCb([this](const hidData* data) {
+            for (int i = 0; i < static_cast<int>(m_tabArea->getChildren().size()); i++) {
                 if (m_tabArea->getChildren()[i]->getId() == data->objId) {
                     setActivateTab(i);
                     break;
@@ -135,7 +135,7 @@ bool TabView::setActivateTab(int idx) {
     return true;
 }
 
-void TabView::setTabSelected(bool val, e_tab* tab) {
+void TabView::setTabSelected(bool val, e_tab* tab)  {
     tab->selected = val;
     tab->tab->setColor(m_sharedRes->colors->at(val ? uiColors::blue : uiColors::white));
     tab->ui_Node->setVisibility(val);

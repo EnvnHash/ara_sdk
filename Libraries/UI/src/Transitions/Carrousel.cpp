@@ -10,9 +10,9 @@ CarrouselSlide::CarrouselSlide() : Div() {
     setName(getTypeName<CarrouselSlide>());
 }
 
-CarrouselSlide::CarrouselSlide(const std::string& styleClass) : Div() {
+CarrouselSlide::CarrouselSlide(const std::string& styleClass)  {
     setName(getTypeName<CarrouselSlide>());
-    addStyleClass(std::move(styleClass));
+    UINode::addStyleClass(styleClass);
 }
 
 Carrousel::Carrousel() : Div() {
@@ -22,7 +22,7 @@ Carrousel::Carrousel() : Div() {
 
 Carrousel::Carrousel(const std::string& styleClass)  {
     setName(getTypeName<Carrousel>());
-    addStyleClass(std::move(styleClass));
+    UINode::addStyleClass(styleClass);
     initFixedChildren();
 }
 
@@ -63,8 +63,8 @@ CarrouselSlide* Carrousel::add() {
     return m_slides.back();
 }
 
-CarrouselSlide* Carrousel::add(std::string&& styleclass) {
-    m_slides.emplace_back(m_content->addChild<CarrouselSlide>(std::move(styleclass)));
+CarrouselSlide* Carrousel::add(const std::string& styleclass) {
+    m_slides.emplace_back(m_content->addChild<CarrouselSlide>(styleclass));
     postAdd(m_slides.back());
     return m_slides.back();
 }
@@ -97,12 +97,12 @@ void Carrousel::show(int32_t toIdx) {
     });
 }
 
-void Carrousel::showSelector(bool val) {
+void Carrousel::showSelector(bool val) const {
     m_selector->setVisibility(val);
     m_selector->excludeFromObjMap(true);
 }
 
-void Carrousel::rotate(float pos) {
+void Carrousel::rotate(float pos) const {
     int i = 0;
 
     float relSlideWidth = 1.f / static_cast<float>(m_slides.size());
@@ -120,7 +120,7 @@ bool Carrousel::isRotating() {
 }
 
 bool Carrousel::isCurrent(CarrouselSlide* sl) {
-    auto r = std::find(m_slides.begin(), m_slides.end(), sl);
+    auto r = std::ranges::find(m_slides, sl);
     if (r != m_slides.end()) {
         return static_cast<int>(std::distance(m_slides.begin(), r)) == m_currentIdx;
     }

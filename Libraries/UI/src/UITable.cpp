@@ -12,7 +12,7 @@ UITable::UITable() {
     m_canReceiveDrag = true;
 }
 
-UITable::UITable(const std::string& styleClass) : Div(std::move(styleClass)) {
+UITable::UITable(const std::string& styleClass) : Div(styleClass) {
     setName(getTypeName<UITable>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;

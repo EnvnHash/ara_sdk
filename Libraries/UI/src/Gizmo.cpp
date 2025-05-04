@@ -13,25 +13,23 @@
 #include <GizmoAxisLabel.h>
 #include <Image.h>
 #include <Utils/Camera.h>
-#include <Utils/Texture.h>
 #include <Utils/TrackBallCam.h>
 
 #include "GeoPrimitives/Cube_TexMap.h"
-#include "GeoPrimitives/Quad_P.h"
 
 using namespace glm;
 using namespace std;
 
 namespace ara {
 
-Gizmo::Gizmo() : Image() {
+Gizmo::Gizmo() {
     m_canReceiveDrag = true;
     setName(getTypeName<Gizmo>());
     setFocusAllowed(false);
     setScissorChildren(false);
 }
 
-Gizmo::Gizmo(const std::string& styleClass) : Image(std::move(styleClass)) {
+Gizmo::Gizmo(const std::string& styleClass) : Image(styleClass) {
     m_canReceiveDrag = true;
     setName(getTypeName<Gizmo>());
     setFocusAllowed(false);
@@ -128,7 +126,7 @@ void Gizmo::init() {
     m_rootNode.setSceneData(&m_sd);
     m_rootNode.m_calcMatrixStack = true;
 
-    m_gizmoSN = static_cast<SNGizmo *>(m_rootNode.addChild(make_unique<SNGizmo>(transMode::rotate_axis, &m_sd)));
+    m_gizmoSN = dynamic_cast<SNGizmo *>(m_rootNode.addChild(make_unique<SNGizmo>(transMode::rotate_axis, &m_sd)));
 
     // arrays for the basic axis cross
     m_crossPos.resize(12);
@@ -143,12 +141,12 @@ void Gizmo::init() {
             for (int k = 0; k < 2; k++) {
                 int ind = (j * 2 + i) * 2 + k;
 
-                m_crossColor[ind] = glm::vec4{j == 1 ? cVal : bVal, j == 2 ? cVal : bVal, j == 0 ? cVal : bVal, 1.f};
+                m_crossColor[ind] = vec4{j == 1 ? cVal : bVal, j == 2 ? cVal : bVal, j == 0 ? cVal : bVal, 1.f};
                 m_crossPos[ind]   = k == 0
-                                        ? glm::vec4{0.f, 0.f, 0.f, 1.f}
-                                        : glm::vec4{float(j == 1) * dir, float(j == 2) * dir, float(j == 0) * dir, 1.f};
+                                        ? vec4{0.f, 0.f, 0.f, 1.f}
+                                        : vec4{static_cast<float>(j == 1) * dir, static_cast<float>(j == 2) * dir, static_cast<float>(j == 0) * dir, 1.f};
 
-                m_crossAux0[ind]   = glm::vec4{0.f};
+                m_crossAux0[ind]   = vec4{0.f};
                 m_crossAux0[ind].x = (1.f + static_cast<float>(j == 1 ? i * 3 : j == 2 ? i * 3 + 1 : i * 3 + 2)) * 0.1f;
             }
         }
@@ -162,7 +160,7 @@ void Gizmo::init() {
     m_auxViewport = vec4(0, 0, viewWidth, viewHeight);
     m_auxUIRoot.setViewport(&m_auxViewport);
     m_auxSharedRes          = UISharedRes(*getSharedRes());
-    m_auxOrtho              = glm::ortho(0.f, static_cast<float>(viewWidth), static_cast<float>(viewHeight), 0.f);
+    m_auxOrtho              = ortho(0.f, static_cast<float>(viewWidth), static_cast<float>(viewHeight), 0.f);
     m_auxSharedRes.orthoMat = &m_auxOrtho;
     m_auxUIRoot.setSharedRes(&m_auxSharedRes);
 
@@ -212,14 +210,14 @@ void Gizmo::init() {
         std::list<GizmoAxisLabel*> inBounds;
 
         for (const auto& it : m_axisLabels)
-            if (glm::all(glm::greaterThanEqual(gsPos, it->getPos())) &&
-                glm::all(glm::lessThanEqual(gsPos, it->getPos() + it->getSize())))
+            if (all(greaterThanEqual(gsPos, it->getPos())) &&
+                all(lessThanEqual(gsPos, it->getPos() + it->getSize())))
                 inBounds.emplace_back(it);
 
         if (inBounds.empty()) return false;
 
         // sort by zPos
-        inBounds.sort([](GizmoAxisLabel* a, GizmoAxisLabel* b) { return a->getZPos() < b->getZPos(); });
+        inBounds.sort([](const GizmoAxisLabel* a, const GizmoAxisLabel* b) { return a->getZPos() < b->getZPos(); });
 
         opi.foundId   = (*inBounds.begin())->getId();
         opi.foundNode = (*inBounds.begin());
@@ -250,9 +248,9 @@ void Gizmo::cbUpdt(TrackBallCam* cam, TbModData& data, bool mapByMouseRot) {
         if (data.dragStart) cam->setInteractionStart();
         if (data.mouseRot) cam->setTbMouseRot(data.mouseRot);
 
-        if ((TrackBallCam::mode)data.mode == TrackBallCam::mode::fixAxisMapping)
+        if (static_cast<TrackBallCam::mode>(data.mode) == TrackBallCam::mode::fixAxisMapping)
             cam->dragFixMouseAxisMapping();
-        else if ((TrackBallCam::mode)data.mode == TrackBallCam::mode::orbitNoRoll)
+        else if (static_cast<TrackBallCam::mode>(data.mode) == TrackBallCam::mode::orbitNoRoll)
             cam->dragOrbitNoRoll();
 
         cam->updateSuperClass(false);
@@ -266,10 +264,10 @@ void Gizmo::cbUpdt(TrackBallCam* cam, TbModData& data, bool mapByMouseRot) {
 
                 cam->setLookAtBlendSrcPos(&cam->getTrackBallTrans());
                 cam->setLookAtBlendSrcLookAt(cam->getLookAtBlendSrcCamPos() +
-                                             vec3(glm::inverse(cam->getModelMatr()) * vec4(0.f, 0.f, -1.f, 0.f)));
-                cam->setLookAtBlendSrcUpVec(vec3(glm::inverse(cam->getModelMatr()) * vec4(0.f, 1.f, 0.f, 0.f)));
+                                             vec3(inverse(cam->getModelMatr()) * vec4(0.f, 0.f, -1.f, 0.f)));
+                cam->setLookAtBlendSrcUpVec(vec3(inverse(cam->getModelMatr()) * vec4(0.f, 1.f, 0.f, 0.f)));
 
-                float d = glm::distance(cam->getLookAtBlendSrcCamPos(), cam->getSnapAxisRotCenter());
+                float d = distance(cam->getLookAtBlendSrcCamPos(), cam->getSnapAxisRotCenter());
                 cam->setLookAtBlendDstPos(cam->getSnapAxisRotCenter() + m_cam.getLookAtBlendDstCamPos() * d);
                 cam->setLookAtBlendDstLookAt(cam->getLookAtBlendDstCamPos() - m_cam.getLookAtBlendDstCamPos());
                 cam->setLookAtBlendDstUpVec(&m_cam.getLookAtBlendDstUpVec());
@@ -286,26 +284,28 @@ void Gizmo::cbUpdt(TrackBallCam* cam, TbModData& data, bool mapByMouseRot) {
     m_camChanged = true;
 }
 
-Shaders* Gizmo::initLineShdr() {
-    std::string vert = STRINGIFY(layout(location = 0) in vec4 position; \n uniform mat4 m_pvm; void main() {
-        \n gl_Position = m_pvm * position;
-        \n
+Shaders* Gizmo::initLineShdr() const {
+    std::string vert = STRINGIFY(
+        layout(location = 0) in vec4 position; \n
+        uniform mat4 m_pvm; \n
+        void main() {\n
+            gl_Position = m_pvm * position;\n
     });
-    vert             = "// gizmo line shader, vert\n" + m_shCol->getShaderHeader() + vert;
+    vert             = "// gizmo line shader, vert\n" + ShaderCollector::getShaderHeader() + vert;
 
-    std::string frag = STRINGIFY(layout(location = 0) out vec4 glFragColor; \n
+    std::string frag = STRINGIFY(
+        layout(location = 0) out vec4 glFragColor; \n
          uniform vec4 color; \n
-         void main() {
-        \n glFragColor = color; \n);
+         void main() {\n
+             glFragColor = color;\n);
 
-        frag = "// gizmo line shader, frag\n" + m_shCol->getShaderHeader() + m_shCol->getUiObjMapUniforms() + frag +
+        frag = "// gizmo line shader, frag\n" + ShaderCollector::getShaderHeader() + m_shCol->getUiObjMapUniforms() + frag +
                m_shCol->getUiObjMapMain() + "}";
 
         return m_shCol->add("Gizmo_lineahder", vert, frag);
 }
 
-Shaders* Gizmo::initLineShdr2()
-{
+Shaders* Gizmo::initLineShdr2() const {
         std::string vert = STRINGIFY(layout(location = 0) in vec4 position; \n
         layout(location = 3) in vec4 color; \n
         layout(location = 6) in vec4 aux0; \n   // objId
@@ -319,7 +319,7 @@ Shaders* Gizmo::initLineShdr2()
             vout.axisId = aux0.x;\n
             gl_Position = m_pvm * position; \n
         });
-        vert = "// gizmo line shader2, vert\n" + m_shCol->getShaderHeader() + vert;
+        vert = "// gizmo line shader2, vert\n" + ShaderCollector::getShaderHeader() + vert;
 
         std::string frag = STRINGIFY(layout(location = 0) out vec4 fragColor; \n
         layout(location = 1) out vec4 objMap; \n
@@ -332,59 +332,69 @@ Shaders* Gizmo::initLineShdr2()
             fragColor = vin.color; \n
         });
 
-        frag = "// gizmo line shader2, frag\n" + m_shCol->getShaderHeader() + frag;
+        frag = "// gizmo line shader2, frag\n" + ShaderCollector::getShaderHeader() + frag;
 
         return m_shCol->add("Gizmo_initLineShdr2", vert, frag);
 }
 
-Shaders* Gizmo::initTexDepthShdr() {
+Shaders* Gizmo::initTexDepthShdr() const {
     std::string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 2) in vec2 texCoord; \n uniform mat4 m_pvm; \n out vec2 tex_coord; \n void
-            main() {
-                \n tex_coord   = texCoord;
-                \n gl_Position = m_pvm * position;
-                \n
-            });
+        layout(location = 0) in vec4 position; \n
+        layout(location = 2) in vec2 texCoord; \n
+        uniform mat4 m_pvm; \n
+        out vec2 tex_coord; \n
+        void main() {\n
+            tex_coord   = texCoord;\n
+            gl_Position = m_pvm * position;\n
+        });
 
-    vert = "// Gizmo tex_depth_obj shader, vert\n" + m_shCol->getShaderHeader() + vert;
+    vert = "// Gizmo tex_depth_obj shader, vert\n" + ShaderCollector::getShaderHeader() + vert;
 
     std::string frag = STRINGIFY(
-        uniform sampler2D tex; \n uniform sampler2D objId; \n uniform sampler2D depth; \n in vec2 tex_coord; \n layout(location = 0) out vec4 color; \n layout(location = 1) out vec4 fragObjId; \n void
-            main() {
-                \n vec4 col  = texture(tex, tex_coord);
-                fragObjId    = texture(objId, tex_coord);
-                gl_FragDepth = col.a > 0.01 ? texture(depth, tex_coord).r : 1.0;
-                color        = col;
-                \n
-            });
+        uniform sampler2D tex; \n
+        uniform sampler2D objId; \n
+        uniform sampler2D depth; \n
+        in vec2 tex_coord; \n
+        layout(location = 0) out vec4 color; \n
+        layout(location = 1) out vec4 fragObjId; \n
+        void main() {\n
+            vec4 col  = texture(tex, tex_coord);
+            fragObjId    = texture(objId, tex_coord);
+            gl_FragDepth = col.a > 0.01 ? texture(depth, tex_coord).r : 1.0;
+            color        = col;\n
+        });
 
-    frag = "// Gizmo tex_depth_obj shader, frag\n" + m_shCol->getShaderHeader() + frag;
+    frag = "// Gizmo tex_depth_obj shader, frag\n" + ShaderCollector::getShaderHeader() + frag;
 
     return m_shCol->add("tex_depth_obj", vert, frag);
 }
 
-Shaders* Gizmo::initObjMapTexShdr() {
+Shaders* Gizmo::initObjMapTexShdr() const {
     string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 2) in vec2 texCoord; \n uniform mat4 m_pvm;\n out vec2 tex_coord;\n
-    \n void main() {
+        layout(location = 0) in vec4 position; \n
+        layout(location = 2) in vec2 texCoord; \n
+        uniform mat4 m_pvm;\n
+        out vec2 tex_coord;\n
+        void main() {
             tex_coord   = texCoord;
             gl_Position = m_pvm * position;
         });
-    vert = "// gizmo objid tex shader, vert\n" + m_shCol->getShaderHeader() + vert;
+    vert = "// gizmo objid tex shader, vert\n" + ShaderCollector::getShaderHeader() + vert;
 
     string frag = STRINGIFY(
-        uniform sampler2D tex;\n uniform uint baseObjId;\n in vec2 tex_coord;\n layout(location = 1) out vec4 frag; \n void
-            main() {
-                vec4    objIdV = texture(tex, tex_coord);
-                \n uint objIdUInt =
-                    (uint(objIdV.r * 255.0) << 16) + (uint(objIdV.g * 255.0) << 8) + uint(objIdV.b * 255.0);
-                \n       objIdUInt += baseObjId;
-                \n float objId = float(objIdUInt);
-                \n       frag  = vec4(mod(floor(objId * 1.52587890625e-5), 256.0) / 255.0,
-                                      mod(floor(objId * 0.00390625), 256.0) / 255.0, mod(objId, 256.0) / 255.0, 1.0);
-                \n;
+        uniform sampler2D tex;\n
+        uniform uint baseObjId;\n
+        in vec2 tex_coord;\n
+        layout(location = 1) out vec4 frag; \n
+        void main() { \n
+            vec4    objIdV = texture(tex, tex_coord);\n
+            uint objIdUInt = (uint(objIdV.r * 255.0) << 16) + (uint(objIdV.g * 255.0) << 8) + uint(objIdV.b * 255.0);\n
+            objIdUInt += baseObjId;\n
+            float objId = float(objIdUInt);\n
+            frag  = vec4(mod(floor(objId * 1.52587890625e-5), 256.0) / 255.0,
+                        mod(floor(objId * 0.00390625), 256.0) / 255.0, mod(objId, 256.0) / 255.0, 1.0);\n;
             });
-    frag = "// gizmo objid tex shader, frag\n" + m_shCol->getShaderHeader() + frag;
+    frag = "// gizmo objid tex shader, frag\n" + ShaderCollector::getShaderHeader() + frag;
 
     return m_shCol->add("Gizmo_ObjectMap_Shader", vert, frag);
 }
@@ -407,7 +417,7 @@ bool Gizmo::drawIndirect(uint32_t *objId) {
     return true;
 }
 
-bool Gizmo::drawToFbo(uint32_t* objId) {
+bool Gizmo::drawToFbo(const uint32_t* objId) {
     if (!m_DrawShader || !m_fbo[0] || !m_fbo[1]) {
         return false;
     }
@@ -432,13 +442,15 @@ bool Gizmo::drawToFbo(uint32_t* objId) {
                     m_axlPos = getAxisEnd(m_pvm, i == 0 ? 1.f : -1.f);
                     axIndx   = i == 0 ? axIndx : axIndx + 3;
 
-                    if (!glm::all(glm::equal(m_axisLabels[axIndx]->getPos(), vec2(m_axlPos)))) {
+                    if (!all(equal(m_axisLabels[axIndx]->getPos(), vec2(m_axlPos)))) {
                         m_axisLabels[axIndx]->setPos(static_cast<int>(m_axlPos.x), static_cast<int>(m_axlPos.y), state::none);
                         m_axisLabels[axIndx]->setPos(static_cast<int>(m_axlPos.x), static_cast<int>(m_axlPos.y), state::highlighted);
                         m_axisLabels[axIndx]->setPos(static_cast<int>(m_axlPos.x), static_cast<int>(m_axlPos.y), state::selected);
                     }
 
-                    if (m_axisLabels[axIndx]->getZPos() != m_axlPos.z) m_axisLabels[axIndx]->setZPos(m_axlPos.z);
+                    if (m_axisLabels[axIndx]->getZPos() != m_axlPos.z) {
+                        m_axisLabels[axIndx]->setZPos(m_axlPos.z);
+                    }
 
                     m_tempObjId = m_axisLabels[axIndx]->m_presetObjId + m_objIdMin;
                     m_axisLabels[axIndx]->setId(m_tempObjId);
@@ -450,11 +462,11 @@ bool Gizmo::drawToFbo(uint32_t* objId) {
 
         // copy axisLabel list and sort
         m_newZSortedAxisLabels.clear();
-        std::copy(m_axisLabels.begin(), m_axisLabels.end(), std::back_inserter(m_newZSortedAxisLabels));
+        ranges::copy(m_axisLabels, std::back_inserter(m_newZSortedAxisLabels));
         m_newZSortedAxisLabels.sort(
-            [](GizmoAxisLabel* a, GizmoAxisLabel* b) { return a->getZPos() > b->getZPos(); });
+            [](const GizmoAxisLabel* a, const GizmoAxisLabel* b) { return a->getZPos() > b->getZPos(); });
 
-        if (!(m_newZSortedAxisLabels == m_zSortedAxisLabels) || m_zSortedAxisLabels.empty()) {
+        if (m_newZSortedAxisLabels != m_zSortedAxisLabels || m_zSortedAxisLabels.empty()) {
             m_zSortedAxisLabels = m_newZSortedAxisLabels;
 
             m_drawMan->clear();
@@ -508,13 +520,13 @@ bool Gizmo::drawToFbo(uint32_t* objId) {
     m_fbo[0]->bind(false);
 
     // clear buffer 0
-    if (m_bkColor)
+    if (m_bkColor) {
         m_fbo[0]->clearToColor(m_bkColor->rgba[0], m_bkColor->rgba[1], m_bkColor->rgba[1], 0.f, 0);
-    else
+    } else {
         m_fbo[0]->clearToColor(0.235f, 0.235f, 0.235f, 0.f, 0);
+    }
 
-    m_fbo[0]->clearToColor(0.f, 1.f, 0.f, 0.f,
-                           1);  // clear buffer 1, y = depth value must be cleared to 1
+    m_fbo[0]->clearToColor(0.f, 1.f, 0.f, 0.f, 1);  // clear buffer 1, y = depth value must be cleared to 1
     m_fbo[0]->clearDepth();     // clear depth
 
 #ifndef ARA_USE_GLES31
@@ -571,24 +583,24 @@ bool Gizmo::drawToFbo(uint32_t* objId) {
 
     glLineWidth(1.f);
 
-    Image::setTexId(m_fbo[1]->getColorImg(), (int)m_fbo[1]->getWidth(), (int)m_fbo[1]->getHeight(), 32);
-    Image::setImgFlags(32);
+    Image::setTexId(m_fbo[1]->getColorImg(), static_cast<int>(m_fbo[1]->getWidth()), static_cast<int>(m_fbo[1]->getHeight()), 32);
+    setImgFlags(32);
 
     m_objIdMax = m_tempObjId;
 
     return true;  // count up objId
 }
 
-glm::vec3 Gizmo::getAxisEnd(glm::mat4& pvm, float yVal) {
-    glm::vec4 axlPos = pvm * glm::vec4(0.f, yVal, 0.f, 1.f);
+vec3 Gizmo::getAxisEnd(const mat4& pvm, float yVal) {
+    vec4 axlPos = pvm * vec4(0.f, yVal, 0.f, 1.f);
     axlPos /= axlPos.w;
     axlPos.x = axlPos.x * 0.5f + 0.5f;
     axlPos.y = 1.f - (axlPos.y * 0.5f + 0.5f);
     axlPos.z = axlPos.z * 0.5f + 0.5f;  // for directly writing depth buffer
                                         // values in fragment shader
 
-    return glm::vec3(axlPos.x * getSize().x - static_cast<float>(m_axisLabelSize.x) * 0.5f,
-                     axlPos.y * getSize().y - static_cast<float>(m_axisLabelSize.y) * 0.5f, axlPos.z);
+    return {axlPos.x * getSize().x - static_cast<float>(m_axisLabelSize.x) * 0.5f,
+                     axlPos.y * getSize().y - static_cast<float>(m_axisLabelSize.y) * 0.5f, axlPos.z};
 }
 
 void Gizmo::mouseDrag(hidData* data) {
@@ -608,7 +620,7 @@ void Gizmo::mouseDrag(hidData* data) {
     data->consumed = true;
 }
 
-void Gizmo::drag(hidData* data)
+void Gizmo::drag(const hidData* data)
 {
     if (data->dragStart) {
         if (getWindow()) getWindow()->setMouseCursorVisible(false);

@@ -101,7 +101,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
     }
 
     if (node->hasValue("imagePadding")) {
-        float imgPadding                            = node->value<float>("imagePadding", 1.f);
+        auto imgPadding                            = node->value<float>("imagePadding", 1.f);
         m_setStyleFunc[st][styleInit::imagePadding] = [imgPadding, this]() {
             if (!m_tex.empty() && m_tex[0]) {
                 m_tex[0]->setPadding(imgPadding, state::none);
@@ -135,14 +135,14 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
                 m_ibl.clear();
                 m_procIbl = true;
             }
-            while ((m_tex.size() - 1) < i) {
+            for (auto j=0; j < i - (m_tex.size() - 1); ++j) {
                 m_tex.emplace_back(addChild<Image>());
                 m_tex.back()->excludeFromObjMap(true);
                 m_tex.back()->setVisibility(false);
                 m_tex.back()->setLod(m_lod);
             }
 
-            m_ibl.emplace_back(make_pair((int)i, m_sharedRes->res->img(inode->m_value)));
+            m_ibl.emplace_back(static_cast<int>(i), m_sharedRes->res->img(inode->m_value));
         }
     }
 
@@ -159,7 +159,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
     if (m_procIbl) {
         m_setStyleFunc[st][styleInit::imageStates] = [this]() {
             for (auto &it : m_ibl) {
-                if ((int)m_tex.size() > it.first && m_tex[it.first]) {
+                if (static_cast<int>(m_tex.size()) > it.first && m_tex[it.first]) {
                     m_tex[it.first]->setImgBase(it.second);
                 }
             }
@@ -218,7 +218,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
     }
 
     if (node->hasValue("img-scale")) {
-        float scale                             = node->value<float>("img-scale", 1.f);
+        auto scale                             = node->value<float>("img-scale", 1.f);
         m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() {
             for (auto &it : m_tex) {
                 if (it) {
@@ -244,12 +244,10 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
 void ImageButton::mouseMove(hidData *data) {
     data->actIcon = ui_MouseIcon;
 
-    // if (!m_mouseIsIn && !m_show_alt_text)
-    //     m_mouseInTime = std::chrono::system_clock::now();
-
-    for (auto &it : m_mouseHidCb[hidEvent::MouseMove]) {
-        it.first(data);
+    for (auto &key: m_mouseHidCb[hidEvent::MouseMove] | views::keys) {
+        key(data);
     }
+
     m_mouseIsIn = true;
     data->consumed = true;
 }
@@ -312,7 +310,7 @@ void ImageButton::mouseUp(hidData *data) {
 }
 
 void ImageButton::setProp(Property<bool> *prop) {
-    onChanged<bool>(prop, [this](std::any val) {
+    onChanged<bool>(prop, [this](const std::any &val) {
         bool v = std::any_cast<bool>(val);
         if (isSelected() != v) {
             setSelected(v);
@@ -337,9 +335,9 @@ void ImageButton::setSelected(bool val, bool forceStyleUpdt) {
     if (!m_isToggle) {
         m_toggleState = -1;
     } else if ((m_isToggle && !m_isMultiToggle) && !m_tex.empty()) {
-        m_toggleState = (int)val;
+        m_toggleState = static_cast<int>(val);
     } else if (m_isMultiToggle) {
-        m_toggleState = (val ? (++m_toggleState % (int)m_tex.size()) : 0);
+        m_toggleState = val ? ++m_toggleState % static_cast<int>(m_tex.size()) : 0;
     }
 
     m_state = (m_isToggle && m_toggleState > 0) ? state::selected : state::none;
@@ -420,7 +418,7 @@ void ImageButton::setVisibility(bool val) {
     }
 }
 
-void ImageButton::applyToggleState() {
+void ImageButton::applyToggleState() const {
     for (auto &it : m_tex) {
         if (it) {
             it->setVisibility(false);
@@ -440,7 +438,7 @@ void ImageButton::applyToggleState() {
     }
 }
 
-void ImageButton::setColor(float r, float g, float b, float a, state st, bool rebuildStyle) {
+void ImageButton::setColor(float r, float g, float b, float a, state st, bool rebuildStyle) const {
     for (auto &it : m_tex)
         if (it) {
             it->setColor(r, g, b, a, st);
@@ -457,8 +455,8 @@ void ImageButton::setColor(float r, float g, float b, float a, state st, bool re
     }
 }
 
-void ImageButton::setColor(glm::vec4 col, state st, bool rebuildStyle) {
-    for (auto &it : m_tex)
+void ImageButton::setColor(glm::vec4 col, state st, bool rebuildStyle) const {
+    for (auto it : m_tex)
         if (it) {
             it->setColor(col, st);
             if (rebuildStyle) {
@@ -475,7 +473,7 @@ void ImageButton::setColor(glm::vec4 col, state st, bool rebuildStyle) {
 }
 
 void ImageButton::setStateImg(const std::string& file, imgType tp, int mipMapLevel) {
-    while (m_tex.size() <= static_cast<size_t>(tp)) {
+    for (auto i=0; i < static_cast<size_t>(tp) - m_tex.size(); ++i) {
         m_tex.emplace_back(addChild<Image>());
     }
 
@@ -494,7 +492,7 @@ void ImageButton::setStateImg(const std::string& file, imgType tp, int mipMapLev
     }
 }
 
-void ImageButton::setOnStateBackImg(const std::string& file, int mipMapLevel) {
+void ImageButton::setOnStateBackImg(const std::string& file, int mipMapLevel) const {
     m_onstate_back_tex->setImg(file, mipMapLevel);
 }
 
@@ -526,14 +524,14 @@ void ImageButton::setImg(const std::string& file, int mipMapLevel) {
     m_imgFile = file;
 }
 
-void ImageButton::setImgByStyle(std::string&& style) {
+void ImageButton::setImgByStyle(const std::string& style) {
     if (m_tex.empty()) {
         m_tex.resize(1);
         m_tex[0] = addChild<Image>();
     }
 
     if (m_tex[0]) {
-        m_tex[0]->addStyleClass(std::move(style));
+        m_tex[0]->addStyleClass(style);
     }
 }
 
@@ -569,7 +567,7 @@ void ImageButton::setLod(float val) {
     m_lod = val;
 }
 
-Image* ImageButton::getImg() {
+Image* ImageButton::getImg() const {
     if (!m_tex.empty() && m_tex[0]) {
         return m_tex[0];
     } else {

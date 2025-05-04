@@ -52,7 +52,7 @@ Image::Image(const std::string& file, int mipMapLevel, bool keep_aspect, align a
 void Image::initDefaults() {
     m_imgFlags    = 0;
     m_imgScale    = 1.f;
-    m_imgAlign[0] = m_imgAlign[1] = 1;
+    m_imgAlign.x = m_imgAlign.y = 1;
     m_mipMapLevel                 = 8;
 
     setStyleInitVal("img-align", "center,vcenter");
@@ -88,17 +88,16 @@ void Image::updateStyleIt(ResNode* node, state st, const std::string& styleClass
         setImgBase(m_sharedRes->res->img(styleClass));
     }
 
-    m_imgFlags    = 0;
-    m_imgAlign[0] = m_imgAlign[1] = 1;
-    m_imgScale    = 1;
+    m_imgFlags = 0;
+    m_imgAlign = {1,1};
+    m_imgScale = 1;
 
     if (typeid(*node) == typeid(AssetImageSource) || typeid(*node) == typeid(AssetImageSection)) {
         if (m_sharedRes->res->img(m_baseStyleClass)) {
             setImgBase(m_sharedRes->res->img(m_baseStyleClass));
         }
     } else {
-        auto* inode = node->findNode<ResNode>("image");
-        if (inode) {
+        if (auto* inode = node->findNode<ResNode>("image")) {
             std::string name                     = inode->m_value;
             m_setStyleFunc[st][styleInit::image] = [name, this]() { setImgBase(m_sharedRes->res->img(name)); };
         }
@@ -172,13 +171,13 @@ void Image::setImgAlign(ResNode* node, state st) {
     }
 
     m_setStyleFunc[st][styleInit::imgAlign] = [a, this]() {
-        m_imgAlign[0] = a[0];
-        m_imgAlign[1] = a[1];
+        m_imgAlign.x = a[0];
+        m_imgAlign.y = a[1];
     };
 }
 
 void Image::setImgScale(ResNode* node, state st) {
-    float scale                             = node->value<float>("img-scale", 1.f);
+    auto scale                             = node->value<float>("img-scale", 1.f);
     m_imgScale                              = scale;
     m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() { m_imgScale = scale; };
 }
@@ -350,7 +349,7 @@ void Image::updateDrawData() {
                 dIt->aux0.w = tuv.y;
             }
 
-            dIt++;
+            ++dIt;
         }
 
         dIt = m_imgDB.vaoData.begin();
@@ -410,8 +409,8 @@ void Image::updateDrawData() {
             dIt->aux3.z = m_lod;                    // mipmap lod
             dIt->aux3.w = m_absoluteAlpha;
 
-            j++;
-            dIt++;
+            ++j;
+            ++dIt;
         }
     }
 }
@@ -545,7 +544,7 @@ bool Image::drawIndirect(uint32_t* objId) {
 }
 
 void Image::pushTexture(DrawSet* ds) {
-    auto dm = m_sharedRes->drawMan;
+    const auto dm = m_sharedRes->drawMan;
 
     // push texture
     if (m_useTexId) {
@@ -560,7 +559,7 @@ void Image::pushTexture(DrawSet* ds) {
 
 void Image::loadImg() {
     m_useTexId    = false;
-    auto filename = m_imageFile;
+    const auto filename = m_imageFile;
 
     auto& texCol = getSharedRes()->glbase->textureCollector();
     tex = texCol.addFromMem(filename, dataPath(), m_mipMapLevel);
@@ -656,7 +655,7 @@ bool Image::isInBounds(glm::vec2& pos) {
         m_hidMp = glm::min(glm::max((pos - m_winRelPos) / m_winRelSize, m_zeroVec), m_oneVec);
 
         // offset and scale by the uv coordinates for this section
-        m_hidMp = static_cast<vec2>(m_secPos) + m_hidMp * (vec2)m_secSize;
+        m_hidMp = static_cast<vec2>(m_secPos) + m_hidMp * static_cast<vec2>(m_secSize);
 
         // check if alpha value at the mouse position is > 0 (convert from lt
         // origin to lb origin, freeimage is using lb origin)
@@ -676,12 +675,8 @@ void Image::reload() {
     loadImg();
 }
 
-PingPongFbo *Image::getUplFbo() {
-    if (m_uplFbo) {
-        return m_uplFbo.get();
-    } else {
-        return nullptr;
-    }
+PingPongFbo *Image::getUplFbo() const {
+    return m_uplFbo ? m_uplFbo.get() : nullptr;
 }
 
 void Image::initUplFbo(const FboInitParams& params) {
@@ -701,7 +696,7 @@ void Image::initUplPbo(int w, int h, GLenum format) {
     m_uplPbo.init();
 }
 
-GLuint Image::getTexID() {
+GLuint Image::getTexID() const {
     return !m_imgBase ? 0 : m_imgBase->getTexID();
 }
 

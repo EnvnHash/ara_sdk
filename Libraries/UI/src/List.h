@@ -14,14 +14,14 @@ namespace ara {
 
 class ListItemBase : public Div {
 public:
-    ListItemBase() : Div() {
+    ListItemBase() {
 #ifdef __ANDROID__
         setCanReceiveDrag(true);
 #endif
         setName(getTypeName<ListItemBase>());
     }
 
-    ListItemBase(const std::string& styleClass) : Div(std::move(styleClass)) {
+    explicit ListItemBase(const std::string& styleClass) : Div(styleClass) {
 #ifdef __ANDROID__
         setCanReceiveDrag(true);
 #endif
@@ -32,8 +32,13 @@ public:
 template <typename T>
 class ListItem : public ListItemBase {
 public:
-    ListItem() : ListItemBase() { setName(getTypeName<ListItem>()); }
-    ListItem(const std::string& styleClass) : ListItemBase(std::move(styleClass)) { setName(getTypeName<ListItem>()); }
+    ListItem() {
+        setName(getTypeName<ListItem>());
+    }
+
+    explicit ListItem(const std::string& styleClass) : ListItemBase(styleClass) {
+        setName(getTypeName<ListItem>());
+    }
 
     void init() override {
         Div::init();
@@ -81,20 +86,17 @@ public:
 class ListBase : public ScrollView {
 public:
     ListBase();
-
     explicit ListBase(const std::string& styleClass);
-
-    virtual ~ListBase() = default;
+    ~ListBase() override = default;
 
     void init() override;
-
     virtual void rebuild() = 0;
-
     void loadStyleDefaults() override;
-
     void updateStyleIt(ResNode *node, state st, const std::string& styleClass) override;
 
-    void setRowHeight(float val) { m_rowHeight = val; }
+    void setRowHeight(float val) {
+        m_rowHeight = val;
+    }
 
     void setSpacing(float spX, float spY) {
         m_space.x = spX;
@@ -110,7 +112,7 @@ protected:
 template <typename DataTyp, class LiTyp = ListItem<DataTyp>>
 class List : public ListBase {
 public:
-    List() : ListBase() {}
+    List() = default;
     explicit List(const std::string& styleClass) : ListBase(std::move(styleClass)) {}
 
     void rebuild() override {
@@ -119,10 +121,13 @@ public:
         m_table->clearCells();
         m_table->insertColumn(-1, 1, 1.f, false);
         m_table->insertRow(-1,
-                           (int)(m_items      ? m_items->size()
-                                 : m_itemsVec ? m_itemsVec->size()
-                                 : m_listProp ? m_listProp->size()
-                                              : 1),
+                           static_cast<int>(m_items
+                                                ? m_items->size()
+                                                : m_itemsVec
+                                                      ? m_itemsVec->size()
+                                                      : m_listProp
+                                                            ? m_listProp->size()
+                                                            : 1),
                            m_rowHeight);
         m_table->t_setSpacing(m_space.x, m_space.y);
 
@@ -130,40 +135,45 @@ public:
 
         int i = 0;
         if (m_items) {
-            for (auto li = m_items->begin(); li != m_items->end(); li++) {
-                m_uiItems.emplace_back(
-                    m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
-                if (!m_uiItems.back()) continue;
-                m_uiItems.back()->setData(&(*li), i);
+            for (auto li = m_items->begin(); li != m_items->end(); ++li) {
+                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
+                if (!m_uiItems.back()) {
+                    continue;
+                }
+                m_uiItems.back()->setData(&*li, i);
                 m_uiItems.back()->addMouseClickCb([this, i, li](hidData *data) {
-                    if (!m_clickCb || !m_items) return;
+                    if (!m_clickCb || !m_items) {
+                        return;
+                    }
                     m_clickCb(&(*li), i, data);
                 });
-                i++;
+                ++i;
             }
         } else if (m_itemsVec) {
-            for (auto li = m_itemsVec->begin(); li != m_itemsVec->end(); li++) {
-                m_uiItems.emplace_back(
-                    m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
+            for (auto li = m_itemsVec->begin(); li != m_itemsVec->end(); ++li) {
+                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
                 if (!m_uiItems.back()) continue;
                 m_uiItems.back()->setData(&(*li), i);
                 m_uiItems.back()->addMouseClickCb([this, i, li](hidData *data) {
                     if (!m_clickCb || !m_itemsVec) return;
                     m_clickCb(&(*li), i, data);
                 });
-                i++;
+                ++i;
             }
         } else if (m_listProp) {
-            for (auto li = m_listProp->begin(); li != m_listProp->end(); li++) {
-                m_uiItems.emplace_back(
-                    m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
-                if (!m_uiItems.back()) continue;
-                m_uiItems.back()->setData(&(*li), i);
+            for (auto li = m_listProp->begin(); li != m_listProp->end(); ++li) {
+                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
+                if (!m_uiItems.back()) {
+                    continue;
+                }
+                m_uiItems.back()->setData(&*li, i);
                 m_uiItems.back()->addMouseClickCb([this, i, li](hidData *data) {
-                    if (!m_clickCb) return;
-                    m_clickCb(&(*li), i, data);
+                    if (!m_clickCb) {
+                        return;
+                    }
+                    m_clickCb(&*li, i, data);
                 });
-                i++;
+                ++i;
             }
         }
 
@@ -171,7 +181,9 @@ public:
     }
 
     void set(std::list<DataTyp> *data, bool doRebuild = true) {
-        if (!data) return;
+        if (!data) {
+            return;
+        }
         m_items = data;
 
         if (doRebuild)
@@ -182,7 +194,9 @@ public:
     }
 
     void set(std::vector<DataTyp> *data, bool doRebuild = true) {
-        if (!data) return;
+        if (!data) {
+            return;
+        }
         m_itemsVec = data;
 
         if (doRebuild)
@@ -193,12 +207,14 @@ public:
     }
 
     void set(ListProperty<DataTyp> *dataProp, bool doRebuild = true) {
-        if (!dataProp) return;
+        if (!dataProp) {
+            return;
+        }
         m_listProp = dataProp;
-        onChanged<DataTyp>(dataProp, [this, doRebuild](std::any v) {
+        onChanged<DataTyp>(dataProp, [this, doRebuild](const std::any &v) {
             auto sess = std::any_cast<std::list<DataTyp> *>(v);
             if (sess && doRebuild)
-                addGlCb(std::to_string((int64_t)this), [this] {
+                addGlCb(std::to_string(static_cast<int64_t>(this)), [this] {
                     rebuild();
                     return true;
                 });
