@@ -5,7 +5,6 @@
 #pragma once
 
 #include <SceneNodes/SceneNode.h>
-#include <Button/Button.h>
 #include <Button/ImageButton.h>
 #include <Div.h>
 #include <Label.h>
@@ -19,7 +18,7 @@ public:
 
     TransformWidget();
     explicit TransformWidget(const std::string& styleClass);
-    virtual ~TransformWidget();
+    ~TransformWidget() override;
 
     void init() override;
     void translate(int j);
@@ -38,11 +37,14 @@ public:
 
     void       setTransAlign(transAlign t) { m_tRel = t; }
     void       setModelNode(SceneNode* node) { m_modelNode = node; }
-    SceneNode* getModelNode() { return m_modelNode; }
-    twPlane    getPlaneType() { return m_transPlane; }
-    transMode  getTransMode() { return m_transMode; }
+
+    [[nodiscard]] SceneNode* getModelNode() const { return m_modelNode; }
+    [[nodiscard]] twPlane    getPlaneType() const { return m_transPlane; }
+    [[nodiscard]] transMode  getTransMode() const { return m_transMode; }
+
     void       setEnableCb(std::function<void()> f) { m_enableCb = std::move(f); }
     void       setCoarseFine(cfState st) { m_cfState = st; }
+
     void       setKeyRotStep(float fine, float normal, float coarse) {
         m_rotAmt[0] = fine;
         m_rotAmt[1] = normal;
@@ -73,8 +75,8 @@ private:
     bool m_mouseInBounds    = false;
     bool m_blockStateChange = false;
 
-    glm::mat4 m_inRm;
-    glm::mat4 m_modRotMat;
+    glm::mat4 m_inRm{};
+    glm::mat4 m_modRotMat{};
 
     std::array<float, 3> m_rotAmt   = {0.1f, 1.f, 10.f};
     std::array<float, 3> m_transAmt = {0.01f, 0.1f, 1.f};
@@ -85,10 +87,10 @@ private:
                                                glm::vec4{0.6f, 0.6f, 1.f, 1.f}};
     std::array<glm::vec4, 3>   m_colorsDis  = {glm::vec4{0.6f, 0.5f, 0.5f, 1.f}, glm::vec4{0.5f, 0.6f, 0.5f, 1.f},
                                                glm::vec4{0.5f, 0.5f, 0.6f, 1.f}};
-    std::array<std::array<ImageButton*, 4>, 2> m_arrowButts    = {0};
-    std::array<std::array<Label*, 4>, 2>       m_arrowLabels   = {0};
-    std::array<std::array<ImageButton*, 5>, 2> m_planeSwitcher = {0};
-    std::array<Label*, 2>                      m_psLabels      = {0};
+    std::array<std::array<ImageButton*, 4>, 2> m_arrowButts    = {nullptr};
+    std::array<std::array<Label*, 4>, 2>       m_arrowLabels   = {nullptr};
+    std::array<std::array<ImageButton*, 5>, 2> m_planeSwitcher = {nullptr};
+    std::array<Label*, 2>                      m_psLabels      = {nullptr};
 
     std::array<std::pair<transMode, twPlane>, 6> m_psSwitchMap = {
         std::pair{transMode::translate, twPlane::xy}, std::pair{transMode::translate, twPlane::xz},

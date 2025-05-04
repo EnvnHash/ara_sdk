@@ -11,7 +11,7 @@ using namespace glm;
 
 namespace ara {
 
-CrossHair::CrossHair() : Div() {
+CrossHair::CrossHair() {
     setName(getTypeName<CrossHair>());
     excludeFromObjMap(true);
 #ifndef FORCE_INMEDIATEMODE_RENDERING
@@ -19,9 +19,9 @@ CrossHair::CrossHair() : Div() {
 #endif
 }
 
-CrossHair::CrossHair(const std::string& styleClass) : Div() {
+CrossHair::CrossHair(const std::string& styleClass)  {
     setName(getTypeName<CrossHair>());
-    addStyleClass(styleClass);
+    UINode::addStyleClass(styleClass);
     excludeFromObjMap(true);
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
@@ -29,15 +29,19 @@ CrossHair::CrossHair(const std::string& styleClass) : Div() {
 }
 
 void CrossHair::init() {
-    std::string vert = STRINGIFY(layout(location = 0) in vec4 position; \n layout(location = 2) in vec2 texCoord; \n uniform mat4 m_pvm; \n uniform vec2 size; \n out vec2 tex_coord;\n const vec2[4] quadVertices = vec2[4](vec2(0., 0.), vec2(1., 0.), vec2(0., 1.), vec2(1., 1.));\n void
-                                     main() {
-                                         \n tex_coord = quadVertices[gl_VertexID];
-                                         \n gl_Position =
-                                             m_pvm * vec4(quadVertices[gl_VertexID] * size, position.z, 1.0);
-                                         \n
-                                     });
+    std::string vert = STRINGIFY(
+        layout(location = 0) in vec4 position; \n
+        layout(location = 2) in vec2 texCoord; \n
+        uniform mat4 m_pvm; \n
+        uniform vec2 size; \n
+        out vec2 tex_coord;\n
+        const vec2[4] quadVertices = vec2[4](vec2(0., 0.), vec2(1., 0.), vec2(0., 1.), vec2(1., 1.));\n
+        void main() {\n
+            tex_coord = quadVertices[gl_VertexID];\n
+            gl_Position = m_pvm * vec4(quadVertices[gl_VertexID] * size, position.z, 1.0);\n
+        });
 
-    vert = getSharedRes()->shCol->getShaderHeader() + "// ui crosshair shader, vert\n" + vert;
+    vert = ShaderCollector::getShaderHeader() + "// ui crosshair shader, vert\n" + vert;
 
     std::string frag = STRINGIFY(
         layout(location = 0) out vec4 fragColor;\n
@@ -113,12 +117,14 @@ void CrossHair::init() {
             fragColor = mix(vec4(0.0), color, cV + cH + a) + baseCol;
         });
 
-    frag = getSharedRes()->shCol->getShaderHeader() + "// ui crosshair shader, frag\n" + frag;
+    frag = ara::ShaderCollector::getShaderHeader() + "// ui crosshair shader, frag\n" + frag;
 
     m_crossHairShdr = getSharedRes()->shCol->add("CrossHair", vert, frag);
 }
 
-bool CrossHair::draw(uint32_t* objId) { return drawFunc(objId); }
+bool CrossHair::draw(uint32_t* objId) {
+    return drawFunc(objId);
+}
 
 bool CrossHair::drawIndirect(uint32_t* objId) {
     if (m_sharedRes && m_sharedRes->drawMan) {
@@ -155,7 +161,7 @@ bool CrossHair::drawFunc(uint32_t* objId) {
     glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 #endif
 
-    return false;  // dont't count up objId
+    return false;  // don't count up objId
 }
 
 }  // namespace ara

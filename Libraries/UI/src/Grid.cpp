@@ -11,7 +11,7 @@ using namespace glm;
 
 namespace ara {
 
-Grid::Grid() : Div() {
+Grid::Grid() {
     setName(getTypeName<Grid>());
     excludeFromObjMap(true);
 #ifndef FORCE_INMEDIATEMODE_RENDERING
@@ -19,9 +19,9 @@ Grid::Grid() : Div() {
 #endif
 }
 
-Grid::Grid(const std::string& styleClass) : Div() {
+Grid::Grid(const std::string& styleClass) {
     setName(getTypeName<Grid>());
-    addStyleClass(std::move(styleClass));
+    UINode::addStyleClass(styleClass);
     excludeFromObjMap(true);
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
@@ -29,15 +29,19 @@ Grid::Grid(const std::string& styleClass) : Div() {
 }
 
 void Grid::init() {
-    std::string vert = STRINGIFY(layout(location = 0) in vec4 position; \n layout(location = 2) in vec2 texCoord; \n uniform mat4 m_pvm; \n uniform vec2 size; \n out vec2 tex_coord;\n const vec2[4] quadVertices = vec2[4](vec2(0., 0.), vec2(1., 0.), vec2(0., 1.), vec2(1., 1.));\n void
-                                     main() {
-                                         \n tex_coord = quadVertices[gl_VertexID];
-                                         \n gl_Position =
-                                             m_pvm * vec4(quadVertices[gl_VertexID] * size, position.z, 1.0);
-                                         \n
-                                     });
+    std::string vert = STRINGIFY(
+        layout(location = 0) in vec4 position; \n
+        layout(location = 2) in vec2 texCoord; \n
+        uniform mat4 m_pvm; \n
+        uniform vec2 size; \n
+        out vec2 tex_coord;\n
+        const vec2[4] quadVertices = vec2[4](vec2(0., 0.), vec2(1., 0.), vec2(0., 1.), vec2(1., 1.));\n
+        void main() { \n
+            tex_coord = quadVertices[gl_VertexID];\n
+            gl_Position = m_pvm * vec4(quadVertices[gl_VertexID] * size, position.z, 1.0); \n
+        });
 
-    vert = getSharedRes()->shCol->getShaderHeader() + "// ui grid shader, vert\n" + vert;
+    vert = ShaderCollector::getShaderHeader() + "// ui grid shader, vert\n" + vert;
 
     std::string frag = STRINGIFY(
         layout(location = 0) out vec4 fragColor;\n
@@ -100,12 +104,14 @@ void Grid::init() {
             fragColor = mix(vec4(0.0), color, cV + cH) + baseCol;
         });
 
-    frag = getSharedRes()->shCol->getShaderHeader() + "// ui grid shader, frag\n" + frag;
+    frag = ShaderCollector::getShaderHeader() + "// ui grid shader, frag\n" + frag;
 
     m_gridShdr = getSharedRes()->shCol->add("UIGrid", vert, frag);
 }
 
-bool Grid::draw(uint32_t* objId) { return drawFunc(objId); }
+bool Grid::draw(uint32_t* objId) {
+    return drawFunc(objId);
+}
 
 bool Grid::drawIndirect(uint32_t* objId) {
     if (m_sharedRes && m_sharedRes->drawMan) {

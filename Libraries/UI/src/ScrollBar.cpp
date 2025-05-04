@@ -27,8 +27,10 @@ void ScrollBar::updateMatrix() {
     // calculate DragArea
 
     // get the scroll view
-    auto sv = (ScrollView*)m_parent;
-    if (!sv || !m_dragArea) return;
+    auto sv = dynamic_cast<ScrollView *>(m_parent);
+    if (!sv || !m_dragArea) {
+        return;
+    }
 
     // calculate the size of the drag area
     m_bbSize = sv->getBBSize();  // is in absolute coordinates top/left x,y
@@ -39,10 +41,11 @@ void ScrollBar::updateMatrix() {
     m_dragAreaSizePix.x = sv->ui_HSB->getSize().x * m_dragAreaSizeRel.x;
     m_dragAreaSizePix.y = sv->ui_VSB->getSize().y * m_dragAreaSizeRel.y;
 
-    if (s_Type == horizontal)
+    if (s_Type == horizontal) {
         m_dragArea->setSize(m_dragAreaSizeRel.x, 1.f);
-    else
+    } else {
         m_dragArea->setSize(1.f, m_dragAreaSizeRel.y);
+    }
 
     // calculate the position of the scrollbars in relation to the content offset
 
@@ -55,9 +58,9 @@ void ScrollBar::updateMatrix() {
     m_scrollOffset    = sv->getContentTransTransl();
 
     if (s_Type == horizontal) {
-        m_dragArea->setX((int)(-m_scrollOffset.x / m_maxScrollOffset.x * m_maxScrollBarDragWay.x));
+        m_dragArea->setX(static_cast<int>(-m_scrollOffset.x / m_maxScrollOffset.x * m_maxScrollBarDragWay.x));
     } else {
-        m_dragArea->setY((int)(-m_scrollOffset.y / m_maxScrollOffset.y * m_maxScrollBarDragWay.y));
+        m_dragArea->setY(static_cast<int>(-m_scrollOffset.y / m_maxScrollOffset.y * m_maxScrollBarDragWay.y));
     }
 }
 
@@ -68,7 +71,7 @@ void ScrollBar::mouseDown(hidData* data) {
 
     if (m_dragArea) {
         // offset the scrollbar by its size
-        auto sv = (ScrollView*)getParent();
+        auto sv = dynamic_cast<ScrollView *>(getParent());
 
         // was the click on the negative or positive side
         float isPositiveSide;
@@ -81,15 +84,14 @@ void ScrollBar::mouseDown(hidData* data) {
             sv->setScrollOffset(sv->getContentTransTransl().x,
                                 sv->getContentTransTransl().y + isPositiveSide * m_dragArea->getSize().y);
         }
-
         data->consumed = true;
     }
 }
 
 void UIScrollBarDragArea::mouseDrag(hidData* data) {
     // get the ScrollView, which is the parent of this parent
-    auto sv = dynamic_cast<ScrollView*>(getParent()->getParent());
-    auto sb = dynamic_cast<ScrollBar*>(getParent());
+    const auto sv = dynamic_cast<ScrollView*>(getParent()->getParent());
+    const auto sb = dynamic_cast<ScrollBar*>(getParent());
 
     if (data->dragStart) {
         m_startDragScrollViewTrans = sv->getContentTransTransl();
@@ -99,7 +101,7 @@ void UIScrollBarDragArea::mouseDrag(hidData* data) {
     m_relOffs = glm::max(glm::min((vec2)data->movedPix / sb->getMaxDragWay(), vec2{1.f}), vec2{-1.f});
 
     // add offset to the initial offset on dragStart
-    if (((ScrollBar*)getParent())->s_Type == ScrollBar::e_stype::horizontal) {
+    if (dynamic_cast<ScrollBar *>(getParent())->s_Type == ScrollBar::e_stype::horizontal) {
         sv->setScrollOffset(-m_relOffs.x * sb->getMaxScrollOffset().x + m_startDragScrollViewTrans.x,
                             sv->getContentTransTransl().y);
     } else {

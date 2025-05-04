@@ -10,7 +10,7 @@ namespace ara {
 
 class DrawManagerGizmo : public DrawManager {
 public:
-    DrawManagerGizmo(GLBase* glbase) : DrawManager(glbase) {}
+    explicit DrawManagerGizmo(GLBase* glbase) : DrawManager(glbase) {}
 
     void     draw() override;
     Shaders* getShader(DrawSet& ds) override;

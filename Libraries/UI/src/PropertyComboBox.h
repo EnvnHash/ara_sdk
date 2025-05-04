@@ -8,9 +8,9 @@
 
 #include <magic_enum.hpp>
 
-#include "CameraCalibration.h"
+//#include "CameraCalibration.h"
 #include "DataModel/ItemRef.h"
-#include "ItemConnectable.h"
+//#include "ItemConnectable.h"
 
 namespace ara::proj {
 
@@ -43,7 +43,7 @@ public:
         setMenuName(to_string_prec((*prop)(), precision));
         menuNameUpdt<T>(prop, precision);
     }
-
+/*
     template <typename T>
     void menuNameUpdt(Property<T>* prop, int precision) {
         ItemRef::onChanged<T>(prop, [this, precision](std::any val) {
@@ -69,7 +69,7 @@ public:
         out << std::fixed << a_value;
         return out.str();
     }
-
+*/
 private:
 };
 

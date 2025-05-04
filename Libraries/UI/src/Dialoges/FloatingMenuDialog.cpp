@@ -44,7 +44,7 @@ FloatingMenuDialog::FloatingMenuDialog(const UIWindowParams& params)
         iterate();  // force the gl thread to iterate
     });
 
-    startRenderLoop();
+    UIWindow::startRenderLoop();
 #endif
 }
 

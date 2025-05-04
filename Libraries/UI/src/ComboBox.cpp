@@ -49,7 +49,7 @@ void ComboBox::open() {
     m_entryList->setPos(static_cast<int>(getWinPos().x), static_cast<int>(getWinPos().y + m_sharedRes->gridSize.y));
     m_entryList->setWidth(static_cast<int>(getSize().x));
     m_entryList->setBorderRadius(5);
-    m_entryList->setHeight(std::min<int>((int)m_entries.size(), m_maxListEntries) * m_listEntryHeight);
+    m_entryList->setHeight(std::min<int>(static_cast<int>(m_entries.size()), m_maxListEntries) * m_listEntryHeight);
     m_entryList->setBackgroundColor(m_sharedRes->colors->at(uiColors::background));
 
     rebuildEntryList();
@@ -59,7 +59,7 @@ void ComboBox::open() {
 
 void ComboBox::rebuildEntryList() {
     if (m_entryList) {
-        static_cast<ScrollView*>(m_entryList)->clearContentChildren();
+        dynamic_cast<ScrollView*>(m_entryList)->clearContentChildren();
     } else {
         return;
     }

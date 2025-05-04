@@ -19,7 +19,9 @@ WindowResizeArea::WindowResizeArea() : m_type(AreaType::top) {
 }
 
 void WindowResizeArea::init() {
-    if (m_drawImmediate && m_shCol) m_shdr = m_shCol->getUIObjMapOnly();
+    if (m_drawImmediate && m_shCol) {
+        m_shdr = m_shCol->getUIObjMapOnly();
+    }
 }
 
 void WindowResizeArea::updateDrawData() {
@@ -58,20 +60,22 @@ void WindowResizeArea::mouseUp(hidData* data) {
 
 void WindowResizeArea::mouseIn(hidData* data) {
 #ifdef ARA_USE_GLFW
-    auto m_win = m_sharedRes->winHandle;
+    auto win = m_sharedRes->winHandle;
 
-    switch (m_type) {
-        case AreaType::top: m_win->setMouseCursor(WinMouseIcon::vresize); break;
-        case AreaType::left: m_win->setMouseCursor(WinMouseIcon::hresize); break;
-        case AreaType::bottom: m_win->setMouseCursor(WinMouseIcon::vresize); break;
-        case AreaType::right: m_win->setMouseCursor(WinMouseIcon::hresize); break;
-        case AreaType::topLeft: m_win->setMouseCursor(WinMouseIcon::lbtrResize); break;
-        case AreaType::topRight: m_win->setMouseCursor(WinMouseIcon::ltbrResize); break;
-        case AreaType::bottomLeft: m_win->setMouseCursor(WinMouseIcon::ltbrResize); break;
-        case AreaType::bottomRight: m_win->setMouseCursor(WinMouseIcon::lbtrResize); break;
+    static std::unordered_map<AreaType, std::function<void()> > funcMap = {
+        { AreaType::top, [win]{ win->setMouseCursor(WinMouseIcon::vresize); } },
+        { AreaType::left, [win]{ win->setMouseCursor(WinMouseIcon::hresize); } },
+        { AreaType::bottom, [win]{ win->setMouseCursor(WinMouseIcon::vresize); } },
+        { AreaType::right, [win]{ win->setMouseCursor(WinMouseIcon::hresize); } },
+        { AreaType::topLeft, [win]{ win->setMouseCursor(WinMouseIcon::lbtrResize); } },
+        { AreaType::topRight, [win]{ win->setMouseCursor(WinMouseIcon::ltbrResize); } },
+        { AreaType::bottomLeft, [win]{ win->setMouseCursor(WinMouseIcon::ltbrResize); } },
+        { AreaType::bottomRight, [win]{ win->setMouseCursor(WinMouseIcon::lbtrResize); } },
+    };
+
+    if (funcMap.contains(m_type)) {
+        funcMap[m_type]();
     }
-
-        // m_sharedRes->winHandle->setBlockMouseIconSwitch(false);
 #endif
 }
 
@@ -84,7 +88,6 @@ void WindowResizeArea::mouseOut(hidData* data) {
 
 void WindowResizeArea::mouseDrag(hidData* data) {
 #ifdef ARA_USE_GLFW
-    ivec2 pixOffs{0, 0};
     ivec2 newPos{0, 0};
     ivec2 newSize{0, 0};
 
@@ -97,39 +100,39 @@ void WindowResizeArea::mouseDrag(hidData* data) {
         m_mouseDownPixelPos = absMousePos;
 
     } else {
-        pixOffs = absMousePos - m_mouseDownPixelPos;
+        auto pixOffs = absMousePos - m_mouseDownPixelPos;
         switch (m_type) {
             case AreaType::top:
-                newPos  = glm::ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y + pixOffs.y);
-                newSize = glm::ivec2(m_dragStartWinSize.x, m_dragStartWinSize.y - pixOffs.y);
+                newPos  = ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y + pixOffs.y);
+                newSize = ivec2(m_dragStartWinSize.x, m_dragStartWinSize.y - pixOffs.y);
                 break;
             case AreaType::bottom:
-                newPos  = glm::ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y);
-                newSize = glm::ivec2(m_dragStartWinSize.x, m_dragStartWinSize.y + pixOffs.y);
+                newPos  = ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y);
+                newSize = ivec2(m_dragStartWinSize.x, m_dragStartWinSize.y + pixOffs.y);
                 break;
             case AreaType::left:
-                newPos  = glm::ivec2(m_dragStartWinPos.x + pixOffs.x, m_dragStartWinPos.y);
-                newSize = glm::ivec2(m_dragStartWinSize.x - pixOffs.x, m_dragStartWinSize.y);
+                newPos  = ivec2(m_dragStartWinPos.x + pixOffs.x, m_dragStartWinPos.y);
+                newSize = ivec2(m_dragStartWinSize.x - pixOffs.x, m_dragStartWinSize.y);
                 break;
             case AreaType::right:
-                newPos  = glm::ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y);
-                newSize = glm::ivec2(m_dragStartWinSize.x + pixOffs.x, m_dragStartWinSize.y);
+                newPos  = ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y);
+                newSize = ivec2(m_dragStartWinSize.x + pixOffs.x, m_dragStartWinSize.y);
                 break;
             case AreaType::topLeft:
-                newPos  = glm::ivec2(m_dragStartWinPos.x + pixOffs.x, m_dragStartWinPos.y + pixOffs.y);
-                newSize = glm::ivec2(m_dragStartWinSize.x - pixOffs.x, m_dragStartWinSize.y - pixOffs.y);
+                newPos  = ivec2(m_dragStartWinPos.x + pixOffs.x, m_dragStartWinPos.y + pixOffs.y);
+                newSize = ivec2(m_dragStartWinSize.x - pixOffs.x, m_dragStartWinSize.y - pixOffs.y);
                 break;
             case AreaType::topRight:
-                newPos  = glm::ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y + pixOffs.y);
-                newSize = glm::ivec2(m_dragStartWinSize.x + pixOffs.x, m_dragStartWinSize.y - pixOffs.y);
+                newPos  = ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y + pixOffs.y);
+                newSize = ivec2(m_dragStartWinSize.x + pixOffs.x, m_dragStartWinSize.y - pixOffs.y);
                 break;
             case AreaType::bottomRight:
-                newPos  = glm::ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y);
-                newSize = glm::ivec2(m_dragStartWinSize.x + pixOffs.x, m_dragStartWinSize.y + pixOffs.y);
+                newPos  = ivec2(m_dragStartWinPos.x, m_dragStartWinPos.y);
+                newSize = ivec2(m_dragStartWinSize.x + pixOffs.x, m_dragStartWinSize.y + pixOffs.y);
                 break;
             case AreaType::bottomLeft:
-                newPos  = glm::ivec2(m_dragStartWinPos.x + pixOffs.x, m_dragStartWinPos.y);
-                newSize = glm::ivec2(m_dragStartWinSize.x - pixOffs.x, m_dragStartWinSize.y + pixOffs.y);
+                newPos  = ivec2(m_dragStartWinPos.x + pixOffs.x, m_dragStartWinPos.y);
+                newSize = ivec2(m_dragStartWinSize.x - pixOffs.x, m_dragStartWinSize.y + pixOffs.y);
                 break;
         }
 

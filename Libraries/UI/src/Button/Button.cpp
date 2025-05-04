@@ -22,16 +22,16 @@ Button::Button(const std::string& styleClass) : Label(styleClass) {
 Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::string& text,
                pair<align, valign> align, const std::string& font_type, int font_height)
     : Label(LabelInitData{
-        .pos = static_cast<glm::ivec2>(pos),
-        .size = static_cast<glm::ivec2>(size),
-        .text_color = text_color,
-        .bg_color = bg_color,
-        .text = text,
-        .ax = align.first,
-        .ay = align.second,
-        .font_type = font_type,
-        .font_height=0
-    }), m_typoColor(glm::vec4(0.f, 0.f, 0.f, 1.f)), m_altTextFontSize(22) {
+          .pos = static_cast<glm::ivec2>(pos),
+          .size = static_cast<glm::ivec2>(size),
+          .text_color = text_color,
+          .bg_color = bg_color,
+          .text = text,
+          .ax = align.first,
+          .ay = align.second,
+          .font_type = font_type,
+          .font_height=0
+      }), m_typoColor({0.f, 0.f, 0.f, 1.f}) {
     setName(getTypeName<Button>());
     setFocusAllowed(false);
     Label::setScissorChildren(true);
@@ -50,8 +50,8 @@ void Button::mouseMove(hidData* data) {
         m_mouseInTime = std::chrono::system_clock::now();
     }
 
-    for (const auto& it : m_mouseHidCb[hidEvent::MouseMove]) {
-        it.first(data);
+    for (const auto &key: m_mouseHidCb[hidEvent::MouseMove] | views::keys) {
+        key(data);
     }
 
     m_mouseIsIn = true;
@@ -117,7 +117,7 @@ void Button::setProp(Property<bool>* prop) {
     }
 
     m_prop = prop;
-    onChanged<bool>(prop, [this](std::any val) {
+    onChanged<bool>(prop, [this](const std::any &val) {
         bool v = std::any_cast<bool>(val);
         if (v != (m_state == state::selected)) {
             toggle(v);

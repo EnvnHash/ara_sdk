@@ -33,7 +33,7 @@ public:
 
     void setAxisFlag(TrackBallCam::snap axis) { m_gizAxis = axis; }
     void setHasLabel(bool val) { m_hasLabel = val; }
-    bool hasLabel() { return m_hasLabel; }
+    bool hasLabel() const { return m_hasLabel; }
 
     int m_presetObjId = 0;
 

@@ -16,7 +16,7 @@ Label::Label() {
     setFocusAllowed(false);
 }
 
-Label::Label(const std::string& styleClass) : Div(std::move(styleClass)) {
+Label::Label(const std::string& styleClass) : Div(styleClass) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
@@ -24,7 +24,7 @@ Label::Label(const std::string& styleClass) : Div(std::move(styleClass)) {
     setFocusAllowed(false);
 }
 
-Label::Label(LabelInitData initData) {
+Label::Label(const LabelInitData &initData) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
@@ -52,14 +52,12 @@ void Label::loadStyleDefaults() {
 void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
-    auto color = node->findNode<AssetColor>("text-color");
-    if (color) {
+    if (auto color = node->findNode<AssetColor>("text-color")) {
         vec4 col                                 = color->getColorvec4();
         m_setStyleFunc[st][styleInit::textColor] = [col, this, st]() { setColor(col.r, col.g, col.b, col.a, st); };
     }
 
-    auto text = node->findNode("text");
-    if (text) {
+    if (auto text = node->findNode("text")) {
         std::string tv                      = text->m_value;
         m_setStyleFunc[st][styleInit::text] = [tv, this]() { m_Text = tv; };
     }
@@ -116,15 +114,12 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
         }
 
         m_tAlign_X = aux;
-
         m_setStyleFunc[st][styleInit::textAlign] = [this, aux]() { m_tAlign_X = aux; };
     }
 
     if (node->hasValue("text-valign")) {
         ParVec p = node->splitNodeValue("text-valign");
-        valign aux;
-
-        aux = valign::center;
+        valign aux = valign::center;
 
         for (std::string& par : p) {
             if (par == "top") {
@@ -139,14 +134,12 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
         }
 
         m_tAlign_Y = aux;
-
         m_setStyleFunc[st][styleInit::textValign] = [this, aux]() { m_tAlign_Y = aux; };
     }
 
-    auto f = node->findNode<AssetFont>("font");
-    if (f) {
-        int         size = ((ResNode*)f)->value<int32_t>("size", 0);
-        std::string font = ((ResNode*)f)->getValue("font");
+    if (auto f = node->findNode<AssetFont>("font")) {
+        int         size = f->value<int32_t>("size", 0);
+        std::string font = f->getValue("font");
 
         m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size]() { setFontSize(size); };
         m_setStyleFunc[st][styleInit::fontFontFamily] = [this, font]() { setFontType(font); };
@@ -158,7 +151,7 @@ void Label::setProp(Property<std::string>* prop) {
         if (m_sharedRes)
             // is this really necessary as glcallback??? basically nothing
             // gl-ish is happening on setText
-            ((UIWindow*)m_sharedRes->win)->addGlCb(this, "chgTxt", [this, val] {
+            static_cast<UIWindow *>(m_sharedRes->win)->addGlCb(this, "chgTxt", [this, val] {
                 setText(std::any_cast<std::string>(val));
                 return true;
             });
@@ -180,7 +173,7 @@ void Label::setProp(Property<std::filesystem::path>* prop) {
     setText((*prop)().string());
 }
 
-glm::vec4 Label::calculateMask() {
+glm::vec4 Label::calculateMask() const {
     return {m_Offset.x, m_Offset.y, m_Offset.x + m_tContSize.x, m_Offset.y + m_tContSize.y};
 }
 
@@ -189,7 +182,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
         return nullptr;
     }
 
-    auto font = getSharedRes()->res->getGLFont(m_fontType, m_fontSize, getPixRatio());
+    const auto font = getSharedRes()->res->getGLFont(m_fontType, m_fontSize, getPixRatio());
     if (!font) {
         LOGE << "[ERROR] UIEdit::UpdateDGV() / Cannot get font for " << m_fontType << "   size=" << m_fontSize;
         return nullptr;
@@ -217,7 +210,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
 
                 bas = faux.getPixSize();
 
-                auto limit = m_tContSize.x - bas.x;  // get the available space (content size - ellipsis size)
+                const auto limit = m_tContSize.x - bas.x;  // get the available space (content size - ellipsis size)
                 int i      = 0;
                 rightLimit = m_FontDGV.getRightLimit();
 
@@ -228,9 +221,9 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
                             if (g.getRightLimit() > limit) {
                                 break;
                             }
-                            i++;
+                            ++i;
                         } else {
-                            i++;
+                            ++i;
                             if (rightLimit - (g.getRightLimit()) <= limit) {
                                 break;
                             }
@@ -410,7 +403,7 @@ void Label::prepareVao(bool checkFontTex) {
         }
 
         if (m_vao.getNrVertices() < dstSize) {
-            m_vao.resize((GLuint)dstSize);
+            m_vao.resize(static_cast<GLuint>(dstSize));
             m_positions.resize(dstSize);
             m_texCoord.resize(dstSize);
             m_indices.resize(m_FontDGV.v.size() * 6);
@@ -431,7 +424,7 @@ void Label::prepareVao(bool checkFontTex) {
                 }
 
                 for (size_t i = 0; i < m_elmInd.size(); i++) {
-                    m_indices[elmInd * m_elmInd.size() + i] = (GLuint)(m_elmInd[i] + elmInd * m_vtxPos.size());
+                    m_indices[elmInd * m_elmInd.size() + i] = static_cast<GLuint>(m_elmInd[i] + elmInd * m_vtxPos.size());
                 }
 
                 elmInd++;
@@ -439,15 +432,15 @@ void Label::prepareVao(bool checkFontTex) {
         }
 
         if (!m_positions.empty()) {
-            m_vao.upload(CoordType::Position, &m_positions[0][0], (uint32_t)dstSize);
+            m_vao.upload(CoordType::Position, &m_positions[0][0], static_cast<uint32_t>(dstSize));
         }
 
         if (!m_texCoord.empty()) {
-            m_vao.upload(CoordType::TexCoord, &m_texCoord[0][0], (uint32_t)dstSize);
+            m_vao.upload(CoordType::TexCoord, &m_texCoord[0][0], static_cast<uint32_t>(dstSize));
         }
 
         if (!m_indices.empty()) {
-            m_vao.setElemIndices((uint32_t)m_indices.size(), &m_indices[0]);
+            m_vao.setElemIndices(static_cast<uint32_t>(m_indices.size()), &m_indices[0]);
         }
     } else {
         updateIndDrawData(checkFontTex);
@@ -562,9 +555,9 @@ unsigned long Label::removeOpt(unsigned long f) {
     return m_tOpt;
 }
 
-void Label::setFont(std::string fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st) {
-    setFontType(std::move(fontType), st);
-    setFontSize((int)fontSize, st);
+void Label::setFont(const std::string& fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st) {
+    setFontType(fontType, st);
+    setFontSize(static_cast<int>(fontSize), st);
     setTextAlign(ax, ay, st);
     setColor(fontColor, st);
 }

@@ -50,7 +50,7 @@ public:
     DrawManager*                                               drawMan    = nullptr;
     GLBase*                                                    glbase     = nullptr;
 
-    void setDrawFlag(bool val = true) {
+    void setDrawFlag(bool val = true) const {
         if (procSteps) {
             procSteps->at(Draw).active = true;
         }

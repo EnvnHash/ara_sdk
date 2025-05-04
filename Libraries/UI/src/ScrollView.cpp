@@ -1,7 +1,5 @@
 #include "ScrollView.h"
 
-#include "Log.h"
-#include "UIApplication.h"
 #include "UIWindow.h"
 #include "string_utils.h"
 
@@ -22,7 +20,7 @@ ScrollView::ScrollView() : Div() {
     m_content->excludeFromObjMap(true);
 }
 
-ScrollView::ScrollView(const std::string& styleClass) : Div(std::move(styleClass)) {
+ScrollView::ScrollView(const std::string& styleClass) : Div(styleClass) {
     setName(getTypeName<ScrollView>());
     setFocusAllowed(false);
     setScissorChildren(true);
@@ -38,8 +36,7 @@ void ScrollView::init() {
     if (getStyleResNode() && getStyleResNode()->has("padding")) {
         auto pv = getStyleResNode()->splitNodeValue("padding");
         if (pv.size() == 1 && !is_number(pv[0])) {
-            auto n = getStyleResNode()->getRoot()->findNode(pv[0]);
-            if (n) {
+            if (auto n = getStyleResNode()->getRoot()->findNode(pv[0])) {
                 pv = n->splitValue(',');
             }
         }

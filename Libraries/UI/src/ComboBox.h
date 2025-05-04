@@ -13,13 +13,13 @@ class Image;
 class ComboBox : public DropDownMenu {
 public:
     ComboBox() : DropDownMenu() { setName(getTypeName<ComboBox>()); }
-    ComboBox(const std::string& styleClass) : DropDownMenu(styleClass) { setName(getTypeName<ComboBox>()); }
-    virtual ~ComboBox() = default;
+    explicit ComboBox(const std::string& styleClass) : DropDownMenu(styleClass) { setName(getTypeName<ComboBox>()); }
 
-    virtual void init();
-    virtual void open();
+    ~ComboBox() override = default;
 
-    virtual void rebuildEntryList();
+    void init() override;
+    void open() override;
+    void rebuildEntryList() override;
 
     void clearEntries() { m_entries.clear(); }
     void setSelectedEntryName(const std::string& str) { setMenuName(str); }

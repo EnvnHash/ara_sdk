@@ -67,7 +67,7 @@ UINode* Slider::addChild(std::unique_ptr<UINode> child) {
 }
 
 void SliderKnob::mouseDrag(hidData* data) {
-    auto slid = (Slider*)getParent();
+    const auto slid = dynamic_cast<Slider *>(getParent());
 
     // remember actual value
     if (data->dragStart) {

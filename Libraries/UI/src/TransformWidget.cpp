@@ -95,10 +95,7 @@ void TransformWidget::init() {
             m_arrowLabels[i][j]->excludeFromObjMap(true);
         }
 
-        // m_psLabels[i] = m_planeSwitchCont->addChild<Label>(getStyleClass() +
-        // ".ps_lbl_" + (i==0 ? "translate" : "rotate"));
-
-        for (int j = 0; j < (int)twPlane::count; j++) {
+        for (int j = 0; j < static_cast<int>(twPlane::count); j++) {
             m_planeSwitcher[i][j] = m_buttCont->addChild<ImageButton>(
                 getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_" + string(enum_name((twPlane)j)));
 
@@ -111,15 +108,15 @@ void TransformWidget::init() {
             });
         }
 
-        m_planeSwitcher[i][(int)twPlane::count] =
+        m_planeSwitcher[i][toType(twPlane::count)] =
             m_buttCont->addChild<ImageButton>(getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_top");
-        m_planeSwitcher[i][(int)twPlane::count]->setObjUsesTexAlpha(true);
-        m_planeSwitcher[i][(int)twPlane::count]->setLod(1.f);
+        m_planeSwitcher[i][toType(twPlane::count)]->setObjUsesTexAlpha(true);
+        m_planeSwitcher[i][toType(twPlane::count)]->setLod(1.f);
 
-        m_planeSwitcher[i][(int)twPlane::count + 1] =
+        m_planeSwitcher[i][toType(twPlane::count) + 1] =
             m_buttCont->addChild<ImageButton>(getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_bott");
-        m_planeSwitcher[i][(int)twPlane::count + 1]->setObjUsesTexAlpha(true);
-        m_planeSwitcher[i][(int)twPlane::count + 1]->setLod(1.f);
+        m_planeSwitcher[i][toType(twPlane::count) + 1]->setObjUsesTexAlpha(true);
+        m_planeSwitcher[i][toType(twPlane::count) + 1]->setLod(1.f);
     }
 
     getWindow()->addGlobalMouseMoveCb(this, [this](hidData *data) {

@@ -11,10 +11,10 @@ namespace ara {
 class DropDownMenuBar : public Div {
 public:
     DropDownMenuBar();
-    virtual ~DropDownMenuBar() = default;
+    ~DropDownMenuBar() override = default;
 
-    void          globalMouseDown(hidData* data);
-    DropDownMenu* addDropDownMenu(std::string name);
+    void          globalMouseDown(hidData* data) const;
+    DropDownMenu* addDropDownMenu(const std::string& name);
 
 private:
     std::vector<DropDownMenu*> m_menuEntries;

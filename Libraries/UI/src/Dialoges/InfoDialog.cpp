@@ -58,13 +58,13 @@ void InfoDialog::open(bool isModal) {
     m_creationTime = std::chrono::system_clock::now();
 
 #ifdef ARA_USE_GLFW
-    getWinHandle()->setFloating(isModal);
+    GLFWWindow::setFloating(isModal);
 #endif
 
     UIWindow::open();
 }
 
-void InfoDialog::close(std::function<bool()> cb) {
+void InfoDialog::close(const std::function<bool()>& cb) {
     // check how long the window has been open
     auto openTime = duration_cast<milliseconds>(system_clock::now() - m_creationTime);
     if (openTime.count() > m_minStayTime) {
@@ -80,7 +80,7 @@ void InfoDialog::close(std::function<bool()> cb) {
     }
 }
 
-void InfoDialog::addCloseEvent(std::function<bool()> cb) {
+void InfoDialog::addCloseEvent(const std::function<bool()> &cb) {
     // this will be called only from the eventloop
     bool closeAndRemove = true;
 
@@ -148,7 +148,7 @@ void InfoDialog::setType(infoDiagType tp) {
     m_sharedRes.setDrawFlag();
 }
 
-void InfoDialog::setInfoMsg(std::string msg) {
+void InfoDialog::setInfoMsg(const std::string& msg) {
     m_infoMsg = msg;
     if (m_msgLabel) {
         m_msgLabel->setText(msg);

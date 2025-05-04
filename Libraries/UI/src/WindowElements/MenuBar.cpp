@@ -3,7 +3,6 @@
 //
 
 #include "MenuBar.h"
-#include "GLBase.h"
 #include "UIWindow.h"
 #include "Button/ImageButton.h"
 #include <Utils/PingPongFbo.h>
@@ -13,7 +12,7 @@ using namespace glm;
 
 namespace ara {
 
-MenuBar::MenuBar() : Image() {
+MenuBar::MenuBar() {
     m_canReceiveDrag = true;
     setName(getTypeName<MenuBar>());
     setFocusAllowed(false);
@@ -43,16 +42,24 @@ void MenuBar::init() {
             m_menButtons[butType::maximize]->setAltText("Maximize");
             m_menButtons[butType::maximize]->setIsToggle(true);
             m_menButtons[butType::maximize]->setToggleCb([this](bool state) {
-                if (!m_enableMinMaxButtons) return;
-                if (state && m_maximizeFunc) m_maximizeFunc();
-                if (!state && m_restoreFunc) m_restoreFunc();
+                if (!m_enableMinMaxButtons) {
+                    return;
+                }
+                if (state && m_maximizeFunc) {
+                    m_maximizeFunc();
+                }
+                if (!state && m_restoreFunc) {
+                    m_restoreFunc();
+                }
             });
             m_menButtons[butType::maximize]->setName("maximize_button");
 
             m_menButtons[butType::minimize] = m_iconsRightSide->addChild<ImageButton>("menuBar.minimize");
             m_menButtons[butType::minimize]->setAltText("Minimize");
             m_menButtons[butType::minimize]->setClickedCb([this] {
-                if (m_enableMinMaxButtons && m_minimizeFunc) m_minimizeFunc();
+                if (m_enableMinMaxButtons && m_minimizeFunc) {
+                    m_minimizeFunc();
+                }
             });
             m_menButtons[butType::minimize]->setName("minimize_button");
         }
@@ -67,7 +74,7 @@ void MenuBar::init() {
                 but.second->setAlign(align::right, valign::center);
                 but.second->setColor(m_brightAdjCol);
                 but.second->setX(i * -containersWidth);
-                i++;
+                ++i;
             }
     }
 }
@@ -75,8 +82,7 @@ void MenuBar::init() {
 void MenuBar::mouseUp(hidData* data) {
 #ifdef ARA_USE_GLFW
     if (m_win) {
-        m_win->setBlockResizing(false);  // somehow window receives size changes on windows when
-                                         // moved fast between displays
+        m_win->setBlockResizing(false);  // somehow window receives size changes on windows when moved fast between displays
         m_win->setBlockMouseIconSwitch(false);
     }
 #endif
@@ -87,12 +93,16 @@ void MenuBar::mouseDown(hidData* data) {
     if (data->hit && getWindow() && m_enableMinMaxButtons && data->isDoubleClick) {
         if (!getWindow()->getWinHandle()->isMaximized() && m_maximizeFunc) {
             m_maximizeFunc();
-            if (m_menButtons[butType::maximize]) m_menButtons[butType::maximize]->setSelected(true);
+            if (m_menButtons[butType::maximize]) {
+                m_menButtons[butType::maximize]->setSelected(true);
+            }
         }
 
         if (getWindow()->getWinHandle()->isMaximized() && m_restoreFunc) {
             m_restoreFunc();
-            if (m_menButtons[butType::maximize]) m_menButtons[butType::maximize]->setSelected(false);
+            if (m_menButtons[butType::maximize]) {
+                m_menButtons[butType::maximize]->setSelected(false);
+            }
         }
     }
 #endif
@@ -100,21 +110,21 @@ void MenuBar::mouseDown(hidData* data) {
 
 void MenuBar::mouseDrag(hidData* data) {
 #ifdef ARA_USE_GLFW
-    ivec2 pixOffs{0};
-    if (!m_win) return;
+    if (!m_win) {
+        return;
+    }
 
     auto absMousePos = m_win->getAbsMousePos();
 
     if (data->dragStart) {
         m_dragStartWinPos = m_win->getPosition();
-        m_win->setBlockResizing(true);  // somehow window receives size changes on windows when
-                                        // moved fast between displays
+        m_win->setBlockResizing(true);  // somehow window receives size changes on windows when moved fast between displays
         m_win->setBlockMouseIconSwitch(true);
         m_mouseDownPixelPos = absMousePos;
 
     } else {
-        pixOffs = absMousePos - m_mouseDownPixelPos;
-        ((UIWindow*)m_sharedRes->win)->addWinCb([this, pixOffs]() {
+        auto pixOffs = absMousePos - m_mouseDownPixelPos;
+        static_cast<UIWindow *>(m_sharedRes->win)->addWinCb([this, pixOffs]() {
             m_win->setPosition(m_dragStartWinPos.x + pixOffs.x, m_dragStartWinPos.y + pixOffs.y);
         });
     }

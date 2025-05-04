@@ -22,7 +22,7 @@ public:
 
     template <class T>
     T* addTab(std::string title) {
-        return (T*)addTab(title, std::make_unique<T>());
+        return static_cast<T *>(addTab(title, std::make_unique<T>()));
     }
 
     UINode* addTab(const std::string& title, std::unique_ptr<UINode> uinode);

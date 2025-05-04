@@ -12,7 +12,7 @@ class WindowResizeArea : public Div {
 public:
     enum class AreaType : int { top = 0, left, bottom, right, topLeft, topRight, bottomLeft, bottomRight };
     WindowResizeArea();
-    virtual ~WindowResizeArea() = default;
+    ~WindowResizeArea() override = default;
 
     void init() override;
     void updateDrawData() override;

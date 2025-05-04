@@ -11,6 +11,7 @@ namespace ara {
 
 class UIBlendStack : public UIStack {
 public:
+    virtual ~UIBlendStack() = default;
     void show(const std::string& name) override;
     void show(const std::string& name, float delay, double transTime);
     void setRootNode(UINode* node) override;

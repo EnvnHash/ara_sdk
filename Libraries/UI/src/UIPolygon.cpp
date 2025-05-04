@@ -10,7 +10,7 @@ using namespace glm;
 using namespace std;
 
 namespace ara {
-UIPolygon::UIPolygon() : UINode(), m_ctrlPointSizePix(17) {
+UIPolygon::UIPolygon() : m_ctrlPointSizePix(17) {
     setName(getTypeName<UIPolygon>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;
@@ -22,9 +22,9 @@ UIPolygon::UIPolygon() : UINode(), m_ctrlPointSizePix(17) {
     m_lColor[2]   = vec4(1.f, 0.82f, 0.f, 1.f) * 0.8f;
     m_lColor[3]   = vec4(1.f, 0.82f, 0.f, 1.f);
 
-    m_ident = glm::mat4(1.f);
+    m_ident = mat4(1.f);
 
-    setChangeCb(std::bind(&UIPolygon::onResize, this));
+    setChangeCb([this] { onResize(); });
 }
 
 void UIPolygon::init() {
@@ -121,7 +121,7 @@ void UIPolygon::initCtrlPointShdr() {
                 \n
             });
 
-    vert = "// control point shader, vert\n" + m_shCol->getShaderHeader() + vert;
+    vert = "// control point shader, vert\n" + ara::ShaderCollector::getShaderHeader() + vert;
 
     string frag = STRINGIFY(uniform vec4 color;\n
                                     uniform int round;\n
@@ -131,7 +131,7 @@ void UIPolygon::initCtrlPointShdr() {
         \n glFragColor = (round == 0 ? 1 : min(max((1.0 - length(tex_coord * 2.0 - 1.0)) * 5.0, 0.0), 1.0)) * color;
     );
 
-    frag = "// control point shader, frag\n" + m_shCol->getShaderHeader() + m_shCol->getUiObjMapUniforms() + frag +
+    frag = "// control point shader, frag\n" + ara::ShaderCollector::getShaderHeader() + m_shCol->getUiObjMapUniforms() + frag +
            m_shCol->getUiObjMapMain() + "}";
 
 #else
@@ -150,13 +150,13 @@ void UIPolygon::initCtrlPointShdr() {
     m_ctrPointShdr = m_shCol->add("UIPolygonPointShdr", vert, frag);
 }
 
-void UIPolygon::tesselate() {
+void UIPolygon::tesselate() const {
         m_polygon->tesselate();
 }
 
-bool UIPolygon::objIdInPolygon(int id) {
-        return id == m_objIdMin || ((uint32_t)id >= m_polygon->getPoints(0)->front().id &&
-                                    (uint32_t)id <= m_polygon->getPoints(0)->back().id);
+bool UIPolygon::objIdInPolygon(int id) const {
+        return id == m_objIdMin || (static_cast<uint32_t>(id) >= m_polygon->getPoints(0)->front().id &&
+                                    static_cast<uint32_t>(id) <= m_polygon->getPoints(0)->back().id);
 }
 
 void UIPolygon::mouseDrag(hidData *data) {
@@ -200,94 +200,97 @@ void UIPolygon::mouseDrag(hidData *data) {
 
 // from node iteration
 void UIPolygon::mouseDown(hidData *data) {
-        m_mc_mousePos = data->mousePosFlipY;
+    m_mc_mousePos = data->mousePosFlipY;
+    if (data->objId >= static_cast<int>(m_polygon->getPoints(0)->front().id) &&
+        data->objId <= static_cast<int>(m_polygon->getPoints(0)->back().id)) {
+        if (*data->cp_editM != cpEditMode::AddCtrlPoint && *data->cp_editM != cpEditMode::DelCtrlPoint) {
+            *data->cp_editM = cpEditMode::Move;
 
-        //  LOG << "UIPolygon clicked this id " << objId;
-
-        if (data->objId >= (int)m_polygon->getPoints(0)->front().id &&
-            data->objId <= (int)m_polygon->getPoints(0)->back().id) {
-            if (*data->cp_editM != cpEditMode::AddCtrlPoint && *data->cp_editM != cpEditMode::DelCtrlPoint) {
-                *data->cp_editM = cpEditMode::Move;
-
-            } else if (*data->cp_editM == cpEditMode::DelCtrlPoint) {
-                m_polygon->deletePoint(0, data->objId - (int)m_polygon->getPoints(0)->front().id);
-                data->procSteps->at(winProcStep::Tesselate).active = true;
-            }
+        } else if (*data->cp_editM == cpEditMode::DelCtrlPoint) {
+            m_polygon->deletePoint(0, data->objId - static_cast<int>(m_polygon->getPoints(0)->front().id));
+            data->procSteps->at(Tesselate).active = true;
         }
+    }
 
-        data->consumed = true;
+    data->consumed = true;
 }
 
 void UIPolygon::onResize() {
-        if (m_fbo->getWidth() != getNodeSize().x || m_fbo->getHeight() != getNodeSize().y)
-            m_fbo->resize(static_cast<uint>(getNodeSize().x), static_cast<uint>(getNodeSize().y));
+    if (m_fbo->getWidth() != getNodeSize().x || m_fbo->getHeight() != getNodeSize().y) {
+        m_fbo->resize(static_cast<uint>(getNodeSize().x), static_cast<uint>(getNodeSize().y));
+    }
 }
 
 void UIPolygon::addPointToSelection(uint32_t clickedObjId, uint32_t level, map <winProcStep, ProcStep> *procSteps) {
-        uint32_t cpInd = clickedObjId - m_polygon->getPoints(0)->at(0).id;
+    uint32_t cpInd = clickedObjId - m_polygon->getPoints(0)->at(0).id;
 
-        // if there are elements in the selection queue
-        // check if the actual dragged CtrlPoint is part of the
-        // selection, if not clear the Selection as soon as possible
-        if (m_cpSelectQueue.size() != 0 && !checkCtrlPointInSel(clickedObjId)) clearSelQueue();
+    // if there are elements in the selection queue
+    // check if the actual dragged CtrlPoint is part of the
+    // selection, if not clear the Selection as soon as possible
+    if (!m_cpSelectQueue.empty() && !checkCtrlPointInSel(clickedObjId)) {
+        clearSelQueue();
+    }
 
-        if (cpInd < m_polygon->getPoints(0)->size()) {
-            m_polygon->getPoints(0)->at(cpInd).selected    = true;
-            m_polygon->getPoints(0)->at(cpInd).refPosition = m_polygon->getPoints(0)->at(cpInd).position;
-            m_cpSelectQueue[cpInd]                         = &m_polygon->getPoints(0)->at(cpInd);
-        }
+    if (cpInd < m_polygon->getPoints(0)->size()) {
+        m_polygon->getPoints(0)->at(cpInd).selected    = true;
+        m_polygon->getPoints(0)->at(cpInd).refPosition = m_polygon->getPoints(0)->at(cpInd).position;
+        m_cpSelectQueue[cpInd]                         = &m_polygon->getPoints(0)->at(cpInd);
+    }
 }
 
-bool UIPolygon::checkCtrlPointInSel(uint32_t _id) {
-        bool found = false;
-        for (auto &kv : m_cpSelectQueue) {
-            if (m_polygon->getPoints(0)->at(kv.first).id == _id) {
-                found = true;
-                break;
-            }
+bool UIPolygon::checkCtrlPointInSel(uint32_t _id) const {
+    bool found = false;
+    for (const auto &key: m_cpSelectQueue | views::keys) {
+        if (m_polygon->getPoints(0)->at(key).id == _id) {
+            found = true;
+            break;
         }
-        return found;
+    }
+    return found;
 }
 
 void UIPolygon::clearSelQueue() {
-        m_cpSelectQueue.clear();
-
-        for (auto &it : *m_polygon->getPoints(0)) it.selected = false;
+    m_cpSelectQueue.clear();
+    for (auto &it : *m_polygon->getPoints(0)) {
+        it.selected = false;
+    }
 }
 
 void UIPolygon::createCopyForUndo() {
-
 }
 
 void UIPolygon::moveCtrlPoints(vec2 _offset, cpEditMode cp_editM) {
-        // movement with linear interpolation
-        // check level 1
-        for (auto &kv : m_cpSelectQueue) {
-            kv.second->position = kv.second->refPosition + _offset;
-        }
+    // movement with linear interpolation
+    // check level 1
+    for (auto &kv : m_cpSelectQueue) {
+        kv.second->position = kv.second->refPosition + _offset;
+    }
 }
 
 void UIPolygon::addPoint(vec2 pos, map <winProcStep, ProcStep> *procSteps) {
-        vec2 mousePos = vec2(inverse(*getWinRelMat()) * vec4(pos, 0.f, 1.f));
+    vec2 mousePos = vec2(inverse(*getWinRelMat()) * vec4(pos, 0.f, 1.f));
 
-        // run through all lines of the polygon and calculate the distance of
-        // the mouse position to them (orthogonal line orthogonal must intersect
-        // polygon line)
-        map<float, int> sortedDist;
-        auto            ply = m_polygon->getPoints(0);
-        for (int i = 0; i < ply->size(); i++) {
-            bool  orthoIntersects = true;
-            float dist            = distPointLine(mousePos, vec2(ply->at(i).position),
-                                                  vec2(ply->at((i + 1) % ply->size()).position), &orthoIntersects);
-            if (orthoIntersects) sortedDist[dist] = i;
+    // run through all lines of the polygon and calculate the distance of
+    // the mouse position to them (orthogonal line orthogonal must intersect
+    // polygon line)
+    map<float, int> sortedDist;
+    auto            ply = m_polygon->getPoints(0);
+    for (int i = 0; i < ply->size(); i++) {
+        bool  orthoIntersects = true;
+        float dist            = distPointLine(mousePos, vec2(ply->at(i).position),
+                                              vec2(ply->at((i + 1) % ply->size()).position), &orthoIntersects);
+        if (orthoIntersects) {
+            sortedDist[dist] = i;
         }
+    }
 
-        if (sortedDist.begin()->second + 1 < m_polygon->getPoints(0)->size())
-            m_polygon->insertBeforePoint(0, sortedDist.begin()->second + 1, mousePos.x, mousePos.y);
-        else
-            m_polygon->addPoint(0, mousePos.x, mousePos.y);
+    if (sortedDist.begin()->second + 1 < m_polygon->getPoints(0)->size()) {
+        m_polygon->insertBeforePoint(0, sortedDist.begin()->second + 1, mousePos.x, mousePos.y);
+    } else {
+        m_polygon->addPoint(0, mousePos.x, mousePos.y);
+    }
 
-        procSteps->at(winProcStep::Tesselate).active = true;
+    procSteps->at(winProcStep::Tesselate).active = true;
 }
 
 }  // namespace ara

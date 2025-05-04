@@ -38,7 +38,9 @@ Shaders *ShaderCollector::add(const std::string &name, const std::string &vert, 
 }
 
 Shaders *ShaderCollector::add(const std::string &name, const std::string &comp) {
-    if (!hasShader(name)) shaderCollection[name] = make_unique<Shaders>(comp, false);
+    if (!hasShader(name)) {
+        shaderCollection[name] = make_unique<Shaders>(comp, false);
+    }
     return shaderCollection[name].get();
 }
 
@@ -52,21 +54,23 @@ Shaders *ShaderCollector::add(const std::string &name, const std::string &vert, 
 }
 
 Shaders *ShaderCollector::addNoLink(const std::string &name, const std::string &vert, const std::string &frag) {
-    if (!hasShader(name)) shaderCollection[name] = make_unique<Shaders>(vert, frag, false);
-
+    if (!hasShader(name)) {
+        shaderCollection[name] = make_unique<Shaders>(vert, frag, false);
+    }
     return shaderCollection[name].get();
 }
 
 Shaders *ShaderCollector::addNoLink(const std::string &name, const std::string &vert, const std::string &geom,
                                     const std::string &frag) {
-    if (!hasShader(name)) shaderCollection[name] = make_unique<Shaders>(vert, geom, frag, false);
-
+    if (!hasShader(name)) {
+        shaderCollection[name] = make_unique<Shaders>(vert, geom, frag, false);
+    }
     return shaderCollection[name].get();
 }
 
 void ShaderCollector::deleteShader(const std::string &name) {
     if (hasShader(name)) {
-        auto it = shaderCollection.find(name);
+        const auto it = shaderCollection.find(name);
         shaderCollection.erase(it);
     }
 }
@@ -81,10 +85,10 @@ void ShaderCollector::deleteShader(const Shaders *ptr) {
 }
 
 Shaders *ShaderCollector::get(const std::string &name) {
-    if (shaderCollection.contains(name))
+    if (shaderCollection.contains(name)) {
         return shaderCollection[name].get();
-    else
-        return nullptr;
+    }
+    return nullptr;
 }
 
 bool ShaderCollector::hasShader(const std::string &name) const {
@@ -92,10 +96,13 @@ bool ShaderCollector::hasShader(const std::string &name) const {
 }
 
 Shaders *ShaderCollector::getStdClear(bool layered, int nrLayers) {
-    if (hasShader("std_clear"))
+    if (hasShader("std_clear")) {
         return shaderCollection["std_clear"].get();
-    else if (hasShader("std_clear_layer"))
+    }
+
+    if (hasShader("std_clear_layer")) {
         return shaderCollection["std_clear_layer"].get();
+    }
 
     std::string vert =
         STRINGIFY(layout(location = 0) in vec4 position; uniform vec4 clearCol; out vec4 i_col; void main() {
@@ -111,16 +118,16 @@ Shaders *ShaderCollector::getStdClear(bool layered, int nrLayers) {
                                 "color[" +
                                 std::to_string(nrLayers) + "];\n";
 
-    std::string geom = STRINGIFY(uniform mat4 m_pvm; in vec4 i_col[]; out vec4 o_col; void main() {
-        \n for (int i = 0; i < gl_in.length(); i++)\n {
-            \n gl_Layer = gl_InvocationID;
-            o_col       = color[gl_InvocationID];
-            gl_Position = m_pvm * gl_in[i].gl_Position;
-            \n EmitVertex();
-            \n
-        }
-        \n EndPrimitive();
-        \n
+    std::string geom = STRINGIFY(uniform mat4 m_pvm; in vec4 i_col[];
+        out vec4 o_col;
+        void main() {\n
+            for (int i = 0; i < gl_in.length(); i++) {\n
+                gl_Layer = gl_InvocationID;
+                o_col       = color[gl_InvocationID];
+                gl_Position = m_pvm * gl_in[i].gl_Position;\n
+                EmitVertex();\n
+            }\n
+            EndPrimitive();\n
     });
 
     //---------------------------------------------------------
@@ -137,22 +144,34 @@ Shaders *ShaderCollector::getStdClear(bool layered, int nrLayers) {
     if (layered) {
         geom = shdr_Header_g + "// clear shader, geom\n" + geom;
         return add("std_clear_layer", vert, geom, frag);
-    } else
-        return add("std_clear", vert, frag);
+    }
+    return add("std_clear", vert, frag);
 }
 
 Shaders *ShaderCollector::getStdCol() {
-    if (hasShader("std_color")) return shaderCollection["std_color"].get();
+    if (hasShader("std_color")) {
+        return shaderCollection["std_color"].get();
+    }
 
-    std::string vert = STRINGIFY(layout(location = 0) in vec4 position; layout(location = 1) in vec4 normal;
-                                 layout(location = 3) in vec4 color; uniform mat4 m_pvm; out vec4 col; void main() {
-                                     col         = color;
-                                     gl_Position = m_pvm * position;
-                                 });
+    std::string vert = STRINGIFY(
+        layout(location = 0) in vec4 position;
+        layout(location = 1) in vec4 normal;
+        layout(location = 3) in vec4 color;
+        uniform mat4 m_pvm;
+        out vec4 col;
+        void main() {
+            col         = color;
+            gl_Position = m_pvm * position;
+        });
 
     vert = shdr_Header + "// basic color shader, vert\n" + vert;
 
-    std::string frag = STRINGIFY(in vec4 col; layout(location = 0) out vec4 color; void main() { color = col; });
+    std::string frag = STRINGIFY(
+        in vec4 col;
+        layout(location = 0) out vec4 color;
+        void main() {
+            color = col;
+        });
 
     frag = shdr_Header + "// basic color shader, frag\n" + frag;
 
@@ -163,17 +182,21 @@ Shaders *ShaderCollector::getStdParCol() {
     if (hasShader("std_par_color")) return shaderCollection["std_par_color"].get();
 
 #ifndef __EMSCRIPTEN__
-    std::string vert = STRINGIFY(layout(location = 0) in vec4 position; \n uniform mat4 m_pvm; void main() {
-        \n gl_Position = m_pvm * position;
-        \n
+    std::string vert = STRINGIFY(
+        layout(location = 0) in vec4 position; \n
+        uniform mat4 m_pvm;
+        void main() {\n
+            gl_Position = m_pvm * position;\n
     });
-    vert             = shdr_Header + "// parametric color shader, vert\n" + vert;
+    vert = shdr_Header + "// parametric color shader, vert\n" + vert;
 
-    std::string frag = STRINGIFY(layout(location = 0) out vec4 glFragColor; \n uniform vec4 color; \n void main() {
-        \n glFragColor = color;
-        \n
+    std::string frag = STRINGIFY(
+        layout(location = 0) out vec4 glFragColor;
+        \n uniform vec4 color;
+        \n void main() {\n
+            glFragColor = color;\n
     });
-    frag             = shdr_Header + "// parametric color shader, frag\n" + frag;
+    frag = shdr_Header + "// parametric color shader, frag\n" + frag;
 #else
     std::string vert = STRINGIFY(precision highp float; \n attribute vec4 position; \n uniform mat4 m_pvm; void main() {
         \n gl_Position = m_pvm * position;

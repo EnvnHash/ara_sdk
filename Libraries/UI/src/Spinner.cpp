@@ -41,7 +41,7 @@ void Spinner::init() {
                 tex_coord   = quadVertices[gl_VertexID]; \n
                 gl_Position = m_pvm * vec4(quadVertices[gl_VertexID] * size, position.z, 1.0); \n
             });
-        vert = m_shCol->getShaderHeader() + vert;
+        vert = ara::ShaderCollector::getShaderHeader() + vert;
 
         string frag = STRINGIFY(
             in vec2 tex_coord; \n
@@ -53,7 +53,7 @@ void Spinner::init() {
             vec2    tc = vec2((cos(t) * p.x - sin(t) * p.y + 0.5), 1.0 - (cos(t) * p.y + sin(t) * p.x + 0.5));
             color = texture(tex, max(min(tc, 1.0), 0.0));\n
         );
-        frag = m_shCol->getShaderHeader() + m_shCol->getUiObjMapUniforms() + frag + m_shCol->getUiObjMapMain() + "}";
+        frag = ara::ShaderCollector::getShaderHeader() + m_shCol->getUiObjMapUniforms() + frag + m_shCol->getUiObjMapMain() + "}";
         m_shader = m_shCol->add("UI_UISpinner", vert, frag);
     }
     m_initTime = std::chrono::system_clock::now();
@@ -77,8 +77,7 @@ void Spinner::updateStyleIt(ResNode * node, state st, const std::string& styleCl
             setImgBase(m_sharedRes->res->img(m_baseStyleClass));
         }
     } else {
-        auto* inode = node->findNode<ResNode>("image");
-        if (inode) {
+        if (auto* inode = node->findNode<ResNode>("image")) {
             std::string name                     = inode->m_value;
             m_setStyleFunc[st][styleInit::image] = [name, this]() { setImgBase(m_sharedRes->res->img(name)); };
         }
@@ -86,9 +85,7 @@ void Spinner::updateStyleIt(ResNode * node, state st, const std::string& styleCl
 }
 
 void Spinner::setImgBase(AssetImageBase * imgBase) {
-    if ((m_imgBase = imgBase) == nullptr) {
-        return;
-    }
+    m_imgBase = imgBase;
 }
 
 bool Spinner::draw(uint32_t* objId) {

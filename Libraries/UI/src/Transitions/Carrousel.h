@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <AnimVal.h>
 #include <Transitions/UIStack.h>
 #include <Div.h>
 
@@ -30,19 +31,19 @@ public:
     void mouseDrag(hidData* data) override;
 
     CarrouselSlide* add();
-    CarrouselSlide* add(std::string&& styleclass);
+    CarrouselSlide* add(const std::string& styleclass);
     void postAdd(CarrouselSlide* sl);
 
-    void rotate(float pos);
+    void rotate(float pos) const;
     bool isRotating();
     bool isCurrent(CarrouselSlide* sl);
     void show(int32_t);
     void show(const std::string& name) override {};
-    void showSelector(bool val);
+    void showSelector(bool val) const;
 
 private:
-    ara::Div*                       m_content = nullptr;
-    ara::Div*                       m_selector = nullptr;
+    Div*                            m_content = nullptr;
+    Div*                            m_selector = nullptr;
     AnimVal<float>                  m_blend;
     std::vector<CarrouselSlide*>    m_slides;
     bool                            m_getDragDir = true;

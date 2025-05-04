@@ -186,8 +186,8 @@ glm::vec2& UINode::getContentSize() {
     }
 
     // calculate the size of the node's content area
-    m_contentSize.x = m_size.x - (m_padding.x + m_padding.z + static_cast<float>(m_borderWidth * 2.f));
-    m_contentSize.y = m_size.y - (m_padding.y + m_padding.w + static_cast<float>(m_borderWidth * 2.f));
+    m_contentSize.x = m_size.x - (m_padding.x + m_padding.z + m_borderWidth * 2.f);
+    m_contentSize.y = m_size.y - (m_padding.y + m_padding.w + m_borderWidth * 2.f);
 
     return m_contentSize;
 }
@@ -534,7 +534,7 @@ void UINode::calcContentTransMat() {
     }
 }
 
-void UINode::setDrawFlag() {
+void UINode::setDrawFlag() const {
     if (m_sharedRes) {
         m_sharedRes->setDrawFlag();
     }
@@ -735,7 +735,7 @@ void  UINode::setState(state st) {
     m_state = st;
 }
 
-void UINode::runOnMainThread(const std::function<bool()>& func, bool forcePush) {
+void UINode::runOnMainThread(const std::function<bool()>& func, bool forcePush) const {
     if (m_glbase) {
         m_glbase->runOnMainThread(func, forcePush);
     }
@@ -758,8 +758,9 @@ void UINode::addStyleClass(const std::string& styleClass) {
 
     // in case there was a previous (not default) style definition, delete it
     if (!m_styleTree.empty()) {
-        auto it = find_if(m_styleTree.begin(), m_styleTree.end(), [&styleClass](const std::string& st) { return st == styleClass; });
-        if (it == m_styleTree.end()) {
+        if (const auto it = ranges::find_if(m_styleTree, [&styleClass](const auto& st) {
+            return st == styleClass;
+        }); it == m_styleTree.end()) {
             m_styleTree.emplace_back(styleClass);
         }
     } else {
@@ -773,7 +774,7 @@ void UINode::clearStyles() {
 
     // clear lambada functions
     for (int i = 0; i < static_cast<int>(state::count); i++) {
-        m_setStyleFunc[(state)i].clear();
+        m_setStyleFunc[static_cast<state>(i)].clear();
     }
 
     loadStyleDefaults();  // calls the derived classes loadStyleDefaults
@@ -829,8 +830,7 @@ void UINode::updateStyleIt(ResNode* node, state st, const std::string& styleClas
         }
     }
 
-    auto align = node->findNode("align");
-    if (align) {
+    if (auto align = node->findNode("align")) {
         if (align->m_value == "center") {
             m_setStyleFunc[st][styleInit::align] = [this, st]() { setAlignX(align::center, st); };
         } else if (align->m_value == "left") {
@@ -840,8 +840,7 @@ void UINode::updateStyleIt(ResNode* node, state st, const std::string& styleClas
         }
     }
 
-    auto v_align = node->findNode("v-align");
-    if (v_align) {
+    if (auto v_align = node->findNode("v-align")) {
         if (v_align->m_value == "center")
             m_setStyleFunc[st][styleInit::valign] = [this, st]() { setAlignY(valign::center, st); };
         else if (v_align->m_value == "top")
@@ -884,8 +883,9 @@ void UINode::updateStyleIt(ResNode* node, state st, const std::string& styleClas
 
         // in case this is a reference iterate again
         if (pv.size() == 1 && !is_number(pv[0])) {
-            auto n = node->getRoot()->findNode(pv[0]);
-            if (n) pv = n->splitValue(',');
+            if (auto n = node->getRoot()->findNode(pv[0])) {
+                pv = n->splitValue(',');
+            }
         }
 
         vec4 pd{pv.f(0), pv.f(1, pv.f(0)), pv.f(2, pv.f(0)), pv.f(3, pv.f(0))};
@@ -897,8 +897,7 @@ void UINode::updateStyleIt(ResNode* node, state st, const std::string& styleClas
         // will become 10,10,10,10
     }
 
-    auto vis = node->findNode("visible");
-    if (vis) {
+    if (auto vis = node->findNode("visible")) {
         bool val                               = vis->m_value == "true";
         m_setStyleFunc[st][styleInit::visible] = [this, val, st]() { setVisibility(val, st); };
     }
@@ -1139,7 +1138,7 @@ void UINode::drawAsRoot(uint32_t* objId) {
     // now iterate again through the scenegraph and draw
 
     // scissor stack must be in hardware pixel coordinates, 0|0 is bottom left
-    glScissor(0, 0, (GLsizei)(m_viewPort.z * getPixRatio()), (GLsizei)(m_viewPort.w * getPixRatio()));
+    glScissor(0, 0, static_cast<GLsizei>(m_viewPort.z * getPixRatio()), static_cast<GLsizei>(m_viewPort.w * getPixRatio()));
 
     if (m_reqTreeChanged) {
         m_treeChanged    = true;
@@ -1295,7 +1294,7 @@ void UINode::drawIt(scissorStack& ss, uint32_t* objId, bool treeChanged, bool* s
         if (!glm::all(glm::equal(m_sc, ss.active))) {
             ss.active = m_sc;
             if (m_drawImmediate) {
-                glScissor((GLint)m_sc.x, (GLint)m_sc.y, (GLint)m_sc.z, (GLint)m_sc.w);
+                glScissor(static_cast<GLint>(m_sc.x), static_cast<GLint>(m_sc.y), static_cast<GLint>(m_sc.z), static_cast<GLint>(m_sc.w));
             }
         }
 
@@ -1336,7 +1335,7 @@ void UINode::drawIt(scissorStack& ss, uint32_t* objId, bool treeChanged, bool* s
     // Note: although the recursive call to drawIt is not the last call, difference in performance is not relevant
 }
 
-void UINode::limitDrawVaoToBounds(vector<DivVaoData>::iterator& dIt, vec2& size, vec2& uvDiff, vec4& scIndDraw, vec4& vp) {
+void UINode::limitDrawVaoToBounds(const vector<DivVaoData>::iterator& dIt, vec2& size, vec2& uvDiff, vec4& scIndDraw, vec4& vp) {
     dIt->pos.y *= -1.f;
 
     bool limit = glm::compAdd(scIndDraw) > 0.f;
@@ -1383,9 +1382,9 @@ void UINode::limitTexCoordsToBounds(float* tc, int stdQuadVertInd, const vec2& t
     }
 }
 
-void UINode::reqUpdtTree() {
+void UINode::reqUpdtTree() const {
     if (!m_drawImmediate && m_sharedRes && m_sharedRes->win) {
-        auto win = static_cast<UIWindow*>(m_sharedRes->win);
+        const auto win = static_cast<UIWindow*>(m_sharedRes->win);
         if (win->getRootNode() && win->getRootNode()->getRoot()) {
             win->getRootNode()->getRoot()->reqTreeChanged(true);
         }
@@ -1432,8 +1431,8 @@ bool UINode::objPosIt(ObjPosIt& opi) {
     bool inBounds = (*opi.it)->isInBounds(opi.pos);
 
     // optional callback for additional ui elements there are not part of the regular tree
-    bool foundOot = false;
     if ((*opi.it)->m_outOfTreeObjId) {
+        bool foundOot = false;
         foundOot = (*opi.it)->m_outOfTreeObjId(opi);
         if (foundOot) {
             return false;
@@ -1544,7 +1543,7 @@ void UINode::hidIt(hidData* data, hidEvent evt, std::list<UINode*>::iterator it,
     }
 
     // go up one hierarchy, if we are at the end of the list, stop
-    it++;
+    ++it;
     if (it == tree.end()) {
         return;
     }
@@ -1704,12 +1703,13 @@ UINode* UINode::insertAfter(const std::string& name, std::unique_ptr<UINode>&& c
         return nullptr;
     }
 
-    auto r = std::find_if(m_children.begin(), m_children.end(), [&name](auto& it){
+    auto r = ranges::find_if(m_children, [&name](auto& it){
         return name == it->getName();
     });
 
-    if (r != m_children.end() && static_cast<int>(std::distance(m_children.begin(), r) +1) <= static_cast<int>(m_children.size())) {
-        auto it = m_children.insert(std::next(r, 1), std::move(child));
+    if (r != m_children.end()
+        && static_cast<int>(std::distance(m_children.begin(), r) +1) <= static_cast<int>(m_children.size())) {
+        const auto it = m_children.insert(std::next(r, 1), std::move(child));
         reqTreeChanged(true);
         init_child(it->get(), this);
         return it->get();
@@ -1724,12 +1724,12 @@ UINode* UINode::insertChild(const std::string& name, std::unique_ptr<UINode>&& c
         return nullptr;
     }
 
-    auto r = std::find_if(m_children.begin(), m_children.end(), [&name](auto& it){
+    auto r = ranges::find_if(m_children, [&name](auto& it){
         return name == it->getName();
     });
 
     if (r != m_children.end()) {
-        auto it = m_children.insert(r, std::move(child));
+        const auto it = m_children.insert(r, std::move(child));
         reqTreeChanged(true);
         init_child(it->get(), this);
         return it->get();
@@ -1743,8 +1743,8 @@ void UINode::moveChildTo(int position, UINode* node) {
         return;
     }
 
-    auto nodeIt = std::find_if(node->getParent()->getChildren().begin(), node->getParent()->getChildren().end(),
-                               [node](const std::unique_ptr<UINode>& it) { return node == it.get(); });
+    auto nodeIt = ranges::find_if(node->getParent()->getChildren(),
+                                  [node](const std::unique_ptr<UINode>& it) { return node == it.get(); });
     if (nodeIt == node->getParent()->getChildren().end()) {
         return;
     }
@@ -1760,8 +1760,8 @@ void UINode::moveChildTo(int position, UINode* node) {
 
 void UINode::remove_child(UINode* node) {
     // be sure the node to delete is really a child of this node
-    auto it = std::find_if(m_children.begin(), m_children.end(),
-                           [node](const unique_ptr<UINode>& n) { return n.get() == node; });
+    auto it = ranges::find_if(m_children,
+                              [node](const unique_ptr<UINode>& n) { return n.get() == node; });
 
     if (it != m_children.end()) {
         (*it)->removeFocus();
@@ -1803,16 +1803,16 @@ void UINode::init_child(UINode* child, UINode* parent) {
 
 void UINode::addGlCb(const std::string& identifier, const std::function<bool()>& f) {
     if (m_sharedRes) {
-        ((UIWindow*)m_sharedRes->win)->addGlCb(this, identifier, f);
+        static_cast<UIWindow *>(m_sharedRes->win)->addGlCb(this, identifier, f);
     }
 }
 
 void UINode::eraseCb(const std::string& identifier) {
-    ((UIWindow*)m_sharedRes->win)->eraseGlCb(this, identifier);
+    static_cast<UIWindow *>(m_sharedRes->win)->eraseGlCb(this, identifier);
 }
 
 bool UINode::hasCb(const std::string& identifier) {
-    return ((UIWindow*)m_sharedRes->win)->hasCb(this, identifier);
+    return static_cast<UIWindow *>(m_sharedRes->win)->hasCb(this, identifier);
 }
 
 uint32_t UINode::getMinChildId(uint32_t minId) {
@@ -1845,11 +1845,9 @@ UINode* UINode::getNodeById(uint32_t searchID) {
     for (const auto& child : m_children) {
         if (child->getId() == searchID) {
             return child.get();
-        } else {
-            auto cN = child->getNodeById(searchID);
-            if (cN) {
-                return cN;
-            }
+        }
+        if (auto cN = child->getNodeById(searchID)) {
+            return cN;
         }
     }
     return nullptr;
@@ -1933,16 +1931,16 @@ void UINode::getSubNodeCountIt(UINode* node, uint32_t* count) {
     }
 }
 
-UIWindow* UINode::getWindow() {
+UIWindow* UINode::getWindow() const {
     return m_sharedRes ? static_cast<UIWindow*>(m_sharedRes->win) : nullptr;
 }
 
-UIApplication* UINode::getApp() {
+UIApplication* UINode::getApp() const {
     return (m_sharedRes && m_sharedRes->win) ? static_cast<UIWindow*>(m_sharedRes->win)->getApplicationHandle()
                                              : nullptr;
 }
 
-float UINode::getPixRatio() {
+float UINode::getPixRatio() const {
     return m_sharedRes ? static_cast<UIWindow*>(m_sharedRes->win)->getPixelRatio() : 1.f;
 }
 

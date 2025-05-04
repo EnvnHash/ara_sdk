@@ -13,7 +13,7 @@ public:
     void init() override;
     void updtMatrIt(scissorStack* ss) override;
     void clearContentChildren() const;
-    std::vector<std::unique_ptr<UINode>>* getContChildren() const;
+    [[nodiscard]] std::vector<std::unique_ptr<UINode>>* getContChildren() const;
     void mouseWheel(hidData* data) override;
 #ifdef __ANDROID__
     void mouseDrag(hidData* data) override;

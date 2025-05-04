@@ -11,7 +11,7 @@ using namespace glm;
 
 namespace ara {
 
-Div::Div() : UINode() {
+Div::Div() {
     setName(getTypeName<Div>());
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_indDrawBlock.stdInit();
@@ -19,9 +19,9 @@ Div::Div() : UINode() {
 #endif
 }
 
-Div::Div(const std::string& styleClass) : UINode() {
+Div::Div(const std::string& styleClass) {
     setName(getTypeName<Div>());
-    addStyleClass(styleClass);
+    UINode::addStyleClass(styleClass);
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_indDrawBlock.stdInit();
     m_drawImmediate = false;
@@ -59,7 +59,7 @@ void Div::updateDrawData() {
         // calculate position in normalized screen coordinates
         for (auto &it : stdQuadVertices) {
             dIt->pos = m_mvp * vec4(it * m_size, 0.f, 1.0);
-            dIt++;
+            ++dIt;
         }
 
         dIt = m_indDrawBlock.vaoData.begin();
@@ -92,8 +92,8 @@ void Div::updateDrawData() {
             dIt->aux3.x = 0.f;  // type indicator (0=Div)
             dIt->aux3.w = m_absoluteAlpha;
 
-            dIt++;
-            i++;
+            ++dIt;
+            ++i;
         }
     }
 }

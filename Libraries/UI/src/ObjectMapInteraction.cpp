@@ -5,12 +5,12 @@ using namespace std;
 
 namespace ara {
 
-ObjectMapInteraction::ObjectMapInteraction(ShaderCollector* _shCol, uint32_t width, uint32_t height, FBO* extFbo,
+ObjectMapInteraction::ObjectMapInteraction(ShaderCollector* shCol, uint32_t width, uint32_t height, FBO* extFbo,
                                            bool isMultisample)
-    : m_guiFboSize(ivec2(width, height)), m_idCtr(0), m_nrPboBufs(3), m_pboIndex(0), m_shCol(_shCol),
-      m_multiSamp(isMultisample) {}
+    : m_shCol(shCol), m_pixels(), m_guiFboSize(ivec2(width, height)), m_multiSamp(isMultisample) {
+}
 
-void ObjectMapInteraction::initObjIdShdr() {
+void ObjectMapInteraction::initObjIdShdr()  {
     string vert = std::string("#version 130\n") // marco.g : need 1.3 for flat in/out
            + STRINGIFY(
        precision highp float;\n
@@ -40,7 +40,12 @@ void ObjectMapInteraction::initObjIdShdr() {
             passId=objId;
 		});
 
-    string frag = STRINGIFY(#version 130\n precision highp float;\n uniform int useTex;\n uniform sampler2D tex;\n varying vec2 tex_coord;\n flat in float passId;\n  // marco.g : Receiving the ObjID as a flat
+    string frag = std::string("#version 130\n") + STRINGIFY(
+        precision highp float;\n
+        uniform int useTex;\n
+        uniform sampler2D tex;\n
+        varying vec2 tex_coord;\n
+        flat in float passId;\n  // marco.g : Receiving the ObjID as a flat
         void main() {
             if (useTex == 1) {  // texture comes in as uint32 to 4 bytes
                 vec4 texCol = texture2D(tex, tex_coord);
@@ -51,7 +56,6 @@ void ObjectMapInteraction::initObjIdShdr() {
                                 mod(floor(z * 0.00390625), 256.0) / 255.0, mod(z, 256.0) / 255.0, 1.0);
         });
 
-    // m_objIdShdr = m_shCol->add("Warping_objId", vert, frag);
     m_objIdShdr = m_shCol->addNoLink("Warping_objId", vert, frag);
 
     // VAO binds texCoord to Attribute Location 2, since we are using WebGL
@@ -64,22 +68,29 @@ void ObjectMapInteraction::initObjIdShdr() {
 
 void ObjectMapInteraction::initExtFboObjIdShdr() {
     string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 2) in vec2 texCoord; \n uniform vec2 size;\n uniform mat4 m_pvm;\n uniform mat4 perspMat;\n uniform int usePersp;\n uniform int flipVTexCoord;\n out vec2 tex_coord;\n
-        \n vec2 undist(vec2 inPoint, mat4 distMat) {
-            \n float x         = inPoint.x;
-            \n float y         = inPoint.y;
-            \n float w         = 1.0 / (x * distMat[0][2] + y * distMat[1][2] + distMat[2][2]);
-            \n       inPoint.x = (x * distMat[0][0] + y * distMat[1][0] + distMat[2][0]) * w;
-            \n       inPoint.y = (x * distMat[0][1] + y * distMat[1][1] + distMat[2][1]) * w;
-            \n return inPoint;
-            \n
+        layout(location = 0) in vec4 position; \n
+        layout(location = 2) in vec2 texCoord; \n
+        uniform vec2 size;\n
+        uniform mat4 m_pvm;\n
+        uniform mat4 perspMat;\n
+        uniform int usePersp;\n
+        uniform int flipVTexCoord;\n
+        out vec2 tex_coord;\n\n
+        vec2 undist(vec2 inPoint, mat4 distMat) {\n
+            float x         = inPoint.x;\n
+            float y         = inPoint.y;\n
+            float w         = 1.0 / (x * distMat[0][2] + y * distMat[1][2] + distMat[2][2]);\n
+            inPoint.x = (x * distMat[0][0] + y * distMat[1][0] + distMat[2][0]) * w;\n
+            inPoint.y = (x * distMat[0][1] + y * distMat[1][1] + distMat[2][1]) * w;\n
+            return inPoint;\n
         } \n
-        \n void main() {
-            tex_coord        = vec2(texCoord.x, bool(flipVTexCoord) ? 1.0 - texCoord.y : texCoord.y);
-            vec4 p           = (usePersp == 1 ? vec4(undist(position.xy, perspMat), 0.0, 1.0) : position);
-            \n   gl_Position = m_pvm * vec4(p.xy * size, p.z, 1.0);
+        \n
+        void main() {
+            tex_coord        = vec2(texCoord.x, bool(flipVTexCoord) ? 1.0 - texCoord.y : texCoord.y);\n
+            vec4 p           = (usePersp == 1 ? vec4(undist(position.xy, perspMat), 0.0, 1.0) : position);\n
+            gl_Position = m_pvm * vec4(p.xy * size, p.z, 1.0);
         });
-    vert = "// objid shader (extfbo), vert\n" + m_shCol->getShaderHeader() + vert;
+    vert = "// objid shader (extfbo), vert\n" + ara::ShaderCollector::getShaderHeader() + vert;
 
     string frag = STRINGIFY(uniform int useTex;\n
         uniform sampler2D tex;\n
@@ -102,29 +113,36 @@ void ObjectMapInteraction::initExtFboObjIdShdr() {
             float z=objId * 16777216.0; \n
             frag = vec4(mod(floor(z * 1.52587890625e-5), 256.0) / 255.0, mod(floor(z * 0.00390625), 256.0) / 255.0, mod(z, 256.0) / 255.0, 1.0);  \n
     });
-    frag = "// objid shader (extfbo), frag\n" + m_shCol->getShaderHeader() + frag;
+    frag = "// objid shader (extfbo), frag\n" + ShaderCollector::getShaderHeader() + frag;
 
     m_objIdShdr = m_shCol->add("ObjectMapInteraction_extFbo", vert, frag);
 }
 
-void ObjectMapInteraction::initNormExtFboObjIdShdr() {
+void ObjectMapInteraction::initNormExtFboObjIdShdr()  {
     string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 2) in vec2 texCoord; \n uniform vec2 size;\n uniform mat4 m_pvm;\n uniform mat4 perspMat;\n uniform int usePersp;\n out vec2 tex_coord;\n
-        \n vec2 undist(vec2 inPoint, mat4 distMat) {
-            \n float x         = inPoint.x;
-            \n float y         = inPoint.y;
-            \n float w         = 1.0 / (x * distMat[0][2] + y * distMat[1][2] + distMat[2][2]);
-            \n       inPoint.x = (x * distMat[0][0] + y * distMat[1][0] + distMat[2][0]) * w;
-            \n       inPoint.y = (x * distMat[0][1] + y * distMat[1][1] + distMat[2][1]) * w;
-            \n return inPoint;
-            \n
+        layout(location = 0) in vec4 position; \n
+        layout(location = 2) in vec2 texCoord; \n
+        uniform vec2 size;\n
+        uniform mat4 m_pvm;\n
+        uniform mat4 perspMat;\n
+        uniform int usePersp;\n out
+        vec2 tex_coord;\n
+        \n
+        vec2 undist(vec2 inPoint, mat4 distMat) {\n
+            float x         = inPoint.x;\n
+            float y         = inPoint.y;\n
+            float w         = 1.0 / (x * distMat[0][2] + y * distMat[1][2] + distMat[2][2]);\n
+            inPoint.x = (x * distMat[0][0] + y * distMat[1][0] + distMat[2][0]) * w;\n
+            inPoint.y = (x * distMat[0][1] + y * distMat[1][1] + distMat[2][1]) * w;\n
+            return inPoint;\n
         } \n
-        \n void main() {
-            tex_coord        = texCoord;
-            vec4 p           = (usePersp == 1 ? vec4(undist(position.xy, perspMat), 0.0, 1.0) : position);
-            \n   gl_Position = m_pvm * p;
+        \n
+        void main() { \n
+            tex_coord        = texCoord; \n
+            vec4 p           = (usePersp == 1 ? vec4(undist(position.xy, perspMat), 0.0, 1.0) : position);\n
+            gl_Position = m_pvm * p;
         });
-    vert = "// objid norm shader (extfbo), vert\n" + m_shCol->getShaderHeader() + vert;
+    vert = "// objid norm shader (extfbo), vert\n" + ShaderCollector::getShaderHeader() + vert;
 
     string frag = STRINGIFY(uniform int useTex;\n
         uniform sampler2D tex;\n
@@ -139,12 +157,12 @@ void ObjectMapInteraction::initNormExtFboObjIdShdr() {
             float z=objId * 16777216.0;
             frag = vec4(mod(floor(z * 1.52587890625e-5), 256.0) / 255.0, mod(floor(z * 0.00390625), 256.0) / 255.0, mod(z, 256.0) / 255.0, 1.0);
         });
-    frag = "// objid norm shader (extfbo), frag\n" + m_shCol->getShaderHeader() + frag;
+    frag = "// objid norm shader (extfbo), frag\n" + ShaderCollector::getShaderHeader() + frag;
 
     m_normObjIdShdr = m_shCol->add("ObjectMapInteraction_norm_extFbo", vert, frag);
 }
 
-void ObjectMapInteraction::initExtFboObjIdTexAlphaShdr() {
+void ObjectMapInteraction::initExtFboObjIdTexAlphaShdr()  {
     std::string vert = STRINGIFY(
         out vec2 uv;\n
         out vec2 tuv;\n
@@ -178,7 +196,7 @@ void ObjectMapInteraction::initExtFboObjIdTexAlphaShdr() {
             out_flags=flags;\n
             gl_Position = mvp * vec4(pos+vr[gl_VertexID]*size,0,1);\n
         });
-    vert = "// objid shader (extfbo, texAlpha), vert\n" + m_shCol->getShaderHeader() + vert;
+    vert = "// objid shader (extfbo, texAlpha), vert\n" + ShaderCollector::getShaderHeader() + vert;
 
     string frag = STRINGIFY(
         in vec2 uv; \n
@@ -206,35 +224,37 @@ void ObjectMapInteraction::initExtFboObjIdTexAlphaShdr() {
             }
         });
 
-    frag = "// objid shader (extfbo, texAlpha), frag\n" + m_shCol->getShaderHeader() + frag;
+    frag = "// objid shader (extfbo, texAlpha), frag\n" + ShaderCollector::getShaderHeader() + frag;
 
     m_shCol->add("ObjectMapInteraction_texAlpha_extFbo", vert, frag);
 }
 
-void ObjectMapInteraction::initMSTextureReadShdr() {
+void ObjectMapInteraction::initMSTextureReadShdr()   {
     string vert = STRINGIFY(void main() { gl_Position = vec4(0.0, 0.0, 0.0, 1.0); });
-    vert        = "// objid read ms FBO (extfbo), vert\n" + m_shCol->getShaderHeader() + vert;
+    vert        = "// objid read ms FBO (extfbo), vert\n" + ShaderCollector::getShaderHeader() + vert;
 
     string frag;
-
-    if (m_useSSBO) frag += "layout( std140, binding=0 ) buffer sb { uint objId[]; };\n";
+    if (m_useSSBO) {
+        frag += "layout( std140, binding=0 ) buffer sb { uint objId[]; };\n";
+    }
 
     frag += STRINGIFY(uniform sampler2DMS tex;\n
         uniform ivec2 pos; \n
         layout(location = 0) out vec4 frag; \n
-        void main() {
-        \n vec4 outCol = texelFetch(tex, pos, 0);
-        \n      frag   = outCol; \n
-    );
+        void main() {\n
+            vec4 outCol = texelFetch(tex, pos, 0);\n
+            frag   = outCol; \n
+        );
 
-        if (m_useSSBO)
-            frag += "objId[0] = (uint(outCol.r * 255.0) << 16) + (uint(outCol.g * "
-                                         "255.0) << 8) + uint(outCol.b * 255.0);\n";
+    if (m_useSSBO) {
+        frag += "objId[0] = (uint(outCol.r * 255.0) << 16) + (uint(outCol.g * "
+                                     "255.0) << 8) + uint(outCol.b * 255.0);\n";
+    }
 
-        frag += "}";
-        frag = "// objid read ms FBO (extfbo), frag\n" + m_shCol->getShaderHeader() + frag;
+    frag += "}";
+    frag = "// objid read ms FBO (extfbo), frag\n" + ShaderCollector::getShaderHeader() + frag;
 
-        m_msFboReadShdr = m_shCol->add("ObjectMapInteraction_readFboShdr", vert, frag);
+    m_msFboReadShdr = m_shCol->add("ObjectMapInteraction_readFboShdr", vert, frag);
 }
 
 }  // namespace ara

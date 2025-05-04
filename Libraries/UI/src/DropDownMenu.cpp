@@ -17,20 +17,19 @@ namespace ara {
 DropDownMenu::DropDownMenu() : Div() {
     setName(getTypeName<DropDownMenu>());
     setFocusAllowed(false);
-    loadStyleDefaults();
+    UINode::loadStyleDefaults();
 }
 
 DropDownMenu::DropDownMenu(const std::string& styleClass) : Div(styleClass) {
     setName(getTypeName<DropDownMenu>());
     setFocusAllowed(false);
-    loadStyleDefaults();
+    UINode::loadStyleDefaults();
 }
 
 DropDownMenu::~DropDownMenu() {
 #ifdef ARA_USE_GLFW
     getWinMan()->removeGlobalMouseButtonCb(this);
-    auto uiWin = static_cast<UIWindow*>(getWindow());
-    if (uiWin) {
+    if (auto uiWin = getWindow()) {
         uiWin->removeGlobalMouseDownLeftCb(this);
         uiWin->removeGlobalMouseDownRightCb(this);
     }
@@ -54,7 +53,7 @@ void DropDownMenu::init() {
     m_listEntryHeight = m_sharedRes->gridSize.y;
 
     // global MouseDown callbacks for closing the DropDownMenu
-    auto uiWin = static_cast<UIWindow*>(getWindow());
+    auto uiWin = getWindow();
 
     // be sure the callback exits only once
     uiWin->removeGlobalMouseDownLeftCb(this);
@@ -70,7 +69,7 @@ void DropDownMenu::init() {
             return;
         }
 
-        auto uiWin = static_cast<UIWindow*>(getWindow());
+        auto uiWin = getWindow();
         if (!uiWin) {
             return;
         }
@@ -115,9 +114,9 @@ void DropDownMenu::open() {
     // create on top of all nodes
     m_entryList = getRoot()->addChild<Div>(getStyleClass() + ".list");
     m_entryList->setName("DDM_EntryList");
-    m_entryList->setPos((int)m_menuEntryButt->getWinPos().x,
-                        (int)(m_menuEntryButt->getWinPos().y + m_sharedRes->gridSize.y));
-    m_entryList->setSize(200, (int)m_entries.size() * m_listEntryHeight);
+    m_entryList->setPos(static_cast<int>(m_menuEntryButt->getWinPos().x),
+                        static_cast<int>(m_menuEntryButt->getWinPos().y + m_sharedRes->gridSize.y));
+    m_entryList->setSize(200, static_cast<int>(m_entries.size()) * m_listEntryHeight);
     m_entryList->setBackgroundColor(m_sharedRes->colors->at(uiColors::background));
     m_entryList->setBorderWidth(1);
     m_entryList->setBorderColor(m_sharedRes->colors->at(uiColors::sepLine));
@@ -206,11 +205,11 @@ void DropDownMenu::rebuildEntryList() {
         butt->setColor(m_sharedRes->colors->at(uiColors::black), state::highlighted);
         butt->setBackgroundColor(m_sharedRes->colors->at(uiColors::highlight), state::highlighted);
 
-        i++;
+        ++i;
     }
 }
 
-void DropDownMenu::setMenuName(std::string str) {
+void DropDownMenu::setMenuName(const std::string& str) {
     m_menuEntryName = str;
 
     if (m_menuEntryButt) {
