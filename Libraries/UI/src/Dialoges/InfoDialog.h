@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include "Button/Button.h"
-#include <Label.h>
 #include <UIWindow.h>
 
 namespace ara {
+
+class Label;
+class Button;
 
 class InfoDialog : public UIWindow {
 public:
@@ -27,7 +28,7 @@ public:
     void setCancelCb(const std::function<bool()>& f) { m_cancelCb = f; }
     void setRemoveCb(const std::function<void()>& f) { m_removeCb = f; }
 
-    long getMinStayTime() const { return m_minStayTime; }
+    [[maybe_unused]] long getMinStayTime() const { return m_minStayTime; }
 
 private:
     Label                                             *m_msgLabel     = nullptr;

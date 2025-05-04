@@ -25,35 +25,39 @@ ShadowMapEsm2::ShadowMapEsm2(Camera* gCam, int scrWidth, int scrHeight, vec3 lig
     colBufType        = GL_R32F;
     s_shadow_map_coef = 0.5f;
     lookAtPoint       = vec3(0.0f, 0.0f, 0.0f);
-    m_shadowMatr        = mat4(1.0f);
+    m_shadowMatr      = mat4(1.0f);
     m_scaleBiasMatrix = mat4(vec4(0.5f, 0.0f, 0.0f, 0.0f), vec4(0.0f, 0.5f, 0.0f, 0.0f), vec4(0.0f, 0.0f, 0.5f, 0.0f),
                              vec4(0.5f, 0.5f, 0.5f, 1.0f));
-
-    m_lightCam = new Camera();
-    m_lightCam->setupPerspective(45.0f, f_near, f_far, s_scrWidth, s_scrHeight);
-    m_lightCam->setCamPos(m_lightPosition);
-    m_lightCam->setLookAt(lookAtPoint);
-    m_lightCam->setType(camType::frustum);
-    m_lightCam->buildMatrices();
-    m_lightCam->setModelMatr(m_gCam->getModelMatr());
+    m_lightCam        = make_unique<Camera>();
     linearDepthScalar = 1.f / (f_far - f_near);  // this helps us remap depth values to be linear
 
+    setLightPos(m_lightPosition);
+
     string vSmapShader = ShaderCollector::getShaderHeader();
-    vSmapShader +=
-        STRINGIFY(layout(location = 0) in vec4 position; layout(location = 4) in mat4 modMatr;
-                  uniform int useInstancing; uniform mat4 model_matrix; uniform mat4 view_matrix;
-                  uniform mat4 projection_matrix; out vec4 v_position; mat4 model_view_matrix; void main() {
-                      model_view_matrix = view_matrix * (useInstancing == 0 ? model_matrix : modMatr);
-                      v_position        = model_view_matrix * position;
-                      gl_Position       = projection_matrix * (model_view_matrix * position);
-                  });
+    vSmapShader += STRINGIFY(
+        layout(location = 0) in vec4 position;
+        layout(location = 4) in mat4 modMatr;
+        uniform int useInstancing;
+        uniform mat4 model_matrix;
+        uniform mat4 view_matrix;
+        uniform mat4 projection_matrix;
+        out vec4 v_position;
+        mat4 model_view_matrix;
+        void main() {
+            model_view_matrix = view_matrix * (useInstancing == 0 ? model_matrix : modMatr);
+            v_position        = model_view_matrix * position;
+            gl_Position       = projection_matrix * (model_view_matrix * position);
+        });
 
     string fSmapShader = ShaderCollector::getShaderHeader();
-    fSmapShader += STRINGIFY(uniform float u_LinearDepthConstant; in vec4 v_position;
-                             layout(location = 0) out vec4 color; void main() {
-                                 float linearDepth = length(v_position.xyz) * u_LinearDepthConstant;
-                                 color.r           = linearDepth;
-                             });
+    fSmapShader += STRINGIFY(
+        uniform float u_LinearDepthConstant;
+        in vec4 v_position;
+        layout(location = 0) out vec4 color;
+        void main() {
+            float linearDepth = length(v_position.xyz) * u_LinearDepthConstant;
+            color.r           = linearDepth;
+        });
 
     m_depthShader = s_glbase->shaderCollector().add("ShadowMapEsm2", vSmapShader, fSmapShader);
 
@@ -89,8 +93,7 @@ float* ShadowMapEsm2::getShadowMatr() {
     return &m_shadowMatr[0][0];
 }
 
-// noch schmutzig, könnte noch eleganter sein....
-void ShadowMapEsm2::setLightPos(vec3 pos) {
+void ShadowMapEsm2::setLightPos(const vec3& pos) {
     m_lightPosition = pos;
     m_lightCam->setupPerspective(45.0f, f_near, f_far, s_scrWidth, s_scrHeight);
     m_lightCam->setCamPos(m_lightPosition);

@@ -25,56 +25,37 @@
 #include <UITable.h>
 #include "WindowElements/WindowResizeArea.h"
 #include "WindowElements/WindowResizeAreas.h"
+#include <Utils/PingPongFbo.h>
+#include <DrawManagers/DrawManagerGizmo.h>
 
 namespace ara {
 
 std::unique_ptr<UINode> UINodeFact::Create(const std::string &className) {
-    if (className == "button") {
-        return std::make_unique<ImageButton>();
-    } else if (className == "comboBox") {
-        return std::make_unique<ComboBox>();
-    } else if (className == "crosshair") {
-        return std::make_unique<CrossHair>();
-    } else if (className == "grid") {
-        return std::make_unique<Grid>();
-    } else if (className == "div") {
-        return std::make_unique<Div>();
-    } else if (className == "dropDownMenu") {
-        return std::make_unique<DropDownMenu>();
-    } else if (className == "dropDownMenuBar") {
-        return std::make_unique<DropDownMenuBar>();
-    } else if (className == "gizmo") {
-        return std::make_unique<Gizmo>();
-    } else if (className == "img") {
-        return std::make_unique<Image>();
-    } else if (className == "label") {
-        return std::make_unique<Label>();
-    } else if (className == "menuBar") {
-        return std::make_unique<MenuBar>();
-    } else if (className == "num_input") {
-        return std::make_unique<UIEdit>();
-    } else if (className == "polygon") {
-        return std::make_unique<UIPolygon>();
-    } else if (className == "slider") {
-        return std::make_unique<Slider>();
-    } else if (className == "propSlider") {
-        return std::make_unique<PropSlider>();
-    } else if (className == "edit") {
-        return std::make_unique<UIEdit>();
-    } else if (className == "node") {
-        return std::make_unique<UINode>();
-    } else if (className == "scrollView") {
-        return std::make_unique<ScrollView>();
-    } else if (className == "spinner") {
-        return std::make_unique<Spinner>();
-    } else if (className == "spinner") {
-        return std::make_unique<Spinner>();
-    } else if (className == "tabView") {
-        return std::make_unique<TabView>();
-    } else if (className == "table") {
-        return std::make_unique<UITable>();
-    }
-    return std::make_unique<UINode>();
+    static std::unordered_map<std::string, std::function<std::unique_ptr<UINode>()> > objMap = {
+        {"button", [] { return std::make_unique<ImageButton>(); }},
+        {"comboBox", [] { return std::make_unique<ComboBox>(); }},
+        {"crosshair", [] { return std::make_unique<CrossHair>(); }},
+        {"grid", [] { return std::make_unique<Grid>(); }},
+        {"div", [] { return std::make_unique<Div>(); }},
+        {"dropDownMenu", [] { return std::make_unique<DropDownMenu>(); }},
+        {"dropDownMenuBar", [] { return std::make_unique<DropDownMenuBar>(); }},
+        {"gizmo", [] { return std::make_unique<Gizmo>(); }},
+        {"img", [] { return std::make_unique<Image>(); }},
+        {"label", [] { return std::make_unique<Label>(); }},
+        {"menuBar", [] { return std::make_unique<MenuBar>(); }},
+        {"num_input", [] { return std::make_unique<UIEdit>(); }},
+        {"polygon", [] { return std::make_unique<UIPolygon>(); }},
+        {"slider", [] { return std::make_unique<Slider>(); }},
+        {"propSlider", [] { return std::make_unique<PropSlider>(); }},
+        {"edit", [] { return std::make_unique<UIEdit>(); }},
+        {"node", [] { return std::make_unique<UINode>(); }},
+        {"scrollView", [] { return std::make_unique<ScrollView>(); }},
+        {"spinner", [] { return std::make_unique<Spinner>(); }},
+        {"tabView", [] { return std::make_unique<TabView>(); }},
+        {"table", [] { return std::make_unique<UITable>(); }},
+    };
+
+    return objMap[className]();
 }
 
 }  // namespace ara

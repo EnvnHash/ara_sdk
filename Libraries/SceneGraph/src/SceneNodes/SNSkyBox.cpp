@@ -13,7 +13,7 @@ using namespace std;
 namespace ara {
 
 SNSkyBox::SNSkyBox(sceneData* sd) : SceneNode(sd) {
-    m_protoName[GLSG_SCENE_PASS] = getTypeName<SPSkyBox>();  // force the use of the GridFloor ShaderPrototype if it is present
+    m_protoName[renderPass::scene] = getTypeName<SPSkyBox>();  // force the use of the GridFloor ShaderPrototype if it is present
     init();
 }
 
@@ -22,7 +22,7 @@ void SNSkyBox::init() {
 }
 
 void SNSkyBox::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo) {
-    if (pass != GLSG_SCENE_PASS) {
+    if (pass != renderPass::scene) {
         return;
     }
 

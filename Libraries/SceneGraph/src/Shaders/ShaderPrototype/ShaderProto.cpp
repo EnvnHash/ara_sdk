@@ -26,12 +26,12 @@ ShaderProto::ShaderProto(sceneData* sd)
  * Standard shader setup: model, view, projection matrices, object highlighting, node Materials
  */
 void ShaderProto::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode* parent, renderPass pass, uint loopNr) {
-    if (pass != GLSG_SHADOW_MAP_PASS && s_shader) {
+    if (pass != renderPass::shadowMap && s_shader) {
         // update values
-        s_camLimit   = pass == GLSG_GIZMO_PASS ? 0 : 100000;
+        s_camLimit   = pass == renderPass::gizmo ? 0 : 100000;
         s_skipForInd = !node->m_skipForCamInd.empty() ? node->m_skipForCamInd[parent] : 100000;
 
-        if (pass != GLSG_OBJECT_MAP_PASS) {
+        if (pass != renderPass::objectMap) {
             s_highLight = static_cast<float>(node->isSelected(parent));  // marco.g : this fixes the projector model
         }                                                     // selection, "parent" had to be passed so it could
                                                             // evaluate if it is selected too, it solves the
@@ -70,14 +70,14 @@ void ShaderProto::sendPar(CameraSet* cs, double time, SceneNode* node, SceneNode
             s_shader->setUniform1iv("fishEye", cs->getSetFishEyeSwitches(), cs->getNrCameras());
             s_shader->setUniform4fv("fishEyeAdjust", cs->getSetFishEyeParams(), cs->getNrCameras());
 
-            if (pass != GLSG_OBJECT_MAP_PASS) {
+            if (pass != renderPass::objectMap) {
                 s_shader->setUniformMatrix3fv(getStdMatrixNames()[toType(StdMatNameInd::NormalMat)], value_ptr(node->getNormalMat(parent)));
                 s_shader->setUniform1f("highLight", s_highLight);
             }
         }
 
         // send SceneNode Material, uses a separate uniform block
-        if (pass != GLSG_OBJECT_MAP_PASS) {
+        if (pass != renderPass::objectMap) {
             node->getMaterial()->sendToShader(s_shader->getProgram());
         }
     }

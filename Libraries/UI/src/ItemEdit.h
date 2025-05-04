@@ -5,9 +5,6 @@
 #pragma once
 
 #include <DataModel/ItemRef.h>
-#include <Label.h>
-#include <PropSlider.h>
-#include <UIEdit.h>
 #include <UITable.h>
 
 namespace ara {

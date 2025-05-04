@@ -145,19 +145,19 @@ void SPSpotLight::clear(renderPass _pass) {
 
 void SPSpotLight::sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode* parent, renderPass pass, uint loopNr) {
     ShaderProto::sendPar(cs, time, scene, parent, pass);
-	if (pass == GLSG_SCENE_PASS) {
+	if (pass == renderPass::scene) {
 		m_lightProp.sendToShader(s_shader->getProgram());
 	}
 }
 
 bool SPSpotLight::begin(CameraSet* cs, renderPass pass, uint loopNr) {
     switch (pass) {
-        case GLSG_SHADOW_MAP_PASS:
+        case renderPass::shadowMap:
         	return false;
-        case GLSG_SCENE_PASS:
+        case renderPass::scene:
             s_shader->begin();
             return true;
-        case GLSG_GIZMO_PASS:
+        case renderPass::gizmo:
             s_shader->begin();
             return true;
         default:
@@ -166,7 +166,7 @@ bool SPSpotLight::begin(CameraSet* cs, renderPass pass, uint loopNr) {
 }
 
 bool SPSpotLight::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SCENE_PASS ) {
+    if (pass == renderPass::scene ) {
 	    Shaders::end();
     }
 

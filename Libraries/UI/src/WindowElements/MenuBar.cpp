@@ -3,10 +3,10 @@
 //
 
 #include "MenuBar.h"
-
 #include "GLBase.h"
-
 #include "UIWindow.h"
+#include "Button/ImageButton.h"
+#include <Utils/PingPongFbo.h>
 
 using namespace std;
 using namespace glm;
@@ -126,9 +126,20 @@ void MenuBar::mouseDrag(hidData* data) {
 void MenuBar::setEnableMinMaxButtons(bool val) {
     m_enableMinMaxButtons = val;
 
-    if (m_menButtons[butType::maximize]) m_menButtons[butType::maximize]->setVisibility(val);
+    if (m_menButtons[butType::maximize]) {
+        m_menButtons[butType::maximize]->setVisibility(val);
+    }
 
-    if (m_menButtons[butType::minimize]) m_menButtons[butType::minimize]->setVisibility(val);
+    if (m_menButtons[butType::minimize]) {
+        m_menButtons[butType::minimize]->setVisibility(val);
+    }
+}
+
+void MenuBar::hideButtons(bool val) {
+    m_showButtons = !val;
+    for (const auto& it : m_menButtons) {
+        it.second->setVisibility(!val);
+    }
 }
 
 }  // namespace ara

@@ -5,7 +5,6 @@
 #pragma once
 
 #include <UINode.h>
-
 #include "AnimVal.h"
 
 namespace ara {

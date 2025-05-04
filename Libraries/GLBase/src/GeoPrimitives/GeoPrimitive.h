@@ -17,7 +17,7 @@
 #pragma once
 
 #include <Meshes/Mesh.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 namespace ara {
 

@@ -13,7 +13,7 @@
 //#include <Utils/MersenneTwister.h>
 //#include <Utils/Texture.h>
 //#include <Utils/Vertex.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 //#include "GLUtils/Noise3DTexGen.h"
 //#include "SceneNodes/SceneNode.h"

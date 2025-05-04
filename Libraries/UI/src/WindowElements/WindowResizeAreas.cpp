@@ -26,7 +26,9 @@ void WindowResizeAreas::init() {
     // there are no grabbers to resize the window ... so we also have to build
     // those by ourselves
     int dragAreaSize = 10;
-    for (int i = 0; i < 8; i++) m_winResizeAreas.emplace_back(addChild<WindowResizeArea>());
+    for (int i = 0; i < 8; i++) {
+        m_winResizeAreas.emplace_back(addChild<WindowResizeArea>());
+    }
 
     // top
     m_winResizeAreas[0]->setAreaType(WindowResizeArea::AreaType::top);  // top
@@ -71,7 +73,9 @@ void WindowResizeAreas::init() {
         it->addMouseOutCb([m_win](hidData *data) {
             // don't change the mouse cursor to 0 on mouse out if the new node
             // is also a WindowResizeArea
-            if (data->newNode && ((UINode *)data->newNode)->getName() == getTypeName<WindowResizeAreas>()) return;
+            if (data->newNode && ((UINode *)data->newNode)->getName() == getTypeName<WindowResizeAreas>()) {
+                return;
+            }
 
             m_win->setMouseCursor(WinMouseIcon::arrow);
         });

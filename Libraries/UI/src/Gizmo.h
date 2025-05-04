@@ -1,19 +1,16 @@
 #pragma once
 
-#include <CameraSets/CsPerspFbo.h>
-#include <Asset/AssetColor.h>
-#include <SceneNodes/SNGizmo.h>
-#include "DrawManagers/DrawManagerGizmo.h"
-#include <GizmoAxisLabel.h>
 #include <Image.h>
-#include <Utils/Camera.h>
-#include <Utils/Texture.h>
 #include <Utils/TrackBallCam.h>
-
-#include "GeoPrimitives/Cube_TexMap.h"
-#include "GeoPrimitives/Quad_P.h"
+#include <GLUtils/sceneData.h>
+#include <SceneNodes/SceneNode.h>
 
 namespace ara {
+
+class AssetColor;
+class GizmoAxisLabel;
+class DrawManagerGizmo;
+class SNGizmo;
 
 class Gizmo : public Image {
 public:

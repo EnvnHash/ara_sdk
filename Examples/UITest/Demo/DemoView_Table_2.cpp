@@ -3,14 +3,12 @@
 using namespace ara;
 using namespace glm;
 using namespace std;
-using namespace ara;
 
 DemoView_Table_2::DemoView_Table_2() : DemoView("Table demo 2 / Table in table / fixed row / row size limits",glm::vec4(.1f,.1f,.1f,1.f)) {
     setName(getTypeName<DemoView_Table_2>());
 }
 
-void DemoView_Table_2::init()
-{
+void DemoView_Table_2::init() {
     ui_Table = (UITable*) addChild(make_unique<UITable>(vec2{0.f, 100.f}, vec2{getContentSize().x, getContentSize().y - 100.f}, ivec2{}));
     ui_Table->t_setSpacing(8, 8);
     ui_Table->t_setMargins(0, 0);

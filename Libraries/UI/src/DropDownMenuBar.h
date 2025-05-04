@@ -4,8 +4,6 @@
 
 #pragma once
 
-#include <WindowManagement/GLFWWindow.h>
-
 #include "DropDownMenu.h"
 
 namespace ara {

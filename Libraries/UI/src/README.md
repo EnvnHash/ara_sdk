@@ -8,8 +8,8 @@
 - [Coordinate System](#coordinate-system)
 - [UI Graph](#ui-graph)
 - [Positioning](#positioning)
-- [UINoode Base class and derivatives](#uinode-base-class-and-derivatives)
-- [UINoode Tree processing](#uinode-tree-processing)
+- [UINode Base class and derivatives](#uinode-base-class-and-derivatives)
+- [UINode Tree processing](#uinode-tree-processing)
 - [HID Processing](#hid-processing)
 - [Styles](#styles)
 
@@ -132,7 +132,7 @@ The UI graph is simple standard node structure with parent-child relations.
 
 ### HID Processing
 
-![HID processing](../../../Documentation/images/uisdk_design-HID Processing.png)
+![HID processing](../../../Documentation/images/uisdk_design-HID_Processing.png)
 
 #### Brief description
 

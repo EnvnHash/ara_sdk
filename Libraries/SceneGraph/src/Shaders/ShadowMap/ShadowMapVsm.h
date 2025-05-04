@@ -10,7 +10,7 @@
 #include "Shaders/ShadowMap/ShadowMap.h"
 #include "Utils/Camera.h"
 #include "Utils/FBO.h"
-#include "glb_common/glb_common.h"
+#include "GlbCommon/GlbCommon.h"
 
 namespace ara {
 

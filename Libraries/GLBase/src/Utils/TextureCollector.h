@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 #include "Texture.h"
 
 namespace ara {

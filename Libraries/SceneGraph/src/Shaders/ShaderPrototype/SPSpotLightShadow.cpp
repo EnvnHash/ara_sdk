@@ -236,7 +236,7 @@ void SPSpotLightShadow::calcLights(CameraSet *cs, renderPass pass) {
         if (m_shadowGen) {
             m_shadowGen->rebuildFbo(static_cast<uint>(s_lights.size()));
             m_shadowGen->rebuildShader(static_cast<uint>(s_lights.size()));
-            if (pass == GLSG_SHADOW_MAP_PASS) {
+            if (pass == renderPass::shadowMap) {
                 m_shadowGen->begin();  // when the shader is rebuilt it is also unbound - so bind it again.
             }
         }
@@ -281,7 +281,7 @@ void SPSpotLightShadow::calcLight(CameraSet *cs, Light *lightPtr, LightPar *ligh
 }
 
 void SPSpotLightShadow::clear(renderPass pass) {
-    if (pass == GLSG_SHADOW_MAP_PASS && m_shadowGen) {
+    if (pass == renderPass::shadowMap && m_shadowGen) {
         m_shadowGen->clear();
     }
 }
@@ -307,7 +307,7 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
 
     ShaderProto::sendPar(cs, time, node, parent, pass);
 
-    if (pass == GLSG_SHADOW_MAP_PASS) {
+    if (pass == renderPass::shadowMap) {
         // send projection/view matrices for all lights
         if (m_pv_mats.size() != s_lights.size()) {
             m_pv_mats.resize(s_lights.size());
@@ -317,7 +317,7 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
             m_pv_mats[i] = s_lights[i]->s_proj_mat * s_lights[i]->s_view_mat;
 
             // check if we are rendering a light source, in this case, avoid that it casts light onto itself
-            if (node->m_nodeType == GLSG_SNT_LIGHT_SCENE_MESH && s_lights[i] == parent) {
+            if (node->m_nodeType == sceneNodeType::lightSceneMesh && s_lights[i] == parent) {
                 m_shadowGen->getShader()->setUniform1i("lightIndIsActMesh", i);
             }
         }
@@ -326,7 +326,7 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
         m_shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)],
                                                     value_ptr(node->getModelMat(parent)));
 
-    } else if ((pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) && s_shader) {
+    } else if ((pass == renderPass::scene || pass == renderPass::gizmo) && s_shader) {
         // estimate nr passes to render all active surfaces and lights
         // one sceneNode con only contain one active surface, so the maximum of
         // active surfacs textures bound is one
@@ -359,7 +359,7 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
             m_lightColTexUnits[i] = m_maxNrParLights + i + 1;
 
             // check if we are rendering a light source, in this case, avoid that it casts light onto itself
-            if (node->m_nodeType == GLSG_SNT_LIGHT_SCENE_MESH && s_lights[i + lightOffs] == parent)
+            if (node->m_nodeType == sceneNodeType::lightSceneMesh && s_lights[i + lightOffs] == parent)
                 s_shader->setUniform1i("lightIndIsActMesh", i);
 
             // bind light color textures
@@ -392,17 +392,17 @@ bool SPSpotLightShadow::begin(CameraSet *cs, renderPass pass, uint loopNr) {
                                                 static_cast<uint>(s_lights.size()));
 
     switch (pass) {
-        case GLSG_SHADOW_MAP_PASS:
+        case renderPass::shadowMap:
             m_shadowGen->begin();
             return true;
             break;
 
-        case GLSG_SCENE_PASS:
+        case renderPass::scene:
             if (s_shader) s_shader->begin();
             return true;
             break;
 
-        case GLSG_GIZMO_PASS:
+        case renderPass::gizmo:
             if (s_shader) s_shader->begin();
             return true;
             break;
@@ -412,9 +412,9 @@ bool SPSpotLightShadow::begin(CameraSet *cs, renderPass pass, uint loopNr) {
 }
 
 bool SPSpotLightShadow::end(renderPass pass, uint loopNr) {
-    if (pass == GLSG_SHADOW_MAP_PASS) {
+    if (pass == renderPass::shadowMap) {
         m_shadowGen->end();
-    } else if (pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) {
+    } else if (pass == renderPass::scene || pass == renderPass::gizmo) {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, 0);
         if (s_shader) {
             s_shader->end();
@@ -426,11 +426,11 @@ bool SPSpotLightShadow::end(renderPass pass, uint loopNr) {
 
 Shaders *SPSpotLightShadow::getShader(renderPass pass, uint loopNr) {
     switch (pass) {
-        case GLSG_SHADOW_MAP_PASS:
+        case renderPass::shadowMap:
             return m_shadowGen->getShader();
-        case GLSG_SCENE_PASS:
+        case renderPass::scene:
             return s_shader ? s_shader : nullptr;
-        case GLSG_GIZMO_PASS:
+        case renderPass::gizmo:
             return s_shader ? s_shader : nullptr;
         default: return nullptr; break;
     }
@@ -440,7 +440,7 @@ void SPSpotLightShadow::setScreenSize(uint width, uint height) {
     s_scrWidth = width, s_scrHeight = height;
     m_shadowGen->setScreenSize(width, height);
     if (s_sd) {
-        s_sd->reqRenderPasses->at(GLSG_SHADOW_MAP_PASS) = true;
+        s_sd->reqRenderPasses->at(renderPass::shadowMap) = true;
     }
 }
 

@@ -4,19 +4,18 @@
 
 #pragma once
 
-#include <Shaders/ShaderUtils/MaterialProperties.h>
-#include <Shaders/Shaders.h>
-#include <Utils/TFO.h>
-#include <Utils/Texture.h>
-#include <WindowManagement/WindowBase.h>
-
+#include <glsg_common/glsg_common.h>
 #include "GLUtils/sceneData.h"
+#include <Shaders/ShaderUtils/MaterialProperties.h>
 
 namespace ara {
 class SceneNode;
 class CameraSet;
 class ShaderProto;
-class sceneData;
+class Shaders;
+class TFO;
+class Texture;
+class WindowBase;
 
 class SNIdGroup {
 public:
@@ -220,7 +219,7 @@ public:
 
     uint64_t      m_nameFlag  = 0;
     uint64_t      m_transFlag = 0;
-    sceneNodeType m_nodeType  = GLSG_SNT_STANDARD;
+    sceneNodeType m_nodeType  = sceneNodeType::standard;
 
     bool m_drawGridTex       = false;
     bool m_visible           = false;
@@ -244,8 +243,8 @@ public:
     std::unordered_map<SceneNode*, int>              m_skipForCamInd;
     std::unordered_map<SceneNode*, int>              m_nodeObjId;
     std::unordered_map<SceneNode*, bool>             m_selected;
-    std::array<std::string, GLSG_NUM_RENDER_PASSES>  m_protoName;
-    std::array<ShaderProto*, GLSG_NUM_RENDER_PASSES> m_cachedCustShdr = {nullptr};
+    std::unordered_map<renderPass, std::string>      m_protoName;
+    std::unordered_map<renderPass, ShaderProto*>     m_cachedCustShdr;
 
 protected:
     WindowBase*           m_scene = nullptr;
@@ -254,7 +253,7 @@ protected:
     GLBase*               m_glbase   = nullptr;
     sceneData*            s_sd       = nullptr;
 
-    MaterialProperties m_material;
+    MaterialProperties m_material{};
 
     std::map<int, SceneNode*>     m_sceneNodeMap;
     std::map<std::string, float*> m_par;

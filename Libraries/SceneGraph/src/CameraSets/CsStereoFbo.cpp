@@ -514,7 +514,7 @@ void CsStereoFbo::rebuildFbo() {
 }
 
 void CsStereoFbo::clearScreen(renderPass pass) {
-    if ((pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) && m_clearShdr) {
+    if ((pass == renderPass::scene || pass == renderPass::gizmo) && m_clearShdr) {
         m_fbo.bind();
 
         glClearDepthf(1.f);
@@ -538,7 +538,7 @@ void CsStereoFbo::clearScreen(renderPass pass) {
 
         m_fbo.unbind();
 
-    } else if (pass == GLSG_SHADOW_MAP_PASS || pass == GLSG_OBJECT_MAP_PASS) {
+    } else if (pass == renderPass::shadowMap || pass == renderPass::objectMap) {
         for (const auto&[fst, proto] : s_shaderProto) {
             proto->clear(pass);
         }
@@ -552,7 +552,7 @@ void CsStereoFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr
         s_matrixStack.clear();
     }
 
-    if (pass == GLSG_SCENE_PASS) {
+    if (pass == renderPass::scene) {
         m_fbo.bind();
     }
 
@@ -562,7 +562,7 @@ void CsStereoFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr
         node->m_calcMatrixStack = false;
     }
 
-    if (pass == GLSG_SCENE_PASS) {
+    if (pass == renderPass::scene) {
         m_fbo.unbind();
     }
 }
@@ -836,7 +836,7 @@ void CsStereoFbo::postRender(renderPass pass, float* extDrawMatr) {
         it->postRender(pass);
     }
 
-    if (pass == GLSG_SCENE_PASS) {
+    if (pass == renderPass::scene) {
         renderFbos(extDrawMatr);
     }
 }

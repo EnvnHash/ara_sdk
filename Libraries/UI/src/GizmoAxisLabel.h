@@ -14,7 +14,7 @@ class GizmoAxisLabel : public Image {
 public:
     GizmoAxisLabel();
     GizmoAxisLabel(const std::string& styleClass);
-    GizmoAxisLabel(std::string file, int mipMapLevel, bool keep_aspect, align ax = align::center,
+    GizmoAxisLabel(const std::string& file, int mipMapLevel, bool keep_aspect, align ax = align::center,
                    valign ay = valign::center);
     ~GizmoAxisLabel() override = default;
 

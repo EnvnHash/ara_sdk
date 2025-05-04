@@ -1,8 +1,9 @@
 #include <Lights/LIProjector.h>
 #include <SceneNodes/SNGridFloor.h>
+#include <SceneNodes/SNGizmo.h>
 #include <UIWindow.h>
 #include <WindowManagement/WindowBase.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 #if !defined(ARA_USE_GLFW) && defined(_WIN32)
 #include <Windows/DisplayScaling.h>
@@ -84,9 +85,10 @@ void Scene3DBase::initSceneData() {
     s_sd.winViewport.w   = getSize().y * s_sd.contentScale.y;
 
     // init the renderPass maps
-    for (auto i = 0; i < GLSG_NUM_RENDER_PASSES; i++) {
-        m_renderPasses[static_cast<renderPass>(i)]    = false;
-        m_reqRenderPasses[static_cast<renderPass>(i)] = true;
+    for (auto i = 0; i < toType(renderPass::size); i++) {
+        auto rp = static_cast<renderPass>(i);
+        m_renderPasses[rp]    = false;
+        m_reqRenderPasses[rp] = true;
     }
 }
 
@@ -183,12 +185,11 @@ void Scene3DBase::loadBasicSceneModels() {
             [this, &loadCnds](SceneNode* modelCont) {
                 modelCont->m_hasNewModelMat = true;  // force rebuild of nodes m_absModelMat
                 modelCont->iterateNode(netCamSN.get(), [](SceneNode* node) {
-                    node->m_nodeType   = GLSG_SNT_CAMERA_SCENE_MESH;
+                    node->m_nodeType   = sceneNodeType::cameraSceneMesh;
                     node->m_selectable = false;
                     return true;
                 });
                 modelCont->setVisibility(false);
-
                 loadCnds[2] = true;
             },
             true);
@@ -223,13 +224,13 @@ void Scene3DBase::initShaderProtos() {
     // add the standard ObjectSelector ShaderProtoType to all camera sets
     for (const auto& cIt : m_camSet) {
         m_objSel = dynamic_cast<SPObjectSelector*>(cIt->addShaderProto(getTypeName<SPObjectSelector>(),
-                                                          {GLSG_OBJECT_MAP_PASS}));  // create ObjectSelector
+                                                          {renderPass::objectMap}));  // create ObjectSelector
         m_objSel->setGizmoNodes(&m_gizmos);
         if (m_addGizmoCb) {
             m_objSel->setAddGizmoCb(std::move(m_addGizmoCb));
         }
 
-        cIt->addShaderProto(getTypeName<SPSpotLightShadowVsm>(), {GLSG_SHADOW_MAP_PASS, GLSG_SCENE_PASS, GLSG_GIZMO_PASS});
+        cIt->addShaderProto(getTypeName<SPSpotLightShadowVsm>(), {renderPass::shadowMap, renderPass::scene, renderPass::gizmo});
     }
 }
 
@@ -317,8 +318,8 @@ bool Scene3DBase::drawFunc(uint32_t* objId) {
     }
 
     // always set the scene render pass
-    m_renderPasses[GLSG_SCENE_PASS]      = true;
-    m_renderPasses[GLSG_SHADOW_MAP_PASS] = true;
+    m_renderPasses[renderPass::scene]      = true;
+    m_renderPasses[renderPass::shadowMap] = true;
 
     // check if the root has a recalcMatrix flag set, if this is the case apply
     // it to the gizmo and sceneNode (this is faster than always recurse the
@@ -340,11 +341,11 @@ bool Scene3DBase::drawFunc(uint32_t* objId) {
         for (const auto& pIt : m_renderPasses) {
             if (pIt.second) {
                 switch (pIt.first) {
-                    case GLSG_OBJECT_ID_PASS:  // generate an id for each node (in linear order)
+                    case renderPass::objectId:  // generate an id for each node (in linear order)
                         m_rootNode->regenNodeIds(1);
                         break;
 
-                    case GLSG_OBJECT_MAP_PASS:  // generate a "depth map" with ids
+                    case renderPass::objectMap:  // generate a "depth map" with ids
                         cIt->clearScreen(pIt.first);
                         cIt->renderTree(m_sceneTreeCont, m_intTime, dt, 0, pIt.first);
                         // clear the obj Ids s_fbo's depthbuffer to have the gizmo always rendered above everything same
@@ -355,13 +356,13 @@ bool Scene3DBase::drawFunc(uint32_t* objId) {
                         cIt->renderTree(gizmoTree, m_intTime, dt, 0, pIt.first);
                         break;
 
-                    case GLSG_SHADOW_MAP_PASS:  // generate shadow maps
+                    case renderPass::shadowMap:  // generate shadow maps
                         cIt->clearScreen(pIt.first);
                         cIt->renderTree(m_sceneTreeCont, m_intTime, dt, 0, pIt.first);
-                        cIt->postRender(GLSG_SHADOW_MAP_PASS, nullptr);
+                        cIt->postRender(renderPass::shadowMap, nullptr);
                         break;
 
-                    case GLSG_SCENE_PASS:  // generate the visible result
+                    case renderPass::scene:  // generate the visible result
                         cIt->clearScreen(pIt.first);
 
                         if (m_useSsao) {
@@ -370,7 +371,7 @@ bool Scene3DBase::drawFunc(uint32_t* objId) {
                         }
 
                         cIt->renderTree(m_sceneTreeCont, m_intTime, dt, 0, pIt.first);
-                        cIt->postRender(GLSG_SCENE_PASS, m_extDrawMatrCb ? m_extDrawMatrCb() : getNormMatPtr());
+                        cIt->postRender(renderPass::scene, m_extDrawMatrCb ? m_extDrawMatrCb() : getNormMatPtr());
 
                         if (m_useSsao) {
                             m_ssao->proc(cIt);
@@ -402,7 +403,7 @@ bool Scene3DBase::drawFunc(uint32_t* objId) {
         glClear(GL_DEPTH_BUFFER_BIT);
 
         for (const auto& cIt : m_camSet) {
-            cIt->renderTree(gizmoTree, m_intTime, dt, 0, GLSG_GIZMO_PASS);  // 0 = pre-render step
+            cIt->renderTree(gizmoTree, m_intTime, dt, 0, renderPass::gizmo);  // 0 = pre-render step
         }
 
         m_gizmoFbo->unbind();
@@ -510,9 +511,9 @@ void Scene3DBase::keyDown(hidData* data) {
 
     moveObjectByArrowKeys(data);
 
-    m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::scene]      = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
 
     setDrawFlag();
 }
@@ -596,9 +597,9 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
         }
     }
 
-    m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::scene]      = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
 
     setDrawFlag();
 }
@@ -617,9 +618,9 @@ void Scene3DBase::mouseDown(hidData* data) {
                                                           static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
     }
 
-    m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::scene]      = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
     m_leftClick                             = true;
     setDrawFlag();
 
@@ -674,9 +675,9 @@ void Scene3DBase::mouseUp(hidData* data) {
                                                         static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
     }
 
-    m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::scene]      = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
 
     if (getWindow()) {
         if (data && data->dragging && (!m_leftClick || forceResetMouse || m_leftClickViewDrag)) {
@@ -700,9 +701,9 @@ void Scene3DBase::mouseDownRight(hidData* data) {
                                                            static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
     }
 
-    m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::scene]      = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
 
     setDrawFlag();
     if (data) {
@@ -723,9 +724,9 @@ void Scene3DBase::mouseUpRight(hidData* data) {
         m_sceneRenderCam->getInteractCam()->mouseUpRight(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
                                                          static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
 
-    m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::scene]      = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
 
     setDrawFlag();
 
@@ -766,9 +767,9 @@ void Scene3DBase::mouseDrag(hidData* data) {
         m_dragStartPos = data->mousePos;
     }
 
-    m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::scene]      = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
 
     setDrawFlag();
     getSharedRes()->requestRedraw = true;
@@ -782,9 +783,9 @@ void Scene3DBase::mouseWheel(hidData* data) {
         m_sceneRenderCam->getInteractCam()->mouseWheel(static_cast<float>(data->degrees) * 0.5f);
     }
 
-    m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::scene]      = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
 
     getSharedRes()->requestRedraw = true;
     data->consumed = true;
@@ -844,9 +845,9 @@ void Scene3DBase::updateScene3DBaseViewport(float x, float y, float width, float
         m_gizmoFbo->resize(s_sd.winViewport.z, s_sd.winViewport.w);
     }
 
-    m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::scene]      = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
 }
 
 void Scene3DBase::scaleGizmos(float gizmoScale) {
@@ -854,7 +855,7 @@ void Scene3DBase::scaleGizmos(float gizmoScale) {
         for (auto it : *gizmoTree->getChildren()) {
             auto giz = dynamic_cast<SNGizmo *>(it);
             giz->setGizmoScreenSize(gizmoScale);
-            m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+            m_reqRenderPasses[renderPass::objectMap] = true;
         }
     }
 }
@@ -897,9 +898,9 @@ void Scene3DBase::addLightObj(SPObjectSelector* objSel, const string& _type) {
             proto->addLight(lightObjs.back());
     }
 
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_ID_PASS] = true;
+    m_reqRenderPasses[objectMapPass] = true;
+    m_reqRenderPasses[shadowMapPass] = true;
+    m_reqRenderPasses[objectIdPass] = true;
     */
 }
 
@@ -949,7 +950,7 @@ bool Scene3DBase::addCamToSet(LICamera* netCam) {
 
     m_netCameras.push_back(netCam);
 
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
     return true;
 }
 
@@ -985,9 +986,9 @@ void Scene3DBase::addCameraViewRelative(SPObjectSelector* objSel) {
     m_netCameras.back()->setVisibility(true);
     m_netCameras.back()->translate(createPoint.x, createPoint.y, createPoint.z);
 
-    m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-    m_reqRenderPasses[GLSG_OBJECT_ID_PASS]  = true;
+    m_reqRenderPasses[renderPass::objectMap] = true;
+    m_reqRenderPasses[renderPass::shadowMap] = true;
+    m_reqRenderPasses[renderPass::objectId]  = true;
 }
 
 void Scene3DBase::setFloorVisibility(bool val) {
@@ -1117,7 +1118,7 @@ void Scene3DBase::hideSceneWorldAxisGizmo() {
 
 void Scene3DBase::addShaderProto(const std::string* shdrName) {
     for (const auto& cIt : m_camSet) {
-        cIt->addShaderProto(*shdrName, {GLSG_SHADOW_MAP_PASS, GLSG_SCENE_PASS, GLSG_GIZMO_PASS});
+        cIt->addShaderProto(*shdrName, {renderPass::shadowMap, renderPass::scene, renderPass::gizmo});
     }
 
     //-----------------------------------------------------------------------
@@ -1176,7 +1177,7 @@ void Scene3DBase::selectObj(int objId) {
             auto objSelector = dynamic_cast<SPObjectSelector *>(cIt->getShaderProto(getTypeName<SPObjectSelector>()));
             if (!objSelector->getLastSceneTree()) objSelector->setLastSceneTree(m_sceneTree);
             objSelector->selectObj(objId, true);
-            m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+            m_reqRenderPasses[renderPass::objectMap] = true;
         }
     }
 }

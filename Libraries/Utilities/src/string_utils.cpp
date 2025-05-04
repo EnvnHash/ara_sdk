@@ -16,7 +16,6 @@
 
 #include "string_utils.h"
 
-#include <algorithm>
 #include <cctype>
 #ifdef _WIN32
 #include <Windows.h>
@@ -76,7 +75,6 @@ std::vector<std::string> split(const std::string &s, const std::string& delim) {
     }
 
     elems.emplace_back(strCpy);
-
     return elems;
 }
 

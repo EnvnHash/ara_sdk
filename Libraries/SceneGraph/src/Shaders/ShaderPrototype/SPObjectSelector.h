@@ -28,9 +28,9 @@ public:
                       bool toObjCenter = false, bool adjRotation = false);
 
     void calcGizmoAxisNDC();
-    void calcMouseMoveVec(float x, float y, float* mouseMovedSign);
+    void calcMouseMoveVec(float x, float y, float& mouseMovedSign);
     void calcIntersectPlane(float x, float y, bool skipPlaneSorting);
-    void calcOffsVecTransAndScale(glm::vec3* offsetVec, const float* mouseMovedSign);
+    void calcOffsVecTransAndScale(glm::vec3& offsetVec, const float& mouseMovedSign);
     void mouseDownLeft(float x, float y, SceneNode* sceneTree) override;
     void mouseUpLeft(SceneNode* sceneTree) override;
     void mouseUpRight(SceneNode* sceneTree) override;

@@ -10,7 +10,7 @@ namespace ara {
 SNWorldAxes::SNWorldAxes(sceneData* sd) : SNGridFloor(sd) {
     setName(getTypeName<SNWorldAxes>());
 
-    m_protoName[GLSG_SCENE_PASS] = getTypeName<SPWorldAxes>();  // force the use of the GridFloor
+    m_protoName[renderPass::scene] = getTypeName<SPWorldAxes>();  // force the use of the GridFloor
                                                                 // ShaderPrototype if it is present
 
     // x and z axis
@@ -22,7 +22,7 @@ SNWorldAxes::SNWorldAxes(sceneData* sd) : SNGridFloor(sd) {
 }
 
 void SNWorldAxes::draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO*) {
-    if (pass != GLSG_SCENE_PASS) {
+    if (pass != renderPass::scene) {
         return;
     }
 

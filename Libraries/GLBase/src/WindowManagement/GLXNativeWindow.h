@@ -9,7 +9,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 #include <unistd.h>
 #include "GLWindowCommon.h"
 

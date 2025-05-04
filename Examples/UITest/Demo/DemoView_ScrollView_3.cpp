@@ -1,5 +1,6 @@
 #include "DemoView.h"
 #include <Image.h>
+#include <Utils/PingPongFbo.h>
 
 using namespace ara;
 using namespace glm;

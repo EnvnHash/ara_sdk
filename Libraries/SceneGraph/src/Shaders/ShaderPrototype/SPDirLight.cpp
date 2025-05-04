@@ -123,7 +123,7 @@ void SPDirLight::sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode
     halfVector = normalize(lightDir + cs->getViewerVec());
     lightProp.setHalfVector(halfVector.x, halfVector.y, halfVector.z);
 
-    if (pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) {
+    if (pass == renderPass::scene || pass == renderPass::gizmo) {
 	    lightProp.sendToShader(s_shader->getProgram());
     }
 
@@ -132,12 +132,12 @@ void SPDirLight::sendPar(CameraSet* cs, double time, SceneNode* scene, SceneNode
 
 bool SPDirLight::begin(CameraSet* cs, renderPass pass, uint loopNr) {
     switch (pass) {
-        case GLSG_SHADOW_MAP_PASS:
+        case renderPass::shadowMap:
         	return false;
-        case GLSG_SCENE_PASS:
+        case renderPass::scene:
             s_shader->begin();
             return true;
-        case GLSG_GIZMO_PASS:
+        case renderPass::gizmo:
             s_shader->begin();
             return true;
         default:

@@ -17,7 +17,7 @@
 #include <Shaders/ShaderPrototype/SPObjectSelector.h>
 #include <StopWatch.h>
 #include <Div.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 #include "SceneNodes/SNWorldAxes.h"
 
@@ -154,15 +154,16 @@ public:
     void setDeselectAllCb(std::function<void()> func) { m_deselectAllCb = std::move(func); }
     void setDataPath(const std::string* _dataPath) { s_sd.dataPath = *_dataPath; }
     void setAllProcSteps() {
-        for (auto i = 0; i < GLSG_NUM_RENDER_PASSES; i++) {
-            m_renderPasses[static_cast<renderPass>(i)]    = true;
-            m_reqRenderPasses[static_cast<renderPass>(i)] = true;
+        for (auto i = 0; i < toType(renderPass::size); i++) {
+            auto rp = static_cast<renderPass>(i);
+            m_renderPasses[rp]    = true;
+            m_reqRenderPasses[rp] = true;
         }
     }
     void setDrawProcSteps() {
-        m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
-        m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-        m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
+        m_reqRenderPasses[renderPass::scene]      = true;
+        m_reqRenderPasses[renderPass::shadowMap] = true;
+        m_reqRenderPasses[renderPass::objectMap] = true;
     }
     void setMouseRotScale(float x, float y) {
         m_mouseRotScale.x = x;

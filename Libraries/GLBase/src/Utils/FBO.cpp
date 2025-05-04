@@ -9,10 +9,6 @@ using namespace std;
 
 namespace ara {
 
-    /**
- *
- * @param ip
- */
 FBO::FBO(const FboInitParams& ip)
     : m_hasDepthBuf(ip.depthBuf),
     m_layered(ip.layered),
@@ -307,7 +303,9 @@ void FBO::init() {
     m_isMultiSample = (m_target == GL_TEXTURE_2D_MULTISAMPLE) || (m_target == GL_TEXTURE_2D_MULTISAMPLE_ARRAY);
 
 #ifndef ARA_USE_GLES31
-    if (m_target == GL_TEXTURE_RECTANGLE) m_mipMapLevels = 1;
+    if (m_target == GL_TEXTURE_RECTANGLE) {
+        m_mipMapLevels = 1;
+    }
 #endif
 
     if (m_nrAttachments > m_glbase->maxNrAttachments()) {
@@ -351,42 +349,41 @@ void FBO::allocColorTexture() {
     glGenTextures(m_nrAttachments, &m_textures[0]);
 
     for (auto i = 0; i < m_nrAttachments; i++) {
-        if (m_type != GL_DEPTH24_STENCIL8) m_bufModes[i] = GL_COLOR_ATTACHMENT0 + i;
+        if (m_type != GL_DEPTH24_STENCIL8) {
+            m_bufModes[i] = GL_COLOR_ATTACHMENT0 + i;
+        }
 
         glBindTexture(m_target, m_textures[i]);
-
 #ifndef __APPLE__
-        // NOTE: Using glTexStorage* is generally considered best practice in
-        // OpenGL as once defined, the OpenGL implementation can make
-        // assumptions that the dimensions and m_format of the texture object
-        // will not change over its lifetime and thus can stop tracking certain
-        // aspects of the texture object.
+        // NOTE: Using glTexStorage* is generally considered best practice in OpenGL as once defined, the OpenGL
+        // implementation can make assumptions that the dimensions and m_format of the texture object
+        // will not change over its lifetime and thus can stop tracking certain aspects of the texture object.
         switch (m_target) {
 #ifndef ARA_USE_GLES31
-            case GL_TEXTURE_1D: glTexStorage1D(m_target, m_mipMapLevels, m_type, m_tex_width); break;
+            case GL_TEXTURE_1D:
+                glTexStorage1D(m_target, m_mipMapLevels, m_type, m_tex_width);
+                break;
 #endif
-            case GL_TEXTURE_2D: glTexStorage2D(m_target, m_mipMapLevels, m_type, m_tex_width, m_tex_height); break;
+            case GL_TEXTURE_2D:
+                glTexStorage2D(m_target, m_mipMapLevels, m_type, m_tex_width, m_tex_height);
+                break;
 #ifndef ARA_USE_GLES31
             case GL_TEXTURE_2D_MULTISAMPLE:
                 glTexImage2DMultisample(m_target, m_nrSamples, m_type, m_tex_width, m_tex_height, GL_FALSE);
                 break;
-
             case GL_TEXTURE_1D_ARRAY:
                 glTexStorage2D(m_target, m_mipMapLevels, m_type, m_tex_width, m_tex_height);
                 break;
-
             case GL_TEXTURE_RECTANGLE:
                 glTexStorage2D(m_target, m_mipMapLevels, m_type, m_tex_width, m_tex_height);
                 break;
 #endif
-
             case GL_TEXTURE_3D:
                 glTexStorage3D(m_target, m_mipMapLevels, m_type, m_tex_width, m_tex_height, m_tex_depth);
                 break;
             case GL_TEXTURE_2D_ARRAY:
                 glTexStorage3D(m_target, m_mipMapLevels, m_type, m_tex_width, m_tex_height, m_tex_depth);
                 break;
-
 #ifndef ARA_USE_GLES31
             case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
                 glTexStorage3DMultisample(m_target, m_mipMapLevels, m_type, m_tex_width, m_tex_height, m_tex_depth,
@@ -457,7 +454,9 @@ void FBO::allocColorTexture() {
 #endif
         }
 
-        if (m_target == GL_TEXTURE_3D) glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, m_wrapMode);
+        if (m_target == GL_TEXTURE_3D) {
+            glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, m_wrapMode);
+        }
 
         glBindTexture(m_target, 0);
     }

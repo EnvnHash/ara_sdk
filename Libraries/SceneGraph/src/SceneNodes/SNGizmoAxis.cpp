@@ -8,7 +8,7 @@ using namespace std;
 namespace ara {
 
 SNGizmoAxis::SNGizmoAxis(sceneData* sd) : SceneNode(sd) {
-    m_nodeType = GLSG_GIZMO;
+    m_nodeType = sceneNodeType::gizmo;
 }
 
 }  // namespace ara

@@ -8,7 +8,7 @@ using namespace std;
 namespace ara {
 
 SNGizmoTransAxis::SNGizmoTransAxis(sceneData* sd) : SNGizmoAxis(sd) {
-    m_nodeType = GLSG_GIZMO;
+    m_nodeType = sceneNodeType::gizmo;
 
     vec2    cylRadius      = {0.0125f, 0.08f};
     vec2    capRadius      = {0.05f, 0.2f};
@@ -88,7 +88,7 @@ void SNGizmoTransAxis::draw(double time, double dt, CameraSet* cs, Shaders* shad
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    if (pass == GLSG_GIZMO_PASS || pass == GLSG_SCENE_PASS || pass == GLSG_OBJECT_MAP_PASS) {
+    if (pass == renderPass::gizmo || pass == renderPass::scene || pass == renderPass::objectMap) {
         // material
         shader->setUniform1i("hasTexture", 0);
         shader->setUniform1i("lightMode", 0);
@@ -99,7 +99,7 @@ void SNGizmoTransAxis::draw(double time, double dt, CameraSet* cs, Shaders* shad
         shader->setUniform4f("specular", 1.f, 1.f, 1.f, 1.f);
         shader->setUniform1i("drawGridTexture", (int)m_drawGridTex);
 
-        m_gizVao[pass == GLSG_OBJECT_MAP_PASS ? 1 : 0]->drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, m_totNrPoints);
+        m_gizVao[pass == renderPass::objectMap ? 1 : 0]->drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, m_totNrPoints);
     }
 }
 

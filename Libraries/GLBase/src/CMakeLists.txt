@@ -18,7 +18,7 @@ include_directories(
 
 file(GLOB_RECURSE GLB_SRC *.cpp)
 
-add_library(${PROJECT_NAME} OBJECT ${GLB_SRC} ${GLB_HEADERS})
+add_library(${PROJECT_NAME} OBJECT ${GLB_SRC} ${GLB_HEADERS} GlbCommon/GlbKeyDefines.h GlbCommon/GlbTypeConversion.cpp)
 
 include(GLBaseDepInclude)
 include(GLBaseDependencies)

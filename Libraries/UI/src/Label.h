@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Utils/Typo/FontGlyphVector.h>
 #include <Div.h>
+#include <Utils/Typo/FontGlyphVector.h>
 #include <Utils/VAO.h>
 
 namespace ara {

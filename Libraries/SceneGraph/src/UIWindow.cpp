@@ -9,6 +9,7 @@
 
 #include "UIApplication.h"
 #include "Windows/DisplayScaling.h"
+#include <Utils/PingPongFbo.h>
 
 using namespace glm;
 using namespace std;

@@ -5,14 +5,14 @@
 #pragma once
 
 #include <Utils/PBO.h>
-#include <Utils/Texture.h>
-#include <Utils/PingPongFbo.h>
 
 #include "Div.h"
 
 namespace ara {
 
 class AssetImageBase;
+class PingPongFbo;
+class Texture;
 
 class Image : public Div {
 public:

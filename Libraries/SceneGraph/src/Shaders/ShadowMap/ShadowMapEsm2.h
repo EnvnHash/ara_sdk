@@ -31,7 +31,7 @@ public:
     [[nodiscard]] glm::mat4 getLightProjMatr() const;
     [[nodiscard]] glm::mat4 lightViewMatr() const;
     float*                  getShadowMatr();
-    void                    setLightPos(glm::vec3 pos);
+    void                    setLightPos(const glm::vec3& pos);
     void                    setLookAtPoint(glm::vec3 pos);
     int                     getWidth() override;
     int                     getHeight() override;
@@ -43,7 +43,7 @@ public:
 private:
     Shaders*                m_depthShader = nullptr;
     Camera*                 m_gCam = nullptr;
-    Camera*                 m_lightCam = nullptr;
+    std::unique_ptr<Camera> m_lightCam;
     std::unique_ptr<FBO>    m_fbo;
     glm::mat4               m_mvp{};
     glm::mat3               m_mat{};

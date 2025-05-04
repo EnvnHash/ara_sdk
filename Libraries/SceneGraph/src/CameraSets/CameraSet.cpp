@@ -226,7 +226,7 @@ void CameraSet::iterateNode(SceneNode* node, double time, double dt, uint ctxNr,
                     it->setBoundingBox(&bBox->getBoundMin(), &bBox->getBoundMax());
             }
 
-            if (it->m_visible && !(pass == GLSG_OBJECT_MAP_PASS && it->excludeFromObjMap())) {
+            if (it->m_visible && !(pass == renderPass::objectMap && it->excludeFromObjMap())) {
                 render(it, node, time, dt, ctxNr, pass);
                 iterateNode(it, time, dt, ctxNr, pass, calcMatrixStack);
             }

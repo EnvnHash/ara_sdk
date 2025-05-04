@@ -7,8 +7,8 @@ namespace ara {
 
 LICamera::LICamera(sceneData* sd) : Light() {
     setName(getTypeName<LICamera>());
-    m_transFlag |= GLSG_NO_SCALE;
-    m_nodeType   = GLSG_SNT_CAMERA;
+    m_transFlag |= toType(transFlag::noScale);
+    m_nodeType   = sceneNodeType::camera;
     m_aspect     = 16.f / 9.f;
     m_throwRatio = 0.5f;
     s_near       = 0.1f;

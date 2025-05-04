@@ -17,7 +17,7 @@
 
 #pragma once
 
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 #ifdef ARA_USE_FREEIMAGE
 struct FIBITMAP;
@@ -58,7 +58,7 @@ public:
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
     std::array<uint8_t*, 6> faceData{};
 #else
-    unsigned char **faceData{};
+    std::array<uint8_t*, 6> faceData{};
 #endif
 
 };

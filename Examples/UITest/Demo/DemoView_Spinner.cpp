@@ -4,7 +4,6 @@
 using namespace ara;
 using namespace glm;
 using namespace std;
-using namespace ara;
 
 DemoView_Spinner::DemoView_Spinner() : DemoView("Spinner demo",glm::vec4(.1f,.1f,.1f,1.f)) {
     setName("DemoView_Spinner");

@@ -109,7 +109,7 @@ if (COMPILE_SCENEGRAPH_LIB)
     file(GLOB GLBASE_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/*.h)
     file(GLOB_RECURSE GLBASE_ASSIMP_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/Assimp/*.h)
     file(GLOB_RECURSE GLBASE_GEOPRIM_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/GeoPrimitives/*.h)
-    file(GLOB_RECURSE GLBASE_GLBCOMM_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/glb_common/*.h)
+    file(GLOB_RECURSE GLBASE_GLBCOMM_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/GlbCommon/*.h)
     file(GLOB_RECURSE GLBASE_MESH_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/Meshes/*.h)
     file(GLOB GLBASE_RES_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/Res/*.h)
     file(GLOB GLBASE_SHDR_HEADERS ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/Shaders/*.h)
@@ -151,8 +151,8 @@ if (COMPILE_SCENEGRAPH_LIB)
             COMMAND ${CMAKE_COMMAND} -E copy ${GLBASE_ASSIMP_HEADERS} ${DST_DIR}/include/GLBase/Assimp
             COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLBase/GeoPrimitives
             COMMAND ${CMAKE_COMMAND} -E copy ${GLBASE_GEOPRIM_HEADERS} ${DST_DIR}/include/GLBase/GeoPrimitives
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLBase/glb_common
-            COMMAND ${CMAKE_COMMAND} -E copy ${GLBASE_GLBCOMM_HEADERS} ${DST_DIR}/include/GLBase/glb_common
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLBase/GlbCommon
+            COMMAND ${CMAKE_COMMAND} -E copy ${GLBASE_GLBCOMM_HEADERS} ${DST_DIR}/include/GLBase/GlbCommon
             COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLBase/Meshes
             COMMAND ${CMAKE_COMMAND} -E copy ${GLBASE_MESH_HEADERS} ${DST_DIR}/include/GLBase/Meshes
             COMMAND ${CMAKE_COMMAND} -E make_directory ${DST_DIR}/include/GLBase/Res

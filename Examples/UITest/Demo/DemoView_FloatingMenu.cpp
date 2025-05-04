@@ -6,7 +6,6 @@
 using namespace glm;
 using namespace std;
 using namespace ara;
-using namespace ara;
 
 #ifndef __ANDROID__
 

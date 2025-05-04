@@ -26,7 +26,7 @@ CsPerspective::CsPerspective(sceneData* sc) : CameraSet(sc) {
 }
 
 void CsPerspective::clearScreen(renderPass pass) {
-    if (pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) {
+    if (pass == renderPass::scene || pass == renderPass::gizmo) {
         glClearColor(0.0, 0.0, 0.0, 0.0);
         glClearDepthf(1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -34,7 +34,7 @@ void CsPerspective::clearScreen(renderPass pass) {
         glScissor(s_iViewport.x, s_iViewport.y, s_iViewport.z, s_iViewport.w);
         glViewport(s_iViewport.x, s_iViewport.y, s_iViewport.z, s_iViewport.w);
 
-    } else if (pass == GLSG_SHADOW_MAP_PASS || pass == GLSG_OBJECT_MAP_PASS) {
+    } else if (pass == renderPass::shadowMap || pass == renderPass::objectMap) {
         for (const auto& proto : s_shaderProto | views::values) {
             proto->clear(pass);
         }
@@ -79,7 +79,7 @@ void CsPerspective::postRender(renderPass pass, float* extDrawMatr /*, float* ex
         it.second->postRender(pass);
     }
 
-    if (pass == GLSG_SCENE_PASS || pass == GLSG_GIZMO_PASS) {
+    if (pass == renderPass::scene || pass == renderPass::gizmo) {
         glViewport(m_csVp[0], m_csVp[1], m_csVp[2], m_csVp[3]);
         glScissor(m_csVp[0], m_csVp[1], m_csVp[2], m_csVp[3]);  // wichtig!!!
     }

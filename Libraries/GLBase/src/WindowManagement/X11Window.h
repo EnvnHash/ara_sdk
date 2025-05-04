@@ -22,7 +22,7 @@
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/XKB.h>
 #include <X11/extensions/XKBstr.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 #define _GLSG_XDND_VERSION 5
 #define CARD32 int32_t

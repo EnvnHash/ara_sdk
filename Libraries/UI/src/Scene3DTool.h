@@ -7,7 +7,7 @@
 #include <Scene3D.h>
 #include <Gizmo.h>
 #include "Button/ImageButton.h"
-
+#include <CameraSets/CsPerspFbo.h>
 #include "TransformWidget.h"
 
 namespace ara {

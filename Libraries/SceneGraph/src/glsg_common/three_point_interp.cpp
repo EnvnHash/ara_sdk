@@ -1,6 +1,6 @@
 #include "glsg_common/three_point_interp.h"
 
-#include "glb_common/glb_common.h"
+#include "GlbCommon/GlbCommon.h"
 
 namespace ara {
 

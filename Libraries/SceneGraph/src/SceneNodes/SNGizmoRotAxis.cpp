@@ -17,7 +17,7 @@ using namespace std;
 namespace ara {
 
 SNGizmoRotAxis::SNGizmoRotAxis(sceneData* sd) : SNGizmoAxis(sd) {
-    m_nodeType = GLSG_GIZMO;
+    m_nodeType = sceneNodeType::gizmo;
 
 #ifndef GIZMO_ROT_SHADER_ONLY
     constexpr uint  nrBasePathPoints   = 30;
@@ -177,7 +177,7 @@ void SNGizmoRotAxis::draw(double time, double dt, CameraSet* cs, Shaders* shader
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    if (pass == GLSG_GIZMO_PASS || pass == GLSG_OBJECT_MAP_PASS) {
+    if (pass == renderPass::gizmo || pass == renderPass::objectMap) {
 #ifdef GIZMO_ROT_SHADER_ONLY
         // init shaders
         if (!m_torusShader) {
@@ -216,7 +216,7 @@ void SNGizmoRotAxis::draw(double time, double dt, CameraSet* cs, Shaders* shader
         shader->setUniform4f("specular", 1.f, 1.f, 1.f, 1.f);
         shader->setUniform1i("drawGridTexture", 0);
 
-        m_gizVao[pass == GLSG_OBJECT_MAP_PASS ? 1 : 0]->drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, m_totNrIndices);
+        m_gizVao[pass == renderPass::objectMap ? 1 : 0]->drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, m_totNrIndices);
 #endif
     }
 }

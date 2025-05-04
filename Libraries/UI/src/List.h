@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <Div.h>
 #include <ListProperty.h>
 #include <Label.h>
 #include <ScrollView.h>
@@ -37,19 +38,21 @@ public:
     void init() override {
         Div::init();
         label = addChild<Label>();
-        if (val) setData(val, m_idx);
+        if (val) {
+            setData(val, m_idx);
+        }
     }
 
     virtual void setData(T *data, int idx) {
-        if (!data) return;
+        if (!data || !label) {
+            return;
+        }
 
         val   = data;
         m_idx = idx;
 
-        if (!label) return;
-
         if (typeid(T) == typeid(std::string)) {
-            label->setText(*reinterpret_cast<std::string *>(data));
+            label->setText(*data);
         } else if (typeid(T) == typeid(const char *)) {
             //            label->setText(std::string(*reinterpret_cast<const
             //            char**>(data)));

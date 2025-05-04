@@ -1,10 +1,10 @@
 #include "DemoView.h"
 #include <Image.h>
+#include <Utils/PingPongFbo.h>
 
 using namespace ara;
 using namespace glm;
 using namespace std;
-using namespace ara;
 
 DemoView_ScrollView_2::DemoView_ScrollView_2() : DemoView("Scroll View demo",glm::vec4(.15f,.15f,.15f,1.f)) {
     setName(getTypeName<DemoView_ScrollView_2>());

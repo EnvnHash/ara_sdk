@@ -17,7 +17,7 @@ using namespace std;
 namespace ara {
 
 SNGizmoRotAxisLetter::SNGizmoRotAxisLetter(sceneData* sd) : SNGizmoAxis(sd) {
-    m_nodeType = GLSG_GIZMO;
+    m_nodeType = sceneNodeType::gizmo;
 
     // allocate memory for all positions and normals we just need a simple line
     m_colors.resize(16);
@@ -34,7 +34,7 @@ void SNGizmoRotAxisLetter::draw(double time, double dt, CameraSet* cs, Shaders* 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    if (pass == GLSG_GIZMO_PASS || pass == GLSG_OBJECT_MAP_PASS) {
+    if (pass == renderPass::gizmo || pass == renderPass::objectMap) {
         shader->setUniform1i("hasTexture", 0);
         shader->setUniform1i("lightMode", 0);
         shader->setUniform4f("ambient", 0.f, 0.f, 0.f, 0.f);

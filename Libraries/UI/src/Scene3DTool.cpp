@@ -3,12 +3,13 @@
 //
 
 #include <Scene3DTool.h>
+#include <SceneNodes/SNGizmo.h>
 #include <SceneNodes/SNGizmoPlane.h>
+#include <DrawManagers/DrawManagerGizmo.h>
 #include <UIWindow.h>
 
 using namespace std;
 using namespace glm;
-
 
 using trm = ara::TrackBallCam::TransMapping;
 using rm  = ara::TrackBallCam::RotateMapping;
@@ -454,9 +455,9 @@ void Scene3DTool::resetZoom() {
                 sceneCam->updateFade();
             }
 
-            m_scene3D->m_reqRenderPasses[GLSG_OBJECT_MAP_PASS] = true;
-            m_scene3D->m_reqRenderPasses[GLSG_SHADOW_MAP_PASS] = true;
-            m_scene3D->m_reqRenderPasses[GLSG_SCENE_PASS]      = true;
+            m_scene3D->m_reqRenderPasses[renderPass::objectMap] = true;
+            m_scene3D->m_reqRenderPasses[renderPass::shadowMap] = true;
+            m_scene3D->m_reqRenderPasses[renderPass::scene]      = true;
             getSharedRes()->requestRedraw                      = true;
             return sceneCam->fadeStopped();
         });

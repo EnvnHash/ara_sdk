@@ -1,4 +1,4 @@
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 using namespace std;
 using namespace glm;
@@ -17,9 +17,9 @@ glm::quat RotationBetweenVectors(glm::vec3 start, glm::vec3 dest) {
         // there is no "ideal" rotation axis
         // So guess one; any will do as long as it's perpendicular to start
         rotationAxis = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), start);
-        if (glm::length2(rotationAxis) < 0.01)  // bad luck, they were parallel, try again!
+        if (glm::length2(rotationAxis) < 0.01) { // bad luck, they were parallel, try again!
             rotationAxis = glm::cross(glm::vec3(1.0f, 0.0f, 0.0f), start);
-
+        }
         rotationAxis = glm::normalize(rotationAxis);
         return glm::angleAxis(180.0f, rotationAxis);
     }
@@ -53,20 +53,18 @@ void catmullRom(const std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &
             if (segNr == 0) {
                 // extrapolate point at the beginning by mirroring
                 glm::vec2 startP = (inPoints[0] - inPoints[1]) + inPoints[0];
-                outPoints[offs] =
-                    glm::catmullRom(startP, inPoints[segNr], inPoints[segNr + 1], inPoints[segNr + 2], fInd);
+                outPoints[offs] = glm::catmullRom(startP, inPoints[segNr], inPoints[segNr + 1], inPoints[segNr + 2], fInd);
             } else if (segNr == inPoints.size() - 2) {
                 // extrapolate point at the end by mirroring
-                glm::vec2 endP =
-                    (inPoints[inPoints.size() - 1] - inPoints[inPoints.size() - 2]) + inPoints[inPoints.size() - 1];
-                outPoints[offs] =
-                    glm::catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1], endP, fInd);
+                glm::vec2 endP = (inPoints[inPoints.size() - 1] - inPoints[inPoints.size() - 2]) + inPoints[inPoints.size() - 1];
+                outPoints[offs] = glm::catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1],
+                                                  endP, fInd);
             } else {
                 outPoints[offs] = glm::catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1],
                                                   inPoints[segNr + 2], fInd);
             }
 
-            offs++;
+            ++offs;
         }
     }
 }
@@ -78,14 +76,11 @@ float perlinOct1D(float x, int octaves, float persistence) {
 
     for (int i = 0; i < octaves; i++) {
         float fx = x * freq;
-
         r += glm::perlin(glm::vec2(fx, 0.f)) * a;
-
         //! update amplitude
         a *= persistence;
         freq = static_cast<float>(2 << i);
     }
-
     return r;
 }
 
@@ -100,10 +95,7 @@ vec4 linInterpolVec4(float inInd, const std::vector<vec4> *array) {
         int   upperInd = static_cast<int>(glm::min(lowerInd + 1.0f, fArraySize - 1.0f));
         float weight   = fInd - lowerInd;
 
-        if (weight == 0.0)
-            outVal = array->at(lowerInd);
-        else
-            outVal = glm::mix(array->at(lowerInd), array->at(upperInd), weight);
+        outVal = weight == 0.0 ? array->at(lowerInd) : glm::mix(array->at(lowerInd), array->at(upperInd), weight);
     } else {
         LOGE << "linInterpolVec4() ERROR: array size = 0";
     }
@@ -118,13 +110,13 @@ pair<bool, vec2> projPointToLine(glm::vec2 point, glm::vec2 l1Start, glm::vec2 l
     float dx = l1End.x - l1Start.x;
     float dy = l1End.y - l1Start.y;
     if (dx == 0) {
-        out             = glm::vec2(l1Start.x, point.y);
+        out             = { l1Start.x, point.y };
         pointInsideLine = l1Start.y <= l1End.y ? (l1Start.y <= point.y && point.y <= l1End.y)
                                                : (l1End.y <= point.y && point.y <= l1Start.y);
         return make_pair(pointInsideLine, out);
     };
     if (dy == 0) {
-        out             = glm::vec2(point.x, l1Start.y);
+        out             = { point.x, l1Start.y };
         pointInsideLine = l1Start.x <= l1End.x ? (l1Start.x <= point.x && point.x <= l1End.x)
                                                : (l1End.x <= point.x && point.x <= l1Start.x);
         return make_pair(pointInsideLine, out);
@@ -185,7 +177,6 @@ pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2S
         else if (dx2 == 0.0 && dx1 != 0.0) {
             intersection.x = l2Start.x;
             intersection.y = static_cast<float>(m1 * l2Start.x + c1);
-
         } else {
             intersection.x = static_cast<float>((c2 - c1) / (m1 - m2));
             intersection.y = static_cast<float>(m1 * intersection.x + c1);
@@ -462,401 +453,6 @@ glm::mat4 matrixToGlm(const matrix *_mat) {
     }
 
     return out;
-}
-
-GLenum postGLError(bool silence) {
-    GLenum glErr = glGetError();
-
-    if (glErr != GL_NO_ERROR && !silence) {
-        switch (glErr) {
-            case GL_INVALID_ENUM:
-                LOGE << "\n GL ERROR: GL_INVALID_ENUM \n \n"; break;
-            case GL_INVALID_VALUE:
-                LOGE << "\n GL ERROR: GL_INVALID_VALUE, A numeric argument is "
-                        "out of range  \n \n";
-                break;
-            case GL_INVALID_OPERATION:
-                LOGE << "\n GL ERROR: GL_INVALID_OPERATION, The specified "
-                        "operation is not allowed in the current state.  \n \n";
-                break;
-            case GL_INVALID_FRAMEBUFFER_OPERATION:
-                LOGE << "\n GL ERROR: GL_INVALID_FRAMEBUFFER_OPERATION, The "
-                        "framebuffer object is not complete. \n  \n";
-                break;
-#ifndef ARA_USE_GLES31
-            case GL_STACK_OVERFLOW:
-                LOGE << "\n GL ERROR: GL_STACK_OVERFLOW, Given when a stack "
-                        "pushing operation cannot be done because it would "
-                        "overflow the limit of that stack's size.  \n \n";
-                break;
-            case GL_STACK_UNDERFLOW:
-                LOGE << "\n GL ERROR: GL_STACK_UNDERFLOW, Given when a stack "
-                        "popping operation cannot be done because the stack is "
-                        "already at its lowest point.  \n \n";
-                break;
-#endif
-            case GL_OUT_OF_MEMORY: LOGE << "\n GL ERROR: GL_OUT_OF_MEMORY, GL_OUT_OF_MEMORY  \n \n"; break;
-            default: LOGE << "\n GL ERROR \n \n"; break;
-        }
-        return glErr;
-    }
-    return GL_NO_ERROR;
-}
-
-#ifdef ARA_USE_EGL
-std::string eglErrorString(EGLint err) {
-    switch (err) {
-        case EGL_SUCCESS: return "no error";
-        case EGL_NOT_INITIALIZED: return "EGL not, or could not be, initialized";
-        case EGL_BAD_ACCESS: return "access violation";
-        case EGL_BAD_ALLOC: return "could not allocate resources";
-        case EGL_BAD_ATTRIBUTE: return "invalid attribute";
-        case EGL_BAD_CONTEXT: return "invalid context specified";
-        case EGL_BAD_CONFIG: return "invald m_frame buffer configuration specified";
-        case EGL_BAD_CURRENT_SURFACE:
-            return "current window : return pbuffer or pixmap surface is no "
-                   "longer valid";
-        case EGL_BAD_DISPLAY: return "invalid display specified";
-        case EGL_BAD_SURFACE: return "invalid surface specified";
-        case EGL_BAD_MATCH: return "bad argument match";
-        case EGL_BAD_PARAMETER: return "invalid paramater";
-        case EGL_BAD_NATIVE_PIXMAP: return "invalid NativePixmap";
-        case EGL_BAD_NATIVE_WINDOW: return "invalid NativeWindow";
-        case EGL_CONTEXT_LOST: return "APM event caused context loss";
-        default: return "unknown error " + std::to_string(err);
-    }
-    return "";
-}
-#endif
-
-GLenum getExtType(GLenum inType) {
-    GLenum extType = 0;
-
-    switch (inType) {
-        case GL_R8: extType = GL_RED; break;
-        case GL_R8_SNORM: extType = GL_RED; break;
-#ifndef ARA_USE_GLES31
-        case GL_R16: extType = GL_RED; break;
-        case GL_R16_SNORM: extType = GL_RED; break;
-#endif
-        case GL_RG8: extType = GL_RG; break;
-        case GL_RG8_SNORM: extType = GL_RG; break;
-#ifndef ARA_USE_GLES31
-        case GL_RG16: extType = GL_RG; break;
-        case GL_RG16_SNORM: extType = GL_RG; break;
-        case GL_R3_G3_B2: extType = GL_RGB; break;
-        case GL_RGB4: extType = GL_RGB; break;
-        case GL_RGB5: extType = GL_RGB; break;
-#endif
-        case GL_RGB565: extType = GL_RGB; break;
-        case GL_RGB8: extType = GL_RGB; break;
-        case GL_RGB8_SNORM: extType = GL_RGB; break;
-#ifndef ARA_USE_GLES31
-        case GL_RGB10: extType = GL_RGB; break;
-        case GL_RGB12: extType = GL_RGB; break;
-        case GL_RGB16: extType = GL_RGB; break;
-        case GL_RGB16_SNORM: extType = GL_RGB; break;
-        case GL_RGBA2: extType = GL_RGBA; break;
-#endif
-        case GL_RGBA4: extType = GL_RGBA; break;
-        case GL_RGB5_A1: extType = GL_RGBA; break;
-        case GL_RGBA8:
-            extType = GL_BGRA;  //??
-            break;
-        case GL_RGBA8_SNORM: extType = GL_RGBA; break;
-        case GL_RGB10_A2: extType = GL_RGBA; break;
-        case GL_RGB10_A2UI: extType = GL_RGBA; break;
-#ifndef ARA_USE_GLES31
-        case GL_RGBA12: extType = GL_RGBA; break;
-        case GL_RGBA16: extType = GL_RGBA; break;
-        case GL_RGBA16_SNORM: extType = GL_RGBA; break;
-#endif
-        case GL_SRGB8: extType = GL_RGB; break;
-        case GL_SRGB8_ALPHA8: extType = GL_RGBA; break;
-        case GL_R16F: extType = GL_RED; break;
-        case GL_RG16F: extType = GL_RG; break;
-        case GL_RGB16F: extType = GL_RGB; break;
-        case GL_RGBA16F: extType = GL_RGBA; break;
-        case GL_R32F: extType = GL_RED; break;
-        case GL_RG32F: extType = GL_RG; break;
-        case GL_RGB32F: extType = GL_RGB; break;
-        case GL_RGBA32F: extType = GL_RGBA; break;
-        case GL_R11F_G11F_B10F: extType = GL_RGB; break;
-        case GL_RGB9_E5: extType = GL_RGB; break;
-        case GL_R8I: extType = GL_RED_INTEGER; break;
-        case GL_R8UI: extType = GL_RED_INTEGER; break;
-        case GL_R16I: extType = GL_RED_INTEGER; break;
-        case GL_R16UI: extType = GL_RED_INTEGER; break;
-        case GL_R32I: extType = GL_RED_INTEGER; break;
-        case GL_R32UI: extType = GL_RED_INTEGER; break;
-        case GL_RG8I: extType = GL_RG_INTEGER; break;
-        case GL_RG8UI: extType = GL_RG_INTEGER; break;
-        case GL_RG16I: extType = GL_RG_INTEGER; break;
-        case GL_RG16UI: extType = GL_RG_INTEGER; break;
-        case GL_RG32I: extType = GL_RG_INTEGER; break;
-        case GL_RG32UI: extType = GL_RG_INTEGER; break;
-        case GL_RGB8I: extType = GL_RGB_INTEGER; break;
-        case GL_RGB8UI: extType = GL_RGB_INTEGER; break;
-        case GL_RGB16I: extType = GL_RGB_INTEGER; break;
-        case GL_RGB16UI: extType = GL_RGB_INTEGER; break;
-        case GL_RGB32I: extType = GL_RGB_INTEGER; break;
-        case GL_RGB32UI: extType = GL_RGB_INTEGER; break;
-        case GL_RGBA8I: extType = GL_RGBA_INTEGER; break;
-        case GL_RGBA8UI: extType = GL_RGBA_INTEGER; break;
-        case GL_RGBA16I: extType = GL_RGBA_INTEGER; break;
-        case GL_RGBA16UI: extType = GL_RGBA_INTEGER; break;
-        case GL_RGBA32I: extType = GL_RGBA_INTEGER; break;
-        case GL_RGBA32UI: extType = GL_RGBA_INTEGER; break;
-        case GL_DEPTH_COMPONENT24: extType = GL_DEPTH_COMPONENT; break;
-        case GL_DEPTH24_STENCIL8: extType = GL_DEPTH_STENCIL; break;
-        case GL_DEPTH32F_STENCIL8: extType = GL_DEPTH_STENCIL; break;
-        case GL_DEPTH_COMPONENT32F: extType = GL_DEPTH_COMPONENT; break;
-    }
-
-    return extType;
-}
-
-GLenum getPixelType(GLenum inType) {
-    GLenum format = 0;
-
-    switch (inType) {
-        case GL_R8: format = GL_UNSIGNED_BYTE; break;
-        case GL_R8_SNORM: format = GL_UNSIGNED_BYTE; break;
-#ifndef ARA_USE_GLES31
-        case GL_R16: format = GL_UNSIGNED_SHORT; break;
-        case GL_R16_SNORM: format = GL_UNSIGNED_SHORT; break;
-#endif
-        case GL_RG8: format = GL_UNSIGNED_BYTE; break;
-        case GL_RG8_SNORM: format = GL_UNSIGNED_BYTE; break;
-#ifndef ARA_USE_GLES31
-        case GL_RG16: format = GL_UNSIGNED_SHORT; break;
-        case GL_RG16_SNORM: format = GL_UNSIGNED_SHORT; break;
-        case GL_R3_G3_B2: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB4: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB5: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB565: format = GL_UNSIGNED_BYTE; break;
-#endif
-        case GL_RGB8: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB8_SNORM: format = GL_UNSIGNED_BYTE; break;
-#ifndef ARA_USE_GLES31
-        case GL_RGB10: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB12: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB16: format = GL_UNSIGNED_SHORT; break;
-        case GL_RGB16_SNORM: format = GL_UNSIGNED_SHORT; break;
-        case GL_RGBA2: format = GL_UNSIGNED_BYTE; break;
-#endif
-        case GL_RGBA4: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB5_A1: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGBA8: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGBA8_SNORM: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB10_A2: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB10_A2UI: format = GL_UNSIGNED_BYTE; break;
-#ifndef ARA_USE_GLES31
-        case GL_RGBA12: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGBA16: format = GL_UNSIGNED_SHORT; break;
-        case GL_RGBA16_SNORM: format = GL_UNSIGNED_SHORT; break;
-#endif
-        case GL_SRGB8: format = GL_UNSIGNED_BYTE; break;
-        case GL_SRGB8_ALPHA8: format = GL_UNSIGNED_BYTE; break;
-        case GL_R16F: format = GL_HALF_FLOAT; break;
-        case GL_RG16F: format = GL_HALF_FLOAT; break;
-        case GL_RGB16F: format = GL_HALF_FLOAT; break;
-        case GL_RGBA16F: format = GL_HALF_FLOAT; break;
-        case GL_R32F: format = GL_FLOAT; break;
-        case GL_RG32F: format = GL_FLOAT; break;
-        case GL_RGB32F: format = GL_FLOAT; break;
-        case GL_RGBA32F: format = GL_FLOAT; break;
-        case GL_R11F_G11F_B10F: format = GL_FLOAT; break;
-        case GL_RGB9_E5: format = GL_UNSIGNED_BYTE; break;
-        case GL_R8I: format = GL_BYTE; break;
-        case GL_R8UI: format = GL_UNSIGNED_BYTE; break;
-        case GL_R16I: format = GL_SHORT; break;
-        case GL_R16UI: format = GL_UNSIGNED_SHORT; break;
-        case GL_R32I: format = GL_INT; break;
-        case GL_R32UI: format = GL_UNSIGNED_INT; break;
-        case GL_RG8I: format = GL_BYTE; break;
-        case GL_RG8UI: format = GL_UNSIGNED_BYTE; break;
-        case GL_RG16I: format = GL_SHORT; break;
-        case GL_RG16UI: format = GL_UNSIGNED_SHORT; break;
-        case GL_RG32I: format = GL_INT; break;
-        case GL_RG32UI: format = GL_UNSIGNED_INT; break;
-        case GL_RGB8I: format = GL_BYTE; break;
-        case GL_RGB8UI: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGB16I: format = GL_SHORT; break;
-        case GL_RGB16UI: format = GL_UNSIGNED_SHORT; break;
-        case GL_RGB32I: format = GL_INT; break;
-        case GL_RGB32UI: format = GL_UNSIGNED_INT; break;
-        case GL_RGBA8I: format = GL_BYTE; break;
-        case GL_RGBA8UI: format = GL_UNSIGNED_BYTE; break;
-        case GL_RGBA16I: format = GL_SHORT; break;
-        case GL_RGBA16UI: format = GL_UNSIGNED_SHORT; break;
-        case GL_RGBA32I: format = GL_INT; break;
-        case GL_RGBA32UI: format = GL_UNSIGNED_INT; break;
-        case GL_DEPTH_COMPONENT24: format = GL_UNSIGNED_INT; break;
-        case GL_DEPTH24_STENCIL8: format = GL_UNSIGNED_INT_24_8; break;
-        case GL_DEPTH32F_STENCIL8: format = GL_FLOAT_32_UNSIGNED_INT_24_8_REV; break;
-        case GL_DEPTH_COMPONENT32F: format = GL_FLOAT; break;
-    }
-
-    return format;
-}
-
-short getNrColChans(GLenum internalType) {
-    switch (internalType) {
-        case GL_R8: return 1;
-        case GL_R8_SNORM: return 1;
-#ifndef ARA_USE_GLES31
-        case GL_R16: return 1;
-        case GL_R16_SNORM: return 1;
-#endif
-        case GL_RG8: return 2;
-        case GL_RG8_SNORM: return 2;
-#ifndef ARA_USE_GLES31
-        case GL_RG16: return 2;
-        case GL_RG16_SNORM: return 2;
-        case GL_R3_G3_B2: return 3;
-        case GL_RGB4: return 3;
-        case GL_RGB5: return 3;
-#endif
-        case GL_RGB565: return 3;
-        case GL_RGB8: return 3;
-        case GL_RGB8_SNORM: return 3;
-#ifndef ARA_USE_GLES31
-        case GL_RGB10: return 3;
-        case GL_RGB12: return 3;
-        case GL_RGB16: return 3;
-        case GL_RGB16_SNORM: return 3;
-        case GL_RGBA2: return 4;
-#endif
-        case GL_RGBA4: return 4;
-        case GL_RGB5_A1: return 4;
-        case GL_RGBA8: return 4;
-        case GL_RGBA8_SNORM: return 4;
-        case GL_RGB10_A2: return 4;
-        case GL_RGB10_A2UI: return 4;
-#ifndef ARA_USE_GLES31
-        case GL_RGBA12: return 4;
-        case GL_RGBA16: return 4;
-        case GL_RGBA16_SNORM: return 4;
-#endif
-        case GL_SRGB8: return 3;
-        case GL_SRGB8_ALPHA8: return 4;
-        case GL_R16F: return 1;
-        case GL_RG16F: return 2;
-        case GL_RGB16F: return 3;
-        case GL_RGBA16F: return 4;
-        case GL_R32F: return 1;
-        case GL_RG32F: return 2;
-        case GL_RGB32F: return 3;
-        case GL_RGBA32F: return 4;
-        case GL_R11F_G11F_B10F: return 3;
-        case GL_RGB9_E5: return 4;
-        case GL_R8I: return 1;
-        case GL_R8UI: return 1;
-        case GL_R16I: return 1;
-        case GL_R16UI: return 1;
-        case GL_R32I: return 1;
-        case GL_R32UI: return 1;
-        case GL_RG8I: return 2;
-        case GL_RG8UI: return 2;
-        case GL_RG16I: return 2;
-        case GL_RG16UI: return 2;
-        case GL_RG32I: return 2;
-        case GL_RG32UI: return 2;
-        case GL_RGB8I: return 3;
-        case GL_RGB8UI: return 3;
-        case GL_RGB16I: return 3;
-        case GL_RGB16UI: return 3;
-        case GL_RGB32I: return 3;
-        case GL_RGB32UI: return 3;
-        case GL_RGBA8I: return 4;
-        case GL_RGBA8UI: return 4;
-        case GL_RGBA16I: return 4;
-        case GL_RGBA16UI: return 4;
-        case GL_RGBA32I: return 4;
-        case GL_RGBA32UI: return 4;
-        default: break;
-    }
-    return 0;
-}
-
-uint getBitCount(GLenum inType) {
-    switch (inType) {
-        case GL_R8: return 8;
-        case GL_R8_SNORM: return 8;
-#ifndef ARA_USE_GLES31
-        case GL_R16: return 16;
-        case GL_R16_SNORM: return 16;
-#endif
-        case GL_RG8: return 16;
-        case GL_RG8_SNORM: return 16;
-#ifndef ARA_USE_GLES31
-        case GL_RG16: return 32;
-        case GL_RG16_SNORM: return 32;
-        case GL_R3_G3_B2: return 8;
-        case GL_RGB4: return 12;
-        case GL_RGB5: return 15;
-#endif
-        case GL_RGB565: return 16;
-        case GL_RGB8: return 24;
-        case GL_RGB8_SNORM: return 24;
-#ifndef ARA_USE_GLES31
-        case GL_RGB10: return 30;
-        case GL_RGB12: return 36;
-        case GL_RGB16: return 48;
-        case GL_RGB16_SNORM: return 48;
-        case GL_RGBA2: return 26;
-#endif
-        case GL_RGBA4: return 28;
-        case GL_RGB5_A1: return 16;
-        case GL_RGBA8: return 32;
-        case GL_RGBA8_SNORM: return 32;
-        case GL_RGB10_A2: return 32;
-        case GL_RGB10_A2UI: return 32;
-#ifndef ARA_USE_GLES31
-        case GL_RGBA12: return 48;
-        case GL_RGBA16: return 64;
-        case GL_RGBA16_SNORM: return 64;
-#endif
-        case GL_SRGB8: return 24;
-        case GL_SRGB8_ALPHA8: return 32;
-        case GL_R16F: return 16;
-        case GL_RG16F: return 32;
-        case GL_RGB16F: return 48;
-        case GL_RGBA16F: return 64;
-        case GL_R32F: return 32;
-        case GL_RG32F: return 64;
-        case GL_RGB32F: return 96;
-        case GL_RGBA32F: return 128;
-        case GL_R11F_G11F_B10F: return 32;
-        case GL_RGB9_E5: return 32;
-        case GL_R8I: return 8;
-        case GL_R8UI: return 8;
-        case GL_R16I: return 16;
-        case GL_R16UI: return 16;
-        case GL_R32I: return 32;
-        case GL_R32UI: return 32;
-        case GL_RG8I: return 16;
-        case GL_RG8UI: return 16;
-        case GL_RG16I: return 32;
-        case GL_RG16UI: return 32;
-        case GL_RG32I: return 64;
-        case GL_RG32UI: return 64;
-        case GL_RGB8I: return 24;
-        case GL_RGB8UI: return 24;
-        case GL_RGB16I: return 48;
-        case GL_RGB16UI: return 48;
-        case GL_RGB32I: return 96;
-        case GL_RGB32UI: return 96;
-        case GL_RGBA8I: return 32;
-        case GL_RGBA8UI: return 32;
-        case GL_RGBA16I: return 64;
-        case GL_RGBA16UI: return 64;
-        case GL_RGBA32I: return 128;
-        case GL_RGBA32UI: return 128;
-        default: break;
-    }
-    return 0;
 }
 
 void decomposeMtx(const glm::mat4 &m, glm::vec3 &pos, glm::quat &rot, glm::vec3 &scale) {

@@ -25,9 +25,6 @@
 
 namespace ara {
 
-template<typename T>
-concept PropertyType = std::is_same_v<T, std::string> || std::is_integral_v<T> || std::is_floating_point_v<T>;
-
 template <PropertyType T>
 class PropertyItemUi;
 

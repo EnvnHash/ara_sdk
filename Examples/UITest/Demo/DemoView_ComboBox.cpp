@@ -3,7 +3,6 @@
 using namespace ara;
 using namespace glm;
 using namespace std;
-using namespace ara;
 
 DemoView_ComboBox::DemoView_ComboBox() : DemoView("ComboBoxes",glm::vec4(.1f,.1f,.1f,1.f)) {
     setName(getTypeName<DemoView_ComboBox>());

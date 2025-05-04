@@ -8,7 +8,7 @@
 
 #include <Shaders/ShaderUtils/ShaderBuffer.h>
 #include <Utils/NoiseTexNV.h>
-#include <glb_common/glb_common.h>
+#include <GlbCommon/GlbCommon.h>
 
 namespace ara {
 struct ShaderParams {

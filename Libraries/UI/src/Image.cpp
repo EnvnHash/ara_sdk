@@ -9,6 +9,7 @@
 #include <Asset/AssetImageBase.h>
 #include <Asset/AssetManager.h>
 #include <DrawManagers/DrawManager.h>
+#include <Utils/PingPongFbo.h>
 
 using namespace std;
 using namespace glm;
@@ -25,7 +26,7 @@ Image::Image() : Div() {
 #endif
 }
 
-Image::Image(const std::string& styleClass) : Div(std::move(styleClass)) {
+Image::Image(const std::string& styleClass) : Div(styleClass) {
     setName(getTypeName<Image>());
     setFocusAllowed(false);
     Image::initDefaults();
@@ -62,9 +63,9 @@ void Image::loadStyleDefaults() {
 
     setStyleInitVal("img-align", "center,vcenter");
 
-    m_setStyleFunc[state::none][styleInit::color]    = [this]() { setColor(1.f, 1.f, 1.f, 1.f); };
-    m_setStyleFunc[state::none][styleInit::imgFlag]  = [this]() { m_imgFlags = 0; };
-    m_setStyleFunc[state::none][styleInit::imgScale] = [this]() { m_imgScale = 1.f; };
+    m_setStyleFunc[state::none][styleInit::color]    = [this]{ setColor(1.f, 1.f, 1.f, 1.f); };
+    m_setStyleFunc[state::none][styleInit::imgFlag]  = [this]{ m_imgFlags = 0; };
+    m_setStyleFunc[state::none][styleInit::imgScale] = [this]{ m_imgScale = 1.f; };
 }
 
 void Image::init() {
