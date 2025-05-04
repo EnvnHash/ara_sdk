@@ -57,7 +57,7 @@ std::string eglErrorString(EGLint err) {
 GLenum getExtType(GLenum tp) {
     static std::unordered_map<GLenum, GLenum> extTypeMap = {
         { GL_R8,  GL_RED },
-        { GL_R8_SNORM,  GL_RED },
+{ GL_R8_SNORM,  GL_RED },
 #ifndef ARA_USE_GLES31
         { GL_R16,  GL_RED },
         { GL_R16_SNORM,  GL_RED },

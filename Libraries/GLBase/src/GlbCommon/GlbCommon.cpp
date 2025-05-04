@@ -5,34 +5,34 @@ using namespace glm;
 
 namespace ara {
 
-glm::quat RotationBetweenVectors(glm::vec3 start, glm::vec3 dest) {
-    start = glm::normalize(start);
-    dest  = glm::normalize(dest);
+quat RotationBetweenVectors(vec3 start, vec3 dest) {
+    start = normalize(start);
+    dest  = normalize(dest);
 
-    float     cosTheta = glm::dot(start, dest);
-    glm::vec3 rotationAxis;
+    float     cosTheta = dot(start, dest);
+    vec3 rotationAxis;
 
     if (cosTheta < -1 + 0.001f) {
         // special case when vectors in opposite directions:
         // there is no "ideal" rotation axis
         // So guess one; any will do as long as it's perpendicular to start
-        rotationAxis = glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), start);
-        if (glm::length2(rotationAxis) < 0.01) { // bad luck, they were parallel, try again!
-            rotationAxis = glm::cross(glm::vec3(1.0f, 0.0f, 0.0f), start);
+        rotationAxis = cross(vec3(0.0f, 0.0f, 1.0f), start);
+        if (length2(rotationAxis) < 0.01) { // bad luck, they were parallel, try again!
+            rotationAxis = cross(vec3(1.0f, 0.0f, 0.0f), start);
         }
-        rotationAxis = glm::normalize(rotationAxis);
-        return glm::angleAxis(180.0f, rotationAxis);
+        rotationAxis = normalize(rotationAxis);
+        return angleAxis(180.0f, rotationAxis);
     }
 
-    rotationAxis = glm::cross(start, dest);
+    rotationAxis = cross(start, dest);
 
-    float s    = glm::sqrt((1 + cosTheta) * 2);
+    float s    = sqrt((1 + cosTheta) * 2);
     float invs = 1 / s;
 
     return {s * 0.5f, rotationAxis.x * invs, rotationAxis.y * invs, rotationAxis.z * invs};
 }
 
-void catmullRom(const std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &outPoints, unsigned int dstNrPoints) {
+void catmullRom(const std::vector<vec2> &inPoints, std::vector<vec2> &outPoints, unsigned int dstNrPoints) {
     outPoints.resize(dstNrPoints);
     float nrIntPointPerSeg = static_cast<float>(dstNrPoints) / static_cast<float>(inPoints.size() - 1);
 
@@ -52,15 +52,15 @@ void catmullRom(const std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &
 
             if (segNr == 0) {
                 // extrapolate point at the beginning by mirroring
-                glm::vec2 startP = (inPoints[0] - inPoints[1]) + inPoints[0];
-                outPoints[offs] = glm::catmullRom(startP, inPoints[segNr], inPoints[segNr + 1], inPoints[segNr + 2], fInd);
+                vec2 startP = (inPoints[0] - inPoints[1]) + inPoints[0];
+                outPoints[offs] = catmullRom(startP, inPoints[segNr], inPoints[segNr + 1], inPoints[segNr + 2], fInd);
             } else if (segNr == inPoints.size() - 2) {
                 // extrapolate point at the end by mirroring
-                glm::vec2 endP = (inPoints[inPoints.size() - 1] - inPoints[inPoints.size() - 2]) + inPoints[inPoints.size() - 1];
-                outPoints[offs] = glm::catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1],
+                vec2 endP = (inPoints[inPoints.size() - 1] - inPoints[inPoints.size() - 2]) + inPoints[inPoints.size() - 1];
+                outPoints[offs] = catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1],
                                                   endP, fInd);
             } else {
-                outPoints[offs] = glm::catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1],
+                outPoints[offs] = catmullRom(inPoints[segNr - 1], inPoints[segNr], inPoints[segNr + 1],
                                                   inPoints[segNr + 2], fInd);
             }
 
@@ -76,7 +76,7 @@ float perlinOct1D(float x, int octaves, float persistence) {
 
     for (int i = 0; i < octaves; i++) {
         float fx = x * freq;
-        r += glm::perlin(glm::vec2(fx, 0.f)) * a;
+        r += perlin(vec2(fx, 0.f)) * a;
         //! update amplitude
         a *= persistence;
         freq = static_cast<float>(2 << i);
@@ -92,10 +92,10 @@ vec4 linInterpolVec4(float inInd, const std::vector<vec4> *array) {
         float fInd       = fmod(fmin(fmax(inInd, 0.f), 1.f), 1.0f) * (fArraySize - 1.0f);
 
         int   lowerInd = static_cast<int>(floor(fInd));
-        int   upperInd = static_cast<int>(glm::min(lowerInd + 1.0f, fArraySize - 1.0f));
+        int   upperInd = static_cast<int>(glm::min(lowerInd + 1.f, fArraySize - 1.f));
         float weight   = fInd - lowerInd;
 
-        outVal = weight == 0.0 ? array->at(lowerInd) : glm::mix(array->at(lowerInd), array->at(upperInd), weight);
+        outVal = weight == 0.0 ? array->at(lowerInd) : mix(array->at(lowerInd), array->at(upperInd), weight);
     } else {
         LOGE << "linInterpolVec4() ERROR: array size = 0";
     }
@@ -103,8 +103,8 @@ vec4 linInterpolVec4(float inInd, const std::vector<vec4> *array) {
     return outVal;
 }
 
-pair<bool, vec2> projPointToLine(glm::vec2 point, glm::vec2 l1Start, glm::vec2 l1End) {
-    glm::vec2 out;
+pair<bool, vec2> projPointToLine(vec2 point, vec2 l1Start, vec2 l1End) {
+    vec2 out;
     bool      pointInsideLine;
 
     float dx = l1End.x - l1Start.x;
@@ -139,7 +139,7 @@ pair<bool, vec2> projPointToLine(glm::vec2 point, glm::vec2 l1Start, glm::vec2 l
     return make_pair(pointInsideLine, out);
 }
 
-pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2Start, glm::vec2 l2End) {
+pair<bool, vec2> lineIntersect(vec2 l1Start, vec2 l1End, vec2 l2Start, vec2 l2End) {
     double m1 = 0, c1 = 0, m2 = 0, c2 = 0;
     vec2   intersection     = vec2(0.f, 0.f);
     std::array<std::array<vec2, 2>, 2> linePoints{};
@@ -162,7 +162,7 @@ pair<bool, vec2> lineIntersect(glm::vec2 l1Start, glm::vec2 l1End, glm::vec2 l2S
     }
 
     // lines are parallel and both parallel to y-axis
-    if (dx1 == 0 && dx2 == 0) return make_pair(false, glm::vec2(0.f, 0.f));
+    if (dx1 == 0 && dx2 == 0) return make_pair(false, vec2(0.f, 0.f));
 
     if ((dx1 != 0) && (dx2 != 0) && (m1 - m2) == 0) {
         // lines are parallel
@@ -213,15 +213,15 @@ bool lineIntersectCheckOutlier(std::array<std::array<vec2, 2>, 2>& linePoints, v
     return onLine[0] && onLine[1];
 }
 
-inline double Det2D(const glm::vec2 &p1, const glm::vec2 &p2, const glm::vec2 &p3) {
+inline double Det2D(const vec2 &p1, const vec2 &p2, const vec2 &p3) {
     return +p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y);
 }
 
-void CheckTriWinding(const glm::vec2 &p1, glm::vec2 &p2, glm::vec2 &p3, bool allowReversed) {
+void CheckTriWinding(const vec2 &p1, vec2 &p2, vec2 &p3, bool allowReversed) {
     double detTri = Det2D(p1, p2, p3);
     if (detTri < 0.0) {
         if (allowReversed) {
-            glm::vec2 a = p3;
+            vec2 a = p3;
             p3          = p2;
             p2          = a;
         } else
@@ -229,18 +229,18 @@ void CheckTriWinding(const glm::vec2 &p1, glm::vec2 &p2, glm::vec2 &p3, bool all
     }
 }
 
-bool BoundaryCollideChk(const glm::vec2 &p1, const glm::vec2 &p2, const glm::vec2 &p3, double eps) { return Det2D(p1, p2, p3) < eps; }
+bool BoundaryCollideChk(const vec2 &p1, const vec2 &p2, const vec2 &p3, double eps) { return Det2D(p1, p2, p3) < eps; }
 
-bool BoundaryDoesntCollideChk(const glm::vec2 &p1, const glm::vec2 &p2, const glm::vec2 &p3, double eps) {
+bool BoundaryDoesntCollideChk(const vec2 &p1, const vec2 &p2, const vec2 &p3, double eps) {
     return Det2D(p1, p2, p3) <= eps;
 }
 
-bool TriTri2D(glm::vec2 *t1, glm::vec2 *t2, double eps = 0.0, bool allowReversed = false, bool onBoundary = true) {
+bool TriTri2D(vec2 *t1, vec2 *t2, double eps = 0.0, bool allowReversed = false, bool onBoundary = true) {
     // Trangles must be expressed anti-clockwise
     CheckTriWinding(t1[0], t1[1], t1[2], allowReversed);
     CheckTriWinding(t2[0], t2[1], t2[2], allowReversed);
 
-    bool (*chkEdge)(const glm::vec2 &, const glm::vec2 &, const glm::vec2 &, double) = nullptr;
+    bool (*chkEdge)(const vec2 &, const vec2 &, const vec2 &, double) = nullptr;
     if (onBoundary) {
         // Points on the boundary are considered as colliding
         chkEdge = BoundaryCollideChk;
@@ -273,16 +273,16 @@ bool TriTri2D(glm::vec2 *t1, glm::vec2 *t2, double eps = 0.0, bool allowReversed
     return true;
 }
 
-float distPointLine(glm::vec2 _point, glm::vec2 _lineP1, glm::vec2 _lineP2, bool *projIsOutside, float *projAngle) {
+float distPointLine(vec2 _point, vec2 _lineP1, vec2 _lineP2, bool *projIsOutside, float *projAngle) {
     // return minimum distance between line segment P1P2 and point
-    float l2 = glm::length(_lineP2 - _lineP1);
+    float l2 = length(_lineP2 - _lineP1);
     l2 *= l2;
 
     if (l2 == 0.f) {
         if (projIsOutside) {
             *projIsOutside = false;
         }
-        return glm::distance(_point, _lineP1);
+        return distance(_point, _lineP1);
     }
 
     if (projIsOutside) {
@@ -291,31 +291,31 @@ float distPointLine(glm::vec2 _point, glm::vec2 _lineP1, glm::vec2 _lineP2, bool
 
     // consider the line extending the segment, parameterized as v + t (P2 - P1).
     // we find projection of point p onto the line if falls where t = [(p - P1) . (P2 - P1)] / |P2 - P1|^2
-    float t = glm::dot(_point - _lineP1, _lineP2 - _lineP1) / l2;
+    float t = dot(_point - _lineP1, _lineP2 - _lineP1) / l2;
 
     /*
     if (projAngle){
-        glm::vec2 diff = (proj - _point);
-        *projAngle = glm::orientedAngle(glm::vec2(1.f, 0.f),
-    glm::normalize(diff));
+        vec2 diff = (proj - _point);
+        *projAngle = orientedAngle(vec2(1.f, 0.f),
+    normalize(diff));
     }
 */
     if (t < 0.f) {
-        return glm::distance(_point, _lineP1);  // beyond the P1 End of Segment
+        return distance(_point, _lineP1);  // beyond the P1 End of Segment
     } else if (t > 1.f) {
-        return glm::distance(_point, _lineP2);  // beyond the P2 End of Segment
+        return distance(_point, _lineP2);  // beyond the P2 End of Segment
     }
 
     auto proj = _lineP1 + t * (_lineP2 - _lineP1);
 
-    return glm::distance(_point, proj);
+    return distance(_point, proj);
 }
 
-float sign(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3) {
+float sign(vec2 p1, vec2 p2, vec2 p3) {
     return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 }
 
-bool pointInTriangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3) {
+bool pointInTriangle(vec2 pt, vec2 v1, vec2 v2, vec2 v3) {
     float d1 = sign(pt, v1, v2);
     float d2 = sign(pt, v2, v3);
     float d3 = sign(pt, v3, v1);
@@ -350,123 +350,44 @@ float map(float value, float inputMin, float inputMax, float outputMin, float ou
 }
 
 // Function to generate a random point within a plane defined by three points
-glm::vec3 getRandomPointOnPlane(const glm::vec3& base, const glm::vec3& v0, const glm::vec3& v1) {
+vec3 getRandomPointOnPlane(const vec3& base, const vec3& v0, const vec3& v1) {
     return base + v0 * getRandF(0.05f, 0.95f) + v1 * getRandF(0.05f, 0.95f);
 }
 
-float angleBetweenVectors(const glm::vec3& a, const glm::vec3& b) {
+float angleBetweenVectors(const vec3& a, const vec3& b) {
     // Calculate dot product of a and b
-    float dotProduct = glm::dot(a, b);
+    float dotProduct = dot(a, b);
 
     // Calculate magnitudes of a and b
-    float magnitudeA = glm::length(a);
-    float magnitudeB = glm::length(b);
+    float magnitudeA = length(a);
+    float magnitudeB = length(b);
 
     // Calculate cos(theta)
     float cosTheta = dotProduct / (magnitudeA * magnitudeB);
 
     // Clamp the value to [-1, 1] due to floating-point arithmetic errors
-    cosTheta = glm::clamp(cosTheta, -1.0f, 1.0f);
+    cosTheta = glm::clamp(cosTheta, -1.f, 1.f);
 
     // Calculate theta in radians
     return std::acos(cosTheta);
 }
 
-double matrix_get_var(matrix* m, int row, int col) {
-    if (row >= 0 && row < m->row && col >= 0 && col < m->col) {
-        return m->var[row][col];
-    } else {
-        fprintf(stderr, "Matrix get_var: Index out of bounds\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
-void matrix_set_var(matrix* m, int row, int col, double value) {
-    if (row >= 0 && row < m->row && col >= 0 && col < m->col) {
-        m->var[row][col] = value;
-    } else {
-        fprintf(stderr, "Matrix set_var: Index out of bounds\n");
-        exit(EXIT_FAILURE);
-    }
-}
-
-void fill_matrix_a(matrix* a, const double *x, const double *y, const double *_x, const double *_y) {
-    for (int i = 0; i < 4; ++i) {
-        matrix_set_var(a, i, 0, x[i]);
-        matrix_set_var(a, i, 1, y[i]);
-        matrix_set_var(a, i, 2, 1.0);
-        matrix_set_var(a, i, 6, -_x[i] * x[i]);
-        matrix_set_var(a, i, 7, -_x[i] * y[i]);
-    }
-
-    for (int i = 0; i < 4; ++i) {
-        matrix_set_var(a, i + 4, 3, x[i]);
-        matrix_set_var(a, i + 4, 4, y[i]);
-        matrix_set_var(a, i + 4, 5, 1.0);
-        matrix_set_var(a, i + 4, 6, -x[i] * _y[i]);
-        matrix_set_var(a, i + 4, 7, -y[i] * _y[i]);
-    }
-}
-
-void fill_matrix_b(matrix* b, const double *_x, const double *_y) {
-    for (int i = 0; i < 4; ++i) {
-        matrix_set_var(b, i, 0, _x[i]);
-    }
-
-    for (int i = 0; i < 4; ++i) {
-        matrix_set_var(b, i + 4, 0, _y[i]);
-    }
-}
-
-matrix* projection_matrix(const double *x, const double *y, const double *_x, const double *_y) {
-    matrix *a = matrix_new(8, 8);
-    matrix *b = matrix_new(8, 1);
-
-    fill_matrix_a(a, x, y, _x, _y);
-    fill_matrix_b(b, _x, _y);
-
-    matrix *a_inv = matrix_inv(a);
-    matrix *c = matrix_multiple(a_inv, b);
-
-    matrix *projection = matrix_new(3, 3);
-    for (int i = 0; i < 2; ++i) {
-        for (int j = 0; j < 2; ++j) {
-            matrix_set_var(projection, i, j, matrix_get_var(c, i + j * 4, 0));
-        }
-    }
-    matrix_set_var(projection, 2, 2, 1.0);
-
-    matrix_free(a);
-    matrix_free(b);
-    matrix_free(c);
-    matrix_free(a_inv);
-
-    return projection;
-}
-
-glm::mat4 matrixToGlm(const matrix *_mat) {
-    auto out = glm::mat4(1.f);
-    for (short j = 0; j < 3; j++) {
-        for (short i = 0; i < 3; i++) {
-            out[i][j] = static_cast<float>(_mat->var[j][i]);
-        }
-    }
-
-    return out;
-}
-
-void decomposeMtx(const glm::mat4 &m, glm::vec3 &pos, glm::quat &rot, glm::vec3 &scale) {
+void decomposeMtx(const mat4 &m, vec3 &pos, quat &rot, vec3 &scale) {
     pos = m[3];
-    for (int i = 0; i < 3; i++) scale[i] = glm::length(vec3(m[i]));
-    const glm::mat3 rotMtx(glm::vec3(m[0]) / scale[0], glm::vec3(m[1]) / scale[1], glm::vec3(m[2]) / scale[2]);
-    rot = glm::quat_cast(rotMtx);
+    for (int i = 0; i < 3; i++) {
+        scale[i] = length(vec3(m[i]));
+    }
+    const mat3 rotMtx(vec3(m[0]) / scale[0], vec3(m[1]) / scale[1], vec3(m[2]) / scale[2]);
+    rot = quat_cast(rotMtx);
 }
 
-void decomposeRot(const glm::mat4 &m, glm::quat &rot) {
+void decomposeRot(const mat4 &m, quat &rot) {
     vec3 scale;
-    for (int i = 0; i < 3; i++) scale[i] = glm::length(vec3(m[i]));
+    for (int i = 0; i < 3; i++) {
+        scale[i] = length(vec3(m[i]));
+    }
 
-    rot = glm::quat_cast(glm::mat3(glm::vec3(m[0]) / scale[0], glm::vec3(m[1]) / scale[1], glm::vec3(m[2]) / scale[2]));
+    rot = quat_cast(mat3(vec3(m[0]) / scale[0], vec3(m[1]) / scale[1], vec3(m[2]) / scale[2]));
 }
 
 /** there is no glGetTexImage in GLES, so bind the texture to a FBO and use

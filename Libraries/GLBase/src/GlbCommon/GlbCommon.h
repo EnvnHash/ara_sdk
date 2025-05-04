@@ -30,7 +30,6 @@
 #include <glm/gtx/vector_angle.hpp>
 
 #include "GlbCommon/GlHeaders.h"
-#include "GlbCommon/matrix.h"
 
 // -------------------- SCENE CONSTANTS ----------------------------
 
@@ -298,14 +297,6 @@ float sign(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3);
 bool  pointInTriangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3);
 float angleBetweenVectors(const glm::vec3& a, const glm::vec3& b);
 glm::vec3 getRandomPointOnPlane(const glm::vec3&, const glm::vec3&, const glm::vec3&);
-
-double matrix_get_var(matrix* m, int row, int col);
-void matrix_set_var(matrix* m, int row, int col, double value);
-void fill_matrix_a(matrix* a, const double *x, const double *y, const double *_x, const double *_y);
-void fill_matrix_b(matrix* b, const double *_x, const double *_y);
-matrix *projection_matrix(const double *x, const double *y, const double *_x, const double *_y);
-
-glm::mat4 matrixToGlm(const matrix *_mat);
 
 GLenum postGLError(bool silence = false);
 GLenum getExtType(GLenum inType);

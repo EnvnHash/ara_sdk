@@ -15,6 +15,11 @@
 
 #pragma once
 
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable: 4244)
+#endif
+
 #include <Asset/ParVec.h>
 #include <string_utils.h>
 
@@ -68,8 +73,7 @@ public:
 
     std::string getPath();
     bool        _r_getPath(std::vector<ResNode *> &nl);
-    ResNode*    findNode(const std::string &path);  // Finds a node in the tree, in the form of
-                                                 // "node.child.child"
+    ResNode*    findNode(const std::string &path);  // Finds a node in the tree, in the form of "node.child.child"
     template <typename T>
     T *findNode(const std::string &path) {
         ResNode *n = findNode(path);
@@ -90,17 +94,16 @@ public:
     }
 
     ResNode                                     *findNode(std::vector<std::string> &v, int level);  // Recursive function to find a child in the tree
-    std::tuple<ResNode *, unitType, std::string> findNumericNode(const std::string &path);  // same as above but resolves reference to other styles and
-                                   // checks if the value is numeric
-    ResNode *findNodeFromNode(const std::string &path, ResNode *rnode);  // Finds a node by path starting
-                                                // from a root rnode (snode)
+    std::tuple<ResNode *, unitType, std::string> findNumericNode(const std::string &path);  // same as above but resolves reference to other styles and checks if the value is numeric
+    ResNode *findNodeFromNode(const std::string &path, ResNode *rnode);  // Finds a node by path starting from a root rnode (snode)
     ResNode *findNodeFromRoot(const std::string& path) {
         return findNodeFromNode(path, nullptr);
     }  // Finds a node by path starting from the root
-    ResNode *getByName(const std::string &name);  // Finds an immediate child with the giving
-                                                  // name (childs in m_Node)
+    ResNode *getByName(const std::string &name);  // Finds an immediate child with the giving name (childs in m_Node)
 
-    void setValue(std::string value) { m_value = std::move(value); }
+    void setValue(std::string value) {
+        m_value = std::move(value);
+    }
 
     void setFunc(std::string func, ParVec &par) {
         m_func = std::move(func);
@@ -230,5 +233,9 @@ protected:
 
     std::unordered_map<std::string, ResNode *> m_findNodeCache;
 };
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif
 
 }  // namespace ara
