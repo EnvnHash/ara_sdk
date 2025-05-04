@@ -103,13 +103,13 @@ public:
     void onKeyDown(int keyNum, bool shiftPressed, bool ctrlPressed, bool altPressed) override;
     void onKeyUp(int keyNum, bool shiftReleased, bool ctrlReleased, bool altReleased) override;
     void onChar(unsigned int codepoint) override;
-    void onMouseDownLeft(float _xPos, float _yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override;
-    void onMouseDownLeftNoDrag(float _xPos, float _yPos) override {}
+    void onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override;
+    void onMouseDownLeftNoDrag(float xPos, float yPos) override {}
     void onMouseUpLeft() override;
-    void onMouseDownRight(float _xPos, float _yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override;
+    void onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override;
     void onMouseUpRight() override;
-    void onMouseMove(float _xPos, float _yPos, ushort _mode) override;
-    void onWheel(float _deg) override;
+    void onMouseMove(float xPos, float yPos, ushort _mode) override;
+    void onWheel(float deg) override;
     void onResizeDone() override {}
 
     virtual void procInputFocus();
@@ -348,4 +348,4 @@ protected:
     std::list<UINode*> m_draggingNodeTree;
 };
 
-}  // namespace ara
+}  // namespace ara∑
