@@ -45,7 +45,7 @@ TEST(Functional_Property, PropertyTest) {
     EXPECT_TRUE(1 == prop3().size());
     EXPECT_TRUE(prop3().back() == 20);
 }
-/*
+
 TEST(Functional_Property, InitialValue) {
     Property prop(42);
     EXPECT_EQ(prop(), 42);
@@ -64,6 +64,7 @@ TEST(Functional_Property, ClampValue) {
     prop.setClamp(0);
     EXPECT_EQ(prop(), 1);
 }
+/*
 
 TEST(Functional_Property, StepValue) {
     Property<int> prop;
