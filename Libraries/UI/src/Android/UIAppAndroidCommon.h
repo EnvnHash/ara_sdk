@@ -2,6 +2,8 @@
 // Created by sven on 05-07-22.
 //
 
+#ifdef __ANDROID__
+
 #pragma once
 
 #include <android/asset_manager.h>
@@ -53,3 +55,5 @@ public:
 static constexpr float kMetersPerInch = 0.0254f;
 
 }  // namespace ara
+
+#endif

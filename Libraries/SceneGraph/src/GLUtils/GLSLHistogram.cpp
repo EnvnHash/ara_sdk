@@ -250,7 +250,7 @@ void GLSLHistogram::proc(GLint texId) {
     if (m_getEnergySum) {
         glBindTexture(GL_TEXTURE_2D, m_histoFbo->m_src->getColorImg());
 #ifdef ARA_USE_GLES31
-        glesGetTexImage(m_histoFbo->src->getColorImg(), GL_TEXTURE_2D, GL_RED, GL_FLOAT, m_histoFbo->getWidth(),
+        glesGetTexImage(m_histoFbo->m_src->getColorImg(), GL_TEXTURE_2D, GL_RED, GL_FLOAT, m_histoFbo->getWidth(),
                         m_histoFbo->getHeight(), (GLubyte*)&m_histoDownload[0]);
 #else
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, &m_histoDownload[0]);

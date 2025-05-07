@@ -83,7 +83,7 @@ void CsStereoFbo::uptStereoRender() {
     auto scr_size = vec2{s_sd->winViewport.z, s_sd->winViewport.w};
 
 #ifdef __ANDROID__
-    auto dpi = glm::vec2{win->getApplicationHandle()->m_cmd_data.xdpi, win->getApplicationHandle()->m_cmd_data.ydpi};
+    auto dpi = m_glbase->g_androidDpi;
 #else
     auto dpi = win->getWinHandle()->getDpi() * 4.f;  // TODO: solve this calculation mismatch between android dpi and desktop dpi
 #endif

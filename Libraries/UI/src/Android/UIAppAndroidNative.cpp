@@ -1,17 +1,23 @@
 //
 // Created by sven on 05-07-22.
 //
+#ifdef __ANDROID__
 
 #include "Android/UIAppAndroidNative.h"
-
+#include <ObjectMapInteraction.h>
+#include <DrawManagers/DrawManager.h>
+#include <UIElements/UINodeBase/UINode.h>
 #include "UIApplication.h"
-
 
 namespace ara {
 
-UIAppAndroidNative::UIAppAndroidNative() : UIApplicationBase() { m_threadedWindowRendering = false; }
+UIAppAndroidNative::UIAppAndroidNative() : UIApplicationBase() {
+    m_threadedWindowRendering = false;
+}
 
-bool UIAppAndroidNative::IsAnimating() { return mHasFocus && mIsVisible && mHasWindow; }
+bool UIAppAndroidNative::IsAnimating() {
+    return mHasFocus && mIsVisible && mHasWindow;
+}
 
 void UIAppAndroidNative::startAndroidEventLoop() {
     // Read all pending events.
@@ -40,13 +46,14 @@ void UIAppAndroidNative::startAndroidEventLoop() {
         if (win) {
             m_glbase.getWinMan()->procEventQueue();
             win->draw();
-        } else
+        } else {
             win = m_glbase.getWinMan()->getFirstWin();
+        }
     }
 }
 
 int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* event) {
-    auto ctx = (UIAppAndroidNative*)app->userData;
+    auto ctx = static_cast<UIAppAndroidNative*>(app->userData);
 
     switch (AInputEvent_getType(event)) {
         case AINPUT_EVENT_TYPE_MOTION: {
@@ -86,16 +93,20 @@ int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* e
 }
 
 void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
-    auto ctx = (UIAppAndroidNative*)app->userData;
+    auto ctx = static_cast<UIAppAndroidNative*>(app->userData);
 
-    if (!ctx) return;
-    if (!ctx->m_androidApp) return;
+    if (!ctx) {
+        return;
+    }
+    if (!ctx->m_androidApp) {
+        return;
+    }
 
     switch (cmd) {
         case APP_CMD_SAVE_STATE:
             // The system has asked us to save our current state.  Do so.
             ctx->m_androidApp->savedState                        = malloc(sizeof(android_app_state));
-            *((android_app_state*)ctx->m_androidApp->savedState) = ctx->m_saved_state;
+            *static_cast<android_app_state*>(ctx->m_androidApp->savedState) = ctx->m_saved_state;
             ctx->m_androidApp->savedStateSize                    = sizeof(android_app_state);
             break;
         case APP_CMD_INIT_WINDOW:
@@ -106,6 +117,7 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
                 float density                      = ctx->get_density(ANativeWindow_getWidth(ctx->m_androidApp->window),
                                                                       ANativeWindow_getHeight(ctx->m_androidApp->window));
                 ctx->getGLBase()->g_androidDensity = density;
+                ctx->getGLBase()->g_androidDpi = { ctx->m_xdpi, ctx->m_ydpi };
                 static_cast<UIApplication*>(app->userData)->init(nullptr);
             }
             break;
@@ -141,7 +153,9 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
         case APP_CMD_WINDOW_REDRAW_NEEDED: break;
         case APP_CMD_CONTENT_RECT_CHANGED: {
             auto win = ctx->getWinMan()->getFirstWin();
-            if (win) win->checkSize();
+            if (win) {
+                win->checkSize();
+            }
         } break;
         case APP_CMD_CONFIG_CHANGED: {
             // ctx->android_get_orientation(app);
@@ -180,20 +194,20 @@ int32_t UIAppAndroidNative::get_orientation() {
     JNIEnv* jni = nullptr;
     m_androidApp->activity->vm->AttachCurrentThread(&jni, NULL);
     if (jni) {
-        jclass classNativeActivity = jni->FindClass("android/app/NativeActivity");
-        jclass classWindowManager  = jni->FindClass("android/view/WindowManager");
-        jclass classDisplay        = jni->FindClass("android/view/Display");
+        auto classNativeActivity = jni->FindClass("android/app/NativeActivity");
+        auto classWindowManager  = jni->FindClass("android/view/WindowManager");
+        auto classDisplay        = jni->FindClass("android/view/Display");
         if (classWindowManager) {
-            jmethodID idNativeActivity_getWindowManager =
+            auto idNativeActivity_getWindowManager =
                 jni->GetMethodID(classNativeActivity, "getWindowManager", "()Landroid/view/WindowManager;");
-            jmethodID idWindowManager_getDefaultDisplay =
+            auto idWindowManager_getDefaultDisplay =
                 jni->GetMethodID(classWindowManager, "getDefaultDisplay", "()Landroid/view/Display;");
             jmethodID idWindowManager_getRotation = jni->GetMethodID(classDisplay, "getRotation", "()I");
             if (idWindowManager_getRotation) {
-                jobject windowManager =
+                auto windowManager =
                     jni->CallObjectMethod(m_androidApp->activity->clazz, idNativeActivity_getWindowManager);
                 if (windowManager) {
-                    jobject display = jni->CallObjectMethod(windowManager, idWindowManager_getDefaultDisplay);
+                    auto display = jni->CallObjectMethod(windowManager, idWindowManager_getDefaultDisplay);
                     if (display) {
                         int rotation = jni->CallIntMethod(display, idWindowManager_getRotation);
 
@@ -218,42 +232,44 @@ int32_t UIAppAndroidNative::get_orientation() {
 }
 
 float UIAppAndroidNative::get_density(float width_pixels, float height_pixels) {
-    if (!m_androidApp) return -1;
+    if (!m_androidApp) {
+        return -1;
+    }
 
     JNIEnv* jni     = nullptr;
     float   density = 0;
     m_androidApp->activity->vm->AttachCurrentThread(&jni, nullptr);
     if (jni) {
-        jclass classNativeActivity = jni->FindClass("android/app/NativeActivity");
-        jclass classWindowManager  = jni->FindClass("android/view/WindowManager");
-        jclass classDisplay        = jni->FindClass("android/view/Display");
-        jclass displayMetricsClass = jni->FindClass("android/util/DisplayMetrics");
+        auto classNativeActivity = jni->FindClass("android/app/NativeActivity");
+        auto classWindowManager  = jni->FindClass("android/view/WindowManager");
+        auto classDisplay        = jni->FindClass("android/view/Display");
+        auto displayMetricsClass = jni->FindClass("android/util/DisplayMetrics");
 
         if (classWindowManager) {
-            jmethodID getWindowManager =
+            auto getWindowManager =
                 jni->GetMethodID(classNativeActivity, "getWindowManager", "()Landroid/view/WindowManager;");
-            jmethodID getDefaultDisplay =
+            auto getDefaultDisplay =
                 jni->GetMethodID(classWindowManager, "getDefaultDisplay", "()Landroid/view/Display;");
             // jmethodID newDisplayMetrics =
             // jni->GetMethodID(displayMetricsClass, "DisplayMetrics", "()V");
 
-            jobject   windowManager = jni->CallObjectMethod(m_androidApp->activity->clazz, getWindowManager);
-            jobject   display       = jni->CallObjectMethod(windowManager, getDefaultDisplay);
-            jmethodID displayMetricsConstructor = jni->GetMethodID(displayMetricsClass, "<init>", "()V");
-            jobject   displayMetrics            = jni->NewObject(displayMetricsClass, displayMetricsConstructor);
-            jmethodID getMetrics = jni->GetMethodID(classDisplay, "getMetrics", "(Landroid/util/DisplayMetrics;)V");
+            auto windowManager = jni->CallObjectMethod(m_androidApp->activity->clazz, getWindowManager);
+            auto display       = jni->CallObjectMethod(windowManager, getDefaultDisplay);
+            auto displayMetricsConstructor = jni->GetMethodID(displayMetricsClass, "<init>", "()V");
+            auto displayMetrics            = jni->NewObject(displayMetricsClass, displayMetricsConstructor);
+            auto getMetrics = jni->GetMethodID(classDisplay, "getMetrics", "(Landroid/util/DisplayMetrics;)V");
             jni->CallVoidMethod(display, getMetrics, displayMetrics);
 
-            jfieldID logDens_id = jni->GetFieldID(displayMetricsClass, "density", "F");
+            auto logDens_id = jni->GetFieldID(displayMetricsClass, "density", "F");
             density             = jni->GetFloatField(displayMetrics, logDens_id);
 
-            jfieldID xdpi_id = jni->GetFieldID(displayMetricsClass, "xdpi", "F");
+            auto xdpi_id = jni->GetFieldID(displayMetricsClass, "xdpi", "F");
             m_xdpi           = jni->GetFloatField(displayMetrics, xdpi_id);
 
-            jfieldID ydpi_id = jni->GetFieldID(displayMetricsClass, "ydpi", "F");
+            auto ydpi_id = jni->GetFieldID(displayMetricsClass, "ydpi", "F");
             m_ydpi           = jni->GetFloatField(displayMetrics, ydpi_id);
 
-            jfieldID densDpi_id = jni->GetFieldID(displayMetricsClass, "densityDpi", "I");
+            auto densDpi_id = jni->GetFieldID(displayMetricsClass, "densityDpi", "I");
             m_densityDpi        = jni->GetIntField(displayMetrics, densDpi_id);
 
             m_width_meters  = (width_pixels / m_xdpi) * kMetersPerInch;
@@ -269,7 +285,9 @@ float UIAppAndroidNative::get_density(float width_pixels, float height_pixels) {
 }
 
 std::filesystem::path UIAppAndroidNative::getExternalStorageDirectory() {
-    if (!m_androidApp) return std::filesystem::path();
+    if (!m_androidApp) {
+        return {};
+    }
 
     JNIEnv*               jni = nullptr;
     jthrowable            exception;
@@ -279,16 +297,22 @@ std::filesystem::path UIAppAndroidNative::getExternalStorageDirectory() {
     if (jni) {
         // Get File object for the external storage directory.
         auto classEnvironment = jni->FindClass("android/os/Environment");
-        if (!classEnvironment) return ret;
+        if (!classEnvironment) {
+            return ret;
+        }
 
         auto methodIDgetExternalStorageDirectory =
             jni->GetStaticMethodID(classEnvironment, "getExternalStorageDirectory",
                                    "()Ljava/io/File;");  // public static File
                                                          // getExternalStorageDirectory ()
-        if (!methodIDgetExternalStorageDirectory) return ret;
+        if (!methodIDgetExternalStorageDirectory) {
+            return ret;
+        }
 
         auto objectFile = jni->CallStaticObjectMethod(classEnvironment, methodIDgetExternalStorageDirectory);
-        if (!objectFile) return ret;
+        if (!objectFile) {
+            return ret;
+        }
 
         exception = jni->ExceptionOccurred();
         if (exception) {
@@ -297,11 +321,11 @@ std::filesystem::path UIAppAndroidNative::getExternalStorageDirectory() {
         }
 
         // Call method on File object to retrieve String object.
-        jclass    classFile               = jni->GetObjectClass(objectFile);
-        jmethodID methodIDgetAbsolutePath = jni->GetMethodID(classFile, "getAbsolutePath", "()Ljava/lang/String;");
+        auto classFile               = jni->GetObjectClass(objectFile);
+        auto methodIDgetAbsolutePath = jni->GetMethodID(classFile, "getAbsolutePath", "()Ljava/lang/String;");
 
-        jstring stringPath = (jstring)jni->CallObjectMethod(objectFile, methodIDgetAbsolutePath);
-        exception          = jni->ExceptionOccurred();
+        auto stringPath = (jstring)jni->CallObjectMethod(objectFile, methodIDgetAbsolutePath);
+        exception       = jni->ExceptionOccurred();
         if (exception) {
             jni->ExceptionDescribe();
             jni->ExceptionClear();
@@ -318,10 +342,11 @@ std::filesystem::path UIAppAndroidNative::getExternalStorageDirectory() {
 }
 
 bool UIAppAndroidNative::AssetReadFile(std::string& assetName, std::vector<uint8_t>& buf) {
-    if (!assetName.length()) return false;
+    if (!assetName.length()) {
+        return false;
+    }
 
-    AAsset* assetDescriptor =
-        AAssetManager_open(m_androidApp->activity->assetManager, assetName.c_str(), AASSET_MODE_BUFFER);
+    auto assetDescriptor =  AAssetManager_open(m_androidApp->activity->assetManager, assetName.c_str(), AASSET_MODE_BUFFER);
     size_t fileLength = AAsset_getLength(assetDescriptor);
 
     buf.resize(fileLength);
@@ -335,17 +360,19 @@ bool UIAppAndroidNative::AssetReadFile(std::string& assetName, std::vector<uint8
 jstring UIAppAndroidNative::permission_name(JNIEnv* lJNIEnv, const char* perm_name) {
     // nested class permission in class android.Manifest,
     // hence android 'slash' Manifest 'dollar' permission
-    jclass   ClassManifestpermission = lJNIEnv->FindClass("android/Manifest$permission");
-    jfieldID lid_PERM = lJNIEnv->GetStaticFieldID(ClassManifestpermission, perm_name, "Ljava/lang/String;");
-    jstring  ls_PERM  = (jstring)(lJNIEnv->GetStaticObjectField(ClassManifestpermission, lid_PERM));
+    auto   ClassManifestpermission = lJNIEnv->FindClass("android/Manifest$permission");
+    auto lid_PERM = lJNIEnv->GetStaticFieldID(ClassManifestpermission, perm_name, "Ljava/lang/String;");
+    auto  ls_PERM  = (jstring)(lJNIEnv->GetStaticObjectField(ClassManifestpermission, lid_PERM));
 
     return ls_PERM;
 }
 
 bool UIAppAndroidNative::has_permission(const char* perm_name) {
-    if (!m_androidApp) return false;
+    if (!m_androidApp) {
+        return false;
+    }
 
-    JavaVM* lJavaVM         = m_androidApp->activity->vm;
+    auto    lJavaVM         = m_androidApp->activity->vm;
     JNIEnv* lJNIEnv         = nullptr;
     bool    lThreadAttached = false;
 
@@ -367,17 +394,16 @@ bool UIAppAndroidNative::has_permission(const char* perm_name) {
 
     bool result = false;
 
-    jstring ls_PERM = permission_name(lJNIEnv, perm_name);
+    auto ls_PERM = permission_name(lJNIEnv, perm_name);
 
-    jclass   ClassPackageManager    = lJNIEnv->FindClass("android/content/pm/PackageManager");
-    jfieldID lid_PERMISSION_GRANTED = lJNIEnv->GetStaticFieldID(ClassPackageManager, "PERMISSION_GRANTED", "I");
-    jint     PERMISSION_GRANTED     = lJNIEnv->GetStaticIntField(ClassPackageManager, lid_PERMISSION_GRANTED);
+    auto ClassPackageManager    = lJNIEnv->FindClass("android/content/pm/PackageManager");
+    auto lid_PERMISSION_GRANTED = lJNIEnv->GetStaticFieldID(ClassPackageManager, "PERMISSION_GRANTED", "I");
+    auto PERMISSION_GRANTED     = lJNIEnv->GetStaticIntField(ClassPackageManager, lid_PERMISSION_GRANTED);
 
-    jobject   activity     = m_androidApp->activity->clazz;
-    jclass    ClassContext = lJNIEnv->FindClass("android/content/Context");
-    jmethodID MethodcheckSelfPermission =
-        lJNIEnv->GetMethodID(ClassContext, "checkSelfPermission", "(Ljava/lang/String;)I");
-    jint int_result = lJNIEnv->CallIntMethod(activity, MethodcheckSelfPermission, ls_PERM);
+    auto activity     = m_androidApp->activity->clazz;
+    auto ClassContext = lJNIEnv->FindClass("android/content/Context");
+    auto MethodcheckSelfPermission = lJNIEnv->GetMethodID(ClassContext, "checkSelfPermission", "(Ljava/lang/String;)I");
+    auto int_result = lJNIEnv->CallIntMethod(activity, MethodcheckSelfPermission, ls_PERM);
     result          = (int_result == PERMISSION_GRANTED);
 
     if (lThreadAttached) {
@@ -388,9 +414,11 @@ bool UIAppAndroidNative::has_permission(const char* perm_name) {
 }
 
 void UIAppAndroidNative::request_permissions(std::vector<std::string> perms) {
-    if (!m_androidApp) return;
+    if (!m_androidApp) {
+        return;
+    }
 
-    JavaVM* lJavaVM         = m_androidApp->activity->vm;
+    auto    lJavaVM         = m_androidApp->activity->vm;
     JNIEnv* lJNIEnv         = nullptr;
     bool    lThreadAttached = false;
 
@@ -410,16 +438,16 @@ void UIAppAndroidNative::request_permissions(std::vector<std::string> perms) {
         case JNI_EVERSION: throw std::runtime_error("Invalid java version");
     }
 
-    jobjectArray perm_array =
+    auto perm_array =
         lJNIEnv->NewObjectArray(perms.size(), lJNIEnv->FindClass("java/lang/String"), lJNIEnv->NewStringUTF(""));
 
-    for (int i = 0; i < perms.size(); i++)
+    for (int i = 0; i < perms.size(); i++) {
         lJNIEnv->SetObjectArrayElement(perm_array, i, permission_name(lJNIEnv, perms[i].c_str()));
+    }
 
-    jobject   activity      = m_androidApp->activity->clazz;
-    jclass    ClassActivity = lJNIEnv->FindClass("android/app/Activity");
-    jmethodID MethodrequestPermissions =
-        lJNIEnv->GetMethodID(ClassActivity, "requestPermissions", "([Ljava/lang/String;I)V");
+    auto activity      = m_androidApp->activity->clazz;
+    auto ClassActivity = lJNIEnv->FindClass("android/app/Activity");
+    auto MethodrequestPermissions = lJNIEnv->GetMethodID(ClassActivity, "requestPermissions", "([Ljava/lang/String;I)V");
 
     // Last arg (0) is just for the callback (that I do not use)
     lJNIEnv->CallVoidMethod(activity, MethodrequestPermissions, perm_array, 0);
@@ -430,20 +458,22 @@ void UIAppAndroidNative::request_permissions(std::vector<std::string> perms) {
 }
 
 void UIAppAndroidNative::check_permission(std::string perm) {
-    if (!has_permission(perm.c_str())) request_permissions({perm});
+    if (!has_permission(perm.c_str())) {
+        request_permissions({perm});
+    }
 }
 
 void UIAppAndroidNative::set_requested_screen_orientation(int an_orientation) {
     JNIEnv* jni;
     m_androidApp->activity->vm->AttachCurrentThread(&jni, nullptr);
-    jclass    clazz    = jni->GetObjectClass(m_androidApp->activity->clazz);
-    jmethodID methodID = jni->GetMethodID(clazz, "setRequestedOrientation", "(I)V");
+    auto clazz    = jni->GetObjectClass(m_androidApp->activity->clazz);
+    auto methodID = jni->GetMethodID(clazz, "setRequestedOrientation", "(I)V");
     jni->CallVoidMethod(m_androidApp->activity->clazz, methodID, an_orientation);
     m_androidApp->activity->vm->DetachCurrentThread();
 }
 
 int32_t UIAppAndroidNative::getDensityDpi() {
-    AConfiguration* config = AConfiguration_new();
+    auto config = AConfiguration_new();
     AConfiguration_fromAssetManager(config, m_androidApp->activity->assetManager);
     int32_t density = AConfiguration_getDensity(config);
     AConfiguration_delete(config);
@@ -451,3 +481,5 @@ int32_t UIAppAndroidNative::getDensityDpi() {
 }
 
 }  // namespace ara
+
+#endif

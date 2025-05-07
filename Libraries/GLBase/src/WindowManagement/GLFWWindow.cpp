@@ -467,9 +467,9 @@ double GLFWWindow::getFps() {
 
     m_lastTime = emscripten_get_now();
 
-    if ((m_lastTime - lastPrintFps) > 1000.0) {
+    if ((m_lastTime - m_lastPrintFps) > 1000.0) {
         printf("FPS: %f dt: %fms\n", 1000.0 / m_medDt, m_medDt);
-        lastPrintFps = m_lastTime;
+        m_lastPrintFps = m_lastTime;
     }
 #else
     // update time counter, get dt and smooth it

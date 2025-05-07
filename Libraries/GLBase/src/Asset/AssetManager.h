@@ -39,16 +39,15 @@ public:
 
     bool     Load(const std::string &path);
     bool     Reload();
+    void     insertPreAndPostContent(std::vector<uint8_t>& vp);
+
     [[nodiscard]] ResNode *getRoot() const { return m_rootNode.get(); }
     [[nodiscard]] ResNode *findNode(const std::string &path) const { return m_rootNode->findNode(path); }
 
     template <typename T>
     T *findNode(const std::string& path) {
-        ResNode *n = findNode(path);
-        if (n == nullptr) {
-            return nullptr;
-        }
-        return (typeid(n[0]) == typeid(T)) ? static_cast<T*>(n) : nullptr;
+        auto n = findNode(path);
+        return (n && typeid(n[0]) == typeid(T)) ? static_cast<T*>(n) : nullptr;
     }
 
     bool getvalue(std::string &dest, const std::string &path);

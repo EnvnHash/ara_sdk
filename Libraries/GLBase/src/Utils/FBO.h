@@ -51,7 +51,7 @@ public:
     void deleteColorTextures() const;
     void deleteDepthTextures() const;
     void download(void *ptr, GLenum intFormat, GLenum extFormat = 0) const;
-    void getTexImage(FIBITMAP* fibitmap, GLenum saveTarget, GLenum format) const;
+    void getTexImage(FIBITMAP* fibitmap, GLuint texId, GLenum saveTarget, GLenum format) const;
     void genFbo();
     void deleteFbo() const;
     GLuint getColorImg() const;

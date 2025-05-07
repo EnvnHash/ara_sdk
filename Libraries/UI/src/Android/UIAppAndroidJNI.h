@@ -2,6 +2,8 @@
 // Created by sven on 05-07-22.
 //
 
+#ifdef __ANDROID__
+
 #pragma once
 
 #include <jni.h>
@@ -18,7 +20,7 @@ public:
     virtual void init(std::function<void()> func) = 0;
 
     void setInternalDataPath(std::string path);
-    void setExternalDataPath(std::string path);
+    void setExternalDataPath(const std::string& path);
     void setDisplayDensity(float density, float w, float h, float xdpi, float ydpi);
 
     /// OnStart is called on the UI thread from the Activity's onStart method.
@@ -68,3 +70,5 @@ public:
 };
 
 }  // namespace ara
+
+#endif

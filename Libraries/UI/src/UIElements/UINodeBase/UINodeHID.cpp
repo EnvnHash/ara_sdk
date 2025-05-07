@@ -2,6 +2,7 @@
 // Created by user on 5/5/25.
 //
 
+#include <Asset/ResNode.h>
 #include <UIElements/UINodeBase/UINodeHID.h>
 #include <UIElements/UINodeBase/UINode.h>
 #include <UIWindow.h>

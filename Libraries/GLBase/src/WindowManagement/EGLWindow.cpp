@@ -17,9 +17,6 @@
 #if defined(ARA_USE_EGL) && !defined(ARA_USE_GLFW)
 
 #include "EGLWindow.h"
-
-#include <thread>
-
 #include "GLBase.h"
 
 using namespace std;
@@ -31,13 +28,13 @@ namespace ara {
 std::unique_ptr<GLWindowBase> EGLWindow::m_osWin;        // EGL display connection
 EGLDisplay                    EGLWindow::m_display = 0;  // EGL display connection
 
-int EGLWindow::init(glWinPar& gp) {
+int EGLWindow::init(const glWinPar& gp) {
     m_widthVirt   = gp.size.x;
     m_heightVirt  = gp.size.y;
     m_widthReal   = gp.size.x;
     m_heightReal  = gp.size.y;
     m_orientation = orientation::default_ori;
-    m_glbase      = (GLBase*)gp.glbase;
+    m_glbase      = static_cast<GLBase*>(gp.glbase);
 
 #ifndef __APPLE__
     EGLint majorVersion = 0;
@@ -50,8 +47,7 @@ int EGLWindow::init(glWinPar& gp) {
     m_esContext.height = ANativeWindow_getHeight(m_esContext.eglNativeWindow);
 
     // calculate a scaling factor for the devices dpi setting (is set in UIApplication::android_handle_cmd)
-    m_contentScale = glm::vec2{m_glbase->g_androidDensity, m_glbase->g_androidDensity};
-
+    m_contentScale = vec2{m_glbase->g_androidDensity, m_glbase->g_androidDensity};
 #else
     m_esContext.width  = m_widthVirt;
     m_esContext.height = m_heightVirt;
@@ -130,10 +126,10 @@ int EGLWindow::init(glWinPar& gp) {
      * As soon as we picked a EGLConfig, we can safely reconfigure the
      * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
     {
-        EGLint m_format = 0;
-        eglGetConfigAttrib(m_esContext.eglDisplay, config, EGL_NATIVE_VISUAL_ID, &m_format);
+        EGLint format = 0;
+        eglGetConfigAttrib(m_esContext.eglDisplay, config, EGL_NATIVE_VISUAL_ID, &format);
     }
-#endif  // ANDROID
+#endif
 
     // Create a surface
     m_esContext.eglSurface =

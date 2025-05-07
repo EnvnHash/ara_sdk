@@ -12,8 +12,9 @@ macro (create_pure_native_app_source)
 #include <android/sensor.h>
 #include <android/window.h>
 
+#include <ObjectMapInteraction.h>
+#include <DrawManagers/DrawManager.h>
 #include \"${UIAPP_DERIVATE_CLASS_FILE_NAME_WE}.h\"
-
 
 /*
 * AcquireASensorManagerInstance(void)
@@ -60,9 +61,9 @@ ASensorManager* AcquireASensorManagerInstance(android_app* app)
 //    Main entrypoint for Android application
 void android_main(struct android_app* app)
 {
-    ${UIAPP_DERIVATE_CLASS}* ui_app = new ${UIAPP_DERIVATE_CLASS}();
+    auto ui_app = std::make_unique<${UIAPP_DERIVATE_CLASS}>();
     ui_app->setAndroidApp(app);
-    app->userData = ui_app;
+    app->userData = ui_app.get();
     app->onAppCmd = &ui_app->handle_cmd;
     app->onInputEvent = &ui_app->handle_input;
 
@@ -79,7 +80,6 @@ void android_main(struct android_app* app)
 
     ui_app->startAndroidEventLoop(); // blocking
     LOG << \"android_main exit !!!\";
-    delete ui_app;
 }") # write it
 
 endmacro()

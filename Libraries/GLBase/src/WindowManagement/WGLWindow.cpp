@@ -33,7 +33,7 @@ bool WGLWindow::create(const glWinPar& wp) {
 
     //LPCWSTR title, uint32_t width, uint32_t height, uint32_t posX, uint32_t posY, uint32_t bits,
                        //bool fullscreenflag, bool hidden, bool decorated, bool resizable, bool floating,
-                       //bool transparent, HGLRC shareCtx
+                       //bool transparent, HGLRC m_shareCtx
 
     m_msgLoop = std::thread([this, wp]() {
         // createKeyTables();

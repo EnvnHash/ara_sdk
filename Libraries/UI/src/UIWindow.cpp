@@ -62,6 +62,7 @@ UIWindow::UIWindow(const UIWindowParams& par)
             .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
             .transparentFramebuffer = par.transparentFB,
             .extWinHandle = par.extWinHandle,
+            .glbase = par.glbase
         });
 
         if (!m_winHandle) {

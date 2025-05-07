@@ -45,7 +45,7 @@ GLenum postGLError(bool silence) {
 
 #ifdef ARA_USE_EGL
 std::string eglErrorString(EGLint err) {
-    static std::unordered_map<GLenum, std::string> errCodeMap = {
+    static std::unordered_map<EGLint, std::string> errCodeMap = {
         { EGL_SUCCESS, "no error" },
         { EGL_NOT_INITIALIZED, "EGL not, or could not be, initialized" },
         { EGL_BAD_ACCESS, "access violation" },
@@ -61,8 +61,8 @@ std::string eglErrorString(EGLint err) {
         { EGL_BAD_NATIVE_PIXMAP, "invalid NativePixmap" },
         { EGL_BAD_NATIVE_WINDOW, "invalid NativeWindow" },
         { EGL_CONTEXT_LOST, "APM event caused context loss" }
-    }
-    return errCodeMap.find(err) != errCodeMap.end() : errCodeMap[err] : "unknown error " + std::to_string(err);
+    };
+    return errCodeMap.find(err) != errCodeMap.end() ? errCodeMap[err] : "unknown error " + std::to_string(err);
 }
 #endif
 

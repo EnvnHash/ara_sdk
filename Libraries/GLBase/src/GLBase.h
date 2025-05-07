@@ -158,6 +158,7 @@ public:
     std::string g_resFile        = "res.txt";
     int32_t     g_hwDpi          = 96;
     float       g_androidDensity = 1.f;
+    glm::vec2   g_androidDpi{};
 
 #ifdef __ANDROID__
     void *android_app = nullptr;

@@ -84,10 +84,10 @@ set(CMAKE_SHARED_LINKER_FLAGS \"\${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity
     endforeach ()
     
     LIST(APPEND ANDROID_CMAKELIST "
-include(\${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/AraConfigure.cmake)
-include(\${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/GLBaseDepInclude.cmake)
-include(\${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/UtilitiesDepInclude.cmake)
-include(\${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/CreateSymLink.cmake)
+include(\${CMAKE_MODULE_PATH}/AraConfigure.cmake)
+include(\${CMAKE_MODULE_PATH}/GLBaseDepInclude.cmake)
+include(\${CMAKE_MODULE_PATH}/UtilitiesDepInclude.cmake)
+include(\${CMAKE_MODULE_PATH}/CreateSymLink.cmake)
 
 #add_subdirectory(Assets)
 # copy the sdk to the project as a symbolic link
@@ -119,7 +119,6 @@ add_library(\${PROJECT_NAME} SHARED \${ARA_SDK_SOURCES} ")
 
 include(GLBaseDependencies)
 include(UtilitiesDependencies)
-
 ")
 
     if (ARA_USE_ARCORE)

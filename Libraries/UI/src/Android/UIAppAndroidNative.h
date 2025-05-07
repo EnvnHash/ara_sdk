@@ -2,6 +2,8 @@
 // Created by sven on 05-07-22.
 //
 
+#ifdef __ANDROID__
+
 #pragma once
 
 #include "Android/UIAppAndroidCommon.h"
@@ -103,3 +105,5 @@ public:
 };
 
 }  // namespace ara
+
+#endif

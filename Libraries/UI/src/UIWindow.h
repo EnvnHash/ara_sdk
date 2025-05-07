@@ -177,7 +177,7 @@ public:
     void        makeCurrent() const { if (m_winHandle) m_winHandle->makeCurrent(); }
     bool        isOpen() const { return m_winHandle->isOpen(); }
     bool        isModal() const { return m_isModal; }
-    void        pollEvents() { if (m_winHandle) GLFWWindow::pollEvents(); }
+    void        pollEvents() { if (m_winHandle) m_winHandle->pollEvents(); }
 #else
     void* getWinHandle() { return m_winHandle; }
 #endif

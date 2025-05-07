@@ -41,14 +41,7 @@ bool AssetManager::Load(const string &path) {
 
     std::vector<uint8_t> vp;
     loadResource(nullptr, vp, path);
-
-    if (!getPreContent().empty()) {
-        vp.insert(vp.begin(), getPreContent().begin(), getPreContent().end());
-    }
-
-    if (!getPostContent().empty()) {
-        vp.insert(vp.end(), getPostContent().begin(), getPostContent().end());
-    }
+    insertPreAndPostContent(vp);
 
     m_loadState = false;
 
@@ -67,7 +60,8 @@ bool AssetManager::Load(const string &path) {
 
             // get fonts
             if (auto fontsNode = findNode("fonts")) {
-                for (auto &f : fontsNode->m_node) {
+                for (const auto &f : fontsNode->m_node) {
+                    LOG << "inset to fontLUT " << f->m_name;
                     m_fontLUT.insert({f->m_name, e_font_lut{f->m_value, 20}});
                 }
             }
@@ -121,7 +115,9 @@ Font *AssetManager::font(const string& path, float pixRatio) {
 
     if (font != nullptr) {
         Font *faux;
-        if ((faux = getGLFont(font->m_FontPath, font->m_Size, pixRatio)) != nullptr) f = faux;
+        if ((faux = getGLFont(font->m_FontPath, font->m_Size, pixRatio)) != nullptr) {
+            f = faux;
+        }
     }
 
     return f;
@@ -204,36 +200,22 @@ bool AssetManager::checkForChangesInFolderFiles() {
 
     filesystem::file_time_type ft;
 
-    // Check for new files...
-    /*
-    try {
-        for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator(m_dataRootPath)) {
-            if (m_resFolderFiles.find(file) == m_resFolderFiles.end()) {
-                m_resFolderFiles[file] = filesystem::last_write_time(file);
-            }
-        }
-    } catch (...) {
-    }*/
-
     // check for file deletion or modification
-    bool keep;
+    for (auto &e: m_resFolderFiles) {
+        if (!filesystem::exists(e.first)) {
+            change = true;
+            break;
+        } else {
+            try {
+                ft = filesystem::last_write_time(e.first);
+            } catch (...) {
+            }
 
-    do {
-        keep = false;
-        for (auto &e : m_resFolderFiles) {
-            if (!filesystem::exists(e.first)) {
+            if (ft != e.second) {
                 change = true;
-                break;
-            } else {
-                try {
-                    ft = filesystem::last_write_time(e.first);
-                } catch (...) {
-                }
-
-                if (ft != e.second) change = true;
             }
         }
-    } while (keep);
+    }
 
     return change;
 }
@@ -249,14 +231,7 @@ bool AssetManager::Reload() {
     bool                 err = true;
 
     loadResource(nullptr, vp, m_resFilePath);
-
-    if (!getPreContent().empty()) {
-        vp.insert(vp.begin(), getPreContent().begin(), getPreContent().end());
-    }
-
-    if (!getPostContent().empty()) {
-        vp.insert(vp.end(), getPostContent().begin(), getPostContent().end());
-    }
+    insertPreAndPostContent(vp);
 
     if (sfile.process(nroot.get(), vp)) {
         nroot->preprocess();
@@ -281,6 +256,16 @@ bool AssetManager::Reload() {
     }
 
     return err;
+}
+
+void AssetManager::insertPreAndPostContent(std::vector<uint8_t>& vp) {
+    if (!getPreContent().empty()) {
+        vp.insert(vp.begin(), getPreContent().begin(), getPreContent().end());
+    }
+
+    if (!getPostContent().empty()) {
+        vp.insert(vp.end(), getPostContent().begin(), getPostContent().end());
+    }
 }
 
 void AssetManager::callResSourceChange() {
@@ -310,14 +295,7 @@ void AssetManager::callResSourceChange() {
         std::vector<uint8_t> vp;
 
         loadResource(nullptr, vp, m_resFilePath);
-
-        if (!getPreContent().empty()) {
-            vp.insert(vp.begin(), getPreContent().begin(), getPreContent().end());
-        }
-
-        if (!getPostContent().empty()) {
-            vp.insert(vp.end(), getPostContent().begin(), getPostContent().end());
-        }
+        insertPreAndPostContent(vp);
 
         if (sfile.process(nroot.get(), vp)) {
             nroot->preprocess();
@@ -325,12 +303,10 @@ void AssetManager::callResSourceChange() {
 
             bool err = true;
 
-            if (nroot->errList.empty())
-                if (nroot->load())
-                    if (nroot->errList.empty()) {
-                        m_rootNode = std::move(nroot);
-                        err      = false;
-                    }
+            if (nroot->errList.empty() && nroot->load() && nroot->errList.empty()) {
+                m_rootNode = std::move(nroot);
+                err      = false;
+            }
 
             if (err) {
                 LOGE << "New resource file has errors";
@@ -408,29 +384,18 @@ void AssetManager::propagateFileChange(bool deleted, const string &fpath) {
 
 AssetImageBase *AssetManager::img(const string& path) {
     auto node = findNode(path);
-    if (!node
-        || !(typeid(node[0]) == typeid(AssetImageSource)
-        || typeid(node[0]) == typeid(AssetImageSection))) {
-        return nullptr;
-    }
-
-    return dynamic_cast<AssetImageBase *>(node);
+    return !node || !(typeid(node[0]) == typeid(AssetImageSource)
+        || typeid(node[0]) == typeid(AssetImageSection)) ? nullptr : dynamic_cast<AssetImageBase *>(node);
 }
 
 std::string AssetManager::value(const std::string &path) {
     auto node = findNode<AssetFont>(path);
-    if (node == nullptr) {
-        return {};
-    }
-    return node->m_value;
+    return node ? node->m_value : std::string{};
 }
 
 std::string AssetManager::value(const std::string &path, const std::string& def) {
     auto node = findNode<AssetFont>(path);
-    if (node == nullptr) {
-        return def;
-    }
-    return node->m_value;
+    return node ? node->m_value : std::string{};
 }
 
 }  // namespace ara

@@ -1059,10 +1059,10 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
             bitmap = FreeImage_Allocate(m_tex_width, m_tex_height, nrChan * 8);
             if (bitmap) {
                 FreeImage_SetTransparent(bitmap, ara::getExtType(m_type) == GL_RGBA);
-                getTexImage(bitmap, saveTarget, format);
-            } else
-                LOGE << "Texture::saveTexToFile2D Error: could not allocate "
-                        "bitmap";
+                getTexImage(bitmap, texId, saveTarget, format);
+            } else {
+                LOGE << "Texture::saveTexToFile2D Error: could not allocate bitmap";
+            }
             break;
         }
         case GL_FLOAT: {
@@ -1074,31 +1074,34 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
                 case GL_RGBA32F: bitmap = FreeImage_AllocateT(FIT_RGBAF, m_tex_width, m_tex_height); break;
                 default: LOGE << "Texture::saveTexToFile2D Error: unknown m_format"; break;
             }
-            getTexImage(bitmap, saveTarget, format);
+            getTexImage(bitmap, texId, saveTarget, format);
             break;
         }
-        default: LOGE << "Texture::saveTexToFile2D Error: Unknown pixel m_format"; break;
+        default:
+            LOGE << "Texture::saveTexToFile2D Error: Unknown pixel m_format";
+        break;
     }
 
-    if (!FreeImage_Save(fileFormat, bitmap, filename.string().c_str(), flags))
+    if (!FreeImage_Save(fileFormat, bitmap, filename.string().c_str(), flags)) {
         LOGE << "Texture::saveTexToFile2D Error: FreeImage_Save failed";
-    else
+    } else {
         FreeImage_Unload(bitmap);
+    }
 #endif
     return true;
 }
 
-void FBO::getTexImage(FIBITMAP* bitmap, GLenum saveTarget, GLenum format) const {
+void FBO::getTexImage(FIBITMAP* bitmap, GLuint texId, GLenum saveTarget, GLenum format) const {
     if (bitmap) {
-        auto *bits = FreeImage_GetBits(bitmap);
+        auto bits = FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
         glesGetTexImage(texId, saveTarget, format, m_pixType, m_tex_width, m_tex_height, bits);
 #else
         glGetTexImage(saveTarget, 0, format, m_pixType, bits);
 #endif
-    } else
-        LOGE << "Texture::saveTexToFile2D Error: could not allocate "
-                "bitmap";
+    } else {
+        LOGE << "Texture::saveTexToFile2D Error: could not allocate bitmap";
+    }
 }
 
 void FBO::download(void *ptr, GLenum intFormat, GLenum extFormat) const {

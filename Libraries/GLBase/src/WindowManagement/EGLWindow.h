@@ -18,13 +18,12 @@
 #if defined(ARA_USE_EGL) && !defined(ARA_USE_GLFW)
 
 #include <WindowManagement/GLWindowBase.h>
-
-#include "WindowManagement/esutil/esUtil.h"
+#include <WindowManagement/esutil/esUtil.h>
 
 #ifdef __ANDROID__
 #include <android/native_window.h>
 #elif __linux__
-#include "X11Window.h"
+#include <X11Window.h>
 #endif
 
 namespace ara {
@@ -36,8 +35,8 @@ public:
     EGLWindow() : GLWindowBase() {}
     virtual ~EGLWindow() = default;
 
-    bool create(glWinPar& gp) { return init(gp); }
-    int  init(glWinPar& gp);
+    bool create(const glWinPar& gp) { return init(gp); }
+    int  init(const glWinPar& gp);
 
     /**
      * @param f the drawing function which will be execute or every iteration
