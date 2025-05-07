@@ -25,7 +25,7 @@ public:
     bool end(renderPass pass, uint loopNr = 0) override;
     void postRender(renderPass pass) override { }
 
-    Shaders* getShader(renderPass pass, uint loopNr = 0);
+    Shaders* getShader(renderPass pass, uint loopNr = 0) override;
 
     void setScreenSize(uint width, uint height) override;
     void setNrCams(int nrCams) override;

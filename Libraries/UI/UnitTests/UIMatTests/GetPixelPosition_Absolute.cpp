@@ -5,7 +5,8 @@
 #include "../test_common.h"
 
 #include "UIApplication.h"
-#include "Button/Button.h"
+#include <UIElements/Button/Button.h>
+#include <ObjectMapInteraction.h>
 
 using namespace std;
 

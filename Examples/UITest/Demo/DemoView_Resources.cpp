@@ -1,5 +1,5 @@
 #include "DemoView.h"
-#include <Image.h>
+#include <UIElements/Image.h>
 #include <Log.h>
 #include <Asset/AssetColor.h>
 #include <Asset/AssetManager.h>

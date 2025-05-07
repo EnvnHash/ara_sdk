@@ -5,7 +5,7 @@
 #pragma once
 
 #include <UIApplication.h>
-#include <Scene3D.h>
+#include <UIElements/Scene3D.h>
 #include "../../Libraries/SceneGraph/src/CameraSets/CsPerspFbo.h"
 
 #ifdef ARA_USE_ARCORE

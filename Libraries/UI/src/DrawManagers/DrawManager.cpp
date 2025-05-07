@@ -5,7 +5,7 @@
 #include "DrawManager.h"
 
 #include "GLBase.h"
-#include "UINode.h"
+#include "UIElements/UINodeBase/UINode.h"
 
 using namespace std;
 using namespace glm;

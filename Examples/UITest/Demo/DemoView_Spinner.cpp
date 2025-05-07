@@ -1,5 +1,5 @@
 #include "DemoView.h"
-#include <Spinner.h>
+#include <UIElements/Spinner.h>
 
 using namespace ara;
 using namespace glm;

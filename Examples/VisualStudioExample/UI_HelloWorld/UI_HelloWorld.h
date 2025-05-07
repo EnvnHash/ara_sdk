@@ -1,9 +1,9 @@
 #pragma once
 
 #include <UIApplication.h>
-#include <Div.h>
-#include <Label.h>
-#include <Image.h>
+#include <UIElements/Div.h>
+#include <UIElements/Label.h>
+#include <UIElements/Image.h>
 
 namespace ara {
 

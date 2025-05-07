@@ -4,6 +4,7 @@
 
 #include "test_common.h"
 #include "UIApplication.h"
+#include <UIElements/Div.h>
 
 using namespace std;
 

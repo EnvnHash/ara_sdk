@@ -3,9 +3,11 @@
 //
 
 #include "Dialoges/InfoDialog.h"
-#include "Button/Button.h"
-#include "Label.h"
-#include "UIApplication.h"
+#include "UIElements/Button/Button.h"
+#include "UIElements/Label.h"
+#include <UIApplication.h>
+#include <ObjectMapInteraction.h>
+#include <DrawManagers/DrawManager.h>
 
 using namespace std;
 using namespace std::chrono;
@@ -16,8 +18,7 @@ using namespace std::chrono;
 
 namespace ara {
 
-InfoDialog::InfoDialog(const UIWindowParams& params)
-    : UIWindow(params) {
+InfoDialog::InfoDialog(const UIWindowParams& params) : UIWindow(params) {
     setEnableWindowResizeHandles(false);
     setEnableMenuBar(false);
 
@@ -56,11 +57,9 @@ InfoDialog::InfoDialog(const UIWindowParams& params)
 void InfoDialog::open(bool isModal) {
     setModal(isModal);
     m_creationTime = std::chrono::system_clock::now();
-
 #ifdef ARA_USE_GLFW
     GLFWWindow::setFloating(isModal);
 #endif
-
     UIWindow::open();
 }
 

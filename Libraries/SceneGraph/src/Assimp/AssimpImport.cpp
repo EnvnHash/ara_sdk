@@ -8,7 +8,7 @@
 
 #include "AssimpImport.h"
 #include <GLBase.h>
-#include "Scene3DBase.h"
+#include "UIElements/Scene3DBase.h"
 #include <Utils/BoundingBoxer.h>
 #include <Utils/Texture.h>
 #include <WindowManagement/WindowBase.h>

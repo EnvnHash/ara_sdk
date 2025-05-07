@@ -10,7 +10,6 @@
 
 #include "CameraSets/CsStereoFbo.h"
 #include <Utils/Stereo/DistortionMesh.h>
-#include <UIApplication.h>
 #include <UIWindow.h>
 #include <SceneNodes/SceneNode.h>
 
@@ -78,18 +77,15 @@ CsStereoFbo::CsStereoFbo(sceneData* sd) : CameraSet(sd), m_layerTexShdr(nullptr)
     buildCamMatrixArrays();
 }
 
-// setup stereo view lensdistortion correction
-
+// setup stereo view lens distortion correction
 void CsStereoFbo::uptStereoRender() {
     auto win = static_cast<UIWindow*>(s_sd->uiWindow);
-
     auto scr_size = vec2{s_sd->winViewport.z, s_sd->winViewport.w};
 
 #ifdef __ANDROID__
     auto dpi = glm::vec2{win->getApplicationHandle()->m_cmd_data.xdpi, win->getApplicationHandle()->m_cmd_data.ydpi};
 #else
-    auto dpi = win->getWinHandle()->getDpi() * 4.f;  // TODO: solve this calculation mismatch between android
-                                                     // dpi and desktop dpi
+    auto dpi = win->getWinHandle()->getDpi() * 4.f;  // TODO: solve this calculation mismatch between android dpi and desktop dpi
 #endif
 
     m_stereoRenderer.setScreenParam(dpi, scr_size);
@@ -173,12 +169,17 @@ void CsStereoFbo::initLayerTexShdr() {
     }
 
     string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 1) in vec4 normal; \n layout(location = 2) in vec2 texCoord; \n layout(location = 3) in vec4 color; \n out vec2 tex_coord; \n uniform mat4 m_pvm; \n uniform mat4 trans; \n void
-            main() {
-                \n tex_coord   = texCoord;
-                \n gl_Position = m_pvm * trans * position;
-                \n
-            });
+        layout(location = 0) in vec4 position; \n
+        layout(location = 1) in vec4 normal; \n
+        layout(location = 2) in vec2 texCoord; \n
+        layout(location = 3) in vec4 color; \n
+        out vec2 tex_coord; \n
+        uniform mat4 m_pvm; \n
+        uniform mat4 trans; \n
+        void main() {\n
+            tex_coord   = texCoord;\n
+            gl_Position = m_pvm * trans * position;\n
+        });
 
     vert = ShaderCollector::getShaderHeader() + "// CsStereoFbo layer texture shader, vert\n" + vert;
 
@@ -189,34 +190,39 @@ void CsStereoFbo::initLayerTexShdr() {
 #endif
 
     frag += STRINGIFY(
-        uniform int useBorder; \n uniform float layerNr; \n uniform float texAsp;\n uniform float stereoAsp;\n uniform int viewMode;\n uniform vec2 centre;\n in vec2 tex_coord; \n layout(location = 0) out vec4 color; \n void
-            main() {
-                \n
+        uniform int useBorder; \n
+        uniform float layerNr; \n
+        uniform float texAsp;\n
+        uniform float stereoAsp;\n
+        uniform int viewMode;\n
+        uniform vec2 centre;\n
+        in vec2 tex_coord; \n
+        layout(location = 0) out vec4 color; \n
+        void main() { \n
+            vec4 col   = vec4(0.0, 0.0, 0.0, 1.0);  // base colour
+            float    alpha = 0.2;                       // lens parameter
+            // Left/Right eye are slightly off centre
+            // Normalize to [-1, 1] and put the centre to "centre"
+            vec2 p1 = vec2(2.0 * tex_coord - 1.0) - centre;
+            p1 *= 0.87;
+            // Transform
+            vec2 p2 = p1 / (1.0 - alpha * length(p1));
+            // Back to [0, 1]
+            p2 = (p2 + centre + 1.0) * 0.5;
 
-                    vec4 col   = vec4(0.0, 0.0, 0.0, 1.0);  // base colour
-                float    alpha = 0.2;                       // lens parameter
-                // Left/Right eye are slightly off centre
-                // Normalize to [-1, 1] and put the centre to "centre"
-                vec2 p1 = vec2(2.0 * tex_coord - 1.0) - centre;
-                p1 *= 0.87;
-                // Transform
-                vec2 p2 = p1 / (1.0 - alpha * length(p1));
-                // Back to [0, 1]
-                p2 = (p2 + centre + 1.0) * 0.5;
-
-                color = bool(viewMode)
-                            ? (all(greaterThanEqual(p2, vec2(0.0))) && all(lessThanEqual(p2, vec2(1.0)))
-                                   ? texture(tex, vec3((tex_coord.x + (texAsp - stereoAsp) * 0.5) / texAsp * stereoAsp,
-                                                       tex_coord.y, layerNr))
-                                   : col)
-                            : texture(tex, vec3(tex_coord.x, tex_coord.y, layerNr));
-                /*
-                            color = bool(viewMode) ? texture(tex,
-                   vec3((tex_coord.x + (texAsp - stereoAsp) * 0.5) / texAsp *
-                   stereoAsp, tex_coord.y, layerNr)) : texture(tex,
-                   vec3(tex_coord.x, tex_coord.y, layerNr)); \n color=vec4(1.0,
-                   0.0, 0.0, 1.0);*/
-            });
+            color = bool(viewMode)
+                        ? (all(greaterThanEqual(p2, vec2(0.0))) && all(lessThanEqual(p2, vec2(1.0)))
+                               ? texture(tex, vec3((tex_coord.x + (texAsp - stereoAsp) * 0.5) / texAsp * stereoAsp,
+                                                   tex_coord.y, layerNr))
+                               : col)
+                        : texture(tex, vec3(tex_coord.x, tex_coord.y, layerNr));
+            /*
+                        color = bool(viewMode) ? texture(tex,
+               vec3((tex_coord.x + (texAsp - stereoAsp) * 0.5) / texAsp *
+               stereoAsp, tex_coord.y, layerNr)) : texture(tex,
+               vec3(tex_coord.x, tex_coord.y, layerNr)); \n color=vec4(1.0,
+               0.0, 0.0, 1.0);*/
+        });
 
     frag = ShaderCollector::getShaderHeader() + "// CsStereoFbo layer texture shader, frag\n" + frag;
 
@@ -232,12 +238,15 @@ void CsStereoFbo::initBackTexShdr(size_t nrLayers) {
     }
 
     string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 1) in vec4 normal; \n layout(location = 2) in vec2 texCoord; \n uniform vec2 uv[6]; \n out vec2 tex_coord; \n void
-            main() {
-                \n tex_coord   = vec2(uv[gl_VertexID].x, 1.0 - uv[gl_VertexID].y);
-                \n gl_Position = position;
-                \n
-            });
+        layout(location = 0) in vec4 position; \n
+        layout(location = 1) in vec4 normal; \n
+        layout(location = 2) in vec2 texCoord; \n
+        uniform vec2 uv[6]; \n
+        out vec2 tex_coord; \n
+        void main() { \n
+            tex_coord   = vec2(uv[gl_VertexID].x, 1.0 - uv[gl_VertexID].y);\n
+            gl_Position = position;\n
+        });
 
     vert = ShaderCollector::getShaderHeader() + "// CsStereoFbo backTex shader, vert\n" + vert;
 
@@ -247,16 +256,16 @@ void CsStereoFbo::initBackTexShdr(size_t nrLayers) {
                                 "clearCol[" +
                                 std::to_string(nrLayers) + "];\n";
 
-    std::string geom = STRINGIFY(in vec2 tex_coord[]; \n out vec2 texCoord; \n void main() {
-        \n for (int i = 0; i < gl_in.length(); i++) {
-            \n gl_Layer    = gl_InvocationID;
-            texCoord       = tex_coord[i];
-            \n gl_Position = gl_in[i].gl_Position;
-            \n EmitVertex();
-            \n
-        }
-        \n EndPrimitive();
-        \n
+    std::string geom = STRINGIFY(in vec2 tex_coord[]; \n
+        out vec2 texCoord; \n
+        void main() {\n
+            for (int i = 0; i < gl_in.length(); i++) {\n
+                gl_Layer    = gl_InvocationID;
+                texCoord       = tex_coord[i]; \n
+                gl_Position = gl_in[i].gl_Position;\n
+                EmitVertex();\n
+            }\n
+            EndPrimitive();\n
     });
 
     geom = shdr_Header_g + "// CsStereoFbo backTex shader, geom\n" + geom;
@@ -267,9 +276,10 @@ void CsStereoFbo::initBackTexShdr(size_t nrLayers) {
     string frag = "uniform sampler2D tex;\n";
 #endif
 
-    frag += STRINGIFY(in vec2 texCoord; \n layout(location = 0) out vec4 color; \n void main() {
-        \n color = texture(tex, vec2(texCoord.x, 1.0 - texCoord.y));
-        \n
+    frag += STRINGIFY(in vec2 texCoord; \n
+        layout(location = 0) out vec4 color; \n
+        void main() {\n
+            color = texture(tex, vec2(texCoord.x, 1.0 - texCoord.y));\n
     });
 
 #ifdef __ANDROID__
@@ -450,16 +460,16 @@ void CsStereoFbo::initClearShader(size_t nrLayers) {
                                 "clearCol[" +
                                 std::to_string(nrLayers) + "];\n";
 
-    std::string geom = STRINGIFY(uniform mat4 m_pvm; out vec4 o_col; void main() {
-        \n for (int i = 0; i < gl_in.length(); i++) {
-            \n gl_Layer = gl_InvocationID;
-            o_col       = clearCol[gl_InvocationID];
-            gl_Position = m_pvm * gl_in[i].gl_Position;
-            \n EmitVertex();
-            \n
-        }
-        \n EndPrimitive();
-        \n
+    std::string geom = STRINGIFY(uniform mat4 m_pvm; \n
+        out vec4 o_col;\n
+        void main() {\n
+            for (int i = 0; i < gl_in.length(); i++) {\n
+                gl_Layer    = gl_InvocationID;\n
+                o_col       = clearCol[gl_InvocationID];\n
+                gl_Position = m_pvm * gl_in[i].gl_Position;\n
+                EmitVertex();\n
+            }\n
+            EndPrimitive();\n
     });
 
     geom = shdr_Header_g + "// CsStereoFbo clear shader, geom\n" + geom;
@@ -490,7 +500,9 @@ void CsStereoFbo::rebuildFbo() {
 #endif
         }
 
-        if (m_fbo.isInited()) m_fbo.remove();
+        if (m_fbo.isInited()) {
+            m_fbo.remove();
+        }
 
         m_fbo.setWidth((int)s_viewport.z);
         m_fbo.setHeight((int)s_viewport.w);
@@ -570,26 +582,25 @@ void CsStereoFbo::renderTree(SceneNode* node, double time, double dt, uint ctxNr
 void CsStereoFbo::render(SceneNode* node, SceneNode* parent, double time, double dt, uint ctxNr, renderPass pass) {
     node->update(time, dt, this);
 
-    if (node->m_emptyDrawFunc) return;
+    if (node->m_emptyDrawFunc) {
+        return;
+    }
 
     // Iterate through the CameraSets shaderPrototypes
     auto proto = getProtoForPass(pass, node);
     if (proto) {
         s_actFboSize = vec2(s_fScrWidth, s_fScrHeight);
+        int  loopNr  = 0;
+        bool run     = true;
 
-        int  loopNr = 0;
-        bool run    = true;
-
-        while (run)  // if ShaderProtoype->end return a value > 0 the scene will
-                     // be drawn another time
-        {
+        while (run) { // if ShaderProtoype->end return a value > 0 the scene will be drawn another time
             if (proto->begin(this, pass, loopNr)) {
                 proto->sendPar(this, time, node, parent, pass, loopNr);
                 if (proto->getShader(pass, loopNr)) node->draw(time, dt, this, proto->getShader(pass, loopNr), pass);
             }
 
             run = proto->end(pass, loopNr);
-            loopNr++;
+            ++loopNr;
         }
     }
 }

@@ -18,12 +18,6 @@ class ShaderCollector;
 class Quad;
 class WindowBase;
 
-class scissorStack {
-public:
-    std::vector<glm::vec4> stack;
-    glm::vec4              active = glm::vec4{0.f};
-};
-
 class UISharedRes {
 public:
     void*            win   = nullptr;

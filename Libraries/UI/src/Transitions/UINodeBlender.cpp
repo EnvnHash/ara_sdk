@@ -2,7 +2,8 @@
 // Created by sven on 05-03-25.
 //
 
-#include "UINodeBlender.h"
+#include "Transitions/UINodeBlender.h"
+#include <UISharedRes.h>
 
 namespace ara {
 
@@ -54,11 +55,14 @@ void UINodeBlender::transition(transType tt, double dur) {
                 m_nodes[type::front]->setAlpha(0.f);
                 m_nodes[type::front]->setVisibility(false);
             }
+
             if (m_nodes[type::back]) {
                 m_nodes[type::back]->setAlpha(1.f);
                 m_nodes[type::back]->setVisibility(true);
             }
+
             m_root->getSharedRes()->requestRedraw = true;
+
             if (m_blendPos.getEndFunc()) {
                 m_blendPos.getEndFunc()();
             }

@@ -2,7 +2,8 @@
 // Created by sven on 04-04-25.
 //
 
-#include "Carrousel.h"
+#include <Transitions/Carrousel.h>
+#include <UISharedRes.h>
 
 namespace ara {
 

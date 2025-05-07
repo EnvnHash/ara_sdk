@@ -6,8 +6,9 @@
 #include "test_common.h"
 
 #include "UIApplication.h"
-#include <TabView.h>
-#include <Div.h>
+#include <UIElements/TabView.h>
+#include <UIElements/Div.h>
+#include <ObjectMapInteraction.h>
 
 using namespace std;
 

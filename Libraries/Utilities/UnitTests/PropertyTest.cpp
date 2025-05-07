@@ -64,7 +64,6 @@ TEST(Functional_Property, ClampValue) {
     prop.setClamp(0);
     EXPECT_EQ(prop(), 1);
 }
-/*
 
 TEST(Functional_Property, StepValue) {
     Property<int> prop;
@@ -79,7 +78,9 @@ TEST(Functional_Property, OnPreChangeCallback) {
     Property prop(0, 0, 10, 1);
     auto f = [&callbackCalled](std::any value) {
         int val = std::any_cast<int>(value);
-        if (val == 5) callbackCalled = true;
+        if (val == 5) {
+            callbackCalled = true;
+        }
     };
     auto sh = std::make_shared<std::function<void(std::any)>>(f);
     prop.onPreChange(sh);
@@ -87,7 +88,7 @@ TEST(Functional_Property, OnPreChangeCallback) {
     prop = 5;
     EXPECT_TRUE(callbackCalled);
 }
-
+/*
 TEST(Functional_Property, OnPostChangeCallback) {
     bool callbackCalled = false;
     auto postChangeFunc = [&callbackCalled](const std::any& value) {

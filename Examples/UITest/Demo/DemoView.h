@@ -1,11 +1,11 @@
 #pragma once
 
-#include <Button/ImageButton.h>
-#include <Label.h>
-#include <UITable.h>
-#include <ScrollView.h>
-#include <List.h>
-#include <ComboBox.h>
+#include <UIElements/Button/ImageButton.h>
+#include <UIElements/Label.h>
+#include <UIElements/UITable.h>
+#include <UIElements/ScrollView.h>
+#include <UIElements/List.h>
+#include <UIElements/ComboBox.h>
 #include <Dialoges/FloatingMenuDialog.h>
 #include <Asset/AssetFont.h>
 #include <Asset/ResGlFont.h>

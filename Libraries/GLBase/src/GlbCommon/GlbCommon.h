@@ -1,11 +1,34 @@
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
+
 /**
- * \brief common headers for the mc3d namespace
+ * \brief common headers for the ara namespace
  *  includes for glew and glm
  *  macros for the basically geometrical constants (M_PI, etc.)
  *
  */
 
 #pragma once
+
+#ifdef _WIN32
+#include "Windows/WindowsMousePos.h"
+#elif __linux__
+#include <X11/X11MousePos.h>
+#elif __APPLE__
+#include <OsX/OSXMousePos.h>
+#endif
 
 #include <util_common.h>
 #include <GlbCommon/GlbKeyDefines.h>
@@ -200,6 +223,30 @@ enum class hidEvent : int {
     SetViewport,
     Size
 };
+
+enum class cpEditMode : int32_t {
+    L2Move = 0,
+    L2CpMove,
+    L2CpScale,
+    L2CpKeybMove,
+    CpKeybMove,
+    L2LineMove,
+    L2LineKeybMove,
+    L1Move,
+    L1CpMove,
+    L1CpScale,
+    L1RotX,
+    L1RotY,
+    L1RotZ,
+    L1TranZ,
+    Move,
+    AddCtrlPoint,
+    DelCtrlPoint,
+    ChangeInterp,  // order matters
+    DrawShape,
+    Count
+};
+
 enum class glFun : int { Enable = 0, Disable, BlendEquation, BlendFunc, PolygonMode };
 enum class changeWinEvent : int { OnResize, SetViewport, Maximize, Minimize, SetWinPos };
 enum class StereoEye : int { left = 0, right = 1, count = 2 };
@@ -219,6 +266,89 @@ template <typename E>
 constexpr typename std::underlying_type<E>::type toType(E e) {
     return static_cast<typename std::underlying_type<E>::type>(e);
 }
+
+class scissorStack {
+public:
+    std::vector<glm::vec4> stack;
+    glm::vec4              active = glm::vec4{};
+};
+
+class ProcStep {
+public:
+    bool                  active = false;
+    std::function<void()> func   = nullptr;
+};
+
+class UINode;
+
+/// <summary>
+/// data for mouse hovering callback
+/// </summary>
+class hidData {
+public:
+    int         objId         = -1;
+    int         clickedObjId  = -1;
+    int         releasedObjId = 0;
+    MouseIcon   actIcon       = MouseIcon::arrow;
+    cpEditMode* cp_editM      = nullptr;
+
+    glm::ivec2 screenMousePos{};     ///> in virtual pixels, relative to screen (not window)
+    glm::vec2  mousePos{};           ///> window relative mouse position in virtual
+    /// pixels (origin top,left)
+    glm::vec2 mousePosFlipY{};       ///> window relative mouse position in hardware pixels (origin
+    /// bottom,left) for use with opengl
+    glm::vec2 mousePosNorm{};        ///> normalized window relative mouse position
+    /// in virtual pixels (origin top,left)
+    glm::vec2 mousePosNormFlipY{};   ///> normalized window relative mouse position in virtual pixels
+    ///(origin bottom,left) for use with opengl
+    glm::vec2 mousePosNodeRel{};     ///> in virtual pixels
+    glm::vec2 movedPix{};            ///> in virtual pixels, dpi dependent
+    glm::vec2 mouseClickPosFlipY{};  ///> onClick normalized window relative mouse position in virtual
+    /// pixels (origin bottom,left) for use with opengl
+
+    bool dragStart         = false;
+    bool dragging          = false;
+    bool altPressed        = false;
+    bool ctrlPressed       = false;
+    bool shiftPressed      = false;
+    bool mousePressed      = false;
+    bool mouseRightPressed = false;
+    bool isDoubleClick     = false;
+    bool hit               = false;
+    bool consumed          = false;
+    bool breakCbIt         = false;
+
+    std::map<winProcStep, ProcStep>* procSteps = nullptr;
+    void*                            newNode   = nullptr;  // used in WindowResizeAreas for avoiding
+    // unnecessary mouse icon changes
+    std::unordered_map<hidEvent, UINode*> hitNode = {
+        { hidEvent::MouseMove, nullptr },
+        { hidEvent::MouseWheel, nullptr },
+        { hidEvent::MouseDownLeft, nullptr },
+        { hidEvent::MouseUpLeft, nullptr },
+        { hidEvent::MouseDownRight, nullptr },
+        { hidEvent::MouseUpRight, nullptr },
+        { hidEvent::MouseDrag, nullptr },
+        { hidEvent::MouseWheel, nullptr }
+    };
+
+    int          key       = 0;  // key callback
+    unsigned int codepoint = 0;  // char callback
+    float        degrees   = 0;  // scroll wheel
+
+    void reset() {
+        consumed  = false;
+        breakCbIt = false;
+    }
+    void getScreenMousePos(float devicePixelRatio) {
+        mouse::getAbsMousePos(screenMousePos.x, screenMousePos.y);
+        screenMousePos = (glm::ivec2)((glm::vec2)screenMousePos / devicePixelRatio);
+    }
+};
+
+// second of pair indicates whether the callback should only be called when the element was really clicked
+// (true => data->hit == true) or if the callback should be called in any case
+typedef std::pair<std::function<void(hidData*)>, bool> mouseCb;
 
 class MouseButtState {
 public:
@@ -243,12 +373,6 @@ public:
     uint32_t offsY  = 0;
     uint32_t width  = 0;
     uint32_t height = 0;
-};
-
-class ProcStep {
-public:
-    bool                  active = false;
-    std::function<void()> func   = nullptr;
 };
 
 struct DrawArraysIndirectCommand {

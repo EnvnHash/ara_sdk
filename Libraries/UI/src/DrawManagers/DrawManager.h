@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Utils/VAO.h"
-#include "UiCommon.h"
+#include "UICommon.h"
 
 namespace ara {
 

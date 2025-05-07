@@ -1,6 +1,6 @@
 
 #include "UI_PropertyExample.h"
-#include "PropSlider.h"
+#include "UIElements/PropSlider.h"
 
 using namespace std;
 using namespace ara;

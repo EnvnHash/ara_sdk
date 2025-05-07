@@ -1,7 +1,9 @@
 #include "DemoView.h"
 #include <UIWindow.h>
 #include <UIApplication.h>
-#include <Button/Button.h>
+#include <UIElements/Button/Button.h>
+#include <ObjectMapInteraction.h>
+#include <DrawManagers/DrawManager.h>
 
 using namespace glm;
 using namespace std;

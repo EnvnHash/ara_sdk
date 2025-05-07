@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include <UINode.h>
-#include "AnimVal.h"
+#include <UIElements/UINodeBase/UINode.h>
+#include <AnimVal.h>
 
 namespace ara {
 
@@ -43,8 +43,8 @@ public:
 
 private:
     std::unordered_map<type, ara::UINode*>  m_nodes;
-    ara::UINode*                            m_root = nullptr;
-    ara::AnimVal<float>                     m_blendPos{};
+    UINode*                                 m_root = nullptr;
+    AnimVal<float>                          m_blendPos{};
     transType                               m_transType{};
 };
 

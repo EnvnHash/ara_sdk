@@ -7,6 +7,9 @@
 #include <gtest/gtest.h>
 #include "UIApplication.h"
 #include "Utils/Texture.h"
+#include <ObjectMapInteraction.h>
+#include <DrawManagers/DrawManager.h>
+
 #include "threadpool/BS_thread_pool.hpp"
 
 static inline BS::thread_pool g_thread_pool;

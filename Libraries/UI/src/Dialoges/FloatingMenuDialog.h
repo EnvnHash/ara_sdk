@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include "UIWindow.h"
+#include <UIElements/Div.h>
+#include <UIWindow.h>
+#include <GLBase.h>
 
 namespace ara {
 
 class FloatingMenuDialog : public UIWindow {
 public:
-    FloatingMenuDialog(const UIWindowParams& params);
+    explicit FloatingMenuDialog(const UIWindowParams& params);
     ~FloatingMenuDialog() override = default;
 
     void close(bool direct = false) override;
@@ -31,7 +33,7 @@ public:
             newItem = m_base->addChild<T>();
         }
 
-        ((UINode*)newItem)->addMouseUpCb([this, returnValue](hidData* data) {
+        static_cast<UINode*>(newItem)->addMouseUpCb([this, returnValue](hidData* data) {
             m_closing = true;
             // window creation and destruction must be done on the main thread
             m_glbase->runOnMainThread([this, returnValue]() {

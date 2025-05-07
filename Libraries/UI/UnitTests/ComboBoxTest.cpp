@@ -6,8 +6,8 @@
 #include "test_common.h"
 
 #include "UIApplication.h"
-#include <ComboBox.h>
-#include <Div.h>
+#include <UIElements/ComboBox.h>
+#include <UIElements/Div.h>
 
 using namespace std;
 

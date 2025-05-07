@@ -1,4 +1,6 @@
 #include "UITestApp.h"
+#include <ObjectMapInteraction.h>
+#include <DrawManagers/DrawManager.h>
 
 using namespace ara;
 

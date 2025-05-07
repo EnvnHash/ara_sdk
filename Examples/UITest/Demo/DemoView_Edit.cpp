@@ -1,12 +1,12 @@
 #include "DemoView.h"
-#include <Image.h>
+#include <UIElements/Image.h>
 #include <Log.h>
 #include <Asset/AssetColor.h>
 #include <Asset/AssetManager.h>
 #include <Asset/ResNode.h>
 #include <Asset/ResSrcFile.h>
-#include <UIEdit.h>
-#include <Label.h>
+#include <UIElements/UIEdit.h>
+#include <UIElements/Label.h>
 
 using namespace ara;
 using namespace glm;

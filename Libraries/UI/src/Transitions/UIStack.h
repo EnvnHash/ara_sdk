@@ -4,13 +4,14 @@
 
 #pragma once
 
-#include <UINode.h>
+#include <UIElements/UINodeBase/UINode.h>
 
 namespace ara {
 
 class UIStack {
 public:
     virtual ~UIStack() = default;
+
     template  <class T>
     T* add(const std::string& name) {
         m_nodes[name] = m_rootNode->addChild<T>();

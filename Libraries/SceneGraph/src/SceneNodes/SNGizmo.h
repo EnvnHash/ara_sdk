@@ -12,7 +12,7 @@ public:
     explicit SNGizmo(transMode mode, sceneData* sd = nullptr);
     ~SNGizmo() override = default;
 
-    void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* _tfo = nullptr);
+    void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* _tfo = nullptr) override;
     void selectAxis(size_t idx);
     void selectNextAxis();
     void selectPrevAxis();

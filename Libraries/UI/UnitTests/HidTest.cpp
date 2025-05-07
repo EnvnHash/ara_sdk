@@ -3,6 +3,7 @@
 //
 
 #include "test_common.h"
+#include <UIElements/Div.h>
 
 using namespace std;
 

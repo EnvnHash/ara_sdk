@@ -9,7 +9,7 @@ public:
     explicit SNGizmoScaleAxis(sceneData* sd = nullptr);
     ~SNGizmoScaleAxis() override = default;
 
-    void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr);
+    void draw(double time, double dt, CameraSet* cs, Shaders* shader, renderPass pass, TFO* tfo = nullptr) override;
 };
 
 }  // namespace ara

@@ -2,29 +2,29 @@
 // Created by sven on 22-07-22.
 //
 
-#include "Button/Button.h"
-#include <ComboBox.h>
-#include <CrossHair.h>
-#include <DropDownMenu.h>
-#include <DropDownMenuBar.h>
-#include <Gizmo.h>
-#include <Grid.h>
-#include <Image.h>
-#include "Button/ImageButton.h"
-#include <Label.h>
-#include "WindowElements/MenuBar.h"
-#include <PropSlider.h>
-#include <ScrollBar.h>
-#include <ScrollView.h>
-#include <Slider.h>
-#include <Spinner.h>
-#include <TabView.h>
-#include <UIEdit.h>
+#include <UIElements/Button/Button.h>
+#include <UIElements/ComboBox.h>
+#include <UIElements/CrossHair.h>
+#include <UIElements/DropDownMenu.h>
+#include <UIElements/DropDownMenuBar.h>
+#include <UIElements/Gizmo.h>
+#include <UIElements/Grid.h>
+#include <UIElements/Image.h>
+#include <UIElements/Button/ImageButton.h>
+#include <UIElements/Label.h>
+#include <UIElements/WindowElements/MenuBar.h>
+#include <UIElements/PropSlider.h>
+#include <UIElements/ScrollBar.h>
+#include <UIElements/ScrollView.h>
+#include <UIElements/Slider.h>
+#include <UIElements/Spinner.h>
+#include <UIElements/TabView.h>
+#include <UIElements/UIEdit.h>
 #include <UINodeFact.h>
-#include <UIPolygon.h>
-#include <UITable.h>
-#include "WindowElements/WindowResizeArea.h"
-#include "WindowElements/WindowResizeAreas.h"
+#include <UIElements/UIPolygon.h>
+#include <UIElements/UITable.h>
+#include <UIElements/WindowElements/WindowResizeArea.h>
+#include <UIElements/WindowElements/WindowResizeAreas.h>
 #include <Utils/PingPongFbo.h>
 #include <DrawManagers/DrawManagerGizmo.h>
 

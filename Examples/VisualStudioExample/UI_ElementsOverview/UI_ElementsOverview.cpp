@@ -1,6 +1,6 @@
 
 #include "UI_ElementsOverview.h"
-#include <PropSlider.h>
+#include <UIElements/PropSlider.h>
 #include <UI/UITable.h>
 #include <UI/ComboBox.h>
 #include <UI/Spinner.h>

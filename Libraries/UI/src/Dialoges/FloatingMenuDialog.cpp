@@ -2,8 +2,9 @@
 // Created by user on 09.04.2021.
 //
 
-#include "FloatingMenuDialog.h"
-
+#include <Dialoges/FloatingMenuDialog.h>
+#include <DrawManagers/DrawManager.h>
+#include <ObjectMapInteraction.h>
 #include <UIApplication.h>
 
 #ifdef ARA_USE_GLFW
@@ -12,8 +13,7 @@ using namespace ara::mouse;
 
 namespace ara {
 
-FloatingMenuDialog::FloatingMenuDialog(const UIWindowParams& params)
-    : UIWindow(params) {
+FloatingMenuDialog::FloatingMenuDialog(const UIWindowParams& params) : UIWindow(params) {
 #ifdef ARA_USE_GLFW
     setEnableWindowResizeHandles(false);
     setEnableMenuBar(false);
