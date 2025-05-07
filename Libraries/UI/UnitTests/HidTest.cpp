@@ -26,7 +26,7 @@ public:
         m_clicked[hidEvent::MouseUpLeft] = false;
         m_clicked[hidEvent::MouseDownLeft] = true;
         if (m_consume) {
-            data->consumed = true;
+            data.consumed = true;
         }
     }
 
@@ -34,7 +34,7 @@ public:
         m_clicked[hidEvent::MouseDownLeft] = false;
         m_clicked[hidEvent::MouseUpLeft] = true;
         if (m_consume) {
-            data->consumed = true;
+            data.consumed = true;
         }
     }
 
@@ -42,7 +42,7 @@ public:
         m_clicked[hidEvent::MouseUpRight] = false;
         m_clicked[hidEvent::MouseDownRight] = true;
         if (m_consume) {
-            data->consumed = true;
+            data.consumed = true;
         }
     }
 
@@ -50,7 +50,7 @@ public:
         m_clicked[hidEvent::MouseUpRight] = true;
         m_clicked[hidEvent::MouseDownRight] = false;
         if (m_consume) {
-            data->consumed = true;
+            data.consumed = true;
         }
     }
 public:

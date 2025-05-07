@@ -347,7 +347,7 @@ void Scene3DTool::resetZoom() {
     if (!m_scene3D) return;
 
     // the scene camera should look from behind the MRD camera towards the models center the scene cameras up-vector
-    // should be indentical to the basePlanes up-vector
+    // should be identical to the basePlanes up-vector
 
     auto objSel   = m_scene3D->getObjectSelector();
     auto sceneCam = m_scene3D->getSceneCamDef();
