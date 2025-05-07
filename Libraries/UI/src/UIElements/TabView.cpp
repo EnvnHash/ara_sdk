@@ -22,9 +22,8 @@ TabView::TabView() : Div() {
     m_contentArea->setHeight(-m_TabHeight);
     m_contentArea->setAlignY(valign::bottom);
 
-    // m_tabButtBgColSel = glm::vec4(.5f, .5f, .5f, 1.0f);
-    m_tabButtBgColDeSel = glm::vec4(.2f, .2f, .2f, 1.0f);
-    m_tabButtBgColSel   = glm::vec4(.2f, .2f, .2f, 1.0f);
+    m_tabButtBgColDeSel = vec4(.2f, .2f, .2f, 1.0f);
+    m_tabButtBgColSel   = vec4(.2f, .2f, .2f, 1.0f);
 }
 
 UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode) {
@@ -136,7 +135,7 @@ bool TabView::setActivateTab(int idx) {
     return true;
 }
 
-void TabView::setTabSelected(bool val, e_tab* tab)  {
+void TabView::setTabSelected(bool val, e_tab* tab) const {
     tab->selected = val;
     tab->tab->setColor(m_sharedRes->colors->at(val ? uiColors::blue : uiColors::white));
     tab->ui_Node->setVisibility(val);

@@ -15,7 +15,7 @@ class MenuBar : public Image {
 public:
     enum class butType : int { close = 0, maximize, minimize };
     MenuBar();
-    virtual ~MenuBar() = default;
+    ~MenuBar() override = default;
 
     void init() override;
 

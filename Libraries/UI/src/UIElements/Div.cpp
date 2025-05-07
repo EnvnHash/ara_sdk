@@ -41,8 +41,6 @@ void Div::updateDrawData() {
             m_uniBlock.addVarName("alias", &getBorderAliasRel()[0], GL_FLOAT_VEC2);
             m_uniBlock.addVarName("color", &m_bgColor[0], GL_FLOAT_VEC4);
             m_uniBlock.addVarName("alpha", &m_absoluteAlpha, GL_FLOAT);
-            // m_uniBlock.addVarName("resolution", &m_bgColor[0],
-            // GL_FLOAT_VEC4);
         }
 
         m_uniBlock.update();

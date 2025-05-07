@@ -781,7 +781,7 @@ void Scene3DBase::mouseWheel(hidData& data) {
     data.consumed = true;
 }
 
-void Scene3DBase::resetMousePos() {
+void Scene3DBase::resetMousePos() const {
 #ifdef ARA_USE_GLFW
     runOnMainThread([this] {
         glfwSetCursorPos(getWindow()->getWinHandle()->getCtx(), m_dragStartPos.x, m_dragStartPos.y);

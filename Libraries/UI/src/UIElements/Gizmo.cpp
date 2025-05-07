@@ -100,8 +100,8 @@ void Gizmo::init() {
 
     for (auto& it : m_fbo) {
         it = make_unique<FBO>(FboInitParams{m_glbase,
-                                            static_cast<int>(viewWidth * getWindow()->getPixelRatio()),
-                                            static_cast<int>(viewHeight * getWindow()->getPixelRatio()),
+                                            static_cast<int>(static_cast<float>(viewWidth) * getWindow()->getPixelRatio()),
+                                            static_cast<int>(static_cast<float>(viewHeight) * getWindow()->getPixelRatio()),
                                             1,
                                             GL_RGBA8, GL_TEXTURE_2D, true, 2, 1, 1,
                                             GL_REPEAT, false});
@@ -116,7 +116,7 @@ void Gizmo::init() {
     m_sd.dataPath     = m_sharedRes->dataPath.string() + "/";
 
     m_sd.winViewport.x = getWinPos().x;
-    m_sd.winViewport.y = getWindow()->getSize().y - getWinPos().y - getSize().y;
+    m_sd.winViewport.y = static_cast<float>(getWindow()->getSize().y) - getWinPos().y - getSize().y;
     m_sd.winViewport.z = getSize().x * m_sd.contentScale.x;
     m_sd.winViewport.w = getSize().y * m_sd.contentScale.y;
 

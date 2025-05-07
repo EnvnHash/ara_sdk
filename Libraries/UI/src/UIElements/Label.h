@@ -33,14 +33,14 @@ public:
     };
 
     Label();
-    Label(const std::string& styleClass);
-    Label(const LabelInitData& initData);
+    explicit Label(const std::string& styleClass);
+    explicit Label(const LabelInitData& initData);
     ~Label() override = default;
 
-    unsigned long getOpt() const { return m_tOpt; }
+    [[nodiscard]] unsigned long getOpt() const { return m_tOpt; }
     unsigned long setOpt(unsigned long f);
     unsigned long removeOpt(unsigned long f);
-    bool          hasOpt(unsigned long f) const { return m_tOpt & f; }
+    [[nodiscard]] bool          hasOpt(unsigned long f) const { return m_tOpt & f; }
     void          setSingleLine() { setOpt(single_line); }
     virtual Font *UpdateDGV(bool *checkFontTexture);
     bool          draw(uint32_t& objId) override;
@@ -74,7 +74,7 @@ public:
 protected:
     void setEditPixSpace(float width, float height, bool set_flag = true);
 
-    glm::vec4 calculateMask() const;
+    [[nodiscard]] glm::vec4 calculateMask() const;
 
     int         m_fontSize = 17;
     std::string m_fontType = "regular";

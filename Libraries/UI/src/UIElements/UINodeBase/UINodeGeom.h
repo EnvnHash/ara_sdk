@@ -14,6 +14,7 @@ class UINode;
 class UINodeGeom {
 public :
     UINodeGeom();
+    virtual ~UINodeGeom() = default;
 
     virtual void setStyleInitVal(const std::string& name, const std::string& val, state st = state::m_state) = 0;
     virtual void updateMatrix() = 0;
@@ -267,10 +268,10 @@ public :
     [[nodiscard]] float getAspect() const { return m_fixAspect > -1.f ? m_fixAspect : m_aspect; }
     [[nodiscard]] bool  getScissorChildren() const { return m_ScissorChildren; }
 
-    align  getAlignX() { return m_alignX; }
-    valign getAlignY() { return m_alignY; }
-    pivotX getPivotX() { return m_pivX; }
-    pivotY getPivotY() { return m_pivY; }
+    [[nodiscard]] align  getAlignX() const { return m_alignX; }
+    [[nodiscard]] valign getAlignY() const { return m_alignY; }
+    [[nodiscard]] pivotX getPivotX() const { return m_pivX; }
+    [[nodiscard]] pivotY getPivotY() const { return m_pivY; }
 
     [[nodiscard]] bool isViewportValid() const {
         return ((m_viewPort.x + m_viewPort.y + m_viewPort.z + m_viewPort.w) != 0);
@@ -300,8 +301,8 @@ public :
     glm::vec3&          getContentTransScale() { return m_contentTransScale; }
     [[nodiscard]] float getZoom() const { return m_contentTransScale.x; }
     glm::vec2&          getParentContentScale();
-    float               getFixAspect() const { return m_fixAspect; }
-    float               getPixRatio() const;
+    [[nodiscard]] float getFixAspect() const { return m_fixAspect; }
+    [[nodiscard]] float getPixRatio() const;
 
     virtual glm::mat4*  getContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPadding = false);
     virtual glm::mat4*  getFlatContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPadding = false);
@@ -396,7 +397,7 @@ protected:
     glm::vec3 m_init_size{1.f};
     glm::vec3 m_work_size{1.f};
 
-    /** the node's size relative to it's parent in normalized coordinates (to be
+    /** the node's size relative to its parent in normalized coordinates (to be
      * passed to a shader to render the node) */
     glm::vec2 m_relSize{0};
     /** the node's size in pixels (including padding and border) */
@@ -421,7 +422,7 @@ protected:
 
     /** the node's window relative matrix. */
     glm::mat4 m_winRelMat = glm::mat4(1.f);
-    /** to be passed down to the children if the node is excluded from it's
+    /** to be passed down to the children if the node is excluded from its
      * parents contentTransOffset. Represents the node's content relative to
      * it's parent => excludes the border and padding areas. in pixels */
     glm::mat4 m_contentMat   = glm::mat4(1.f);

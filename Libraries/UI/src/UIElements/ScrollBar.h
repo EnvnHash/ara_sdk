@@ -6,7 +6,7 @@ namespace ara {
 
 class UIScrollBarDragArea : public Div {
 public:
-    UIScrollBarDragArea() : Div() {
+    UIScrollBarDragArea() {
         setName(getTypeName<UIScrollBarDragArea>());
         m_canReceiveDrag = true;
     }
@@ -29,7 +29,7 @@ public:
     void updateMatrix() override;
     void mouseDown(hidData& data) override;
 
-    void setType(ScrollBar::e_stype type) { s_Type = type; }
+    void setType(e_stype type) { s_Type = type; }
     void setScrollOffset(float offsX, float offsY) {
         m_scrollOffset.x = offsX;
         m_scrollOffset.y = offsY;

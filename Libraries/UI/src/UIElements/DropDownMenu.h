@@ -8,7 +8,7 @@ class Button;
 class DropDownMenu : public Div {
 public:
     DropDownMenu();
-    DropDownMenu(const std::string& styleClass);
+    explicit DropDownMenu(const std::string& styleClass);
     ~DropDownMenu() override;
 
     void init() override;
@@ -16,10 +16,10 @@ public:
     virtual void open();
     virtual void close();
 
-    virtual void mouseDown(hidData& data) override;
+    void mouseDown(hidData& data) override;
     virtual void globalMouseDown(hidData& data);
 
-    void         addEntry(const std::string& name, const std::function<void()>& f) {
+    void addEntry(const std::string& name, const std::function<void()>& f) {
         m_entries.emplace_back(name, f);
     }
     virtual void setMenuName(const std::string& str);

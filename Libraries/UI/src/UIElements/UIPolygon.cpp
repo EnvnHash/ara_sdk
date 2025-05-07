@@ -183,7 +183,7 @@ void UIPolygon::mouseDrag(hidData& data) {
                     // not have been cleared if the queue will be cleared later
                     // the ui_vc->cpSelectQueue.size will be 0 and the objId
                     // check will be skipped
-                    if (m_cpSelectQueue.size() != 0 && checkCtrlPointInSel(data.objId)) {
+                    if (!m_cpSelectQueue.empty() && checkCtrlPointInSel(data.objId)) {
                         moveCtrlPoints(relMouseOffs, *data.cp_editM);
                         data.procSteps->at(Select).active = true;
                     } else {
@@ -261,11 +261,11 @@ void UIPolygon::clearSelQueue() {
 void UIPolygon::createCopyForUndo() {
 }
 
-void UIPolygon::moveCtrlPoints(vec2 _offset, cpEditMode cp_editM) {
+void UIPolygon::moveCtrlPoints(vec2 _offset, cpEditMode cp_editM) const {
     // movement with linear interpolation
     // check level 1
-    for (auto &kv : m_cpSelectQueue) {
-        kv.second->position = kv.second->refPosition + _offset;
+    for (const auto &[key, point] : m_cpSelectQueue) {
+        point->position = point->refPosition + _offset;
     }
 }
 

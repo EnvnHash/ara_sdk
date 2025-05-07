@@ -25,7 +25,7 @@ TransformWidget::TransformWidget() : Div() {
     m_excludeFromParentScissoring = true;
 }
 
-TransformWidget::TransformWidget(const std::string& styleClass) : Div(std::move(styleClass)) {
+TransformWidget::TransformWidget(const std::string& styleClass) : Div(styleClass) {
     m_canReceiveDrag = true;
     setName(getTypeName<TransformWidget>());
     setFocusAllowed(false);
@@ -97,13 +97,13 @@ void TransformWidget::init() {
 
         for (int j = 0; j < static_cast<int>(twPlane::count); j++) {
             m_planeSwitcher[i][j] = m_buttCont->addChild<ImageButton>(
-                getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_" + string(enum_name((twPlane)j)));
+                getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_" + string(enum_name(static_cast<twPlane>(j))));
 
             m_planeSwitcher[i][j]->setIsToggle(true);
             m_planeSwitcher[i][j]->setLod(0.f);
             m_planeSwitcher[i][j]->setObjUsesTexAlpha(true);
             m_planeSwitcher[i][j]->addMouseClickCb([this, i, j](hidData& data) {
-                setPlaneSwitcherState(i == 0 ? transMode::translate : transMode::rotate, (twPlane)j);
+                setPlaneSwitcherState(i == 0 ? transMode::translate : transMode::rotate, static_cast<twPlane>(j));
                 getWindow()->setInputFocusNode(this);
             });
         }
@@ -119,25 +119,33 @@ void TransformWidget::init() {
         m_planeSwitcher[i][toType(twPlane::count) + 1]->setLod(1.f);
     }
 
-    getWindow()->addGlobalMouseMoveCb(this, [this](hidData& data) {
-        if (!getWindow()->isCursorVisible() || !m_visible) return;
+    getWindow()->addGlobalMouseMoveCb(this, [this](const hidData& data) {
+        if (!getWindow()->isCursorVisible() || !m_visible) {
+            return;
+        }
 
         m_mouseInBounds = false;
 
-        if ((uint32_t)data.objId >= m_objIdMin && (uint32_t)data.objId <= getMaxChildId() &&
+        if (static_cast<uint32_t>(data.objId) >= m_objIdMin && static_cast<uint32_t>(data.objId) <= getMaxChildId() &&
             m_state == state::disabled && !m_blockHID) {
-            if (!m_disHighlighted) highLight(true);
+            if (!m_disHighlighted) {
+                highLight(true);
+            }
 
             m_mouseInBounds = true;
         }
 
-        if (!m_mouseInBounds && m_disHighlighted && m_state == state::disabled) highLight(false);
+        if (!m_mouseInBounds && m_disHighlighted && m_state == state::disabled) {
+            highLight(false);
+        }
     });
 
-    getWindow()->addGlobalMouseDownLeftCb(this, [this](hidData& data) {
-        if (!getWindow()->isCursorVisible() || !m_visible) return;
+    getWindow()->addGlobalMouseDownLeftCb(this, [this](const hidData& data) {
+        if (!getWindow()->isCursorVisible() || !m_visible) {
+            return;
+        }
 
-        if ((uint32_t)data.objId >= m_objIdMin && (uint32_t)data.objId <= getMaxChildId() &&
+        if (static_cast<uint32_t>(data.objId) >= m_objIdMin && static_cast<uint32_t>(data.objId) <= getMaxChildId() &&
             m_state == state::disabled && m_visible && !m_blockHID) {
             setDisabled(false, true);
         }
@@ -150,10 +158,12 @@ void TransformWidget::init() {
 }
 
 void TransformWidget::translate(int j) {
-    if (!m_modelNode) return;
+    if (!m_modelNode) {
+        return;
+    }
 
     vec3  offs;
-    float amt = m_transAmt[(int)m_cfState];
+    float amt = m_transAmt[static_cast<int>(m_cfState)];
     switch (m_transPlane) {
         case twPlane::xy:
             offs = vec3{j == 0 ? amt : (j == 1 ? -amt : 0.f), j == 2 ? -amt : (j == 3 ? amt : 0.f), 0.f};
@@ -255,13 +265,15 @@ void TransformWidget::keyUp(hidData& data) {
 
 void TransformWidget::setPlaneSwitcherState(transMode m, twPlane p) {
     for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < (int)twPlane::count; j++) {
-            if (m_planeSwitcher[i][j]) m_planeSwitcher[i][j]->setSelected(false, true);
+        for (int j = 0; j < static_cast<int>(twPlane::count); j++) {
+            if (m_planeSwitcher[i][j]) {
+                m_planeSwitcher[i][j]->setSelected(false, true);
+            }
         }
     }
 
-    if (m_planeSwitcher[m == transMode::translate ? 0 : 1][(int)p]) {
-        m_planeSwitcher[m == transMode::translate ? 0 : 1][(int)p]->setSelected(true, true);
+    if (m_planeSwitcher[m == transMode::translate ? 0 : 1][static_cast<int>(p)]) {
+        m_planeSwitcher[m == transMode::translate ? 0 : 1][static_cast<int>(p)]->setSelected(true, true);
     }
 
     setTransMode(m);
@@ -273,11 +285,13 @@ void TransformWidget::setTransMode(transMode m, bool updtColors) {
 
     for (int i = 0; i < 2; i++)
         for (int j = 0; j < 4; j++) {
-            if (m_arrowButts[i][j])
+            if (m_arrowButts[i][j]) {
                 m_arrowButts[i][j]->setVisibility((i == 0 ? transMode::translate : transMode::rotate) == m);
+            }
 
-            if (m_arrowLabels[i][j])
+            if (m_arrowLabels[i][j]) {
                 m_arrowLabels[i][j]->setVisibility((i == 0 ? transMode::translate : transMode::rotate) == m);
+            }
         }
 
     // switch the indicator button in the center
@@ -339,7 +353,7 @@ void TransformWidget::setPlane(twPlane p) {
     checkPlaneSwitchIdx();
 }
 
-int TransformWidget::getColorIdx(int buttIdx) {
+int TransformWidget::getColorIdx(int buttIdx) const {
     int idx = buttIdx;
 
     switch (m_transPlane) {
@@ -367,7 +381,7 @@ void TransformWidget::setDisabled(bool val, bool forceStyleUpdt) {
 
     UINode::setDisabled(val, forceStyleUpdt);
 
-    for (auto &it: m_children) {
+    for (const auto &it: m_children) {
         it->setDisabled(val, forceStyleUpdt);
     }
 
@@ -381,7 +395,7 @@ void TransformWidget::setDisabled(bool val, bool forceStyleUpdt) {
             }
         }
 
-        for (int j = 0; j < (int) twPlane::count; j++) {
+        for (int j = 0; j < static_cast<int>(twPlane::count); j++) {
             if (m_planeSwitcher[i][j]) {
                 m_planeSwitcher[i][j]->setDisabled(val, forceStyleUpdt);
             }
@@ -413,19 +427,29 @@ void TransformWidget::highLight(bool val) {
 
     m_disHighlighted = val;
 
-    if (m_buttCont) m_buttCont->setDisabledHighlighted(val, true);
+    if (m_buttCont) {
+        m_buttCont->setDisabledHighlighted(val, true);
+    }
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 4; j++) {
-            if (m_arrowButts[i][j]) m_arrowButts[i][j]->setDisabledHighlighted(val, true);
+            if (m_arrowButts[i][j]) {
+                m_arrowButts[i][j]->setDisabledHighlighted(val, true);
+            }
 
-            if (m_arrowLabels[i][j]) m_arrowLabels[i][j]->setDisabledHighlighted(val, true);
+            if (m_arrowLabels[i][j]) {
+                m_arrowLabels[i][j]->setDisabledHighlighted(val, true);
+            }
         }
 
-        for (int j = 0; j < (int)twPlane::count; j++)
-            if (m_planeSwitcher[i][j]) m_planeSwitcher[i][j]->setDisabledHighlighted(val, true);
+        for (int j = 0; j < static_cast<int>(twPlane::count); j++)
+            if (m_planeSwitcher[i][j]) {
+                m_planeSwitcher[i][j]->setDisabledHighlighted(val, true);
+            }
 
-        if (m_psLabels[i]) m_psLabels[i]->setDisabledHighlighted(val, true);
+        if (m_psLabels[i]) {
+            m_psLabels[i]->setDisabledHighlighted(val, true);
+        }
     }
 }
 
@@ -434,26 +458,26 @@ void TransformWidget::setVisibility(bool val) {
     setTransMode(m_transMode);
 }
 
-void TransformWidget::checkCamFlags() {
-    // in case the modelnode contains a cameraDef, force its projection matrix
-    // to be updated
+void TransformWidget::checkCamFlags() const {
+    // in case the modelnode contains a cameraDef, force its projection matrix to be updated
     if (m_modelNode->getName() == getTypeName<LICamera>() || m_modelNode->getName() == getTypeName<LIProjector>()) {
-        ((LICamera *)m_modelNode)->getCamDef()->setForceUpdtProjMat(true);
-        ((LICamera *)m_modelNode)->getCamDef()->setForceUpdtCb(true);
+        dynamic_cast<LICamera *>(m_modelNode)->getCamDef()->setForceUpdtProjMat(true);
+        dynamic_cast<LICamera *>(m_modelNode)->getCamDef()->setForceUpdtCb(true);
     }
 }
 
 void TransformWidget::checkPlaneSwitchIdx() {
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 6; i++) {
         if (m_psSwitchMap[i].first == m_transMode && m_psSwitchMap[i].second == m_transPlane) {
             m_psSwitchMapIdx = i;
             break;
         }
+    }
 }
 
 TransformWidget::~TransformWidget() {
     if (m_sharedRes && m_sharedRes->win) {
-        auto uiWin = (UIWindow *)m_sharedRes->win;
+        auto uiWin = static_cast<UIWindow *>(m_sharedRes->win);
         uiWin->removeGlobalMouseMoveCb(this);
         uiWin->removeGlobalMouseDownLeftCb(this);
     }

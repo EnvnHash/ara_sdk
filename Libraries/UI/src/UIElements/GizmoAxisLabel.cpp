@@ -42,7 +42,9 @@ void GizmoAxisLabel::init() {
 }
 
 bool GizmoAxisLabel::draw(uint32_t& objId) {
-    if (m_hasLabel) Image::draw(objId);
+    if (m_hasLabel) {
+        Image::draw(objId);
+    }
     updateCamFade();
 
     return true;  // count up objId
@@ -56,14 +58,14 @@ void GizmoAxisLabel::pushVaoUpdtOffsets() {
     }
 }
 
-bool GizmoAxisLabel::updateCamFade() {
+bool GizmoAxisLabel::updateCamFade() const {
     if (m_gizmo->getCamera() && !m_gizmo->getCamera()->fadeTransfStopped()) {
         m_gizmo->getCamera()->updateFade();
         setDrawFlag();
         m_gizmo->getSharedRes()->requestRedraw = true;
         return true;
-    } else
-        return false;
+    }
+    return false;
 }
 
 void GizmoAxisLabel::mouseIn(hidData& data) {

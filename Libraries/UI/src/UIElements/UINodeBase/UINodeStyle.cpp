@@ -348,7 +348,7 @@ void UINodeStyle::applyStyle() {
     }
 }
 
-ResNode* UINodeStyle::getStyleResNode() {
+ResNode* UINodeStyle::getStyleResNode() const {
     return m_sharedRes->res->findNode(m_baseStyleClass);
 }
 

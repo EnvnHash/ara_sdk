@@ -63,7 +63,7 @@ public:
     }
     void        reset() { m_valueAsString = ""; }
     float       setKnobProportion(float nprop) { return (m_knobProportion = nprop); }
-    SliderKnob* getKnob() { return m_knob; }
+    SliderKnob* getKnob() const { return m_knob; }
 
 private:
     UINode*     m_numView   = nullptr;

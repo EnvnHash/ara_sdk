@@ -2,7 +2,6 @@
 // Created by user on 5/5/25.
 //
 
-#include <Asset/ResNode.h>
 #include <UIElements/UINodeBase/UINodeHID.h>
 #include <UIElements/UINodeBase/UINode.h>
 #include <UIWindow.h>
@@ -13,51 +12,38 @@ using namespace glm;
 namespace ara {
 
 void UINodeHID::hidIt(hidData& data, hidEvent evt, std::list<UINode*>::iterator it, std::list<UINode*>& tree) {
-    data.hit = (*it)->containsObjectId(data.objId)
-                && (*it)->getState() != state::disabled
-                && (*it)->getState() != state::disabledSelected
-                && (*it)->getState() != state::disabledHighlighted
-                && !(*it)->isHIDBlocked();
+    const auto node = *it;
+    data.hit = node->containsObjectId(data.objId)
+                && node->getState() != state::disabled
+                && node->getState() != state::disabledSelected
+                && node->getState() != state::disabledHighlighted
+                && !node->isHIDBlocked();
 
     if (data.hit && evt == hidEvent::MouseDownLeft) {
-        data.actIcon = (*it)->ui_MouseIcon;
+        data.actIcon = node->ui_MouseIcon;
 
         // proc input focus
-        if ((*it)->getWindow()) {
-            (*it)->getWindow()->procInputFocus();
+        if (node->getWindow()) {
+            node->getWindow()->procInputFocus();
         }
     }
 
     // calculate the mouse position relative to this node
-    data.mousePosNodeRel = data.mousePos - (*it)->getWinPos();  // virtual pixels
+    data.mousePosNodeRel = data.mousePos - node->getWinPos();  // virtual pixels
 
-    switch (evt) {
-        case hidEvent::MouseDownLeft:
-            (*it)->mouseDown(data);
-            break;
-        case hidEvent::MouseUpLeft:
-            (*it)->mouseUp(data);
-            break;
-        case hidEvent::MouseDownRight:
-            (*it)->mouseDownRight(data);
-            break;
-        case hidEvent::MouseUpRight:
-            (*it)->mouseUpRight(data);
-            break;
-        case hidEvent::MouseMove:
-            (*it)->mouseMove(data);
-            break;
-        case hidEvent::MouseDrag:
-            (*it)->mouseDrag(data);
-            break;
-        case hidEvent::MouseWheel:
-            (*it)->mouseWheel(data);
-            break;
-        default: break;
-    }
+    static std::unordered_map<hidEvent, std::function<void(hidData&, UINode*)> > evtMap = {
+        { hidEvent::MouseDownLeft, [](hidData& d, UINode* n) { n->mouseDown(d); } },
+        { hidEvent::MouseUpLeft, [](hidData& d, UINode* n) { n->mouseUp(d); } },
+        { hidEvent::MouseDownRight, [](hidData& d, UINode* n) { n->mouseDownRight(d); } },
+        { hidEvent::MouseUpRight, [](hidData& d, UINode* n) { n->mouseUpRight(d); } },
+        { hidEvent::MouseMove, [](hidData& d, UINode* n) { n->mouseMove(d); } },
+        { hidEvent::MouseDrag, [](hidData& d, UINode* n) { n->mouseDrag(d); } },
+        { hidEvent::MouseWheel, [](hidData& d, UINode* n) { n->mouseWheel(d); } }
+    };
+    evtMap[evt](data, node);
 
     // process callbacks
-    for (const auto& cbIt : (*it)->getMouseHidCb(evt)) {
+    for (const auto& cbIt : node->getMouseHidCb(evt)) {
         if (!cbIt.second || (cbIt.second && (data.hit || evt == hidEvent::MouseDrag))) {
             cbIt.first(data);
             if (data.breakCbIt) {
@@ -68,7 +54,7 @@ void UINodeHID::hidIt(hidData& data, hidEvent evt, std::list<UINode*>::iterator 
 
     // if hit, store that node and procInput focus if the left Mouse button was clicked
     if (data.consumed) {
-        data.hitNode[evt] = dynamic_cast<UINode*>(*it);
+        data.hitNode[evt] = node;
         return;
     }
 
@@ -78,7 +64,7 @@ void UINodeHID::hidIt(hidData& data, hidEvent evt, std::list<UINode*>::iterator 
         return;
     }
 
-    UINodeHID::hidIt(data, evt, it, tree);
+    hidIt(data, evt, it, tree);
 }
 
 void UINodeHID::keyDownIt(hidData& data) {

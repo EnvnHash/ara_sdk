@@ -84,7 +84,7 @@ public:
     void setKeyDownCb(std::function<void(hidData&)> func) { m_keyDownCb = std::move(func); }
     void setKeyUpCb(std::function<void(hidData&)> func) { m_keyUpCb = std::move(func); }
 
-    UIWindow*  getWindow() const;
+    [[nodiscard]] UIWindow*  getWindow() const;
 
 protected:
     std::unordered_map<hidEvent, std::list<mouseCb>> m_mouseHidCb;

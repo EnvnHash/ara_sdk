@@ -113,7 +113,7 @@ void DropDownMenu::open() {
     m_entryList = getRoot()->addChild<Div>(getStyleClass() + ".list");
     m_entryList->setName("DDM_EntryList");
     m_entryList->setPos(static_cast<int>(m_menuEntryButt->getWinPos().x),
-                        static_cast<int>(m_menuEntryButt->getWinPos().y + m_sharedRes->gridSize.y));
+                        static_cast<int>(m_menuEntryButt->getWinPos().y + static_cast<float>(m_sharedRes->gridSize.y)));
     m_entryList->setSize(200, static_cast<int>(m_entries.size()) * m_listEntryHeight);
     m_entryList->setBackgroundColor(m_sharedRes->colors->at(uiColors::background));
     m_entryList->setBorderWidth(1);

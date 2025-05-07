@@ -13,7 +13,7 @@ class Gizmo;
 class GizmoAxisLabel : public Image {
 public:
     GizmoAxisLabel();
-    GizmoAxisLabel(const std::string& styleClass);
+    explicit GizmoAxisLabel(const std::string& styleClass);
     GizmoAxisLabel(const std::string& file, int mipMapLevel, bool keep_aspect, align ax = align::center,
                    valign ay = valign::center);
     ~GizmoAxisLabel() override = default;
@@ -28,12 +28,12 @@ public:
     void mouseDown(hidData& data) override;
     void mouseUp(hidData& data) override;
 
-    bool updateCamFade();
+    bool updateCamFade() const;
     void setGizmoParent(Gizmo* gizmo);
 
     void setAxisFlag(TrackBallCam::snap axis) { m_gizAxis = axis; }
     void setHasLabel(bool val) { m_hasLabel = val; }
-    bool hasLabel() const { return m_hasLabel; }
+    [[nodiscard]] bool hasLabel() const { return m_hasLabel; }
 
     int m_presetObjId = 0;
 
@@ -42,7 +42,7 @@ private:
     TrackBallCam::snap m_gizAxis                = TrackBallCam::snap::x_pos;
     bool               m_resetExcludeFromStyles = false;
     bool               m_hasLabel               = false;
-    bool               m_leftPressed            = false;  // additional check for avoind errors with hid
+    bool               m_leftPressed            = false;  // additional check for avoid errors with hid
                                                           // blocking during camera animation
     glm::vec2          m_mousePosRel = glm::vec2{0.f};
     glm::vec2          m_rotScale    = glm::vec2{1.f};

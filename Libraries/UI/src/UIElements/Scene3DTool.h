@@ -34,7 +34,7 @@ public:
 
     void init() override;
     void connectUINodes();
-    void startMouseDrag(TrackBallCam* cam, hidData& data);
+    void startMouseDrag(TrackBallCam* cam, const hidData& data);
     void resetMousePos();
     void resetZoom();
     void objectToolClicked(ToolBarIcon idx);
@@ -44,8 +44,8 @@ public:
     void setMouseRotExp(float exp);
     void setModifyCoarseFine();
     void setTransWidget(SceneNode* node);
-    void setKeyTransStep(float fine, float normal, float coarse);
-    void setKeyRotStep(float fine, float normal, float coarse);
+    void setKeyTransStep(float fine, float normal, float coarse) const;
+    void setKeyRotStep(float fine, float normal, float coarse) const;
     void enableNetCamHighlight(bool val);
 
     float*  getKeyTransStep() { return m_keyTransStep.data(); }

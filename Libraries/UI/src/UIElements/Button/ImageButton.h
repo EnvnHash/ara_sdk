@@ -52,7 +52,7 @@ public:
     void setOnStateImg(const std::string& file, int mipMapLevel) { setStateImg(file, imgType::On, mipMapLevel); }
     void setOnStateBackImg(const std::string& file, int mipMapLevel = 8) const;
 
-    Image* getImg() const;
+    [[nodiscard]] Image* getImg() const;
 
     std::string&           getImgFile() { return m_imgFile; }
     [[nodiscard]] uint32_t getToggleState() const { return m_toggleState; }

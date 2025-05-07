@@ -5,11 +5,8 @@
 #include "UIElements/UINodeBase/UINodeGeom.h"
 #include "UIElements/UINodeBase/UINode.h"
 #include "UIWindow.h"
-#include <GeoPrimitives/Quad.h>
-#include <Shaders/ShaderCollector.h>
 #include <GLBase.h>
 #include <UISharedRes.h>
-#include <ObjectMapInteraction.h>
 
 using namespace std;
 using namespace glm;
@@ -24,8 +21,8 @@ bool UINodeGeom::contains(UINodeGeom* outer, UINodeGeom* node) {
         return false;
     }
 
-    glm::vec2 t_contLT{};
-    glm::vec2 t_contRB{};
+    vec2 t_contLT{};
+    vec2 t_contRB{};
 
     for (int32_t i = 0; i < 2; i++) {
         t_contLT[i] = node->getWinPos()[i] + std::min(0.f, node->getChildrenBoundBox()[i]);
@@ -74,7 +71,7 @@ void UINodeGeom::calcContentTransMat() {
     if (m_orthoMat) {
         // this is expensive
         m_mvp   = *m_orthoMat * m_parentMatLocCpy * m_nodePosMat;
-        m_mvpHw = m_mvp * glm::scale(vec3{1.f / getPixRatio(), 1.f / getPixRatio(), 1.f});
+        m_mvpHw = m_mvp * scale(vec3{1.f / getPixRatio(), 1.f / getPixRatio(), 1.f});
     }
 }
 
@@ -89,7 +86,7 @@ void UINodeGeom::calcNormMat() {
     }
 
     // to render a normalized quad lb (-1|-1) rt (1|1)
-    m_normMat = translate(vec3(pN[1] + (pN[0] - pN[1]) * 0.5f, 0.f)) * scale(vec3(glm::abs(pN[1] - pN[0]) * 0.5f, 1.f));
+    m_normMat = translate(vec3(pN[1] + (pN[0] - pN[1]) * 0.5f, 0.f)) * scale(vec3(abs(pN[1] - pN[0]) * 0.5f, 1.f));
 }
 
 void UINodeGeom::setAlignX(align type, state st) {
@@ -128,7 +125,7 @@ void UINodeGeom::setPadding(float left, float top, float right, float bot, state
             std::to_string(left) + "," + std::to_string(top) + "," + std::to_string(right) + "," + std::to_string(bot), st);
 }
 
-void UINodeGeom::setPadding(glm::vec4& val, state st) {
+void UINodeGeom::setPadding(vec4& val, state st) {
     if (st == state::m_state || st == m_state) {
         m_padding    = val;
         m_geoChanged = true;
@@ -156,7 +153,7 @@ void UINodeGeom::setPivot(pivotX pX, pivotY pY) {
 
 void UINodeGeom::setPadding(float val, state st) {
     if (st == state::m_state || st == m_state) {
-        m_padding    = glm::vec4(val, val, val, val);
+        m_padding    = vec4(val, val, val, val);
         m_geoChanged = true;
     }
     setStyleInitVal("padding", std::to_string(val), st);
@@ -234,9 +231,9 @@ void UINodeGeom::setZoomNormMat(float val) {
 }
 
 /** \brief scale the content of this View, center onto actual mouse coordinates (must be in window relative pixels) **/
-void UINodeGeom::setZoomWithCenter(float val, glm::vec2& actMousePos) {
+void UINodeGeom::setZoomWithCenter(float val, vec2& actMousePos) {
     // convert absolut window relative mousePos to node relative mouse pos
-    auto t_vec2 = vec2(glm::inverse(m_contentTransMatRel) * vec4(actMousePos - getWinPos(), 0.f, 1.f));
+    auto t_vec2 = vec2(inverse(m_contentTransMatRel) * vec4(actMousePos - getWinPos(), 0.f, 1.f));
 
     setContentTransScale(val, val);
     calcContentTransMat();
@@ -253,26 +250,26 @@ void UINodeGeom::setZoomWithCenter(float val, glm::vec2& actMousePos) {
     m_contTransMatCentered = lastContTransMode;
 }
 
-glm::vec2 UINodeGeom::getOrigPos() {
+vec2 UINodeGeom::getOrigPos() {
     return {m_posXType == unitType::Pixels ? static_cast<float>(m_posXInt) : m_posXFloat,
             m_posYType == unitType::Pixels ? static_cast<float>(m_posYInt) : m_posYFloat};
 }
 
-glm::vec2& UINodeGeom::getPos() {
+vec2& UINodeGeom::getPos() {
     if (m_geoChanged) {
         updateMatrix();
     }
     return m_pos;
 }
 
-glm::vec2& UINodeGeom::getSize() {
+vec2& UINodeGeom::getSize() {
     if (m_geoChanged) {
         updateMatrix();
     }
     return m_size;
 }
 
-glm::vec2& UINodeGeom::getNodeSize() {
+vec2& UINodeGeom::getNodeSize() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -293,7 +290,7 @@ float UINodeGeom::getNodeHeight() {
     return m_size.y;
 }
 
-glm::vec2 UINodeGeom::getNodeRelSize() {
+vec2 UINodeGeom::getNodeRelSize() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -302,18 +299,18 @@ glm::vec2 UINodeGeom::getNodeRelSize() {
     return m_relSize;
 }
 
-glm::vec4 UINodeGeom::getNodeViewportGL() {
+vec4 UINodeGeom::getNodeViewportGL() {
     getWinPos();
     return {m_winRelPos.x, m_viewPort.w - (m_winRelPos.y + m_size.y), m_size.x, m_size.y};
 }
 
-glm::vec4 UINodeGeom::getContentViewport() {
+vec4 UINodeGeom::getContentViewport() {
     getContWinPos();
     getContentSize();
     return {m_contWinPos.x, m_contWinPos.y, m_contentSize.x, m_contentSize.y};
 }
 
-glm::vec4 UINodeGeom::getNodeViewport() {
+vec4 UINodeGeom::getNodeViewport() {
     getWinPos();
     getNodeSize();
     return {m_winRelPos.x, m_winRelPos.y, m_size.x, m_size.y};
@@ -326,14 +323,14 @@ float* UINodeGeom::getMVPMatPtr() {
     return &m_mvp[0][0];
 }
 
-glm::mat4* UINodeGeom::getMvp() {
+mat4* UINodeGeom::getMvp() {
     if (m_geoChanged) {
         updateMatrix();
     }
     return &m_mvp;
 }
 
-glm::mat4* UINodeGeom::getHwMvp() {
+mat4* UINodeGeom::getHwMvp() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -347,14 +344,14 @@ float* UINodeGeom::getWinRelMatPtr() {
     return &m_winRelMat[0][0];
 }
 
-glm::mat4* UINodeGeom::getWinRelMat() {
+mat4* UINodeGeom::getWinRelMat() {
     if (m_geoChanged) {
         updateMatrix();
     }
     return &m_winRelMat;
 }
 
-glm::mat4* UINodeGeom::getNormMat() {
+mat4* UINodeGeom::getNormMat() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -370,7 +367,7 @@ float* UINodeGeom::getNormMatPtr() {
     return &m_normMat[0][0];
 }
 
-glm::vec2& UINodeGeom::getParentContentScale() {
+vec2& UINodeGeom::getParentContentScale() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -394,7 +391,7 @@ mat4* UINodeGeom::getFlatContentMat(bool excludedFromParentContentTrans, bool ex
     return &m_flatContentTransMat;
 }
 
-glm::vec2& UINodeGeom::getParentNodeRelPos() {
+vec2& UINodeGeom::getParentNodeRelPos() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -410,7 +407,7 @@ glm::vec2& UINodeGeom::getParentNodeRelPos() {
     return m_parentNodeRelPos;
 }
 
-glm::vec2& UINodeGeom::getWinPos() {
+vec2& UINodeGeom::getWinPos() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -425,7 +422,7 @@ glm::vec2& UINodeGeom::getWinPos() {
     return m_winRelPos;
 }
 
-glm::vec2& UINodeGeom::getWinRelSize() {
+vec2& UINodeGeom::getWinRelSize() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -439,7 +436,7 @@ glm::vec2& UINodeGeom::getWinRelSize() {
     return m_winRelSize;
 }
 
-glm::vec2& UINodeGeom::getContWinPos() {
+vec2& UINodeGeom::getContWinPos() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -452,19 +449,19 @@ glm::vec2& UINodeGeom::getContWinPos() {
     return m_contWinPos;
 }
 
-glm::vec2& UINodeGeom::getContentSize() {
+vec2& UINodeGeom::getContentSize() {
     if (m_geoChanged) {
         updateMatrix();
     }
 
     // calculate the size of the node's content area
-    m_contentSize.x = m_size.x - (m_padding.x + m_padding.z + m_borderWidth * 2.f);
-    m_contentSize.y = m_size.y - (m_padding.y + m_padding.w + m_borderWidth * 2.f);
+    m_contentSize.x = m_size.x - (m_padding.x + m_padding.z + static_cast<float>(m_borderWidth) * 2.f);
+    m_contentSize.y = m_size.y - (m_padding.y + m_padding.w + static_cast<float>(m_borderWidth) * 2.f);
 
     return m_contentSize;
 }
 
-glm::vec2& UINodeGeom::getContentOffset() {
+vec2& UINodeGeom::getContentOffset() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -476,7 +473,7 @@ glm::vec2& UINodeGeom::getContentOffset() {
     return m_contentOffset;
 }
 
-glm::vec2& UINodeGeom::getBorderWidthRel() {
+vec2& UINodeGeom::getBorderWidthRel() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -492,7 +489,7 @@ glm::vec2& UINodeGeom::getBorderWidthRel() {
     return m_borderWidthRel;
 }
 
-glm::vec2& UINodeGeom::getBorderRadiusRel() {
+vec2& UINodeGeom::getBorderRadiusRel() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -508,7 +505,7 @@ glm::vec2& UINodeGeom::getBorderRadiusRel() {
     return m_borderRadiusRel;
 }
 
-glm::vec2& UINodeGeom::getBorderAliasRel() {
+vec2& UINodeGeom::getBorderAliasRel() {
     if (m_geoChanged) {
         updateMatrix();
     }
@@ -528,7 +525,7 @@ float UINodeGeom::getPixRatio() const {
     return m_sharedRes ? static_cast<UIWindow*>(m_sharedRes->win)->getPixelRatio() : 1.f;
 }
 
-bool UINodeGeom::isInBounds(glm::vec2& pos) {
+bool UINodeGeom::isInBounds(vec2& pos) {
     // inBounds calculation must respect the parent content-transformation matrices and children bounds
     getWinPos();
     getWinRelSize();
@@ -538,7 +535,7 @@ bool UINodeGeom::isInBounds(glm::vec2& pos) {
         m_objItRB[i] = m_objItLT[i] + std::max(m_winRelSize[i], m_childBoundBox[i + 2] - m_childBoundBox[i]);
     }
 
-    return glm::all(glm::greaterThanEqual(pos, m_objItLT)) && glm::all(glm::lessThanEqual(pos, m_objItRB));
+    return all(greaterThanEqual(pos, m_objItLT)) && all(lessThanEqual(pos, m_objItRB));
 }
 
 bool UINodeGeom::isOutOfParentBounds() {
@@ -546,8 +543,8 @@ bool UINodeGeom::isOutOfParentBounds() {
         return false;
     }
     auto p = dynamic_cast<UINodeGeom*>(getParent());
-    return glm::any(glm::greaterThan(m_parentNodeRelPos, p->m_size)) ||
-           glm::any(glm::lessThan(m_parentNodeRelPos + m_size, {}));
+    return glm::any(greaterThan(m_parentNodeRelPos, p->m_size)) ||
+           glm::any(lessThan(m_parentNodeRelPos + m_size, {}));
 }
 
 

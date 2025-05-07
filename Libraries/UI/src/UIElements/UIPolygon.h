@@ -20,15 +20,15 @@ public:
     void drawCtrlPoints(uint32_t& objId);
     void initCtrlPointShdr();
     void tesselate() const;
-    bool objIdInPolygon(int id) const;
+    [[nodiscard]] bool objIdInPolygon(int id) const;
     void mouseDrag(hidData& data) override;
     void mouseDown(hidData& data) override;
     void onResize() override;
     void addPointToSelection(uint32_t clickedObjId, uint32_t level, std::map<winProcStep, ProcStep>* procSteps);
-    bool checkCtrlPointInSel(uint32_t _id) const;
+    [[nodiscard]] bool checkCtrlPointInSel(uint32_t id) const;
     void clearSelQueue();
     void createCopyForUndo();
-    void moveCtrlPoints(glm::vec2 _offset, cpEditMode cp_editM);
+    void moveCtrlPoints(glm::vec2 _offset, cpEditMode cp_editM) const;
     void addPoint(glm::vec2 pos, std::map<winProcStep, ProcStep>* procSteps);
 
     void setDrawInvert(bool val) { m_drawInv = val; }

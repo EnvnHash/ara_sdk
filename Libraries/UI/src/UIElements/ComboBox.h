@@ -12,7 +12,7 @@ class Image;
 
 class ComboBox : public DropDownMenu {
 public:
-    ComboBox() : DropDownMenu() { setName(getTypeName<ComboBox>()); }
+    ComboBox() { setName(getTypeName<ComboBox>()); }
     explicit ComboBox(const std::string& styleClass) : DropDownMenu(styleClass) { setName(getTypeName<ComboBox>()); }
 
     ~ComboBox() override = default;

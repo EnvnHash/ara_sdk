@@ -25,14 +25,14 @@ public:
     void rotate(int j);
     void setTransMode(transMode m, bool updtColors = false);
     void setPlane(twPlane p);
-    int  getColorIdx(int buttIdx);
+    int  getColorIdx(int buttIdx) const;
     void setPlaneSwitcherState(transMode m, twPlane p);
     void setDisabled(bool val, bool forceStyleUpdt = false) override;
     void setVisibility(bool val);
     void highLight(bool val);
     void keyDown(hidData& data) override;
     void keyUp(hidData& data) override;
-    void checkCamFlags();
+    void checkCamFlags() const;
     void checkPlaneSwitchIdx();
 
     void       setTransAlign(transAlign t) { m_tRel = t; }

@@ -45,19 +45,19 @@ public:
     void setGlBase(GLBase* glbase);
     void setAlpha(float val);
 
-    static std::string& getCustomDefName() { return m_customDefName; }
-    std::string&        getFontType() { return m_fontType; }
-    bool                isSelected() { return m_state == state::selected; }
-    state               getState() { return m_state; }
-    state               getLastState() { return m_lastState; }
-    virtual float       getAlpha() { return m_absoluteAlpha; }
-    glm::vec4&          getColor() { return m_color; }
-    glm::vec4&          getBackgroundColor() { return m_bgColor; }
-    std::string&        getStyleClass() { return m_baseStyleClass; }
-    bool                getStyleChanged() const { return m_styleChanged; }
-    bool                getStyleClassInited() const { return m_styleClassInited; }
+    static std::string&     getCustomDefName() { return m_customDefName; }
+    std::string&            getFontType() { return m_fontType; }
+    [[nodiscard]] bool      isSelected() const { return m_state == state::selected; }
+    [[nodiscard]] state     getState() const { return m_state; }
+    [[nodiscard]] state     getLastState() const { return m_lastState; }
+    virtual float           getAlpha() { return m_absoluteAlpha; }
+    glm::vec4&              getColor() { return m_color; }
+    glm::vec4&              getBackgroundColor() { return m_bgColor; }
+    std::string&            getStyleClass() { return m_baseStyleClass; }
+    [[nodiscard]] bool      getStyleChanged() const { return m_styleChanged; }
+    [[nodiscard]] bool      getStyleClassInited() const { return m_styleClassInited; }
+    [[nodiscard]] ResNode*  getStyleResNode() const;
 
-    ResNode* getStyleResNode();
     std::unordered_map<state, std::unordered_map<styleInit, std::function<void()>>> m_setStyleFunc;
 
 protected:

@@ -58,7 +58,7 @@ public:
     void mouseUpRight(hidData& data) override;
     void mouseDrag(hidData& data) override;
     void mouseWheel(hidData& data) override;
-    void resetMousePos();
+    void resetMousePos() const;
     void setViewport(float x, float y, float width, float height) override;
     void setViewport(glm::vec4* viewport) override;
     void updateScene3DBaseViewport(float x, float y, float width, float height);
