@@ -67,22 +67,22 @@ UINode* Slider::addChild(std::unique_ptr<UINode> child) {
     return nd;
 }
 
-void SliderKnob::mouseDrag(hidData* data) {
+void SliderKnob::mouseDrag(hidData& data) {
     const auto slid = dynamic_cast<Slider *>(getParent());
 
     // remember actual value
-    if (data->dragStart) {
+    if (data.dragStart) {
         m_dragStartValue = slid->getUnScaled(slid->getScaledNormValue());
     } else {
         // values from slider are scaled,
-        float relMove      = data->movedPix.x / slid->getMaxDragWay();
+        float relMove      = data.movedPix.x / slid->getMaxDragWay();
         float newNormValue = std::min<float>(std::max<float>(m_dragStartValue + relMove, 0.f), 1.f);
         slid->setValue(newNormValue);
 
         setDrawFlag();
     }
 
-    data->consumed = true;
+    data.consumed = true;
 }
 
 float Slider::getScaledVal(float in) {

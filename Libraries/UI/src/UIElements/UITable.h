@@ -67,11 +67,11 @@ public:
         }
     }
 
-    void mouseDrag(hidData* data) override;
-    void mouseMove(hidData* data) override;
-    void mouseDown(hidData* data) override;
-    void mouseUp(hidData* data) override;
-    void mouseOut(hidData* data) override;
+    void mouseDrag(hidData& data) override;
+    void mouseMove(hidData& data) override;
+    void mouseDown(hidData& data) override;
+    void mouseUp(hidData& data) override;
+    void mouseOut(hidData& data) override;
 
     virtual bool insertRow(int at, int count, float size, bool percent = false, bool fixed = false,
                            float min_pix_size = -1,

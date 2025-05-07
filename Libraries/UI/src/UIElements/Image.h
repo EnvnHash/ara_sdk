@@ -31,8 +31,8 @@ public:
     virtual void    setImgBase(AssetImageBase *imgBase);
     void            updateDrawData() override;
     void            initUnitBlock();
-    bool            draw(uint32_t *objId) override;
-    bool            drawIndirect(uint32_t *objId) override;
+    bool            draw(uint32_t& objId) override;
+    bool            drawIndirect(uint32_t& objId) override;
     void            pushTexture(DrawSet *ds);
     void            pushVaoUpdtOffsets() override;
     virtual void    loadImg();

@@ -38,7 +38,7 @@ public:
 
     [[nodiscard]] bool      usesExtFbo() const { return m_extFbo; }
     [[nodiscard]] float     getMaxObjId() const { return m_maxNrGuiObjects - 1.f; };
-    uint32_t* getIdCtr() { return &m_idCtr; }
+    uint32_t&               getIdCtr() { return m_idCtr; }
     [[nodiscard]] FBO*      getFbo() const { return m_extFbo ? m_extFbo : m_objIDFBO; }
     [[nodiscard]] FBO*      getDownFbo() const { return m_downFbo; }
     [[nodiscard]] Shaders*  getNormShdr() const { return m_normObjIdShdr; }

@@ -30,8 +30,8 @@ public:
     void setDisabled(bool val, bool forceStyleUpdt = false) override;
     void setVisibility(bool val);
     void highLight(bool val);
-    void keyDown(hidData* data) override;
-    void keyUp(hidData* data) override;
+    void keyDown(hidData& data) override;
+    void keyUp(hidData& data) override;
     void checkCamFlags();
     void checkPlaneSwitchIdx();
 

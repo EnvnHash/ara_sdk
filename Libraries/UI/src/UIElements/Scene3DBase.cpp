@@ -264,26 +264,24 @@ void Scene3DBase::freeGLResources() {
     }
 }
 
-bool Scene3DBase::draw(uint32_t* objId) {
+bool Scene3DBase::draw(uint32_t& objId) {
     Div::draw(objId);
     return drawFunc(objId);
 }
 
-bool Scene3DBase::drawIndirect(uint32_t* objId) {
+bool Scene3DBase::drawIndirect(uint32_t& objId) {
     Div::drawIndirect(objId);
 
     if (m_sharedRes && m_sharedRes->drawMan) {
-        m_tempObjId = *objId;
-        m_sharedRes->drawMan->pushFunc([this] {
-            m_dfObjId = m_tempObjId;
-            drawFunc(&m_dfObjId);
+        m_sharedRes->drawMan->pushFunc([this, objId] {
+            drawFunc(objId);
         });
     }
 
     return true;
 }
 
-bool Scene3DBase::drawFunc(uint32_t* objId) {
+bool Scene3DBase::drawFunc(const uint32_t& objId) {
     if (!m_inited) return false;
 
     if (!m_startTimeSet) {
@@ -468,7 +466,7 @@ void Scene3DBase::updateMatrix() {
     }
 }
 
-void Scene3DBase::keyDown(hidData* data) {
+void Scene3DBase::keyDown(hidData& data) {
     // if there is an ObjectSelector, get it
     SPObjectSelector* objSel = nullptr;
     for (const auto cIt : m_camSet)
@@ -478,32 +476,32 @@ void Scene3DBase::keyDown(hidData* data) {
         }
 
     if (m_sceneRenderCam->getInteractCam())
-        m_sceneRenderCam->getInteractCam()->keyDown(data->key, data->shiftPressed, data->altPressed, data->ctrlPressed);
+        m_sceneRenderCam->getInteractCam()->keyDown(data.key, data.shiftPressed, data.altPressed, data.ctrlPressed);
 
-    if (data->key == GLSG_KEY_W && objSel) {
+    if (data.key == GLSG_KEY_W && objSel) {
         objSel->setTransMode(transMode::translate);
         return;
     }
 
     ///> scale mode
-    if (data->key == GLSG_KEY_E && objSel) {
+    if (data.key == GLSG_KEY_E && objSel) {
         objSel->setTransMode(transMode::scale);
         return;
     }
 
     ///> rotate mode
-    if (data->key == GLSG_KEY_R && objSel) {
+    if (data.key == GLSG_KEY_R && objSel) {
         objSel->setTransMode(transMode::rotate);
         return;
     }
 
     // dump the sceneTree
-    if (data->key == GLSG_KEY_D) {
+    if (data.key == GLSG_KEY_D) {
         m_rootNode->dump();
         return;
     }
 
-    if (data->key == GLSG_KEY_F) {
+    if (data.key == GLSG_KEY_F) {
         m_drawFps = !m_drawFps;
         return;
     }
@@ -517,7 +515,7 @@ void Scene3DBase::keyDown(hidData* data) {
     setDrawFlag();
 }
 
-void Scene3DBase::keyUp(hidData* data) {
+void Scene3DBase::keyUp(hidData& data) {
     // if there is an ObjectSelector, get it
     for (auto cIt : m_camSet)
         if (cIt->s_shaderProto.contains(getTypeName<SPObjectSelector>())) {
@@ -526,11 +524,11 @@ void Scene3DBase::keyUp(hidData* data) {
         }
 
     if (m_sceneRenderCam->getInteractCam()) {
-        m_sceneRenderCam->getInteractCam()->keyUp(data->key, data->shiftPressed, data->altPressed, data->ctrlPressed);
+        m_sceneRenderCam->getInteractCam()->keyUp(data.key, data.shiftPressed, data.altPressed, data.ctrlPressed);
     }
 }
 
-void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
+void Scene3DBase::moveObjectByArrowKeys(const hidData& data) {
     SPObjectSelector* objSel = nullptr;
     for (const auto& cIt : m_camSet) {
         if (cIt->s_shaderProto.contains(getTypeName<SPObjectSelector>())) {
@@ -539,8 +537,8 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
     }
 
     ///> move a selected object via the keyboard, in case a single gizmo axis is selected
-    if ((data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_UP || data->key == GLSG_KEY_LEFT ||
-         data->key == GLSG_KEY_RIGHT) &&
+    if ((data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_UP || data.key == GLSG_KEY_LEFT ||
+         data.key == GLSG_KEY_RIGHT) &&
         objSel && objSel->getSelectedNode() && objSel->getSelectedObjectNode() && !m_gizmos.empty()) {
         // check if any of the gizmo axes is selected
         for (auto g : *m_gizmos[static_cast<int>(transMode::translate)]->getChildren()) {
@@ -551,20 +549,20 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
                 vec4 moveVec{0.f};
 
                 if (g->getName() == getTypeName<SNGizmo>() + "_Y_Z") {
-                    moveVec.y = data->key == GLSG_KEY_LEFT ? -1.f : data->key == GLSG_KEY_RIGHT ? 1.f : 0.f;
-                    moveVec.z = data->key == GLSG_KEY_DOWN ? -1.f : data->key == GLSG_KEY_UP ? 1.f : 0.f;
+                    moveVec.y = data.key == GLSG_KEY_LEFT ? -1.f : data.key == GLSG_KEY_RIGHT ? 1.f : 0.f;
+                    moveVec.z = data.key == GLSG_KEY_DOWN ? -1.f : data.key == GLSG_KEY_UP ? 1.f : 0.f;
                 } else if (g->getName() == getTypeName<SNGizmo>() + "_X_Z") {
-                    moveVec.x = data->key == GLSG_KEY_LEFT ? -1.f : data->key == GLSG_KEY_RIGHT ? 1.f : 0.f;
-                    moveVec.z = data->key == GLSG_KEY_DOWN ? -1.f : data->key == GLSG_KEY_UP ? 1.f : 0.f;
+                    moveVec.x = data.key == GLSG_KEY_LEFT ? -1.f : data.key == GLSG_KEY_RIGHT ? 1.f : 0.f;
+                    moveVec.z = data.key == GLSG_KEY_DOWN ? -1.f : data.key == GLSG_KEY_UP ? 1.f : 0.f;
                 } else if (g->getName() == getTypeName<SNGizmo>() + "_X_Y") {
-                    moveVec.x = data->key == GLSG_KEY_LEFT ? -1.f : data->key == GLSG_KEY_RIGHT ? 1.f : 0.f;
-                    moveVec.y = data->key == GLSG_KEY_DOWN ? -1.f : data->key == GLSG_KEY_UP ? 1.f : 0.f;
+                    moveVec.x = data.key == GLSG_KEY_LEFT ? -1.f : data.key == GLSG_KEY_RIGHT ? 1.f : 0.f;
+                    moveVec.y = data.key == GLSG_KEY_DOWN ? -1.f : data.key == GLSG_KEY_UP ? 1.f : 0.f;
                 } else if (g->m_nameFlag & GLSG_TRANS_GIZMO_X)
-                    moveVec.x = (data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_LEFT) ? -1.f : 1.f;
+                    moveVec.x = (data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_LEFT) ? -1.f : 1.f;
                 else if (g->m_nameFlag & GLSG_TRANS_GIZMO_Y)
-                    moveVec.y = (data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_LEFT) ? -1.f : 1.f;
+                    moveVec.y = (data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_LEFT) ? -1.f : 1.f;
                 else if (g->m_nameFlag & GLSG_TRANS_GIZMO_Z)
-                    moveVec.z = (data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_LEFT) ? -1.f : 1.f;
+                    moveVec.z = (data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_LEFT) ? -1.f : 1.f;
 
                 // rotate selected axis into object space and multiply by gizmoAxis parent (the gizmo container) scaleFact
                 moveVec = object->getRotMat() * vec4(vec3(moveVec) * m_keyTransStep[static_cast<int>(m_cfState)], 0.f);
@@ -585,7 +583,7 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
                                   static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_Z)};
 
                 float     offs = m_keyRotStep[static_cast<int>(m_cfState)];
-                glm::mat4 newRot = object->getRotMat() * glm::rotate((data->key == GLSG_KEY_DOWN || data->key == GLSG_KEY_LEFT) ? -offs : offs, rotAxis);
+                glm::mat4 newRot = object->getRotMat() * glm::rotate((data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_LEFT) ? -offs : offs, rotAxis);
 
                 // offset
                 object->rotate(newRot);
@@ -603,18 +601,18 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData* data) {
     setDrawFlag();
 }
 
-void Scene3DBase::mouseDown(hidData* data) {
+void Scene3DBase::mouseDown(hidData& data) {
     // process the object map at the position of the mouse
     if (m_objSel) {
-        m_objSel->mouseDownLeft(static_cast<float>(data->mousePos.x) - getWinPos().x, static_cast<float>(data->mousePos.y) - getWinPos().y,
+        m_objSel->mouseDownLeft(static_cast<float>(data.mousePos.x) - getWinPos().x, static_cast<float>(data.mousePos.y) - getWinPos().y,
                                 m_rootNode.get());
     }
 
-    s_mousePos = data->mousePos - getWinPos();
+    s_mousePos = data.mousePos - getWinPos();
 
     if (m_sceneRenderCam->getInteractCam()) {
-        m_sceneRenderCam->getInteractCam()->mouseDownLeft(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
-                                                          static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
+        m_sceneRenderCam->getInteractCam()->mouseDownLeft(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
+                                                          static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
     }
 
     m_reqRenderPasses[renderPass::scene]      = true;
@@ -623,10 +621,10 @@ void Scene3DBase::mouseDown(hidData* data) {
     m_leftClick                             = true;
     setDrawFlag();
 
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void Scene3DBase::mouseUp(hidData* data) {
+void Scene3DBase::mouseUp(hidData& data) {
     bool forceResetMouse = false;
 
     // process the object map at the position of the mouse
@@ -669,9 +667,9 @@ void Scene3DBase::mouseUp(hidData* data) {
         m_objSel->mouseUpLeft(m_rootNode.get());
     }
 
-    if (m_sceneRenderCam->getInteractCam() && data) {
-        m_sceneRenderCam->getInteractCam()->mouseUpLeft(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
-                                                        static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
+    if (m_sceneRenderCam->getInteractCam()) {
+        m_sceneRenderCam->getInteractCam()->mouseUpLeft(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
+                                                        static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
     }
 
     m_reqRenderPasses[renderPass::scene]      = true;
@@ -679,7 +677,7 @@ void Scene3DBase::mouseUp(hidData* data) {
     m_reqRenderPasses[renderPass::objectMap] = true;
 
     if (getWindow()) {
-        if (data && data->dragging && (!m_leftClick || forceResetMouse || m_leftClickViewDrag)) {
+        if (data.dragging && (!m_leftClick || forceResetMouse || m_leftClickViewDrag)) {
             m_leftClickViewDrag = false;
         }
     }
@@ -687,17 +685,15 @@ void Scene3DBase::mouseUp(hidData* data) {
     m_leftClick = false;
     setDrawFlag();
 
-    if (data) {
-        data->consumed = true;
-    }
+    data.consumed = true;
 }
 
-void Scene3DBase::mouseDownRight(hidData* data) {
-    s_mousePos = data->mousePos - getWinPos();
+void Scene3DBase::mouseDownRight(hidData& data) {
+    s_mousePos = data.mousePos - getWinPos();
 
     if (m_sceneRenderCam->getInteractCam()) {
-        m_sceneRenderCam->getInteractCam()->mouseDownRight(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
-                                                           static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
+        m_sceneRenderCam->getInteractCam()->mouseDownRight(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
+                                                           static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
     }
 
     m_reqRenderPasses[renderPass::scene]      = true;
@@ -705,23 +701,17 @@ void Scene3DBase::mouseDownRight(hidData* data) {
     m_reqRenderPasses[renderPass::objectMap] = true;
 
     setDrawFlag();
-    if (data) {
-        data->consumed = true;
-    }
+    data.consumed = true;
 }
 
-void Scene3DBase::mouseUpRight(hidData* data) {
-    if (!data) {
-        return;
-    }
-
+void Scene3DBase::mouseUpRight(hidData& data) {
     if (m_objSel) {
         m_objSel->mouseUpRight(m_rootNode.get());
     }
 
     if (m_sceneRenderCam->getInteractCam())
-        m_sceneRenderCam->getInteractCam()->mouseUpRight(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
-                                                         static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
+        m_sceneRenderCam->getInteractCam()->mouseUpRight(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
+                                                         static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
 
     m_reqRenderPasses[renderPass::scene]      = true;
     m_reqRenderPasses[renderPass::shadowMap] = true;
@@ -729,41 +719,42 @@ void Scene3DBase::mouseUpRight(hidData* data) {
 
     setDrawFlag();
 
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void Scene3DBase::mouseDrag(hidData* data) {
-    if (!m_objSel || !data) {
+void Scene3DBase::mouseDrag(hidData& data) {
+    if (!m_objSel) {
         return;
     }
 
-    s_mousePos = data->mousePos - getWinPos();
+    s_mousePos = data.mousePos - getWinPos();
 
-    if (data->mousePressed && !data->shiftPressed && !data->altPressed && !data->ctrlPressed)  {
+    if (data.mousePressed && !data.shiftPressed && !data.altPressed && !data.ctrlPressed)  {
         m_forceMouseUp = true;  // process the object map at the position of the mouse
     }
 
-    if (data->mousePressed) {
+    if (data.mousePressed) {
         m_objSel->mouseMove(s_mousePos.x, s_mousePos.y);
     }
 
     if (m_sceneRenderCam->getInteractCam()) {
-        if (data->mousePressed && !data->shiftPressed && !data->altPressed && data->ctrlPressed && m_forceMouseUp) { // left mouse with ctrl pressed
+        if (data.mousePressed && !data.shiftPressed && !data.altPressed && data.ctrlPressed && m_forceMouseUp) { // left mouse with ctrl pressed
             m_forceMouseUp = false;
-            mouseUp(nullptr);
+            hidData d;
+            mouseUp(d);
         }
 
         // avoid clashing of object transformation and view dragging
         if (m_objSel->getState() == SPObjectSelector::objSelState::idle) {
-            m_sceneRenderCam->getInteractCam()->mouseDrag(data->mousePosNodeRel.x / m_size.x,
-                                                          data->mousePosNodeRel.y / m_size.y, data->shiftPressed,
-                                                          data->altPressed, data->ctrlPressed, m_mouseRotScale);
+            m_sceneRenderCam->getInteractCam()->mouseDrag(data.mousePosNodeRel.x / m_size.x,
+                                                          data.mousePosNodeRel.y / m_size.y, data.shiftPressed,
+                                                          data.altPressed, data.ctrlPressed, m_mouseRotScale);
             m_leftClickViewDrag = true;
         }
     }
 
-    if (data->dragStart) {
-        m_dragStartPos = data->mousePos;
+    if (data.dragStart) {
+        m_dragStartPos = data.mousePos;
     }
 
     m_reqRenderPasses[renderPass::scene]      = true;
@@ -773,13 +764,13 @@ void Scene3DBase::mouseDrag(hidData* data) {
     setDrawFlag();
     getSharedRes()->requestRedraw = true;
 
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void Scene3DBase::mouseWheel(hidData* data) {
+void Scene3DBase::mouseWheel(hidData& data) {
     if (m_sceneRenderCam->getInteractCam()) {
         m_sceneRenderCam->getInteractCam()->setInteractionStart();
-        m_sceneRenderCam->getInteractCam()->mouseWheel(static_cast<float>(data->degrees) * 0.5f);
+        m_sceneRenderCam->getInteractCam()->mouseWheel(static_cast<float>(data.degrees) * 0.5f);
     }
 
     m_reqRenderPasses[renderPass::scene]      = true;
@@ -787,7 +778,7 @@ void Scene3DBase::mouseWheel(hidData* data) {
     m_reqRenderPasses[renderPass::objectMap] = true;
 
     getSharedRes()->requestRedraw = true;
-    data->consumed = true;
+    data.consumed = true;
 }
 
 void Scene3DBase::resetMousePos() {

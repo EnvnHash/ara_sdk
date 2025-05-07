@@ -124,31 +124,31 @@ public:
 
     // ---------- global callbacks that are not related to a UINode
 protected:
-    std::unordered_map<void*, std::function<void(hidData*)>>           m_globalMouseDownLeftCb;
-    std::unordered_map<void*, std::function<void(hidData*)>>           m_globalMouseDownRightCb;
-    std::unordered_map<void*, std::function<void(hidData*)>>           m_globalMouseUpLeftCb;
+    std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseDownLeftCb;
+    std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseDownRightCb;
+    std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseUpLeftCb;
     std::unordered_map<void*, std::function<void(int, int, int, int)>> m_globalSetViewportCb;
     std::unordered_map<void*, std::function<void(int, int)>>           m_globalWinPosCb;
-    std::unordered_map<void*, std::function<void(hidData*)>>           m_globalMouseMoveCb;
-    std::unordered_map<void*, std::function<void(hidData*)>>           m_globalKeyDownCb;
-    std::unordered_map<void*, std::function<void(hidData*)>>           m_globalKeyUpCb;
+    std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseMoveCb;
+    std::unordered_map<void*, std::function<void(hidData&)>>           m_globalKeyDownCb;
+    std::unordered_map<void*, std::function<void(hidData&)>>           m_globalKeyUpCb;
 
 public:
     void addGlobalWinPosCb(void* ptr, const std::function<void(int, int)>& f);
     void removeGlobalWinPosCb(void* ptr);
     void addGlobalSetViewportCb(void* ptr, const std::function<void(int, int, int, int)>& f);
     void removeGlobalSetViewportCb(void* ptr);
-    void addGlobalMouseDownLeftCb(void* ptr, const std::function<void(hidData*)>& f);
+    void addGlobalMouseDownLeftCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalMouseDownLeftCb(void* ptr);
-    void addGlobalMouseUpLeftCb(void* ptr, const std::function<void(hidData*)>& f);
+    void addGlobalMouseUpLeftCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalMouseUpLeftCb(void* ptr);
-    void addGlobalMouseDownRightCb(void* ptr, const std::function<void(hidData*)>& f);
+    void addGlobalMouseDownRightCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalMouseDownRightCb(void* ptr);
-    void addGlobalMouseMoveCb(void* ptr, const std::function<void(hidData*)>& f);
+    void addGlobalMouseMoveCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalMouseMoveCb(void* ptr);
-    void addGlobalKeyDownCb(void* ptr, const std::function<void(hidData*)>& f);
+    void addGlobalKeyDownCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalKeyDownCb(void* ptr);
-    void addGlobalKeyUpCb(void* ptr, const std::function<void(hidData*)>& f);
+    void addGlobalKeyUpCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalKeyUpCb(void* ptr);
 
     void setAltPressed(bool val) { m_hidData.altPressed = val; }

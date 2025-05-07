@@ -34,8 +34,8 @@ public:
     void mouseDownLeft(float x, float y, SceneNode* sceneTree) override;
     void mouseUpLeft(SceneNode* sceneTree) override;
     void mouseUpRight(SceneNode* sceneTree) override;
-    void keyDown(hidData* data) override;
-    void keyUp(hidData* data) override;
+    void keyDown(hidData& data) override;
+    void keyUp(hidData& data) override;
 
     glm::vec4 unProjectMouse(const glm::vec4& inPoint, glm::vec3 camPos, const glm::vec3& planeOrig, const glm::vec3& planeNormal);
     void      mouseMove(float x, float y) override;

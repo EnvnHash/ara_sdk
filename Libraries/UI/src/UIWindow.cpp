@@ -817,14 +817,14 @@ void UIWindow::onKeyDown(int key, bool shiftPressed, bool ctrlPressed, bool altP
     m_hidData.key          = key;
 
     if (m_inputFocusNode) {
-        m_inputFocusNode->keyDown(&m_hidData);
+        m_inputFocusNode->keyDown(m_hidData);
         if (m_inputFocusNode->getKeyDownCb()) {
-            (*m_inputFocusNode->getKeyDownCb())(&m_hidData);
+            (*m_inputFocusNode->getKeyDownCb())(m_hidData);
         }
     }
 
-    for (auto &it : m_globalKeyDownCb) {
-        it.second(&m_hidData);
+    for (auto &it : m_globalKeyDownCb | views::values) {
+        it(m_hidData);
     }
 }
 
@@ -837,14 +837,14 @@ void UIWindow::onKeyUp(int key, bool shiftReleased, bool ctrlReleased, bool altR
     m_hidData.key       = key;
 
     if (m_inputFocusNode) {
-        m_inputFocusNode->keyUp(&m_hidData);
+        m_inputFocusNode->keyUp(m_hidData);
         if (m_inputFocusNode->getKeyUpCb()) {
-            (*m_inputFocusNode->getKeyUpCb())(&m_hidData);
+            (*m_inputFocusNode->getKeyUpCb())(m_hidData);
         }
     }
 
-    for (auto &it : m_globalKeyUpCb) {
-        it.second(&m_hidData);
+    for (auto &it : m_globalKeyUpCb | views::values) {
+        it(m_hidData);
     }
 }
 
@@ -854,7 +854,7 @@ void UIWindow::onChar(unsigned int codepoint) {
     data.codepoint = codepoint;
 
     if (m_inputFocusNode) {
-        m_inputFocusNode->onChar(&data);
+        m_inputFocusNode->onChar(data);
     }
 }
 
@@ -924,8 +924,8 @@ void UIWindow::onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool c
     m_hidData.movedPix.y    = 0.f;
 
     // callbacks that are not related to a specific UINode
-    for (auto &it : m_globalMouseDownLeftCb) {
-        it.second(&m_hidData);
+    for (auto &it : m_globalMouseDownLeftCb | views::values) {
+        it(m_hidData);
     }
 
     m_draggingNodeTree.clear();
@@ -934,7 +934,7 @@ void UIWindow::onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool c
     // iterate mouse click through UINode - Tree
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()) {
-        UINode::hidIt(&m_hidData, hidEvent::MouseDownLeft, m_opi.localTree.begin(), m_opi.localTree);
+        UINode::hidIt(m_hidData, hidEvent::MouseDownLeft, m_opi.localTree.begin(), m_opi.localTree);
     }
 
     m_lastClickedPos.x = xPos;
@@ -947,7 +947,7 @@ void UIWindow::procInputFocus() {
     if (m_hidData.hitNode[hidEvent::MouseDownLeft]) {
         auto lastFocusNode = m_inputFocusNode;
 
-        // old focused node looses focus
+        // old focused node loses focus
         if (m_inputFocusNode && m_inputFocusNode != m_hidData.hitNode[hidEvent::MouseDownLeft]) {
             if (m_inputFocusNode->getFocusAllowed()) {
                 m_inputFocusNode->setInputFocus(false);
@@ -974,22 +974,22 @@ void UIWindow::onMouseUpLeft() {
     m_hidData.consumed      = false;
 
     // callbacks that are not related to a specific UINode
-    for (auto &it : m_globalMouseUpLeftCb) {
-        it.second(&m_hidData);
+    for (const auto &it : m_globalMouseUpLeftCb | views::values)  {
+        it(m_hidData);
     }
 
     // in case an object id changed during mouseDrag explicitly call the mouseup on this element
     if (m_hidData.dragging && m_draggingNode && !m_draggingNode->isHIDBlocked()) {
-        m_draggingNode->mouseUp(&m_hidData);
-        for (auto &key: m_draggingNode->getMouseUpCb() | views::keys) {
-            key(&m_hidData);
+        m_draggingNode->mouseUp(m_hidData);
+        for (const auto &key: m_draggingNode->getMouseUpCb() | views::keys) {
+            key(m_hidData);
         }
     } else {
         m_hidData.reset();
     }
 
     if (m_opi.foundNode && !m_opi.localTree.empty()) {
-        UINode::hidIt(&m_hidData, hidEvent::MouseUpLeft, m_opi.localTree.begin(), m_opi.localTree);
+        UINode::hidIt(m_hidData, hidEvent::MouseUpLeft, m_opi.localTree.begin(), m_opi.localTree);
     }
 
     m_hidData.hitNode[hidEvent::MouseDownLeft] = nullptr;
@@ -1009,8 +1009,8 @@ void UIWindow::onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool 
     fillHidData(hidEvent::MouseDownRight, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
 
     // callbacks that are not related to a specific UINode
-    for (auto &it : m_globalMouseDownRightCb) {
-        it.second(&m_hidData);
+    for (const auto &it : m_globalMouseDownRightCb | views::values) {
+        it(m_hidData);
     }
 
     m_draggingNodeTree.clear();
@@ -1019,7 +1019,7 @@ void UIWindow::onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool 
     // iterate mouse click through UINode - Tree
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()) {
-        UINode::hidIt(&m_hidData, hidEvent::MouseDownRight, m_opi.localTree.begin(), m_opi.localTree);
+        UINode::hidIt(m_hidData, hidEvent::MouseDownRight, m_opi.localTree.begin(), m_opi.localTree);
     }
 }
 
@@ -1028,15 +1028,15 @@ void UIWindow::onMouseUpRight() {
 
     // in case an object id changed during mouseDrag explicitly call the mouseup on this element
     if (m_hidData.dragging && m_draggingNode && !m_draggingNode->isHIDBlocked()) {
-        m_draggingNode->mouseUpRight(&m_hidData);
-        for (auto &key: m_draggingNode->getMouseUpRightCb() | views::keys) {
-            key(&m_hidData);
+        m_draggingNode->mouseUpRight(m_hidData);
+        for (const auto &key: m_draggingNode->getMouseUpRightCb() | views::keys) {
+            key(m_hidData);
         }
     }
 
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()) {
-        UINode::hidIt(&m_hidData, hidEvent::MouseUpRight, m_opi.localTree.begin(), m_opi.localTree);
+        UINode::hidIt(m_hidData, hidEvent::MouseUpRight, m_opi.localTree.begin(), m_opi.localTree);
     }
 
     m_hidData.mousePressed                      = false;
@@ -1058,23 +1058,23 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
     auto foundNode = m_opi.foundNode;
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()){
-        UINode::hidIt(&m_hidData, hidEvent::MouseMove, m_opi.localTree.begin(), m_opi.localTree);
+        UINode::hidIt(m_hidData, hidEvent::MouseMove, m_opi.localTree.begin(), m_opi.localTree);
     }
 
     m_hidData.newNode = static_cast<void *>(foundNode);
 
-    for (auto &it : m_globalMouseMoveCb) {
-        it.second(&m_hidData);
+    for (auto &it : m_globalMouseMoveCb | views::values) {
+        it(m_hidData);
     }
 
     // if the mouse moved to another UiNode, advice the old node of this event
     if (m_lastHoverFound && m_lastHoverFound != foundNode && !m_hidData.dragging && !m_lastHoverFound->isHIDBlocked()) {
-        m_lastHoverFound->mouseOut(&m_hidData);  // mouse out has to be processed before mouse in !!!
+        m_lastHoverFound->mouseOut(m_hidData);  // mouse out has to be processed before mouse in !!!
     }
 
     if (foundNode && (!m_lastHoverFound || m_lastHoverFound != foundNode) && !m_hidData.dragging &&
         !foundNode->isHIDBlocked()) {
-        foundNode->mouseIn(&m_hidData);
+        foundNode->mouseIn(m_hidData);
     }
 
     m_lastHoverFound = foundNode;
@@ -1097,19 +1097,19 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
             m_hidData.objId = m_hidData.clickedObjId;
         }
 
-        UINode::hidIt(&m_hidData, hidEvent::MouseDrag, m_draggingNodeTree.begin(), m_draggingNodeTree);
+        UINode::hidIt(m_hidData, hidEvent::MouseDrag, m_draggingNodeTree.begin(), m_draggingNodeTree);
         m_hidData.dragStart = false;
         m_hidData.dragging  = true;
     }
 }
 
 void UIWindow::onWheel(float deg) {
-    m_hidData.objId   = (int)getObjAtPos(m_hidData.mousePos.x, m_hidData.mousePos.y, hidEvent::MouseWheel);
+    m_hidData.objId   = static_cast<int>(getObjAtPos(m_hidData.mousePos.x, m_hidData.mousePos.y, hidEvent::MouseWheel));
     m_hidData.degrees = deg;
 
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()) {
-        UINode::hidIt(&m_hidData, hidEvent::MouseWheel, m_opi.localTree.begin(), m_opi.localTree);
+        UINode::hidIt(m_hidData, hidEvent::MouseWheel, m_opi.localTree.begin(), m_opi.localTree);
     }
 
     m_procSteps[Draw].active = true;
@@ -1360,7 +1360,7 @@ void UIWindow::removeGlobalSetViewportCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalMouseDownLeftCb(void* ptr, const std::function<void(hidData*)>& f) {
+void UIWindow::addGlobalMouseDownLeftCb(void* ptr, const std::function<void(hidData&)>& f) {
     m_globalMouseDownLeftCb[ptr] = f;
 }
 
@@ -1373,7 +1373,7 @@ void UIWindow::removeGlobalMouseDownLeftCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalMouseUpLeftCb(void* ptr, const std::function<void(hidData*)>& f) {
+void UIWindow::addGlobalMouseUpLeftCb(void* ptr, const std::function<void(hidData&)>& f) {
     m_globalMouseUpLeftCb[ptr] = f;
 }
 
@@ -1385,7 +1385,7 @@ void UIWindow::removeGlobalMouseUpLeftCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalMouseDownRightCb(void* ptr, const std::function<void(hidData*)>& f) {
+void UIWindow::addGlobalMouseDownRightCb(void* ptr, const std::function<void(hidData&)>& f) {
     m_globalMouseDownRightCb[ptr] = f;
 }
 
@@ -1398,7 +1398,7 @@ void UIWindow::removeGlobalMouseDownRightCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalMouseMoveCb(void* ptr, const std::function<void(hidData*)>& f) {
+void UIWindow::addGlobalMouseMoveCb(void* ptr, const std::function<void(hidData&)>& f) {
     m_globalMouseMoveCb[ptr] = f;
 }
 
@@ -1410,7 +1410,7 @@ void UIWindow::removeGlobalMouseMoveCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalKeyDownCb(void* ptr, const std::function<void(hidData*)>& f) {
+void UIWindow::addGlobalKeyDownCb(void* ptr, const std::function<void(hidData&)>& f) {
     m_globalKeyDownCb[ptr] = f;
 }
 
@@ -1422,7 +1422,7 @@ void UIWindow::removeGlobalKeyDownCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalKeyUpCb(void* ptr, const std::function<void(hidData*)>& f) {
+void UIWindow::addGlobalKeyUpCb(void* ptr, const std::function<void(hidData&)>& f) {
     m_globalKeyUpCb[ptr] = f;
 }
 

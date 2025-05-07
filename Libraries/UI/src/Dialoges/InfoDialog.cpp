@@ -34,7 +34,7 @@ InfoDialog::InfoDialog(const UIWindowParams& params) : UIWindow(params) {
 
     m_okButton = base->addChild<Button>("infoDiag.okButt");
     m_okButton->setVisibility(false);
-    m_okButton->addMouseClickCb([this](hidData *data) {
+    m_okButton->addMouseClickCb([this](hidData& data) {
         m_glbase->runOnMainThread([this] {
             close(m_confirmCb);
             return true;
@@ -43,7 +43,7 @@ InfoDialog::InfoDialog(const UIWindowParams& params) : UIWindow(params) {
 
     m_cancelButton = base->addChild<Button>("infoDiag.cancelButt");
     m_cancelButton->setVisibility(false);
-    m_cancelButton->addMouseClickCb([this](hidData *data) {
+    m_cancelButton->addMouseClickCb([this](hidData& data) {
         m_glbase->runOnMainThread([this] {
             close(m_cancelCb);
             return true;

@@ -12,12 +12,12 @@ public:
            std::pair<align, valign> align, const std::string& font_type, int font_height);
     ~Button() override = default;
 
-    bool draw(uint32_t *objId) override;
-    void mouseUp(hidData *data) override;
-    void mouseUpRight(hidData *data) override;
-    void mouseMove(hidData *data) override;
-    void mouseOut(hidData *data) override;
-    void click(hidData *data);
+    bool draw(uint32_t& objId) override;
+    void mouseUp(hidData& data) override;
+    void mouseUpRight(hidData& data) override;
+    void mouseMove(hidData& data) override;
+    void mouseOut(hidData& data) override;
+    void click(hidData& data);
     void toggle(bool val);
 
     virtual void setProp(Property<bool> *prop);

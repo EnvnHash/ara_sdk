@@ -47,9 +47,9 @@ UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode
         tab->setText(title);
         tab->setTextAlignX(align::center);
         tab->setTextAlignY(valign::center);
-        tab->addMouseClickCb([this](const hidData* data) {
+        tab->addMouseClickCb([this](const hidData& data) {
             for (int i = 0; i < static_cast<int>(m_tabArea->getChildren().size()); i++) {
-                if (m_tabArea->getChildren()[i]->getId() == data->objId) {
+                if (m_tabArea->getChildren()[i]->getId() == data.objId) {
                     setActivateTab(i);
                     break;
                 }

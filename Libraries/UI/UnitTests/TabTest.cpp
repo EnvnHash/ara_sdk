@@ -30,7 +30,7 @@ TabView* addTabView(UIApplication* app, std::array<bool, 3>& checks) {
         divChild->setSize(0.8f, 0.8f);
         divChild->setPos(0.1f, 0.1f);
         divChild->setBackgroundColor(static_cast<float>(i%3), static_cast<float>((i+1)%2), static_cast<float>((i+2)%3), 1.f);
-        divChild->addMouseClickCb([&checks, i](hidData* data) {
+        divChild->addMouseClickCb([&checks, i](hidData& data) {
             checks[i] = true;
         });
         divChild->setName("TabContentElement"+std::to_string(i));

@@ -80,7 +80,7 @@ void MenuBar::init() {
     }
 }
 
-void MenuBar::mouseUp(hidData* data) {
+void MenuBar::mouseUp(hidData& data) {
 #ifdef ARA_USE_GLFW
     if (m_win) {
         m_win->setBlockResizing(false);  // somehow window receives size changes on windows when moved fast between displays
@@ -89,9 +89,9 @@ void MenuBar::mouseUp(hidData* data) {
 #endif
 }
 
-void MenuBar::mouseDown(hidData* data) {
+void MenuBar::mouseDown(hidData& data) {
 #ifdef ARA_USE_GLFW
-    if (data->hit && getWindow() && m_enableMinMaxButtons && data->isDoubleClick) {
+    if (data.hit && getWindow() && m_enableMinMaxButtons && data.isDoubleClick) {
         if (!getWindow()->getWinHandle()->isMaximized() && m_maximizeFunc) {
             m_maximizeFunc();
             if (m_menButtons[butType::maximize]) {
@@ -109,7 +109,7 @@ void MenuBar::mouseDown(hidData* data) {
 #endif
 }
 
-void MenuBar::mouseDrag(hidData* data) {
+void MenuBar::mouseDrag(hidData& data) {
 #ifdef ARA_USE_GLFW
     if (!m_win) {
         return;
@@ -117,7 +117,7 @@ void MenuBar::mouseDrag(hidData* data) {
 
     auto absMousePos = m_win->getAbsMousePos();
 
-    if (data->dragStart) {
+    if (data.dragStart) {
         m_dragStartWinPos = m_win->getPosition();
         m_win->setBlockResizing(true);  // somehow window receives size changes on windows when moved fast between displays
         m_win->setBlockMouseIconSwitch(true);
@@ -131,7 +131,7 @@ void MenuBar::mouseDrag(hidData* data) {
     }
 #endif
 
-    data->consumed = true;
+    data.consumed = true;
 }
 
 void MenuBar::setEnableMinMaxButtons(bool val) {

@@ -234,21 +234,21 @@ public:
         }
     }
 
-    static void itrNodes(UINode* node, const std::function<void(UINode*)>& f) {
+    static void itrNodes(UINode* node, const std::function<void(UINode*)>& f)  {
         f(node);
-        for (const auto& it : node->getChildren()) {
+        for (auto& it : node->getChildren()) {
             UINode::itrNodes(it.get(), f);
         }
     }
 
 
     /** draw the scenegraph from this node onwards */
-    virtual void drawAsRoot(uint32_t* objId);
+    virtual void drawAsRoot(uint32_t& objId);
 
     /** the scenegraph drawing iteration loop */
-    virtual void drawIt(scissorStack& ss, uint32_t* objId, bool treeChanged, bool* skipFirst);
-    virtual bool draw(uint32_t* objId) { return true; }
-    virtual bool drawIndirect(uint32_t* objId) { return true; }
+    virtual void drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool* skipFirst);
+    virtual bool draw(uint32_t& objId) { return true; }
+    virtual bool drawIndirect(uint32_t& objId) { return true; }
     virtual void updateDrawData() {}
     virtual void updtMatrIt(scissorStack* ss);
 
@@ -279,8 +279,8 @@ public:
     virtual void eraseCb(const std::string&);
     virtual bool hasCb(const std::string&);
 
-    void keyDownIt(hidData* data) override;
-    void onCharIt(hidData* data) override;
+    void keyDownIt(hidData& data) override;
+    void onCharIt(hidData& data) override;
 
     std::filesystem::path       dataPath();
     UIApplication*              getApp() const;

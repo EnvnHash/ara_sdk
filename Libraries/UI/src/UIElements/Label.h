@@ -43,8 +43,8 @@ public:
     bool          hasOpt(unsigned long f) const { return m_tOpt & f; }
     void          setSingleLine() { setOpt(single_line); }
     virtual Font *UpdateDGV(bool *checkFontTexture);
-    bool          draw(uint32_t *objId) override;
-    bool          drawIndirect(uint32_t *objId) override;
+    bool          draw(uint32_t& objId) override;
+    bool          drawIndirect(uint32_t& objId) override;
     virtual bool  checkGlyphsPrepared(bool checkFontTex = false);
     void          updateMatrix() override;
     virtual void  updateFontGeo();

@@ -234,7 +234,7 @@ bool UINode::recChildrenBoundBox(glm::vec4& ref) {
     return true;
 }
 
-void UINode::drawAsRoot(uint32_t* objId) {
+void UINode::drawAsRoot(uint32_t& objId) {
 #ifdef ARA_DEBUG
     postGLError();
 #endif
@@ -271,7 +271,7 @@ void UINode::drawAsRoot(uint32_t* objId) {
     }
 }
 
-void UINode::drawIt(scissorStack& ss, uint32_t* objId, bool treeChanged, bool* skip) {
+void UINode::drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool* skip) {
     // draw to the screen and the object map
     if (!m_visible || !m_inited || m_isOutOfParentBounds || m_referenceDrawing) {
         return;
@@ -285,12 +285,12 @@ void UINode::drawIt(scissorStack& ss, uint32_t* objId, bool treeChanged, bool* s
             }
         }
 
-        if (m_objIdMin != *objId && (m_drawImmediate || (!m_drawImmediate && treeChanged))) {
-            m_objIdMin = m_objIdMax = *objId;
+        if (m_objIdMin != objId && (m_drawImmediate || (!m_drawImmediate && treeChanged))) {
+            m_objIdMin = m_objIdMax = objId;
             m_drawParamChanged      = true;
         }
 
-        // matrices may be changed within a draw loop, so be sure everything is up-to-date
+        // matrices may be changed within a draw loop, so be sure everything is up to date
         if (m_inited && m_geoChanged) {
             updateMatrix();
         }
@@ -308,7 +308,7 @@ void UINode::drawIt(scissorStack& ss, uint32_t* objId, bool treeChanged, bool* s
         }
 
         if ((m_drawImmediate && draw(objId)) || (!m_drawImmediate && treeChanged && drawIndirect(objId))) {
-            ++(*objId);  // increase objId
+            ++objId;  // increase objId
         }
 
     } else {
@@ -807,7 +807,7 @@ void UINode::addGlCb(const std::string& identifier, const std::function<bool()>&
     }
 }
 
-void UINode::keyDownIt(hidData* data) {
+void UINode::keyDownIt(hidData& data) {
     UINodeHID::keyDownIt(data);
 
     for (const auto& it : m_children) {
@@ -815,7 +815,7 @@ void UINode::keyDownIt(hidData* data) {
     }
 }
 
-void UINode::onCharIt(hidData* data) {
+void UINode::onCharIt(hidData& data) {
     UINodeHID::onCharIt(data);
 
     for (const auto& it : m_children) {

@@ -17,9 +17,9 @@ using namespace ara;
 void UI_Test_App::init(std::function<void()> initCb) {
     // create the main UI-Window must be on the same thread on that glbase.init happened to have context-sharing work
     m_mainWindow = addWindow(UIWindowParams{.size = {1280, 700}, .shift = {50, 50} });
-    m_mainWindow->addGlobalKeyUpCb(this, [this](const hidData* data){
+    m_mainWindow->addGlobalKeyUpCb(this, [this](const hidData& data){
         // dump the sceneTree
-        if (data->key == GLSG_KEY_D) {
+        if (data.key == GLSG_KEY_D) {
             if (m_mainWindow->getWinHandle()) {
                 m_mainWindow->getRootNode()->dump();
             }

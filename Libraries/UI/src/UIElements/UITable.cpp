@@ -138,17 +138,17 @@ void UITable::updateMatrix() {
     UINode::updateMatrix();
 }
 
-void UITable::mouseDrag(hidData* data) {
+void UITable::mouseDrag(hidData& data) {
     if (mouseEvent & 1) {
-        m_Cells.updateSepInt(&data->mousePosNodeRel[0]);
+        m_Cells.updateSepInt(&data.mousePosNodeRel[0]);
         setDrawFlag();
         m_geoChanged = true;
     }
 }
 
-void UITable::mouseMove(hidData* data) {
-    pp[0] = m_Cells(1).evalByPix(ii[0], data->mousePosNodeRel.x);
-    pp[1] = m_Cells(0).evalByPix(ii[1], data->mousePosNodeRel.y);
+void UITable::mouseMove(hidData& data) {
+    pp[0] = m_Cells(1).evalByPix(ii[0], data.mousePosNodeRel.x);
+    pp[1] = m_Cells(0).evalByPix(ii[1], data.mousePosNodeRel.y);
 
 #ifdef ARA_USE_GLFW
     if (pp[0] == dTableType::Separator && pp[1] == dTableType::Separator) {
@@ -163,34 +163,34 @@ void UITable::mouseMove(hidData* data) {
 #endif
 }
 
-void UITable::mouseOut(hidData* data) {
+void UITable::mouseOut(hidData& data) {
 #ifdef ARA_USE_GLFW
     m_sharedRes->winHandle->setMouseCursor(WinMouseIcon::arrow);
 #endif
 }
 
-void UITable::mouseDown(hidData* data) {
-    if (!data->hit) {
+void UITable::mouseDown(hidData& data) {
+    if (!data.hit) {
         return;
     }
 
-    if (m_Cells.startSepInt(&data->mousePosNodeRel[0])) {
+    if (m_Cells.startSepInt(&data.mousePosNodeRel[0])) {
         mouseEvent |= 1;
-        data->consumed = true;
+        data.consumed = true;
     }
 }
 
-void UITable::mouseUp(hidData* data) {
-    if (!data->hit) {
+void UITable::mouseUp(hidData& data) {
+    if (!data.hit) {
         return;
     }
 
     if (mouseEvent & 1) {
-        m_Cells.stopSepInt(&data->mousePosNodeRel[0]);
+        m_Cells.stopSepInt(&data.mousePosNodeRel[0]);
         mouseEvent &= ~1;
     }
 
-    data->consumed = true;
+    data.consumed = true;
 }
 
 bool UITable::insertRow(int at, int count, float size, bool percent, bool fixed, float min_pix_size,

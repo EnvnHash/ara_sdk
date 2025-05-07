@@ -90,26 +90,24 @@ void Spinner::setImgBase(AssetImageBase * imgBase) {
     m_imgBase = imgBase;
 }
 
-bool Spinner::draw(uint32_t* objId) {
+bool Spinner::draw(uint32_t& objId) {
     Div::draw(objId);
     return drawFunc(objId);
 }
 
-bool Spinner::drawIndirect(uint32_t* objId) {
+bool Spinner::drawIndirect(uint32_t& objId) {
     Div::drawIndirect(objId);
 
     if (m_sharedRes && m_sharedRes->drawMan) {
-        m_tempObjId = *objId;
-        m_sharedRes->drawMan->pushFunc([this] {
-            m_dfObjId = m_tempObjId;
-            drawFunc(&m_dfObjId);
+        m_sharedRes->drawMan->pushFunc([this, objId] {
+            drawFunc(objId);
         });
     }
 
     return true;  // count up objId
 }
 
-bool Spinner::drawFunc(const uint32_t* objId) {
+bool Spinner::drawFunc(const uint32_t& objId) {
     if (!m_inited) {
         return false;
     }
@@ -122,7 +120,7 @@ bool Spinner::drawFunc(const uint32_t* objId) {
         m_shader->setUniform1f("t", m_refTime);
         m_shader->setUniformMatrix4fv("m_pvm", getMVPMatPtr());
         m_shader->setUniform2fv("size", &getSize()[0]);
-        m_shader->setUniform1f("objId", static_cast<float>(*objId));
+        m_shader->setUniform1f("objId", static_cast<float>(objId));
         m_shader->setUniform1f("alpha", m_absoluteAlpha);
 
         glActiveTexture(GL_TEXTURE0);

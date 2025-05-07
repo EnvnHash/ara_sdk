@@ -28,7 +28,7 @@ DropDownMenu* DropDownMenuBar::addDropDownMenu(const std::string& name) {
     return ddm;
 }
 
-void DropDownMenuBar::globalMouseDown(hidData* data) const {
+void DropDownMenuBar::globalMouseDown(hidData& data) const {
     for (const auto& it : m_menuEntries) {
         it->globalMouseDown(data);
     }

@@ -239,18 +239,18 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
     }
 }
 
-void ImageButton::mouseMove(hidData *data) {
-    data->actIcon = ui_MouseIcon;
+void ImageButton::mouseMove(hidData& data) {
+    data.actIcon = ui_MouseIcon;
 
     for (auto &key: m_mouseHidCb[hidEvent::MouseMove] | views::keys) {
         key(data);
     }
 
     m_mouseIsIn = true;
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void ImageButton::mouseIn(hidData *data) {
+void ImageButton::mouseIn(hidData& data) {
     m_mouseIsIn     = true;
     m_show_alt_text = false;
 
@@ -267,7 +267,7 @@ void ImageButton::mouseIn(hidData *data) {
     UINode::mouseIn(data);
 }
 
-void ImageButton::mouseOut(hidData *data) {
+void ImageButton::mouseOut(hidData& data) {
     m_mouseIsIn     = false;
     m_show_alt_text = false;
 
@@ -284,8 +284,8 @@ void ImageButton::mouseOut(hidData *data) {
     UINode::mouseOut(data);
 }
 
-void ImageButton::mouseUp(hidData *data) {
-    if (data->hit) {
+void ImageButton::mouseUp(hidData& data) {
+    if (data.hit) {
         if (m_state != state::disabled && m_state != state::disabledSelected && m_state != state::disabledHighlighted &&
             m_isToggle) {
             auto sw_state = (m_state == state::selected) ? m_state = state::none : m_state = state::selected;
@@ -303,7 +303,7 @@ void ImageButton::mouseUp(hidData *data) {
             getWindow()->setLastHoverFound(nullptr);
         }
 
-        data->consumed = true;
+        data.consumed = true;
     }
 }
 

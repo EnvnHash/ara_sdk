@@ -189,7 +189,7 @@ void Gizmo::init() {
     m_axisLabels.emplace_back(m_axisLabelYNeg);
     m_axisLabels.emplace_back(m_axisLabelZNeg);
 
-    uint32_t i = 1;
+    int32_t i = 1;
     for (const auto& it : m_axisLabels) {
         it->setGizmoParent(this);
         it->setSize(m_axisLabelSize.x, m_axisLabelSize.y);
@@ -398,17 +398,15 @@ Shaders* Gizmo::initObjMapTexShdr() const {
     return m_shCol->add("Gizmo_ObjectMap_Shader", vert, frag);
 }
 
-bool Gizmo::draw(uint32_t* objId) {
+bool Gizmo::draw(uint32_t& objId) {
     drawToFbo(objId);
     return Image::draw(objId);
 }
 
-bool Gizmo::drawIndirect(uint32_t *objId) {
+bool Gizmo::drawIndirect(uint32_t& objId) {
     if (m_sharedRes && m_sharedRes->drawMan) {
-        m_dfTempObjId = *objId;
-        m_sharedRes->drawMan->pushFunc([this] {
-            m_dfObjId = m_dfTempObjId;
-            drawToFbo(&m_dfObjId);
+        m_sharedRes->drawMan->pushFunc([this, objId] {
+            drawToFbo(objId);
         });
     }
 
@@ -416,7 +414,7 @@ bool Gizmo::drawIndirect(uint32_t *objId) {
     return true;
 }
 
-bool Gizmo::drawToFbo(const uint32_t* objId) {
+bool Gizmo::drawToFbo(const uint32_t& objId) {
     if (!m_DrawShader || !m_fbo[0] || !m_fbo[1]) {
         return false;
     }
@@ -505,7 +503,7 @@ bool Gizmo::drawToFbo(const uint32_t* objId) {
     // -------------------------------------------------------------------------------------
     // seconds pass draw!
 
-    m_objIdMin = m_objIdMax = *objId;
+    m_objIdMin = m_objIdMax = objId;
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -602,61 +600,61 @@ vec3 Gizmo::getAxisEnd(const mat4& pvm, float yVal) {
                      axlPos.y * getSize().y - static_cast<float>(m_axisLabelSize.y) * 0.5f, axlPos.z};
 }
 
-void Gizmo::mouseDrag(hidData* data) {
-    if (data->mouseRightPressed) {
+void Gizmo::mouseDrag(hidData& data) {
+    if (data.mouseRightPressed) {
         return;
     }
 
     // check if the clicked object id is within this UINode (the same node
     // or any of its children)
     for (const auto& it : m_axisLabels) {
-        if (data->clickedObjId == it->getId()) {
+        if (data.clickedObjId == it->getId()) {
             it->mouseDrag(data);
         }
     }
 
     drag(data);
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void Gizmo::drag(const hidData* data)
+void Gizmo::drag(const hidData& data)
 {
-    if (data->dragStart) {
+    if (data.dragStart) {
         if (getWindow()) getWindow()->setMouseCursorVisible(false);
-        m_dragStartPos = data->mousePos;
+        m_dragStartPos = data.mousePos;
         excludeLabelsFromStyles(true);  // avoid Label highlighting while dragging
         m_resetExcludeFromStyles = true;
     }
 
-    m_cam.mouseDrag(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
-                    static_cast<float>(data->mousePosNodeRel.y) / getSize().y,
-                    data->shiftPressed, data->altPressed, data->ctrlPressed, m_rotScale);
+    m_cam.mouseDrag(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
+                    static_cast<float>(data.mousePosNodeRel.y) / getSize().y,
+                    data.shiftPressed, data.altPressed, data.ctrlPressed, m_rotScale);
 
     getSharedRes()->requestRedraw = true;
 }
 
-void Gizmo::mouseUp(hidData* data) {
+void Gizmo::mouseUp(hidData& data) {
     if (!m_leftPressed) {
         return;
     }
 
     for (const auto& it : m_axisLabels) {
         it->mouseUp(data);
-        if (data->consumed && getSharedRes()) {
+        if (data.consumed && getSharedRes()) {
             getSharedRes()->requestRedraw = true;
             return;
         }
     }
 
-    m_cam.mouseUpLeft(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
-                static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
+    m_cam.mouseUpLeft(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
+                static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
 
     if (getWindow()) {
         getWindow()->setMouseCursorVisible(true);
     }
 
     // reposition the cursor to be exactly over the label
-    if (data->dragging) {
+    if (data.dragging) {
 #ifdef ARA_USE_GLFW
         runOnMainThread([this] {
             glfwSetCursorPos(getWindow()->getWinHandle()->getCtx(), m_dragStartPos.x * getWindow()->getPixelRatio(),
@@ -679,15 +677,15 @@ void Gizmo::mouseUp(hidData* data) {
         m_resetExcludeFromStyles = false;
     }
 
-    data->consumed = true;
+    data.consumed = true;
     m_leftPressed  = false;
 }
 
-void Gizmo::mouseDownRight(hidData* data) {
+void Gizmo::mouseDownRight(hidData& data) {
     // check if the clicked object id is within this UINode (the same node or any of its children)
     for (const auto& it : m_axisLabels) {
         it->mouseDownRight(data);
-        if (data->consumed) {
+        if (data.consumed) {
             if (m_auxSharedRes.requestRedraw) {
                 getSharedRes()->requestRedraw = m_auxSharedRes.requestRedraw;
             }
@@ -699,13 +697,13 @@ void Gizmo::mouseDownRight(hidData* data) {
         getWindow()->setMouseCursorVisible(true);
     }
 
-    m_cam.mouseDownRight(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
-                         static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
-    data->consumed = true;
+    m_cam.mouseDownRight(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
+                         static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
+    data.consumed = true;
     m_rightPressed = true;
 }
 
-void Gizmo::mouseUpRight(hidData* data)
+void Gizmo::mouseUpRight(hidData& data)
 {
     if (!m_rightPressed) {
         return;
@@ -715,7 +713,7 @@ void Gizmo::mouseUpRight(hidData* data)
     // or any of its children)
     for (const auto& it : m_axisLabels) {
         it->mouseUpRight(data);
-        if (data->consumed) {
+        if (data.consumed) {
             if (m_auxSharedRes.requestRedraw) {
                 getSharedRes()->requestRedraw = m_auxSharedRes.requestRedraw;
             }
@@ -727,28 +725,28 @@ void Gizmo::mouseUpRight(hidData* data)
         getWindow()->setMouseCursorVisible(true);
     }
 
-    m_cam.mouseUpRight(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
-                    static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
-    data->consumed = true;
+    m_cam.mouseUpRight(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
+                    static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
+    data.consumed = true;
     m_rightPressed = false;
 }
 
-void Gizmo::mouseMove(hidData* data) {
+void Gizmo::mouseMove(hidData& data) {
     for (const auto& it : m_axisLabels) {
         it->mouseMove(data);
-        if (data->consumed) {
+        if (data.consumed) {
             if (getSharedRes()) getSharedRes()->requestRedraw = true;
             return;
         }
     }
 
-    m_lastMouseHoverData = data;
+    m_lastMouseHoverData = &data;
 }
 
-void Gizmo::mouseDown(hidData* data) {
-    m_cam.mouseDownLeft(static_cast<float>(data->mousePosNodeRel.x) / getSize().x,
-                        static_cast<float>(data->mousePosNodeRel.y) / getSize().y);
-    data->consumed = true;
+void Gizmo::mouseDown(hidData& data) {
+    m_cam.mouseDownLeft(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
+                        static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
+    data.consumed = true;
     m_leftPressed  = true;
 }
 

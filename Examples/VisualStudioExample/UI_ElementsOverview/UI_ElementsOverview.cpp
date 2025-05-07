@@ -48,7 +48,7 @@ void UI_ElementsOverview::addButton(UINode* root, int heightStep) {
     auto butt = root->addChild<Button>(0, heightStep * 2, 100, 30);
     butt->setText("Button");
     butt->setBackgroundColor(0.6f, 0.6f, 0.6f, 1.f);
-    butt->addMouseClickCb([this](hidData* data) { LOG << "Button clicked!"; });
+    butt->addMouseClickCb([this](hidData& data) { LOG << "Button clicked!"; });
 }
 
 void UI_ElementsOverview::addSlider(UINode* root, int heightStep) {

@@ -18,10 +18,10 @@ public:
     void loadStyleDefaults() override;
     void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
 
-    void mouseMove(hidData* data) override;
-    void mouseUp(hidData* data) override;
-    void mouseIn(hidData* data) override;
-    void mouseOut(hidData* data) override;
+    void mouseMove(hidData& data) override;
+    void mouseUp(hidData& data) override;
+    void mouseIn(hidData& data) override;
+    void mouseOut(hidData& data) override;
 
     virtual void setProp(Property<bool>* prop);
     virtual void setStateImg(const std::string& file, imgType tp, int mipMapLevel = 8);

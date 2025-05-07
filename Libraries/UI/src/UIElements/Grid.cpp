@@ -110,23 +110,21 @@ void Grid::init() {
     m_gridShdr = getSharedRes()->shCol->add("UIGrid", vert, frag);
 }
 
-bool Grid::draw(uint32_t* objId) {
+bool Grid::draw(uint32_t& objId) {
     return drawFunc(objId);
 }
 
-bool Grid::drawIndirect(uint32_t* objId) {
+bool Grid::drawIndirect(uint32_t& objId) {
     if (m_sharedRes && m_sharedRes->drawMan) {
-        m_tempObjId = *objId;
-        m_sharedRes->drawMan->pushFunc([this] {
-            m_dfObjId = m_tempObjId;
-            drawFunc(&m_dfObjId);
+        m_sharedRes->drawMan->pushFunc([this, objId] {
+            drawFunc(objId);
         });
     }
 
     return false;
 }
 
-bool Grid::drawFunc(uint32_t* objId) {
+bool Grid::drawFunc(const uint32_t& objId) {
 #ifndef ARA_USE_GLES31
     glBlendFuncSeparatei(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 #endif

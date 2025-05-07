@@ -16,8 +16,8 @@ public:
     virtual void open();
     virtual void close();
 
-    virtual void mouseDown(hidData* data) override;
-    virtual void globalMouseDown(hidData* data);
+    virtual void mouseDown(hidData& data) override;
+    virtual void globalMouseDown(hidData& data);
 
     void         addEntry(const std::string& name, const std::function<void()>& f) {
         m_entries.emplace_back(name, f);

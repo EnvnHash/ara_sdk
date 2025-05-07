@@ -201,18 +201,16 @@ Shaders* ARCoreCam::getFocSquareShdr() {
     return m_shCol->add("ARCoreCam_FocusSquare", vert, frag);
 }
 
-bool ARCoreCam::draw(uint32_t* objId) {
+bool ARCoreCam::draw(uint32_t& objId) {
     Image::draw(objId);
     return drawFunc(objId);
 }
 
-bool ARCoreCam::drawIndirect(uint32_t* objId) {
+bool ARCoreCam::drawIndirect(uint32_t& objId) {
     Image::drawIndirect(objId);
     if (m_sharedRes && m_sharedRes->drawMan) {
-        m_tempObjId = *objId;
-        m_sharedRes->drawMan->pushFunc([this] {
-            m_dfObjId = m_tempObjId;
-            drawFunc(&m_dfObjId);
+        m_sharedRes->drawMan->pushFunc([this, objId] {
+            drawFunc(objId);
         });
     }
 
@@ -237,7 +235,7 @@ void ARCoreCam::updateAR() {
     }
 }
 
-bool ARCoreCam::drawFunc(uint32_t* objId) {
+bool ARCoreCam::drawFunc(const uint32_t& objId) {
     updateAR();
 
     if (!createBgQuad()) return false;

@@ -51,14 +51,14 @@ void WindowResizeArea::updateDrawData() {
     }
 }
 
-void WindowResizeArea::mouseUp(hidData* data) {
+void WindowResizeArea::mouseUp(hidData& data) {
 #ifdef ARA_USE_GLFW
     m_sharedRes->winHandle->setBlockMouseIconSwitch(false);
 #endif
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void WindowResizeArea::mouseIn(hidData* data) {
+void WindowResizeArea::mouseIn(hidData& data) {
 #ifdef ARA_USE_GLFW
     auto win = m_sharedRes->winHandle;
 
@@ -79,21 +79,21 @@ void WindowResizeArea::mouseIn(hidData* data) {
 #endif
 }
 
-void WindowResizeArea::mouseOut(hidData* data) {
+void WindowResizeArea::mouseOut(hidData& data) {
 #ifdef ARA_USE_GLFW
     m_sharedRes->winHandle->setMouseCursor(WinMouseIcon::arrow);
     // m_sharedRes->winHandle->setBlockMouseIconSwitch(false);
 #endif
 }
 
-void WindowResizeArea::mouseDrag(hidData* data) {
+void WindowResizeArea::mouseDrag(hidData& data) {
 #ifdef ARA_USE_GLFW
     ivec2 newPos{0, 0};
     ivec2 newSize{0, 0};
 
     auto absMousePos = m_sharedRes->winHandle->getAbsMousePos();
 
-    if (data->dragStart) {
+    if (data.dragStart) {
         m_dragStartWinPos  = m_sharedRes->winHandle->getPosition();
         m_dragStartWinSize = m_sharedRes->winHandle->getSize();
         m_sharedRes->winHandle->setBlockMouseIconSwitch(true);
@@ -155,7 +155,7 @@ void WindowResizeArea::mouseDrag(hidData* data) {
     }
 
 #endif
-    data->consumed = true;
+    data.consumed = true;
 }
 
 }  // namespace ara

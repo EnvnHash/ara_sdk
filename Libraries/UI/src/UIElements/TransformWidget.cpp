@@ -35,7 +35,7 @@ TransformWidget::TransformWidget(const std::string& styleClass) : Div(std::move(
 
 void TransformWidget::init() {
     m_buttCont = addChild<Div>(getStyleClass() + ".buttCont");
-    m_buttCont->addMouseClickCb([this](hidData *data) { getWindow()->setInputFocusNode(this); });
+    m_buttCont->addMouseClickCb([this](hidData& data) { getWindow()->setInputFocusNode(this); });
     m_buttCont->setScissorChildren(false);
 
     m_centInd = m_buttCont->addChild<ImageButton>(getStyleClass() + ".centerIndicator");
@@ -52,9 +52,9 @@ void TransformWidget::init() {
             m_arrowButts[i][j]->init();
             m_arrowButts[i][j]->setCanReceiveDrag(false);
             m_arrowButts[i][j]->setObjUsesTexAlpha(true);
-            m_arrowButts[i][j]->addMouseUpCb([this](hidData *data) { m_mousePressed = false; });
+            m_arrowButts[i][j]->addMouseUpCb([this](hidData& data) { m_mousePressed = false; });
 
-            m_arrowButts[i][j]->addMouseClickCb([this, i, j](hidData *data) {
+            m_arrowButts[i][j]->addMouseClickCb([this, i, j](hidData& data) {
                 m_mousePressed = true;
                 m_firstDown    = true;
                 m_downTp       = chrono::system_clock::now();
@@ -102,7 +102,7 @@ void TransformWidget::init() {
             m_planeSwitcher[i][j]->setIsToggle(true);
             m_planeSwitcher[i][j]->setLod(0.f);
             m_planeSwitcher[i][j]->setObjUsesTexAlpha(true);
-            m_planeSwitcher[i][j]->addMouseClickCb([this, i, j](hidData *data) {
+            m_planeSwitcher[i][j]->addMouseClickCb([this, i, j](hidData& data) {
                 setPlaneSwitcherState(i == 0 ? transMode::translate : transMode::rotate, (twPlane)j);
                 getWindow()->setInputFocusNode(this);
             });
@@ -119,12 +119,12 @@ void TransformWidget::init() {
         m_planeSwitcher[i][toType(twPlane::count) + 1]->setLod(1.f);
     }
 
-    getWindow()->addGlobalMouseMoveCb(this, [this](hidData *data) {
+    getWindow()->addGlobalMouseMoveCb(this, [this](hidData& data) {
         if (!getWindow()->isCursorVisible() || !m_visible) return;
 
         m_mouseInBounds = false;
 
-        if ((uint32_t)data->objId >= m_objIdMin && (uint32_t)data->objId <= getMaxChildId() &&
+        if ((uint32_t)data.objId >= m_objIdMin && (uint32_t)data.objId <= getMaxChildId() &&
             m_state == state::disabled && !m_blockHID) {
             if (!m_disHighlighted) highLight(true);
 
@@ -134,10 +134,10 @@ void TransformWidget::init() {
         if (!m_mouseInBounds && m_disHighlighted && m_state == state::disabled) highLight(false);
     });
 
-    getWindow()->addGlobalMouseDownLeftCb(this, [this](hidData *data) {
+    getWindow()->addGlobalMouseDownLeftCb(this, [this](hidData& data) {
         if (!getWindow()->isCursorVisible() || !m_visible) return;
 
-        if ((uint32_t)data->objId >= m_objIdMin && (uint32_t)data->objId <= getMaxChildId() &&
+        if ((uint32_t)data.objId >= m_objIdMin && (uint32_t)data.objId <= getMaxChildId() &&
             m_state == state::disabled && m_visible && !m_blockHID) {
             setDisabled(false, true);
         }
@@ -208,15 +208,15 @@ void TransformWidget::rotate(int j) {
     checkCamFlags();
 }
 
-void TransformWidget::keyDown(hidData *data) {
+void TransformWidget::keyDown(hidData& data) {
     int dir = -1;
-    if (data->key == GLSG_KEY_DOWN)
+    if (data.key == GLSG_KEY_DOWN)
         dir = 3;
-    else if (data->key == GLSG_KEY_UP)
+    else if (data.key == GLSG_KEY_UP)
         dir = 2;
-    else if (data->key == GLSG_KEY_LEFT)
+    else if (data.key == GLSG_KEY_LEFT)
         dir = 0;
-    else if (data->key == GLSG_KEY_RIGHT)
+    else if (data.key == GLSG_KEY_RIGHT)
         dir = 1;
 
     if (dir > -1) {
@@ -234,22 +234,19 @@ void TransformWidget::keyDown(hidData *data) {
     }
 
     // advance plane selection
-    if (data->key == GLSG_KEY_TAB) {
-        if (!data->shiftPressed)
-            m_psSwitchMapIdx = (m_psSwitchMapIdx + 1) % 6;
-        else
-            m_psSwitchMapIdx = (m_psSwitchMapIdx + 5) % 6;
-
+    if (data.key == GLSG_KEY_TAB) {
+        m_psSwitchMapIdx = !data.shiftPressed ? (m_psSwitchMapIdx + 1) % 6 :  (m_psSwitchMapIdx + 5) % 6;
         setPlaneSwitcherState(m_psSwitchMap[m_psSwitchMapIdx].first, m_psSwitchMap[m_psSwitchMapIdx].second);
     }
 
     setDrawFlag();
 }
 
-void TransformWidget::keyUp(hidData *data) {
+void TransformWidget::keyUp(hidData& data) {
     if (m_resetButHighlight.second) {
-        if (m_state != state::disabled)
+        if (m_state != state::disabled) {
             m_resetButHighlight.second->setColor(m_colors[m_resetButHighlight.first], state::none, false);
+        }
 
         m_resetButHighlight.second = nullptr;
         setDrawFlag();
@@ -257,13 +254,15 @@ void TransformWidget::keyUp(hidData *data) {
 }
 
 void TransformWidget::setPlaneSwitcherState(transMode m, twPlane p) {
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 2; i++) {
         for (int j = 0; j < (int)twPlane::count; j++) {
             if (m_planeSwitcher[i][j]) m_planeSwitcher[i][j]->setSelected(false, true);
         }
+    }
 
-    if (m_planeSwitcher[m == transMode::translate ? 0 : 1][(int)p])
+    if (m_planeSwitcher[m == transMode::translate ? 0 : 1][(int)p]) {
         m_planeSwitcher[m == transMode::translate ? 0 : 1][(int)p]->setSelected(true, true);
+    }
 
     setTransMode(m);
     setPlane(p);
@@ -290,7 +289,9 @@ void TransformWidget::setTransMode(transMode m, bool updtColors) {
         }
     }
 
-    if (updtColors) setPlane(m_transPlane);
+    if (updtColors) {
+        setPlane(m_transPlane);
+    }
 
     checkPlaneSwitchIdx();
 }
@@ -326,10 +327,14 @@ void TransformWidget::setPlane(twPlane p) {
             m_arrowButts[ti][i]->setColor(m_colorsHigh[idx], state::disabledHighlighted);
         }
 
-        if (m_arrowLabels[ti][i]) m_arrowLabels[ti][i]->setText(txt);
+        if (m_arrowLabels[ti][i]) {
+            m_arrowLabels[ti][i]->setText(txt);
+        }
     }
 
-    if (m_planeSwCb) m_planeSwCb(m_transMode, m_transPlane);
+    if (m_planeSwCb) {
+        m_planeSwCb(m_transMode, m_transPlane);
+    }
 
     checkPlaneSwitchIdx();
 }
@@ -338,9 +343,15 @@ int TransformWidget::getColorIdx(int buttIdx) {
     int idx = buttIdx;
 
     switch (m_transPlane) {
-        case twPlane::xy: idx = m_transMode == transMode::translate ? (buttIdx / 2) : 1 - (buttIdx / 2); break;
-        case twPlane::xz: idx = m_transMode == transMode::translate ? (buttIdx / 2) * 2 : 2 - (buttIdx / 2) * 2; break;
-        case twPlane::yz: idx = m_transMode == transMode::translate ? 2 - (buttIdx / 2) : (buttIdx / 2) + 1;
+        case twPlane::xy:
+            idx = m_transMode == transMode::translate ? (buttIdx / 2) : 1 - (buttIdx / 2);
+            break;
+        case twPlane::xz:
+            idx = m_transMode == transMode::translate ? (buttIdx / 2) * 2 : 2 - (buttIdx / 2) * 2;
+            break;
+        case twPlane::yz:
+            idx = m_transMode == transMode::translate ? 2 - (buttIdx / 2) : (buttIdx / 2) + 1;
+            break;
         default: break;
     }
 

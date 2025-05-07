@@ -19,14 +19,14 @@ public:
     ~GizmoAxisLabel() override = default;
 
     void init() override;
-    bool draw(uint32_t* objId) override;
+    bool draw(uint32_t& objId) override;
     void pushVaoUpdtOffsets() override;
 
-    void mouseIn(hidData* data) override;
-    void mouseOut(hidData* data) override;
-    void mouseDrag(hidData* data) override;
-    void mouseDown(hidData* data) override;
-    void mouseUp(hidData* data) override;
+    void mouseIn(hidData& data) override;
+    void mouseOut(hidData& data) override;
+    void mouseDrag(hidData& data) override;
+    void mouseDown(hidData& data) override;
+    void mouseUp(hidData& data) override;
 
     bool updateCamFade();
     void setGizmoParent(Gizmo* gizmo);

@@ -27,9 +27,9 @@ public:
     Shaders* getPlaneShdr();
     Shaders* getFocSquareShdr();
 
-    bool draw(uint32_t* objId);
-    bool drawIndirect(uint32_t* objId);
-    bool drawFunc(uint32_t* objId);
+    bool draw(uint32_t& objId);
+    bool drawIndirect(uint32_t& objId);
+    bool drawFunc(const uint32_t& objId);
     void      drawPlane(ArPlane* plane);
     void      updateForPlane(ArSession* ar_session, ArPlane* ar_plane);
     glm::vec3 getPlaneNormal(ArSession* ar_session, ArPose* plane_pose);

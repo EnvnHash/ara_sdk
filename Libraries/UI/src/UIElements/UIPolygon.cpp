@@ -42,7 +42,7 @@ void UIPolygon::init() {
     tesselate();
 }
 
-bool UIPolygon::draw(uint32_t *objId) {
+bool UIPolygon::draw(uint32_t& objId) {
     m_fbo->bind();
 
     if (!m_drawInv) {
@@ -68,8 +68,8 @@ bool UIPolygon::draw(uint32_t *objId) {
     m_uiTexShdr->setUniform2fv("size", &getSize()[0]);
     m_uiTexShdr->setUniform1i("hFlip", 1);
 
-    m_objIdMin = (*objId);
-    m_uiTexShdr->setUniform1f("objId", static_cast<float>((*objId)++));
+    m_objIdMin = objId;
+    m_uiTexShdr->setUniform1f("objId", static_cast<float>(objId++));
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_fbo->getColorImg());
@@ -80,13 +80,13 @@ bool UIPolygon::draw(uint32_t *objId) {
     return false;  // don't count up objId
 }
 
-void UIPolygon::drawCtrlPoints(uint32_t *id) {
+void UIPolygon::drawCtrlPoints(uint32_t& objId) {
     m_ctrPointShdr->begin();
 
     // draw the warping reference points (Nodes)
     for (auto &it : *m_polygon->getPoints(0)) {
         glDisable(GL_BLEND);
-        it.id = *id;
+        it.id = objId;
 
         vec2 refPointSize = static_cast<float>(m_ctrlPointSizePix) /
                             vec2(getParent()->getViewport()->z, getParent()->getViewport()->w) *
@@ -101,34 +101,36 @@ void UIPolygon::drawCtrlPoints(uint32_t *id) {
         m_ctrPointShdr->setUniform2f("size", 1.f, 1.f);
         m_ctrPointShdr->setUniform1i("round", 1);
         m_ctrPointShdr->setUniform1i("useTex", 0);
-        m_ctrPointShdr->setUniform1f("objId", static_cast<float>((*id)));
+        m_ctrPointShdr->setUniform1f("objId", static_cast<float>(objId));
 
         m_quad->drawAsShared();
 
         glEnable(GL_BLEND);
-        m_objIdMax = (*id);
-        (*id)++;
+        m_objIdMax = objId;
+        ++objId;
     }
 }
 
 void UIPolygon::initCtrlPointShdr() {
 #ifndef __EMSCRIPTEN__
     string vert = STRINGIFY(
-        layout(location = 0) in vec4 position;\n layout(location = 2) in vec2 texCoord;\n uniform mat4 m_pvm;\n out vec2 tex_coord;\n void
-            main() {
-                \n tex_coord   = texCoord;
-                \n gl_Position = m_pvm * position;
-                \n
+        layout(location = 0) in vec4 position;\n
+        layout(location = 2) in vec2 texCoord;\n
+        uniform mat4 m_pvm;\n
+        out vec2 tex_coord;\n
+        void main() { \n
+            tex_coord   = texCoord;\n
+            gl_Position = m_pvm * position;\n
             });
 
     vert = "// control point shader, vert\n" + ara::ShaderCollector::getShaderHeader() + vert;
 
     string frag = STRINGIFY(uniform vec4 color;\n
-                                    uniform int round;\n
-                                    in vec2 tex_coord;\n
-                                    layout(location = 0) out vec4 glFragColor;\n
-                                    void main() {
-        \n glFragColor = (round == 0 ? 1 : min(max((1.0 - length(tex_coord * 2.0 - 1.0)) * 5.0, 0.0), 1.0)) * color;
+        uniform int round;\n
+        in vec2 tex_coord;\n
+        layout(location = 0) out vec4 glFragColor;\n
+        void main() {\n
+            glFragColor = (round == 0 ? 1 : min(max((1.0 - length(tex_coord * 2.0 - 1.0)) * 5.0, 0.0), 1.0)) * color;
     );
 
     frag = "// control point shader, frag\n" + ara::ShaderCollector::getShaderHeader() + m_shCol->getUiObjMapUniforms() + frag +
@@ -159,60 +161,60 @@ bool UIPolygon::objIdInPolygon(int id) const {
                                     static_cast<uint32_t>(id) <= m_polygon->getPoints(0)->back().id);
 }
 
-void UIPolygon::mouseDrag(hidData *data) {
+void UIPolygon::mouseDrag(hidData& data) {
         // get the relative offset in relation to the root node
-        vec2 relMouseOffs = data->mousePosNormFlipY - m_mc_mousePos;
+        vec2 relMouseOffs = data.mousePosNormFlipY - m_mc_mousePos;
 
         // now inverse apply this nodes matrix
         relMouseOffs = relMouseOffs * 2.f / vec2((*getWinRelMat())[0][0], (*getWinRelMat())[1][1]);
 
-        if (objIdInPolygon(data->objId) && !(data->altPressed && !data->shiftPressed)) {
-            if (data->dragStart) {
+        if (objIdInPolygon(data.objId) && !(data.altPressed && !data.shiftPressed)) {
+            if (data.dragStart) {
                 createCopyForUndo();
-                data->dragStart = false;
+                data.dragStart = false;
 
-                if (*data->cp_editM == cpEditMode::Move) {
-                    addPointToSelection(data->objId, 1, data->procSteps);
+                if (*data.cp_editM == cpEditMode::Move) {
+                    addPointToSelection(data.objId, 1, data.procSteps);
                 }
             } else {
-                if (*data->cp_editM == cpEditMode::Move) {
+                if (*data.cp_editM == cpEditMode::Move) {
                     // double check if the dragged point is part of the
                     // selection if the opengl thread is delayed the queue might
                     // not have been cleared if the queue will be cleared later
                     // the ui_vc->cpSelectQueue.size will be 0 and the objId
                     // check will be skipped
-                    if (m_cpSelectQueue.size() != 0 && checkCtrlPointInSel(data->objId)) {
-                        moveCtrlPoints(relMouseOffs, *data->cp_editM);
-                        data->procSteps->at(Select).active = true;
+                    if (m_cpSelectQueue.size() != 0 && checkCtrlPointInSel(data.objId)) {
+                        moveCtrlPoints(relMouseOffs, *data.cp_editM);
+                        data.procSteps->at(Select).active = true;
                     } else {
                         // m_polygon->getPoints(0)->at(cpInd).dispPos =
-                        // actMousePos[1]; data->procSteps->at(Select).active =
+                        // actMousePos[1]; data.procSteps->at(Select).active =
                         // true;
                     }
 
-                    data->procSteps->at(Tesselate).active = true;
+                    data.procSteps->at(Tesselate).active = true;
                 }
             }
         }
 
-        data->consumed = true;
+        data.consumed = true;
 }
 
 // from node iteration
-void UIPolygon::mouseDown(hidData *data) {
-    m_mc_mousePos = data->mousePosFlipY;
-    if (data->objId >= static_cast<int>(m_polygon->getPoints(0)->front().id) &&
-        data->objId <= static_cast<int>(m_polygon->getPoints(0)->back().id)) {
-        if (*data->cp_editM != cpEditMode::AddCtrlPoint && *data->cp_editM != cpEditMode::DelCtrlPoint) {
-            *data->cp_editM = cpEditMode::Move;
+void UIPolygon::mouseDown(hidData& data) {
+    m_mc_mousePos = data.mousePosFlipY;
+    if (data.objId >= static_cast<int>(m_polygon->getPoints(0)->front().id) &&
+        data.objId <= static_cast<int>(m_polygon->getPoints(0)->back().id)) {
+        if (*data.cp_editM != cpEditMode::AddCtrlPoint && *data.cp_editM != cpEditMode::DelCtrlPoint) {
+            *data.cp_editM = cpEditMode::Move;
 
-        } else if (*data->cp_editM == cpEditMode::DelCtrlPoint) {
-            m_polygon->deletePoint(0, data->objId - static_cast<int>(m_polygon->getPoints(0)->front().id));
-            data->procSteps->at(Tesselate).active = true;
+        } else if (*data.cp_editM == cpEditMode::DelCtrlPoint) {
+            m_polygon->deletePoint(0, data.objId - static_cast<int>(m_polygon->getPoints(0)->front().id));
+            data.procSteps->at(Tesselate).active = true;
         }
     }
 
-    data->consumed = true;
+    data.consumed = true;
 }
 
 void UIPolygon::onResize() {

@@ -28,11 +28,11 @@ void ZoomView::init() {
     ui_workingArea->setContentTransCentered(true);
     ui_workingArea->setCanReceiveDrag(true);
     ui_workingArea->addMouseDragCb(
-        [this](hidData* data) {
+        [this](hidData& data) {
             // translate the working area view
-            if (data->mousePressed && !data->altPressed && !data->shiftPressed) {
-                vec2 moved    = vec2(data->mousePos) - s_mouseDownPos;
-                vec2 resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(ui_workingArea->getContentTransScale());
+            if (data.mousePressed && !data.altPressed && !data.shiftPressed) {
+                auto moved    = vec2(data.mousePos) - s_mouseDownPos;
+                auto resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(ui_workingArea->getContentTransScale());
                 ui_workingArea->setContentTransTransl(resTrans.x, resTrans.y);
                 setDrawFlag();
             }
@@ -96,42 +96,42 @@ void ZoomView::setDisplaySize(int w, int h) {
     }
 }
 
-void ZoomView::keyDown(hidData* data) {
-    if (!data->key) return;
+void ZoomView::keyDown(hidData& data) {
+    if (!data.key) return;
 }
 
-void ZoomView::mouseDown(hidData* data) {
+void ZoomView::mouseDown(hidData& data) {
     // working area movement
     if (ui_workingArea) m_mouseDownViewTrans = ui_workingArea->getContentTransTransl();
-    s_mouseDownPos = (vec2)data->mousePos;
+    s_mouseDownPos = (vec2)data.mousePos;
 }
 
-void ZoomView::mouseUp(hidData* data) {
+void ZoomView::mouseUp(hidData& data) {
     /*
         if (!ui_workingArea) return;
-        bool isInWorkingArea = data->mousePos.x >
+        bool isInWorkingArea = data.mousePos.x >
        ui_workingArea->getNodeViewport().x
-                               && data->mousePos.y >
+                               && data.mousePos.y >
        ui_workingArea->getNodeViewport().y
-                               && data->mousePos.x <
+                               && data.mousePos.x <
        (ui_workingArea->getNodeViewport().x +
        ui_workingArea->getNodeViewport().z)
-                               && data->mousePos.y <
+                               && data.mousePos.y <
        (ui_workingArea->getNodeViewport().y +
        ui_workingArea->getNodeViewport().w);
     */
 }
 
-void ZoomView::mouseWheel(hidData* data) {
+void ZoomView::mouseWheel(hidData& data) {
     if (getWindow()->isMousePressed()) return;
 
     if (m_zoomProp) {
-        float newVal   = m_zoomProp() * 0.01f * (1.f + data->degrees * (data->ctrlPressed ? 0.01f : 0.1f));
+        float newVal   = m_zoomProp() * 0.01f * (1.f + data.degrees * (data.ctrlPressed ? 0.01f : 0.1f));
         m_zoomUseWheel = true;
         m_zoomProp.setClamp(newVal * 100.f);
     }
 
-    data->consumed = true;
+    data.consumed = true;
 }
 
 }  // namespace ara

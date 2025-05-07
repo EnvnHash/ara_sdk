@@ -15,7 +15,7 @@ public:
     ~WindowResizeAreas() override = default;
 
     void init() override;
-    bool draw(uint32_t* objId) override { return false; }
+    bool draw(uint32_t& objId) override { return false; }
 
 private:
     std::vector<WindowResizeArea*> m_winResizeAreas;

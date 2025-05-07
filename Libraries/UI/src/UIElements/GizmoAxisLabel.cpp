@@ -41,7 +41,7 @@ void GizmoAxisLabel::init() {
     setDstBlendAlphaFunc(GL_ONE);
 }
 
-bool GizmoAxisLabel::draw(uint32_t* objId) {
+bool GizmoAxisLabel::draw(uint32_t& objId) {
     if (m_hasLabel) Image::draw(objId);
     updateCamFade();
 
@@ -66,7 +66,7 @@ bool GizmoAxisLabel::updateCamFade() {
         return false;
 }
 
-void GizmoAxisLabel::mouseIn(hidData* data) {
+void GizmoAxisLabel::mouseIn(hidData& data) {
     Image::mouseIn(data);
 
     // since this is rendered out of tree, manually call updateDrawData
@@ -76,7 +76,7 @@ void GizmoAxisLabel::mouseIn(hidData* data) {
     }
 }
 
-void GizmoAxisLabel::mouseOut(hidData* data) {
+void GizmoAxisLabel::mouseOut(hidData& data) {
     m_setStyleFunc[state::none][styleInit::x] = [] {};
     m_setStyleFunc[state::none][styleInit::y] = [] {};
 
@@ -95,29 +95,29 @@ void GizmoAxisLabel::mouseOut(hidData* data) {
     }
 }
 
-void GizmoAxisLabel::mouseDrag(hidData* data) {
+void GizmoAxisLabel::mouseDrag(hidData& data) {
     if (m_gizmo) {
         m_gizmo->drag(data);
     }
-    if (data->hit) {
-        data->consumed = true;
+    if (data.hit) {
+        data.consumed = true;
     }
 }
 
-void GizmoAxisLabel::mouseDown(hidData* data) {
-    if (!m_gizmo || data->clickedObjId != m_objIdMin) {
+void GizmoAxisLabel::mouseDown(hidData& data) {
+    if (!m_gizmo || data.clickedObjId != m_objIdMin) {
         return;
     }
 
-    m_mousePosRel = m_gizmo->getGizmoRelMousePos(data->mousePos);
+    m_mousePosRel = m_gizmo->getGizmoRelMousePos(data.mousePos);
     m_gizmo->getCamera()->mouseDownLeft(m_mousePosRel.x, m_mousePosRel.y);
 
-    data->consumed = true;
+    data.consumed = true;
     m_leftPressed  = true;
 }
 
-void GizmoAxisLabel::mouseUp(hidData* data) {
-    if (!m_leftPressed || !m_gizmo || data->clickedObjId != m_objIdMin) {
+void GizmoAxisLabel::mouseUp(hidData& data) {
+    if (!m_leftPressed || !m_gizmo || data.clickedObjId != m_objIdMin) {
         return;
     }
 
@@ -128,7 +128,7 @@ void GizmoAxisLabel::mouseUp(hidData* data) {
 
     UINode::mouseUp(data);
 
-    if (!data->dragging) {
+    if (!data.dragging) {
         m_gizmo->getCamera()->snapToAxis(m_gizAxis);
     } else {
         if (getWindow()) {
@@ -155,12 +155,12 @@ void GizmoAxisLabel::mouseUp(hidData* data) {
 
         // if the actual mouse position is not over the label, force a Mouseout
         // call
-        if (data->releasedObjId != m_objIdMin && m_gizmo->m_lastMouseHoverData) {
+        if (data.releasedObjId != m_objIdMin && m_gizmo->m_lastMouseHoverData) {
             setSelected(false, true);
         }
     }
 
-    m_mousePosRel = m_gizmo->getGizmoRelMousePos(data->mousePos);
+    m_mousePosRel = m_gizmo->getGizmoRelMousePos(data.mousePos);
 
     if (m_gizmo->getCamera()) {
         m_gizmo->getCamera()->mouseUpLeft(m_mousePosRel.x, m_mousePosRel.y);
@@ -168,7 +168,7 @@ void GizmoAxisLabel::mouseUp(hidData* data) {
 
     setDrawFlag();
     getSharedRes()->requestRedraw = true;
-    data->consumed                = true;
+    data.consumed                = true;
     m_leftPressed                 = false;
 }
 

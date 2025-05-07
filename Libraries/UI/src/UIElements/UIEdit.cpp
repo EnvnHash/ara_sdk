@@ -43,7 +43,7 @@ void UIEdit::init() {
     m_caret->setVisibility(false);
     m_caret->excludeFromPadding(true);
 
-    static_cast<UIWindow *>(m_sharedRes->win)->addGlobalMouseDownLeftCb(this, [this](hidData *data) {
+    static_cast<UIWindow *>(m_sharedRes->win)->addGlobalMouseDownLeftCb(this, [this](hidData& data) {
         globalMouseDown(data);
     });
 
@@ -83,7 +83,7 @@ void UIEdit::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::caretColor]     = [this]() { setCaretColor(1.f, 1.f, 1.f, 1.f); };
 }
 
-bool UIEdit::draw(uint32_t *objId) {
+bool UIEdit::draw(uint32_t& objId) {
     Label::draw(objId);
 
     drawSelectionBg();  // Draw the selection background
@@ -93,7 +93,7 @@ bool UIEdit::draw(uint32_t *objId) {
     return true;  // count up objId
 }
 
-bool UIEdit::drawIndirect(uint32_t *objId) {
+bool UIEdit::drawIndirect(uint32_t& objId) {
     Div::drawIndirect(objId);
     drawSelectionBg();
     checkGlyphsPrepared(true);
@@ -147,7 +147,7 @@ void UIEdit::drawSelectionBg() {
     }
 }
 
-void UIEdit::drawGlyphs(uint32_t *objId) {
+void UIEdit::drawGlyphs(uint32_t& objId) {
     checkGlyphsPrepared();
 
     if (!m_glyphShader) {
@@ -419,7 +419,7 @@ void UIEdit::clearDs() {
     m_selBgDB.drawSet = nullptr;
 }
 
-void UIEdit::keyDown(hidData *data) {
+void UIEdit::keyDown(hidData& data) {
     if (m_blockEdit) {
         return;
     }
@@ -427,7 +427,7 @@ void UIEdit::keyDown(hidData *data) {
     setDrawFlag();
 
     // enter or return
-    if (data->key == GLSG_KEY_ENTER || data->key == GLSG_KEY_KP_ENTER) {
+    if (data.key == GLSG_KEY_ENTER || data.key == GLSG_KEY_KP_ENTER) {
         if (hasOpt(single_line)) {
             checkLimits();
         } else {
@@ -447,14 +447,14 @@ void UIEdit::keyDown(hidData *data) {
     }
 
     // ctrl + z, shift+ctrl+z and ctrl+y will most likely be used for undo / redo
-    if ((data->key == GLSG_KEY_Z && data->ctrlPressed) ||
-        (data->key == GLSG_KEY_Z && data->ctrlPressed && data->shiftPressed) ||
-        (data->key == GLSG_KEY_Y && data->ctrlPressed)) {
+    if ((data.key == GLSG_KEY_Z && data.ctrlPressed) ||
+        (data.key == GLSG_KEY_Z && data.ctrlPressed && data.shiftPressed) ||
+        (data.key == GLSG_KEY_Y && data.ctrlPressed)) {
         onLostFocus();
         return;
     }
 
-    if (data->key == GLSG_KEY_TAB) {
+    if (data.key == GLSG_KEY_TAB) {
         if (hasOpt(accept_tabs)) {
             m_CaretIndex = insertChar('\t', m_CaretIndex, true);
         } else {
@@ -467,15 +467,15 @@ void UIEdit::keyDown(hidData *data) {
 
     // increment decrement for integers and floats
     if (hasOpt(num_int) || hasOpt(num_fp)) {
-        if (data->key == GLSG_KEY_UP) {
-            incValue(1.f, data->shiftPressed ? cfState::coarse : data->ctrlPressed ? cfState::fine : cfState::normal);
-        } else if (data->key == GLSG_KEY_DOWN) {
-            incValue(-1.f, data->shiftPressed ? cfState::coarse : data->ctrlPressed ? cfState::fine : cfState::normal);
+        if (data.key == GLSG_KEY_UP) {
+            incValue(1.f, data.shiftPressed ? cfState::coarse : data.ctrlPressed ? cfState::fine : cfState::normal);
+        } else if (data.key == GLSG_KEY_DOWN) {
+            incValue(-1.f, data.shiftPressed ? cfState::coarse : data.ctrlPressed ? cfState::fine : cfState::normal);
         }
     }
 
-    if (data->shiftPressed) {
-        if (data->key == GLSG_KEY_LEFT && m_CaretIndex > 0) {
+    if (data.shiftPressed) {
+        if (data.key == GLSG_KEY_LEFT && m_CaretIndex > 0) {
             if (!getSelRange(m_charSelection)) {
                 m_CaretRange[0] = m_CaretIndex;
             }
@@ -490,7 +490,7 @@ void UIEdit::keyDown(hidData *data) {
             return;
         }
 
-        if (data->key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_Text.size())) {
+        if (data.key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_Text.size())) {
             if (!getSelRange(m_charSelection)) {
                 m_CaretRange[0] = m_CaretIndex;
             }
@@ -504,7 +504,7 @@ void UIEdit::keyDown(hidData *data) {
             return;
         }
 
-        if (data->key == GLSG_KEY_HOME) {
+        if (data.key == GLSG_KEY_HOME) {
             if (!getSelRange(m_charSelection)) {
                 m_CaretRange[0] = m_CaretIndex;
             }
@@ -518,7 +518,7 @@ void UIEdit::keyDown(hidData *data) {
             return;
         }
 
-        if (data->key == GLSG_KEY_END) {
+        if (data.key == GLSG_KEY_END) {
             if (!getSelRange(m_charSelection)) {
                 m_CaretRange[0] = m_CaretIndex;
             }
@@ -536,23 +536,23 @@ void UIEdit::keyDown(hidData *data) {
     }
 
     if (!getSelRange(m_charSelection)) {
-        if (data->key == GLSG_KEY_BACKSPACE && (m_CaretIndex > 0 && !m_Text.empty())) {
+        if (data.key == GLSG_KEY_BACKSPACE && (m_CaretIndex > 0 && !m_Text.empty())) {
             m_Text.erase(std::min<int>(std::max<int>((m_CaretIndex--) - 1, 0), static_cast<int>(m_Text.size()) - 1), 1);
             reqUpdtGlyphs(true);
-        } else if (data->key == GLSG_KEY_DELETE && (m_CaretIndex < static_cast<int>(m_Text.size()))) {
+        } else if (data.key == GLSG_KEY_DELETE && (m_CaretIndex < static_cast<int>(m_Text.size()))) {
             m_Text.erase(m_CaretIndex, 1);
             reqUpdtGlyphs(true);
-        } else if (data->key == GLSG_KEY_LEFT && m_CaretIndex > 0) {
+        } else if (data.key == GLSG_KEY_LEFT && m_CaretIndex > 0) {
             m_CaretIndex--;
-        } else if (data->key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_Text.size())) {
+        } else if (data.key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_Text.size())) {
             m_CaretIndex++;
-        } else if (data->key == GLSG_KEY_HOME) {
+        } else if (data.key == GLSG_KEY_HOME) {
             m_CaretIndex = 0;
-        } else if (data->key == GLSG_KEY_END) {
+        } else if (data.key == GLSG_KEY_END) {
             m_CaretIndex = static_cast<int>(m_Text.size());
         }
     } else {
-        if (data->key == GLSG_KEY_BACKSPACE || data->key == GLSG_KEY_DELETE) {
+        if (data.key == GLSG_KEY_BACKSPACE || data.key == GLSG_KEY_DELETE) {
             eraseContent(m_charSelection[0], m_charSelection[1]);
             m_CaretIndex = m_charSelection[0];
             clearSelRange();
@@ -563,16 +563,16 @@ void UIEdit::keyDown(hidData *data) {
         //          if leaving it will then clear the sel range and onChar won't
         //          be able to use it
 
-        else if (data->key == GLSG_KEY_LEFT && m_CaretIndex > 0) {
+        else if (data.key == GLSG_KEY_LEFT && m_CaretIndex > 0) {
             clearSelRange();
             m_CaretIndex--;
-        } else if (data->key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_Text.size())) {
+        } else if (data.key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_Text.size())) {
             clearSelRange();
             m_CaretIndex++;
-        } else if (data->key == GLSG_KEY_HOME) {
+        } else if (data.key == GLSG_KEY_HOME) {
             clearSelRange();
             m_CaretIndex = 0;
-        } else if (data->key == GLSG_KEY_END) {
+        } else if (data.key == GLSG_KEY_END) {
             clearSelRange();
             m_CaretIndex = static_cast<int>(m_Text.size());
         }
@@ -585,11 +585,11 @@ void UIEdit::keyDown(hidData *data) {
     }
 }
 
-void UIEdit::onChar(hidData *data) {
+void UIEdit::onChar(hidData& data) {
     if (m_blockEdit) {
         return;
     }
-    m_CaretIndex = insertChar(static_cast<int>(data->codepoint), m_CaretIndex, true);
+    m_CaretIndex = insertChar(static_cast<int>(data.codepoint), m_CaretIndex, true);
     setDrawFlag();
 }
 
@@ -602,11 +602,11 @@ void UIEdit::onLostFocus() {
     UINode::onLostFocus();
 }
 
-void UIEdit::mouseDrag(hidData *data) {
+void UIEdit::mouseDrag(hidData& data) {
     if (m_blockEdit) {
         return;
     }
-    m_mousePosCr = data->mousePosNodeRel / getParentContentScale() - m_alignOffset;
+    m_mousePosCr = data.mousePosNodeRel / getParentContentScale() - m_alignOffset;
 
     if (m_mouseEvent & 1) {
         l_cpos = getCaretByPixPos(m_mousePosCr.x, m_mousePosCr.y);
@@ -619,15 +619,15 @@ void UIEdit::mouseDrag(hidData *data) {
         }
         setDrawFlag();
     }
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void UIEdit::mouseDown(hidData *data) {
+void UIEdit::mouseDown(hidData& data) {
     if (m_blockEdit) {
         return;
     }
 
-    vec2 p = data->mousePosNodeRel / getParentContentScale();
+    vec2 p = data.mousePosNodeRel / getParentContentScale();
     int cpos = getCaretByPixPos(p.x - m_alignOffset.x, p.y - m_alignOffset.y);
 
     if (cpos >= 0) {
@@ -643,33 +643,33 @@ void UIEdit::mouseDown(hidData *data) {
     setSelected(true, true);
     drawCaret();
 
-    if (data->isDoubleClick) {
+    if (data.isDoubleClick) {
         setSelRangeAll();
     }
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void UIEdit::mouseUp(hidData *data) {
+void UIEdit::mouseUp(hidData& data) {
     if (m_blockEdit) {
         return;
     }
     m_mouseEvent = 0;
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void UIEdit::mouseWheel(hidData *data) {
+void UIEdit::mouseWheel(hidData& data) {
     if (m_blockEdit) {
         return;
     }
 
     if (m_useWheel) {
-        incValue(data->degrees, data->shiftPressed  ? cfState::coarse
-                                       : data->ctrlPressed ? cfState::fine
+        incValue(data.degrees, data.shiftPressed  ? cfState::coarse
+                                       : data.ctrlPressed ? cfState::fine
                                                            : cfState::normal);
     }
 
     setDrawFlag();
-    data->consumed = m_useWheel;
+    data.consumed = m_useWheel;
 }
 
 void UIEdit::incValue(float amt, cfState cf) {
@@ -691,14 +691,14 @@ void UIEdit::incValue(float amt, cfState cf) {
     }
 }
 
-void UIEdit::globalMouseDown(hidData *data) {
+void UIEdit::globalMouseDown(hidData& data) {
     if (m_blockEdit) {
         return;
     }
 
     // close the menu if it is open and the user clicked somewhere outside the menu
     if (isInited() && m_state == state::selected &&
-        !(static_cast<uint32_t>(data->objId) >= getId() && static_cast<uint32_t>(data->objId) <= getMaxChildId())) {
+        !(static_cast<uint32_t>(data.objId) >= getId() && static_cast<uint32_t>(data.objId) <= getMaxChildId())) {
         setSelected(false, true);
         drawCaret();
         m_sharedRes->setDrawFlag();

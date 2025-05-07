@@ -348,7 +348,7 @@ public:
 
 // second of pair indicates whether the callback should only be called when the element was really clicked
 // (true => data->hit == true) or if the callback should be called in any case
-typedef std::pair<std::function<void(hidData*)>, bool> mouseCb;
+typedef std::pair<std::function<void(hidData&)>, bool> mouseCb;
 
 class MouseButtState {
 public:

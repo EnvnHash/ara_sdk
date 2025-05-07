@@ -141,7 +141,7 @@ public:
                     continue;
                 }
                 m_uiItems.back()->setData(&*li, i);
-                m_uiItems.back()->addMouseClickCb([this, i, li](hidData *data) {
+                m_uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
                     if (!m_clickCb || !m_items) {
                         return;
                     }
@@ -154,7 +154,7 @@ public:
                 m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
                 if (!m_uiItems.back()) continue;
                 m_uiItems.back()->setData(&(*li), i);
-                m_uiItems.back()->addMouseClickCb([this, i, li](hidData *data) {
+                m_uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
                     if (!m_clickCb || !m_itemsVec) return;
                     m_clickCb(&(*li), i, data);
                 });
@@ -167,7 +167,7 @@ public:
                     continue;
                 }
                 m_uiItems.back()->setData(&*li, i);
-                m_uiItems.back()->addMouseClickCb([this, i, li](hidData *data) {
+                m_uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
                     if (!m_clickCb) {
                         return;
                     }
@@ -221,14 +221,14 @@ public:
         });
     }
 
-    void setClickCb(std::function<void(DataTyp *, int, hidData *data)> cb) { m_clickCb = std::move(cb); }
+    void setClickCb(std::function<void(DataTyp *, int, hidData& data)> cb) { m_clickCb = std::move(cb); }
 
 protected:
     std::vector<DataTyp>                              *m_itemsVec = nullptr;
     std::list<DataTyp>                                *m_items    = nullptr;
     ListProperty<DataTyp>                             *m_listProp = nullptr;
     std::vector<LiTyp *>                               m_uiItems;
-    std::function<void(DataTyp *, int, hidData *data)> m_clickCb;
+    std::function<void(DataTyp *, int, hidData& data)> m_clickCb;
 };
 
 }  // namespace ara

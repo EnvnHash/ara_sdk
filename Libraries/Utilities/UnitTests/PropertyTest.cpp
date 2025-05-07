@@ -88,7 +88,7 @@ TEST(Functional_Property, OnPreChangeCallback) {
     prop = 5;
     EXPECT_TRUE(callbackCalled);
 }
-/*
+
 TEST(Functional_Property, OnPostChangeCallback) {
     bool callbackCalled = false;
     auto postChangeFunc = [&callbackCalled](const std::any& value) {
@@ -108,7 +108,7 @@ TEST(Functional_PropertyPtr, InitialValue) {
     PropertyPtr propPtr(prop.get());
     EXPECT_EQ(propPtr.get(), 42);
 }
-
+/*
 TEST(Functional_PropertyPtr, SetValue) {
     auto prop = std::make_unique<Property<int>>();
     PropertyPtr propPtr(prop.get());

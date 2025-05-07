@@ -15,8 +15,8 @@ public:
     explicit Div(const std::string& styleClass);
     ~Div() override = default;
 
-    bool draw(uint32_t *objId) override;
-    bool drawIndirect(uint32_t *objId) override;
+    bool draw(uint32_t &objId) override;
+    bool drawIndirect(uint32_t &objId) override;
     void updateDrawData() override;
     void pushVaoUpdtOffsets() override;
 

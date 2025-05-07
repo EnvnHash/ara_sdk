@@ -22,7 +22,7 @@ public:
         }
     }
 
-    void mouseDown(hidData* data) override {
+    void mouseDown(hidData& data) override {
         m_clicked[hidEvent::MouseUpLeft] = false;
         m_clicked[hidEvent::MouseDownLeft] = true;
         if (m_consume) {
@@ -30,7 +30,7 @@ public:
         }
     }
 
-    void mouseUp(hidData* data) override {
+    void mouseUp(hidData& data) override {
         m_clicked[hidEvent::MouseDownLeft] = false;
         m_clicked[hidEvent::MouseUpLeft] = true;
         if (m_consume) {
@@ -38,7 +38,7 @@ public:
         }
     }
 
-    void mouseDownRight(hidData* data) override {
+    void mouseDownRight(hidData& data) override {
         m_clicked[hidEvent::MouseUpRight] = false;
         m_clicked[hidEvent::MouseDownRight] = true;
         if (m_consume) {
@@ -46,7 +46,7 @@ public:
         }
     }
 
-    void mouseUpRight(hidData* data) override {
+    void mouseUpRight(hidData& data) override {
         m_clicked[hidEvent::MouseUpRight] = true;
         m_clicked[hidEvent::MouseDownRight] = false;
         if (m_consume) {
@@ -88,16 +88,16 @@ static std::unordered_map<hidEvent, bool> initCallbacks() {
 }
 
 static void setHidCallbacks(HidNode* div, std::unordered_map<hidEvent, bool>& cbCalled) {
-    div->addMouseClickCb([&](hidData* data){
+    div->addMouseClickCb([&](hidData& data){
         cbCalled[hidEvent::MouseDownLeft] = true;
     });
-    div->addMouseUpCb([&](hidData* data){
+    div->addMouseUpCb([&](hidData& data){
         cbCalled[hidEvent::MouseUpLeft] = true;
     });
-    div->addMouseClickRightCb([&](hidData* data){
+    div->addMouseClickRightCb([&](hidData& data){
         cbCalled[hidEvent::MouseDownRight] = true;
     });
-    div->addMouseUpRightCb([&](hidData* data){
+    div->addMouseUpRightCb([&](hidData& data){
         cbCalled[hidEvent::MouseUpRight] = true;
     });
 }

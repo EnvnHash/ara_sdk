@@ -41,9 +41,9 @@ void Carrousel::initFixedChildren() {
     m_selector->setAlign(align::center, valign::center);
 }
 
-void Carrousel::mouseDrag(hidData* data) {
-    if (m_blend.stopped() && m_getDragDir && std::abs(data->movedPix.x) > 50.f) {
-        m_moveToIdx = std::min(m_currentIdx + (data->movedPix.x < 1 ? 1 : -1), static_cast<int32_t>(m_slides.size()) -1);
+void Carrousel::mouseDrag(hidData& data) {
+    if (m_blend.stopped() && m_getDragDir && std::abs(data.movedPix.x) > 50.f) {
+        m_moveToIdx = std::min(m_currentIdx + (data.movedPix.x < 1 ? 1 : -1), static_cast<int32_t>(m_slides.size()) -1);
 
         if (m_moveToIdx != m_currentIdx) {
             show(m_moveToIdx);
@@ -54,7 +54,7 @@ void Carrousel::mouseDrag(hidData* data) {
     }
 }
 
-void Carrousel::mouseUp(hidData* data) {
+void Carrousel::mouseUp(hidData& data) {
     m_getDragDir = true;
 }
 

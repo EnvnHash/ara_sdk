@@ -123,23 +123,21 @@ void CrossHair::init() {
     m_crossHairShdr = getSharedRes()->shCol->add("CrossHair", vert, frag);
 }
 
-bool CrossHair::draw(uint32_t* objId) {
+bool CrossHair::draw(uint32_t& objId) {
     return drawFunc(objId);
 }
 
-bool CrossHair::drawIndirect(uint32_t* objId) {
+bool CrossHair::drawIndirect(uint32_t& objId) {
     if (getSharedRes() && getSharedRes()->drawMan) {
-        m_tempObjId = *objId;
-        getSharedRes()->drawMan->pushFunc([this] {
-            m_dfObjId = m_tempObjId;
-            drawFunc(&m_dfObjId);
+        getSharedRes()->drawMan->pushFunc([this, objId] {
+            drawFunc(objId);
         });
     }
 
     return false;
 }
 
-bool CrossHair::drawFunc(uint32_t* objId) {
+bool CrossHair::drawFunc(const uint32_t& objId) {
 #ifndef ARA_USE_GLES31
     glBlendFuncSeparatei(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 #endif

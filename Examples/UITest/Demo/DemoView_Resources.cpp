@@ -49,7 +49,7 @@ void DemoView_Resources::init() {
     });
 }
 
-bool DemoView_Resources::draw(uint32_t* objId) {
+bool DemoView_Resources::draw(uint32_t& objId) {
     DemoView::draw(objId);
 
     int i=0;

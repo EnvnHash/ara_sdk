@@ -65,8 +65,8 @@ void ScrollBar::updateMatrix() {
     }
 }
 
-void ScrollBar::mouseDown(hidData* data) {
-    if (!data->hit) {
+void ScrollBar::mouseDown(hidData& data) {
+    if (!data.hit) {
         return;
     }
 
@@ -77,29 +77,29 @@ void ScrollBar::mouseDown(hidData* data) {
         // was the click on the negative or positive side
         float isPositiveSide;
         if (s_Type == horizontal) {
-            isPositiveSide = data->mousePosNodeRel.x > m_dragArea->getPos().x + m_dragArea->getSize().x ? -1.f : 1.f;
+            isPositiveSide = data.mousePosNodeRel.x > m_dragArea->getPos().x + m_dragArea->getSize().x ? -1.f : 1.f;
             sv->setScrollOffset(sv->getContentTransTransl().x + isPositiveSide * m_dragArea->getSize().x,
                                 sv->getContentTransTransl().y);
         } else {
-            isPositiveSide = data->mousePosNodeRel.y > m_dragArea->getPos().y + m_dragArea->getSize().y ? -1.f : 1.f;
+            isPositiveSide = data.mousePosNodeRel.y > m_dragArea->getPos().y + m_dragArea->getSize().y ? -1.f : 1.f;
             sv->setScrollOffset(sv->getContentTransTransl().x,
                                 sv->getContentTransTransl().y + isPositiveSide * m_dragArea->getSize().y);
         }
-        data->consumed = true;
+        data.consumed = true;
     }
 }
 
-void UIScrollBarDragArea::mouseDrag(hidData* data) {
+void UIScrollBarDragArea::mouseDrag(hidData& data) {
     // get the ScrollView, which is the parent of this parent
     const auto sv = dynamic_cast<ScrollView*>(getParent()->getParent());
     const auto sb = dynamic_cast<ScrollBar*>(getParent());
 
-    if (data->dragStart) {
+    if (data.dragStart) {
         m_startDragScrollViewTrans = sv->getContentTransTransl();
     }
 
     // relative pos
-    m_relOffs = glm::max(glm::min((vec2)data->movedPix / sb->getMaxDragWay(), vec2{1.f}), vec2{-1.f});
+    m_relOffs = glm::max(glm::min((vec2)data.movedPix / sb->getMaxDragWay(), vec2{1.f}), vec2{-1.f});
 
     // add offset to the initial offset on dragStart
     if (dynamic_cast<ScrollBar *>(getParent())->s_Type == ScrollBar::e_stype::horizontal) {
@@ -110,7 +110,7 @@ void UIScrollBarDragArea::mouseDrag(hidData* data) {
                             -m_relOffs.y * sb->getMaxScrollOffset().y + m_startDragScrollViewTrans.y);
     }
 
-    data->consumed = true;
+    data.consumed = true;
 }
 
 }

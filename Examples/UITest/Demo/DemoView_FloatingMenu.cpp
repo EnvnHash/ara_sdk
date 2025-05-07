@@ -23,11 +23,11 @@ void DemoView_FloatingMenu::init() {
     div->setBorderColor(0.7f, 0.7f, 0.7f, 1.f);
     div->setBackgroundColor(0.3f, 0.3f, 0.3f, 1.f);
 
-    div->addMouseClickRightCb([this](hidData* data) {
+    div->addMouseClickRightCb([this](hidData& data) {
         runOnMainThread([this, data] {
             auto rightClickMen = getApp()->addWindow<FloatingMenuDialog>(UIWindowParams{
                 .size = {200, 96},
-                .shift = data->screenMousePos
+                .shift = data.screenMousePos
             });
 
             rightClickMen->addGlCb(this, "add", [rightClickMen]{

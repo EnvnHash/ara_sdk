@@ -55,8 +55,8 @@ void DropDownMenu::init() {
 
     // be sure the callback exits only once
     uiWin->removeGlobalMouseDownLeftCb(this);
-    uiWin->addGlobalMouseDownLeftCb(this, [this](hidData* data) { globalMouseDown(data); });
-    uiWin->addGlobalMouseDownRightCb(this, [this](hidData* data) { globalMouseDown(data); });
+    uiWin->addGlobalMouseDownLeftCb(this, [this](hidData& data) { globalMouseDown(data); });
+    uiWin->addGlobalMouseDownRightCb(this, [this](hidData& data) { globalMouseDown(data); });
 
     // add a callback to listen for clicks also outside the window bounds
     // be sure the callback exits only once
@@ -137,18 +137,18 @@ void DropDownMenu::close() {
     }
 }
 
-void DropDownMenu::mouseDown(hidData* data) {
+void DropDownMenu::mouseDown(hidData& data) {
     open();
-    data->consumed = true;
+    data.consumed = true;
 }
 
-void DropDownMenu::globalMouseDown(hidData* data) {
+void DropDownMenu::globalMouseDown(hidData& data) {
     // close the menu if it is open and the user clicked somewhere outside the menu
-    bool isChild          = static_cast<uint32_t>(data->objId) >= getId() &&
-                            static_cast<uint32_t>(data->objId) <= getMaxChildId();
+    bool isChild          = static_cast<uint32_t>(data.objId) >= getId() &&
+                            static_cast<uint32_t>(data.objId) <= getMaxChildId();
     bool isEntryListChild = m_entryList
-                            && static_cast<uint32_t>(data->objId) >= m_entryList->getId()
-                            && static_cast<uint32_t>(data->objId) <= m_entryList->getMaxChildId();
+                            && static_cast<uint32_t>(data.objId) >= m_entryList->getId()
+                            && static_cast<uint32_t>(data.objId) <= m_entryList->getMaxChildId();
 
     if (isInited() && m_open && !isChild && !isEntryListChild) {
         close();

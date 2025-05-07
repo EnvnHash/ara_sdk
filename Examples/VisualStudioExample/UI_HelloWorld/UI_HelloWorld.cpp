@@ -48,7 +48,7 @@ void UI_HelloWorld::createStyleSheetDiv()
     // when saving the file, the app will automatically update
 
     // make it clickable
-    label->addMouseClickCb([this](hidData* data) {
+    label->addMouseClickCb([this](hidData& data) {
         LOG << "hello";
     });
 }

@@ -70,10 +70,10 @@ void WindowResizeAreas::init() {
     m_winResizeAreas[7]->setAlign(align::right, valign::bottom);
 
     for (auto &it : m_winResizeAreas)
-        it->addMouseOutCb([m_win](const hidData *data) {
+        it->addMouseOutCb([m_win](const hidData& data) {
             // don't change the mouse cursor to 0 on mouse out if the new node
             // is also a WindowResizeArea
-            if (data->newNode && static_cast<UINode *>(data->newNode)->getName() == getTypeName<WindowResizeAreas>()) {
+            if (data.newNode && static_cast<UINode *>(data.newNode)->getName() == getTypeName<WindowResizeAreas>()) {
                 return;
             }
 

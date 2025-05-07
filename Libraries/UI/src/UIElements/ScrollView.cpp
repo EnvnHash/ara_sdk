@@ -164,12 +164,12 @@ std::vector<std::unique_ptr<UINode>>* ScrollView::getContChildren() const {
     if (!m_content) {
         return nullptr;
     }
-    return reinterpret_cast<std::vector<std::unique_ptr<UINode>>*>(&m_content->getChildren());
+    return &m_content->getChildren();
 }
 
-void ScrollView::mouseWheel(hidData* data) {
+void ScrollView::mouseWheel(hidData& data) {
     if (ui_VSB && ui_VSB->isVisible()) {
-        setScrollOffset(m_offs.x, data->degrees * 100 + getContentTransTransl().y);
+        setScrollOffset(m_offs.x, data.degrees * 100 + getContentTransTransl().y);
         if (m_scrollCb) {
             m_scrollCb();
         }
@@ -177,12 +177,12 @@ void ScrollView::mouseWheel(hidData* data) {
 }
 
 #ifdef __ANDROID__
-void ScrollView::mouseDrag(hidData* data) {
+void ScrollView::mouseDrag(hidData& data) {
     if (ui_VSB && ui_VSB->isVisible()) {
-        if (data->dragStart) {
+        if (data.dragStart) {
             m_dragInitOffs = getContentTransTransl();
         }
-        setScrollOffset(m_offs.x, data->movedPix.y + m_dragInitOffs.y);
+        setScrollOffset(m_offs.x, data.movedPix.y + m_dragInitOffs.y);
         if (m_scrollCb) m_scrollCb();
     }
 }

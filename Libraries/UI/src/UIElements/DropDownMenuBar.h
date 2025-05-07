@@ -13,7 +13,7 @@ public:
     DropDownMenuBar();
     ~DropDownMenuBar() override = default;
 
-    void          globalMouseDown(hidData* data) const;
+    void          globalMouseDown(hidData& data) const;
     DropDownMenu* addDropDownMenu(const std::string& name);
 
 private:

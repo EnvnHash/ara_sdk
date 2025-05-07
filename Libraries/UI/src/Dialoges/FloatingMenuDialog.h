@@ -33,7 +33,7 @@ public:
             newItem = m_base->addChild<T>();
         }
 
-        static_cast<UINode*>(newItem)->addMouseUpCb([this, returnValue](hidData* data) {
+        static_cast<UINode*>(newItem)->addMouseUpCb([this, returnValue](hidData& data) {
             m_closing = true;
             // window creation and destruction must be done on the main thread
             m_glbase->runOnMainThread([this, returnValue]() {

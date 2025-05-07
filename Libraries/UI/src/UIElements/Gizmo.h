@@ -30,28 +30,28 @@ public:
     void setModelCam(TrackBallCam *cam);
     void cbUpdt(TrackBallCam *cam, TbModData &data, bool mapByMouseRot);
 
-    bool draw(uint32_t *objId) override;
-    bool drawIndirect(uint32_t *objId) override;
-    bool drawToFbo(const uint32_t *objId);
-    bool drawToFbo2(uint32_t *objId);
+    bool draw(uint32_t& objId) override;
+    bool drawIndirect(uint32_t& objId) override;
+    bool drawToFbo(const uint32_t& objId);
+    bool drawToFbo2(uint32_t& objId);
 
     glm::vec3 getAxisEnd(const glm::mat4 &pvm, float yVal);
 
-    void mouseDrag(hidData *data) override;
-    void drag(const hidData *data);
-    void mouseUp(hidData *data) override;
-    void mouseDownRight(hidData *data) override;
-    void mouseUpRight(hidData *data) override;
-    void mouseDown(hidData *data) override;
-    void mouseMove(hidData *data) override;
+    void mouseDrag(hidData& data) override;
+    void drag(const hidData& data);
+    void mouseUp(hidData& data) override;
+    void mouseDownRight(hidData& data) override;
+    void mouseUpRight(hidData& data) override;
+    void mouseDown(hidData& data) override;
+    void mouseMove(hidData& data) override;
     void excludeLabelsFromStyles(bool val);
 
-    void keyDown(hidData *data) override {
-        m_cam.keyDown(data->key, data->shiftPressed, data->altPressed, data->ctrlPressed);
+    void keyDown(hidData& data) override {
+        m_cam.keyDown(data.key, data.shiftPressed, data.altPressed, data.ctrlPressed);
     }
 
-    void keyUp(hidData *data) override {
-        m_cam.keyUp(data->key, data->shiftPressed, data->altPressed, data->ctrlPressed);
+    void keyUp(hidData& data) override {
+        m_cam.keyUp(data.key, data.shiftPressed, data.altPressed, data.ctrlPressed);
     }
 
     std::vector<GizmoAxisLabel *> *getAxisLabels() { return &m_axisLabels; }
@@ -113,8 +113,6 @@ protected:
     int axIndx = 0;
 
     uint32_t m_tempObjId   = 0;
-    uint32_t m_dfTempObjId = 0;
-    uint32_t m_dfObjId     = 0;
 
     StopWatch m_watch;
 };

@@ -33,7 +33,7 @@ void CollapseList::rebuildList()
     {
         li.label = m_table->setCell<Label>(i, 0);
         li.label->setText(m_items[i].text);
-        li.label->addMouseClickCb([li](hidData* data) { if (li.cb) li.cb(data);
+        li.label->addMouseClickCb([li](hidData& data) { if (li.cb) li.cb(data);
 }); if (!getStyleClass().empty())
             li.label->addStyleClass(getStyleClass()+".label");
         i++;

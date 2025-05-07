@@ -37,14 +37,14 @@ Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::s
     Label::setScissorChildren(true);
 }
 
-bool Button::draw(uint32_t* objId) {
+bool Button::draw(uint32_t& objId) {
     return Label::draw(objId);
     // raw text is rendered here implicitly
 }
 
-void Button::mouseMove(hidData* data) {
-    data->actIcon  = ui_MouseIcon;
-    data->consumed = true;
+void Button::mouseMove(hidData& data) {
+    data.actIcon  = ui_MouseIcon;
+    data.consumed = true;
 
     if (!m_mouseIsIn && !m_show_alt_text) {
         m_mouseInTime = std::chrono::system_clock::now();
@@ -57,27 +57,27 @@ void Button::mouseMove(hidData* data) {
     m_mouseIsIn = true;
 }
 
-void Button::mouseOut(hidData* data) {
+void Button::mouseOut(hidData& data) {
     m_mouseIsIn     = false;
     m_show_alt_text = false;
     UINode::mouseOut(data);
 }
 
-void Button::mouseUp(hidData* data) {
-    if (data->hit) {
+void Button::mouseUp(hidData& data) {
+    if (data.hit) {
         click(data);
-        data->consumed = true;
+        data.consumed = true;
     }
 }
 
-void Button::mouseUpRight(hidData* data) {
-    if (data->hit) {
+void Button::mouseUpRight(hidData& data) {
+    if (data.hit) {
         click(data);
-        data->consumed = true;
+        data.consumed = true;
     }
 }
 
-void Button::click(hidData* data) {
+void Button::click(hidData& data) {
     toggle(m_state != state::selected);
 
     if (m_state != state::disabled && m_clickedFunc) {
@@ -85,7 +85,7 @@ void Button::click(hidData* data) {
     }
 
     // force a mouseOut
-    if (getWindow() && getWindow()->getLastHoverFound() && data) {
+    if (getWindow() && getWindow()->getLastHoverFound()) {
         getWindow()->getLastHoverFound()->mouseOut(data);
         getWindow()->setLastHoverFound(nullptr);
     }

@@ -27,8 +27,8 @@ public:
     explicit Carrousel(const std::string& styleClass);
 
     void initFixedChildren();
-    void mouseUp(hidData* data) override;
-    void mouseDrag(hidData* data) override;
+    void mouseUp(hidData& data) override;
+    void mouseDrag(hidData& data) override;
 
     CarrouselSlide* add();
     CarrouselSlide* add(const std::string& styleclass);

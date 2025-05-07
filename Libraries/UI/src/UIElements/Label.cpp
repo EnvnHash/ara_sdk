@@ -258,7 +258,7 @@ void Label::setEditPixSpace(float width, float height, bool set_flag) {
     }
 }
 
-bool Label::draw(uint32_t* objId) {
+bool Label::draw(uint32_t& objId) {
     Div::draw(objId);
 
     if (!m_glyphShader) {
@@ -281,7 +281,7 @@ bool Label::draw(uint32_t* objId) {
     return true;
 }
 
-bool Label::drawIndirect(uint32_t* objId) {
+bool Label::drawIndirect(uint32_t& objId) {
     Div::drawIndirect(objId);
 
     checkGlyphsPrepared(true);

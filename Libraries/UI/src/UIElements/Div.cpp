@@ -104,7 +104,7 @@ void Div::pushVaoUpdtOffsets() {
     }
 }
 
-bool Div::draw(uint32_t *objId) {
+bool Div::draw(uint32_t& objId) {
     if (!m_uniBlock.isInited()) {
         m_uniBlock.init(m_shdr->getProgram(), "nodeData");
         updateDrawData();
@@ -129,7 +129,7 @@ bool Div::draw(uint32_t *objId) {
     return true;  // count up objId
 }
 
-bool Div::drawIndirect(uint32_t *objId) {
+bool Div::drawIndirect(uint32_t& objId) {
     if (m_sharedRes && m_sharedRes->drawMan) {
         m_indDrawBlock.drawSet = &m_sharedRes->drawMan->push(m_indDrawBlock, this);
     }

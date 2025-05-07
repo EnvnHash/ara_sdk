@@ -12,7 +12,7 @@ public:
     }
     ~SliderKnob() override = default;
 
-    void mouseDrag(hidData* data) override;
+    void mouseDrag(hidData& data) override;
 
 private:
     float m_dragStartValue;
@@ -27,7 +27,7 @@ public:
 
     void init() override;
 
-    virtual void addMouseDragCb(const std::function<void(hidData*)>& func) { m_knob->addMouseDragCb(func); }
+    virtual void addMouseDragCb(const std::function<void(hidData&)>& func) { m_knob->addMouseDragCb(func); }
 
     virtual void adjustKnob();
     void         updateMatrix() override;

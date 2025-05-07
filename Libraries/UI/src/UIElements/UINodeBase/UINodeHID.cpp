@@ -12,15 +12,15 @@ using namespace glm;
 
 namespace ara {
 
-void UINodeHID::hidIt(hidData* data, hidEvent evt, std::list<UINode*>::iterator it, std::list<UINode*>& tree) {
-    data->hit = (*it)->containsObjectId(data->objId)
+void UINodeHID::hidIt(hidData& data, hidEvent evt, std::list<UINode*>::iterator it, std::list<UINode*>& tree) {
+    data.hit = (*it)->containsObjectId(data.objId)
                 && (*it)->getState() != state::disabled
                 && (*it)->getState() != state::disabledSelected
                 && (*it)->getState() != state::disabledHighlighted
                 && !(*it)->isHIDBlocked();
 
-    if (data->hit && evt == hidEvent::MouseDownLeft) {
-        data->actIcon = (*it)->ui_MouseIcon;
+    if (data.hit && evt == hidEvent::MouseDownLeft) {
+        data.actIcon = (*it)->ui_MouseIcon;
 
         // proc input focus
         if ((*it)->getWindow()) {
@@ -29,7 +29,7 @@ void UINodeHID::hidIt(hidData* data, hidEvent evt, std::list<UINode*>::iterator 
     }
 
     // calculate the mouse position relative to this node
-    data->mousePosNodeRel = data->mousePos - (*it)->getWinPos();  // virtual pixels
+    data.mousePosNodeRel = data.mousePos - (*it)->getWinPos();  // virtual pixels
 
     switch (evt) {
         case hidEvent::MouseDownLeft:
@@ -58,17 +58,17 @@ void UINodeHID::hidIt(hidData* data, hidEvent evt, std::list<UINode*>::iterator 
 
     // process callbacks
     for (const auto& cbIt : (*it)->getMouseHidCb(evt)) {
-        if (!cbIt.second || (cbIt.second && (data->hit || evt == hidEvent::MouseDrag))) {
+        if (!cbIt.second || (cbIt.second && (data.hit || evt == hidEvent::MouseDrag))) {
             cbIt.first(data);
-            if (data->breakCbIt) {
+            if (data.breakCbIt) {
                 return;
             }
         }
     }
 
     // if hit, store that node and procInput focus if the left Mouse button was clicked
-    if (data->consumed) {
-        data->hitNode[evt] = dynamic_cast<UINode*>(*it);
+    if (data.consumed) {
+        data.hitNode[evt] = dynamic_cast<UINode*>(*it);
         return;
     }
 
@@ -81,21 +81,21 @@ void UINodeHID::hidIt(hidData* data, hidEvent evt, std::list<UINode*>::iterator 
     UINodeHID::hidIt(data, evt, it, tree);
 }
 
-void UINodeHID::keyDownIt(hidData* data) {
+void UINodeHID::keyDownIt(hidData& data) {
     if (!m_blockHID && m_state != state::disabled && m_state != state::disabledSelected &&
         m_state != state::disabledHighlighted) {
         keyDown(data);
     }
 }
 
-void UINodeHID::onCharIt(hidData* data) {
+void UINodeHID::onCharIt(hidData& data) {
     if (!m_blockHID && m_state != state::disabled && m_state != state::disabledSelected &&
         m_state != state::disabledHighlighted) {
         onChar(data);
     }
 }
 
-void UINodeHID::mouseIn(hidData* data) {
+void UINodeHID::mouseIn(hidData& data) {
     if (m_state == state::disabled || m_state == state::disabledSelected || m_state == state::disabledHighlighted) {
         return;
     }
@@ -123,7 +123,7 @@ void UINodeHID::mouseIn(hidData* data) {
     }
 }
 
-void UINodeHID::mouseOut(hidData* data) {
+void UINodeHID::mouseOut(hidData& data) {
     if (m_state == state::disabled || m_state == state::disabledSelected || m_state == state::disabledHighlighted) {
         return;
     }
@@ -152,35 +152,35 @@ void UINodeHID::mouseOut(hidData* data) {
     }
 }
 
-void UINodeHID::addMouseHidCb(hidEvent evt, const std::function<void(hidData*)>& func, bool onHit) {
+void UINodeHID::addMouseHidCb(hidEvent evt, const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[evt].emplace_back(std::make_pair(func, onHit));
 }
 
-void UINodeHID::addMouseClickCb(const std::function<void(hidData*)>& func, bool onHit) {
+void UINodeHID::addMouseClickCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseDownLeft].emplace_back(std::make_pair(func, onHit));
 }
 
-void UINodeHID::addMouseClickRightCb(const std::function<void(hidData*)>& func, bool onHit) {
+void UINodeHID::addMouseClickRightCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseDownRight].emplace_back(std::make_pair(func, onHit));
 }
 
-void UINodeHID::addMouseUpCb(const std::function<void(hidData*)>& func, bool onHit) {
+void UINodeHID::addMouseUpCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseUpLeft].emplace_back(std::make_pair(func, onHit));
 }
 
-void UINodeHID::addMouseUpRightCb(const std::function<void(hidData*)>& func, bool onHit) {
+void UINodeHID::addMouseUpRightCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseUpRight].emplace_back(std::make_pair(func, onHit));
 }
 
-void UINodeHID::addMouseDragCb(const std::function<void(hidData*)>& func, bool onHit) {
+void UINodeHID::addMouseDragCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseDrag].emplace_back(std::make_pair(func, onHit));
 }
 
-void UINodeHID::addMouseMoveCb(const std::function<void(hidData*)>& func, bool onHit) {
+void UINodeHID::addMouseMoveCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseMove].emplace_back(std::make_pair(func, onHit));
 }
 
-void UINodeHID::addMouseWheelCb(const std::function<void(hidData*)>& func, bool onHit) {
+void UINodeHID::addMouseWheelCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseWheel].emplace_back(std::make_pair(func, onHit));
 }
 
@@ -188,11 +188,11 @@ void UINodeHID::clearMouseCb(hidEvent evt) {
     m_mouseHidCb[evt].clear();
 }
 
-void UINodeHID::addMouseInCb(std::function<void(hidData*)> func, state st) {
+void UINodeHID::addMouseInCb(std::function<void(hidData&)> func, state st) {
     m_mouseInCb[st] = std::move(func);
 }
 
-void UINodeHID::addMouseOutCb(std::function<void(hidData*)> func, state st) {
+void UINodeHID::addMouseOutCb(std::function<void(hidData&)> func, state st) {
     m_mouseOutCb[st] = std::move(func);
 }
 

@@ -43,21 +43,21 @@ public:
     virtual void loadBasicSceneModels();
     virtual void loadTypo();
 
-    bool draw(uint32_t* objId) override;
-    bool drawIndirect(uint32_t* objId) override;
-    bool drawFunc(uint32_t* objId);
+    bool draw(uint32_t& objId) override;
+    bool drawIndirect(uint32_t& objId) override;
+    bool drawFunc(const uint32_t& objId);
 
     void updateMatrix() override;
 
-    void keyDown(hidData* data) override;
-    void keyUp(hidData* data) override;
-    void moveObjectByArrowKeys(const hidData* data);
-    void mouseDown(hidData* data) override;
-    void mouseUp(hidData* data) override;
-    void mouseDownRight(hidData* data) override;
-    void mouseUpRight(hidData* data) override;
-    void mouseDrag(hidData* data) override;
-    void mouseWheel(hidData* data) override;
+    void keyDown(hidData& data) override;
+    void keyUp(hidData& data) override;
+    void moveObjectByArrowKeys(const hidData& data);
+    void mouseDown(hidData& data) override;
+    void mouseUp(hidData& data) override;
+    void mouseDownRight(hidData& data) override;
+    void mouseUpRight(hidData& data) override;
+    void mouseDrag(hidData& data) override;
+    void mouseWheel(hidData& data) override;
     void resetMousePos();
     void setViewport(float x, float y, float width, float height) override;
     void setViewport(glm::vec4* viewport) override;
@@ -260,9 +260,6 @@ protected:
     float m_keyRotStep[3]{0.005f, 0.05f, 0.5f};
     float m_worldAxisNdcSize = 0.2f;
     float m_mouseRotExp      = 1.f;
-
-    uint32_t m_tempObjId = 0;
-    uint32_t m_dfObjId   = 0;
 
     std::function<void()>            m_deselectAllCb;
     std::function<void(transMode)>   m_addGizmoCb;

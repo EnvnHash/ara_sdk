@@ -16,13 +16,13 @@ public:
     ~UIPolygon() override = default;
 
     void init() override;
-    bool draw(uint32_t* objId) override;
-    void drawCtrlPoints(uint32_t* id);
+    bool draw(uint32_t& objId) override;
+    void drawCtrlPoints(uint32_t& objId);
     void initCtrlPointShdr();
     void tesselate() const;
     bool objIdInPolygon(int id) const;
-    void mouseDrag(hidData* data) override;
-    void mouseDown(hidData* data) override;
+    void mouseDrag(hidData& data) override;
+    void mouseDown(hidData& data) override;
     void onResize() override;
     void addPointToSelection(uint32_t clickedObjId, uint32_t level, std::map<winProcStep, ProcStep>* procSteps);
     bool checkCtrlPointInSel(uint32_t _id) const;

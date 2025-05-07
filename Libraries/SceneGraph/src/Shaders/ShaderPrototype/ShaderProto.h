@@ -51,8 +51,8 @@ public:
     virtual void      mouseUpLeft(SceneNode* sceneTree) {}
     virtual void      mouseUpRight(SceneNode* sceneTree) {}
     virtual void      mouseMove(float x, float y) {}
-    virtual void      keyDown(hidData* data) {}
-    virtual void      keyUp(hidData* data) {}
+    virtual void      keyDown(hidData& data) {}
+    virtual void      keyUp(hidData& data) {}
     virtual transMode getTransMode() { return transMode(0); }
 
     Shaders*         s_shader = nullptr;

@@ -63,7 +63,7 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
         },
         prop);
 
-    m_Slider->addMouseDragCb([this, prop, idx](hidData* data) {
+    m_Slider->addMouseDragCb([this, prop, idx](hidData& data) {
         float newVal = m_Slider->getValue() * (prop->getMax()[idx] - prop->getMin()[idx]) + prop->getMin()[idx];
         if (!m_onMouseUpUpdtMode) {
             glm::vec2 lastVal = (*prop)();
@@ -74,7 +74,7 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
         }
     });
     m_Slider->setValue(((*prop)()[idx] - prop->getMin()[idx]) / (prop->getMax()[idx] - prop->getMin()[idx]));
-    m_Slider->getKnob()->addMouseUpCb([this, prop, idx](hidData* data) {
+    m_Slider->getKnob()->addMouseUpCb([this, prop, idx](hidData& data) {
         if (m_onMouseUpUpdtMode) {
             glm::vec2 lastVal = (*prop)();
             lastVal[idx] = m_Slider->getValue() * (prop->getMax()[idx] - prop->getMin()[idx]) + prop->getMin()[idx];

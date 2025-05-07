@@ -449,10 +449,10 @@ void Image::pushVaoUpdtOffsets() {
     }
 }
 
-bool Image::draw(uint32_t* objId) {
+bool Image::draw(uint32_t& objId) {
     Div::draw(objId);
 
-    m_objIdMax = ++(*objId);
+    m_objIdMax = ++objId;
 
     if (m_sharedRes) {
         if (m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) {
@@ -503,8 +503,8 @@ bool Image::draw(uint32_t* objId) {
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, m_extObjTexId);
 
-            *objId += m_extObjTexObjIdOffs;
-            m_objIdMax = *objId;
+            objId += m_extObjTexObjIdOffs;
+            m_objIdMax = objId;
         }
     } else if (m_imgBase) {
         glActiveTexture(GL_TEXTURE0);
@@ -530,10 +530,10 @@ bool Image::draw(uint32_t* objId) {
     return true;  // count up objId
 }
 
-bool Image::drawIndirect(uint32_t* objId) {
+bool Image::drawIndirect(uint32_t& objId) {
     Div::drawIndirect(objId);
 
-    m_objIdMax = ++(*objId);
+    m_objIdMax = ++objId;
 
     if (m_sharedRes && m_sharedRes->drawMan) {
         auto dm = m_sharedRes->drawMan;

@@ -113,17 +113,17 @@ void Scene3DTool::connectUINodes() {
                 }
         });
 
-        getWindow()->addGlobalKeyDownCb(this, [this](hidData *data) {
-            if (data->key == GLSG_KEY_LEFT_CONTROL ||
-                data->key == GLSG_KEY_RIGHT_CONTROL && m_toolBarIcons[ToolBarIcon::coarseFine] &&
+        getWindow()->addGlobalKeyDownCb(this, [this](hidData& data) {
+            if (data.key == GLSG_KEY_LEFT_CONTROL ||
+                data.key == GLSG_KEY_RIGHT_CONTROL && m_toolBarIcons[ToolBarIcon::coarseFine] &&
                     m_toolBarIcons[ToolBarIcon::coarseFine]->getToggleState() != 1) {
                 m_toolBarIcons[ToolBarIcon::coarseFine]->setToggleState(1);
                 setModifyCoarseFine();
                 setDrawFlag();
             }
 
-            if (data->key == GLSG_KEY_LEFT_SHIFT ||
-                data->key == GLSG_KEY_RIGHT_SHIFT && m_toolBarIcons[ToolBarIcon::coarseFine] &&
+            if (data.key == GLSG_KEY_LEFT_SHIFT ||
+                data.key == GLSG_KEY_RIGHT_SHIFT && m_toolBarIcons[ToolBarIcon::coarseFine] &&
                     m_toolBarIcons[ToolBarIcon::coarseFine]->getToggleState() != 2) {
                 m_toolBarIcons[ToolBarIcon::coarseFine]->setToggleState(2);
                 setModifyCoarseFine();
@@ -131,9 +131,9 @@ void Scene3DTool::connectUINodes() {
             }
         });
 
-        getWindow()->addGlobalKeyUpCb(this, [this](hidData *data) {
-            if ((data->key == GLSG_KEY_LEFT_CONTROL || data->key == GLSG_KEY_RIGHT_CONTROL ||
-                 data->key == GLSG_KEY_LEFT_SHIFT || data->key == GLSG_KEY_RIGHT_SHIFT) &&
+        getWindow()->addGlobalKeyUpCb(this, [this](hidData& data) {
+            if ((data.key == GLSG_KEY_LEFT_CONTROL || data.key == GLSG_KEY_RIGHT_CONTROL ||
+                 data.key == GLSG_KEY_LEFT_SHIFT || data.key == GLSG_KEY_RIGHT_SHIFT) &&
                 m_toolBarIcons[ToolBarIcon::coarseFine] &&
                 m_toolBarIcons[ToolBarIcon::coarseFine]->getToggleState() != 0) {
                 m_toolBarIcons[ToolBarIcon::coarseFine]->setToggleState(0);
@@ -266,14 +266,14 @@ void Scene3DTool::connectUINodes() {
     for (auto &it : m_objToolIcons) {
         it.second->setIsToggle(true);
         it.second->setClickedCb([it, this] { objectToolClicked(it.first); });
-        // it.second->addMouseClickCb([it, this](hidData *data) {
+        // it.second->addMouseClickCb([it, this](hidData& data) {
         // objectToolClicked(it.first); });
     }
 
     for (auto &it : m_viewToolIcons) {
         it.second->setIsToggle(true);
         it.second->setClickedCb([it, this] { viewToolClicked(it.first); });
-        // it.second->addMouseClickCb([it, this](hidData *data) {
+        // it.second->addMouseClickCb([it, this](hidData& data) {
         // viewToolClicked(it.first); });
     }
 
@@ -281,47 +281,47 @@ void Scene3DTool::connectUINodes() {
         /*
                 m_toolBarIcons[ToolBarIcon::pan]->setCanReceiveDrag(true);
                 m_toolBarIcons[ToolBarIcon::pan]->addMouseDragCb([this](hidData*
-           data){ vec2 mp = vec2(data->mousePos.x / getSize().x,
-           data->mousePos.y / getSize().y); auto cam =
+           data){ vec2 mp = vec2(data.mousePos.x / getSize().x,
+           data.mousePos.y / getSize().y); auto cam =
            m_scene3D->getSceneCamSet()->getInteractCam();
 
-                    if (*data->dragStart)
+                    if (*data.dragStart)
                     {
                         startMouseDrag(cam, data);
                         cam->mouseDownRight(mp.x, mp.y);
                     }
 
                     glm::vec2 rs{1.f};
-                    cam->mouseDrag(mp.x, mp.y, true, data->altPressed,
-           data->ctrlPressed, rs); setDrawFlag();
+                    cam->mouseDrag(mp.x, mp.y, true, data.altPressed,
+           data.ctrlPressed, rs); setDrawFlag();
                 });
         */
-        m_toolBarIcons[ToolBarIcon::pan]->addMouseUpCb([this](hidData *data) {
-            if (data->dragging) resetMousePos();
+        m_toolBarIcons[ToolBarIcon::pan]->addMouseUpCb([this](hidData& data) {
+            if (data.dragging) resetMousePos();
         });
 
-        m_toolBarIcons[ToolBarIcon::pan]->addMouseUpRightCb([this](hidData *data) {
-            if (data->dragging) resetMousePos();
+        m_toolBarIcons[ToolBarIcon::pan]->addMouseUpRightCb([this](hidData& data) {
+            if (data.dragging) resetMousePos();
         });
     }
 
     if (m_toolBarIcons[ToolBarIcon::zoomReset]) {
         m_toolBarIcons[ToolBarIcon::zoomReset]->setClickedCb([this] { resetZoom(); });
-        m_toolBarIcons[ToolBarIcon::zoomReset]->addMouseUpRightCb([this](hidData *data) { resetZoom(); });
+        m_toolBarIcons[ToolBarIcon::zoomReset]->addMouseUpRightCb([this](hidData& data) { resetZoom(); });
     }
 
     if (m_toolBarIcons[ToolBarIcon::coarseFine]) {
         m_toolBarIcons[ToolBarIcon::coarseFine]->setClickedCb([this] { setModifyCoarseFine(); });
-        m_toolBarIcons[ToolBarIcon::coarseFine]->addMouseUpRightCb([this](hidData *data) { setModifyCoarseFine(); });
+        m_toolBarIcons[ToolBarIcon::coarseFine]->addMouseUpRightCb([this](hidData& data) { setModifyCoarseFine(); });
     }
 
     objectToolClicked(ToolBarIcon::select);
 }
 
-void Scene3DTool::startMouseDrag(TrackBallCam *cam, hidData *data) {
+void Scene3DTool::startMouseDrag(TrackBallCam *cam, hidData& data) {
     cam->setInteractionStart();
-    m_dragStartPos.x = data->mousePos.x;
-    m_dragStartPos.y = data->mousePos.y;
+    m_dragStartPos.x = data.mousePos.x;
+    m_dragStartPos.y = data.mousePos.y;
     getWindow()->setMouseCursorVisible(false);
 }
 
@@ -346,9 +346,8 @@ void Scene3DTool::resetMousePos() {
 void Scene3DTool::resetZoom() {
     if (!m_scene3D) return;
 
-    // the scene camera should look from behind the MRD camera towards the
-    // models center the scene cameras up-vector should be indentical to the
-    // basePlanes up-vector
+    // the scene camera should look from behind the MRD camera towards the models center the scene cameras up-vector
+    // should be indentical to the basePlanes up-vector
 
     auto objSel   = m_scene3D->getObjectSelector();
     auto sceneCam = m_scene3D->getSceneCamDef();

@@ -35,10 +35,10 @@ public:
     void loadStyleDefaults() override;
     void init() override;
     void initSelBgShader();
-    bool draw(uint32_t* objId) override;
-    bool drawIndirect(uint32_t* objId) override;
+    bool draw(uint32_t& objId) override;
+    bool drawIndirect(uint32_t& objId) override;
     void drawSelectionBg();
-    void drawGlyphs(uint32_t* objId);
+    void drawGlyphs(uint32_t& objId);
     void drawCaret(bool forceCaretVaoUpdt = true);
     void prepareSelBgVao();
 
@@ -138,15 +138,15 @@ public:
     virtual void clearProp();
 
 protected:
-    void keyDown(hidData* data) override;
-    void onChar(hidData* data) override;
+    void keyDown(hidData& data) override;
+    void onChar(hidData& data) override;
     void onLostFocus() override;
 
-    void         mouseDrag(hidData* data) override;
-    void         mouseDown(hidData* data) override;
-    void         mouseUp(hidData* data) override;
-    void         mouseWheel(hidData* data) override;
-    virtual void globalMouseDown(hidData* data);
+    void         mouseDrag(hidData& data) override;
+    void         mouseDown(hidData& data) override;
+    void         mouseUp(hidData& data) override;
+    void         mouseWheel(hidData& data) override;
+    virtual void globalMouseDown(hidData& data);
 
     bool validateInputToString(int ch) const;
     void checkLimits();

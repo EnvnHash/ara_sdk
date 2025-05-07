@@ -100,7 +100,7 @@ class DemoView_Resources : public DemoView {
 public:
     DemoView_Resources();
     void                init() override;
-    bool                draw(uint32_t* objId) override;
+    bool                draw(uint32_t& objId) override;
     void                drawColors(ResNode* node, int& it);
 
 private:

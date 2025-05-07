@@ -11,7 +11,7 @@ public:
         m_canReceiveDrag = true;
     }
     ~UIScrollBarDragArea() override = default;
-    void mouseDrag(hidData* data) override;
+    void mouseDrag(hidData& data) override;
 
 private:
     glm::vec2 m_startDragScrollViewTrans{0.f};
@@ -27,7 +27,7 @@ public:
 
     void init() override;
     void updateMatrix() override;
-    void mouseDown(hidData* data) override;
+    void mouseDown(hidData& data) override;
 
     void setType(ScrollBar::e_stype type) { s_Type = type; }
     void setScrollOffset(float offsX, float offsY) {

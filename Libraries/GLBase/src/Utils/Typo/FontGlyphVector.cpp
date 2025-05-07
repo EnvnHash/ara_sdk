@@ -550,7 +550,9 @@ e_fontline *FontGlyphVector::AddLine(e_fontdglyph *p_begin, e_fontdglyph *p_end,
                    text_align_x == align::justify_ex) {  // JUSTIFIED (4 is whole, even EOL)
 
             bool doit = true;
-            if (text_align_x == align::justify && eol) doit = false;
+            if (text_align_x == align::justify && eol) {
+                doit = false;
+            }
 
             if (doit) {
                 float xo = 0;
@@ -569,7 +571,7 @@ e_fontline *FontGlyphVector::AddLine(e_fontdglyph *p_begin, e_fontdglyph *p_end,
                     while (dg->cp <= 32 && dg > p_begin) {
                         dg->osize.x = 0;
                         dg->opos.x  = width;
-                        dg--;
+                        --dg;
                     }
 
                     if (dg > p_begin && dg->cp > 32) {

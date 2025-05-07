@@ -503,20 +503,20 @@ void SPObjectSelector::mouseMove(float x, float y) {
     }
 }
 
-void SPObjectSelector::keyDown(hidData* data) {
-    if (data->key == GLSG_KEY_LEFT_CONTROL || data->key == GLSG_KEY_RIGHT_CONTROL) {
+void SPObjectSelector::keyDown(hidData& data) {
+    if (data.key == GLSG_KEY_LEFT_CONTROL || data.key == GLSG_KEY_RIGHT_CONTROL) {
         m_cfState = cfState::fine;
     }
 
-    if (data->key == GLSG_KEY_LEFT_SHIFT) {
+    if (data.key == GLSG_KEY_LEFT_SHIFT) {
         m_cfState = cfState::coarse;
     }
 
     // if there is a selected object (that is a gizmo placed ontop of it) switch
     // the selected axis first rotate through the simple axes, then in case of a
     // translation gizmo, through the planes
-    if (m_selectedObjectNode && m_cs && m_cs->s_activeGizmo && data->key == GLSG_KEY_TAB) {
-        if (data->shiftPressed) {
+    if (m_selectedObjectNode && m_cs && m_cs->s_activeGizmo && data.key == GLSG_KEY_TAB) {
+        if (data.shiftPressed) {
             m_cs->s_activeGizmo->selectPrevAxis();
         } else {
             m_cs->s_activeGizmo->selectNextAxis();
@@ -524,8 +524,8 @@ void SPObjectSelector::keyDown(hidData* data) {
     }
 }
 
-void SPObjectSelector::keyUp(hidData* data) {
-    if (data->key == GLSG_KEY_LEFT_CONTROL || data->key == GLSG_KEY_RIGHT_CONTROL || data->key == GLSG_KEY_LEFT_SHIFT) {
+void SPObjectSelector::keyUp(hidData& data) {
+    if (data.key == GLSG_KEY_LEFT_CONTROL || data.key == GLSG_KEY_RIGHT_CONTROL || data.key == GLSG_KEY_LEFT_SHIFT) {
         m_cfState = cfState::normal;
     }
 }

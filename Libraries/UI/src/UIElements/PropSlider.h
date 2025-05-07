@@ -37,7 +37,7 @@ public:
         m_Edit->setValue((*prop)());
         m_Edit->setStep(prop->getStep());
 
-        m_Slider->addMouseDragCb([this, prop](hidData* data) {
+        m_Slider->addMouseDragCb([this, prop](hidData& data) {
             auto newValue = static_cast<T>(m_Slider->getValue() * (static_cast<float>(prop->getMax()) - static_cast<float>(prop->getMin())) +
                                static_cast<float>(prop->getMin()));
             newValue = static_cast<T>(static_cast<int>(static_cast<float>(newValue) / static_cast<float>(prop->getStep()))) * prop->getStep();
@@ -46,10 +46,10 @@ public:
             } else {
                 m_Edit->setValue(newValue);
             }
-            data->consumed = true;
+            data.consumed = true;
         });
 
-        m_Slider->getKnob()->addMouseUpCb([this, prop](hidData* data) {
+        m_Slider->getKnob()->addMouseUpCb([this, prop](hidData& data) {
             if (m_onMouseUpUpdtMode) {
                 auto newValue = static_cast<T>(m_Slider->getValue() * (static_cast<float>(prop->getMax()) - static_cast<float>(prop->getMin())) +
                                    static_cast<float>(prop->getMin()));

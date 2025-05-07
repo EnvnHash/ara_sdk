@@ -34,7 +34,7 @@ public:
 
     void init() override;
     void connectUINodes();
-    void startMouseDrag(TrackBallCam* cam, hidData* data);
+    void startMouseDrag(TrackBallCam* cam, hidData& data);
     void resetMousePos();
     void resetZoom();
     void objectToolClicked(ToolBarIcon idx);

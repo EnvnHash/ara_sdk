@@ -36,10 +36,10 @@ public:
     }
 
     void setDisplaySize(int w, int h);
-    void keyDown(hidData* data) override;
-    void mouseDown(hidData* data) override;
-    void mouseUp(hidData* data) override;
-    void mouseWheel(hidData* data) override;
+    void keyDown(hidData& data) override;
+    void mouseDown(hidData& data) override;
+    void mouseUp(hidData& data) override;
+    void mouseWheel(hidData& data) override;
 
     [[nodiscard]] UINode* getWorkingArea() const { return ui_workingArea; }
     [[nodiscard]] UINode* getContent() const { return ui_content; }

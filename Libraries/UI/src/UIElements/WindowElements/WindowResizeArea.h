@@ -17,10 +17,10 @@ public:
     void init() override;
     void updateDrawData() override;
 
-    void mouseUp(hidData* data) override;
-    void mouseDrag(hidData* data) override;
-    void mouseIn(hidData* data) override;
-    void mouseOut(hidData* data) override;
+    void mouseUp(hidData& data) override;
+    void mouseDrag(hidData& data) override;
+    void mouseIn(hidData& data) override;
+    void mouseOut(hidData& data) override;
 
     void setAreaType(AreaType t) { m_type = t; }
 

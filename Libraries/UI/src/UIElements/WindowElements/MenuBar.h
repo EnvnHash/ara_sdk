@@ -30,9 +30,9 @@ public:
     void setMaximizeFunc(std::function<void()> func) { m_maximizeFunc = std::move(func); }
     void setRestoreFunc(std::function<void()> func) { m_restoreFunc = std::move(func); }
 
-    void mouseUp(hidData* data) override;
-    void mouseDown(hidData* data) override;
-    void mouseDrag(hidData* data) override;
+    void mouseUp(hidData& data) override;
+    void mouseDown(hidData& data) override;
+    void mouseDrag(hidData& data) override;
     void setEnableMinMaxButtons(bool val);
     [[maybe_unused]] void hideButtons(bool val);
 
