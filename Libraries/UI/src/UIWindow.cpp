@@ -526,21 +526,7 @@ void UIWindow::copyToScreen() const {
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         glBlitFramebuffer(0, 0, m_sceneFbo->getWidth(), m_sceneFbo->getHeight(), 0, 0, m_sceneFbo->getWidth(),
-                          m_sceneFbo->getHeight(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
-        /*
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-                // draw the FBO
-                m_stdTex->begin();
-                m_stdTex->setIdentMatrix4fv("m_pvm");
-                m_stdTex->setUniform1i("tex", 0);
-
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, m_sceneFbo->getColorImg(0));
-
-                m_normQuad->draw();
-        */
-    }
+                          m_sceneFbo->getHeight(), GL_COLOR_BUFFER_BIT, GL_LINEAR);}
 }
 
 void UIWindow::update() {
@@ -556,7 +542,9 @@ void UIWindow::update() {
 
 void UIWindow::iterate() const {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    if (m_selfManagedCtx && m_winHandle->isRunning() && m_winHandle->isInited()) m_winHandle->iterate();
+    if (m_selfManagedCtx && m_winHandle->isRunning() && m_winHandle->isInited()) {
+        m_winHandle->iterate();
+    }
 #endif
 }
 
@@ -1272,7 +1260,9 @@ void UIWindow::setInputFocusNode(UINode *node, bool procLostFocus) {
 
     m_inputFocusNode = node;
 
-    if (m_inputFocusNode) m_inputFocusNode->onGotFocus();
+    if (m_inputFocusNode) {
+        m_inputFocusNode->onGotFocus();
+    }
 }
 
 void UIWindow::setAppIcon(std::string &path) {
@@ -1356,7 +1346,7 @@ void UIWindow::removeGlobalSetViewportCb(void* ptr) {
     if (m_globalSetViewportCb.empty()) {
         return;
     }
-    if (auto it = m_globalSetViewportCb.find(ptr); it != m_globalSetViewportCb.end()) {
+    if (const auto it = m_globalSetViewportCb.find(ptr); it != m_globalSetViewportCb.end()) {
         m_globalSetViewportCb.erase(it);
     }
 }
@@ -1379,9 +1369,10 @@ void UIWindow::addGlobalMouseUpLeftCb(void* ptr, const std::function<void(hidDat
 }
 
 void UIWindow::removeGlobalMouseUpLeftCb(void* ptr) {
-    if (m_globalMouseUpLeftCb.empty()) return;
-    auto it = m_globalMouseUpLeftCb.find(ptr);
-    if (it != m_globalMouseUpLeftCb.end()) {
+    if (m_globalMouseUpLeftCb.empty()) {
+        return;
+    }
+    if (const auto it = m_globalMouseUpLeftCb.find(ptr); it != m_globalMouseUpLeftCb.end()) {
         m_globalMouseUpLeftCb.erase(it);
     }
 }
@@ -1404,9 +1395,10 @@ void UIWindow::addGlobalMouseMoveCb(void* ptr, const std::function<void(hidData&
 }
 
 void UIWindow::removeGlobalMouseMoveCb(void* ptr) {
-    if (m_globalMouseMoveCb.empty()) return;
-    auto it = m_globalMouseMoveCb.find(ptr);
-    if (it != m_globalMouseMoveCb.end()) {
+    if (m_globalMouseMoveCb.empty()) {
+        return;
+    }
+    if (const auto it = m_globalMouseMoveCb.find(ptr); it != m_globalMouseMoveCb.end()) {
         m_globalMouseMoveCb.erase(it);
     }
 }
@@ -1416,9 +1408,10 @@ void UIWindow::addGlobalKeyDownCb(void* ptr, const std::function<void(hidData&)>
 }
 
 void UIWindow::removeGlobalKeyDownCb(void* ptr) {
-    if (m_globalKeyDownCb.empty()) return;
-    auto it = m_globalKeyDownCb.find(ptr);
-    if (it != m_globalKeyDownCb.end()) {
+    if (m_globalKeyDownCb.empty()) {
+        return;
+    }
+    if (const auto it = m_globalKeyDownCb.find(ptr); it != m_globalKeyDownCb.end()) {
         m_globalKeyDownCb.erase(it);
     }
 }
@@ -1428,9 +1421,10 @@ void UIWindow::addGlobalKeyUpCb(void* ptr, const std::function<void(hidData&)>& 
 }
 
 void UIWindow::removeGlobalKeyUpCb(void* ptr) {
-    if (m_globalKeyUpCb.empty()) return;
-    auto it = m_globalKeyUpCb.find(ptr);
-    if (it != m_globalKeyUpCb.end()) {
+    if (m_globalKeyUpCb.empty()) {
+        return;
+    }
+    if (auto it = m_globalKeyUpCb.find(ptr); it != m_globalKeyUpCb.end()) {
         m_globalKeyUpCb.erase(it);
     }
 }

@@ -61,7 +61,6 @@ bool AssetManager::Load(const string &path) {
             // get fonts
             if (auto fontsNode = findNode("fonts")) {
                 for (const auto &f : fontsNode->m_node) {
-                    LOG << "inset to fontLUT " << f->m_name;
                     m_fontLUT.insert({f->m_name, e_font_lut{f->m_value, 20}});
                 }
             }
@@ -78,8 +77,8 @@ bool AssetManager::Load(const string &path) {
 }
 
 bool AssetManager::getvalue(string &dest, const string &path) {
-    auto *node = findNode<AssetFont>(path);
-    if (node == nullptr) {
+    auto node = findNode<AssetFont>(path);
+    if (!node) {
         return false;
     }
 
@@ -88,9 +87,8 @@ bool AssetManager::getvalue(string &dest, const string &path) {
 }
 
 bool AssetManager::getvalue(string &dest, const string &path, int index) {
-    auto *node = findNode<AssetFont>(path);
-
-    if (node == nullptr) {
+    auto node = findNode<AssetFont>(path);
+    if (!node) {
         return false;
     }
 
@@ -149,7 +147,7 @@ Font *AssetManager::getGLFont(string font_type_path, int size, float pixRatio) {
 
 size_t AssetManager::loadResource(ResNode *node, std::vector<uint8_t> &dest, const string& path) {
     if (node) {
-        e_file_bind                   eb{node->getPath(), path};
+        e_file_bind eb{node->getPath(), path};
         if (ranges::find_if(m_fileBind, [&](const e_file_bind &e) {
                  return e.file_path == eb.file_path && e.node_path == eb.node_path;
              }) == m_fileBind.end()) {
@@ -176,29 +174,20 @@ bool AssetManager::checkForResSourceChange() {
         return false;
     }
 
-    filesystem::file_time_type ft;
-
     try {
-        ft = filesystem::last_write_time(m_resSysFile);
+        return filesystem::last_write_time(m_resSysFile) != m_resFileLastTime;
     } catch (...) {
         return false;
     }
-
-    return ft != m_resFileLastTime;
 }
 
 bool AssetManager::checkForChangesInFolderFiles() {
-    bool change = false;
-
-    if (usingComp()) {
-        return false;
-    }
-
-    if (!isOK()) {
+    if (usingComp() || !isOK()) {
         return false;
     }
 
     filesystem::file_time_type ft;
+    bool change = false;
 
     // check for file deletion or modification
     for (auto &e: m_resFolderFiles) {

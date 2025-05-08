@@ -74,6 +74,7 @@ public:
     }
 
     virtual void onWindowSize(int width, int height) = 0;
+
     virtual void onFrameBufferSize(int width, int height) {}
 
     void onScroll(double xpos, double ypos) const {
@@ -152,6 +153,7 @@ public:
     bool             isRunning() const { return m_run; }
     virtual bool     getRequestOpen() const { return m_requestOpen; }
     virtual bool     getRequestClose() const { return m_requestClose; }
+    virtual bool     getForceRedraw() const { return m_forceRedraw; }
     virtual void     requestOpen(bool val) { m_requestOpen = val; }
     virtual void     requestClose(bool val) { m_requestClose = val; }
 

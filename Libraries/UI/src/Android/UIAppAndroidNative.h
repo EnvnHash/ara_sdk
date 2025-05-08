@@ -15,9 +15,10 @@ class UIAppAndroidNative : public UIApplicationBase {
 public:
     UIAppAndroidNative();
 
-    static bool IsAnimating();
-    void        setAndroidApp(struct android_app* app) {
-        if (!app) return;
+    void setAndroidApp(struct android_app* app) {
+        if (!app) {
+            return;
+        }
         m_androidApp         = app;
         m_glbase.android_app = app;
     }
@@ -35,7 +36,7 @@ public:
 
     /// wrapper for the getExternalStorageDirectory()
     /// https://developer.android.com/reference/android/os/Environment#getExternalStorageDirectory()
-    std::filesystem::path getExternalStorageDirectory();
+    std::filesystem::path getExternalStorageDirectory() const;
 
     /**
      * \brief Gets the internal name for an android permission.
@@ -72,7 +73,7 @@ public:
      * \param[in] perm the name of the permission, e.g.,
      * "READ_EXTERNAL_STORAGE", "WRITE_TERNAL_STORAGE".
      */
-    void check_permission(std::string perm);
+    void check_permission(const std::string& perm);
 
     /// read files from the android projetcs asset directory (if there is any)
     bool AssetReadFile(std::string& name, std::vector<uint8_t>& buf);
@@ -82,9 +83,9 @@ public:
     void startAndroidEventLoop();
     void set_requested_screen_orientation(int an_orientation);
 
-    static inline bool mHasFocus  = false;
-    static inline bool mIsVisible = false;
-    static inline bool mHasWindow = false;
+    static inline bool m_hasFocus  = false;
+    static inline bool m_isVisible = false;
+    static inline bool m_hasWindow = false;
 
     android_app_state   m_saved_state;
     struct android_app* m_androidApp          = nullptr;

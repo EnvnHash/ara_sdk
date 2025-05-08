@@ -19,7 +19,6 @@ UINode::UINode() {
     setName(getTypeName<UINode>());
 }
 
-
 UINode* UINode::getNode(const std::string& name) {
     UINode* fn = nullptr;
     getNodeIt(this, &fn, name);
@@ -124,7 +123,6 @@ void UINode::remove_child(UINode* node) {
 
 void UINode::clearChildren() {
     removeFocus();
-
     m_reqTreeChanged = true;
     m_children.clear();
 }
@@ -238,14 +236,11 @@ void UINode::drawAsRoot(uint32_t& objId) {
 #ifdef ARA_DEBUG
     postGLError();
 #endif
-
     m_scissorStack.stack.clear();
     m_scissorStack.stack.emplace_back(0, 0, m_viewPort.z * getPixRatio(), m_viewPort.w * getPixRatio());
 
     // first update all matrices and calculate the children's bounding boxes
     updtMatrIt(&m_scissorStack);
-
-    // now iterate again through the scenegraph and draw
 
     // scissor stack must be in hardware pixel coordinates, 0|0 is bottom left
     glScissor(0, 0, static_cast<GLsizei>(m_viewPort.z * getPixRatio()), static_cast<GLsizei>(m_viewPort.w * getPixRatio()));
@@ -260,8 +255,9 @@ void UINode::drawAsRoot(uint32_t& objId) {
         m_sharedRes->drawMan->addSet();
     }
 
+    // iterate again through the ui-graph and draw
     bool skip = true;
-    drawIt(m_scissorStack, objId, m_treeChanged, &skip);
+    drawIt(m_scissorStack, objId, m_treeChanged, skip);
 
     if (m_treeChanged) {
         m_sharedRes->drawMan->rebuildVaos();
@@ -271,13 +267,13 @@ void UINode::drawAsRoot(uint32_t& objId) {
     }
 }
 
-void UINode::drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool* skip) {
+void UINode::drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool& skip) {
     // draw to the screen and the object map
     if (!m_visible || !m_inited || m_isOutOfParentBounds || m_referenceDrawing) {
         return;
     }
 
-    if (!(*skip)) {
+    if (!skip) {
         if (!glm::all(glm::equal(m_sc, ss.active))) {
             ss.active = m_sc;
             if (m_drawImmediate) {
@@ -312,7 +308,7 @@ void UINode::drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool* s
         }
 
     } else {
-        (*skip) = false;
+        skip = false;
     }
 
     for (const auto& it : m_children) {
@@ -354,7 +350,6 @@ void UINode::updtMatrIt(scissorStack* ss) {
     // continue iterating through the children
     for (const auto& it : m_children) {
         it->updtMatrIt(ss);
-
         // keep track of the children's boundingBox
         if (it->isVisible()) {
             it->recChildrenBoundBox(m_childBoundBox);
@@ -399,7 +394,6 @@ void UINode::checkInit() {
                 m_state = m_lastState;
             }
         }
-
         m_inited = true;
     }
 }
@@ -407,7 +401,6 @@ void UINode::checkInit() {
 void UINode::checkStyles() {
     if (m_inited && getWindow() && (getWindow()->resChanged() || m_styleChanged || !m_styleClassInited)) {
         updateStyle();
-
         m_drawParamChanged = true;
 
         // in case the window was resize before the res.txt was changed, the styledefaults loaded will still in respect
@@ -622,7 +615,7 @@ bool UINode::objPosIt(ObjPosIt& opi) {
         opi.parents.emplace_back(opi.it);
         opi.list = &(*opi.it)->m_children;
         opi.it   = (*opi.it)->m_children.end() - 1;
-        opi.treeLevel++;
+        ++opi.treeLevel;
     } else {
         // try to step towards front
         if (opi.it != opi.list->begin()) {
@@ -636,7 +629,7 @@ bool UINode::objPosIt(ObjPosIt& opi) {
             opi.list = &(*opi.parents.back())->getParent()->m_children;
             opi.it   = opi.parents.back();
             opi.parents.pop_back();
-            opi.treeLevel--;
+            --opi.treeLevel;
 
             // try to step towards front
             if (opi.it == opi.list->begin()) {
@@ -665,7 +658,6 @@ void UINode::limitDrawVaoToBounds(const vector<DivVaoData>::iterator& dIt, vec2&
     for (int i = 0; i < 2; i++) {
         // convert to pixels and limit to NDC bounds
         dIt->pos[i] = (dIt->pos[i] * 0.5f + 0.5f) * vp[2 + i];
-
         uvDiff[i] = dIt->pos[i];  // save initial pixel position for later uv correction
 
         // limit same as glScissor TODO: this causes problems with border-radius, review
@@ -776,7 +768,6 @@ void UINode::applyStyle() {
 
 void UINode::setSharedRes(UISharedRes* shared) {
     UINodeGeom::setSharedRes(shared);
-
     if (shared) {
         m_shCol     = shared->shCol;
         m_objSel    = shared->objSel;
@@ -784,7 +775,6 @@ void UINode::setSharedRes(UISharedRes* shared) {
         m_shdr      = m_shCol->getUIColBorder();
         m_glbase    = shared->glbase;
     }
-
     setChangeCb([this] { onResize(); });
 }
 

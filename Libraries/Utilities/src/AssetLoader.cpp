@@ -79,10 +79,6 @@ memRet AssetLoader::loadAssetToMem(vector<uint8_t>& buf, const string& path) {
     auto compPathStr = getSanitizedAssetPath(compPath);
     auto fs = cmrc::ara::get_filesystem();
 
-    for (auto&& entry : fs.iterate_directory("")) {
-        std::cout << entry.filename() << '\n';
-    }
-        
     if (!fs.exists(compPathStr)) {
         LOGE << "Could not get " << compPathStr << " from cmrc file system";
         return { 0, std::filesystem::file_time_type{} };
@@ -96,7 +92,7 @@ memRet AssetLoader::loadAssetToMem(vector<uint8_t>& buf, const string& path) {
     size_t size = file.size();
     if (size > 0) {
         buf.resize(size);
-        copy(file.begin(), file.end(), buf.begin());
+        ranges::copy(file, buf.begin());
     }
 
     return { buf.size(), std::filesystem::file_time_type{} };

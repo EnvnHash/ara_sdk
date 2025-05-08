@@ -15,21 +15,16 @@ UIAppAndroidNative::UIAppAndroidNative() : UIApplicationBase() {
     m_threadedWindowRendering = false;
 }
 
-bool UIAppAndroidNative::IsAnimating() {
-    return mHasFocus && mIsVisible && mHasWindow;
-}
-
 void UIAppAndroidNative::startAndroidEventLoop() {
     // Read all pending events.
-    // int ident;
     int                         events;
     struct android_poll_source* source;
     GLWindow*                   win = nullptr;
 
     while (true) {
-        // If not animating, block until we get an event; if animating, don't
-        // block.
-        while ((ALooper_pollOnce(IsAnimating() ? 0 : -1, nullptr, &events, (void**)&source)) >= 0) {
+        //  block until we get an event
+        while ((win && win->getForceRedraw())
+            || (ALooper_pollOnce(-1, nullptr, &events, (void**)&source) >= 0)) {
             // Process this event. calls  android_handle_cmd
             if (source != nullptr) {
                 source->process(m_androidApp, source);
@@ -40,14 +35,14 @@ void UIAppAndroidNative::startAndroidEventLoop() {
                 // engine_term_display(&engine);
                 return;
             }
-        }
 
-        // draw frame
-        if (win) {
-            m_glbase.getWinMan()->procEventQueue();
-            win->draw();
-        } else {
-            win = m_glbase.getWinMan()->getFirstWin();
+            // draw frame
+            if (win) {
+                m_glbase.getWinMan()->procEventQueue();
+                win->draw();
+            } else {
+                win = m_glbase.getWinMan()->getFirstWin();
+            }
         }
     }
 }
@@ -112,7 +107,7 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
         case APP_CMD_INIT_WINDOW:
             // The window is being shown, get it ready.
             if (ctx->m_androidApp->window && !ctx->m_inited) {
-                mHasWindow                         = true;
+                m_hasWindow                         = true;
                 ctx->m_androidNativeWin            = ctx->m_androidApp->window;
                 float density                      = ctx->get_density(ANativeWindow_getWidth(ctx->m_androidApp->window),
                                                                       ANativeWindow_getHeight(ctx->m_androidApp->window));
@@ -123,30 +118,12 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
             break;
         case APP_CMD_TERM_WINDOW:
             // The window is being hidden or closed, clean it up.
-            // engine_term_display(engine);
             break;
         case APP_CMD_GAINED_FOCUS:
-            mHasFocus = true;
-            // When our app gains focus, we start monitoring the accelerometer.
-            /*          if (ctx->m_accelerometerSensor) {
-                    ASensorEventQueue_enableSensor(ctx->m_sensorEventQueue,
-               ctx->m_accelerometerSensor);
-                    // We'd like to get 60 events per second (in us).
-                    ASensorEventQueue_setEventRate(ctx->m_sensorEventQueue,
-               ctx->m_accelerometerSensor, (1000L/60)*1000);
-                }
-            */
+            m_hasFocus = true;
             break;
         case APP_CMD_LOST_FOCUS:
-            mHasFocus = false;
-
-            // When our app loses focus, we stop monitoring the accelerometer.
-            // This is to avoid consuming battery while not being used.
-            // if (ctx->m_accelerometerSensor) {
-            //    ASensorEventQueue_disableSensor(ctx->m_sensorEventQueue,
-            //    ctx->m_accelerometerSensor);
-            // }
-            // Also stop drawing
+            m_hasFocus = false;
             break;
         case APP_CMD_INPUT_CHANGED: break;
         case APP_CMD_WINDOW_RESIZED: break;
@@ -158,14 +135,13 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
             }
         } break;
         case APP_CMD_CONFIG_CHANGED: {
-            // ctx->android_get_orientation(app);
         } break;
         case APP_CMD_LOW_MEMORY: break;
         case APP_CMD_START:
             for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onStart]) {
                 it(&ctx->m_cmd_data);
             }
-            mIsVisible = true;
+            m_isVisible = true;
             break;
         case APP_CMD_RESUME:
             for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onResume]) {
@@ -176,7 +152,7 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
             for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onPause]) {
                 it(&ctx->m_cmd_data);
             }
-            mIsVisible = false;
+            m_isVisible = false;
             break;
         case APP_CMD_STOP:
             for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onStop]) {
@@ -212,11 +188,9 @@ int32_t UIAppAndroidNative::get_orientation() {
                         int rotation = jni->CallIntMethod(display, idWindowManager_getRotation);
 
                         if (rotation == 0 || rotation == 2) {
-                            // Context->ScreenRotation = ESR_PORTRAIT;
-                            // LOG << "default screen rotation is PORTRAIT";
+                            LOG << "default screen rotation is PORTRAIT";
                         } else {
-                            // Context->ScreenRotation = ESR_LANDSCAPE;
-                            // LOG << "default screen rotation is LANDSCAPE";
+                            LOG << "default screen rotation is LANDSCAPE";
                         }
 
                         m_androidApp->activity->vm->DetachCurrentThread();
@@ -250,8 +224,6 @@ float UIAppAndroidNative::get_density(float width_pixels, float height_pixels) {
                 jni->GetMethodID(classNativeActivity, "getWindowManager", "()Landroid/view/WindowManager;");
             auto getDefaultDisplay =
                 jni->GetMethodID(classWindowManager, "getDefaultDisplay", "()Landroid/view/Display;");
-            // jmethodID newDisplayMetrics =
-            // jni->GetMethodID(displayMetricsClass, "DisplayMetrics", "()V");
 
             auto windowManager = jni->CallObjectMethod(m_androidApp->activity->clazz, getWindowManager);
             auto display       = jni->CallObjectMethod(windowManager, getDefaultDisplay);
@@ -284,7 +256,7 @@ float UIAppAndroidNative::get_density(float width_pixels, float height_pixels) {
     return density;
 }
 
-std::filesystem::path UIAppAndroidNative::getExternalStorageDirectory() {
+std::filesystem::path UIAppAndroidNative::getExternalStorageDirectory() const {
     if (!m_androidApp) {
         return {};
     }
@@ -342,15 +314,15 @@ std::filesystem::path UIAppAndroidNative::getExternalStorageDirectory() {
 }
 
 bool UIAppAndroidNative::AssetReadFile(std::string& assetName, std::vector<uint8_t>& buf) {
-    if (!assetName.length()) {
+    if (assetName.empty()) {
         return false;
     }
 
     auto assetDescriptor =  AAssetManager_open(m_androidApp->activity->assetManager, assetName.c_str(), AASSET_MODE_BUFFER);
-    size_t fileLength = AAsset_getLength(assetDescriptor);
+    auto fileLength = AAsset_getLength(assetDescriptor);
 
     buf.resize(fileLength);
-    int64_t readSize = AAsset_read(assetDescriptor, buf.data(), buf.size());
+    auto readSize = AAsset_read(assetDescriptor, buf.data(), buf.size());
 
     AAsset_close(assetDescriptor);
 
@@ -358,13 +330,10 @@ bool UIAppAndroidNative::AssetReadFile(std::string& assetName, std::vector<uint8
 }
 
 jstring UIAppAndroidNative::permission_name(JNIEnv* lJNIEnv, const char* perm_name) {
-    // nested class permission in class android.Manifest,
-    // hence android 'slash' Manifest 'dollar' permission
-    auto   ClassManifestpermission = lJNIEnv->FindClass("android/Manifest$permission");
+    // nested class permission in class android.Manifest, hence android 'slash' Manifest 'dollar' permission
+    auto ClassManifestpermission = lJNIEnv->FindClass("android/Manifest$permission");
     auto lid_PERM = lJNIEnv->GetStaticFieldID(ClassManifestpermission, perm_name, "Ljava/lang/String;");
-    auto  ls_PERM  = (jstring)(lJNIEnv->GetStaticObjectField(ClassManifestpermission, lid_PERM));
-
-    return ls_PERM;
+    return static_cast<jstring>(lJNIEnv->GetStaticObjectField(ClassManifestpermission, lid_PERM));
 }
 
 bool UIAppAndroidNative::has_permission(const char* perm_name) {
@@ -457,7 +426,7 @@ void UIAppAndroidNative::request_permissions(std::vector<std::string> perms) {
     }
 }
 
-void UIAppAndroidNative::check_permission(std::string perm) {
+void UIAppAndroidNative::check_permission(const std::string& perm) {
     if (!has_permission(perm.c_str())) {
         request_permissions({perm});
     }

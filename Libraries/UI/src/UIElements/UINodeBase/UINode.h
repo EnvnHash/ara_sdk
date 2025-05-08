@@ -246,7 +246,7 @@ public:
     virtual void drawAsRoot(uint32_t& objId);
 
     /** the scenegraph drawing iteration loop */
-    virtual void drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool* skipFirst);
+    virtual void drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool& skipFirst);
     virtual bool draw(uint32_t& objId) { return true; }
     virtual bool drawIndirect(uint32_t& objId) { return true; }
     virtual void updateDrawData() {}

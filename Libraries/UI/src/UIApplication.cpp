@@ -125,7 +125,7 @@ void UIApplication::openInfoDiag(const InfoDiagParams& params) {
         m_infoDiag->setRemoveCb([this] {
             m_glbase.runOnMainThread([this] {
                 if (m_infoDiag) {
-                    auto ptr   = m_infoDiag;
+                    const auto ptr   = m_infoDiag;
                     m_infoDiag = nullptr;
                     removeWindow(ptr);
                 }
@@ -196,7 +196,7 @@ void UIApplication::openInfoDiag(infoDiagType tp, const std::string& msg, const 
     ivec2 diagSize = ivec2(750, 150);
 
     if (!m_uiWindows.empty()) {
-        diagPos = (static_cast<ivec2>(m_uiWindows.front()->getSize()) - diagSize) / 2 + m_uiWindows.front()->getPosition();
+        diagPos = (m_uiWindows.front()->getSize() - diagSize) / 2 + m_uiWindows.front()->getPosition();
     }
 
     openInfoDiag(InfoDiagParams{
@@ -244,7 +244,9 @@ void UIApplication::closeInfoDiag() {
             // there may be situation where the closeInfoDiag will reach even
             // before the window is created
             m_infoDiagCreatedCb = [this] {
-                if (m_infoDiag) m_infoDiag->close();
+                if (m_infoDiag) {
+                    m_infoDiag->close();
+                }
             };
         }
         return true;

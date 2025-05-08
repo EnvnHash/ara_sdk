@@ -31,7 +31,7 @@ public:
     memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::filesystem::path& path);
     memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::string& path);
 
-    std::string getSanitizedAssetPath(const std::filesystem::path& p);
+    static std::string getSanitizedAssetPath(const std::filesystem::path& p);
 
     void setAssetPath(const std::filesystem::path& p) {
         m_assetPath = p;
@@ -41,7 +41,7 @@ public:
         return m_assetPath / p;
     }
 
-    std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
+    static std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
 
     bool usingCmrc() {
 #ifdef ARA_USE_CMRC

@@ -89,12 +89,11 @@ include(\${CMAKE_MODULE_PATH}/GLBaseDepInclude.cmake)
 include(\${CMAKE_MODULE_PATH}/UtilitiesDepInclude.cmake)
 include(\${CMAKE_MODULE_PATH}/CreateSymLink.cmake)
 
-#add_subdirectory(Assets)
 # copy the sdk to the project as a symbolic link
-create_symlink(${ASSETS_FOLDER} \${CMAKE_SOURCE_DIR}/Assets)
+create_symlink(${ASSETS_FOLDER}/resdata \${CMAKE_SOURCE_DIR}/resdata)
 include(CMakeRC)
 
-file(GLOB_RECURSE RESOURCES \${CMAKE_SOURCE_DIR}/Assets/resdata/* )
+file(GLOB_RECURSE RESOURCES \${CMAKE_SOURCE_DIR}/resdata/* )
 cmrc_add_resource_library(resources ALIAS ara::rc NAMESPACE ara \${RESOURCES})
 
 

@@ -13,7 +13,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-
 #if defined(ARA_USE_EGL) && !defined(ARA_USE_GLFW)
 
 #include "EGLWindow.h"
@@ -26,7 +25,7 @@ using namespace std::chrono;
 namespace ara {
 
 std::unique_ptr<GLWindowBase> EGLWindow::m_osWin;        // EGL display connection
-EGLDisplay                    EGLWindow::m_display = 0;  // EGL display connection
+EGLDisplay                    EGLWindow::m_display = nullptr;  // EGL display connection
 
 int EGLWindow::init(const glWinPar& gp) {
     m_widthVirt   = gp.size.x;
@@ -41,7 +40,8 @@ int EGLWindow::init(const glWinPar& gp) {
     EGLint minorVersion = 0;
 
 #ifdef __ANDROID__
-    m_esContext.eglNativeWindow = (ANativeWindow*)gp.extWinHandle;
+    m_esContext.eglNativeWindow = static_cast<ANativeWindow*>(gp.extWinHandle);
+
     // For Android, get the width/height from the window rather than what the application requested.
     m_esContext.width  = ANativeWindow_getWidth(m_esContext.eglNativeWindow);
     m_esContext.height = ANativeWindow_getHeight(m_esContext.eglNativeWindow);
@@ -75,7 +75,7 @@ int EGLWindow::init(const glWinPar& gp) {
     LOG << "USING EGL " << majorVersion << "." << minorVersion;
 
     EGLConfig config = nullptr;
-    GLint     flags  = ES_WINDOW_RGB | ES_WINDOW_DEPTH | ES_WINDOW_STENCIL;
+    auto      flags  = ES_WINDOW_RGB | ES_WINDOW_DEPTH | ES_WINDOW_STENCIL;
 
     {
         EGLint numConfigs   = 0;
@@ -132,8 +132,7 @@ int EGLWindow::init(const glWinPar& gp) {
 #endif
 
     // Create a surface
-    m_esContext.eglSurface =
-        eglCreateWindowSurface(m_esContext.eglDisplay, config, m_esContext.eglNativeWindow, nullptr);
+    m_esContext.eglSurface = eglCreateWindowSurface(m_esContext.eglDisplay, config, m_esContext.eglNativeWindow, nullptr);
     if (m_esContext.eglSurface == EGL_NO_SURFACE) {
         LOGE << "EGLWindow Error eglCreateWindowSurface failed";
         return GL_FALSE;
@@ -142,8 +141,6 @@ int EGLWindow::init(const glWinPar& gp) {
     // Create a GL context
     EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
     m_esContext.eglContext  = eglCreateContext(m_esContext.eglDisplay, config, gp.shareCont, contextAttribs);
-    // m_esContext.eglContext = eglCreateContext(m_esContext.eglDisplay, config,
-    // gp.shareCont, nullptr);
     if (m_esContext.eglContext == EGL_NO_CONTEXT) {
         LOGE << "EGLWindow Error eglCreateContext failed";
         return GL_FALSE;
@@ -172,10 +169,8 @@ int EGLWindow::init(const glWinPar& gp) {
         auto info = glGetString(name);
         LOG << "OpenGL Info: " << info;
     }
-    // Initialize GL state.
-    // glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-    // glShadeModel(GL_SMOOTH);
 
+    // Initialize GL state.
     glClearColor(0.f, 0.f, 0.f, 0.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     swap();
@@ -197,16 +192,17 @@ void EGLWindow::runLoop(std::function<bool(double, double, int)> f, bool eventBa
     m_run            = true;
     m_eventBasedLoop = eventBased;
 
-    if (!eglMakeCurrent(m_esContext.eglDisplay, m_esContext.eglSurface, m_esContext.eglSurface, m_esContext.eglContext))
+    if (!eglMakeCurrent(m_esContext.eglDisplay, m_esContext.eglSurface, m_esContext.eglSurface, m_esContext.eglContext)) {
         LOGE << "EGLWindow::runLoop could not make context current";
+    }
 
     // Loop until the user closes the window
     while (m_run) {
-        if (eventBased && m_initSignaled && !m_forceRedraw) m_iterate.wait(0);
+        if (eventBased && m_initSignaled && !m_forceRedraw) {
+            m_iterate.wait(0);
+        }
 
-        // getFps();
         m_forceRedraw = false;
-
         draw();
 
         if (m_run && m_glCb) {
@@ -220,7 +216,9 @@ void EGLWindow::runLoop(std::function<bool(double, double, int)> f, bool eventBa
     }
     m_run = false;
 
-    if (destroyWinOnExit) destroy();
+    if (destroyWinOnExit) {
+        destroy();
+    }
 
     m_exitSignal.notify();
 }
@@ -244,10 +242,11 @@ void EGLWindow::stopDrawThread() {
 void EGLWindow::draw() {
     m_lastTime   = system_clock::now();
     auto actDifF = std::chrono::duration<double, std::milli>(m_lastTime - m_startTime).count();
-
     glViewport(0, 0, m_widthReal, m_heightReal);
 
-    if (m_drawFunc(actDifF * 1000.0, 0, 0)) swap();
+    if (m_drawFunc(actDifF * 1000.0, 0, 0)) {
+        swap();
+    }
 }
 
 void EGLWindow::open() {}
@@ -255,15 +254,17 @@ void EGLWindow::open() {}
 void EGLWindow::close() {}
 
 void EGLWindow::swap() {
-    if (EGL_FALSE == eglSwapBuffers(m_esContext.eglDisplay, m_esContext.eglSurface))
+    if (EGL_FALSE == eglSwapBuffers(m_esContext.eglDisplay, m_esContext.eglSurface)) {
         LOG << "NativeEngine: eglSwapBuffers failed, EGL error " << eglGetError();
+    }
 }
 
 void EGLWindow::hide() {}
 
 void EGLWindow::makeCurrent() {
-    if (!eglMakeCurrent(m_esContext.eglDisplay, m_esContext.eglSurface, m_esContext.eglSurface, m_esContext.eglContext))
+    if (!eglMakeCurrent(m_esContext.eglDisplay, m_esContext.eglSurface, m_esContext.eglSurface, m_esContext.eglContext)) {
         LOGE << "EGLWindow::makeCurrent() failed";
+    }
 }
 
 void EGLWindow::setVSync(bool val) {}
@@ -280,18 +281,11 @@ void EGLWindow::destroy(bool val) {
 }
 
 void EGLWindow::onWindowSize(int width, int height) {
-    //    // when moving the window very fast between m_monitors
-    //    // on windows, resize calls are send from the OS
-    //    // be sure that the window doesn't change it's size if this is not
-    //    desired if (m_blockResizing) {
-    //        if (width != m_widthVirt || height != m_heightVirt)
-    //            glfwSetWindowSize(m_window, m_widthVirt, m_heightVirt);
-    //        return;
-    //    }
-
     m_widthVirt  = width;
     m_heightVirt = height;
-    if (m_windowSizeCb) m_windowSizeCb(width, height);
+    if (m_windowSizeCb) {
+        m_windowSizeCb(width, height);
+    }
 }
 
 void EGLWindow::resize(GLsizei width, GLsizei height) {}
@@ -301,15 +295,19 @@ void EGLWindow::checkSize() {
 
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_WIDTH, &w);
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_HEIGHT, &h);
-    m_widthVirt  = (uint32_t)std::round(static_cast<float>(w) / m_contentScale.x);
-    m_heightVirt = (uint32_t)std::round(static_cast<float>(h) / m_contentScale.y);
-    m_widthReal  = (uint32_t)w;
-    m_heightReal = (uint32_t)h;
+    m_widthVirt  = static_cast<uint32_t>(std::round(static_cast<float>(w) / m_contentScale.x));
+    m_heightVirt = static_cast<uint32_t>(std::round(static_cast<float>(h) / m_contentScale.y));
+    m_widthReal  = static_cast<uint32_t>(w);
+    m_heightReal = static_cast<uint32_t>(h);
 
-    if (m_windowSizeCb) m_windowSizeCb(m_widthVirt, m_heightVirt);
+    if (m_windowSizeCb) {
+        m_windowSizeCb(static_cast<int32_t>(m_widthVirt), static_cast<int32_t>(m_heightVirt));
+    }
 }
 
-void* EGLWindow::getNativeCtx() { return nullptr; }
+void* EGLWindow::getNativeCtx() {
+    return nullptr;
+}
 
 void EGLWindow::waitEvents() {
 #if defined(__linux__) && !defined(__ANDROID__)
@@ -345,7 +343,9 @@ EGLint EGLWindow::GetContextRenderableType(EGLDisplay eglDisplay) {
     const char* extensions = eglQueryString(eglDisplay, EGL_EXTENSIONS);
 
     // check whether EGL_KHR_create_context is in the extension string
-    if (extensions && strstr(extensions, "EGL_KHR_create_context")) return EGL_OPENGL_ES3_BIT_KHR;
+    if (extensions && strstr(extensions, "EGL_KHR_create_context")) {
+        return EGL_OPENGL_ES3_BIT_KHR;
+    }
 #endif
     return EGL_OPENGL_ES2_BIT;
 }

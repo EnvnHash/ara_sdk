@@ -116,31 +116,26 @@ public:
 private:
     std::mutex              m_drawMtx;
     std::vector<glWinPar>   m_addWindows;
+
     // a vector may rearrange it element and thus change their pointer addresses
     std::map<GLWindow *, std::vector<std::function<void(int, int, int, int)>>>            m_keyCbMap;
     std::map<GLWindow *, std::vector<std::function<void(int, int, int, double, double)>>> m_mouseButCbMap;
     std::map<GLWindow *, std::vector<std::function<void(double, double)>>>                m_cursorCbMap;
 
-    std::function<void(double, double, unsigned int)> m_dispFunc;
+    std::function<void(double, double, unsigned int)>   m_dispFunc;
+    std::vector<NativeDisplay>                          m_displays;
 
-    bool m_showFps  = false;
-    bool m_multCtx  = false;
-    bool m_inited = false;
+    bool            m_showFps       = false;
+    bool            m_multCtx       = false;
+    bool            m_inited        = false;
+    unsigned int    m_winIdx        = 0;
+    size_t          m_dispCount     = 0;
+    double          m_medDt         = 0.066;
+    double          m_lastTime      = 0;
+    double          printFpsIntv    = 2.0;
+    double          m_lastPrintFps  = 0.0;
+    GLWindow*       m_shareCtx      = nullptr;
 
-    unsigned int m_winIdx = 0;
-    int          m_dispCount       = 0;
-
-    double    m_medDt        = 0.066;
-    double    m_lastTime     = 0;
-    double    printFpsIntv = 2.0;
-    double    m_lastPrintFps = 0.0;
-    GLWindow *m_shareCtx     = nullptr;
-
-    std::vector<NativeDisplay> m_displays;
-
-#ifdef _WIN32
-    size_t m_dispCount = 0;
-#endif
 
 #if !defined(__ANDROID__) && (defined(__linux__) || defined(__APPLE__))
     //GLFWmonitor                      **m_monitors        = nullptr;

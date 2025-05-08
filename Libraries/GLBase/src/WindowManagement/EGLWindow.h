@@ -50,55 +50,40 @@ public:
     void stopDrawThread();
     void draw();
 
-    virtual void open();
-    virtual void close();
-    virtual void swap();
-    virtual void hide();
-    virtual void makeCurrent();
-    virtual void setVSync(bool val);
-    void         focus() {}
-    virtual void destroy() { destroy(false); }
-    virtual void destroy(bool val);
-    void         minimize() {
-        if (m_osWin) m_osWin->minimize();
-    }
-    void restore() {
-        if (m_osWin) m_osWin->restore();
-    }
-    bool isMinimized() { return false; }
-    void checkSize();
-
-    virtual void  onWindowSize(int width, int height);
-    virtual void  resize(GLsizei width, GLsizei height);
-    virtual void* getNativeCtx();
+    void            open() override;
+    void            close() override;
+    void            swap() override;
+    void            hide();
+    void            makeCurrent() override;
+    void            setVSync(bool val) override;
+    void            focus() {}
+    void            destroy() override { destroy(false); }
+    virtual void    destroy(bool val);
+    void            minimize() override { if (m_osWin) m_osWin->minimize(); }
+    void            restore() override { if (m_osWin) m_osWin->restore(); }
+    bool            isMinimized() { return false; }
+    void            checkSize();
+    void            onWindowSize(int width, int height) override;
+    void            resize(GLsizei width, GLsizei height) override;
+    void*           getNativeCtx() override;
 
 #ifndef __APPLE__
     EGLint GetContextRenderableType(EGLDisplay eglDisplay);
 #endif
 
-    EGLDisplay   getEglDisplay() const { return m_display; }
-    EGLSurface   getEglSurface() const { return m_surface; }
-    void*        getCtx() { return (void*)m_esContext.eglContext; }
-    void*        getWin() { return &m_esContext.eglNativeWindow; }
-    void*        getDisp() { return &m_esContext.eglNativeDisplay; }
-    EGLConfig    getEglConfig() const { return m_eglConfig; }
-    EGLint       getEglVersionMajor() const { return m_eglVersionMajor; }
-    EGLint       getEglVersionMinor() const { return m_eglVersionMinor; }
-    unsigned int getMonitorWidth() { return 0; }
-    unsigned int getMonitorHeight() { return 0; }
-    int          getFocus() { return 1; }
-    glm::ivec2   getLastMousePos() {
-        if (m_osWin)
-            return m_osWin->getLastMousePos();
-        else
-            return glm::ivec2{0};
-    }
-    int* getWorkArea() {
-        if (m_osWin)
-            return m_osWin->getWorkArea();
-        else
-            return nullptr;
-    }
+    EGLDisplay      getEglDisplay() const { return m_display; }
+    EGLSurface      getEglSurface() const { return m_surface; }
+    void*           getCtx() { return (void*)m_esContext.eglContext; }
+    void*           getWin() { return &m_esContext.eglNativeWindow; }
+    void*           getDisp() { return &m_esContext.eglNativeDisplay; }
+    EGLConfig       getEglConfig() const { return m_eglConfig; }
+    EGLint          getEglVersionMajor() const { return m_eglVersionMajor; }
+    EGLint          getEglVersionMinor() const { return m_eglVersionMinor; }
+    unsigned int    getMonitorWidth() { return 0; }
+    unsigned int    getMonitorHeight() { return 0; }
+    int             getFocus() { return 1; }
+    glm::ivec2      getLastMousePos() { return m_osWin ? m_osWin->getLastMousePos() : glm::ivec2 {}; }
+    int*            getWorkArea() { return m_osWin ? m_osWin->getWorkArea() : nullptr; }
 
     void setSize(int m_widthVirt, int m_heightVirt) {}
     void setPosition(int posx, int posy) {}
@@ -120,20 +105,18 @@ public:
 
     static void waitEvents();
     static void pollEvents() {}
-
     static void postEmptyEvent();
     static void setErrorCallback(std::function<void(int, const char*)> f) {}
     static void initLibrary() {}
     static void terminateLibrary() {}
     static void focusWin(EGLContext ctx) {}
     static void makeNoneCurrent() {
-        if (m_display)
-            if (!eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
-                LOGE << "EGLWindow, could not make none context current";
+        if (m_display && !eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
+            LOGE << "EGLWindow, could not make none context current";
     }
 
     static void error_callback(int error, const char* description) {
-        printf(" GFLW ERROR: %s \n", description);
+        printf("EGL ERROR: %s \n", description);
         fputs(description, stderr);
     }
 
