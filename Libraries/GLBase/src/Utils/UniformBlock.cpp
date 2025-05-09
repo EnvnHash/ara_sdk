@@ -22,7 +22,6 @@ UniformBlock::UniformBlock(GLuint program, const std::string &blockName) { init(
 
 void UniformBlock::init(GLuint program, const std::string &blockName) {
     m_program = program;
-
     glUseProgram(m_program);
 
     // Find the uniform buffer index for "Uniforms", and determine the block’s sizes
@@ -74,11 +73,21 @@ void UniformBlock::changeVarName(const std::string &name, void *inVal, GLenum ty
         item->inType = type;
 
         switch (type) {
-            case GL_INT: item->iVal = static_cast<int *>(inVal); break;
-            case GL_FLOAT: item->fVal = static_cast<float *>(inVal); break;
-            case GL_UNSIGNED_INT: item->uVal = static_cast<uint32_t *>(inVal); break;
-            case GL_BOOL: item->bVal = static_cast<bool *>(inVal); break;
-            default: item->vVal = inVal; break;
+            case GL_INT:
+                item->iVal = static_cast<int *>(inVal);
+                break;
+            case GL_FLOAT:
+                item->fVal = static_cast<float *>(inVal);
+                break;
+            case GL_UNSIGNED_INT:
+                item->uVal = static_cast<uint32_t *>(inVal);
+                break;
+            case GL_BOOL:
+                item->bVal = static_cast<bool *>(inVal);
+                break;
+            default:
+                item->vVal = inVal;
+                break;
         }
     } else
         LOGE << "UniformBlock::changeVarName Error, name not found ";
@@ -92,8 +101,7 @@ ubBlockVar* UniformBlock::getVar(const std::string &name) {
 
 void UniformBlock::update() {
     if (!m_buffer.empty() && !m_valPairs.empty() && m_program != 0) {
-        // Query the necessary attributes to determine
-        // where in the buffer we should write the values
+        // Query the necessary attributes to determine where in the buffer we should write the values
         m_numUniforms = static_cast<int>(m_valPairs.size());
         int i         = 0;
 
@@ -138,9 +146,10 @@ void UniformBlock::update() {
             ++i;
         }
 
-        // Create the uniform buffer object, initialize its storage, and
-        // associated it with the shader program
-        if (m_ubo == 0) glGenBuffers(1, &m_ubo);
+        // Create the uniform buffer object, initialize its storage, and associated it with the shader program
+        if (m_ubo == 0) {
+            glGenBuffers(1, &m_ubo);
+        }
         glBindBuffer(GL_UNIFORM_BUFFER, m_ubo);
         glBufferData(GL_UNIFORM_BUFFER, m_uboSize, &m_buffer[0], GL_STATIC_DRAW);
         glBindBufferBase(GL_UNIFORM_BUFFER, m_uboIndex, m_ubo);
@@ -149,37 +158,34 @@ void UniformBlock::update() {
 }
 
 size_t UniformBlock::TypeSize(GLenum type) {
-    switch (type) {
-        case GL_FLOAT: return sizeof(GLfloat);
-        case GL_FLOAT_VEC2: return sizeof(GLfloat) * 2;
-        case GL_FLOAT_VEC3: return sizeof(GLfloat) * 3;
-        case GL_FLOAT_VEC4: return sizeof(GLfloat) * 4;
-        case GL_INT: return sizeof(GLint);
-        case GL_INT_VEC2: return sizeof(GLint) * 2;
-        case GL_INT_VEC3: return sizeof(GLint) * 3;
-        case GL_INT_VEC4: return sizeof(GLint) * 4;
-        case GL_UNSIGNED_INT: return sizeof(GLuint);
-        case GL_UNSIGNED_INT_VEC2: return sizeof(GLuint) * 2;
-        case GL_UNSIGNED_INT_VEC3: return sizeof(GLuint) * 3;
-        case GL_UNSIGNED_INT_VEC4: return sizeof(GLuint) * 4;
-        case GL_BOOL: return sizeof(GLboolean);
-        case GL_BOOL_VEC2: return sizeof(GLboolean) * 2;
-        case GL_BOOL_VEC3: return sizeof(GLboolean) * 3;
-        case GL_BOOL_VEC4: return sizeof(GLboolean) * 4;
-        case GL_FLOAT_MAT2: return sizeof(GLfloat) * 4;
-        case GL_FLOAT_MAT2x3: return sizeof(GLfloat) * 6;
-        case GL_FLOAT_MAT2x4: return sizeof(GLfloat) * 8;
-        case GL_FLOAT_MAT3: return sizeof(GLfloat) * 9;
-        case GL_FLOAT_MAT3x2: return sizeof(GLfloat) * 6;
-        case GL_FLOAT_MAT3x4: return sizeof(GLfloat) * 12;
-        case GL_FLOAT_MAT4: return sizeof(GLfloat) * 16;
-        case GL_FLOAT_MAT4x2: return sizeof(GLfloat) * 8;
-        case GL_FLOAT_MAT4x3: return sizeof(GLfloat) * 12;
-
-        default: 
-            LOGE << "UniformBlock ERROR: Unknown type: " << type; 
-            return 0;
-    }
+    static std::unordered_map<GLenum, size_t> typeSizes = {
+        { GL_FLOAT, sizeof(GLfloat) },
+        { GL_FLOAT_VEC2, sizeof(GLfloat) * 2 },
+        { GL_FLOAT_VEC3, sizeof(GLfloat) * 3 },
+        { GL_FLOAT_VEC4, sizeof(GLfloat) * 4 },
+        { GL_INT, sizeof(GLint) },
+        { GL_INT_VEC2, sizeof(GLint) * 2 },
+        { GL_INT_VEC3, sizeof(GLint) * 3 },
+        { GL_INT_VEC4, sizeof(GLint) * 4 },
+        { GL_UNSIGNED_INT, sizeof(GLuint) },
+        { GL_UNSIGNED_INT_VEC2, sizeof(GLuint) * 2 },
+        { GL_UNSIGNED_INT_VEC3, sizeof(GLuint) * 3 },
+        { GL_UNSIGNED_INT_VEC4, sizeof(GLuint) * 4 },
+        { GL_BOOL, sizeof(GLboolean) },
+        { GL_BOOL_VEC2, sizeof(GLboolean) * 2 },
+        { GL_BOOL_VEC3, sizeof(GLboolean) * 3 },
+        { GL_BOOL_VEC4, sizeof(GLboolean) * 4 },
+        { GL_FLOAT_MAT2, sizeof(GLfloat) * 4 },
+        { GL_FLOAT_MAT2x3, sizeof(GLfloat) * 6 },
+        { GL_FLOAT_MAT2x4, sizeof(GLfloat) * 8 },
+        { GL_FLOAT_MAT3, sizeof(GLfloat) * 9 },
+        { GL_FLOAT_MAT3x2, sizeof(GLfloat) * 6 },
+        { GL_FLOAT_MAT3x4, sizeof(GLfloat) * 12 },
+        { GL_FLOAT_MAT4, sizeof(GLfloat) * 16 },
+        { GL_FLOAT_MAT4x2, sizeof(GLfloat) * 8 },
+        { GL_FLOAT_MAT4x3, sizeof(GLfloat) * 12 },
+    };
+    return typeSizes[type];
 }
 
 UniformBlock::~UniformBlock() {
