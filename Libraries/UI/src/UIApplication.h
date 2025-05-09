@@ -10,6 +10,7 @@
 #include <Property.h>
 #include "UIApplicationBase.h"
 #include <UIWindow.h>
+#include <UIElements/WindowElements/MenuBar.h>
 
 #if defined(__ANDROID__) && defined(ARA_ANDROID_PURE_NATIVE_APP)
 #include "Android/UIAppAndroidNative.h"
