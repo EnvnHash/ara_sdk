@@ -26,7 +26,6 @@ public:
     void setMaxListEntries(int count) { m_maxListEntries = count; }
 
 private:
-    Image* m_downIcon       = nullptr;
     int    m_maxListEntries = 100;
 };
 

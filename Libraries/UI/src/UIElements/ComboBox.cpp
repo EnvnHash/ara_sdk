@@ -35,14 +35,14 @@ void ComboBox::init() {
     setHeight(getSharedRes()->gridSize.y);
     setBackgroundColor(getSharedRes()->colors->at(uiColors::sepLine));
 
-    m_downIcon = addChild<Image>();
-    m_downIcon->excludeFromObjMap(true);
-    m_downIcon->setImg("Icons/icon-arrow-down.png", 1);
-    m_downIcon->setSize(12, 1.f);
-    m_downIcon->setX(-11);
-    m_downIcon->setAlign(align::right, valign::center);
+    auto downIcon = addChild<Image>();
+    downIcon->excludeFromObjMap(true);
+    downIcon->setImg("Icons/icon-arrow-down.png", 1);
+    downIcon->setSize(12, 1.f);
+    downIcon->setX(-11);
+    downIcon->setAlign(align::right, valign::center);
 
-    if (!getStyleClass().empty() && m_downIcon) {
+    if (!getStyleClass().empty()) {
         m_downIcon->addStyleClass(getStyleClass() + ".downIcon");
     }
 

@@ -108,7 +108,7 @@ TEST(Functional_PropertyPtr, InitialValue) {
     PropertyPtr propPtr(prop.get());
     EXPECT_EQ(propPtr.get(), 42);
 }
-/*
+
 TEST(Functional_PropertyPtr, SetValue) {
     auto prop = std::make_unique<Property<int>>();
     PropertyPtr propPtr(prop.get());
@@ -124,7 +124,7 @@ TEST(Functional_PropertyPtr, StepValue) {
     propPtr = 2;
     EXPECT_EQ(propPtr(), 2); // No change since it's less than the step
 }
-
+/*
 TEST(Functional_PropertyPtr, OnPreChangeCallback) {
     bool callbackCalled = false;
     auto preChangeFunc = [&callbackCalled](std::any value) {
