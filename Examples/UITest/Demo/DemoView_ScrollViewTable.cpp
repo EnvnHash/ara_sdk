@@ -1,6 +1,5 @@
 #include "DemoView.h"
 #include <UIElements/Image.h>
-#include <Utils/PingPongFbo.h>
 
 using namespace ara;
 using namespace glm;

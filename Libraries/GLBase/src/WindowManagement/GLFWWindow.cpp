@@ -74,13 +74,13 @@ int GLFWWindow::init(const glWinPar &gp) {
     getMonitorScales();
 
     if (gp.fullScreen) {
-        printf(" Window running in fullscreen mode \n");
+        LOG << " Window running in fullscreen mode";
         if (gp.debug) {
             for (int i = 0; i < m_count; i++) {
-                printf("monitor %i: %s current video mode: width: %i height: %i "
-                       "refreshRate: %i\n",
-                       i, glfwGetMonitorName(m_monitors[i]), glfwGetVideoMode(m_monitors[i])->width,
-                       glfwGetVideoMode(m_monitors[i])->height, glfwGetVideoMode(m_monitors[i])->refreshRate);
+                auto vm = glfwGetVideoMode(m_monitors[i]);
+                LOG << "monitor " << i << " " << glfwGetMonitorName(m_monitors[i])
+                << " current video mode: width: " << vm->width << " height: " << vm->height
+                << " refreshRate: " << vm->refreshRate;
             }
         }
 

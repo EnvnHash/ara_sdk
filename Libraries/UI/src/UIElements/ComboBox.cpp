@@ -13,8 +13,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <Utils/FBO.h>
-#include <Utils/PingPongFbo.h>
 #include <UIElements/Button/Button.h>
 #include <UIElements/ScrollView.h>
 #include <UISharedRes.h>

@@ -6,7 +6,6 @@
 #include <UIElements/GizmoAxisLabel.h>
 #include <UIElements/Image.h>
 #include <UIWindow.h>
-#include <DrawManagers/DrawManagerGizmo.h>
 #include <Utils/Camera.h>
 #include <Utils/TrackBallCam.h>
 

@@ -5,8 +5,6 @@
 #include <UIElements/WindowElements/MenuBar.h>
 #include <UIWindow.h>
 #include <UIElements/Button/ImageButton.h>
-#include <Utils/PingPongFbo.h>
-#include <Utils/FBO.h>
 
 using namespace std;
 using namespace glm;

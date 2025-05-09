@@ -5,8 +5,6 @@
 #include <UIElements/Gizmo.h>
 #include <UIElements/GizmoAxisLabel.h>
 #include <UIWindow.h>
-#include <Utils/FBO.h>
-#include <Utils/PingPongFbo.h>
 #include <DrawManagers/DrawManagerGizmo.h>
 
 using namespace std;

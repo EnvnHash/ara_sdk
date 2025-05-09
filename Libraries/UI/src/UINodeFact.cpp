@@ -25,8 +25,6 @@
 #include <UIElements/UITable.h>
 #include <UIElements/WindowElements/WindowResizeArea.h>
 #include <UIElements/WindowElements/WindowResizeAreas.h>
-#include <Utils/PingPongFbo.h>
-#include <DrawManagers/DrawManagerGizmo.h>
 
 namespace ara {
 

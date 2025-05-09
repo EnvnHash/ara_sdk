@@ -5,6 +5,7 @@
 #include <GLUtils/sceneData.h>
 #include <SceneNodes/SceneNode.h>
 #include <UISharedRes.h>
+#include <DrawManagers/DrawManagerGizmo.h>
 
 namespace ara {
 
@@ -33,7 +34,6 @@ public:
     bool draw(uint32_t& objId) override;
     bool drawIndirect(uint32_t& objId) override;
     bool drawToFbo(const uint32_t& objId);
-    bool drawToFbo2(uint32_t& objId);
 
     glm::vec3 getAxisEnd(const glm::mat4 &pvm, float yVal);
 
@@ -105,10 +105,8 @@ protected:
     glm::ivec2 m_axisLabelSize = glm::ivec2(20, 20);
 
     bool m_resetExcludeFromStyles = false;
-    bool m_rightPressed           = false;  // additional check for avoind errors with hid
-                                            // blocking during camera animation
-    bool m_leftPressed = false;             // additional check for avoind errors with hid
-                                            // blocking during camera animation
+    bool m_rightPressed           = false;
+    bool m_leftPressed = false;
 
     int axIndx = 0;
 

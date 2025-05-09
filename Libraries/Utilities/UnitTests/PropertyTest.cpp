@@ -124,7 +124,7 @@ TEST(Functional_PropertyPtr, StepValue) {
     propPtr = 2;
     EXPECT_EQ(propPtr(), 2); // No change since it's less than the step
 }
-/*
+
 TEST(Functional_PropertyPtr, OnPreChangeCallback) {
     bool callbackCalled = false;
     auto preChangeFunc = [&callbackCalled](std::any value) {
@@ -140,7 +140,7 @@ TEST(Functional_PropertyPtr, OnPreChangeCallback) {
     propPtr = 5;
     EXPECT_TRUE(callbackCalled);
 }
-
+/*
 TEST(Functional_PropertyPtr, OnPostChangeCallback) {
     bool callbackCalled = false;
     auto postChangeFunc = [&callbackCalled](const std::any& value) {

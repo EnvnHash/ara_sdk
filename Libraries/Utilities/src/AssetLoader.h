@@ -41,7 +41,7 @@ public:
         return m_assetPath / p;
     }
 
-    static std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
+    std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
 
     bool usingCmrc() {
 #ifdef ARA_USE_CMRC

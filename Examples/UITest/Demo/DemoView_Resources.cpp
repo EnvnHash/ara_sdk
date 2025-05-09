@@ -5,7 +5,6 @@
 #include <Asset/AssetManager.h>
 #include <Asset/ResNode.h>
 #include <Asset/ResSrcFile.h>
-#include <Utils/PingPongFbo.h>
 
 using namespace ara;
 using namespace glm;

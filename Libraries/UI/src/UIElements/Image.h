@@ -5,6 +5,8 @@
 #pragma once
 
 #include <Utils/PBO.h>
+#include <Utils/PingPongFbo.h>
+#include <Utils/FBO.h>
 
 #include "UIElements/Div.h"
 

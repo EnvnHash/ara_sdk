@@ -8,7 +8,6 @@
 #include <Asset/AssetImageBase.h>
 #include <Asset/AssetManager.h>
 
-#include <Utils/PingPongFbo.h>
 #include <GLBase.h>
 #include <UISharedRes.h>
 #include <Shaders/ShaderCollector.h>

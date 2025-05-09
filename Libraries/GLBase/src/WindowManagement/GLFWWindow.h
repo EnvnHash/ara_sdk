@@ -309,7 +309,7 @@ public:
     static void makeNoneCurrent() { glfwMakeContextCurrent(nullptr); }
 
     static void error_callback(int error, const char *description) {
-        printf(" GFLW ERROR: %s \n", description);
+        LOGE << "GLFW ERROR: " << description;
         fputs(description, stderr);
     }
 

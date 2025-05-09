@@ -13,7 +13,6 @@
 #include <UIElements/WindowElements/WindowResizeAreas.h>
 #include <Windows/WindowsMousePos.h>
 #include <X11/X11MousePos.h>
-#include <Utils/PingPongFbo.h>
 
 using namespace glm;
 using namespace std;
