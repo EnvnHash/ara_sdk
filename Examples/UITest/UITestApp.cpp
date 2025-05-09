@@ -6,8 +6,8 @@
 #include <UIElements/Label.h>
 #include <UIElements/TabView.h>
 #include <UIElements/ScrollBar.h>
-#include <ObjectMapInteraction.h>
-#include <DrawManagers/DrawManager.h>
+
+
 
 using namespace std;
 using namespace ara;

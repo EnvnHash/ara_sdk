@@ -11,7 +11,7 @@
 
 #include "Scene3DBase.h"
 #include <SceneNodes/SNGizmo.h>
-#include <DrawManagers/DrawManager.h>
+
 #include "Utils/BoundingBoxer.h"
 
 using namespace glm;

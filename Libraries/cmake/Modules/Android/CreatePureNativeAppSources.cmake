@@ -12,8 +12,8 @@ macro (create_pure_native_app_source)
 #include <android/sensor.h>
 #include <android/window.h>
 
-#include <ObjectMapInteraction.h>
-#include <DrawManagers/DrawManager.h>
+
+
 #include \"${UIAPP_DERIVATE_CLASS_FILE_NAME_WE}.h\"
 
 /*

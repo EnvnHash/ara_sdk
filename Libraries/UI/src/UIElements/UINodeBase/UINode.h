@@ -10,6 +10,11 @@
 #include <ListProperty.h>
 #include <UICommon.h>
 
+// avoid including too many headers when using this class
+#include <ObjectMapInteraction.h>
+#include <DrawManagers/DrawManager.h>
+
+
 namespace ara {
 
 class ObjectMapInteraction;
@@ -23,7 +28,7 @@ class WindowManager;
 class UINode : public UINodeHID {
 public:
     UINode();
-    virtual ~UINode();
+    ~UINode() override;
 
     virtual void init() {}
 

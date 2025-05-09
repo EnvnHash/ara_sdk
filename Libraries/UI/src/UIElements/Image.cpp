@@ -7,7 +7,7 @@
 #include <Asset/AssetImageSource.h>
 #include <Asset/AssetImageBase.h>
 #include <Asset/AssetManager.h>
-#include <DrawManagers/DrawManager.h>
+
 #include <Utils/PingPongFbo.h>
 #include <GLBase.h>
 #include <UISharedRes.h>

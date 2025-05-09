@@ -2,8 +2,8 @@
 
 #include <Asset/AssetImageSection.h>
 #include <Asset/AssetImageSource.h>
-#include <DrawManagers/DrawManager.h>
-#include <ObjectMapInteraction.h>
+
+
 
 #include "UIApplication.h"
 

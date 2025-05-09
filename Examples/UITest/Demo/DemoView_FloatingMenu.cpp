@@ -2,8 +2,8 @@
 #include <UIWindow.h>
 #include <UIApplication.h>
 #include <UIElements/Button/Button.h>
-#include <ObjectMapInteraction.h>
-#include <DrawManagers/DrawManager.h>
+
+
 
 using namespace glm;
 using namespace std;

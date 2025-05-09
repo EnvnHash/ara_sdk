@@ -5,8 +5,8 @@
 #include <gtest/gtest.h>
 #include "UIApplication.h"
 #include <UIElements/Button/Button.h>
-#include <ObjectMapInteraction.h>
-#include <DrawManagers/DrawManager.h>
+
+
 
 using namespace std;
 

@@ -3,8 +3,8 @@
 //
 
 #include <Dialoges/FloatingMenuDialog.h>
-#include <DrawManagers/DrawManager.h>
-#include <ObjectMapInteraction.h>
+
+
 #include <UIApplication.h>
 
 #ifdef ARA_USE_GLFW

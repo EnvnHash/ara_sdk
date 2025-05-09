@@ -5,8 +5,8 @@
 #ifdef __ANDROID__
 
 #include "Android/UIAppAndroidJNI.h"
-#include <ObjectMapInteraction.h>
-#include <DrawManagers/DrawManager.h>
+
+
 #include <UIElements/UINodeBase/UINode.h>
 #include "UIApplication.h"
 

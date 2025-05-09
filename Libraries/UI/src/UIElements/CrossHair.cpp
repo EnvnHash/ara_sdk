@@ -3,7 +3,7 @@
 //
 
 #include "CrossHair.h"
-#include <DrawManagers/DrawManager.h>
+
 #include <Shaders/ShaderCollector.h>
 #include <UISharedRes.h>
 

@@ -2,8 +2,7 @@
 // Created by user on 5/5/25.
 //
 
-#include <DrawManagers/DrawManager.h>
-#include <ObjectMapInteraction.h>
+
 #include <WindowManagement/WindowManager.h>
 #include <UIElements/UINodeBase/UINode.h>
 #include <UISharedRes.h>

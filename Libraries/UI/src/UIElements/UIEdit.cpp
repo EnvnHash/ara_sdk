@@ -4,7 +4,6 @@
 #include <DataModel/PropertyItemUi.h>
 #include "UIEdit.h"
 #include "UIWindow.h"
-#include <DrawManagers/DrawManager.h>
 
 using namespace glm;
 using namespace std;

@@ -5,8 +5,8 @@
 #include "UIWindow.h"
 #include "UIApplication.h"
 #include "Windows/DisplayScaling.h"
-#include <DrawManagers/DrawManager.h>
-#include <ObjectMapInteraction.h>
+
+
 #include <UIElements/UINodeBase/UINode.h>
 #include <UIElements/WindowElements/MenuBar.h>
 #include <UIElements/WindowElements/WindowResizeArea.h>

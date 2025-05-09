@@ -43,7 +43,7 @@ void ComboBox::init() {
     downIcon->setAlign(align::right, valign::center);
 
     if (!getStyleClass().empty()) {
-        m_downIcon->addStyleClass(getStyleClass() + ".downIcon");
+        downIcon->addStyleClass(getStyleClass() + ".downIcon");
     }
 
     m_menuEntryButt->setFontSize(19);
