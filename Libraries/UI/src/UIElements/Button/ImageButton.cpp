@@ -62,26 +62,20 @@ void ImageButton::loadStyleDefaults() {
     setStyleInitVal("img-align", "center,vcenter");
 
     m_setStyleFunc[state::none][styleInit::color] = [this] {
-        for (auto &it : m_tex) {
-            if (it) {
-                it->setColor(1.f, 1.f, 1.f, 1.f);
-            }
+        for (auto it : getValidTex()) {
+            it->setColor(1.f, 1.f, 1.f, 1.f);
         }
     };
 
     m_setStyleFunc[state::none][styleInit::imgFlag] = [this] {
-        for (auto &it : m_tex) {
-            if (it) {
-                it->m_imgFlags = 0;
-            }
+        for (auto it : getValidTex()) {
+            it->m_imgFlags = 0;
         }
     };
 
     m_setStyleFunc[state::none][styleInit::imgScale] = [this] {
-        for (auto &it : m_tex) {
-            if (it) {
-                it->m_imgScale = 1.f;
-            }
+        for (auto it : getValidTex()) {
+            it->m_imgScale = 1.f;
         }
     };
 }
@@ -134,13 +128,12 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
                 m_ibl.clear();
                 m_procIbl = true;
             }
-            for (auto j=0; j < i - (m_tex.size() - 1); ++j) {
+            while ((m_tex.size() - 1) < i) {
                 m_tex.emplace_back(addChild<Image>());
                 m_tex.back()->excludeFromObjMap(true);
                 m_tex.back()->setVisibility(false);
                 m_tex.back()->setLod(m_lod);
             }
-
             m_ibl.emplace_back(static_cast<int>(i), m_sharedRes->res->img(inode->m_value));
         }
     }
@@ -181,10 +174,8 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
         }
 
         m_setStyleFunc[st][styleInit::imgFlag] = [iflags, this]() {
-            for (auto &it : m_tex) {
-                if (it) {
-                    it->m_imgFlags = iflags;
-                }
+            for (auto it : getValidTex()) {
+                it->m_imgFlags = iflags;
             }
         };
     }
@@ -205,11 +196,9 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
         }
 
         m_setStyleFunc[st][styleInit::imgAlign] = [a, this]() {
-            for (auto &it : m_tex) {
-                if (it) {
-                    it->m_imgAlign[0] = a[0];
-                    it->m_imgAlign[1] = a[1];
-                }
+            for (auto &it : getValidTex()) {
+                it->m_imgAlign[0] = a[0];
+                it->m_imgAlign[1] = a[1];
             }
         };
     }
@@ -217,10 +206,8 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
     if (node->hasValue("img-scale")) {
         auto scale                             = node->value<float>("img-scale", 1.f);
         m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() {
-            for (auto &it : m_tex) {
-                if (it) {
-                    it->m_imgScale = scale;
-                }
+            for (auto &it : getValidTex()) {
+                it->m_imgScale = scale;
             }
         };
     }
@@ -229,10 +216,8 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
     if ((color = node->findNode<AssetColor>("color")) != nullptr) {
         vec4 col                             = color->getColorvec4();
         m_setStyleFunc[st][styleInit::color] = [this, col]() {
-            for (auto &it : m_tex) {
-                if (it) {
-                    it->setColor(col.r, col.g, col.b, col.a);
-                }
+            for (auto &it : getValidTex()) {
+                it->setColor(col.r, col.g, col.b, col.a);
             }
         };
     }
@@ -253,10 +238,8 @@ void ImageButton::mouseIn(hidData& data) {
     m_mouseIsIn     = true;
     m_show_alt_text = false;
 
-    for (auto &it : m_tex) {
-        if (it) {
-            it->mouseIn(data);
-        }
+    for (auto it : getValidTex()) {
+        it->mouseIn(data);
     }
 
     if (m_onstate_back_tex) {
@@ -270,10 +253,8 @@ void ImageButton::mouseOut(hidData& data) {
     m_mouseIsIn     = false;
     m_show_alt_text = false;
 
-    for (auto &it : m_tex) {
-        if (it) {
-            it->mouseOut(data);
-        }
+    for (auto it : getValidTex()) {
+        it->mouseOut(data);
     }
 
     if (m_onstate_back_tex) {
@@ -349,10 +330,8 @@ void ImageButton::setSelected(bool val, bool forceStyleUpdt) {
 void ImageButton::setDisabled(bool val, bool forceStyleUpdt) {
     UINode::setDisabled(val, forceStyleUpdt);
 
-    for (auto it : m_tex) {
-        if (it) {
-            it->setDisabled(val, forceStyleUpdt);
-        }
+    for (auto it : getValidTex()) {
+        it->setDisabled(val, forceStyleUpdt);
     }
 
     if (m_onstate_back_tex) {
@@ -362,10 +341,8 @@ void ImageButton::setDisabled(bool val, bool forceStyleUpdt) {
 
 void ImageButton::setDisabledHighlighted(bool val, bool forceStyleUpdt) {
     UINode::setDisabledHighlighted(val, forceStyleUpdt);
-    for (auto &it : m_tex) {
-        if (it) {
-            it->setDisabledHighlighted(val, forceStyleUpdt);
-        }
+    for (auto &it : getValidTex()) {
+        it->setDisabledHighlighted(val, forceStyleUpdt);
     }
 
     if (m_onstate_back_tex) {
@@ -375,10 +352,8 @@ void ImageButton::setDisabledHighlighted(bool val, bool forceStyleUpdt) {
 
 void ImageButton::setDisabledSelected(bool val, bool forceStyleUpdt) {
     UINode::setDisabledSelected(val, forceStyleUpdt);
-    for (auto &it : m_tex) {
-        if (it) {
-            it->setDisabledSelected(val, forceStyleUpdt);
-        }
+    for (auto it : getValidTex()) {
+        it->setDisabledSelected(val, forceStyleUpdt);
     }
 
     if (m_onstate_back_tex) {
@@ -401,10 +376,8 @@ void ImageButton::setVisibility(bool val) {
     UINode::setVisibility(val);
 
     if (!val) {
-        for (auto &it : m_tex) {
-            if (it) {
-                it->setVisibility(false);
-            }
+        for (auto it : getValidTex()) {
+            it->setVisibility(false);
         }
 
         if (m_onstate_back_tex) {
@@ -415,11 +388,9 @@ void ImageButton::setVisibility(bool val) {
     }
 }
 
-void ImageButton::applyToggleState() const {
-    for (auto it : m_tex) {
-        if (it) {
-            it->setVisibility(false);
-        }
+void ImageButton::applyToggleState() {
+    for (auto it : getValidTex()) {
+        it->setVisibility(false);
     }
 
     if (!m_tex.empty() && m_tex[0] && (!m_isToggle || m_tex.size() == 1)) {
@@ -470,7 +441,7 @@ void ImageButton::setColor(glm::vec4 col, state st, bool rebuildStyle) const {
 }
 
 void ImageButton::setStateImg(const std::string& file, imgType tp, int mipMapLevel) {
-    for (auto i=0; i < static_cast<size_t>(tp) - m_tex.size(); ++i) {
+    while (m_tex.size() <= static_cast<size_t>(tp)) {
         m_tex.emplace_back(addChild<Image>());
     }
 
@@ -553,7 +524,7 @@ void ImageButton::setSelectedDoAction(bool val) {
 }
 
 void ImageButton::setLod(float val) {
-    for (const auto& it : m_tex) {
+    for (const auto& it : getValidTex()) {
         it->setLod(val);
     }
 
@@ -574,21 +545,21 @@ Image* ImageButton::getImg() const {
 
 void ImageButton::setSectionSize(const glm::ivec2& sz) {
     m_secSize = sz;
-    for (auto it : m_tex) {
+    for (auto it : getValidTex()) {
         it->setSectionSize(sz);
     }
 }
 
 void ImageButton::setSectionSep(const glm::ivec2& sp) {
     m_secSep = sp;
-    for (auto it : m_tex) {
+    for (auto it : getValidTex()) {
         it->setSectionSep(sp);
     }
 }
 
 void ImageButton::setSectionPos(const glm::ivec2& pos) {
     m_secPos = pos;
-    for (auto it : m_tex) {
+    for (auto it : getValidTex()) {
         it->setSectionPos(pos);
     }
 }

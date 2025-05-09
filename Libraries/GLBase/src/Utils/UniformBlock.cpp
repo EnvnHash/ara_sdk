@@ -47,11 +47,21 @@ void UniformBlock::addVarName(const std::string& name, void *inVal, GLenum type)
     m_valPairs.emplace_back(ubBlockVar{name, type});
 
     switch (type) {
-        case GL_INT: m_valPairs.back().iVal = static_cast<int *>(inVal); break;
-        case GL_FLOAT: m_valPairs.back().fVal = static_cast<float *>(inVal); break;
-        case GL_UNSIGNED_INT: m_valPairs.back().uVal = static_cast<uint32_t *>(inVal); break;
-        case GL_BOOL: m_valPairs.back().bVal = static_cast<bool *>(inVal); break;
-        default: m_valPairs.back().vVal = inVal; break;
+        case GL_INT:
+            m_valPairs.back().iVal = static_cast<int *>(inVal);
+            break;
+        case GL_FLOAT:
+            m_valPairs.back().fVal = static_cast<float *>(inVal);
+            break;
+        case GL_UNSIGNED_INT:
+            m_valPairs.back().uVal = static_cast<uint32_t *>(inVal);
+            break;
+        case GL_BOOL:
+            m_valPairs.back().bVal = static_cast<bool *>(inVal);
+            break;
+        default:
+            m_valPairs.back().vVal = inVal;
+            break;
     }
 }
 
@@ -107,25 +117,24 @@ void UniformBlock::update() {
         // Copy the uniform values into the buffer
         i = 0;
         for (auto &it : m_valPairs) {
-            auto ptr = &m_buffer[0] + m_offset[i];
-            auto dataSize = m_size[i];
+            void* src = it.vVal;
             switch (m_valPairs[i].inType) {
                 case GL_INT:
-                    std::copy_n(it.iVal, dataSize, ptr);
+                    src = it.iVal;
                     break;
                 case GL_FLOAT:
-                    std::copy_n(reinterpret_cast<GLubyte *>(it.fVal), dataSize, ptr);
+                    src = it.fVal;
                     break;
                 case GL_UNSIGNED_INT:
-                    std::copy_n(it.uVal, dataSize, ptr);
+                    src = it.uVal;
                     break;
                 case GL_BOOL:
-                    std::copy_n(it.bVal, dataSize, ptr);
+                    src = it.bVal;
                     break;
                 default:
-                    std::copy_n(static_cast<GLubyte*>(it.vVal), dataSize, ptr);
                     break;
             }
+            memcpy(&m_buffer[0] + m_offset[i], src, m_size[i] * TypeSize(m_type[i]));
             ++i;
         }
 

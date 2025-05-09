@@ -765,24 +765,33 @@ Shaders *ShaderCollector::getUITex() {
     if (hasShader("ui_tex")) return shaderCollection["ui_tex"].get();
 
     std::string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 1) in vec4 normal; \n layout(location = 2) in vec2 texCoord; \n layout(location = 3) in vec4 color; \n uniform mat4 m_pvm; \n uniform vec2 size; \n uniform int hFlip; \n out vec2 tex_coord; \n void
-            main() {
-                \n tex_coord   = texCoord;
-                \n tex_coord.y = (hFlip == 1) ? 1.0 - texCoord.y : texCoord.y;
-                \n gl_Position = m_pvm * vec4(position.xy * size, position.z, 1.0);
-                \n
-            });
+        layout(location = 0) in vec4 position; \n
+        layout(location = 1) in vec4 normal; \n
+        layout(location = 2) in vec2 texCoord; \n
+        layout(location = 3) in vec4 color; \n
+        uniform mat4 m_pvm; \n
+        uniform vec2 size; \n
+        uniform int hFlip; \n
+        out vec2 tex_coord; \n
+        void main() { \n
+            tex_coord   = texCoord;\n
+            tex_coord.y = (hFlip == 1) ? 1.0 - texCoord.y : texCoord.y;\n
+            gl_Position = m_pvm * vec4(position.xy * size, position.z, 1.0);\n
+        });
 
     vert = shdr_Header + "// ui texture shader, vert\n" + vert;
 
     std::string frag = STRINGIFY(
-        uniform sampler2D tex; \n uniform float bright; \n uniform vec4 color = vec4(1.0); \n in vec2 tex_coord; \n layout(location = 0) out vec4 fragColor; \n void
-            main() {
-                \n vec4 col = texture(tex, tex_coord);
-                if (col.a < 0.00001) discard;
-                fragColor = col * color * bright;
-                \n
-            });
+        uniform sampler2D tex; \n
+        uniform float bright; \n
+        uniform vec4 color = vec4(1.0); \n
+        in vec2 tex_coord; \n
+        layout(location = 0) out vec4 fragColor; \n
+        void main() {\n
+            vec4 col = texture(tex, tex_coord);
+            if (col.a < 0.00001) discard;
+            fragColor = col * color * bright; \n
+        });
 
     frag = shdr_Header + "// ui texture shader, frag\n" + frag;
 
@@ -795,13 +804,19 @@ Shaders *ShaderCollector::getUITexInv() {
     if (hasShader("ui_tex_inv")) return shaderCollection["ui_tex_inv"].get();
 
     std::string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 1) in vec4 normal; \n layout(location = 2) in vec2 texCoord; \n layout(location = 3) in vec4 color; \n uniform mat4 m_pvm; \n uniform vec2 size; \n uniform int hFlip; \n out vec2 tex_coord; \n void
-            main() {
-                \n tex_coord   = texCoord;
-                \n tex_coord.y = (hFlip == 1) ? 1.0 - texCoord.y : texCoord.y;
-                \n gl_Position = m_pvm * vec4(position.xy * size, position.z, 1.0);
-                \n
-            });
+        layout(location = 0) in vec4 position; \n
+        layout(location = 1) in vec4 normal; \n
+        layout(location = 2) in vec2 texCoord; \n
+        layout(location = 3) in vec4 color; \n
+        uniform mat4 m_pvm; \n
+        uniform vec2 size; \n
+        uniform int hFlip; \n
+        out vec2 tex_coord; \n
+        void main() {\n
+            tex_coord   = texCoord;\n
+            tex_coord.y = (hFlip == 1) ? 1.0 - texCoord.y : texCoord.y;\n
+            gl_Position = m_pvm * vec4(position.xy * size, position.z, 1.0);\n
+        });
 
     vert = "// ui texture invert shader, vert\n" + shdr_Header + vert;
 
@@ -813,10 +828,10 @@ Shaders *ShaderCollector::getUITexInv() {
             uniform float alpha; \n
             in vec2 tex_coord; \n
             layout(location = 0) out vec4 fragColor; \n
-            void main() {
-                \n vec4 col = texture(tex, tex_coord);
-                fragColor   = bool(invert) ? mix(alphaToColor, invClearColor, col.a) : col;
-                \n fragColor.a *= alpha;
+            void main() {\n
+                vec4 col = texture(tex, tex_coord);
+                fragColor   = bool(invert) ? mix(alphaToColor, invClearColor, col.a) : col;\n
+                fragColor.a *= alpha;
         );
 
         frag += m_uiObjMapMain + "}";

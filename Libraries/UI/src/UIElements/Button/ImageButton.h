@@ -36,7 +36,7 @@ public:
     void setIsToggle(bool val, bool multiToggle = false);
     void setColor(float r, float g, float b, float a, state st = state::m_state, bool rebuildStyle = true) const;
     void setColor(glm::vec4 col, state st = state::m_state, bool rebuildStyle = true) const;
-    void applyToggleState() const;
+    void applyToggleState();
     void setImgByStyle(const std::string& style);
     void setImgAlign(align ax, valign ay);
     void setImg(const std::string& file, int mipMapLevel = 8);
@@ -54,9 +54,10 @@ public:
 
     [[nodiscard]] Image* getImg() const;
 
-    std::string&           getImgFile() { return m_imgFile; }
-    [[nodiscard]] uint32_t getToggleState() const { return m_toggleState; }
-    [[nodiscard]] bool     getToggle() const { return m_isToggle; }
+    std::string&            getImgFile() { return m_imgFile; }
+    [[nodiscard]] uint32_t  getToggleState() const { return m_toggleState; }
+    [[nodiscard]] bool      getToggle() const { return m_isToggle; }
+    auto                    getValidTex() { return m_tex | std::views::filter([](auto it) { return it != nullptr; }); };
 
 protected:
     bool m_mouseIsIn       = false;

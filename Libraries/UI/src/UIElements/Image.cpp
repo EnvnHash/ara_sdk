@@ -223,7 +223,9 @@ void Image::setImgScale(float scale) {
 }
 
 void Image::setImgBase(AssetImageBase* imgBase) {
-    if ((m_imgBase = imgBase) == nullptr) return;
+    if ((m_imgBase = imgBase) == nullptr) {
+        return;
+    }
 
     if (m_sharedRes) {
         if (m_imgBase->getType() == AssetImageBase::Type::frame) {
@@ -269,19 +271,19 @@ void Image::updateDrawData() {
             m_texSize.y = static_cast<int>(m_imgBase->getTexture()->getHeight());
         }
     } else {
-        if (tex && !m_useTexId) {
+        if (m_tex && !m_useTexId) {
             if (m_secPos.x == 0 && m_secPos.y == 0) {
                 memset(&m_secPos[0], 0, 8);
             }
 
             if (m_secSize.x == 0 && m_secSize.y == 0) {
-                m_secSize.x = static_cast<int>(tex->getWidth());
-                m_secSize.y = static_cast<int>(tex->getHeight());
+                m_secSize.x = static_cast<int>(m_tex->getWidth());
+                m_secSize.y = static_cast<int>(m_tex->getHeight());
             }
 
             if (m_texSize.x == 0 && m_texSize.y == 0) {
-                m_texSize.x = static_cast<int>(tex->getWidth());
-                m_texSize.y = static_cast<int>(tex->getHeight());
+                m_texSize.x = static_cast<int>(m_tex->getWidth());
+                m_texSize.y = static_cast<int>(m_tex->getHeight());
             }
         }
     }
@@ -461,7 +463,7 @@ bool Image::draw(uint32_t& objId) {
         }
     }
 
-    if (!m_texShdr || (!m_imgBase && !tex && !m_useTexId)) {
+    if (!m_texShdr || (!m_imgBase && !m_tex && !m_useTexId)) {
         return true;
     }
 
@@ -509,8 +511,8 @@ bool Image::draw(uint32_t& objId) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_imgBase->getTexID());
     } else {
-        if (tex && !m_useTexId) {
-            tex->bind(0);
+        if (m_tex && !m_useTexId) {
+            m_tex->bind(0);
         }
     }
 
@@ -536,7 +538,7 @@ bool Image::drawIndirect(uint32_t& objId) {
 
     if (m_sharedRes && m_sharedRes->drawMan) {
         auto dm = m_sharedRes->drawMan;
-        pushTexture(&dm->getWriteSet());
+        pushTexture(dm->getWriteSet());
         updateDrawData();  // can this be optimized?
         m_imgDB.drawSet = &m_sharedRes->drawMan->push(m_imgDB, this);
     }
@@ -544,17 +546,17 @@ bool Image::drawIndirect(uint32_t& objId) {
     return true;
 }
 
-void Image::pushTexture(DrawSet* ds) {
+void Image::pushTexture(DrawSet& ds) {
     const auto dm = m_sharedRes->drawMan;
 
     // push texture
     if (m_useTexId) {
         // in some rare cases (FBO with depth buffers) it is needed to render depth values from an external depth buffer
-        m_texUnit = dm->pushTexture(*ds, m_texId);
+        m_texUnit = dm->pushTexture(ds, m_texId);
     } else if (m_imgBase) {
-        m_texUnit = dm->pushTexture(*ds, m_imgBase->getTexID());
-    } else if (tex/* && !m_useTexId*/) {
-        m_texUnit = dm->pushTexture(*ds, tex->getId());
+        m_texUnit = dm->pushTexture(ds, m_imgBase->getTexID());
+    } else if (m_tex) {
+        m_texUnit = dm->pushTexture(ds, m_tex->getId());
     }
 }
 
@@ -563,14 +565,14 @@ void Image::loadImg() {
     const auto filename = m_imageFile;
 
     auto& texCol = getSharedRes()->glbase->textureCollector();
-    tex = texCol.addFromMem(filename, dataPath(), m_mipMapLevel);
-    if (tex){
+    m_tex = texCol.addFromMem(filename, dataPath(), m_mipMapLevel);
+    if (m_tex){
         m_loaded    = true;
-        m_texAspect = tex->getWidthF() / tex->getHeightF();
-        m_texSize   = { tex->getWidth(), tex->getHeight() };
+        m_texAspect = m_tex->getWidthF() / m_tex->getHeightF();
+        m_texSize   = { m_tex->getWidth(), m_tex->getHeight() };
 
         texCol.addRemoveCb(filename, [this]{
-            tex = nullptr;
+            m_tex = nullptr;
         });
 
         if (m_sizeToAspect && (getAspect() != m_texAspect)) {
@@ -578,7 +580,7 @@ void Image::loadImg() {
         }
 
         if (m_sizeChangeCb) {
-            m_sizeChangeCb(static_cast<int>(tex->getWidth()), static_cast<int>(tex->getHeight()));
+            m_sizeChangeCb(static_cast<int>(m_tex->getWidth()), static_cast<int>(m_tex->getHeight()));
         }
 
         if (m_drawImmediate) {
@@ -619,7 +621,7 @@ bool Image::setTexId(GLuint inTexId, int width, int height, int bitCount) {
     }
 
     if (m_imgDB.drawSet) {
-        pushTexture(m_imgDB.drawSet);
+        pushTexture(*m_imgDB.drawSet);
     }
 
     m_drawParamChanged = true;

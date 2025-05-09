@@ -35,7 +35,7 @@ public:
     void            initUnitBlock();
     bool            draw(uint32_t& objId) override;
     bool            drawIndirect(uint32_t& objId) override;
-    void            pushTexture(DrawSet *ds);
+    void            pushTexture(DrawSet& ds);
     void            pushVaoUpdtOffsets() override;
     virtual void    loadImg();
     virtual void    reload();
@@ -65,7 +65,7 @@ public:
     void            setZOffsPos(float z) { m_offsZPos = z; }
 
     [[nodiscard]] AssetImageBase    *getImgBase() const { return m_imgBase; }
-    [[nodiscard]] Texture           *getTexture() const { return tex; }
+    [[nodiscard]] Texture           *getTexture() const { return m_tex; }
     GLuint                          getTexID() const;
     [[nodiscard]]  unsigned         getImgFlags() const { return m_imgFlags; }
     [[nodiscard]]  GLuint           getExtTexId() const { return m_texId; }
@@ -89,7 +89,7 @@ public:
     float        m_texUnit = -1.f;
 
 protected:
-    Texture                     *tex       = nullptr;
+    Texture                     *m_tex     = nullptr;
     Shaders                     *m_texShdr = nullptr;
     std::unique_ptr<PingPongFbo> m_uplFbo;
     PBO                          m_uplPbo;
