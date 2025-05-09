@@ -16,5 +16,7 @@ file(GLOB_RECURSE UI_SRC "*.cpp")
 
 add_library(${PROJECT_NAME} OBJECT ${UI_SRC} UIElements/UINodeBase/UINodeGeom.cpp UIElements/UINodeBase/UINodeGeom.h UIElements/UINodeBase/UINodeStyle.cpp UIElements/UINodeBase/UINodeStyle.h UIElements/UINodeBase/UINode.cpp UIElements/UINodeBase/UINode.h UIElements/UINodeBase/UINodeHID.cpp UIElements/UINodeBase/UINodeHID.h)
 
+add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
 include(GLBaseDepInclude)
 include(GLBaseDependencies)

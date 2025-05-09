@@ -81,6 +81,8 @@ else ()
     add_library(${PROJECT_NAME} OBJECT ${GLSG_ALL_SRC})
 endif ()
 
+add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
 if (ANDROID)
     target_include_directories(${PROJECT_NAME} PRIVATE ${ANDROID_NDK}/sources/android/native_app_glue)
 endif ()

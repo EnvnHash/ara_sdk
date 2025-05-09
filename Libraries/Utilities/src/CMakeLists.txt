@@ -74,6 +74,7 @@ if (WIN32)
 endif ()
 
 add_library(${PROJECT_NAME} OBJECT ${UTILITIES_SRC})
+add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 include(Gtk3Include)
 include(PugiXMLInclude)
