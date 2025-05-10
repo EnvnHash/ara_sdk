@@ -12,7 +12,7 @@ class UIStack {
 public:
     virtual ~UIStack() = default;
 
-    template  <class T>
+    template <class T>
     T* add(const std::string& name) {
         m_nodes[name] = m_rootNode->addChild<T>();
         m_nodes[name]->setVisibility(false);

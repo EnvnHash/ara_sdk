@@ -22,9 +22,10 @@ void UIAppAndroidNative::startAndroidEventLoop() {
     GLWindow*                   win = nullptr;
 
     while (true) {
+        auto hasEvent = ALooper_pollOnce(-1, nullptr, &events, reinterpret_cast<void**>(&source)) >= 0;
+
         //  block until we get an event
-        while ((win && win->getForceRedraw())
-            || (ALooper_pollOnce(-1, nullptr, &events, (void**)&source) >= 0)) {
+        if ((win && win->getForceRedraw()) || hasEvent) {
             // Process this event. calls  android_handle_cmd
             if (source != nullptr) {
                 source->process(m_androidApp, source);
@@ -42,6 +43,9 @@ void UIAppAndroidNative::startAndroidEventLoop() {
                 win->draw();
             } else {
                 win = m_glbase.getWinMan()->getFirstWin();
+                if (win) {
+                    win->setALooper(ALooper_forThread());
+                }
             }
         }
     }

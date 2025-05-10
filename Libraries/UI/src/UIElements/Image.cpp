@@ -565,7 +565,7 @@ void Image::loadImg() {
     const auto filename = m_imageFile;
 
     auto& texCol = getSharedRes()->glbase->textureCollector();
-    m_tex = texCol.addFromMem(filename, dataPath(), m_mipMapLevel);
+    m_tex = texCol.addFromAssetManager(filename, m_mipMapLevel);
     if (m_tex){
         m_loaded    = true;
         m_texAspect = m_tex->getWidthF() / m_tex->getHeightF();

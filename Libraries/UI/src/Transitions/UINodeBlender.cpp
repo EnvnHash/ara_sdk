@@ -64,7 +64,16 @@ void UINodeBlender::transition(transType tt, double dur) {
             m_root->getSharedRes()->requestRedraw = true;
 
             if (m_blendPos.getEndFunc()) {
-                m_blendPos.getEndFunc()();
+                // node may not be initialized at this point
+                if (!m_nodes[type::back]->isInited()) {
+                    m_nodes[type::back]->getSharedRes()->requestRedraw = true;
+                    m_nodes[type::back]->addGlCb("retryUINodeBlenderFrontToBack", [this]{
+                        m_blendPos.getEndFunc()();
+                        return true;
+                    });
+                } else {
+                    m_blendPos.getEndFunc()();
+                }
             }
         } else {
             m_blendPos.start(0.f, 1.f, dur, false, [&](const float& v){

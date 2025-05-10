@@ -68,16 +68,7 @@ public:
     [[maybe_unused]] Conditional *getStopEventLoopSema() { return &m_stopEventLoopSema; }
     [[maybe_unused]] Conditional *getStartEventLoopSema() { return &m_startEventLoopSema; }
 
-    /** add a new window (using the GWindow glfw-wrapper class) */
-/*    GLWindow *addWin(int width, int height, int refreshRate, bool fullScreen, bool useGL32p, int shiftX = 0,
-                     int shiftY = 0, int monitorNr = 0, bool decorated = true, bool floating = false,
-                     unsigned int nrSamples = 2, bool hidden = false, bool scaleToMonitor = false,
-                     void *sharedCtx = nullptr, bool transparentFB = false, void *extWinHandle = nullptr,
-                     bool debug = false);
-*/
-    /**
-     * add a new Window using the GWindow Wrapper class parameters are set via pre-filled gWinPar struct
-     */
+    /** add a new Window using the GWindow Wrapper class parameters are set via pre-filled gWinPar struct */
     GLWindow *addWin(const glWinPar& gp);
 
     void removeWin(GLWindow *win, bool terminateGLFW = true);
@@ -138,22 +129,16 @@ public:
     bool isRunning() const { return m_run; }
 
     [[maybe_unused]] int getDispOffsetX(unsigned int idx) const {
-        if (m_dispOffsets.size() > idx) {
-            return m_dispOffsets[idx].first;
-        } else {
-            return 0;
-        }
+        return m_dispOffsets.size() > idx ? m_dispOffsets[idx].first : 0;
     }
 
     [[maybe_unused]] int getDispOffsetY(unsigned int idx) const {
-        if (m_dispOffsets.size() > idx) {
-            return m_dispOffsets[idx].second;
-        } else {
-            return 0;
-        }
+        return m_dispOffsets.size() > idx ? m_dispOffsets[idx].second : 0;
     }
 
-    [[maybe_unused]] GLWindow *getFirstWin() const { return m_windows.empty() ? nullptr : m_windows.front().get(); }
+    [[maybe_unused]] GLWindow *getFirstWin() const {
+        return m_windows.empty() ? nullptr : m_windows.front().get();
+    }
     [[maybe_unused]] GLWindow *getBack() const  { return m_windows.back().get(); }
     std::vector<std::unique_ptr<GLWindow>>        *getWindows() { return &m_windows; }
     GLWindow                                      *getFocusedWin() const { return m_focusedWin; }

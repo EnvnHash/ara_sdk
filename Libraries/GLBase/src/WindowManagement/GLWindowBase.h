@@ -37,7 +37,7 @@ public:
     virtual void *getNativeCtx()                        = 0;
 
     void iterate() { m_iterate.notify(); }
-    void forceRedraw() { m_forceRedraw = true; }
+    virtual void forceRedraw() { m_forceRedraw = true; }
     void setDrawFunc(const std::function<bool(double, double, int)>& f) { m_drawFunc = f; }
     void setGlCb(const std::function<void()>& cb) {
         m_glCb = cb;

@@ -140,7 +140,7 @@ TEST(Functional_PropertyPtr, OnPreChangeCallback) {
     propPtr = 5;
     EXPECT_TRUE(callbackCalled);
 }
-/*
+
 TEST(Functional_PropertyPtr, OnPostChangeCallback) {
     bool callbackCalled = false;
     auto postChangeFunc = [&callbackCalled](const std::any& value) {
@@ -156,7 +156,7 @@ TEST(Functional_PropertyPtr, OnPostChangeCallback) {
     propPtr = 5;
     EXPECT_TRUE(callbackCalled);
 }
-
+/*
 TEST(Functional_PropertyPtr, ToJson) {
     Property prop(60, 0, 1, 2);
 

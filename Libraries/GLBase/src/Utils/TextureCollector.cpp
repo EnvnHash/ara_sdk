@@ -57,17 +57,12 @@ Texture *TextureCollector::addFromMem(const std::filesystem::path &fileName, con
     });
 }
 
-Texture *TextureCollector::addFromAssetManager(const AssetManager *res, const std::string &fn, int mipMapLevel) {
+Texture *TextureCollector::addFromAssetManager(const std::string &fn, int mipMapLevel) {
     return checkForExistence(fn, nullptr, [&]  {
-        if (res) {
-            std::vector<uint8_t> vp;
-            //res->loadResource(nullptr, vp, fn);
-            auto al = m_glBase->getAssetManager()->getAssetLoader();
-            al.loadAssetToMem(vp, fn);
-            return add(vp, fn, nullptr, mipMapLevel);
-        } else {
-            return static_cast<Texture *>(nullptr);
-        }
+        std::vector<uint8_t> vp;
+        auto& al = m_glBase->getAssetManager()->getAssetLoader();
+        al.loadAssetToMem(vp, fn);
+        return add(vp, fn, &al.getAssetPath(), mipMapLevel);
     });
 }
 

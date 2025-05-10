@@ -22,6 +22,7 @@
 
 #ifdef __ANDROID__
 #include <android/native_window.h>
+#include <android/looper.h>
 #elif __linux__
 #include <X11Window.h>
 #endif
@@ -35,7 +36,7 @@ public:
     EGLWindow() : GLWindowBase() {}
     virtual ~EGLWindow() = default;
 
-    bool create(const glWinPar& gp) { return init(gp); }
+    bool create(const glWinPar& gp) override { return init(gp); }
     int  init(const glWinPar& gp);
 
     /**
@@ -74,8 +75,8 @@ public:
     EGLDisplay      getEglDisplay() const { return m_display; }
     EGLSurface      getEglSurface() const { return m_surface; }
     void*           getCtx() { return (void*)m_esContext.eglContext; }
-    void*           getWin() { return &m_esContext.eglNativeWindow; }
-    void*           getDisp() { return &m_esContext.eglNativeDisplay; }
+    void*           getWin() override { return &m_esContext.eglNativeWindow; }
+    void*           getDisp() override { return &m_esContext.eglNativeDisplay; }
     EGLConfig       getEglConfig() const { return m_eglConfig; }
     EGLint          getEglVersionMajor() const { return m_eglVersionMajor; }
     EGLint          getEglVersionMinor() const { return m_eglVersionMinor; }
@@ -87,6 +88,12 @@ public:
 
     void setSize(int m_widthVirt, int m_heightVirt) {}
     void setPosition(int posx, int posy) {}
+
+#ifdef __ANDROID__
+    void setALooper(void* looper) { m_looper = reinterpret_cast<ALooper*>(looper); }
+    ALooper* getALooper() { return m_looper; }
+    void forceRedraw() override { m_forceRedraw = true; if(m_looper) ALooper_wake(m_looper); }
+#endif
 
     // utility methods for unified window handling (EGLWindow -> GLWindow)
     void setKeyCallback(std::function<void(EGLContext, int, int, int, int)> f) {}
@@ -145,6 +152,10 @@ protected:
     float                 m_androidDefaultDpi = 160.f;
     GLBase*               m_glbase            = nullptr;
     std::function<void()> m_onCloseCb;
+
+#ifdef __ANDROID__
+    ALooper* m_looper = nullptr;
+#endif
 };
 
 }  // namespace ara
