@@ -166,7 +166,8 @@ public:
     void                                    deserialize(const std::string&);
     void                                    deserialize(const nlohmann::json& j);
     void                                    load(const std::filesystem::path& filePath);
-    virtual void                            load();
+    void                                    loadFromAssets(const std::filesystem::path& filePath);
+    virtual void                            load(bool fromAssets);
     void                                    loadFromString(const std::string& str);
     void                                    saveAs(const std::filesystem::path& filePath);
     void                                    save();
@@ -246,6 +247,5 @@ protected:
         { cbType::postRemoveChild, {}} };
 
 };
-
 
 }

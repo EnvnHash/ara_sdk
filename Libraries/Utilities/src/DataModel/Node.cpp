@@ -16,8 +16,11 @@
 #include <DataModel/Node.h>
 #include <string_utils.h>
 
+#include "AssetLoader.h"
+
 using json = nlohmann::json;
 using namespace std::chrono_literals;
+using namespace std;
 
 namespace ara {
 
@@ -27,11 +30,11 @@ Node::Node() {
 
 Node::~Node() {
     if (!m_fileName.empty()) {
-        auto r = std::ranges::find_if(m_watchFiles, [&](auto& it) {
+        auto r = ranges::find_if(m_watchFiles, [&](auto& it) {
             return it.path.string() == m_fileName;
         });
         if (r != m_watchFiles.end()) {
-            std::unique_lock<std::mutex> lock(m_watchMtx);
+            unique_lock<std::mutex> lock(m_watchMtx);
             m_watchFiles.erase(r);
         }
     }
@@ -49,7 +52,7 @@ void Node::pop() {
             it();
         }
         {
-            std::unique_lock l(m_mtx);
+            unique_lock l(m_mtx);
             m_children.pop_back();
         }
         for (auto &it : postRemoveCbs) {
@@ -64,7 +67,7 @@ void Node::remove(Node* node) {
     }
 
     if (!m_children.empty()) {
-        auto res = std::ranges::find_if(m_children,
+        auto res = ranges::find_if(m_children,
                                         [&](auto& it) { return it.get() == node; });
         if (res != m_children.end()) {
             auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
@@ -73,7 +76,7 @@ void Node::remove(Node* node) {
                 it();
             }
             {
-                std::unique_lock<std::mutex> l(m_mtx);
+                unique_lock<std::mutex> l(m_mtx);
                 m_children.erase(res);
             }
             for (auto &it : postRemoveCbs) {
@@ -94,7 +97,7 @@ void Node::clearChildren() {
         it();
     }
     {
-        std::unique_lock l(m_mtx);
+        unique_lock l(m_mtx);
         children().clear();
     }
     for (auto &it : postRemoveCbs) {
@@ -102,8 +105,8 @@ void Node::clearChildren() {
     }
 }
 
-std::deque<Node*> Node::findChild(const std::string& name) {
-    std::deque<Node*> list;
+deque<Node*> Node::findChild(const string& name) {
+    deque<Node*> list;
     if (m_name == name) {
         list.emplace_back(this);
     }
@@ -131,7 +134,7 @@ void Node::signalChange(Node::cbType cbType) {
 json Node::asJson() {
     json root;
     {
-        std::unique_lock l(m_mtx);
+        unique_lock l(m_mtx);
         serialize(root);
     }
     return root;
@@ -156,7 +159,7 @@ void Node::serialize(json& j)  {
     }
 }
 
-void Node::deserialize(const std::string& str) {
+void Node::deserialize(const string& str) {
     json j = json::parse(str);
     deserialize(j);
 }
@@ -169,7 +172,7 @@ void Node::deserialize(const json& j) {
         }
     }
 
-    std::unordered_map<std::string, Node*> existingChildren;
+    unordered_map<string, Node*> existingChildren;
     for (const auto& child : m_children) {
         existingChildren[child->uuid()] = child.get();
     }
@@ -180,11 +183,11 @@ void Node::deserialize(const json& j) {
             if (it != existingChildren.end()) {
                 it->second->deserialize(*jChild);
                 // assure correct order
-                auto childIt = std::find_if(m_children.begin(), m_children.end(), [&](auto& el){ return el.get() == it->second; });
-                auto childIdx = std::distance(m_children.begin(), childIt);
-                auto jChildIdx = std::distance(j["children"].begin(), jChild);
+                auto childIt = find_if(m_children.begin(), m_children.end(), [&](auto& el){ return el.get() == it->second; });
+                auto childIdx = distance(m_children.begin(), childIt);
+                auto jChildIdx = distance(j["children"].begin(), jChild);
                 if (childIdx != jChildIdx) {
-                    m_children.splice(std::next(m_children.begin(), jChildIdx), m_children, childIt);
+                    m_children.splice(next(m_children.begin(), jChildIdx), m_children, childIt);
                 }
                 existingChildren.erase(it);
             } else {
@@ -204,25 +207,35 @@ void Node::deserialize(const json& j) {
     }
 }
 
-void Node::load(const std::filesystem::path& filePath) {
+void Node::load(const filesystem::path& filePath) {
     m_fileName = filePath;
-    load();
+    load(false);
 }
 
-void Node::load() {
+void Node::loadFromAssets(const filesystem::path& filePath) {
+    m_fileName = filePath;
+    load(true);
+}
+
+void Node::load(bool fromAssets) {
     if (m_undoBufRoot) {
         saveState();
     }
 
-    if (std::filesystem::exists(m_fileName)) {
+    if (!fromAssets && filesystem::exists(m_fileName)) {
         json j;
-        std::ifstream i(m_fileName);
+        ifstream i(m_fileName);
         i >> j;
+        deserialize(j);
+    } else {
+        AssetLoader al;
+        auto str = al.loadAssetAsString(m_fileName);
+        json j = json::parse(str);
         deserialize(j);
     }
 
-    if (m_watchFile && m_watchFile->time == std::filesystem::file_time_type{}) {
-        m_watchFile->time = std::filesystem::last_write_time(m_watchFile->path);
+    if (m_watchFile && m_watchFile->time == filesystem::file_time_type{}) {
+        m_watchFile->time = filesystem::last_write_time(m_watchFile->path);
     }
 
     // update file watching
@@ -231,7 +244,7 @@ void Node::load() {
     }
 }
 
-void Node::loadFromString(const std::string& str) {
+void Node::loadFromString(const string& str) {
     if (m_undoBufRoot) {
         saveState();
     }
@@ -242,17 +255,17 @@ void Node::loadFromString(const std::string& str) {
     }
 }
 
-void Node::saveAs(const std::filesystem::path& filePath) {
+void Node::saveAs(const filesystem::path& filePath) {
     m_fileName = filePath;
     save();
 }
 
 void Node::save() {
-    std::ofstream o(m_fileName);
-    o << std::setw(4) << asJson() << std::endl;
+    ofstream o(m_fileName);
+    o << setw(4) << asJson() << endl;
 
     if (m_watchFile) {
-        m_watchFile->time = std::filesystem::last_write_time(m_watchFile->path);
+        m_watchFile->time = filesystem::last_write_time(m_watchFile->path);
     }
 }
 
@@ -308,15 +321,15 @@ void Node::redo() {
     }
 }
 
-void Node::iterateChildren(Node& node, const std::function<void(Node&)>& f) {
+void Node::iterateChildren(Node& node, const function<void(Node&)>& f) {
     f(node);
     for (const auto& it: node.children()) {
         iterateChildren(*it, f);
     }
 }
 
-std::deque<std::function<void()>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
-    std::deque<std::function<void()>> list;
+deque<function<void()>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
+    deque<function<void()>> list;
     if  (!withChildrenOnly || !m_children.empty()) {
         for (auto &it : m_changeCb[cbType]) {
             list.emplace_back(it.second);
@@ -335,7 +348,7 @@ std::deque<std::function<void()>> Node::collectCallbacks(cbType cbType, bool wit
 }
 
 Node* Node::root() {
-    std::unique_lock l(m_mtx);
+    unique_lock l(m_mtx);
     auto currentParent = m_parent;
     if (!currentParent) {
         return this;
@@ -346,21 +359,21 @@ Node* Node::root() {
     return currentParent;
 }
 
-void Node::changeVal(const std::function<void()>& f) {
+void Node::changeVal(const function<void()>& f) {
     if (m_undoBufRoot) {
         m_undoBufRoot->saveState();
     }
 
-    for (auto &val: m_changeCb[cbType::preChange] | std::views::values) {
+    for (auto &val: m_changeCb[cbType::preChange] | views::values) {
         val();
     }
 
     {
-        std::unique_lock l(m_mtx);
+        unique_lock l(m_mtx);
         f();
     }
 
-    for (auto &val: m_changeCb[cbType::postChange] | std::views::values) {
+    for (auto &val: m_changeCb[cbType::postChange] | views::values) {
         val();
     }
 }
@@ -372,15 +385,15 @@ void Node::setUndoBuffer(bool enabled, size_t size) {
     });
 }
 
-void Node::checkAndAddWatchPath(const std::string& fn) {
-    auto r = std::ranges::find_if(m_watchFiles, [&](auto& it) {
+void Node::checkAndAddWatchPath(const string& fn) {
+    auto r = ranges::find_if(m_watchFiles, [&](auto& it) {
         return it.path.string() == fn;
     });
 
     if (r == m_watchFiles.end()) {
         m_watchFile = &m_watchFiles.emplace_back(NodeWatchFile{this, fn});
-        if (std::filesystem::exists(m_watchFile->path)) {
-            m_watchFile->time = std::filesystem::last_write_time(m_watchFile->path);
+        if (filesystem::exists(m_watchFile->path)) {
+            m_watchFile->time = filesystem::last_write_time(m_watchFile->path);
         }
     }
 }
@@ -406,19 +419,19 @@ void Node::setWatch(bool val) {
 
 void Node::startWatchThread() {
 #ifndef ARA_USE_CMRC
-    m_watchThrd = std::thread([&]{
-        std::filesystem::file_time_type init_ft{};
+    m_watchThrd = thread([&]{
+        filesystem::file_time_type init_ft{};
         while (m_watchThreadRunning) {
             {
-                std::unique_lock<std::mutex> lock(m_watchMtx);
+                unique_lock<mutex> lock(m_watchMtx);
                 try {
                     for (auto &wfIt : m_watchFiles) {
-                        if (std::filesystem::exists(wfIt.path)) {
-                            auto ft = std::filesystem::last_write_time(wfIt.path);
+                        if (filesystem::exists(wfIt.path)) {
+                            auto ft = filesystem::last_write_time(wfIt.path);
                             if (ft != init_ft && ft != wfIt.time) {
                                 // the file may actually being written to, file size needs to be constant
-                                if (wfIt.fileSize != std::filesystem::file_size(wfIt.path)) {
-                                    wfIt.fileSize = std::filesystem::file_size(wfIt.path);
+                                if (wfIt.fileSize != filesystem::file_size(wfIt.path)) {
+                                    wfIt.fileSize = filesystem::file_size(wfIt.path);
                                 } else {
                                     LOG << "Detected File change: " << wfIt.path;
                                     wfIt.node->load();
@@ -432,7 +445,7 @@ void Node::startWatchThread() {
                     LOGE << "Node file watcher caught an error checking files";
                 }
             }
-            std::this_thread::sleep_for(1.0s);
+            this_thread::sleep_for(1.0s);
         }
     });
     m_watchThrd.detach();

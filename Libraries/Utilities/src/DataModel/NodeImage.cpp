@@ -24,7 +24,7 @@ Image::Image() : Node() {
     ara::Node::setTypeName<Image>();
 }
 
-void Image::load() { // called when the image was changed on disk
+void Image::load(bool fromAssets) { // called when the image was changed on disk
     for (const auto& cb : m_changeCb[cbType::postChange]) {
         cb.second();
     }
