@@ -13,26 +13,26 @@ include_directories(
 # add test source files
 file(GLOB GLBASE_UT_SRC
         TypoGlyphMapTest.cpp
-        #ContextSharing.cpp
-        ##ContextSharingFbo.cpp
-        #CreateFbo.cpp
-        #CreateFbo.cpp
-        #CreateGLCtx.cpp
-        #CreateWindow.cpp
-        #CtrlPointSerialization.cpp
-        #DrawQuad.cpp
-        #MemLeakTests/DrawQuadMemLeak.cpp
-        #GLBaseCreationDestruction.cpp
-        #GLBaseStopStart.cpp
+        ContextSharing.cpp
+        #ContextSharingFbo.cpp
+        CreateFbo.cpp
+        CreateFbo.cpp
+        CreateGLCtx.cpp
+        CreateWindow.cpp
+        CtrlPointSerialization.cpp
+        DrawQuad.cpp
+        MemLeakTests/DrawQuadMemLeak.cpp
+        GLBaseCreationDestruction.cpp
+        GLBaseStopStart.cpp
         GLBaseStopStartResources.cpp
-        #GLRendererTest.cpp
-        #LoadTextureMipMap.cpp
-        #LoadTexture.cpp
-        #NativeWindow.cpp
-        #PolygonTest.cpp
-        #PolygonSerializationHps.cpp
-        #PolygonSerialization.cpp
-        #ThreadedWindow.cpp
+        GLRendererTest.cpp
+        LoadTextureMipMap.cpp
+        LoadTexture.cpp
+        NativeWindow.cpp
+        PolygonTest.cpp
+        PolygonSerializationHps.cpp
+        PolygonSerialization.cpp
+        ThreadedWindow.cpp
 )
 
 add_executable(${PROJECT_NAME} ${GLBASE_UT_SRC})

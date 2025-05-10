@@ -11,8 +11,7 @@ namespace ara::GLBaseUnitTest::GLBaseStopStartResources {
 
 TEST(GLBaseTest, GLBaseStopStartResources) {
     // create and destroy the GLBase context - there should be no timeouts, deadlocks or memleaks
-    int nrIterations = 1;
-    //int nrIterations = 50;
+    int nrIterations = 50;
     for (int i = 0; i < nrIterations; i++) {
         GLBase m_glbase;
         EXPECT_EQ(m_glbase.init(), true);
