@@ -324,12 +324,12 @@ protected:
 
     UINode* m_parent = nullptr;
 
-    bool m_inited                        = false;
-    bool m_forceInit                     = false;
-    bool m_excludeFromObjMap             = false;
-    bool m_treeChanged                   = false;  /// a child was added or removed
-    bool m_reqTreeChanged                = false;
-    bool m_referenceDrawing              = false;
+    bool m_inited               = false;
+    bool m_forceInit            = false;
+    bool m_excludeFromObjMap    = false;
+    bool m_treeChanged          = false;  /// a child was added or removed
+    bool m_reqTreeChanged       = false;
+    bool m_referenceDrawing     = false;
 
     std::function<void()>     m_changeCb;
     std::string               m_name;

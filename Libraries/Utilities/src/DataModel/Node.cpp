@@ -218,6 +218,8 @@ void Node::loadFromAssets(const filesystem::path& filePath) {
 }
 
 void Node::load(bool fromAssets) {
+    m_useAssetLoader = fromAssets;
+
     if (m_undoBufRoot) {
         saveState();
     }
@@ -423,7 +425,7 @@ void Node::startWatchThread() {
         filesystem::file_time_type init_ft{};
         while (m_watchThreadRunning) {
             {
-                unique_lock<mutex> lock(m_watchMtx);
+                unique_lock<std::mutex> lock(m_watchMtx);
                 try {
                     for (auto &wfIt : m_watchFiles) {
                         if (filesystem::exists(wfIt.path)) {
@@ -434,7 +436,7 @@ void Node::startWatchThread() {
                                     wfIt.fileSize = filesystem::file_size(wfIt.path);
                                 } else {
                                     LOG << "Detected File change: " << wfIt.path;
-                                    wfIt.node->load();
+                                    wfIt.node->load(m_useAssetLoader);
                                     LOG << " loading finished after File change: " << wfIt.path;
                                     wfIt.time = ft;
                                 }
