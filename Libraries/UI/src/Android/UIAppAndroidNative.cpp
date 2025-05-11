@@ -22,11 +22,9 @@ void UIAppAndroidNative::startAndroidEventLoop() {
     GLWindow*                   win = nullptr;
 
     while (true) {
-        auto hasEvent = ALooper_pollOnce(-1, nullptr, &events, reinterpret_cast<void**>(&source)) >= 0;
-
-        //  block until we get an event
-        if ((win && win->getForceRedraw()) || hasEvent) {
-            // Process this event. calls  android_handle_cmd
+        // timeout == -1 means blocking until a new event comes
+        // a return value of -1 == ALOOPER_POLL_WAKE, i.e. forceRedraw
+        while (ALooper_pollOnce(-1, nullptr, &events, reinterpret_cast<void**>(&source)) >= -1) {
             if (source != nullptr) {
                 source->process(m_androidApp, source);
             }
