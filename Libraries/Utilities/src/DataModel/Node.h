@@ -182,8 +182,8 @@ public:
     void                                    setUndoBuffer(bool enabled, size_t size);
     void                                    checkAndAddWatchPath(const std::string& fn);
     virtual void                            setWatch(bool val);
-    static void                             startWatchThread();
-    static void                             stopWatchThread();
+    void                                    startWatchThread();
+    void                                    stopWatchThread();
 
     std::mutex&                             mutex() { return m_mtx; }
     std::list<std::shared_ptr<Node>>&       children() const { return const_cast<std::list<std::shared_ptr<Node>>&>(m_children); }
@@ -226,6 +226,7 @@ protected:
     std::string                                     m_path;
 
     bool                                            m_watch = false;
+    bool                                            m_useAssetLoader = false;
     NodeWatchFile*                                  m_watchFile = nullptr;
 
     Node*                                           m_parent = nullptr; // can't use weak pointer, since can't create weak_ptr from this without previous shared_ptr creation
