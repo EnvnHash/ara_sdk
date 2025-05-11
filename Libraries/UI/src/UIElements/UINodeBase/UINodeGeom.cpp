@@ -21,16 +21,16 @@ bool UINodeGeom::contains(UINodeGeom* outer, UINodeGeom* node) {
         return false;
     }
 
-    vec2 t_contLT{};
-    vec2 t_contRB{};
+    vec2 contLT{};
+    vec2 contRB{};
 
     for (int32_t i = 0; i < 2; i++) {
-        t_contLT[i] = node->getWinPos()[i] + std::min(0.f, node->getChildrenBoundBox()[i]);
-        t_contRB[i] = m_objItLT[i] + std::max(node->getWinRelSize()[i],
-                                              node->getChildrenBoundBox()[i + 2] - node->getChildrenBoundBox()[i]);
+        contLT[i] = node->getWinPos()[i] + std::min(0.f, node->getChildrenBoundBox()[i]);
+        contRB[i] = contLT[i] + std::max(node->getWinRelSize()[i],
+                                         node->getChildrenBoundBox()[i + 2] - node->getChildrenBoundBox()[i]);
     }
 
-    return outer->isInBounds(t_contLT) && outer->isInBounds(t_contLT);
+    return outer->isInBounds(contLT) && outer->isInBounds(contLT);
 }
 
 void UINodeGeom::calcContentTransMat() {
@@ -530,12 +530,15 @@ bool UINodeGeom::isInBounds(vec2& pos) {
     getWinPos();
     getWinRelSize();
 
+    vec2 objItLT{};
+    vec2 objItRB{};
+
     for (int32_t i = 0; i < 2; i++) {
-        m_objItLT[i] = m_winRelPos[i] + std::min(0.f, m_childBoundBox[i]);
-        m_objItRB[i] = m_objItLT[i] + std::max(m_winRelSize[i], m_childBoundBox[i + 2] - m_childBoundBox[i]);
+        objItLT[i] = m_winRelPos[i] + std::min(0.f, m_childBoundBox[i]);
+        objItRB[i] = objItLT[i] + std::max(m_winRelSize[i], m_childBoundBox[i + 2] - m_childBoundBox[i]);
     }
 
-    return all(greaterThanEqual(pos, m_objItLT)) && all(lessThanEqual(pos, m_objItRB));
+    return all(greaterThanEqual(pos, objItLT)) && all(lessThanEqual(pos, objItRB));
 }
 
 bool UINodeGeom::isOutOfParentBounds() {

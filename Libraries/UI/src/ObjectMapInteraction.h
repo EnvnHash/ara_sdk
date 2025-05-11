@@ -34,7 +34,7 @@ public:
 
     // must be normalized coordinates [0-1]
     // this is called from procHID(), no FBO is bound. x and y must be in hardware pixels
-    uint32_t getObjAtPos(float x, float y) { return 0; }
+    uint32_t getObjAtPos(glm::vec2& pos) { return 0; }
 
     [[nodiscard]] bool      usesExtFbo() const { return m_extFbo; }
     [[nodiscard]] float     getMaxObjId() const { return m_maxNrGuiObjects - 1.f; };

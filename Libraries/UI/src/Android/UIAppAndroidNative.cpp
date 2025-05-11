@@ -57,7 +57,9 @@ int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* e
             float x   = AMotionEvent_getX(event, 0);
             float y   = AMotionEvent_getY(event, 0);
             auto  win = ctx->getWinMan()->getFirstWin();
-            if (!win) return -1;
+            if (!win) {
+                return -1;
+            }
 
             // convert to virtual coordinates
             x /= win->getContentScale().x;

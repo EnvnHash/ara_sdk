@@ -638,16 +638,7 @@ bool Image::isInBounds(glm::vec2& pos) {
         return false;
     }
 
-    // inBounds calculation must respect the parent content-transformation matrices and children bounds
-    getWinPos();
-    getWinRelSize();
-
-    for (int i = 0; i < 2; i++) {
-        m_objItLT[i] = m_winRelPos[i] + std::min(0.f, m_childBoundBox[i]);
-        m_objItRB[i] = m_objItLT[i] + std::max(m_winRelSize[i], m_childBoundBox[i + 2] - m_childBoundBox[i]);
-    }
-
-    m_mpInBounds = glm::all(glm::greaterThanEqual(pos, m_objItLT)) && glm::all(glm::lessThanEqual(pos, m_objItRB));
+    m_mpInBounds = UINodeGeom::isInBounds(pos);
 
     if (!m_mpInBounds) {
         return false;
