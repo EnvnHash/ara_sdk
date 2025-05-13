@@ -108,3 +108,11 @@ jobs:
         if [ "$RUNNER_OS" == "macOS" ] || [ "$RUNNER_OS" == "Linux" ]; then
           ./Libraries/Utilities/UnitTests/Utilities_UnitTests
         fi
+
+    - name: GLBase Utilties
+      shell: bash
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: | 
+        if [ "$RUNNER_OS" == "macOS" ] || [ "$RUNNER_OS" == "Linux" ]; then
+          ./Libraries/GLBase/UnitTests/GLBase_UnitTests
+        fi
