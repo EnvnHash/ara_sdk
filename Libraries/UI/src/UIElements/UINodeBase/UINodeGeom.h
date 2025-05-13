@@ -89,101 +89,46 @@ public :
         setStyleInitVal(comp == coordComp::x ? "width" : "height", valueStr, st);
     }
 
-    /** set x-position in pixels (Values can be negative this means extreme right minus nr of pixels) **/
-    void setX(int32_t x, state st = state::m_state) {
+    /** set x-position in pixels (int) (Values can be negative this means extreme right minus nr of pixels)
+     or percentage (float) 0 - 1, 0 = left, 1 = right **/
+    template<typename T>
+    void setX(T x, state st = state::m_state) {
         setCoord(x, coordComp::x, st);
     }
 
-    /** set x-position in percentage 0 - 1, 0 = left, 1 = right **/
-    void setX(float x, state st = state::m_state) {
-        setCoord(x, coordComp::x, st);
-    }
-
-    /** set y-position in absolute pixels. +y means towards the bottom **/
-    void setY(int32_t y, state st = state::m_state) {
+    /** set y-position in absolute pixels (int). +y means towards the bottom
+     or in percentage (float) 0 - 1, 0 = top, 1 = bottom **/
+    template<typename T>
+    void setY(T y, state st = state::m_state) {
         setCoord(y, coordComp::y, st);
     }
 
-    /** set y-position in percentage 0 - 1, 0 = top, 1 = bottom **/
-    void setY(float y, state st = state::m_state) {
-        setCoord(y, coordComp::y, st);
-    }
-
-    /** set position in absolute pixels. -y means towards the top Values can be
-     * negative this means extreme right/top minus nr of pixels **/
-    void setPos(int32_t posX, int32_t posY, state st = state::m_state) {
-        setCoord(posX, coordComp::x, st);
-        setCoord(posY, coordComp::y, st);
-    }
-
-    /** set x-position in absolute pixels (Values can be negative this means
-     * extreme right minus nr of pixels) and y-position relative from -0.5 to
-     * 0.5. +y means towards the bottom **/
-    void setPos(int32_t posX, float posY, state st = state::m_state) {
-        setCoord(posX, coordComp::x, st);
-        setCoord(posY, coordComp::y, st);
-    }
-
-    /** set x-position relative from 0 to 1 (if PIVOT and ALIGN is top left) and
-     * y-position in absolute pixels (Values can be negative this means extreme
-     * top minus nr of pixels) **/
-    void setPos(float posX, int32_t posY, state st = state::m_state) {
-        setCoord(posX, coordComp::x, st);
-        setCoord(posY, coordComp::y, st);
-    }
-
-    /** set position relative from 0 to 1 (if PIVOT and ALIGN is top left). +y
-     * means towards the bottom **/
-    void setPos(float posX, float posY, state st = state::m_state){
+    /** set position in absolute pixels (int) or percentage (float). -y means towards the top Values can be negative
+     * this means extreme right/top minus nr of pixels. **/
+    template<typename T, typename U>
+    void setPos(T posX, U posY, state st = state::m_state) {
         setCoord(posX, coordComp::x, st);
         setCoord(posY, coordComp::y, st);
     }
 
     virtual void       setZPos(float val) { m_zPos = val; }
 
-    /** set width in absolute pixels **/
-    void setWidth(int32_t width, state st = state::m_state) {
+    /** set width in absolute pixels (int), in relative percentage (float) 0-1 **/
+    template<typename T>
+    void setWidth(T width, state st = state::m_state) {
         setSizeComp(width, coordComp::x, st);
     }
 
-    /** set width in relative percentage 0-1  **/
-    void setWidth(float width, state st = state::m_state) {
-        setSizeComp(width, coordComp::x, st);
-    }
-
-    /** set height in absolute pixels **/
-    void setHeight(int32_t height, state st = state::m_state) {
+    /** set height in absolute pixels (int), or in relative percentage (float) 0-1**/
+    template<typename T>
+    void setHeight(T height, state st = state::m_state) {
         setSizeComp(height, coordComp::y, st);
     }
 
-    /** set height in relative percentage 0-1  **/
-    void setHeight(float height, state st = state::m_state) {
-        setSizeComp(height, coordComp::y, st);
-    }
-
-    /** set width and height in absolute pixels. Values can be negative this
+    /** set width and height in absolute pixels (int) or relative percentage (float). Values can be negative this
      * means full width/height minus nr of pixels **/
-    void setSize(int32_t width, int32_t height, state st = state::m_state) {
-        setSizeComp(width, coordComp::x, st);
-        setSizeComp(height, coordComp::y, st);
-    }
-
-    /** set width in absolute pixels (Values can be negative this means full
-     * width minus nr of pixels) and height in percentage 0-1 **/
-    void setSize(int32_t width, float height, state st = state::m_state) {
-        setSizeComp(width, coordComp::x, st);
-        setSizeComp(height, coordComp::y, st);
-    }
-
-    /** set width relative percentage 0-1 and height in absolute pixels (Values
-     * can be negative this means full height minus nr of pixels ) **/
-    void setSize(float width, int32_t height, state st = state::m_state) {
-        setSizeComp(width, coordComp::x, st);
-        setSizeComp(height, coordComp::y, st);
-    }
-
-    /** set width and height relative percentage 0-1 **/
-    void setSize(float width, float height, state st = state::m_state) {
+    template<typename T, typename U>
+    void setSize(T width, U height, state st = state::m_state) {
         setSizeComp(width, coordComp::x, st);
         setSizeComp(height, coordComp::y, st);
     }

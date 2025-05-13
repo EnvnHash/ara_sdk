@@ -18,7 +18,6 @@ using namespace glm;
 using namespace std;
 
 namespace fs = std::filesystem;
-namespace ph = std::placeholders;
 
 namespace ara {
 
@@ -333,7 +332,7 @@ void UIWindow::close(bool direct) {
 }
 
 bool UIWindow::closeEvtLoopCb() {
-    // if this was called from key event callback, it will cause a crash, because we are still iterating through
+    // if this was called from a key event callback, it will cause a crash because we are still iterating through
     // GLFWWindow member variables. check if the window was already closed;
     if (!s_inited) {
         return true;
