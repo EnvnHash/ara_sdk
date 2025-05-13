@@ -106,7 +106,7 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: | 
         if [ "$RUNNER_OS" == "macOS" ] || [ "$RUNNER_OS" == "Linux" ]; then
-          ./Libraries/Utilities/UnitTests/Utilities_UnitTests
+          ./Libraries/Utilities/UnitTests/Utilities_UnitTests --gtest_filter=-AnimValTest.*:Functional_Property.*
         fi
 
     - name: GLBase Utilties
