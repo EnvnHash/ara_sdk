@@ -118,7 +118,7 @@ public:
 
     virtual void procInputFocus();
     virtual void onNodeRemove(UINode* node);
-    virtual int32_t getObjAtPos(float x, float y, hidEvent evt);
+    virtual int32_t getObjAtPos(glm::vec2& pos, hidEvent evt);
 
     void fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed);
 

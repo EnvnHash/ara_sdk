@@ -598,9 +598,8 @@ bool UINode::objPosIt(ObjPosIt& opi) {
         }
     }
 
-    // if in bounds and not excluded from the object map and
-    if (inBounds && !(*opi.it)->isExcludedFromObjMap() && (*opi.it)->isVisible() && opi.foundTreeLevel <= opi.treeLevel) {
-        opi.foundNode      = opi.it->get();
+    if (inBounds && !(*opi.it)->isExcludedFromObjMap() && (*opi.it)->isVisible() && opi.foundTreeLevel < opi.treeLevel) {
+            opi.foundNode      = opi.it->get();
         opi.foundId        = (*opi.it)->getId();
         opi.foundTreeLevel = opi.treeLevel;
         // call hid interaction method on node, can optionally stop iteration

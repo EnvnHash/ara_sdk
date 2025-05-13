@@ -421,9 +421,6 @@ protected:
     glm::vec2 m_borderRadiusRel{0};
     glm::vec2 m_borderAliasRel{0};
 
-    static inline glm::vec2   m_objItLT{};
-    static inline glm::vec2   m_objItRB{};
-
     state m_state     = state::none;
     state m_lastState = state::none;
 

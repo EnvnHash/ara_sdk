@@ -416,7 +416,7 @@ bool UIWindow::draw(double time, double dt, int ctxNr) {
     WindowBase::procChangeWin();
 
     // process hid events, received in the WinBase HID callbacks this function passes down HID events to the UINodes and
-    // by this assures, that all UINode HID functions are called within the GL-context of their parent window
+    // by this assures that all UINode HID functions are called within the GL-context of their parent window
     WindowBase::procHid();
 
     m_doSwap = m_procSteps[Draw].active;
@@ -881,7 +881,7 @@ void UIWindow::fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPress
         m_hidData.mouseClickPosFlipY = m_hidData.mousePosNormFlipY;
     }
 
-    m_hidData.objId        = getObjAtPos(m_hidData.mousePos.x, m_hidData.mousePos.y, evt);
+    m_hidData.objId        = getObjAtPos(m_hidData.mousePos,  evt);
     m_hidData.hitNode[evt] = m_opi.foundNode;
 
     // store mouseDown ObjId for dragging (objId must not change while dragging)
@@ -1091,7 +1091,7 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
 }
 
 void UIWindow::onWheel(float deg) {
-    m_hidData.objId   = static_cast<int>(getObjAtPos(m_hidData.mousePos.x, m_hidData.mousePos.y, hidEvent::MouseWheel));
+    m_hidData.objId   = static_cast<int>(getObjAtPos(m_hidData.mousePos, hidEvent::MouseWheel));
     m_hidData.degrees = deg;
 
     m_hidData.reset();
@@ -1182,9 +1182,7 @@ void UIWindow::onNodeRemove(UINode *node) {
     }
 }
 
-int32_t UIWindow::getObjAtPos(float x, float y, hidEvent evt) {
-    glm::vec2 pos{x, y};
-
+int32_t UIWindow::getObjAtPos(glm::vec2& pos, hidEvent evt) {
     if (!m_uiRoot) {
         m_opi.foundNode = nullptr;
         return 0;

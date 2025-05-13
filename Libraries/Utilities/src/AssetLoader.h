@@ -25,26 +25,26 @@ namespace ara {
 
 class AssetLoader {
 public:
-    std::string loadAssetAsString(const std::filesystem::path& path);
-    std::string loadAssetAsString(const std::string& path);
+    static std::string loadAssetAsString(const std::filesystem::path& path);
+    static std::string loadAssetAsString(const std::string& path);
 
-    memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::filesystem::path& path);
-    memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::string& path);
+    static memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::filesystem::path& path);
+    static memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::string& path);
 
     static std::string getSanitizedAssetPath(const std::filesystem::path& p);
 
-    void setAssetPath(const std::filesystem::path& p) {
+    static void setAssetPath(const std::filesystem::path& p) {
         m_assetPath = p;
     }
 
-    std::filesystem::path resolveAssetPath(const std::filesystem::path& p) {
+    static std::filesystem::path resolveAssetPath(const std::filesystem::path& p) {
         return m_assetPath / p;
     }
 
-    std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
-    std::filesystem::path& getAssetPath() { return m_assetPath; }
+    static std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
+    static std::filesystem::path& getAssetPath() { return m_assetPath; }
 
-    bool usingCmrc() {
+    static bool usingCmrc() {
 #ifdef ARA_USE_CMRC
         return true;
 #else
@@ -53,7 +53,7 @@ public:
     }
 
 private:
-    std::filesystem::path m_assetPath;
+    static inline std::filesystem::path m_assetPath;
 };
 
 }
