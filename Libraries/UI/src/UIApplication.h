@@ -33,7 +33,8 @@ public:
     UIApplication();
     ~UIApplication() override = default;
 
-    void init(std::function<void()> func) override;
+    void init(const std::function<void()>& f) override;
+    void startUiThread(const std::function<void()>& f);
 
     /// \brief initialization function for sequential rendering. A loop which calls the WindowManager's iterate function,
     /// which will call all window's draw functions on after another
@@ -140,12 +141,11 @@ public:
 
     virtual std::filesystem::path dataPath();
 
-    UINode* getRootNode(uint winIdx = 0) { return (m_uiWindows.size() > winIdx) ? m_uiWindows[winIdx]->getRootNode() : nullptr; }
-    UIWindow* getWinBase(uint winIdx = 0) { return m_uiWindows.size() > winIdx ? m_uiWindows[winIdx].get() : nullptr; }
-
-    UIWindow*                               getMainWindow() const { return m_mainWindow; }
-    std::vector<std::unique_ptr<UIWindow>>* getUIWindows() { return &m_uiWindows; }
-    void*                                   getDataModel() const { return m_dataModel; }
+    UINode*     getRootNode(uint winIdx = 0) { return (m_uiWindows.size() > winIdx) ? m_uiWindows[winIdx]->getRootNode() : nullptr; }
+    UIWindow*   getWinBase(uint winIdx = 0) { return m_uiWindows.size() > winIdx ? m_uiWindows[winIdx].get() : nullptr; }
+    auto        getMainWindow() const { return m_mainWindow; }
+    auto        getUIWindows() { return &m_uiWindows; }
+    auto        getDataModel() const { return m_dataModel; }
 
     void stop();            /// for single threaded mode
     virtual void exit();    /// exit the application, must called from the main thread in multi-thread setups

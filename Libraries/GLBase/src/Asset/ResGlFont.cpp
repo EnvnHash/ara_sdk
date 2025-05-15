@@ -82,8 +82,7 @@ Font *FontList::add(std::vector<uint8_t> &vp, const std::string& font_path, int 
     return m_FontList.back().get();
 }
 
-/** copy all glyph texture maps of the same size into one TEXTURE_3D for
- * DrawManager indirect drawing */
+/** copy all glyph texture maps of the same size into one TEXTURE_3D for DrawManager indirect drawing */
 void FontList::update3DLayers() {
     m_layerCount.clear();
 

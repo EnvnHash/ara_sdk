@@ -69,9 +69,8 @@ void WindowManager::iterate(bool only_open_windows) {
     }
 
     GLWindow::pollEvents();  // Poll for and process events.
-    // Note: this should be glfwWaitEvents in case of event based rendering, but
-    // e.m_g. on window resizing on windows events are blocked, so no update
-    // would be possible during this operation. This is why we need to manually
+    // Note: this should be glfwWaitEvents in case of event based rendering, but e.g. on window resizing on windows
+    // events are blocked, so no update would be possible during this operation. This is why we need to manually
     // interrupt the rendering loop
 
     // update windows
@@ -254,60 +253,12 @@ void WindowManager::stopThreadedRendering() const {
     }
 }
 
-/*
-GLWindow *WindowManager::addWin(int width, int height, int refreshRate, bool fullScreen, bool useGL32p, int shiftX,
-                                int shiftY, int monitorNr, bool decorated, bool floating, unsigned int nrSamples,
-                                bool hidden, bool scaleToMonitor, void *sharedCtx, bool transparentFB,
-                                void *extWinHandle, bool debug) {
-    return addWin({
-        .doInit                 = false,
-        .fullScreen             = fullScreen,
-        .useGL32p               = useGL32p,
-        .decorated              = decorated,
-        .floating               = floating,
-        .createHidden           = hidden,
-        .openGlDebug            = false,
-        .debug                  = debug,
-        .resizeable             = true,
-        .transparent            = false,
-        .hidInput     = true;
-        .hidExtern    = false;
-        .nrSamples = 2;
-        .bits      = 32;
-        .shiftX    = 0;
-        .shiftY    = 0;
-        .monitorNr = 0;
-        .width          = 1;
-        .height         = 1;
-        .refreshRate    = 60;
-        .scaleToMonitor = false;
-        .shareCont              = nullptr;
-        .transparentFramebuffer = false;
-        .extWinHandle           = nullptr;
-        .glbase                 = nullptr;
-
-
-        .width                  = width,
-        .height                 = height,
-        .refreshRate            = refreshRate,
-        .shiftX                 = shiftX,
-        .shiftY                 = shiftY,
-        .monitorNr              = monitorNr,
-        .transparentFramebuffer = transparentFB,
-        .nrSamples              = nrSamples,
-        .scaleToMonitor         = scaleToMonitor,
-        .shareCont              = sharedCtx,
-        .extWinHandle           = extWinHandle,
-        .glbase                 = m_glbase
-    });
-}*/
-
 GLWindow *WindowManager::addWin(const glWinPar& gp) {
 #ifdef _WIN32
     {
         unique_lock<mutex> lock(m_globMouseLoopMtx);
 #endif
-        m_windows.emplace_back(std::make_unique<GLWindow>());
+        m_windows.emplace_back(make_unique<GLWindow>());
 
         // if there is no explicit request to share a specific content, and we already got another context to share,
         // take the first added window as a shared context

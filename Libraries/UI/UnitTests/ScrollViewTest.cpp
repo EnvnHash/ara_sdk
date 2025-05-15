@@ -1,7 +1,7 @@
 //
 // Created by sven on 11/15/20.
 //
-#include "test_common.h"
+#include "TestCommon.h"
 
 #include "UIApplication.h"
 #include "UIElements/UITable.h"

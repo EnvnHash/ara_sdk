@@ -5,10 +5,9 @@
 #pragma once
 
 #include <gtest/gtest.h>
-#include "UIApplication.h"
-#include "Utils/Texture.h"
-
-
+#include <UIApplication.h>
+#include <Utils/Texture.h>
+#include <WindowManagement/GLWindow.h>
 
 #include "threadpool/BS_thread_pool.hpp"
 
@@ -24,7 +23,7 @@ static void appBody(const std::function<void(ara::UIApplication*)>& drawFunc,
     app.setEnableMenuBar(false);
     app.setScaleToMonitor(false);
     app.setEnableWindowResizeHandles(false);
-    app.init([&](){
+    app.init([&]{
         auto mainWin = app.getMainWindow();
         drawFunc(&app);
 
@@ -93,4 +92,63 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
 static void compareFrameBufferToImage(const std::filesystem::path& p, uint32_t width, uint32_t height, uint8_t eps=0) {
     auto data = getPixels(0, 0, width, height);
     compareBitmaps(data, p, width, height, eps);
+}
+
+struct checkPix {
+    glm::ivec2 pos{};
+    glm::vec4 col{};
+};
+
+static void checkVals(const std::vector<GLubyte>& data, ara::GLWindow* mainWin, const std::vector<checkPix>& cv) {
+    for (auto &it : cv) {
+        auto ptr = (it.pos.x + it.pos.y * mainWin->getWidthReal()) * 4;
+        ASSERT_EQ(data[ptr], it.col.r * 255);
+        ASSERT_EQ(data[ptr +1], it.col.g * 255);
+        ASSERT_EQ(data[ptr +2], it.col.b * 255);
+        ASSERT_EQ(data[ptr +3], it.col.a * 255);
+    }
+}
+
+static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::ivec2& virtSize, const glm::ivec4& col,
+                      const glm::ivec4& backCol) {
+    auto data = getPixels(0, 0, win->getWidthReal(), win->getHeightReal());
+
+    // convert from virtual to hardware pixels
+    glm::ivec2 size { win->virt2RealX(virtSize.x) -1, win->virt2RealY(virtSize.y) -1 };
+    glm::ivec2 pos { win->virt2RealX(virtPos.x), win->virt2RealY(virtPos.y) };
+
+    std::array<glm::ivec2, 4> edges {
+        pos,                        // left-top
+        { pos.x + size.x, pos.y },  // right-top
+        { pos.x, pos.y + size.y },  // left-bottom,
+        pos + size                  // right-bottom
+    };
+
+    std::array<std::array<glm::ivec2, 2>, 4> edgeOffsets {
+        std::array<glm::ivec2, 2>{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0, -1 } },   // left-top
+        std::array<glm::ivec2, 2>{ glm::ivec2{  1, 0 }, glm::ivec2{ 0, -1 } },   // right-top
+        std::array<glm::ivec2, 2>{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0,  1 } },   // left-bottom,
+        std::array<glm::ivec2, 2>{ glm::ivec2{  1, 0 }, glm::ivec2{ 0,  1 } }    // right-bottom
+    };
+
+    // check edges for front color
+    std::vector<checkPix> checkPixels;
+    for (auto i=0; i<edges.size(); ++i) {
+        checkPixels.emplace_back(edges[i], col);
+        for (auto j=0; j<2; ++j) {
+            auto p = edges[i] + edgeOffsets[i][j];
+            if (p.x > 0 && p.y > 0 && p.x < win->getWidthReal() && p.y < win->getHeightReal()) {
+                checkPixels.emplace_back(p, backCol);
+            }
+        }
+    }
+
+    // flip y-axis
+    std::ranges::transform(checkPixels.begin(), checkPixels.end(), checkPixels.begin(), [win](auto& it) {
+        return checkPix{.pos = { it.pos.x, win->getHeightReal() -1 -it.pos.y },
+                        .col = it.col };
+    });
+
+    // check outside edges for back color
+    checkVals(data, win, checkPixels);
 }

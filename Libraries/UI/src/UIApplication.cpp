@@ -6,8 +6,6 @@
 #include <UIElements/UINodeBase/UINode.h>
 #include <Utils/TextureCollector.h>
 
-
-
 using namespace glm;
 using namespace std;
 
@@ -21,10 +19,9 @@ UIApplication::UIApplication() :
 #else
       UIApplicationBase()
 #endif
-{
-}
+{}
 
-void UIApplication::init(std::function<void()> initCb) {
+void UIApplication::init(const std::function<void()>& initCb) {
     initGLBase();
 #ifdef _NO_CRT_STDIO_INLINE
     LOG << "_NO_CRT_STDIO_INLINE defined";
@@ -32,7 +29,7 @@ void UIApplication::init(std::function<void()> initCb) {
 
     // create the main UI-Window
     m_mainWindow = addWindow(UIWindowParams{
-        .size = {winWidth, winHeight},
+        .size = winSize,
         .shift = {100, 100},
         .osDecoration = m_osWinDecoration,
         .transparentFB = false,
@@ -48,15 +45,17 @@ void UIApplication::init(std::function<void()> initCb) {
     // guiThread won't be able to make it current
     GLWindow::makeNoneCurrent();
 
+    startUiThread(initCb);
+    startGLBaseRenderLoop();
+    m_inited = true;
+}
+
+void UIApplication::startUiThread(const std::function<void()>& initCb) {
     m_guiThread = std::thread([this, &initCb] {
         initThread(initCb);
     });
     m_guiThread.detach();
-
-    startGLBaseRenderLoop();
-
-    m_inited = true;
-    m_initSema.wait();
+    m_initSema.wait(0);
 }
 
 void UIApplication::initThread(const std::function<void()>& initCb) {
@@ -89,7 +88,11 @@ void UIApplication::initThread(const std::function<void()>& initCb) {
             m_initSignaled = true;
         }
     }
+
+    GLWindow::makeNoneCurrent();
+
     m_loopExitSema.notify();
+    m_initSignaled = false;
 }
 
 void UIApplication::startRenderLoop() {
@@ -256,6 +259,7 @@ void UIApplication::closeInfoDiag() {
 void UIApplication::stop() {
     m_run = false;
     m_iterate.notify();
+    m_loopExitSema.wait(0);
 #ifdef ARA_USE_GLFW
     m_glbase.getWinMan()->stopEventLoop();
 #endif

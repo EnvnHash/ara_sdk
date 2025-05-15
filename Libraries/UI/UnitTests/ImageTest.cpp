@@ -2,7 +2,7 @@
 // Created by sven on 10-04-25.
 //
 
-#include "test_common.h"
+#include "TestCommon.h"
 #include "UIApplication.h"
 #include "UIElements/Image.h"
 

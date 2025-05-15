@@ -3,7 +3,7 @@
 //
 
 
-#include "test_common.h"
+#include "TestCommon.h"
 
 #include "UIApplication.h"
 #include <UIElements/TabView.h>
@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace ara::SceneGraphUnitTest::TabViewTest {
+namespace ara::UiUnitTest::TabViewTest {
 
 TabView* addTabView(UIApplication* app, std::array<bool, 3>& checks) {
     auto rootNode = app->getMainWindow()->getRootNode();

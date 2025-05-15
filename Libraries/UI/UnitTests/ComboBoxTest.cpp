@@ -3,7 +3,7 @@
 //
 //
 
-#include "test_common.h"
+#include "TestCommon.h"
 
 #include "UIApplication.h"
 #include <UIElements/ComboBox.h>
@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace ara::SceneGraphUnitTest::ComboBoxTest {
+namespace ara::UiUnitTest::ComboBoxTest {
 
     void addCombo(UIApplication* app, bool& flag) {
         auto rootNode = app->getMainWindow()->getRootNode();

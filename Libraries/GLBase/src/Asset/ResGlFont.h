@@ -39,7 +39,11 @@ public:
     void  setGlbase(GLBase *glbase) { m_glbase = glbase; }
     [[nodiscard]] int   getCount() const { return static_cast<int>(m_FontList.size()); }
     [[nodiscard]] Font *get(int index) const { return (index < 0 || index >= getCount()) ? nullptr : m_FontList[index].get(); }
-    void  clear() { m_FontList.clear(); }
+    void clear() {
+        if (!m_FontList.empty()) {
+            m_FontList.clear();
+        }
+    }
 
 private:
     std::vector<std::unique_ptr<Font>>                m_FontList;

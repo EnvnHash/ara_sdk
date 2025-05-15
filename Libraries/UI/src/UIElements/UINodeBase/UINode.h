@@ -167,11 +167,6 @@ public:
         m_onValChangedCb[prop] = nullptr;
     }
 
-    void setChanged(bool val) override;
-    void setChangeCb(std::function<void()> f) { m_changeCb = std::move(f); }
-    void setHIDBlocked(bool val) override;
-    bool removeFocus() override;
-
     virtual UINode* addChild(std::unique_ptr<UINode>&& child);
     virtual UINode* insertChild(int32_t position, std::unique_ptr<UINode>&& child);
     virtual UINode* insertChild(const std::string& name, std::unique_ptr<UINode>&& child);
@@ -179,49 +174,109 @@ public:
     virtual void moveChildTo(int32_t position, UINode*);
     virtual void remove_child(UINode* node);
     virtual void clearChildren();
+    virtual void removeGLResources() {}
 
     void initChild(UINode* child, UINode* parent);
 
-    virtual void setParent(UINode* parent) { m_parent = parent; }
+    /** draw the scenegraph from this node onwards */
+    virtual void drawAsRoot(uint32_t& objId);
 
-    uint32_t                                    getMinChildId(uint32_t minId = UINT32_MAX);
-    uint32_t                                    getMaxChildId(uint32_t maxId = 0);
-    std::vector<std::unique_ptr<UINode>>&       getChildren() { return m_children; }
-    [[nodiscard]] uint32_t                      getId() const { return m_objIdMin; }
-    [[nodiscard]] uint32_t                      getMinId() const { return m_objIdMin; }
-    [[nodiscard]] uint32_t                      getMaxId() const { return m_objIdMax; }
+    /** the scenegraph drawing iteration loop */
+    virtual void drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool& skipFirst);
+    virtual bool draw(uint32_t& objId) { return true; }
+    virtual bool drawIndirect(uint32_t& objId) { return true; }
+    virtual void updateDrawData() {}
+    virtual void updtMatrIt(scissorStack* ss);
 
-    UINode*                 getRoot();
-    UINode*                 getParent() override { return m_parent; }
-    UINode*                 getNode(const std::string& name);
-    UINode*                 getNodeById(uint32_t searchID);
-    virtual float           getValue() { return 0.f; }
-    virtual std::string&    getName() { return m_name; }
+    void updateMatrix() override;
+    void checkInit();
+    void checkStyles();
+    void immediateScissoring(scissorStack* ss);
+    void checkScissoring(scissorStack* ss);
+    void getParentViewport();
+    void setPositionAndSize();
+    void setAlignment();
 
-    void setId(uint32_t val) { m_objIdMin = val; m_objIdMax = val; }
-    void setMinId(uint32_t val) { m_objIdMin = val; }
-    void setMaxId(uint32_t val) { m_objIdMax = val; }
-    void reqTreeChanged(bool val) { m_reqTreeChanged = true; }
+    virtual void        pushVaoUpdtOffsets() {}
+    void                applyStyle() override;
 
-    [[nodiscard]] bool containsObjectId(uint32_t id) const { return (id >= m_objIdMin && id <= m_objIdMax); }
-
-    // functional
-    virtual void setRefDraw(bool v) { m_referenceDrawing = true; }
-
-    void         setName(std::string name) { m_name = std::move(name); }
-    virtual void setValue(float val) {}
-    virtual void setAbsValue(float val) {}
-    virtual void setPath(std::filesystem::path file) { m_filepath = std::move(file); }
-
+    void                setChanged(bool val) override;
+    void                setChangeCb(std::function<void()> f) { m_changeCb = std::move(f); }
+    void                setHIDBlocked(bool val) override;
+    bool                removeFocus() override;
+    void                setId(uint32_t val) { m_objIdMin = val; m_objIdMax = val; }
+    void                setMinId(uint32_t val) { m_objIdMin = val; }
+    void                setMaxId(uint32_t val) { m_objIdMax = val; }
+    void                reqTreeChanged(bool val) { m_reqTreeChanged = true; }
+    virtual void        setParent(UINode* parent) { m_parent = parent; }
+    virtual void        setRefDraw(bool v) { m_referenceDrawing = true; }
+    void                setName(std::string name) { m_name = std::move(name); }
+    virtual void        setValue(float val) {}
+    virtual void        setAbsValue(float val) {}
+    virtual void        setPath(std::filesystem::path file) { m_filepath = std::move(file); }
     [[nodiscard]] bool  isVisible() const { return m_visible; }
     [[nodiscard]] bool  isInited() const { return m_inited; }
     void                setInited(bool val) { m_inited = val; }
     void                setForceInit(bool val) { m_forceInit = val; }
     void                excludeFromObjMap(bool val) { m_excludeFromObjMap = val; }
     [[nodiscard]] bool  isExcludedFromObjMap() const { return m_excludeFromObjMap; }
+    void                setViewport(float x, float y, float width, float height) override;
+    void                setViewport(glm::vec4* viewport) override { UINodeGeom::setViewport(viewport); }
+    void                setVisibility(bool val, state st = state::m_state) override;
+    void                setDrawFlag() const;
+    void                setHasDepth(bool val) { m_hasDepth = val; }
+    void                setDrawInmediate(bool val) { m_drawImmediate = val; }
+    void                setShaderCollector(ShaderCollector* shCol) { m_shCol = shCol; }
+    void                setSharedRes(UISharedRes* shared) override;
+    void                reqUpdtTree() const;
+    void                setVaoOffset(GLuint v) { m_indDrawBlock.vaoOffset = v; }
+    virtual void        clearDs() { m_indDrawBlock.drawSet = nullptr; }
+
+    GLuint                                  getVaoOffset() const { return m_indDrawBlock.vaoOffset; }
+    std::vector<DivVaoData>&                getDivData() { return m_indDrawBlock.vaoData; }
+    IndDrawBlock&                           getIndDrawBlock() { return m_indDrawBlock; }
+    uint32_t                                getMinChildId(uint32_t minId = UINT32_MAX);
+    uint32_t                                getMaxChildId(uint32_t maxId = 0);
+    std::vector<std::unique_ptr<UINode>>&   getChildren() { return m_children; }
+    [[nodiscard]] uint32_t                  getId() const { return m_objIdMin; }
+    [[nodiscard]] uint32_t                  getMinId() const { return m_objIdMin; }
+    [[nodiscard]] uint32_t                  getMaxId() const { return m_objIdMax; }
+    UINode*                                 getRoot();
+    UINode*                                 getParent() override { return m_parent; }
+    UINode*                                 getNode(const std::string& name);
+    UINode*                                 getNodeById(uint32_t searchID);
+    virtual float                           getValue() { return 0.f; }
+    virtual std::string&                    getName() { return m_name; }
+
+    [[nodiscard]] bool containsObjectId(uint32_t id) const { return (id >= m_objIdMin && id <= m_objIdMax); }
 
     virtual uint32_t getSubNodeCount();
     virtual void     getSubNodeCountIt(UINode* node, uint32_t* count);
+
+    static bool objPosIt(ObjPosIt& opi);
+
+    virtual void dump();
+
+    virtual void addGlCb(const std::string&, const std::function<bool()>& f);
+    virtual void eraseCb(const std::string&);
+    virtual bool hasCb(const std::string&);
+
+    void keyDownIt(hidData& data) override;
+    void onCharIt(hidData& data) override;
+
+    std::filesystem::path       dataPath();
+    UIApplication*              getApp() const;
+
+    bool                        isInBounds(glm::vec2& pos) override;
+    bool                        recChildrenBoundBox(glm::vec4& ref);
+
+    void            runOnMainThread(const std::function<bool()>& func, bool forcePush = false) const;
+    WindowManager*  getWinMan();
+    void            addGlCbSync(const std::function<bool()>& func) const;
+
+    static void limitDrawVaoToBounds(const std::vector<DivVaoData>::iterator& dIt, glm::vec2& size, glm::vec2& uvDiff,
+                                     glm::vec4& scIndDraw, glm::vec4& vp);
+    static void limitTexCoordsToBounds(float* tc, int32_t stdQuadVertInd, const glm::vec2& tvSize, const glm::vec2& uvSize);
 
     // generic iteration function for calculations on parts of the node-tree
     static void itrNodes(const std::unique_ptr<UINode>& node, void* result,
@@ -246,69 +301,6 @@ public:
         }
     }
 
-
-    /** draw the scenegraph from this node onwards */
-    virtual void drawAsRoot(uint32_t& objId);
-
-    /** the scenegraph drawing iteration loop */
-    virtual void drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool& skipFirst);
-    virtual bool draw(uint32_t& objId) { return true; }
-    virtual bool drawIndirect(uint32_t& objId) { return true; }
-    virtual void updateDrawData() {}
-    virtual void updtMatrIt(scissorStack* ss);
-
-    void updateMatrix() override;
-    void checkInit();
-    void checkStyles();
-    void immediateScissoring(scissorStack* ss);
-    void checkScissoring(scissorStack* ss);
-    void getParentViewport();
-    void setPositionAndSize();
-    void setAlignment();
-
-    static bool objPosIt(ObjPosIt& opi);
-
-    virtual void dump();
-
-    void setViewport(float x, float y, float width, float height) override;
-    void setViewport(glm::vec4* viewport) override { UINodeGeom::setViewport(viewport); }
-    void setVisibility(bool val, state st = state::m_state) override;
-    void setDrawFlag() const;
-    void setHasDepth(bool val) { m_hasDepth = val; }
-    void setDrawInmediate(bool val) { m_drawImmediate = val; }
-    void setShaderCollector(ShaderCollector* shCol) { m_shCol = shCol; }
-    void setSharedRes(UISharedRes* shared) override;
-    void reqUpdtTree() const;
-
-    virtual void addGlCb(const std::string&, const std::function<bool()>& f);
-    virtual void eraseCb(const std::string&);
-    virtual bool hasCb(const std::string&);
-
-    void keyDownIt(hidData& data) override;
-    void onCharIt(hidData& data) override;
-
-    std::filesystem::path       dataPath();
-    UIApplication*              getApp() const;
-
-    void                        setVaoOffset(GLuint v) { m_indDrawBlock.vaoOffset = v; }
-    GLuint                      getVaoOffset() const { return m_indDrawBlock.vaoOffset; }
-    std::vector<DivVaoData>&    getDivData() { return m_indDrawBlock.vaoData; }
-    IndDrawBlock&               getIndDrawBlock() { return m_indDrawBlock; }
-    virtual void                pushVaoUpdtOffsets() {}
-    virtual void                clearDs() { m_indDrawBlock.drawSet = nullptr; }
-    void                        applyStyle() override;
-
-    bool                        isInBounds(glm::vec2& pos) override;
-    bool                        recChildrenBoundBox(glm::vec4& ref);
-
-    void            runOnMainThread(const std::function<bool()>& func, bool forcePush = false) const;
-    WindowManager*  getWinMan();
-    void            addGlCbSync(const std::function<bool()>& func) const;
-
-    static void limitDrawVaoToBounds(const std::vector<DivVaoData>::iterator& dIt, glm::vec2& size, glm::vec2& uvDiff,
-                                     glm::vec4& scIndDraw, glm::vec4& vp);
-    static void limitTexCoordsToBounds(float* tc, int32_t stdQuadVertInd, const glm::vec2& tvSize, const glm::vec2& uvSize);
-
     void util_FillRect(glm::ivec2 pos, glm::ivec2 size, glm::vec4 col = {1.f, 1.f, 1.f, 1.f}, Shaders* shdr=nullptr, Quad* quad=nullptr);
     void util_FillRect(glm::ivec2 pos, glm::ivec2 size, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
     void util_FillRect(glm::ivec4& r, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
@@ -316,6 +308,7 @@ public:
 protected:
     bool getNodeIt(UINode* node, UINode** fn, const std::string& name);
 
+    std::shared_ptr<DrawManager>            m_drawMan;
     ObjectMapInteraction*                   m_objSel = nullptr;
     std::vector<std::unique_ptr<UINode>>    m_children;
 

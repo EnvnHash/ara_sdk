@@ -23,7 +23,7 @@ public:
      * on the application whether rendering should be done threaded or running
      * as a blocking loop in the main-thread
      */
-    virtual void init(std::function<void()> func) = 0;
+    virtual void init(const std::function<void()>& f) = 0;
 
     void initGLBase();
     /// start the global opengl processing loop in a separate thread
@@ -46,8 +46,9 @@ public:
     /// get a reference to GLBase instance containing all opengl related shared resources
     GLBase* getGLBase() { return &m_glbase; }
 
-    void setWinWidth(int w) { winWidth = w; }
-    void setWinHeight(int g) { winHeight = g; }
+    void setWinWidth(int w) { winSize.x = w; }
+    void setWinHeight(int g) { winSize.y = g; }
+    void setWinSize(const glm::ivec2& s) { winSize = s; }
 
 public:
     std::string m_internalPath;
@@ -64,11 +65,9 @@ protected:
     bool m_osWinDecoration            = false;
     bool m_multisample                = false;
 
-    int winWidth  = 1280;
-    int winHeight = 720;
-
     Conditional m_initSema;
     UIWindow*   m_mainWindow = nullptr;
+    glm::ivec2 winSize = { 1280, 720 };
 
 #ifdef ARA_USE_GLBASE
     GLBase m_glbase;

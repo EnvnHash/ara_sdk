@@ -398,10 +398,10 @@ vec2& UINodeGeom::getParentNodeRelPos() {
 
     // calculate the node's position relative to the parent node's upper left corner in pixels
     if (getParent()) {
-        auto p               = dynamic_cast<UINodeGeom*>(getParent());
-        vec2 wp              = getWinPos();
-        m_parentNodeRelPos.x = wp.x - p->getWinPos().x;
-        m_parentNodeRelPos.y = wp.y - p->getWinPos().y;
+        auto parent           = dynamic_cast<UINodeGeom*>(getParent());
+        auto wp              = getWinPos();
+        m_parentNodeRelPos.x = wp.x - parent->getWinPos().x;
+        m_parentNodeRelPos.y = wp.y - parent->getWinPos().y;
     }
 
     return m_parentNodeRelPos;
@@ -428,7 +428,9 @@ vec2& UINodeGeom::getWinRelSize() {
     }
 
     if (m_parentMat) {
-        for (int i = 0; i < 2; i++) m_winRelSize[i] = m_parentMatLocCpy[i][i] * m_size[i];
+        for (int i = 0; i < 2; i++) {
+            m_winRelSize[i] = m_parentMatLocCpy[i][i] * m_size[i];
+        }
     } else {
         m_winRelSize = m_size;
     }
@@ -441,8 +443,7 @@ vec2& UINodeGeom::getContWinPos() {
         updateMatrix();
     }
 
-    // this node's content's left/top corner in relation to the window's
-    // top/left corner
+    // this node's content's left/top corner in relation to the window's top/left corner
     m_contWinPos.x = m_parentContVp.x + m_pos.x + m_padding.x + static_cast<float>(m_borderWidth);
     m_contWinPos.y = m_parentContVp.y + m_pos.y + m_padding.y + static_cast<float>(m_borderWidth);
 
@@ -545,8 +546,8 @@ bool UINodeGeom::isOutOfParentBounds() {
     if (!getParent() || m_skipBoundCheck) {
         return false;
     }
-    auto p = dynamic_cast<UINodeGeom*>(getParent());
-    return glm::any(greaterThan(m_parentNodeRelPos, p->m_size)) ||
+    auto parent = dynamic_cast<UINodeGeom*>(getParent());
+    return glm::any(greaterThan(m_parentNodeRelPos, parent->m_size)) ||
            glm::any(lessThan(m_parentNodeRelPos + m_size, {}));
 }
 

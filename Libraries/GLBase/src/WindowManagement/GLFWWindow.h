@@ -49,6 +49,8 @@ public:
     ~GLFWWindow() override = default;
     bool create(const glWinPar &gp) override { return init(gp); }
     int  init(const glWinPar &gp);
+    void initFullScreen(const glWinPar &gp);
+    void initNonFullScreen(const glWinPar &gp);
 
     /**
      * @param f the drawing function which will be executed or every iteration
@@ -65,56 +67,16 @@ public:
     double getFps();
 
     /** also sets the focus to the respective window */
-    void open() override {
-        glfwShowWindow(m_window);
-        m_isOpen = true;
-    }
-
+    void open() override;
     /** hide window, including removing it from the taskbar, dock or windowlist */
-    void hide() {
-        glfwHideWindow(m_window);
-        m_isOpen = false;
-    }
-
+    void hide();
     void close() override;
-
-    void makeCurrent() override {
-        if (m_window) {
-            glfwMakeContextCurrent(m_window);
-        }
-    }
-
+    void makeCurrent() override;
     void swap() override { glfwSwapBuffers(m_window); }
-
-    void destroy() override {
-        glfwDestroyWindow(m_window);
-        glfwTerminate();
-        m_exitSema.notify();
-    }
-
-    void destroy(bool terminate) {
-        glfwDestroyWindow(m_window);
-        if (terminate) {
-            glfwTerminate();
-        }
-        m_exitSema.notify();
-    }
-
-    void resize(GLsizei width, GLsizei height) override {
-        bool unlock = m_drawMtx.try_lock();
-        glfwSetWindowSize(m_window, width, height);
-        m_widthVirt  = width;
-        m_heightVirt = height;
-        if (unlock) {
-            m_drawMtx.unlock();
-        }
-    }
-
-    void focus() const {
-        if (m_window) {
-            glfwFocusWindow(m_window);
-        }
-    }
+    void destroy() override;
+    void destroy(bool terminate);
+    void resize(GLsizei width, GLsizei height) override;
+    void focus() const;
     void minimize() override { glfwIconifyWindow(m_window); }
 
     void maximize() {
@@ -170,86 +132,30 @@ public:
     int           getPosXReal() const { return static_cast<int>(m_posXreal); }  /// in real pixels
     int           getPosYReal() const { return static_cast<int>(m_posYreal); }  /// in real pixels
     int           getFocus() const { return glfwGetWindowAttrib(m_window, GLFW_FOCUSED); }
-
-    void *getNativeCtx() override { return m_nativeHandle; }
-
+    void*         getNativeCtx() override { return m_nativeHandle; }
     /// return virtual pixels
-    glm::ivec2 getLastMousePos() {
-        double xpos, ypos;
-        glfwGetCursorPos(m_window, &xpos, &ypos);
-#ifdef __APPLE__
-        return {(int)xpos, (int)ypos};
-#else
-        return {static_cast<int>(xpos / m_contentScale.x), static_cast<int>(ypos / m_contentScale.y)};
-#endif
-    }
-
-    glm::ivec2 getAbsMousePos() const {
-        glm::ivec2 mp{};
-        mouse::getAbsMousePos(mp.x, mp.y);
-#ifdef __APPLE__
-        return mp;
-#else
-        return glm::ivec2{static_cast<int>(static_cast<float>(mp.x) / m_contentScale.x), static_cast<int>(static_cast<float>(mp.y) / m_contentScale.y)};
-#endif
-    }
-
+    glm::ivec2    getLastMousePos();
+    glm::ivec2    getAbsMousePos() const;
 #ifdef _WIN32
     HWND  getHwndHandle() const { return m_hwndHandle; }
     HGLRC getHglrcHandle() const { return m_wglHandle; }
 #endif
+    auto    getWorkArea() { return m_workArea; }
+    auto    getIterateSema() { return &m_iterate; }
+    auto    getBlockResizing() const { return m_blockResizing; }
+    bool    getRequestOpen() const override { return m_requestOpen; }
+    bool    getRequestClose() const override { return m_requestClose; }
+    auto&   getOnCloseCb() { return m_onCloseCb; }
 
-    int         *getWorkArea() { return m_workArea; }
-    Conditional *getIterateSema() { return &m_iterate; }
-    bool         getBlockResizing() const { return m_blockResizing; }
-    bool         getRequestOpen() const override { return m_requestOpen; }
-    bool         getRequestClose() const override { return m_requestClose; }
-    void         requestOpen(bool val) override { m_requestOpen = val; }
-    void         requestClose(bool val) override { m_requestClose = val; }
-    std::function<void()>& getOnCloseCb() { return m_onCloseCb; }
+    void requestOpen(bool val) override { m_requestOpen = val; }
+    void requestClose(bool val) override { m_requestClose = val; }
 
-    static glm::vec2 getDpi() {
-#ifdef __linux__
-        auto   dpy = glfwGetX11Display();
-        auto   scr = 0;
-        double dDisplayDPI_H, dDisplayDPI_V;
-        dDisplayDPI_H = (double)DisplayWidth(dpy, scr) / ((double)DisplayWidthMM(dpy, scr) / 25.4);
-        dDisplayDPI_V = (double)DisplayHeight(dpy, scr) / ((double)DisplayHeightMM(dpy, scr) / 25.4);
-        return glm::vec2{dDisplayDPI_H, dDisplayDPI_V};
-#else
-        return glm::vec2{92.f, 92.f};
-#endif
-    }
+    static glm::vec2 getDpi();
 
     /// input in virtual pixels
-    void setSize(int inWidth, int inHeight) {
-        m_widthVirt  = inWidth;
-        m_heightVirt = inHeight;
-        m_widthReal  = static_cast<int>(static_cast<float>(inWidth) * m_contentScale.x);
-        m_heightReal = static_cast<int>(static_cast<float>(inHeight) * m_contentScale.y);
-#ifdef __APPLE__
-        glfwSetWindowSize(m_window, inWidth, inHeight);
-#else
-        // glfw calls immediately the corresponding callback without passing through glfwWaitEvents
-        glfwSetWindowSize(m_window, m_widthReal, m_heightReal);
-#endif
-        iterate();
-    }
-
+    void setSize(int inWidth, int inHeight);
     /// input in virtual pixels
-    void setPosition(int posx, int posy) {
-        m_posXvirt = static_cast<float>(posx);
-        m_posYvirt = static_cast<float>(posy);
-        m_posXreal = static_cast<float>(posx) * m_contentScale.x;
-        m_posYreal = static_cast<float>(posy) * m_contentScale.y;
-#ifdef __APPLE__
-        glfwSetWindowPos(m_window, m_posXvirt, m_posYvirt);
-#else
-        glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));
-#endif
-        iterate();
-    }
-
+    void setPosition(int posx, int posy);
     void setVSync(bool set) override { glfwSwapInterval(set); }
     void setBlockResizing(bool val) { m_blockResizing = val; }
     void setBlockMouseIconSwitch(bool val) { m_blockMouseIconSwitch = val; }
@@ -277,7 +183,6 @@ public:
     void setScrollCallback(GLFWscrollfun f) const { glfwSetScrollCallback(m_window, f); }
     void setWindowRefreshCallback(GLFWwindowrefreshfun f) const { glfwSetWindowRefreshCallback(m_window, f); }
     void setOnCloseCb(std::function<void()> f) { m_onCloseCb = std::move(f); }
-
     void onWindowSize(int width, int height) override;
 
     static void  pollEvents() { glfwPollEvents(); }
@@ -288,29 +193,14 @@ public:
     
     static glm::vec2 getPrimaryMonitorWindowContentScale();
 
-    static void initLibrary() {
-        if (!glfwInit()) {
-            printf("ERROR: Couldn't init glfw\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-
+    static void initLibrary();
     static void terminateLibrary() { glfwTerminate(); }
     static void focusWin(GLFWwindow *win) { glfwFocusWindow(win); }
-    void        removeMouseCursors() {
-        if (m_window) {
-            for (auto &it : m_mouseCursors) {
-                if (it) {
-                    glfwDestroyCursor(it);
-                }
-            }
-        }
-    }
-    static void makeNoneCurrent() { glfwMakeContextCurrent(nullptr); }
+    void        removeMouseCursors();
+    static void error_callback(int error, const char *description);
 
-    static void error_callback(int error, const char *description) {
-        LOGE << "GLFW ERROR: " << description;
-        fputs(description, stderr);
+    static void makeNoneCurrent() {
+        glfwMakeContextCurrent(nullptr);
     }
 
 protected:
@@ -321,7 +211,7 @@ protected:
 
     int monitorRefreshRate{};
     int useMonitor = 0;
-    int m_workArea[4]{};
+    glm::ivec4 m_workArea{};
 
     bool m_isOpen               = false;
     bool m_requestOpen          = false;

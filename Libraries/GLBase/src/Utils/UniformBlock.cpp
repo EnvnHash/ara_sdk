@@ -18,7 +18,9 @@
 
 namespace ara {
 
-UniformBlock::UniformBlock(GLuint program, const std::string &blockName) { init(program, blockName); }
+UniformBlock::UniformBlock(GLuint program, const std::string &blockName) {
+    init(program, blockName);
+}
 
 void UniformBlock::init(GLuint program, const std::string &blockName) {
     m_program = program;
@@ -188,10 +190,15 @@ size_t UniformBlock::TypeSize(GLenum type) {
     return typeSizes[type];
 }
 
-UniformBlock::~UniformBlock() {
+void UniformBlock::removeGLResources() {
     if (m_ubo) {
         glDeleteBuffers(1, &m_ubo);
     }
+    m_inited = false;
+}
+
+UniformBlock::~UniformBlock() {
+    removeGLResources();
 }
 
 }  // namespace ara

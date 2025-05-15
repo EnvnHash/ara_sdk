@@ -21,98 +21,30 @@ namespace fs = std::filesystem;
 
 namespace ara {
 
-UIWindow::UIWindow(const UIWindowParams& par)
-    : WindowBase(),
-    m_glbase(par.glbase),
-    m_drawMan{make_unique<DrawManager>(par.glbase)},
+UIWindow::UIWindow(const UIWindowParams& par) : WindowBase() {
+    init(par);
+}
+
+void UIWindow::init(const UIWindowParams& par) {
 #ifdef ARA_USE_GLES31
-    m_multisample(false),
+    m_multisample       = false;
 #else
-    m_multisample(par.multisample),
+    m_multisample       = par.multisample;
 #endif
-    m_selfManagedCtx(!par.initToCurrentCtx) {
-    uint32_t rWidth  = par.size.x;
-    uint32_t rHeight = par.size.y;
-    uint32_t vWidth  = par.size.x;
-    uint32_t vHeight = par.size.y;
+    m_selfManagedCtx    = !par.initToCurrentCtx;
+    m_glbase            = par.glbase;
+    m_restartGlBaseLoop = false;
 
-    bool restartGlBaseLoop = false;
+    if (!m_drawMan) {
+        m_drawMan = make_shared<DrawManager>(par.glbase);
+    }
 
-    // init a UIWindow, using the GLFWWindowManager and GLbase in a separate thread
     if (!par.initToCurrentCtx) {
-#ifndef ARA_USE_EGL
-        // check if GLBase render loop is running, if this is the case, stop it and start it later again. Otherwise,
-        // context sharing will fail
-        if (m_glbase->isRunning()) {
-            restartGlBaseLoop = true;
-            m_glbase->stopRenderLoop();
-        }
-
-#endif
-#if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-        m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{
-            .decorated = par.osDecoration,
-            .floating = par.floating,
-            .debug = m_debugGLFWwin,
-            .shift = par.shift,
-            .size = par.size,
-            .scaleToMonitor = par.scaleToMonitor,
-            .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
-            .transparentFramebuffer = par.transparentFB,
-            .extWinHandle = par.extWinHandle,
-            .glbase = par.glbase
-        });
-
-        if (!m_winHandle) {
-            return;
-        }
-
-        m_winHandle->setDrawFunc([&](double time, double dt, int ctxNr) { return draw(time, dt, ctxNr); });
-
-        // set hid callbacks. This must be done this way, as GlFW expects static c-style callbacks, which is not possible
-        // when aiming for modular c++ style window architectures
-        m_winHandle->addKeyCb([this](int p1, int p2, int p3, int p4) { key_callback(p1, p2, p3, p4); });
-        m_winHandle->setCharCb([this](unsigned int p1) { char_callback(p1); });
-        m_winHandle->setMouseButtonCb([this](int button, int action, int mods) { mouseBut_callback(button, action, mods); });
-        m_winHandle->setMouseCursorCb([this](double x, double y) { cursor_callback(x, y); });
-        m_winHandle->setWindowSizeCb([this](int w, int h) { window_size_callback(w, h); });
-        m_winHandle->setScrollCb([this](double xOffs, double yOffs) { scroll_callback(xOffs, yOffs); });
-        m_winHandle->setWindowPosCb([this](int posX, int posY) { window_pos_callback(posX, posY); });
-        m_winHandle->setWindowMaximizeCb([this](int maximized) { window_maximize_callback(maximized); });
-        m_winHandle->setWindowFocusCb([this](int focused) { window_focus_callback(focused); });
-        m_winHandle->setWindowIconfifyCb([this](int iconified) { window_minimize_callback(iconified); });
-        m_winHandle->setCloseCb([this] { window_close_callback(); });
-        m_winHandle->setWindowRefreshCb([this] { window_refresh_callback(); });
-
-        // double check if the requested size was accepted
-        vWidth             = m_winHandle->getWidth();
-        vHeight            = m_winHandle->getHeight();
-        rWidth             = m_winHandle->getWidthReal();
-        rHeight            = m_winHandle->getHeightReal();
-        s_devicePixelRatio = m_winHandle->getContentScale().x;
-#endif
+        initUIWindow(par);
 #ifndef ARA_USE_EGL
     } else if (!m_glbase->isInited()) {
 #endif
-        // init GLBase to this context
-        m_glbase->useSelfManagedCtx(false);
-
-#ifndef __ANDROID__
-        // resources updating must be done this way in case of non-window managed setup
-        m_glbase->setUpdtResCb([this] {
-            addGlCb(this, "resUpt", [this] {
-                if (m_glbase->getAssetManager()) {
-                    m_glbase->getAssetManager()->callResSourceChange();
-                    m_glbase->getAssetManager()->callForChangesInFolderFiles();
-                    setResChanged(true);
-                    update();
-                }
-                return true;
-            });
-        });
-#endif
-        m_glbase->init();  // makes no context current
-        m_winHandle->makeCurrent();
+        initToCurrentCtx();
     }
 
 #if defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
@@ -124,31 +56,8 @@ UIWindow::UIWindow(const UIWindowParams& par)
     initGLEW();
 
     if (!s_inited) {
-        WindowBase::init(0, 0, vWidth, vHeight);
-
-        // create the FBO to draw the SceneGraph and it's object map
-        if (m_multisample) {
-            m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(rWidth), static_cast<int>(rHeight), 1,
-                                                        GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1, 2, GL_CLAMP_TO_EDGE, false});
-        } else {
-            m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(rWidth), static_cast<int>(rHeight), 1,
-                                                        GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
-        }
-        s_shCol.setShaderHeader(m_glbase->getShaderHeader());
-
-        m_quad = make_unique<Quad>(QuadInitParams{
-            .pos = {0.f, 0.f},
-            .size = {1.f, 1.f},
-            .color = { 1.f, 0.f, 0.f, 1.f }
-        });
-        m_normQuad = make_unique<Quad>(QuadInitParams{ .color = {1.f, 0.f, 0.f, 1.f} });
-        glGenVertexArrays(1, &m_nullVao);
-
-        m_objSel = make_unique<ObjectMapInteraction>(&s_shCol, rWidth, rHeight, m_sceneFbo.get(), m_multisample);
-        m_drawMan->setMaxObjId(static_cast<uint32_t>(m_objSel->getMaxObjId()));
-        m_drawMan->setShaderCollector(&s_shCol);
-
-        //-------------------------------------------------------------------------------------------
+        WindowBase::init({}, m_virtSize);
+        initGLResources();
 
 #ifdef ARA_USE_GLFW
         if (!par.initToCurrentCtx) {
@@ -157,122 +66,36 @@ UIWindow::UIWindow(const UIWindowParams& par)
             m_winHandle->setMouseCursorIcon(m_glbase->getWinMan()->m_diagResizeDescCursor, WinMouseIcon::ltbrResize);
         }
 #endif
-
-        //-------------------------------------------------------------------------------------------
-
         // first argument: should the request be processed?
         m_procSteps[Callbacks] = ProcStep{true, [&] { iterateGlCallbacks(); }};
         m_procSteps[Draw]      = ProcStep{true, [&] { drawNodeTree(); }};
 
-        //-------------------------------------------------------------------------------------------
+        initColors();
 
-        m_colors[uiColors::background]     = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
-        m_colors[uiColors::darkBackground] = glm::vec4(0.12f, 0.12f, 0.12f, 1.f);
-        m_colors[uiColors::sepLine]        = glm::vec4(0.3f, 0.3f, 0.3f, 1.f);
-        m_colors[uiColors::font]           = glm::vec4(0.8f, 0.8f, 0.8f, 1.f);
-        m_colors[uiColors::highlight]      = glm::vec4(0.f, 0.6f, 0.87f, 1.f);
-        m_colors[uiColors::black]          = glm::vec4(0.f, 0.f, 0.f, 1.f);
-        m_colors[uiColors::blue]           = glm::vec4(0.f, 0.6f, 0.9f, 1.f);
-        m_colors[uiColors::darkBlue]       = glm::vec4(0.f, 0.36f, 0.5f, 1.f);
-        m_colors[uiColors::white]          = glm::vec4(1.f, 1.f, 1.f, 1.f);
-
-        m_minWinSize = ivec2(300, 300);
+        m_minWinSize = ivec2{300, 300};
         m_sharedRes  = UISharedRes{static_cast<void *>(this),
-                                  &s_shCol,
-                                  m_winHandle,
-                                  m_objSel.get(),
-                                  m_quad.get(),
-                                  m_normQuad.get(),
-                                  getOrthoMat(),
-                                  m_dataFolder,
-                                  &m_procSteps,
-                                  this,
-                                  false,
-                                  &m_colors,
-                                  glm::ivec2(60, 30),
-                                  m_stdPadding,
-                                  &m_minWinSize,
-                                  m_glbase->getAssetManager(),
-                                  &m_nullVao,
-                                  m_drawMan.get(),
-                                  m_glbase};
+                                   &s_shCol,
+                                   m_winHandle,
+                                   m_objSel.get(),
+                                   m_quad.get(),
+                                   m_normQuad.get(),
+                                   getOrthoMat(),
+                                   m_dataFolder,
+                                   &m_procSteps,
+                                   this,
+                                   false,
+                                   &m_colors,
+                                   glm::ivec2(60, 30),
+                                   m_stdPadding,
+                                   &m_minWinSize,
+                                   m_glbase->getAssetManager(),
+                                   &m_nullVao,
+                                   m_drawMan,
+                                   m_glbase};
 
-        //-------------------------------------------------------------------------------------------
-        // UI ELEMENTS
-        m_uiRoot = make_unique<UINode>();
-        m_uiRoot->setSharedRes(&m_sharedRes);
-        m_uiRoot->setName("root");  // set the name of this UINode
-
-        if (!par.initToCurrentCtx) {
-            m_contentRoot = m_uiRoot->addChild<UINode>();
-            m_contentRoot->setName("ContentRoot");
-            m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2));
-            m_contentRoot->setAlignY(valign::bottom);
-
-#if defined(ARA_USE_GLFW)
-            // create a MenuBar
-            m_menuBar = m_uiRoot->addChild<MenuBar>();
-            m_menuBar->setPadding(m_stdPadding * 3, m_stdPadding, m_stdPadding * 3, m_stdPadding);
-            m_menuBar->setAlignY(valign::top);
-            m_menuBar->setSize(1.f, m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2);
-            m_menuBar->setBackgroundColor(m_colors[uiColors::background]);
-            m_menuBar->setWindowHandle(m_winHandle);
-
-            // since the GLFWWindow is not part of UIWindow, these functions have to be bound this way
-            m_menuBar->setCloseFunc([this] {
-                // we are in the gl HID thread of this UIWindow
-                if (m_closeFunc) {
-                    m_closeFunc(this);
-                } else if (m_appHandle && m_isMainWindow) {
-                    // this is called from GL HID queue
-                    ivec2 diagPos(0, 0);
-                    ivec2 diagSize(500, 150);
-                    if (m_winHandle) {
-                        diagPos.x = (m_winHandle->getSize().x - diagSize.x) / 2 + m_winHandle->getPosition().x;
-                        diagPos.y = (m_winHandle->getSize().y - diagSize.y) / 2 + m_winHandle->getPosition().y;
-                    }
-
-                    m_appHandle->openInfoDiag((InfoDiagParams{
-                        .pos = diagPos,
-                        .size = diagSize,
-                        .tp = infoDiagType::confirm,
-                        .msg = "Do you really want to quit?",
-                        .minStayTime =  0,
-                        .isModal = true,
-                        .onConfirm = [this] {
-                            m_winHandle->hide();
-                            m_appHandle->exit();
-                            return false;  // don't close the window, stop after immediately after this point
-                        }
-                    }));
-                }
-            });
-
-            m_menuBar->setMinimizeFunc([this] {
-                m_winProcCb.emplace_back([this] { m_winHandle->minimize(); });
-                m_sharedRes.requestRedraw = true;
-            });
-            m_menuBar->setMaximizeFunc([this] {
-                m_winProcCb.emplace_back([this] { m_winHandle->maximize(); });
-                m_sharedRes.requestRedraw = true;
-            });
-            m_menuBar->setRestoreFunc([this] {
-                m_winProcCb.emplace_back([this] { m_winHandle->restore(); });
-                m_sharedRes.requestRedraw = true;
-            });
-
-            m_windowResizeAreas = m_uiRoot->addChild<WindowResizeAreas>();
-            m_windowResizeAreas->setSize(1.f, 1.f);
-#endif
-        } else {
-            m_menuBarEnabled             = false;
-            m_windowResizeHandlesEnabled = false;
-        }
-
-        //-------------------------------------------------------------------------------------------
-
+        initUI(par);
         initGL();
-        UIWindow::onSetViewport(0, 0, static_cast<int>(vWidth), static_cast<int>(vHeight));
+        UIWindow::onSetViewport(0, 0, m_virtSize.x, m_virtSize.y);
 
         m_stdTex = s_shCol.getStdTex();
         if (m_multisample) {
@@ -283,13 +106,133 @@ UIWindow::UIWindow(const UIWindowParams& par)
     }
 
 #ifdef ARA_USE_GLFW
-    if (!par.initToCurrentCtx && restartGlBaseLoop) {
+    if (!par.initToCurrentCtx && m_restartGlBaseLoop) {
         GLWindow::makeNoneCurrent();
         m_glbase->startRenderLoop();
         // no context bound at this point
     }
     // uiwindow context bound if not restartGlBaseLoop
 #endif
+}
+
+void UIWindow::initUIWindow(const UIWindowParams& par) {
+#ifndef ARA_USE_EGL
+    // check if GLBase render loop is running, if this is the case, stop it and start it later again. Otherwise,
+    // context sharing will fail
+    if (m_glbase->isRunning()) {
+        m_restartGlBaseLoop = true;
+        m_glbase->stopRenderLoop();
+    }
+#endif
+
+#if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
+    if (!m_winHandle) {
+        m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{
+                .decorated = par.osDecoration,
+                .floating = par.floating,
+                .debug = m_debugGLFWwin,
+                .shift = par.shift,
+                .size = par.size,
+                .scaleToMonitor = par.scaleToMonitor,
+                .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
+                .transparentFramebuffer = par.transparentFB,
+                .extWinHandle = par.extWinHandle,
+                .glbase = par.glbase
+        });
+    } else {
+        m_winHandle->makeCurrent();
+    }
+
+    if (!m_winHandle) {
+        LOGE << "UIWindow::init Error: failed to create a GLFWWindow.";
+        return;
+    }
+
+    m_winHandle->setDrawFunc([&](double time, double dt, int ctxNr) { return draw(time, dt, ctxNr); });
+    initHidCallbacks();
+
+    // double check if the requested size was accepted
+    m_virtSize.x       = m_winHandle->getWidth();
+    m_virtSize.y       = m_winHandle->getHeight();
+    m_realSize.x       = m_winHandle->getWidthReal();
+    m_realSize.y       = m_winHandle->getHeightReal();
+    s_devicePixelRatio = m_winHandle->getContentScale().x;
+#endif
+}
+
+void UIWindow::initToCurrentCtx() {
+    // init GLBase to this context
+    m_glbase->useSelfManagedCtx(false);
+
+#ifndef __ANDROID__
+    // resources updating must be done this way in case of non-window managed setup
+    m_glbase->setUpdtResCb([this] {
+        addGlCb(this, "resUpt", [this] {
+            if (m_glbase->getAssetManager()) {
+                m_glbase->getAssetManager()->callResSourceChange();
+                m_glbase->getAssetManager()->callForChangesInFolderFiles();
+                setResChanged(true);
+                update();
+            }
+            return true;
+        });
+    });
+#endif
+    m_glbase->init();  // makes no context current
+    m_winHandle->makeCurrent();
+}
+
+void UIWindow::initHidCallbacks() {
+    // set hid callbacks. This must be done this way, as GlFW expects static c-style callbacks, which is not possible
+    // when aiming for modular c++ style window architectures
+    m_winHandle->addKeyCb([this](int p1, int p2, int p3, int p4) { key_callback(p1, p2, p3, p4); });
+    m_winHandle->setCharCb([this](unsigned int p1) { char_callback(p1); });
+    m_winHandle->setMouseButtonCb([this](int button, int action, int mods) { mouseBut_callback(button, action, mods); });
+    m_winHandle->setMouseCursorCb([this](double x, double y) { cursor_callback(x, y); });
+    m_winHandle->setWindowSizeCb([this](int w, int h) { window_size_callback(w, h); });
+    m_winHandle->setScrollCb([this](double xOffs, double yOffs) { scroll_callback(xOffs, yOffs); });
+    m_winHandle->setWindowPosCb([this](int posX, int posY) { window_pos_callback(posX, posY); });
+    m_winHandle->setWindowMaximizeCb([this](int maximized) { window_maximize_callback(maximized); });
+    m_winHandle->setWindowFocusCb([this](int focused) { window_focus_callback(focused); });
+    m_winHandle->setWindowIconfifyCb([this](int iconified) { window_minimize_callback(iconified); });
+    m_winHandle->setCloseCb([this] { window_close_callback(); });
+    m_winHandle->setWindowRefreshCb([this] { window_refresh_callback(); });
+}
+
+void UIWindow::initColors() {
+    m_colors[uiColors::background]     = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
+    m_colors[uiColors::darkBackground] = glm::vec4(0.12f, 0.12f, 0.12f, 1.f);
+    m_colors[uiColors::sepLine]        = glm::vec4(0.3f, 0.3f, 0.3f, 1.f);
+    m_colors[uiColors::font]           = glm::vec4(0.8f, 0.8f, 0.8f, 1.f);
+    m_colors[uiColors::highlight]      = glm::vec4(0.f, 0.6f, 0.87f, 1.f);
+    m_colors[uiColors::black]          = glm::vec4(0.f, 0.f, 0.f, 1.f);
+    m_colors[uiColors::blue]           = glm::vec4(0.f, 0.6f, 0.9f, 1.f);
+    m_colors[uiColors::darkBlue]       = glm::vec4(0.f, 0.36f, 0.5f, 1.f);
+    m_colors[uiColors::white]          = glm::vec4(1.f, 1.f, 1.f, 1.f);
+}
+
+void UIWindow::initGLResources() {
+    // create the FBO to draw the SceneGraph and it's object map
+    if (m_multisample) {
+        m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(m_realSize.x), static_cast<int>(m_realSize.y), 1,
+                                                    GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1, 2, GL_CLAMP_TO_EDGE, false});
+    } else {
+        m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(m_realSize.x), static_cast<int>(m_realSize.y), 1,
+                                                    GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
+    }
+    s_shCol.setShaderHeader(m_glbase->getShaderHeader());
+
+    m_quad = make_unique<Quad>(QuadInitParams{
+            .pos = { 0.f, 0.f },
+            .size = { 1.f, 1.f },
+            .color = { 1.f, 0.f, 0.f, 1.f }
+    });
+    m_normQuad = make_unique<Quad>(QuadInitParams{ .color = {1.f, 0.f, 0.f, 1.f} });
+    glGenVertexArrays(1, &m_nullVao);
+
+    m_objSel = make_unique<ObjectMapInteraction>(&s_shCol, m_realSize.x, m_realSize.y, m_sceneFbo.get(), m_multisample);
+    m_drawMan->setMaxObjId(static_cast<uint32_t>(m_objSel->getMaxObjId()));
+    m_drawMan->setShaderCollector(&s_shCol);
 }
 
 void UIWindow::initGL() const {
@@ -309,6 +252,90 @@ void UIWindow::initGL() const {
     glEnable(GL_BLEND);
     glEnable(GL_SCISSOR_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void UIWindow::initUI(const UIWindowParams& par) {
+    if (!m_uiRoot) {
+        m_uiRoot = make_unique<UINode>();
+        m_uiRoot->setSharedRes(&m_sharedRes);
+        m_uiRoot->setName("root");  // set the name of this UINode
+    }
+
+    if (!par.initToCurrentCtx) {
+        if (!m_contentRoot) {
+            m_contentRoot = m_uiRoot->addChild<UINode>();
+            m_contentRoot->setName("ContentRoot");
+            m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2));
+            m_contentRoot->setAlignY(valign::bottom);
+        }
+
+#if defined(ARA_USE_GLFW)
+        // create a MenuBar
+        if (!m_menuBar) {
+            m_menuBar = m_uiRoot->addChild<MenuBar>();
+            m_menuBar->setPadding(m_stdPadding * 3, m_stdPadding, m_stdPadding * 3, m_stdPadding);
+            m_menuBar->setAlignY(valign::top);
+            m_menuBar->setSize(1.f, m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2);
+            m_menuBar->setBackgroundColor(m_colors[uiColors::background]);
+            m_menuBar->setWindowHandle(m_winHandle);
+
+            // since the GLFWWindow is not part of UIWindow, these functions have to be bound this way
+            m_menuBar->setCloseFunc([this] {
+                menuBarCloseFunc();
+            });
+
+            m_menuBar->setMinimizeFunc([this] {
+                m_winProcCb.emplace_back([this] { m_winHandle->minimize(); });
+                m_sharedRes.requestRedraw = true;
+            });
+            m_menuBar->setMaximizeFunc([this] {
+                m_winProcCb.emplace_back([this] { m_winHandle->maximize(); });
+                m_sharedRes.requestRedraw = true;
+            });
+            m_menuBar->setRestoreFunc([this] {
+                m_winProcCb.emplace_back([this] { m_winHandle->restore(); });
+                m_sharedRes.requestRedraw = true;
+            });
+        }
+
+        if (!m_windowResizeAreas) {
+            m_windowResizeAreas = m_uiRoot->addChild<WindowResizeAreas>();
+            m_windowResizeAreas->setSize(1.f, 1.f);
+        }
+#endif
+    } else {
+        m_menuBarEnabled             = false;
+        m_windowResizeHandlesEnabled = false;
+    }
+}
+
+void UIWindow::menuBarCloseFunc() {
+    // we are in the gl HID thread of this UIWindow
+    if (m_closeFunc) {
+        m_closeFunc(this);
+    } else if (m_appHandle && m_isMainWindow) {
+        // this is called from GL HID queue
+        ivec2 diagPos{0, 0};
+        ivec2 diagSize{500, 150};
+        if (m_winHandle) {
+            diagPos.x = (m_winHandle->getSize().x - diagSize.x) / 2 + m_winHandle->getPosition().x;
+            diagPos.y = (m_winHandle->getSize().y - diagSize.y) / 2 + m_winHandle->getPosition().y;
+        }
+
+        m_appHandle->openInfoDiag((InfoDiagParams{
+            .pos = diagPos,
+            .size = diagSize,
+            .tp = infoDiagType::confirm,
+            .msg = "Do you really want to quit?",
+            .minStayTime =  0,
+            .isModal = true,
+            .onConfirm = [this] {
+                m_winHandle->hide();
+                m_appHandle->exit();
+                return false;  // don't close the window, stop after immediately after this point
+            }
+        }));
+    }
 }
 
 void UIWindow::open() {
@@ -354,23 +381,7 @@ bool UIWindow::closeEvtLoopCb() {
             // set a callback to be called when the window draw loop exits, but
             // the gl context is still valid remove all resources and cleanup
             m_winHandle->setOnCloseCb([this] {
-                m_uiRoot.reset();
-                if (m_objSel) {
-                    m_objSel.reset();
-                }
-                s_shCol.clear();  // remove gl resources
-                if (!m_texCol.empty()){
-                    m_texCol.clear();
-                }
-                if (m_quad) {
-                    m_quad.reset();
-                }
-                if (m_normQuad) {
-                    m_normQuad.reset();
-                }
-                if (m_sceneFbo) {
-                    m_sceneFbo.reset();
-                }
+                removeGLResources(true);
             });
 
             m_winHandle->stopDrawThread();  // also calls close() on GLFWWindow
@@ -446,7 +457,7 @@ bool UIWindow::draw(double time, double dt, int ctxNr) {
     }
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    // proc force redraw if requested
+    // process force-redraw-requests if requested
     if (m_selfManagedCtx && m_sharedRes.requestRedraw) {
         m_sharedRes.requestRedraw = false;
         m_procSteps[Draw].active  = true;
@@ -575,13 +586,13 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
     bool isShift = (key == GLSG_KEY_LEFT_SHIFT) || (key == GLSG_KEY_RIGHT_SHIFT);
 
     // convert special keys, ...QT and GLFW use different key codes
-    switch (key) {
-        case GLSG_KEY_UP: outKey = 19; break;
-        case GLSG_KEY_DOWN: outKey = 21; break;
-        case GLSG_KEY_LEFT: outKey = 18; break;
-        case GLSG_KEY_RIGHT: outKey = 20; break;
-        default: break;
-    }
+    static unordered_map<int, int> specialKeys = {
+        { GLSG_KEY_UP, 19 },
+        { GLSG_KEY_DOWN, 21 },
+        { GLSG_KEY_LEFT, 18 },
+        { GLSG_KEY_RIGHT, 20 },
+    };
+    outKey = specialKeys[key];
 
     if (action == GLSG_PRESS || action == GLSG_REPEAT) {
         WindowBase::osKeyDown(outKey, (mods & GLSG_MOD_SHIFT) || isShift, (mods & GLSG_MOD_CONTROL) || isCtrl,
@@ -689,16 +700,16 @@ void UIWindow::scroll_callback(double xoffset, double yoffset) {
 void UIWindow::window_pos_callback(int xpos, int ypos) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     WindowBase::osSetWinPos([this, xpos, ypos] {
-        // this is also called on Windows when the window is minimized
-        // since there are invalid numbers, we have to filter those calls
+        // this is also called on Windows when the window is minimized since there are invalid numbers, we have to
+        // filter those calls
 
         // check if the window will be completely invisible
         auto wa = m_winHandle->getWorkArea();
-        if (wa && wa[2] && wa[3] &&
-            !(xpos > wa[2]                                   // outside right bounds
-              || xpos > wa[3]                                // outside bottom bounds
-              || (xpos + m_winHandle->getSize().x < wa[0])   // outside left bounds
-              || (ypos + m_winHandle->getSize().y < wa[1]))  // outside top bounds
+        if (wa.z && wa.w &&
+            !(xpos > wa.z                                   // outside right bounds
+              || xpos > wa.w                                // outside bottom bounds
+              || (xpos + m_winHandle->getSize().x < wa.x)   // outside left bounds
+              || (ypos + m_winHandle->getSize().y < wa.y))  // outside top bounds
         ) {
             getActualMonitorMaxArea(xpos, ypos);
             for (auto &val: m_globalWinPosCb | views::values) {
@@ -1531,5 +1542,43 @@ std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, st
     return out;
 }
 #endif
+
+void UIWindow::removeGLResources(bool resetUINode) {
+    s_shCol.clear();  // remove gl resources
+
+    if (!m_texCol.empty()){
+        m_texCol.clear();
+    }
+
+    if (m_quad) {
+        m_quad.reset();
+    }
+
+    if (m_normQuad) {
+        m_normQuad.reset();
+    }
+
+    if (m_sceneFbo) {
+        m_sceneFbo.reset();
+    }
+
+    if (m_sharedRes.res && m_sharedRes.res->getGLFont().getCount()) {
+        m_sharedRes.res->clearGLFont();
+    }
+
+    if (m_sharedRes.drawMan){
+        m_sharedRes.drawMan->clear();
+    }
+
+    if (resetUINode) {
+        m_uiRoot.reset();
+    } else {
+        UINode::itrNodes(m_uiRoot.get(), [](UINode *node) {
+            node->removeGLResources();
+        });
+    }
+
+    s_inited = false;
+}
 
 }  // namespace ara

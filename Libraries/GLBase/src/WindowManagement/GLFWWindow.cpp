@@ -47,153 +47,34 @@ int GLFWWindow::init(const glWinPar &gp) {
     }
 
     // get the bounding box around all displays
-    m_workArea[0] = std::numeric_limits<int>::max();  // left
-    m_workArea[1] = std::numeric_limits<int>::max();  // top
-    m_workArea[2] = 0;                                // right
-    m_workArea[3] = 0;                                // bottom
+    m_workArea.x = std::numeric_limits<int>::max();  // left
+    m_workArea.y = std::numeric_limits<int>::max();  // top
+    m_workArea.z = 0;                                // right
+    m_workArea.w = 0;                                // bottom
 
-    {
-        int w, h, x, y;
-        for (int i = 0; i < m_count; i++) {
-            glfwGetMonitorWorkarea(m_monitors[i], &x, &y, &w, &h);
-            if (x < m_workArea[0]) {
-                m_workArea[0] = x;
-            }
-            if (x + w > m_workArea[2]) {
-                m_workArea[2] = x + w;
-            }
-            if (y < m_workArea[1]) {
-                m_workArea[1] = y;
-            }
-            if (y + h > m_workArea[3]) {
-                m_workArea[3] = y + h;
-            }
+    int w, h, x, y;
+    for (int i = 0; i < m_count; i++) {
+        glfwGetMonitorWorkarea(m_monitors[i], &x, &y, &w, &h);
+        if (x < m_workArea.x) {
+            m_workArea[0] = x;
+        }
+        if (x + w > m_workArea.z) {
+            m_workArea[2] = x + w;
+        }
+        if (y < m_workArea.y) {
+            m_workArea[1] = y;
+        }
+        if (y + h > m_workArea.w) {
+            m_workArea[3] = y + h;
         }
     }
 
     getMonitorScales();
 
     if (gp.fullScreen) {
-        LOG << " Window running in fullscreen mode";
-        if (gp.debug) {
-            for (int i = 0; i < m_count; i++) {
-                auto vm = glfwGetVideoMode(m_monitors[i]);
-                LOG << "monitor " << i << " " << glfwGetMonitorName(m_monitors[i])
-                << " current video mode: width: " << vm->width << " height: " << vm->height
-                << " refreshRate: " << vm->refreshRate;
-            }
-        }
-
-        if (m_count > gp.monitorNr) {
-            useMonitor = gp.monitorNr;
-        }
-
-        // get Video Modes
-        int                countVm;
-        bool               found       = false;
-        const GLFWvidmode *modes       = glfwGetVideoModes(m_monitors[useMonitor], &countVm);
-        const GLFWvidmode *useThisMode = nullptr;
-
-        if (gp.debug) {
-            for (int j = 0; j < countVm; j++) {
-                printf("%i: current video mode: width: %i height: %i refreshRate: %i\n",
-                        j, modes[j].width, modes[j].height, modes[j].refreshRate);
-            }
-        }
-
-        for (auto i = 0; i < countVm; i++) {
-            if (modes[i].width == gp.size.x && modes[i].height == gp.size.y && modes[i].refreshRate == gp.refreshRate &&
-                modes[i].redBits == 8) {
-                found       = true;
-                useThisMode = &modes[i];
-            }
-        }
-
-        if (!found) {
-            const GLFWvidmode *mode = glfwGetVideoMode(m_monitors[useMonitor]);
-            if (gp.debug) {
-                printf("current video mode: width: %i height: %i refreshRate: %i\n",
-                    mode->width, mode->height, mode->refreshRate);
-                printf("using unsupported videomode! \n");
-            }
-        } else {
-            if (gp.debug) {
-                printf("set video mode: width: %i height: %i refreshRate: %i\n", useThisMode->width,
-                       useThisMode->height, useThisMode->refreshRate);
-            }
-
-            m_widthVirt  = useThisMode->width;
-            m_heightVirt = useThisMode->height;
-            glfwWindowHint(GLFW_RED_BITS, useThisMode->redBits);
-            glfwWindowHint(GLFW_GREEN_BITS, useThisMode->greenBits);
-            glfwWindowHint(GLFW_BLUE_BITS, useThisMode->blueBits);
-            glfwWindowHint(GLFW_REFRESH_RATE, useThisMode->refreshRate);
-            monitorRefreshRate = useThisMode->refreshRate;
-        }
-
-        m_mon = m_monitors[useMonitor];
-
-        // get the video mode of the current selected monitor
-        const GLFWvidmode *mode = glfwGetVideoMode(m_mon);
-
-        glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-        glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-        glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-        glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-        glfwWindowHint(GLFW_SAMPLES, gp.nrSamples);
-
-        monitorRefreshRate = mode->refreshRate;
-        m_widthVirt        = mode->width;
-        m_heightVirt       = mode->height;
-        m_monWidth         = mode->width;
-        m_monHeight        = mode->height;
-
+        initFullScreen(gp);
     } else {
-        if (gp.debug) {
-            for (int i = 0; i < m_count; i++) {
-                printf( "Window monitor %i: %s current video mode: width: %i height: %i refreshRate: %i scaleY: %f scaleY: %f "
-                        "decorated: %d floating: %d \n",
-                        i, glfwGetMonitorName(m_monitors[i]), glfwGetVideoMode(m_monitors[i])->width,
-                        glfwGetVideoMode(m_monitors[i])->height, glfwGetVideoMode(m_monitors[i])->refreshRate,
-                        m_monContScale[i].first, m_monContScale[i].second, gp.decorated, gp.floating);
-            }
-        }
-
-        monitorRefreshRate = 60;
-
-        // for non-fullscreen to always stay on top
-        glfwWindowHint(GLFW_DECORATED, gp.decorated ? GL_TRUE : GL_FALSE);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_FOCUSED, GL_TRUE);
-        glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, gp.transparentFramebuffer);
-        glfwWindowHint(GLFW_REFRESH_RATE, monitorRefreshRate);
-        glfwWindowHint(GLFW_SAMPLES, gp.nrSamples);
-        glfwWindowHint(GLFW_RESIZABLE, gp.resizeable);
-#if defined(_WIN32) || defined(__linux__)
-        glfwWindowHint(GLFW_SCALE_TO_MONITOR,
-                       gp.scaleToMonitor ? GL_TRUE : GL_FALSE);  // if GL_FALSE pixel sizing is 1:1 if GL_TRUE the
-                                                                 // required size will be different from the
-                                                                 // resulting window size
-#endif
-
-#ifdef __APPLE__
-        glfwWindowHint(GLFW_SCALE_TO_MONITOR,
-                       GL_TRUE);  // if GL_FALSE pixel sizing is 1:1 if GL_TRUE
-                                  // the required size will be different from
-                                  // the resulting window size
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // uncomment this statement to fix compilation on OS X
-        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);  // uncomment this statement to fix compilation on OS X
-#endif
-
-#ifndef __EMSCRIPTEN__
-        glfwWindowHint(GLFW_FLOATING, gp.floating);  // ignored for fullscreen, necessary
-#endif
-        const GLFWvidmode *mode = glfwGetVideoMode(m_monitors[0]);
-        m_monWidth              = mode->width;
-        m_monHeight             = mode->height;
+        initNonFullScreen(gp);
     }
 
     m_window = glfwCreateWindow(m_widthVirt, m_heightVirt, "", gp.fullScreen ? m_mon : nullptr, static_cast<GLFWwindow *>(gp.shareCont));
@@ -230,7 +111,7 @@ int GLFWWindow::init(const glWinPar &gp) {
     m_nativeHandle = static_cast<void *>(wglGetCurrentContext());
 #elif __linux__
 #ifndef ARA_USE_GLES31
-    m_nativeHandle = (void *)glXGetCurrentContext();
+    m_nativeHandle = static_cast<void*>(glXGetCurrentContext());
 #endif
 #endif
 
@@ -270,12 +151,12 @@ int GLFWWindow::init(const glWinPar &gp) {
     if (gp.nrSamples > 2) {
         glEnable(GL_MULTISAMPLE_ARB);
         if (gp.debug) {
-            printf("enabling Multisampling \n");
+            LOG << "enabling Multisampling";
         }
     }
 
     // init cursors
-    for (auto & cursor : m_mouseCursors) {
+    for (auto cursor : m_mouseCursors) {
         cursor = nullptr;
     }
 
@@ -355,8 +236,138 @@ int GLFWWindow::init(const glWinPar &gp) {
 
     m_inited = true;
     m_initSema.notify();
-
     return true;
+}
+
+void GLFWWindow::initFullScreen(const glWinPar &gp) {
+    LOG << " Window running in fullscreen mode";
+    if (gp.debug) {
+        for (int i = 0; i < m_count; i++) {
+            auto vm = glfwGetVideoMode(m_monitors[i]);
+            LOG << "monitor " << i << " " << glfwGetMonitorName(m_monitors[i])
+                << " current video mode: width: " << vm->width << " height: " << vm->height
+                << " refreshRate: " << vm->refreshRate;
+        }
+    }
+
+    if (m_count > gp.monitorNr) {
+        useMonitor = gp.monitorNr;
+    }
+
+    // get Video Modes
+    int                countVm;
+    bool               found       = false;
+    const GLFWvidmode *modes       = glfwGetVideoModes(m_monitors[useMonitor], &countVm);
+    const GLFWvidmode *useThisMode = nullptr;
+
+    if (gp.debug) {
+        for (int j = 0; j < countVm; j++) {
+            printf("%i: current video mode: width: %i height: %i refreshRate: %i\n",
+                   j, modes[j].width, modes[j].height, modes[j].refreshRate);
+        }
+    }
+
+    for (auto i = 0; i < countVm; i++) {
+        if (modes[i].width == gp.size.x && modes[i].height == gp.size.y && modes[i].refreshRate == gp.refreshRate &&
+            modes[i].redBits == 8) {
+            found       = true;
+            useThisMode = &modes[i];
+        }
+    }
+
+    if (!found) {
+        const GLFWvidmode *mode = glfwGetVideoMode(m_monitors[useMonitor]);
+        if (gp.debug) {
+            printf("current video mode: width: %i height: %i refreshRate: %i\n",
+                   mode->width, mode->height, mode->refreshRate);
+            printf("using unsupported videomode! \n");
+        }
+    } else {
+        if (gp.debug) {
+            printf("set video mode: width: %i height: %i refreshRate: %i\n", useThisMode->width,
+                   useThisMode->height, useThisMode->refreshRate);
+        }
+
+        m_widthVirt  = useThisMode->width;
+        m_heightVirt = useThisMode->height;
+        glfwWindowHint(GLFW_RED_BITS, useThisMode->redBits);
+        glfwWindowHint(GLFW_GREEN_BITS, useThisMode->greenBits);
+        glfwWindowHint(GLFW_BLUE_BITS, useThisMode->blueBits);
+        glfwWindowHint(GLFW_REFRESH_RATE, useThisMode->refreshRate);
+        monitorRefreshRate = useThisMode->refreshRate;
+    }
+
+    m_mon = m_monitors[useMonitor];
+
+    // get the video mode of the current selected monitor
+    const GLFWvidmode *mode = glfwGetVideoMode(m_mon);
+
+    glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+    glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+    glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+    glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+    glfwWindowHint(GLFW_SAMPLES, gp.nrSamples);
+
+    monitorRefreshRate = mode->refreshRate;
+    m_widthVirt        = mode->width;
+    m_heightVirt       = mode->height;
+    m_monWidth         = mode->width;
+    m_monHeight        = mode->height;
+}
+
+void GLFWWindow::initNonFullScreen(const glWinPar &gp) {
+    if (gp.debug) {
+        for (int i = 0; i < m_count; i++) {
+            printf( "Window monitor %i: %s current video mode: width: %i height: %i refreshRate: %i scaleY: %f scaleY: %f "
+                    "decorated: %d floating: %d \n",
+                    i, glfwGetMonitorName(m_monitors[i]), glfwGetVideoMode(m_monitors[i])->width,
+                    glfwGetVideoMode(m_monitors[i])->height, glfwGetVideoMode(m_monitors[i])->refreshRate,
+                    m_monContScale[i].first, m_monContScale[i].second, gp.decorated, gp.floating);
+        }
+    }
+
+    monitorRefreshRate = 60;
+
+    // for non-fullscreen to always stay on top
+    glfwWindowHint(GLFW_DECORATED, gp.decorated ? GL_TRUE : GL_FALSE);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_FOCUSED, GL_TRUE);
+    glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, gp.transparentFramebuffer);
+    glfwWindowHint(GLFW_REFRESH_RATE, monitorRefreshRate);
+    glfwWindowHint(GLFW_SAMPLES, gp.nrSamples);
+    glfwWindowHint(GLFW_RESIZABLE, gp.resizeable);
+#if defined(_WIN32) || defined(__linux__)
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR,
+                   gp.scaleToMonitor ? GL_TRUE : GL_FALSE);  // if GL_FALSE pixel sizing is 1:1 if GL_TRUE the
+    // required size will be different from the
+    // resulting window size
+#endif
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR,
+                       GL_TRUE);  // if GL_FALSE pixel sizing is 1:1 if GL_TRUE
+                                  // the required size will be different from
+                                  // the resulting window size
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // uncomment this statement to fix compilation on OS X
+        glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GL_FALSE);  // uncomment this statement to fix compilation on OS X
+#endif
+
+#ifndef __EMSCRIPTEN__
+    glfwWindowHint(GLFW_FLOATING, gp.floating);  // ignored for fullscreen, necessary
+#endif
+    const GLFWvidmode *mode = glfwGetVideoMode(m_monitors[0]);
+    m_monWidth              = mode->width;
+    m_monHeight             = mode->height;
+}
+
+void GLFWWindow::initLibrary() {
+    if (!glfwInit()) {
+        printf("ERROR: Couldn't init glfw\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 void GLFWWindow::runLoop(std::function<bool(double, double, int)> f, bool eventBased, bool terminateGLFW,
@@ -454,6 +465,128 @@ void GLFWWindow::onWindowSize(int width, int height) {
     if (m_windowSizeCb) {
         m_windowSizeCb(width, height);
     }
+}
+
+void GLFWWindow::open() {
+    glfwShowWindow(m_window);
+    m_isOpen = true;
+}
+
+/** hide window, including removing it from the taskbar, dock or windowlist */
+void GLFWWindow::hide() {
+    glfwHideWindow(m_window);
+    m_isOpen = false;
+}
+
+void GLFWWindow::makeCurrent() {
+    if (m_window) {
+        glfwMakeContextCurrent(m_window);
+    }
+}
+
+void GLFWWindow::destroy() {
+    glfwDestroyWindow(m_window);
+    glfwTerminate();
+    m_exitSema.notify();
+}
+
+void GLFWWindow::destroy(bool terminate) {
+    glfwDestroyWindow(m_window);
+    if (terminate) {
+        glfwTerminate();
+    }
+    m_exitSema.notify();
+}
+
+void GLFWWindow::resize(GLsizei width, GLsizei height)  {
+    bool unlock = m_drawMtx.try_lock();
+    glfwSetWindowSize(m_window, width, height);
+    m_widthVirt  = width;
+    m_heightVirt = height;
+    if (unlock) {
+        m_drawMtx.unlock();
+    }
+}
+
+void GLFWWindow::focus() const {
+    if (m_window) {
+        glfwFocusWindow(m_window);
+    }
+}
+
+void GLFWWindow::removeMouseCursors() {
+    if (m_window) {
+        for (auto it : m_mouseCursors | std::views::filter([](const auto it){ return it != nullptr; })) {
+            glfwDestroyCursor(it);
+        }
+    }
+}
+
+void GLFWWindow::error_callback(int error, const char *description) {
+    LOGE << "GLFW ERROR: " << description;
+    fputs(description, stderr);
+}
+
+/// input in virtual pixels
+void GLFWWindow::setSize(int inWidth, int inHeight) {
+    m_widthVirt  = inWidth;
+    m_heightVirt = inHeight;
+    m_widthReal  = static_cast<int>(static_cast<float>(inWidth) * m_contentScale.x);
+    m_heightReal = static_cast<int>(static_cast<float>(inHeight) * m_contentScale.y);
+#ifdef __APPLE__
+    glfwSetWindowSize(m_window, inWidth, inHeight);
+#else
+    // glfw calls immediately the corresponding callback without passing through glfwWaitEvents
+    glfwSetWindowSize(m_window, m_widthReal, m_heightReal);
+#endif
+    iterate();
+}
+
+/// input in virtual pixels
+void GLFWWindow::setPosition(int posx, int posy) {
+    m_posXvirt = static_cast<float>(posx);
+    m_posYvirt = static_cast<float>(posy);
+    m_posXreal = static_cast<float>(posx) * m_contentScale.x;
+    m_posYreal = static_cast<float>(posy) * m_contentScale.y;
+#ifdef __APPLE__
+    glfwSetWindowPos(m_window, m_posXvirt, m_posYvirt);
+#else
+    glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));
+#endif
+    iterate();
+}
+
+glm::vec2 GLFWWindow::getDpi() {
+#ifdef __linux__
+    auto   dpy = glfwGetX11Display();
+    auto   scr = 0;
+    double dDisplayDPI_H, dDisplayDPI_V;
+    dDisplayDPI_H = (double)DisplayWidth(dpy, scr) / ((double)DisplayWidthMM(dpy, scr) / 25.4);
+    dDisplayDPI_V = (double)DisplayHeight(dpy, scr) / ((double)DisplayHeightMM(dpy, scr) / 25.4);
+    return glm::vec2{dDisplayDPI_H, dDisplayDPI_V};
+#else
+    return glm::vec2{92.f, 92.f};
+#endif
+}
+
+glm::ivec2 GLFWWindow::getLastMousePos() {
+    double xpos, ypos;
+    glfwGetCursorPos(m_window, &xpos, &ypos);
+#ifdef __APPLE__
+    return {(int)xpos, (int)ypos};
+#else
+    return {static_cast<int>(xpos / m_contentScale.x), static_cast<int>(ypos / m_contentScale.y)};
+#endif
+}
+
+glm::ivec2 GLFWWindow::getAbsMousePos() const {
+    glm::ivec2 mp{};
+    mouse::getAbsMousePos(mp.x, mp.y);
+#ifdef __APPLE__
+    return mp;
+#else
+    return glm::ivec2{static_cast<int>(static_cast<float>(mp.x) / m_contentScale.x), static_cast<int>(static_cast<float>(mp.y) / m_contentScale.y)};
+#endif
 }
 
 double GLFWWindow::getFps() {
@@ -592,5 +725,6 @@ void GLFWWindow::close() {
         m_isOpen = false;
     }
 }
+
 }  // namespace ara
 #endif

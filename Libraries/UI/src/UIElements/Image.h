@@ -44,6 +44,7 @@ public:
     virtual void    setObjUsesTexAlpha(bool val);
     void            clearDs() override;
     bool            isInBounds(glm::vec2& pos) override;
+    void            removeGLResources() override;
 
     virtual void    setImg(const std::string& file, int mipMapLevel = 1);
     unsigned        setImgFlags(unsigned flags);

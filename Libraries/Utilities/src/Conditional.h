@@ -72,6 +72,7 @@ public:
     void reset() { m_flag = false; m_waitingThreads = 0; }
     bool hasWaitingThreads() { return !m_waitingThreads; }
 
+    std::string name;
 private:
     std::mutex              m_mtx;
     std::condition_variable m_cv;

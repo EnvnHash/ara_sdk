@@ -2,12 +2,12 @@
 // Created by sven on 07-04-25.
 //
 
-#include "test_common.h"
+#include "TestCommon.h"
 #include <UIElements/Div.h>
 
 using namespace std;
 
-namespace ara::SceneGraphUnitTest::HidTest {
+namespace ara::UiUnitTest::HidTest {
 
 class HidNode :  public Div {
 public:

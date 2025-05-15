@@ -249,9 +249,9 @@ void UINode::drawAsRoot(uint32_t& objId) {
         m_reqTreeChanged = false;
     }
 
-    if (m_treeChanged && m_sharedRes && m_sharedRes->drawMan) {
-        m_sharedRes->drawMan->clear();
-        m_sharedRes->drawMan->addSet();
+    if (m_treeChanged && m_drawMan) {
+        m_drawMan->clear();
+        m_drawMan->addSet();
     }
 
     // iterate again through the ui-graph and draw
@@ -259,10 +259,10 @@ void UINode::drawAsRoot(uint32_t& objId) {
     drawIt(m_scissorStack, objId, m_treeChanged, skip);
 
     if (m_treeChanged) {
-        m_sharedRes->drawMan->rebuildVaos();
+        m_drawMan->rebuildVaos();
         m_treeChanged = false;
     } else {
-        m_sharedRes->drawMan->update();
+        m_drawMan->update();
     }
 }
 
@@ -302,7 +302,8 @@ void UINode::drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool& s
             m_drawParamChanged = false;
         }
 
-        if ((m_drawImmediate && draw(objId)) || (!m_drawImmediate && treeChanged && drawIndirect(objId))) {
+        if ((m_drawImmediate && draw(objId))
+            || (!m_drawImmediate && treeChanged && drawIndirect(objId))) {
             ++objId;  // increase objId
         }
 
@@ -379,9 +380,9 @@ void UINode::checkInit() {
         // be sure init always done in default state
         setState(state::none);  // sync states
 
-        init();  // the Node may create children in its init function which might depend on other node's size
+        init();  // the Node may create children in its init function, which might depend on another node's size
         // so to be sure the calculation won't turn out wrong, since the
-        // depending on nodes might change after init set the node to changed again
+        // depending on nodes might change after init set the node to "changed" again
 
         rebuildCustomStyle();
 
@@ -772,6 +773,7 @@ void UINode::setSharedRes(UISharedRes* shared) {
         m_quad      = shared->quad;
         m_shdr      = m_shCol->getUIColBorder();
         m_glbase    = shared->glbase;
+        m_drawMan   = shared->drawMan;
     }
     setChangeCb([this] { onResize(); });
 }
@@ -867,12 +869,11 @@ void UINode::dumpIt(UINode* node, int* depth, bool dumpLocalTree) {
     --(*depth);
 }
 
-
 UINode::~UINode() {
     // check if the actual is selected as inputFocusNode, if this is the case, set it to nullptr
     if (m_sharedRes) {
-        if (!m_drawImmediate && m_sharedRes->drawMan) {
-            m_sharedRes->drawMan->removeUINode(this);
+        if (!m_drawImmediate && m_drawMan) {
+            m_drawMan->removeUINode(this);
         }
 
         if (m_sharedRes->win) {

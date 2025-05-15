@@ -51,12 +51,14 @@ public:
     void                            pushFunc(const std::function<void()>& f);
     void                            clear();
     void                            clearFonts();
+    void                            removeGLResources();
+
 
     void     addSet() { m_drawSets.emplace_back(); }
     DrawSet& getWriteSet() { return m_drawSets.back(); }
     void     setShaderCollector(ShaderCollector* sc) { m_shCol = sc; }
     void     setMaxObjId(uint32_t id) { m_maxObjId = id; }
-    void     removeUINode(UINode* node) { m_nodeList.remove(node); }
+    void     removeUINode(UINode* node);
 
 protected:
     GLBase*          m_glbase = nullptr;

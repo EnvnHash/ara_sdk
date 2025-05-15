@@ -13,7 +13,9 @@ using namespace glm;
 namespace ara {
 
 bool DrawManager::rebuildVaos() {
-    if (!m_shCol) return false;
+    if (!m_shCol) {
+        return false;
+    }
 
     for (auto &ds : m_drawSets) {
         if (ds.divData.empty()) {
@@ -33,14 +35,13 @@ bool DrawManager::rebuildVaos() {
             ds.vao.setElemIndices(ds.indOffs, nullptr);
         }
 
-        // divVao is arranged as interleave data, so just run through the DivData and upload
+        // divVao is arranged as interleaved data, so just run through the DivData and upload
         try {
             if (auto ptr = static_cast<DivVaoData *>(ds.vao.getMapBuffer(CoordType::Position))) {
                 for (const auto it : ds.divData) {
                     ranges::copy((*it), ptr);
                     ptr += it->size();
                 }
-
                 VAO::unMapBuffer();
             }
 
@@ -50,7 +51,6 @@ bool DrawManager::rebuildVaos() {
                     ranges::copy(*it, ip);
                     ip += it->size();
                 }
-
                 VAO::unMapElementBuffer();
             }
         } catch (std::runtime_error& e) {
@@ -349,7 +349,7 @@ float DrawManager::pushTexture(GLuint texId) {
 float DrawManager::pushTexture(DrawSet &ds, GLuint texId) {
     size_t newTexSize = ds.textures.size() + static_cast<size_t>(!ds.textures.contains(texId));
 
-    // check if the maximum number of parallel texture units are used if this is the case, create a new draw set
+    // check if the maximum number of parallel texture units is used. if this is the case, create a new draw set
     if (newTexSize + ds.textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
         m_drawSets.emplace_back();
     }
@@ -377,17 +377,13 @@ void DrawManager::pushFunc(const std::function<void()>& f) {
 void DrawManager::clear() {
     // remove shaders if necessary
     if (m_shCol) {
-        for (auto &ds : m_drawSets) {
-            if (ds.shdr) {
-                m_shCol->deleteShader(ds.shdr);
-            }
+        for (auto &ds : m_drawSets  | std::views::filter([](auto& ds) { return ds.shdr; }) ) {
+            m_shCol->deleteShader(ds.shdr);
         }
     }
 
-    for (const auto &it : m_nodeList) {
-        if (it) {
-            it->clearDs();
-        }
+    for (const auto it : m_nodeList | std::views::filter([](auto it) { return it != nullptr; }) ) {
+        it->clearDs();
     }
 
     m_nodeList.clear();
@@ -398,6 +394,14 @@ void DrawManager::clearFonts() {
     for (auto& it : m_drawSets) {
         it.fontTex.clear();
     }
+}
+
+void DrawManager::removeUINode(UINode* node) {
+    m_nodeList.remove(node);
+}
+
+void DrawManager::removeGLResources() {
+
 }
 
 }  // namespace ara

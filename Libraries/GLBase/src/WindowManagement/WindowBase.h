@@ -25,7 +25,7 @@ public:
     WindowBase() = default;
     virtual ~WindowBase() = default;
 
-    virtual void init(uint x, uint y, uint scrWidth, uint scrHeight);
+    virtual void init(const glm::ivec2& pos, const glm::ivec2& size);
     virtual bool draw(double time, double dt, int ctxNr) = 0;
     virtual void procHid();
     virtual void procChangeWin();
@@ -90,7 +90,9 @@ public:
     }
 
     virtual void osSetViewport(int x, int y, int width, int height) {
-        if (!width || !height) return;
+        if (!width || !height) {
+            return;
+        }
         std::unique_lock<std::mutex> lock(s_procHidMtx);
         s_hidEvents[hidEvent::SetViewport] = [this, x, y, width, height]() { onSetViewport(x, y, width, height); };
     }
@@ -130,62 +132,18 @@ public:
     virtual void onSetViewport(int x, int y, int width, int height) = 0;
     virtual void iterateGlCallbacks();
 
-    // virtual ShaderProto* getShaderProto(uint ind, std::string& name) = 0;
     bool        getDrawMtxIsLocked() const { return s_drawMtxLocked; }
     std::mutex *getDrawMtx() { return &s_drawMtx; }
     glm::mat4  *getOrthoMat() { return &s_orthoMat; }
     std::mutex *getHidMutex() { return &s_procHidMtx; }
 
-    virtual void addGlCb(void *cbName, const std::string &fName, std::function<bool()> func) {
-        bool gotLock = s_drawMtx.try_lock();
-        if (!s_openGlCbs.contains(cbName)) {
-            s_openGlCbs[cbName] = std::unordered_map<std::string, std::function<bool()>>();
-        }
-        s_openGlCbs[cbName][fName] = std::move(func);
-        if (gotLock) {
-            s_drawMtx.unlock();
-        }
-    }
+    virtual void addGlCb(void *cbName, const std::string &fName, std::function<bool()> func);
+    virtual bool hasCb(void *cbName, const std::string &fName);
+    virtual void eraseGlCb(void *cbName, const std::string &fName);
+    virtual void eraseGlCb(void *cbName);
+    virtual void clearGlCbQueue();
 
-    virtual bool hasCb(void *cbName, const std::string &fName) {
-        bool gotLock = s_drawMtx.try_lock();
-        bool ret     = (s_openGlCbs.contains(cbName) && s_openGlCbs[cbName].contains(fName));
-
-        if (gotLock) {
-            s_drawMtx.unlock();
-        }
-        return ret;
-    }
-
-    virtual void eraseGlCb(void *cbName, const std::string &fName) {
-        bool gotLock = s_drawMtx.try_lock();
-        auto it      = s_openGlCbs.find(cbName);
-        if (it != s_openGlCbs.end() && s_openGlCbs[cbName].contains(fName)) {
-            s_openGlCbs[cbName].erase(fName);
-        }
-        if (gotLock) {
-            s_drawMtx.unlock();
-        }
-    }
-
-    virtual void eraseGlCb(void *cbName) {
-        bool gotLock = s_drawMtx.try_lock();
-        auto it      = s_openGlCbs.find(cbName);
-        if (it != s_openGlCbs.end()) {
-            s_openGlCbs.erase(cbName);
-        }
-        if (gotLock) {
-            s_drawMtx.unlock();
-        }
-    }
-
-    virtual void clearGlCbQueue() {
-        bool gotLock = s_drawMtx.try_lock();
-        s_openGlCbs.clear();
-        if (gotLock) {
-            s_drawMtx.unlock();
-        }
-    }
+    virtual void removeGLResources() {};
 
 public:
     bool              s_inited        = false;

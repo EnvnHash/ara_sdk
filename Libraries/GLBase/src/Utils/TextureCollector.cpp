@@ -98,7 +98,7 @@ Texture *TextureCollector::add(std::vector<uint8_t>& vp, const std::string &fn, 
     return &m_texMap[fn].texture;
 }
 
-void TextureCollector::remove(const std::filesystem::path &fileName) {
+auto TextureCollector::remove(const std::filesystem::path &fileName) {
     auto fn = fileName.string();
     if (!m_texMap.empty() && !fileName.empty()) {
         auto it = m_texMap.find(fn);
@@ -106,9 +106,10 @@ void TextureCollector::remove(const std::filesystem::path &fileName) {
             for (auto &cb : it->second.removeCbs) {
                 cb();
             }
-            m_texMap.erase(it);
+            return m_texMap.erase(it);
         }
     }
+    return m_texMap.end();
 }
 
 void TextureCollector::addRemoveCb(const std::string &fileName, const std::function<void()>& f) {
@@ -135,6 +136,13 @@ Texture* TextureCollector::checkForExistence(const std::string &fn, const std::f
     }
 
     return f();
+}
+
+void TextureCollector::clear() {
+    for (auto texIt = m_texMap.begin(); texIt != m_texMap.end();) {
+        texIt = remove(texIt->first);
+    }
+    m_texMap.clear();
 }
 
 }  // namespace ara

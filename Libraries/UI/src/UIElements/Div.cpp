@@ -128,8 +128,8 @@ bool Div::draw(uint32_t& objId) {
 }
 
 bool Div::drawIndirect(uint32_t& objId) {
-    if (m_sharedRes && m_sharedRes->drawMan) {
-        m_indDrawBlock.drawSet = &m_sharedRes->drawMan->push(m_indDrawBlock, this);
+    if (m_drawMan) {
+        m_indDrawBlock.drawSet = &m_drawMan->push(m_indDrawBlock, this);
     }
 
     return true;  // count up objId

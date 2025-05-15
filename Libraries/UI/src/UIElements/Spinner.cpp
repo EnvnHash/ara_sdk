@@ -98,8 +98,8 @@ bool Spinner::draw(uint32_t& objId) {
 bool Spinner::drawIndirect(uint32_t& objId) {
     Div::drawIndirect(objId);
 
-    if (m_sharedRes && m_sharedRes->drawMan) {
-        m_sharedRes->drawMan->pushFunc([this, objId] {
+    if (m_drawMan) {
+        m_drawMan->pushFunc([this, objId] {
             drawFunc(objId);
         });
     }

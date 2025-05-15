@@ -290,8 +290,8 @@ bool Label::drawIndirect(uint32_t& objId) {
         updateIndDrawData(true);
     }
 
-    if (m_sharedRes && m_sharedRes->drawMan) {
-        m_lblDB.drawSet = &m_sharedRes->drawMan->push(m_lblDB, this);
+    if (m_drawMan) {
+        m_lblDB.drawSet = &m_drawMan->push(m_lblDB, this);
     }
 
     return true;  // count up objId
@@ -457,7 +457,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
     // check if the layerTexture containing this font was already collected, if not append it (must happen before Glyph
     // updating in order to have the correct texUnit value set to the vao data)
     if (m_riFont && checkFontTex) {
-        m_fontTexUnit = m_sharedRes->drawMan->pushFont(m_riFont->getLayerTexId(), static_cast<float>(m_riFont->getLayerTexSize()));
+        m_fontTexUnit = m_drawMan->pushFont(m_riFont->getLayerTexId(), static_cast<float>(m_riFont->getLayerTexSize()));
     }
 
     auto ld = m_lblDB.vaoData.begin();

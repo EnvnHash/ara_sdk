@@ -51,7 +51,9 @@ public:
     }
 
     void makeCurrent(bool value = true) const {
-        if (s_inited && m_winHandle) value ? m_winHandle->makeCurrent() : glfwMakeContextCurrent(nullptr);
+        if (s_inited && m_winHandle) {
+            value ? m_winHandle->makeCurrent() : glfwMakeContextCurrent(nullptr);
+        }
     }
 
     void show() {

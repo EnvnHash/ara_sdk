@@ -49,6 +49,7 @@ public:
     void                     addVarName(const std::string& name, void *inVal, GLenum type);
     void                     changeVarName(const std::string &name, void *inVal, GLenum type);
     void                     update();
+    void                     removeGLResources();
     static std::size_t       TypeSize(GLenum type);
     [[nodiscard]] bool       isInited() const { return m_inited; }
     std::vector<ubBlockVar> *getValPairs() { return &m_valPairs; }

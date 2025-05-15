@@ -2,7 +2,7 @@
 // Created by sven on 11/15/20.
 //
 
-#include "test_common.h"
+#include "TestCommon.h"
 
 #include "UIApplication.h"
 #include <UIElements/Button/Button.h>
@@ -10,7 +10,7 @@
 
 using namespace std;
 
-namespace ara::SceneGraphUnitTest::ButtonTests{
+namespace ara::UiUnitTest::ButtonTests{
 
 TEST(UITest, ButtonTests) {
     glm::ivec2 buttSize{200, 100};

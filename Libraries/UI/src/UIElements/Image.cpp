@@ -456,11 +456,8 @@ bool Image::draw(uint32_t& objId) {
     m_objIdMax = ++objId;
 
     if (m_sharedRes) {
-        if (m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame) {
-            m_texShdr = m_sharedRes->shCol->getUIGridTexFrame();
-        } else {
-            m_texShdr = m_sharedRes->shCol->getUIGridTexSimple();
-        }
+        m_texShdr = m_imgBase && m_imgBase->getType() == AssetImageBase::Type::frame ?
+                m_sharedRes->shCol->getUIGridTexFrame() : m_texShdr = m_sharedRes->shCol->getUIGridTexSimple();
     }
 
     if (!m_texShdr || (!m_imgBase && !m_tex && !m_useTexId)) {
@@ -536,27 +533,24 @@ bool Image::drawIndirect(uint32_t& objId) {
 
     m_objIdMax = ++objId;
 
-    if (m_sharedRes && m_sharedRes->drawMan) {
-        auto dm = m_sharedRes->drawMan;
-        pushTexture(dm->getWriteSet());
+    if (m_drawMan) {
+        pushTexture(m_drawMan->getWriteSet());
         updateDrawData();  // can this be optimized?
-        m_imgDB.drawSet = &m_sharedRes->drawMan->push(m_imgDB, this);
+        m_imgDB.drawSet = &m_drawMan->push(m_imgDB, this);
     }
 
     return true;
 }
 
 void Image::pushTexture(DrawSet& ds) {
-    const auto dm = m_sharedRes->drawMan;
-
     // push texture
     if (m_useTexId) {
         // in some rare cases (FBO with depth buffers) it is needed to render depth values from an external depth buffer
-        m_texUnit = dm->pushTexture(ds, m_texId);
+        m_texUnit = m_drawMan->pushTexture(ds, m_texId);
     } else if (m_imgBase) {
-        m_texUnit = dm->pushTexture(ds, m_imgBase->getTexID());
+        m_texUnit = m_drawMan->pushTexture(ds, m_imgBase->getTexID());
     } else if (m_tex) {
-        m_texUnit = dm->pushTexture(ds, m_tex->getId());
+        m_texUnit = m_drawMan->pushTexture(ds, m_tex->getId());
     }
 }
 
@@ -694,5 +688,14 @@ GLuint Image::getTexID() const {
     return !m_imgBase ? 0 : m_imgBase->getTexID();
 }
 
+void Image::removeGLResources() {
+    m_texShdr = nullptr;
+    if (m_uplFbo) {
+        m_uplFbo.reset();
+    }
+    if (m_texUniBlock.isInited()) {
+    }
+    m_tex = nullptr;
+}
 
 }  // namespace ara

@@ -116,6 +116,7 @@ public:
     Font       *getGLFont(std::string font_type_path, int size, float pixRatio);
     void        clearGLFont() { m_fontList.clear(); }
     std::mutex *getMtx() { return &m_updtMtx; }
+    FontList&   getGLFont() { return m_fontList; }
 
     AssetLoader &getAssetLoader() { return m_assetLoader; }
 

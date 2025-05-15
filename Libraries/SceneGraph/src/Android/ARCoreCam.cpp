@@ -208,8 +208,8 @@ bool ARCoreCam::draw(uint32_t& objId) {
 
 bool ARCoreCam::drawIndirect(uint32_t& objId) {
     Image::drawIndirect(objId);
-    if (m_sharedRes && m_sharedRes->drawMan) {
-        m_sharedRes->drawMan->pushFunc([this, objId] {
+    if (m_drawMan) {
+        m_drawMan->pushFunc([this, objId] {
             drawFunc(objId);
         });
     }

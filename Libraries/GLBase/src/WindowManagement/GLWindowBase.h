@@ -131,31 +131,33 @@ public:
     void setWindowRefreshCb(const std::function<void()>& f) { m_windowRefreshCb = f; }
     std::function<bool(double, double, int)> &getDrawFunc() { return m_drawFunc; }
 
-    int              getKeyScancode(int key)  const { return m_scancodes[key]; }
-    virtual uint32_t getWidth() const { return m_widthVirt; }
-    virtual uint32_t getHeight() const { return m_heightVirt; }
-    virtual uint32_t getWidthReal() const { return m_widthReal; }
-    virtual uint32_t getHeightReal() const { return m_heightReal; }
-    virtual uint32_t getPosX() const { return m_offsX; }
-    virtual uint32_t getPosY() const { return m_offsY; }
-    glm::ivec2       getSize() const { return {m_widthVirt, m_heightVirt}; }
-    glm::ivec2       getPosition() const { return {m_offsX, m_offsY}; }
-    Conditional     *getInitSema() { return &m_initSema; }
-    Conditional     *getExitSema() { return &m_exitSema; }
-    Conditional     *getGlInitedSema() { return &m_glInitedSema; }
-    virtual void    *getWin() { return nullptr; }
-    virtual void    *getDisp() { return nullptr; }
-    glm::ivec2       getLastMousePos() const { return {m_lastCursorPosX, m_lastCursorPosY}; };
-    static int      *getWorkArea() { return nullptr; }
-    glm::vec2       &getContentScale() { return m_contentScale; }
-    bool             isInited() const { return m_initSignaled; }
-    virtual bool     isOpen() const { return m_isOpen; }
-    bool             isRunning() const { return m_run; }
-    virtual bool     getRequestOpen() const { return m_requestOpen; }
-    virtual bool     getRequestClose() const { return m_requestClose; }
-    virtual bool     getForceRedraw() const { return m_forceRedraw; }
-    virtual void     requestOpen(bool val) { m_requestOpen = val; }
-    virtual void     requestClose(bool val) { m_requestClose = val; }
+    int                 getKeyScancode(int key)  const { return m_scancodes[key]; }
+    virtual uint32_t    getWidth() const { return m_widthVirt; }
+    virtual uint32_t    getHeight() const { return m_heightVirt; }
+    virtual uint32_t    getWidthReal() const { return m_widthReal; }
+    virtual uint32_t    getHeightReal() const { return m_heightReal; }
+    virtual uint32_t    getPosX() const { return m_offsX; }
+    virtual uint32_t    getPosY() const { return m_offsY; }
+    glm::ivec2          getSize() const { return {m_widthVirt, m_heightVirt}; }
+    glm::ivec2          getPosition() const { return {m_offsX, m_offsY}; }
+    auto                getInitSema() { return &m_initSema; }
+    auto                getExitSema() { return &m_exitSema; }
+    auto                getGlInitedSema() { return &m_glInitedSema; }
+    virtual void*       getWin() { return nullptr; }
+    virtual void*       getDisp() { return nullptr; }
+    glm::ivec2          getLastMousePos() const { return {m_lastCursorPosX, m_lastCursorPosY}; };
+    static int*         getWorkArea() { return nullptr; }
+    auto&               getContentScale() { return m_contentScale; }
+    auto                isInited() const { return m_initSignaled; }
+    virtual bool        isOpen() const { return m_isOpen; }
+    auto                isRunning() const { return m_run; }
+    virtual bool        getRequestOpen() const { return m_requestOpen; }
+    virtual bool        getRequestClose() const { return m_requestClose; }
+    virtual bool        getForceRedraw() const { return m_forceRedraw; }
+    virtual void        requestOpen(bool val) { m_requestOpen = val; }
+    virtual void        requestClose(bool val) { m_requestClose = val; }
+    int32_t             virt2RealX(int x) { return static_cast<int>(static_cast<float>(x) * getContentScale().x); }
+    int32_t             virt2RealY(int y) { return static_cast<int>(static_cast<float>(y) * getContentScale().y); }
 
 protected:
     bool m_active{};               // Window Active Flag Set To TRUE By Default

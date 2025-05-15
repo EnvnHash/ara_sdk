@@ -60,31 +60,29 @@ class GLBase {
 public:
     GLBase();
 
-    bool m_init(bool doInitResources = true, void *winHnd = nullptr);
-    void m_createCtx();
-    void m_addContext(void *ctx);
-    void m_destroyCtx();
-    void m_removeContext(void *ctx);
-    void m_shareCtx();
+    bool init(bool doInitResources = true, void *winHnd = nullptr);
+    void createCtx();
+    void addContext(void *ctx);
+    void destroyCtx();
+    void removeContext(void *ctx);
+    void shareCtx();
     void checkCapabilities();
     void initToThisCtx();
     void destroy(bool terminateGLFW = true);
-    static void m_switchCtx(GLNativeCtxHnd &ctx);
+    static void switchCtx(GLNativeCtxHnd &ctx);
 
 #ifdef ARA_USE_GLFW
     static std::unique_ptr<GLWindow> createOpenGLCtx(bool initGLFW = true);
-    // static std::unique_ptr<GLWindow> createOpenGLCtx(bool initGLFW = true) {
-    // return m_createOpenGLCtx(initGLFW); }
 #endif
 
     void appmsg(const char *format, ...);
     void appMsgStatic(size_t lineIdx, const char *format, ...);
     void initAppMsg(const char *fontFile, int fontHeight, int screenWidth, int screenHeight);
     void renderAppMsgs();
-    void m_startRenderLoop();
-    void m_stopRenderLoop();
-    void m_addEvtCb(const std::function<bool()> &func, bool forcePush = false);
-    void m_addGlCb(const std::function<bool()> &func, Conditional *sema = nullptr);
+    void startRenderLoop();
+    void stopRenderLoop();
+    void addEvtCb(const std::function<bool()> &func, bool forcePush = false);
+    void addGlCb(const std::function<bool()> &func, Conditional *sema = nullptr);
     void renderLoop();
     void initResources();
     void checkResourceChanges();
@@ -109,47 +107,36 @@ public:
     WindowManager *getWinMan();
 #endif
 
-    bool        init(bool doInitResources = true, void *winHnd = nullptr) { return m_init(doInitResources, winHnd); }
-    void        runOnMainThread(const std::function<bool()> &func, bool forcePush = false) { m_addEvtCb(func, forcePush); }
-    void        addGlCb(const std::function<bool()> &func, Conditional *sema = nullptr) { m_addGlCb(func, sema); }
-    void        addContext(void *ctx) { m_addContext(ctx); }
-    void        removeContext(void *ctx) { m_removeContext(ctx); }
-    void        setResFile(std::string str) { g_resFile = std::move(str); }
-    static void switchCtx(GLNativeCtxHnd &ctx) { m_switchCtx(ctx); }
-    void        setShaderHeader(std::string hdr) { return g_shaderCollector.setShaderHeader(std::move(hdr)); }
-    void        setAppMsgNumLines(size_t count) { g_appMessagesNumLines = count; }
-    void        setUpdtResCb(std::function<void()> f) { g_updtResCb = std::move(f); }
-    void        useSelfManagedCtx(bool val) { m_selfManagedCtx = val; }
+    void runOnMainThread(const std::function<bool()> &func, bool forcePush = false) { addEvtCb(func, forcePush); }
+    void setResFile(std::string str) { g_resFile = std::move(str); }
+    void setShaderHeader(std::string hdr) { return g_shaderCollector.setShaderHeader(std::move(hdr)); }
+    void setAppMsgNumLines(size_t count) { g_appMessagesNumLines = count; }
+    void setUpdtResCb(std::function<void()> f) { g_updtResCb = std::move(f); }
+    void useSelfManagedCtx(bool val) { m_selfManagedCtx = val; }
 
-    void    procGlCb() { m_procGlCb(); }
-    void    m_procGlCb() { g_sema.notify(); }
-    void    startRenderLoop() { m_startRenderLoop(); }
-    void    stopRenderLoop() { m_stopRenderLoop(); }
-    void    shareCtx() { m_shareCtx(); }
-
-    size_t              getNrCtx() { return g_contexts.size(); }
-    ShaderCollector     &shaderCollector() { return g_shaderCollector; }
-    TextureCollector    &textureCollector() { return g_textureCollector; }
-    GLuint              *nullVao() { return &g_nullVao; }
-    std::thread::id     getMainThreadId() { return g_mainThreadId; }
-    bool                rendererIsIntel() const { return g_isIntelRenderer; }
-    int32_t             maxTexUnits() const { return g_caps.max_tex_units; }
-    int32_t             maxShaderInvocations() const { return g_caps.max_shader_invoc; }
-    int32_t             getNrSamples() const { return static_cast<int32_t>(g_nrSamples); }
-    int32_t             maxNrDrawBuffers() const { return g_caps.max_nr_drawbuffers; }
-    int32_t             maxTexMipMapLevels() const { return g_caps.max_tex_level; }
-    int32_t             getMajorVer() const { return g_caps.major_vers; }
-    int32_t             getMinorVer() const { return g_caps.minor_vers; }
-    std::mutex          *glMtx() { return &g_mtx; }
-    void                *getNativeCtxHndl() const { return g_nativeCtx.ctx; }
-    void                *getNativeDeviceHndl() const { return g_nativeCtx.deviceHandle; }
-    std::string         getShaderHeader() { return g_shaderCollector.getShaderHeader(); }
-    bool                isInited() const { return g_inited; }
-    bool                isRunning() { return g_loopRunning; }
-    AssetManager        *getAssetManager() { return g_assetManager.get(); }
-    Conditional         &getLoopExitSema() { return g_loopExit; }
-
-    std::unordered_map<void *, std::shared_ptr<Quad>>   &perCtxQuads() { return g_perCtxQuad; }
+    void    procGlCb() { g_sema.notify(); }
+    auto    getNrCtx() { return g_contexts.size(); }
+    auto    &shaderCollector() { return g_shaderCollector; }
+    auto    &textureCollector() { return g_textureCollector; }
+    auto    *nullVao() { return &g_nullVao; }
+    auto    getMainThreadId() { return g_mainThreadId; }
+    auto    rendererIsIntel() const { return g_isIntelRenderer; }
+    auto    maxTexUnits() const { return g_caps.max_tex_units; }
+    auto    maxShaderInvocations() const { return g_caps.max_shader_invoc; }
+    auto    getNrSamples() const { return static_cast<int32_t>(g_nrSamples); }
+    auto    maxNrDrawBuffers() const { return g_caps.max_nr_drawbuffers; }
+    auto    maxTexMipMapLevels() const { return g_caps.max_tex_level; }
+    auto    getMajorVer() const { return g_caps.major_vers; }
+    auto    getMinorVer() const { return g_caps.minor_vers; }
+    auto    glMtx() { return &g_mtx; }
+    auto    getNativeCtxHndl() const { return g_nativeCtx.ctx; }
+    auto    getNativeDeviceHndl() const { return g_nativeCtx.deviceHandle; }
+    auto&   getShaderHeader() { return g_shaderCollector.getShaderHeader(); }
+    auto    isInited() const { return g_inited; }
+    bool    isRunning() { return g_loopRunning; }
+    auto    getAssetManager() { return g_assetManager.get(); }
+    auto&   getLoopExitSema() { return g_loopExit; }
+    auto&   perCtxQuads() { return g_perCtxQuad; }
 
 #if !defined(ARA_USE_GLFW) && defined(_WIN32)
     static LRESULT CALLBACK WGLMessageHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -217,11 +204,9 @@ protected:
     void *m_enterCtx = nullptr;
 
     std::thread::id g_mainThreadId;
-
-    std::thread g_renderLoop;
-    std::thread m_resUpdt;
-
-    std::mutex g_mtx;
+    std::thread     g_renderLoop;
+    std::thread     m_resUpdt;
+    std::mutex      g_mtx;
 
     std::atomic<bool> g_loopRunning = {false};
     std::atomic<bool> m_resUpdtRun  = {false};

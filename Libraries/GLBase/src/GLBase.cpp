@@ -39,7 +39,7 @@ GLBase::GLBase() {
 /// <summary>
 /// init a GL context with standard resources
 /// </summary>
-bool GLBase::m_init(bool doInitResources, void *winHnd) {
+bool GLBase::init(bool doInitResources, void *winHnd) {
     if (g_inited) {
         return true;
     }
@@ -54,18 +54,20 @@ bool GLBase::m_init(bool doInitResources, void *winHnd) {
         wp.hidInput     = false;
         wp.size         = { 5, 5 };
         wp.shareCont    = winHnd;
-        g_win = g_winMan->addWin(wp);
+        g_win           = g_winMan->addWin(wp);
     }
 #elif _WIN32
-    // create an invisible window with a valid gl context which will contain the
-    // resources and be shared to all context that are created afterwards
-    m_createCtx();
+    // create an invisible window with a valid gl context which will contain the resources and be shared to all context
+    // that are created afterwards
+    createCtx();
 #endif
+
     initToThisCtx();
     checkCapabilities();
     if (doInitResources) {
         initResources();
     }
+
 #ifdef ARA_USE_GLFW
     GLWindow::makeNoneCurrent();
 #elif _WIN32
@@ -259,7 +261,7 @@ void GLBase::destroy(bool terminateGLFW) {
     }
 
     if (g_loopRunning) {
-        m_stopRenderLoop();
+        stopRenderLoop();
     }
     g_openGlCbs.clear();
 
@@ -280,13 +282,15 @@ void GLBase::destroy(bool terminateGLFW) {
         g_assetManager = nullptr;
     }
 
+    g_textureCollector.clear();
+
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     if (m_selfManagedCtx && g_win) {
         GLWindow::makeNoneCurrent();
         g_winMan->removeWin(g_win, terminateGLFW);
     }
 #elif _WIN32
-    m_destroyCtx();
+    destroyCtx();
 #endif
     g_inited      = false;
     m_checkedCaps = false;
@@ -303,7 +307,9 @@ unique_ptr<GLWindow> GLBase::createOpenGLCtx(bool initGLFW) {
     glWinPar gp;
     gp.createHidden = true;
     gp.doInit       = initGLFW;
-    if (!gwin->init(gp)) gwin.reset();
+    if (!gwin->init(gp)) {
+        gwin.reset();
+    }
 
     // init GLEW
     if (!initGLEW()) {
@@ -315,7 +321,7 @@ unique_ptr<GLWindow> GLBase::createOpenGLCtx(bool initGLFW) {
 }
 #endif
 
-void GLBase::m_startRenderLoop() {
+void GLBase::startRenderLoop() {
     if (!g_loopRunning) {
         // start a separate thread for processing
         g_renderLoop = std::thread([this] { renderLoop(); });
@@ -330,7 +336,9 @@ void GLBase::m_startRenderLoop() {
 void GLBase::renderLoop() {
 #ifdef ARA_USE_GLFW
     // initially make the GLBase context current
-    if (!g_win) return;
+    if (!g_win) {
+        return;
+    }
     g_win->makeCurrent();
 #elif _WIN32
     if (!m_hdc || !m_hRC) {
@@ -346,18 +354,17 @@ void GLBase::renderLoop() {
 
     while (g_loopRunning) {
         g_sema.wait(0);  // wait infinitely
-
         g_mtx.lock();
         // process the callbacks
         for (auto it = g_openGlCbs.begin(); it != g_openGlCbs.end();) {
             if (it->first()) {
                 if (it->second) it->second->notify();
                 it = g_openGlCbs.erase(it);
-            } else
-                it++;
+            } else {
+                ++it;
+            }
         }
         g_mtx.unlock();
-
         glFinish();
     }
 
@@ -371,7 +378,7 @@ void GLBase::renderLoop() {
     g_loopExit.notify();
 }
 
-void GLBase::m_stopRenderLoop() {
+void GLBase::stopRenderLoop() {
     if (g_loopRunning) {
         g_loopRunning = false;
         g_sema.notify();  // notify in case the loop is waiting;
@@ -379,7 +386,7 @@ void GLBase::m_stopRenderLoop() {
     }
 }
 
-void GLBase::m_createCtx() {
+void GLBase::createCtx() {
 #if !defined(ARA_USE_GLFW) && defined(_WIN32)
     // in case any context is current, make none current
     wglMakeCurrent(nullptr, nullptr);
@@ -404,7 +411,7 @@ void GLBase::m_createCtx() {
     wcex.hIconSm       = LoadIcon(wcex.hInstance, IDI_WINLOGO);
 
     if (!RegisterClassEx(&wcex)) {
-        LOGE << "m_glbase.m_createCtx Error: could not register Window class";
+        LOGE << "m_glbase.createCtx Error: could not register Window class";
         return;
     }
 
@@ -509,11 +516,11 @@ void GLBase::m_createCtx() {
 #endif
 }
 
-void GLBase::m_addContext(void *ctx) {
+void GLBase::addContext(void *ctx) {
     g_contexts.emplace_back(ctx);
 }
 
-void GLBase::m_destroyCtx() {
+void GLBase::destroyCtx() {
 #if !defined(ARA_USE_GLFW) && defined(_WIN32)
     if (m_hRC)  // Do We Have A Rendering Context?
     {
@@ -538,7 +545,7 @@ void GLBase::m_destroyCtx() {
 #endif
 }
 
-void GLBase::m_removeContext(void *ctx) {
+void GLBase::removeContext(void *ctx) {
     g_contexts.remove_if([ctx](const void *lc) { return lc == ctx; });
 }
 
@@ -548,7 +555,7 @@ LRESULT CALLBACK m_glbase.WGLMessageHandler(HWND hWnd, UINT message, WPARAM wPar
 }
 #endif
 
-void GLBase::m_shareCtx() {
+void GLBase::shareCtx() {
     if (!g_contexts.empty()) {
         auto c = getGLCtx();
 #ifdef _WIN32
@@ -557,7 +564,7 @@ void GLBase::m_shareCtx() {
     }
 }
 
-void GLBase::m_addEvtCb(const std::function<bool()> &func, bool forcePush) {
+void GLBase::addEvtCb(const std::function<bool()> &func, bool forcePush) {
 #ifdef __ANDROID__
     func();
 #else
@@ -574,12 +581,13 @@ void GLBase::m_addEvtCb(const std::function<bool()> &func, bool forcePush) {
 #endif
 }
 
-void GLBase::m_addGlCb(const std::function<bool()> &func, Conditional *sema) {
+void GLBase::addGlCb(const std::function<bool()> &func, Conditional *sema) {
     std::unique_lock<std::mutex> lock(g_mtx);
     g_openGlCbs.emplace_back(func, sema);
-    if (sema)
+    if (sema) {
         g_sema.notify();  // in the worst case, is sent before g_sema is waiting, true flag wait until another thread
                           // calls wait()
+    }
 }
 
 void GLBase::addGlCbSync(const std::function<bool()> &f) {
@@ -595,19 +603,19 @@ void GLBase::addGlCbSync(const std::function<bool()> &f) {
 GLNativeCtxHnd GLBase::getGLCtx() {
     GLNativeCtxHnd glCtx;
 #ifdef _WIN32
-    glCtx.ctx          = (void *)wglGetCurrentContext();
-    glCtx.deviceHandle = (void *)wglGetCurrentDC();
+    glCtx.ctx          = static_cast<void*>(wglGetCurrentContext());
+    glCtx.deviceHandle = static_cast<void*>(wglGetCurrentDC());
 #elif defined(__linux__) && !defined(ARA_USE_GLES31)
-    glCtx.ctx          = (void *)glXGetCurrentContext();
-    glCtx.deviceHandle = (void *)glXGetCurrentDisplay();
-    glCtx.drawable     = (uint32_t)glXGetCurrentDrawable();
+    glCtx.ctx          = static_cast<void*>(glXGetCurrentContext());
+    glCtx.deviceHandle = static_cast<void*>(glXGetCurrentDisplay());
+    glCtx.drawable     = static_cast<uint32_t>(glXGetCurrentDrawable());
 #elif __ANDROID__
-    glCtx.ctx = (void *)eglGetCurrentContext();
+    glCtx.ctx = static_cast<void *>(eglGetCurrentContext());
 #endif
     return glCtx;
 }
 
-void GLBase::m_switchCtx(GLNativeCtxHnd &ctx) {
+void GLBase::switchCtx(GLNativeCtxHnd &ctx) {
 #ifdef _WIN32
     if (!ctx.ctx) {
         return;
@@ -634,13 +642,13 @@ void GLBase::initAppMsg(const char *fontFile, int fontHeight, int screenWidth, i
 }
 
 void GLBase::clearGlCbQueue() {
-    std::unique_lock<std::mutex> lock(g_mtx);
+    unique_lock<std::mutex> lock(g_mtx);
     g_openGlCbs.clear();
 }
 
 void GLBase::setResRootPath(const std::string &str) {
 #ifndef ARA_USE_CMRC
-    g_resRootPath = (std::filesystem::current_path() / str).string();
+    g_resRootPath = (filesystem::current_path() / str).string();
 #else
     g_resRootPath = str;
 #endif

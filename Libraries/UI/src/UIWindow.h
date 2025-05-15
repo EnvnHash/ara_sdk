@@ -55,14 +55,20 @@ public:
     explicit UIWindow(const UIWindowParams& par);
     ~UIWindow() override = default;
 
-    // opengl drawing
-    void         initGL() const;
-    bool         draw(double time, double dt, int ctxNr) override;
-    virtual void drawNodeTree();
-
-    void copyToScreen() const;
-    void update();
-    void iterate() const;
+    void            init(const UIWindowParams& par);
+    void            initUIWindow(const UIWindowParams& par);
+    void            initToCurrentCtx();
+    void            initHidCallbacks();
+    void            initGL() const;
+    void            initGLResources();
+    void            initColors();
+    void            initUI(const UIWindowParams& par);
+    bool            draw(double time, double dt, int ctxNr) override;
+    virtual void    drawNodeTree();
+    void            copyToScreen() const;
+    void            update();
+    void            iterate() const;
+    void            menuBarCloseFunc();
 
     // window changes
     void onSetViewport(int x, int y, int width, int height) override;
@@ -122,7 +128,8 @@ public:
 
     void fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed);
 
-    // ---------- global callbacks that are not related to a UINode
+    void removeGLResources(bool resetUINode);
+
 protected:
     std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseDownLeftCb;
     std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseDownRightCb;
@@ -158,19 +165,19 @@ public:
     void setEnableWindowResizeHandles(bool val);
     void setEnableMinMaxButtons(bool val);
 
-    std::map<winProcStep, ProcStep>* getProcSteps() { return &m_procSteps; }
-    ShaderCollector*                 getShaderCollector() { return &s_shCol; }
-    static ShaderProto*              getShaderProto(uint ind, std::string& name) { return nullptr; };
-    UINode*                          getRootNode() { return (m_menuBarEnabled && m_contentRoot) ? m_contentRoot : m_uiRoot.get(); };
-    MenuBar*                         getMenuBar() { return m_menuBarEnabled ? m_menuBar : nullptr; };
-    std::unordered_map<uiColors, glm::vec4>& getColors() { return m_colors; };
-    glm::vec4&                       getColor(uiColors colName) { return m_colors[colName]; };
-    UIApplication*                   getApplicationHandle() { return m_appHandle; };
-    float                            getPixelRatio() { return s_devicePixelRatio; };
-    bool                             isCursorVisible() const { return m_cursorVisible; };
-    UISharedRes*                     getSharedRes() { return &m_sharedRes; }
-    UINode*                          getLastHoverFound() { return m_lastHoverFound; }
-    void                             setLastHoverFound(UINode* node) { m_lastHoverFound = node; }
+    auto        getProcSteps() { return &m_procSteps; }
+    auto        getShaderCollector() { return &s_shCol; }
+    static auto getShaderProto(uint ind, std::string& name) { return nullptr; };
+    auto        getRootNode() { return (m_menuBarEnabled && m_contentRoot) ? m_contentRoot : m_uiRoot.get(); };
+    auto        getMenuBar() { return m_menuBarEnabled ? m_menuBar : nullptr; };
+    auto&       getColors() { return m_colors; };
+    auto&       getColor(uiColors colName) { return m_colors[colName]; };
+    auto        getApplicationHandle() { return m_appHandle; };
+    auto        getPixelRatio() { return s_devicePixelRatio; };
+    auto        isCursorVisible() const { return m_cursorVisible; };
+    auto        getSharedRes() { return &m_sharedRes; }
+    auto        getLastHoverFound() { return m_lastHoverFound; }
+    void        setLastHoverFound(UINode* node) { m_lastHoverFound = node; }
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     GLWindow*   getWinHandle() const { return m_winHandle; }
@@ -247,24 +254,27 @@ public:
     virtual void hide() {}
     void         setExtWinHnd(void* hnd) { m_winHandle = hnd; }
 #endif
-    bool         isMousePressed() const { return m_hidData.mousePressed; }
-    void         setResChanged(bool val);
+    bool    isMousePressed() const { return m_hidData.mousePressed; }
+    void    setResChanged(bool val);
 
-    bool                       resChanged() const { return m_resChanged; }
-    void                       showObjMap(bool val) { m_showObjMap = val; }
-    bool                       objMapVisible() const { return m_showObjMap; }
-    UINode*                    getInputFocusNode() { return m_inputFocusNode; }
-    UINode*                    getDraggingNode() { return m_draggingNode; }
-    void                       resetDraggingNode() { m_draggingNode = nullptr; }
-    void                       blockWindowResizeCb(bool val) { m_blockWindowResizeCb = val; }
-    std::function<glm::vec2()> extGetWinOffs() { return m_extGetWinOffs; }
-    void                       setExtGetWinOffs(std::function<glm::vec2()> f) { m_extGetWinOffs = std::move(f); }
-    void                       forceDpiScale(float val) { m_forceDpiScale = val; }
-    glm::vec2&                 getActMousePos() { return m_hidData.mousePos; }
-    FBO*                       getSceneFbo() { return m_sceneFbo.get(); }
-    void                       setInputFocusNode(UINode* node, bool procLostFocus = true);
-    void                       addGlCb(void* cbName, const std::string& fName, const std::function<bool()>& func);
-    void                       removeGlCbs(void* cbName) { WindowBase::eraseGlCb(cbName); }
+    auto    resChanged() const { return m_resChanged; }
+    auto    objMapVisible() const { return m_showObjMap; }
+    auto    getInputFocusNode() { return m_inputFocusNode; }
+    auto    getDraggingNode() { return m_draggingNode; }
+    auto    extGetWinOffs() { return m_extGetWinOffs; }
+    auto&   getActMousePos() { return m_hidData.mousePos; }
+    auto    getSceneFbo() { return m_sceneFbo.get(); }
+    auto    usingSelfManagedCtx() { return !m_selfManagedCtx; }
+    auto    usingMultiSample() { return m_multisample; }
+
+    void showObjMap(bool val) { m_showObjMap = val; }
+    void resetDraggingNode() { m_draggingNode = nullptr; }
+    void blockWindowResizeCb(bool val) { m_blockWindowResizeCb = val; }
+    void setExtGetWinOffs(std::function<glm::vec2()> f) { m_extGetWinOffs = std::move(f); }
+    void forceDpiScale(float val) { m_forceDpiScale = val; }
+    void setInputFocusNode(UINode* node, bool procLostFocus = true);
+    void addGlCb(void* cbName, const std::string& fName, const std::function<bool()>& func);
+    void removeGlCbs(void* cbName) { WindowBase::eraseGlCb(cbName); }
 
     // UI Elements
     std::unique_ptr<UINode>               m_uiRoot;
@@ -287,7 +297,7 @@ protected:
     std::unique_ptr<FBO> m_sceneFbo;
 
     UISharedRes                  m_sharedRes;
-    std::unique_ptr<DrawManager> m_drawMan;
+    std::shared_ptr<DrawManager> m_drawMan;
     UIApplication*               m_appHandle = nullptr;
     ObjPosIt                     m_opi;
 
@@ -309,6 +319,8 @@ protected:
     glm::ivec2 m_minWinSize = {300, 300};
     glm::vec2  m_mouseClickPos{0.f};
     glm::vec2  m_lastClickedPos = glm::vec2{};
+    glm::ivec2 m_realSize{};
+    glm::ivec2 m_virtSize{};
 
     float m_stdPadding    = 5.f;
     float m_forceDpiScale = -1.f;
@@ -330,6 +342,7 @@ protected:
     bool m_showObjMap                 = false;
     bool m_selfManagedCtx             = false;
     bool m_windowResizeHandlesEnabled = true;
+    bool m_restartGlBaseLoop          = true;
 
     GLuint m_nullVao = 0;
 
@@ -342,7 +355,7 @@ protected:
 
     std::chrono::time_point<std::chrono::system_clock> m_lastLeftMouseDown;
 
-    std::list<UINode*> m_draggingNodeTree;
+    std::list<UINode*>  m_draggingNodeTree;
 };
 
 }  // namespace ara

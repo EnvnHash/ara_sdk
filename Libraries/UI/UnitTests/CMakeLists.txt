@@ -16,14 +16,15 @@ include_directories(
 
 # add test source files
 file(GLOB UI_UT_SRC
+        ReloadGLContextTest.cpp
         AlignTest.cpp
         ButtonTests.cpp
         ComboBoxTest.cpp
         HidTest.cpp
-        Image.cpp
+        ImageTest.cpp
         ScrollViewTest.cpp
         SetXSetY.cpp
-        TabTest.cpp
+        abTest.cpp
         UIMatTests/GetPixelPosition_Absolute.cpp
         UIMatTests/GetPixelPosition_ParentRelative.cpp
 )

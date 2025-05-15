@@ -3,8 +3,6 @@
 //
 
 #include <Dialoges/FloatingMenuDialog.h>
-
-
 #include <UIApplication.h>
 
 #ifdef ARA_USE_GLFW

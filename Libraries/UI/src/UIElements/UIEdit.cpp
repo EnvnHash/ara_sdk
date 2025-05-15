@@ -103,8 +103,8 @@ bool UIEdit::drawIndirect(uint32_t& objId) {
 
     drawCaret(false);
 
-    if (m_sharedRes && m_sharedRes->drawMan) {
-        m_lblDB.drawSet = &m_sharedRes->drawMan->push(m_lblDB, this);
+    if (m_drawMan) {
+        m_lblDB.drawSet = &m_drawMan->push(m_lblDB, this);
     }
 
     return true;  // count up objId
@@ -139,8 +139,8 @@ void UIEdit::drawSelectionBg() {
                 m_backVao.drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, static_cast<int>(m_backIndices.size()));
             }
         } else {
-            if (m_sharedRes && m_sharedRes->drawMan) {
-                m_selBgDB.drawSet = &m_sharedRes->drawMan->push(m_selBgDB, this);
+            if (m_drawMan) {
+                m_selBgDB.drawSet = &m_drawMan->push(m_selBgDB, this);
             }
         }
     }

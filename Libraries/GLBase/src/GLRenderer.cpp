@@ -59,7 +59,7 @@ bool GLRenderer::init(const std::string& name, glm::ivec2 pos, glm::ivec2 dimens
     initGLEW();
 
     if (!s_inited) {
-        WindowBase::init(0, 0, dimension.x, dimension.y);
+        WindowBase::init({}, dimension);
         initGL();
 
         glfwMakeContextCurrent(nullptr);
@@ -69,7 +69,9 @@ bool GLRenderer::init(const std::string& name, glm::ivec2 pos, glm::ivec2 dimens
     }
 
     if (restartGlBaseLoop && m_glbase) {
-        if (!s_inited) glfwMakeContextCurrent(nullptr);
+        if (!s_inited) {
+            glfwMakeContextCurrent(nullptr);
+        }
         m_glbase->startRenderLoop();
         // no context bound at this point
     }

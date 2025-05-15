@@ -40,9 +40,10 @@ public:
     Texture *addFromMem(const std::filesystem::path &fileName, const std::filesystem::path &dataPath, int32_t mipMapLevel);
     Texture *addFromAssetManager(const std::string &fn, int mipMapLevel);
     void addRemoveCb(const std::string &fileName, const std::function<void()>& f);
-    void remove(const std::filesystem::path &fileName);
+    auto remove(const std::filesystem::path &fileName);
     Texture *checkForExistence(const std::string &fileName, const std::filesystem::path *dataPath,
                                const std::function<Texture*()>& f);
+    void clear();
 
 private:
     std::unordered_map<std::string, TextureCollectorElement>    m_texMap;

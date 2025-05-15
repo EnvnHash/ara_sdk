@@ -41,7 +41,7 @@ public:
     glm::ivec2*                                                minWinSize = nullptr;
     AssetManager*                                              res        = nullptr;
     GLuint*                                                    nullVao    = nullptr;
-    DrawManager*                                               drawMan    = nullptr;
+    std::shared_ptr<DrawManager>                               drawMan;
     GLBase*                                                    glbase     = nullptr;
 
     void setDrawFlag(bool val = true) const {
