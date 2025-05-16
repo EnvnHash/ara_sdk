@@ -84,33 +84,33 @@ ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
 }
 
 TEST(UITest, ScrollViewTestNoScrollbar) {
-    appBody([&](UIApplication* app){
-        auto rootNode = app->getMainWindow()->getRootNode();
+    appBody([&](UIApplication& app){
+        auto rootNode = app.getMainWindow()->getRootNode();
         addScrollView(rootNode, 5);
-    }, [&](UIApplication* app){
+    }, [&](UIApplication& app){
          compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 600, 400);
 }
 
 TEST(UITest, ScrollViewTestScrollbarVisible) {
-    appBody([&](UIApplication* app){
-        auto rootNode = app->getMainWindow()->getRootNode();
+    appBody([&](UIApplication& app){
+        auto rootNode = app.getMainWindow()->getRootNode();
         addScrollView(rootNode, 10);
-    }, [&](UIApplication* app){
+    }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref2.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 600, 400);
 }
 
 TEST(UITest, ScrollViewTestScrollBarMoved) {
-    appBody([&](UIApplication* app){
-        auto mainWin = app->getMainWindow();
+    appBody([&](UIApplication& app){
+        auto mainWin = app.getMainWindow();
         auto rootNode = mainWin->getRootNode();
         auto scrollView = addScrollView(rootNode, 10);
 
-        app->getWinBase()->draw(0, 0, 0);
-        app->getMainWindow()->swap();
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
 
         // simulate dragging
         mainWin->onMouseDownLeft(500, 150, false, false, false);
@@ -118,15 +118,15 @@ TEST(UITest, ScrollViewTestScrollBarMoved) {
         mainWin->onMouseMove(500, 200, 0);
         mainWin->onMouseUpLeft();
 
-    }, [&](UIApplication* app){
+    }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref3.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 600, 400);
 }
 
 TEST(UITest, ScrollViewIntable) {
-    appBody([&](UIApplication* app){
-        auto mainWin = app->getMainWindow();
+    appBody([&](UIApplication& app){
+        auto mainWin = app.getMainWindow();
         auto rootNode = mainWin->getRootNode();
         auto taux = addTable(rootNode);
 
@@ -140,10 +140,10 @@ TEST(UITest, ScrollViewIntable) {
 
         addLabels(nt);
 
-    }, [&](UIApplication* app){
-        auto mainWin = app->getMainWindow();
+    }, [&](UIApplication& app){
+        auto mainWin = app.getMainWindow();
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_in_table.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
 
         // simulate dragging
         mainWin->onMouseDownLeft(1215, 120, false, false, false);
@@ -151,11 +151,11 @@ TEST(UITest, ScrollViewIntable) {
         mainWin->onMouseMove(1215, 473, 0);
         mainWin->onMouseUpLeft();
 
-        app->getWinBase()->draw(0, 0, 0);
-        app->getMainWindow()->swap();
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
 
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_in_table_moved.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 1280, 720);
 }
 

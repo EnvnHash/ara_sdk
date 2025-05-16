@@ -13,8 +13,13 @@ using namespace std;
 
 namespace ara::UiUnitTest::ComboBoxTest {
 
-    void addCombo(UIApplication* app, bool& flag) {
-        auto rootNode = app->getMainWindow()->getRootNode();
+    void drawAndSwap(UIApplication& app) {
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
+    }
+
+    void addCombo(UIApplication& app, bool& flag) {
+        auto rootNode = app.getMainWindow()->getRootNode();
 
         auto combo = rootNode->addChild<ComboBox>();
         combo->setMenuName("ComboBox");
@@ -34,84 +39,66 @@ namespace ara::UiUnitTest::ComboBoxTest {
         combo->addEntry("Entry 4", [&]{ LOG << " entry four "; });
     }
 
+    void openMenu(UIApplication& app) {
+        drawAndSwap(app);
+        app.getMainWindow()->onMouseDownLeft(175, 65, false, false, false);
+    }
+
+    void hoverOverFirstEntry(UIApplication& app) {
+        drawAndSwap(app);
+        app.getMainWindow()->onMouseMove(64, 95, 0);
+    }
+
     TEST(UITest, ComboBoxTest) {
         bool entryOne = false;
-        appBody([&](UIApplication* app){
+        appBody([&](UIApplication& app){
             addCombo(app, entryOne);
-        }, [&](UIApplication* app){
+        }, [&](UIApplication& app){
             compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref.png",
-                                      app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                      app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
         }, 600, 400);
     }
 
     TEST(UITest, ComboBoxTestClicked) {
         bool entryOne = false;
-        appBody([&](UIApplication* app){
-            auto mainWin = app->getMainWindow();
-
+        appBody([&](UIApplication& app){
             addCombo(app, entryOne);
-
-            app->getWinBase()->draw(0, 0, 0);
-            app->getMainWindow()->swap();
-
-            mainWin->onMouseDownLeft(175, 65, false, false, false);
-
-        }, [&](UIApplication* app){
+            openMenu(app);
+        }, [&](UIApplication& app){
             compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref2.png",
-                                      app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                      app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
         }, 600, 400);
     }
 
     TEST(UITest, ComboBoxTestListHover) {
         bool entryOne = false;
-        appBody([&](UIApplication* app){
-            auto mainWin = app->getMainWindow();
+        appBody([&](UIApplication& app){
+            auto mainWin = app.getMainWindow();
             addCombo(app, entryOne);
-
-            app->getWinBase()->draw(0, 0, 0);
-            app->getMainWindow()->swap();
-
-            mainWin->onMouseDownLeft(175, 65, false, false, false);
-
-            app->getWinBase()->draw(0, 0, 0);
-            app->getMainWindow()->swap();
-
-            mainWin->onMouseMove(64, 95, 0);
-
-            app->getWinBase()->draw(0, 0, 0);
-            app->getMainWindow()->swap();
-
-        }, [&](UIApplication* app){
+            openMenu(app);
+            hoverOverFirstEntry(app);
+            drawAndSwap(app);
+        }, [&](UIApplication& app){
             compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref3.png",
-                                      app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                      app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
         }, 600, 400);
     }
 
     TEST(UITest, ComboBoxTestListClicked) {
         bool entryOne = false;
-        appBody([&](UIApplication* app){
-            auto mainWin = app->getMainWindow();
+        appBody([&](UIApplication& app){
+            auto mainWin = app.getMainWindow();
             addCombo(app, entryOne);
+            openMenu(app);
+            hoverOverFirstEntry(app);
 
-            app->getWinBase()->draw(0, 0, 0);
-            app->getMainWindow()->swap();
-
-            mainWin->onMouseDownLeft(175, 65, false, false, false);
-
-            app->getWinBase()->draw(0, 0, 0);
-            app->getMainWindow()->swap();
-
-            mainWin->onMouseMove(64, 95, 0);
-
-            app->getWinBase()->draw(0, 0, 0);
-            app->getMainWindow()->swap();
-
+            drawAndSwap(app);
             mainWin->onMouseDownLeft(64, 95, false, false, false);
             mainWin->onMouseUpLeft();
 
-        }, [&](UIApplication* app){
+        }, [&](UIApplication& app){
              compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref.png",
-                                      app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                      app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
 
             ASSERT_TRUE(entryOne);
         }, 600, 400);

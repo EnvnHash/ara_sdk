@@ -14,8 +14,8 @@ using namespace std;
 
 namespace ara::UiUnitTest::TabViewTest {
 
-TabView* addTabView(UIApplication* app, std::array<bool, 3>& checks) {
-    auto rootNode = app->getMainWindow()->getRootNode();
+TabView* addTabView(UIApplication& app, std::array<bool, 3>& checks) {
+    auto rootNode = app.getMainWindow()->getRootNode();
 
     auto tabView = rootNode->addChild<TabView>(10, 10, 1200, 800, glm::vec4(.3f, .3f, .3f, 1.f), glm::vec4(.1f, .1f, .1f, 1.f));
     tabView->setPos(0,0);
@@ -37,20 +37,19 @@ TabView* addTabView(UIApplication* app, std::array<bool, 3>& checks) {
     }
 
     tabView->setActivateTab(0);
-
     return tabView;
 }
 
 TEST(UITest, TabViewTest) {
     TabView* tv = nullptr;
     std::array<bool, 3> m_clicked{};
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         tv = addTabView(app, m_clicked);
-    }, [&](UIApplication* app){
+    }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "tab_view_test_ref.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
 
-        auto mainWin = app->getMainWindow();
+        auto mainWin = app.getMainWindow();
 
         // click div on tab0
         mainWin->onMouseDownLeft(280, 210, false, false, false);
@@ -61,11 +60,11 @@ TEST(UITest, TabViewTest) {
         mainWin->onMouseDownLeft(290, 30, false, false, false);
         mainWin->onMouseUpLeft();
 
-        app->getWinBase()->draw(0, 0, 0);
-        app->getMainWindow()->swap();
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
 
         compareFrameBufferToImage(filesystem::current_path() / "tab_view_test_ref2.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
 
         // click div on tab1
         mainWin->onMouseDownLeft(280, 210, false, false, false);
@@ -76,11 +75,11 @@ TEST(UITest, TabViewTest) {
         mainWin->onMouseDownLeft(490, 30, false, false, false);
         mainWin->onMouseUpLeft();
 
-        app->getWinBase()->draw(0, 0, 0);
-        app->getMainWindow()->swap();
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
 
         compareFrameBufferToImage(filesystem::current_path() / "tab_view_test_ref3.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
 
         // click div on tab2
         mainWin->onMouseDownLeft(280, 210, false, false, false);

@@ -58,8 +58,8 @@ public:
     bool m_consume = false;
 };
 
-static HidNode* addDiv(UIApplication* app) {
-    auto rootNode = app->getMainWindow()->getRootNode();
+static HidNode* addDiv(UIApplication& app) {
+    auto rootNode = app.getMainWindow()->getRootNode();
     auto div = rootNode->addChild<HidNode>();
     div->setPos(50,50);
     div->setSize(200,100);
@@ -111,13 +111,13 @@ static void checkCbCalled(std::unordered_map<hidEvent, bool>& cbCalled, bool exp
 
 TEST(UITest, HidDefaultTest) {
     HidNode* div = nullptr;
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         div = addDiv(app);
-    }, [&](UIApplication* app){
+    }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "hid_node_test.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight());
 
-        auto mainWin = app->getMainWindow();
+        auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(150, 100, false, false, false);
         EXPECT_TRUE(div->m_clicked[hidEvent::MouseDownLeft]);         // div should not be clickable
     }, 600, 400);
@@ -125,20 +125,20 @@ TEST(UITest, HidDefaultTest) {
 
 TEST(UITest, HidDivClickTest) {
     HidNode* div = nullptr;
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         div = addDiv(app);
-    }, [&](UIApplication* app){
-        auto mainWin = app->getMainWindow();
+    }, [&](UIApplication& app){
+        auto mainWin = app.getMainWindow();
         simulateClickLeftRight(mainWin, div, {150, 100}, true);
     }, 600, 400);
 }
 
 TEST(UITest, HidDivClickNegTest) {
     HidNode* div = nullptr;
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         div = addDiv(app);
-    }, [&](UIApplication* app){
-        auto mainWin = app->getMainWindow();
+    }, [&](UIApplication& app){
+        auto mainWin = app.getMainWindow();
         simulateClickLeftRight(mainWin, div, {260, 100}, false);
     }, 600, 400);
 }
@@ -146,14 +146,14 @@ TEST(UITest, HidDivClickNegTest) {
 TEST(UITest, HidDivClickCallbackTest) {
     HidNode* div = nullptr;
     auto cbCalled = initCallbacks();
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         div = addDiv(app);
         setHidCallbacks(div, cbCalled);
-    }, [&](UIApplication* app){
-        auto mainWin = app->getMainWindow();
+    }, [&](UIApplication& app){
+        auto mainWin = app.getMainWindow();
         simulateClickLeftRight(mainWin, div, {150, 100}, true);
 
-        app->getWinBase()->draw(0, 0, 0);
+        app.getWinBase()->draw(0, 0, 0);
         mainWin->swap();
 
         checkCbCalled(cbCalled, true);
@@ -164,17 +164,17 @@ TEST(UITest, HidDivClickCallbackNegTest) {
     HidNode* div = nullptr;
     auto cbCalled = initCallbacks();
 
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         div = addDiv(app);
         setHidCallbacks(div, cbCalled);
-    }, [&](UIApplication* app){
+    }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "hid_node_test.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight());
 
-        auto mainWin = app->getMainWindow();
+        auto mainWin = app.getMainWindow();
         simulateClickLeftRight(mainWin, div, {260, 100}, false);
 
-        app->getWinBase()->draw(0, 0, 0);
+        app.getWinBase()->draw(0, 0, 0);
         mainWin->swap();
 
         checkCbCalled(cbCalled, false);
@@ -185,7 +185,7 @@ TEST(UITest, HidDivNestedClick) {
     HidNode* div = nullptr;
     HidNode* childDiv = nullptr;
 
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         div = addDiv(app);
         div->setName("div1");
 
@@ -195,11 +195,11 @@ TEST(UITest, HidDivNestedClick) {
         childDiv->setPos(20,20);
         childDiv->setBackgroundColor(0.f, 0.f, 1.f, 1.f);
 
-    }, [&](UIApplication* app){
+    }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "hid_node_test2.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight());
 
-        auto mainWin = app->getMainWindow();
+        auto mainWin = app.getMainWindow();
 
         mainWin->onMouseDownLeft(95, 95, false, false, false);
         EXPECT_TRUE(childDiv->m_clicked[hidEvent::MouseDownLeft]);
@@ -235,7 +235,7 @@ TEST(UITest, HidDivDoubleNestedClick) {
     HidNode* childDiv = nullptr;
     HidNode* childChildDiv = nullptr;
 
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         div = addDiv(app);
 
         childDiv = div->addChild<HidNode>();
@@ -248,11 +248,11 @@ TEST(UITest, HidDivDoubleNestedClick) {
         childChildDiv->setPos(10,10);
         childChildDiv->setBackgroundColor(0.f, 1.f, 0.f, 1.f);
 
-    }, [&](UIApplication* app){
+    }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "hid_node_test3.png",
-                                  app->getWinBase()->getWidth(), app->getWinBase()->getHeight());
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight());
 
-        auto mainWin = app->getMainWindow();
+        auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(95, 95, false, false, false);
         EXPECT_TRUE(childChildDiv->m_clicked[hidEvent::MouseDownLeft]);
         EXPECT_TRUE(childDiv->m_clicked[hidEvent::MouseDownLeft]);
@@ -292,7 +292,7 @@ TEST(UITest, HidDivNestedClickConsume) {
     HidNode* childDiv = nullptr;
     HidNode* childChildDiv = nullptr;
 
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         div = addDiv(app);
 
         childDiv = div->addChild<HidNode>();
@@ -306,8 +306,8 @@ TEST(UITest, HidDivNestedClickConsume) {
         childChildDiv->setBackgroundColor(0.f, 1.f, 0.f, 1.f);
         childChildDiv->m_consume = true;
 
-    }, [&](UIApplication* app){
-        auto mainWin = app->getMainWindow();
+    }, [&](UIApplication& app){
+        auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(95, 95, false, false, false);
         EXPECT_TRUE(childChildDiv->m_clicked[hidEvent::MouseDownLeft]);
         EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseDownLeft]);
@@ -373,7 +373,7 @@ TEST(UITest, HidDivNestedClickExclude) {
     HidNode* childDiv = nullptr;
     HidNode* childChildDiv = nullptr;
 
-    appBody([&](UIApplication* app){
+    appBody([&](UIApplication& app){
         div = addDiv(app);
         div->setName("div1");
 
@@ -389,8 +389,8 @@ TEST(UITest, HidDivNestedClickExclude) {
         childChildDiv->setPos(10,10);
         childChildDiv->setBackgroundColor(0.f, 1.f, 0.f, 1.f);
         childChildDiv->setName("div3");
-    }, [&](UIApplication* app){
-        auto mainWin = app->getMainWindow();
+    }, [&](UIApplication& app){
+        auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(95, 95, false, false, false);
         EXPECT_FALSE(childChildDiv->m_clicked[hidEvent::MouseDownLeft]);
         EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseDownLeft]);
@@ -444,16 +444,16 @@ TEST(UITest, HidDivOverlap) {
     HidNode* div = nullptr;
     HidNode* div2 = nullptr;
 
-    appBody([&](UIApplication* app) {
+    appBody([&](UIApplication& app) {
         div = addDiv(app);
 
-        div2 = app->getRootNode()->addChild<HidNode>();
+        div2 = app.getRootNode()->addChild<HidNode>();
         div2->setName("Div2");
         div2->setPos(50,50);
         div2->setSize(200,100);
         div2->setBackgroundColor(1.f, 0.f, 0.f, 1.f);
-    }, [&](UIApplication* app) {
-        auto mainWin = app->getMainWindow();
+    }, [&](UIApplication& app) {
+        auto mainWin = app.getMainWindow();
 
         mainWin->onMouseDownLeft(95, 95, false, false, false);
         EXPECT_FALSE(div->m_clicked[hidEvent::MouseDownLeft]);
@@ -477,18 +477,18 @@ TEST(UITest, HidDivInvisibleOverlap) {
     HidNode* div = nullptr;
     HidNode* div2 = nullptr;
 
-    appBody([&](UIApplication* app) {
+    appBody([&](UIApplication& app) {
         div = addDiv(app);
 
-        div2 = app->getRootNode()->addChild<HidNode>();
+        div2 = app.getRootNode()->addChild<HidNode>();
         div2->setName("Div2");
         div2->setPos(50,50);
         div2->setSize(200,100);
         div2->setBackgroundColor(0.f, 1.f, 0.f, 1.f);
         div2->setVisibility(false);
 
-    }, [&](UIApplication* app) {
-        auto mainWin = app->getMainWindow();
+    }, [&](UIApplication& app) {
+        auto mainWin = app.getMainWindow();
 
         mainWin->onMouseDownLeft(95, 95, false, false, false);
         EXPECT_TRUE(div->m_clicked[hidEvent::MouseDownLeft]);

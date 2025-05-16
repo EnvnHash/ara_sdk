@@ -15,3 +15,5 @@
 /Libraries/third_party/portaudio/
 /cmake-build-relwithdebinfo/
 /Examples/UITest/UITest_Android/
+.DS_STORE
+Libraries/GLBase/src/.DS_Store

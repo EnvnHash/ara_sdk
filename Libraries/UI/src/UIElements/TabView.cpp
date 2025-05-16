@@ -22,8 +22,8 @@ TabView::TabView() : Div() {
     m_contentArea->setHeight(-m_TabHeight);
     m_contentArea->setAlignY(valign::bottom);
 
-    m_tabButtBgColDeSel = vec4(.2f, .2f, .2f, 1.0f);
-    m_tabButtBgColSel   = vec4(.2f, .2f, .2f, 1.0f);
+    m_tabButtBgColDeSel = vec4{.2f, .2f, .2f, 1.0f};
+    m_tabButtBgColSel   = vec4{.2f, .2f, .2f, 1.0f};
 }
 
 UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode) {
@@ -47,13 +47,14 @@ UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode
         tab->setTextAlignX(align::center);
         tab->setTextAlignY(valign::center);
         tab->addMouseClickCb([this](const hidData& data) {
-            for (int i = 0; i < static_cast<int>(m_tabArea->getChildren().size()); i++) {
-                if (m_tabArea->getChildren()[i]->getId() == data.objId) {
-                    setActivateTab(i);
-                    break;
-                }
+            auto ret = ranges::find_if(m_tabArea->getChildren(), [&data](auto& item){
+                return item->getId() == data.objId;
+            });
+            if (ret != m_tabArea->getChildren().end()) {
+                setActivateTab(std::distance( m_tabArea->getChildren().begin(), ret));
+                setDrawFlag();
+                getSharedRes()->requestRedraw = true;
             }
-            setDrawFlag();
         });
 
         // tab underline
@@ -122,11 +123,11 @@ bool TabView::setActivateTab(int idx) {
 
     // deselect all
     for (auto& it : m_Tab) {
-        setTabSelected(false, &it);
+        setTabSelected(false, it);
     }
 
     // select the request tab
-    setTabSelected(true, &m_Tab[idx]);
+    setTabSelected(true, m_Tab[idx]);
 
     if (m_switchTabCb) {
         m_switchTabCb(idx);
@@ -135,11 +136,11 @@ bool TabView::setActivateTab(int idx) {
     return true;
 }
 
-void TabView::setTabSelected(bool val, e_tab* tab) const {
-    tab->selected = val;
-    tab->tab->setColor(m_sharedRes->colors->at(val ? uiColors::blue : uiColors::white));
-    tab->ui_Node->setVisibility(val);
-    tab->underline->setVisibility(val);
+void TabView::setTabSelected(bool val, e_tab& tab) const {
+    tab.selected = val;
+    tab.tab->setColor(m_sharedRes->colors->at(val ? uiColors::blue : uiColors::white));
+    tab.ui_Node->setVisibility(val);
+    tab.underline->setVisibility(val);
 }
 
 }

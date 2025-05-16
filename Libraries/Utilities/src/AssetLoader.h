@@ -41,7 +41,7 @@ public:
         return m_assetPath / p;
     }
 
-    static std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
+    std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
     static std::filesystem::path& getAssetPath() { return m_assetPath; }
 
     static bool usingCmrc() {

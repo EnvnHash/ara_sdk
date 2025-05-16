@@ -43,18 +43,17 @@ bool GLBase::init(bool doInitResources, void *winHnd) {
     if (g_inited) {
         return true;
     }
-
     g_mainThreadId = this_thread::get_id();
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     g_winMan->setMainThreadId(g_mainThreadId);
     if (m_selfManagedCtx) {
-        glWinPar wp;
-        wp.createHidden = true;
-        wp.hidInput     = false;
-        wp.size         = { 5, 5 };
-        wp.shareCont    = winHnd;
-        g_win           = g_winMan->addWin(wp);
+        g_win = g_winMan->addWin(glWinPar{
+            .createHidden = true,
+            .hidInput     = false,
+            .size         = { 5, 5 },
+            .shareCont    = winHnd
+        });
     }
 #elif _WIN32
     // create an invisible window with a valid gl context which will contain the resources and be shared to all context
@@ -395,20 +394,21 @@ void GLBase::createCtx() {
 
     // register a window class for subsequent use in calls to the CreateWindow
     // or CreateWindowEx function.
-    wcex.cbSize        = sizeof(WNDCLASSEX);
-    wcex.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-    wcex.lpfnWndProc   = &m_glbase.WGLMessageHandler;
-    wcex.cbWndExtra    = sizeof(GLBase *);  // Reserve space to store the instance pointer
-    wcex.cbClsExtra    = 0;
-    wcex.hInstance     = hInstance;
-    wcex.hIcon         = LoadIcon(hInstance, IDI_WINLOGO);
-    wcex.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = NULL;  // No Background Required For GL
-    wcex.lpszMenuName  = NULL;
-
     m_wglClassName     = "OpenGL_" + std::to_string((uint64_t)this);
-    wcex.lpszClassName = m_wglClassName.c_str();  // Set The Class Name
-    wcex.hIconSm       = LoadIcon(wcex.hInstance, IDI_WINLOGO);
+    wcex =  WNDCLASSEX{
+        .cbSize        = sizeof(WNDCLASSEX);
+        .style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+        .lpfnWndProc   = &m_glbase.WGLMessageHandler;
+        .cbWndExtra    = sizeof(GLBase *);  // Reserve space to store the instance pointer
+        .cbClsExtra    = 0;
+        .hInstance     = hInstance;
+        .hIcon         = LoadIcon(hInstance, IDI_WINLOGO);
+        .hCursor       = LoadCursor(NULL, IDC_ARROW);
+        .hbrBackground = NULL;  // No Background Required For GL
+        .lpszMenuName  = NULL;
+        .lpszClassName = m_wglClassName.c_str();  // Set The Class Name
+        .hIconSm       = LoadIcon(wcex.hInstance, IDI_WINLOGO);
+    };
 
     if (!RegisterClassEx(&wcex)) {
         LOGE << "m_glbase.createCtx Error: could not register Window class";
@@ -436,83 +436,31 @@ void GLBase::createCtx() {
         PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER,
         PFD_TYPE_RGBA,
         32,  // bit depth
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         16,  // z-buffer depth
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
+        0, 0, 0, 0, 0, 0, 0,
     };
 
     // Pixel format.
     GLuint m_nPixelFormat = ChoosePixelFormat(m_hdc, &pfd);
     SetPixelFormat(m_hdc, m_nPixelFormat, &pfd);
 
-    // Create the OpenGL Rendering Context.
-    m_hRC = wglCreateContext(m_hdc);
-
+    m_hRC = wglCreateContext(m_hdc); // Create the OpenGL Rendering Context.
     wglMakeCurrent(m_hdc, m_hRC);
 
     // init GLEW
     glewExperimental = GL_TRUE;
-    GLenum err       = glewInit();
-    if (err != GLEW_OK) {
+    if (glewInit() != GLEW_OK) {
         LOGE << "GLEW ERROR: " << glewGetErrorString(err);
         return;
     }
 
     err = glGetError();  // remove glew standard error
 
-    LOG << "Vendor:   " << glGetString(GL_VENDOR);
-    LOG << "Renderer: " << glGetString(GL_RENDERER);
-    LOG << "Version:  " << glGetString(GL_VERSION);
-    LOG << "GLSL:     " << glGetString(GL_SHADING_LANGUAGE_VERSION);
-
-    // glViewport(0, 0, 10, 10);	// Reset The Current Viewport
-    // SwapBuffers(m_hdc);
-
-    /*
-        m_msgLoop = std::thread([this](){
-            m_msgLoopSp.notify();
-            m_msgLoopRunning = true;
-
-            MSG msg = { 0 };
-            BOOL bRet;
-
-            while ((bRet = GetMessage(&msg, m_hWnd, 0, 0)) != 0)
-            {
-                LOG << "GLBAse GetMessage ";
-                if (bRet == -1)
-                {
-                    // handle the error and possibly exit
-                }
-                else
-                {
-                    TranslateMessage(&msg);
-                    DispatchMessage(&msg);
-                }
-            }
-            m_msgLoopEnd.notify();
-        });
-
-        m_msgLoop.detach();
-        m_msgLoopSp.wait(0);
-        */
+    LOG << "Vendor:   " << glGetString(GL_VENDOR) << "\n"
+        << "Renderer: " << glGetString(GL_RENDERER) << "\n"
+        << "Version:  " << glGetString(GL_VERSION) << "\n"
+        << "GLSL:     " << glGetString(GL_SHADING_LANGUAGE_VERSION);
 #endif
 }
 

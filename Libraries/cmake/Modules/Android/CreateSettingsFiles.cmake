@@ -21,7 +21,7 @@ zipStoreBase=GRADLE_USER_HOME")
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/proguard-rules.pro "")
 
     # local.properties
-    if (WIN32)
+    if (WIN32 OR APPLE)
         FILE(WRITE ${ANDROID_STUDIO_PROJ}/local.properties "sdk.dir=$ENV{ANDROID_SDK_ROOT}")
     else()
         FILE(WRITE ${ANDROID_STUDIO_PROJ}/local.properties "sdk.dir=$ENV{ANDROID_SDK_ROOT}

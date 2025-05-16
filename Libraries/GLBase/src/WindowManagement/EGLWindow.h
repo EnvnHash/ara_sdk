@@ -74,7 +74,7 @@ public:
 
     EGLDisplay      getEglDisplay() const { return m_display; }
     EGLSurface      getEglSurface() const { return m_surface; }
-    void*           getCtx() { return (void*)m_esContext.eglContext; }
+    void*           getCtx() { return static_cast<void*>(m_esContext.eglContext); }
     void*           getWin() override { return &m_esContext.eglNativeWindow; }
     void*           getDisp() override { return &m_esContext.eglNativeDisplay; }
     EGLConfig       getEglConfig() const { return m_eglConfig; }
@@ -86,8 +86,8 @@ public:
     glm::ivec2      getLastMousePos() { return m_osWin ? m_osWin->getLastMousePos() : glm::ivec2 {}; }
     int*            getWorkArea() { return m_osWin ? m_osWin->getWorkArea() : nullptr; }
 
-    void setSize(int m_widthVirt, int m_heightVirt) {}
-    void setPosition(int posx, int posy) {}
+    void setSize(int, int) {}
+    void setPosition(int, int) {}
 
 #ifdef __ANDROID__
     void setALooper(void* looper) { m_looper = reinterpret_cast<ALooper*>(looper); }
@@ -123,7 +123,7 @@ public:
     }
 
     static void error_callback(int error, const char* description) {
-        printf("EGL ERROR: %s \n", description);
+        LOGE << "EGL ERROR: " << description;
         fputs(description, stderr);
     }
 

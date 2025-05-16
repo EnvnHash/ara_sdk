@@ -110,7 +110,7 @@ public:
     std::function<void(GLWindow *, int, int, int)>      m_mouseButtonCbFun;
     std::function<void(GLWindow *, int, int)>           m_winResizeCbFun;
 
-    bool                                   m_run;
+    bool                                   m_run = false;
     std::vector<std::unique_ptr<GLWindow>> m_windows;  // in order to use pointers to the windows of this arrays use unique_ptr.
 
 private:

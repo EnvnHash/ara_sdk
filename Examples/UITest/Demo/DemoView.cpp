@@ -5,8 +5,7 @@ using namespace glm;
 using namespace std;
 using namespace ara;
 
-DemoView::DemoView(std::string title, glm::vec4 bk_color) : Div()
-{
+DemoView::DemoView(std::string title, glm::vec4 bk_color) : Div() {
     setName(getTypeName<DemoView>());
     setBackgroundColor(bk_color);
     setPadding(20);

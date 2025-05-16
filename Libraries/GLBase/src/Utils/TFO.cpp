@@ -153,7 +153,7 @@ void TFO::begin(GLenum mode) {
     glBeginTransformFeedback(mode);
 }
 
-void TFO::pauseAndOffsetBuf(GLenum _mode) {
+void TFO::pauseAndOffsetBuf(GLenum mode) {
     int offs = m_recVertOffs;
 
     end();
@@ -166,7 +166,7 @@ void TFO::pauseAndOffsetBuf(GLenum _mode) {
                           m_bufSize * m_fragSizes[i] * sizeof(float));
     }
 
-    begin(_mode);
+    TFO::begin(mode);
 }
 
 void TFO::offsetBuf() const {
@@ -311,7 +311,7 @@ GLuint TFO::getTFOBuf(CoordType _nr) {
     if (it != m_parNames.end()) {
         out = m_buffers[it - m_parNames.begin()];
     } else {
-        printf("TFO::getTFOBuf Error: index out of range \n");
+        LOGE << "TFO::getTFOBuf Error: index out of range";
     }
 
     return out;
@@ -383,12 +383,11 @@ void TFO::recallDepthTestState() const {
     }
 }
 
-
 TFO::~TFO() {
     glDeleteTransformFeedbacks(1, &m_tfo);
     glDeleteBuffers(m_nrPar, m_tbos.data());
     glDeleteBuffers(m_nrPar, m_buffers.data());
     glDeleteVertexArrays(1, &m_resVAO);
-
 }
+
 }  // namespace ara

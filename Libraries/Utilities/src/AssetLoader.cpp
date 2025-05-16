@@ -113,10 +113,10 @@ string AssetLoader::getSanitizedAssetPath(const filesystem::path& p) {
 
 std::filesystem::file_time_type AssetLoader::getLastFileUpdate(const std::string& path) {
 #ifdef ARA_USE_CMRC
-    return  std::filesystem::file_time_type{};
+    return std::filesystem::file_time_type{};
 #else
     auto compPath = resolveAssetPath(path);
-    return  filesystem::last_write_time(compPath);
+    return filesystem::last_write_time(compPath);
 #endif
 }
 

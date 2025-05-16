@@ -14,28 +14,75 @@
 static inline BS::thread_pool g_thread_pool;
 static inline glm::vec2       contentScale{1.f, 1.f};
 
-static void appBody(const std::function<void(ara::UIApplication*)>& drawFunc,
-                    const std::function<void(ara::UIApplication*)>& verifyFunc, 
-                    int width = 1280, int height = 720) { // width and height are in hardware pixels (non-scaled)
-    ara::UIApplication app;
+static void stdAppSetup(ara::UIApplication& app, int width, int height) {
     app.setWinWidth(width);
     app.setWinHeight(height);
     app.setEnableMenuBar(false);
     app.setScaleToMonitor(false);
     app.setEnableWindowResizeHandles(false);
+}
+
+static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
+                    const std::function<void(ara::UIApplication&)>& verifyFunc,
+                    int width=1280, int height=720,
+                    const std::function<void(ara::UIApplication&)>& postInitFunc=nullptr) { // width and height are in hardware pixels (non-scaled)
+    ara::UIApplication app;
+    stdAppSetup(app, width, height);
     app.init([&]{
-        auto mainWin = app.getMainWindow();
-        drawFunc(&app);
+        drawFunc(app);
 
         EXPECT_EQ(ara::postGLError(), GL_NO_ERROR);
         app.getWinBase()->draw(0, 0, 0);
-        mainWin->swap();
+        app.getMainWindow()->swap();
 
-        verifyFunc(&app);
+        verifyFunc(app);
     });
 
-    // app.startEventLoop(); // for debugging comment in this line in order to have to window stay
+    if (postInitFunc) {
+        postInitFunc(app);
+    }
+
+    //app.startEventLoop(); // for debugging comment in this line in order to have to window stay
     app.exit();
+}
+
+static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFunc,
+                         const std::function<void(ara::UIApplication&)>& verifyFunc,
+                         int width = 1280, int height = 720) {
+
+    auto postVerifyFunc = [&](ara::UIApplication& app) {
+        // remove all gl resources, but leave the window and its UINode tree untouched
+        app.stop();
+        app.stopGLBaseRenderLoop();
+
+        app.getMainWindow()->removeGLResources(false); // make the window release all it's opengl resources
+        app.getGLBase()->destroy(false); // remove glbase opengl resources
+
+        // rebuild the context
+        app.initGLBase(); // no context current after this call
+
+        app.startUiThread([&] {
+            app.getMainWindow()->init(ara::UIWindowParams{
+                    .glbase = app.getGLBase(),
+                    .size = { app.getMainWindow()->getWidth(), app.getMainWindow()->getHeight() },
+                    .shift = app.getMainWindow()->getPosition(),
+                    .initToCurrentCtx = app.getMainWindow()->usingSelfManagedCtx(),
+                    .multisample = app.getMainWindow()->usingMultiSample(),
+            });
+
+            ara::UINode::itrNodes(app.getMainWindow()->getRootNode(), [](ara::UINode* node) {
+                node->reqUpdtTree();
+            });
+
+            app.getMainWindow()->getProcSteps()->at(ara::Draw).active = true;
+            app.getWinBase()->draw(0, 0, 0);
+            app.getMainWindow()->swap();
+
+            verifyFunc(app);
+        });
+    };
+
+    appBody(drawFunc, verifyFunc, width, height, postVerifyFunc);
 }
 
 static std::vector<GLubyte> getPixels(int x, int y, uint32_t width, uint32_t height) {
@@ -134,11 +181,11 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
     // check edges for front color
     std::vector<checkPix> checkPixels;
     for (auto i=0; i<edges.size(); ++i) {
-        checkPixels.emplace_back(edges[i], col);
+        checkPixels.emplace_back(checkPix{edges[i], col});
         for (auto j=0; j<2; ++j) {
             auto p = edges[i] + edgeOffsets[i][j];
             if (p.x > 0 && p.y > 0 && p.x < win->getWidthReal() && p.y < win->getHeightReal()) {
-                checkPixels.emplace_back(p, backCol);
+                checkPixels.emplace_back(checkPix{p, backCol});
             }
         }
     }
