@@ -118,6 +118,7 @@ GLuint Shaders::create() {
 
 void Shaders::checkStatusLink(GLuint obj) {
     GLint status = GL_FALSE, len = 10;
+    std::string log;
 
     if (glIsProgram(obj)) {
         glGetProgramiv(obj, GL_LINK_STATUS, &status);
@@ -128,28 +129,19 @@ void Shaders::checkStatusLink(GLuint obj) {
 
         if (glIsShader(obj)) {
             glGetShaderiv(obj, GL_INFO_LOG_LENGTH, &len);
-        }
-
-        if (glIsProgram(obj)) {
-            glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &len);
-        }
-
-        std::string log;
-        log.resize(len);
-
-        if (glIsShader(obj)) {
+            log.resize(len);
             glGetShaderInfoLog(obj, len, nullptr, &log[0]);
             LOGE << log;
         }
 
         if (glIsProgram(obj)) {
+            glGetProgramiv(obj, GL_INFO_LOG_LENGTH, &len);
+            log.resize(len);
             glGetProgramInfoLog(obj, len, nullptr, &log[0]);
             LOGE << log;
         }
 
-        if (!m_gs.empty()) {
-            LOG << "shader geometry code: log: " + m_gs;
-        }
+        LOG << "shader geometry code: log: " + (!m_gs.empty() ? m_gs : "");
     } else {
         bLoaded = true;
 
@@ -161,9 +153,10 @@ void Shaders::checkStatusLink(GLuint obj) {
         GLint   size;
         GLsizei length;
         for (int i = 0; i < numUniforms; i++) {
-            GLchar name[m_uniNameBufSize];
-            glGetActiveUniform(m_program, static_cast<GLuint>(i), m_uniNameBufSize, &length, &size, &type, name);
-            m_locations[std::string(name)] = glGetUniformLocation(m_program, name);
+            std::string name;
+            name.resize(m_uniNameBufSize);
+            glGetActiveUniform(m_program, static_cast<GLuint>(i), m_uniNameBufSize, &length, &size, &type, &name[0]);
+            m_locations[name] = glGetUniformLocation(m_program, &name[0]);
         }
     }
 }

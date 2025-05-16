@@ -73,25 +73,7 @@ void UIWindow::init(const UIWindowParams& par) {
         initColors();
 
         m_minWinSize = ivec2{300, 300};
-        m_sharedRes  = UISharedRes{static_cast<void *>(this),
-                                   &s_shCol,
-                                   m_winHandle,
-                                   m_objSel.get(),
-                                   m_quad.get(),
-                                   m_normQuad.get(),
-                                   getOrthoMat(),
-                                   m_dataFolder,
-                                   &m_procSteps,
-                                   this,
-                                   false,
-                                   &m_colors,
-                                   glm::ivec2(60, 30),
-                                   m_stdPadding,
-                                   &m_minWinSize,
-                                   m_glbase->getAssetManager(),
-                                   &m_nullVao,
-                                   m_drawMan,
-                                   m_glbase};
+        m_sharedRes  = UISharedRes{static_cast<void *>(this), &s_shCol, m_winHandle,m_objSel.get(), m_quad.get(), m_normQuad.get(), getOrthoMat(), m_dataFolder, &m_procSteps, this, false, &m_colors, glm::ivec2(60, 30), m_stdPadding, &m_minWinSize, m_glbase->getAssetManager(), &m_nullVao, m_drawMan, m_glbase};
 
         initUI(par);
         initGL();

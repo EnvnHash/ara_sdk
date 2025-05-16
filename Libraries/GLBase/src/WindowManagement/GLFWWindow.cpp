@@ -240,13 +240,10 @@ int GLFWWindow::init(const glWinPar &gp) {
 }
 
 void GLFWWindow::initFullScreen(const glWinPar &gp) {
-    LOG << " Window running in fullscreen mode";
     if (gp.debug) {
         for (int i = 0; i < m_count; i++) {
             auto vm = glfwGetVideoMode(m_monitors[i]);
-            LOG << "monitor " << i << " " << glfwGetMonitorName(m_monitors[i])
-                << " current video mode: width: " << vm->width << " height: " << vm->height
-                << " refreshRate: " << vm->refreshRate;
+            LOG << "monitor " << i << " " << glfwGetMonitorName(m_monitors[i]) << " current video mode: width: " << vm->width << " height: " << vm->height << " refreshRate: " << vm->refreshRate;
         }
     }
 
@@ -262,8 +259,7 @@ void GLFWWindow::initFullScreen(const glWinPar &gp) {
 
     if (gp.debug) {
         for (int j = 0; j < countVm; j++) {
-            printf("%i: current video mode: width: %i height: %i refreshRate: %i\n",
-                   j, modes[j].width, modes[j].height, modes[j].refreshRate);
+            printf("%i: current video mode: width: %i height: %i refreshRate: %i\n", j, modes[j].width, modes[j].height, modes[j].refreshRate);
         }
     }
 
@@ -278,41 +274,30 @@ void GLFWWindow::initFullScreen(const glWinPar &gp) {
     if (!found) {
         const GLFWvidmode *mode = glfwGetVideoMode(m_monitors[useMonitor]);
         if (gp.debug) {
-            printf("current video mode: width: %i height: %i refreshRate: %i\n",
-                   mode->width, mode->height, mode->refreshRate);
-            printf("using unsupported videomode! \n");
+            LOG << "current video mode: width: " << mode->width << " height: " <<  mode->height << "  refreshRate: " << mode->refreshRate;
         }
     } else {
         if (gp.debug) {
-            printf("set video mode: width: %i height: %i refreshRate: %i\n", useThisMode->width,
-                   useThisMode->height, useThisMode->refreshRate);
+            LOG << "set video mode: width: " << useThisMode->width << " height: " << useThisMode->height << " refreshRate: " << useThisMode->refreshRate;
         }
-
-        m_widthVirt  = useThisMode->width;
-        m_heightVirt = useThisMode->height;
-        glfwWindowHint(GLFW_RED_BITS, useThisMode->redBits);
-        glfwWindowHint(GLFW_GREEN_BITS, useThisMode->greenBits);
-        glfwWindowHint(GLFW_BLUE_BITS, useThisMode->blueBits);
-        glfwWindowHint(GLFW_REFRESH_RATE, useThisMode->refreshRate);
-        monitorRefreshRate = useThisMode->refreshRate;
     }
 
     m_mon = m_monitors[useMonitor];
 
     // get the video mode of the current selected monitor
-    const GLFWvidmode *mode = glfwGetVideoMode(m_mon);
+    useThisMode = glfwGetVideoMode(m_mon);
 
-    glfwWindowHint(GLFW_RED_BITS, mode->redBits);
-    glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
-    glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
-    glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+    glfwWindowHint(GLFW_RED_BITS, useThisMode->redBits);
+    glfwWindowHint(GLFW_GREEN_BITS, useThisMode->greenBits);
+    glfwWindowHint(GLFW_BLUE_BITS, useThisMode->blueBits);
+    glfwWindowHint(GLFW_REFRESH_RATE, useThisMode->refreshRate);
     glfwWindowHint(GLFW_SAMPLES, gp.nrSamples);
 
-    monitorRefreshRate = mode->refreshRate;
-    m_widthVirt        = mode->width;
-    m_heightVirt       = mode->height;
-    m_monWidth         = mode->width;
-    m_monHeight        = mode->height;
+    monitorRefreshRate = useThisMode->refreshRate;
+    m_widthVirt        = useThisMode->width;
+    m_heightVirt       = useThisMode->height;
+    m_monWidth         = useThisMode->width;
+    m_monHeight        = useThisMode->height;
 }
 
 void GLFWWindow::initNonFullScreen(const glWinPar &gp) {
