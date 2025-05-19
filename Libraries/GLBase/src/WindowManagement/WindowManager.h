@@ -17,17 +17,15 @@
 #pragma once
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-
 #include <Conditional.h>
 #include "GLWindow.h"
-
 #ifdef __linux__
 #include <X11/X11MousePos.h>
 #endif
 
 namespace ara {
-class AssetManager;
 
+class AssetManager;
 class GLBase;
 
 class WindowManager {

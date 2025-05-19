@@ -32,6 +32,7 @@
 
 #include <util_common.h>
 #include <GlbCommon/GlbKeyDefines.h>
+#include <GlbCommon/GlbConstants.h>
 
 #include <cstdint>
 #include <algorithm>
@@ -100,97 +101,13 @@ typedef unsigned short ushort;
 typedef uint32_t uint;
 #endif
 
-// -------------------- CONSTANTS ----------------------------
-
-#ifndef PI
-#define PI 3.14159265358979323846
-#endif
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
-#ifndef TWO_PI
-#define TWO_PI 6.28318530717958647693
-#endif
-
-#ifndef M_TWO_PI
-#define M_TWO_PI 6.28318530717958647693
-#endif
-
-#ifndef FOUR_PI
-#define FOUR_PI 12.56637061435917295385
-#endif
-
-#ifndef HALF_PI
-#define HALF_PI 1.57079632679489661923
-#endif
-
-#ifndef DEG_TO_RAD
-#define DEG_TO_RAD (PI / 180.0)
-#endif
-
-#ifndef ONE_THIRD
-#define ONE_THIRD (1.0f / 3.0f)
-#endif
-
-#ifndef FOUR_THIRDS
-#define FOUR_THIRDS (4.0f / 3.0f)
-#endif
-
-#ifndef SEL_LAYER_COUNT
-#define SEL_LAYER_COUNT 2
-#endif
-
-#ifndef MAX_PATH
-#define MAX_PATH 256
-#endif
-
-#ifdef _WIN32
-#ifndef GET_X_LPARAM
-#define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
-#endif
-
-#ifndef GET_Y_LPARAM
-#define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
-#endif
-#endif
-
-#define GLSG_DONT_CARE (-1)
-
-// -------------------- ENUMS ----------------------------
-
 namespace ara {
 
-enum class CoordType : int {
-    Position = 0,
-    Normal,
-    TexCoord,
-    Color,
-    TexCoordMod,
-    Velocity,
-    Aux0,
-    Aux1,
-    Aux2,
-    Aux3,
-    ModMatr,
-    Count
-};
+enum class CoordType : int { Position = 0, Normal, TexCoord, Color, TexCoordMod, Velocity, Aux0, Aux1, Aux2, Aux3, ModMatr, Count };
 enum class align : int { center = 0, left, right, justify, justify_ex };
 enum class valign : int { center = 0, top, bottom };
 enum class MouseIcon : int { arrow = 0, move, scale, rotate, ibeam, hresize, vresize, count };
-enum class WinMouseIcon : int {
-    arrow = 0,
-    hresize,
-    vresize,
-    lbtrResize,
-    ltbrResize,
-    crossHair,
-    move,
-    rotate,
-    scale,
-    count
-};
+enum class WinMouseIcon : int { arrow = 0, hresize, vresize, lbtrResize, ltbrResize, crossHair, move, rotate, scale, count };
 enum class mouseButt : int { left = 0, middle, right };
 enum class mouseDragType : int { none = 0, translating, rotating, rolling, zooming, snapToAxis };
 
@@ -198,31 +115,16 @@ static std::map<std::string, MouseIcon> stringToMouseIcon = {
     {"arrow", MouseIcon::arrow},    {"move", MouseIcon::move},   {"scale", MouseIcon::scale},
     {"rotate", MouseIcon::rotate},  {"ibeam", MouseIcon::ibeam}, {"hresize", MouseIcon::hresize},
     {"vresize", MouseIcon::vresize}};
-enum class ShaderType : int { Vertex = 0, Geometry, Fragment, Count };
-enum class StdMatNameInd : int { ModelMat = 0, CamModelMat, ViewMat, ProjectionMat, NormalMat };
-enum class TexCordGenType : int { PlaneProjection = 0 };
+
+enum class stdMatNameInd : int { ModelMat = 0, CamModelMat, ViewMat, ProjectionMat, NormalMat };
+enum class texCordGenType : int { PlaneProjection = 0 };
 enum class unitType : int { Pixels = 0, Percent };
 enum class coordComp : int { x = 0, y };
 enum class extrapolM : int { Mirror = 0, Circle };
 enum class interpolM : int { Bilinear = 0, CatmullRomCentri, Bezier };
 enum class maskType : int { Vector = 0, Bitmap, Count };
 enum class cfState : int { fine = 0, normal, coarse };
-enum class hidEvent : int {
-    KeyDown = 0,
-    KeyUp,
-    onChar,
-    MouseDownLeft,
-    MouseDownLeftNoDrag,
-    MouseUpLeft,
-    MouseDownRight,
-    MouseUpRight,
-    MouseMove,
-    MouseDrag,
-    MouseWheel,
-    OnResize,
-    SetViewport,
-    Size
-};
+enum class hidEvent : int { KeyDown = 0, KeyUp, onChar, MouseDownLeft, MouseDownLeftNoDrag, MouseUpLeft, MouseDownRight, MouseUpRight, MouseMove, MouseDrag, MouseWheel, OnResize, SetViewport, Size };
 
 enum class cpEditMode : int32_t {
     L2Move = 0,
@@ -249,7 +151,8 @@ enum class cpEditMode : int32_t {
 
 enum class glFun : int { Enable = 0, Disable, BlendEquation, BlendFunc, PolygonMode };
 enum class changeWinEvent : int { OnResize, SetViewport, Maximize, Minimize, SetWinPos };
-enum class StereoEye : int { left = 0, right = 1, count = 2 };
+enum class stereoEye : int { left = 0, right = 1, count = 2 };
+enum class winCb : int { Key = 0, Char, MouseButton, CursorPos, WindowSize, WindowClose, WindowMaximize, WindowIconify, WindowFocus, WindowPos, Scroll, WindowRefresh, Size };
 
 // process steps, order matters!!!, these are for fixed functionality that is used frequently
 enum winProcStep : int { Callbacks = 0, Tesselate, L1Lines, Select, ClearSel, Draw, Update, Count };

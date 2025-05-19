@@ -34,10 +34,10 @@ void SPGridFloorAxes::rebuildShader(uint32_t nrCameras) {
         "layout(location = 0) in vec4 position; \n"
         "layout(location = 3) in vec4 color; \n"
         "uniform mat4 " +
-        getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
         "; \n"
         "uniform mat3 " +
-        getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] +
         "; \n"
         "uniform vec4 lineCol[2]; \n"
         "\n"
@@ -48,7 +48,7 @@ void SPGridFloorAxes::rebuildShader(uint32_t nrCameras) {
         "\n"
         "void main() { \n"
         "\tvec4 wPos = " +
-        getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
         " * position; \n"
         "\tvertex_out.rawPos = wPos; \n"
         "\tvertex_out.color = lineCol[int(gl_VertexID >= 2)]; \n"
@@ -69,10 +69,10 @@ void SPGridFloorAxes::rebuildShader(uint32_t nrCameras) {
                        "\tfloat floorSwitch;\n"
                        "} vertex_out; \n"
                        "uniform mat4 " +
-                       getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
+                       getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
                        "];\n"
                        "uniform mat4 " +
-                       getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
+                       getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
                        "];\n"
                        "uniform float floorSwitch[" +
                        to_string(nrCameras) +
@@ -87,10 +87,10 @@ void SPGridFloorAxes::rebuildShader(uint32_t nrCameras) {
                        "\t\tfor (int i = 0; i < gl_in.length(); i++) { \n"
                        "\t\t\tgl_Layer = gl_InvocationID; \n"
                        "\t\t\tvec4 wPos = " +
-                       getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] +
+                       getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] +
                        "[gl_InvocationID] * vertex_in[i].rawPos; \n"
                        "\t\t\tvec4 p = " +
-                       getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] +
+                       getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] +
                        "[gl_InvocationID] * wPos; \n"
                        "\t\t\tgl_Position = bool(fishEye[gl_InvocationID]) ? "
                        "fishEyePos(wPos): p; \n"

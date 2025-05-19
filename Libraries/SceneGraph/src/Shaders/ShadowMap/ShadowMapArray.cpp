@@ -48,14 +48,14 @@ void ShadowMapArray::rebuildShader(uint _nrLights) {
             "uniform mat4 m_pv[" +
             std::to_string(limitNrLights) +
             "];\n"
-            "uniform mat4 " + getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] + "; \n"
+            "uniform mat4 " + getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] + "; \n"
             "uniform int lightIndIsActMesh;\n";
 
     geom += STRINGIFY(void main() {
         if (lightIndIsActMesh != gl_InvocationID) {
             for (int i = 0; i < gl_in.length(); i++) {
                 gl_Layer = gl_InvocationID;
-                                gl_Position = m_pv[gl_InvocationID] * ) + getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] + STRINGIFY( * gl_in[i].gl_Position;
+                                gl_Position = m_pv[gl_InvocationID] * ) + getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] + STRINGIFY( * gl_in[i].gl_Position;
 				EmitVertex();
             }
             EndPrimitive();

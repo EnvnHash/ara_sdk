@@ -37,16 +37,16 @@ CsStereoFbo::CsStereoFbo(sceneData* sd) : CameraSet(sd), m_layerTexShdr(nullptr)
 
     if (s_sd->winViewport.z > 0.f && s_sd->winViewport.w > 0.f) {
         for (int i = 0; i < 2; i++) {
-            auto f = m_stereoRenderer.getFov((StereoEye)i);
+            auto f = m_stereoRenderer.getFov((stereoEye)i);
 
             s_intern_cam.push_back(make_unique<TrackBallCam>(CameraInitParams{
                 .cTyp = camType::perspective,
-                .screenSize = { m_stereoRenderer.getFov((StereoEye)i)[0], m_stereoRenderer.getFov((StereoEye)i)[2] },
+                .screenSize = { m_stereoRenderer.getFov((stereoEye)i)[0], m_stereoRenderer.getFov((stereoEye)i)[2] },
                 .rect = { -0.5f, 0.5f, -0.5f, 0.5f },  // left, right, bottom, top
-                .cp = { m_camPos.x + m_stereoRenderer.getViewEyeOffs((StereoEye)i), m_camPos.y, m_camPos.z },
-                .la = { m_stereoRenderer.getViewEyeOffs((StereoEye)i), 0.f, 0.f},
-                .fov = glm::degrees(m_stereoRenderer.getFov((StereoEye)i)[3] +
-                             m_stereoRenderer.getFov((StereoEye)i)[2])
+                .cp = { m_camPos.x + m_stereoRenderer.getViewEyeOffs((stereoEye)i), m_camPos.y, m_camPos.z },
+                .la = { m_stereoRenderer.getViewEyeOffs((stereoEye)i), 0.f, 0.f},
+                .fov = glm::degrees(m_stereoRenderer.getFov((stereoEye)i)[3] +
+                             m_stereoRenderer.getFov((stereoEye)i)[2])
             }));  // fov
 
             s_intern_cam.back()->setUseTrackBall(true);
@@ -54,7 +54,7 @@ CsStereoFbo::CsStereoFbo(sceneData* sd) : CameraSet(sd), m_layerTexShdr(nullptr)
 
             if (i == 0) {
                 m_stereoViewAspect =
-                    m_stereoRenderer.getFov((StereoEye)i)[0] / m_stereoRenderer.getFov((StereoEye)i)[2];
+                    m_stereoRenderer.getFov((stereoEye)i)[0] / m_stereoRenderer.getFov((stereoEye)i)[2];
                 setInteractCam(s_intern_cam.back().get());
 
                 // sync both cameras, listen to updates on the first cam and
@@ -127,7 +127,7 @@ void CsStereoFbo::buildViewMatrixArrays() {
         s_modelMatrixList[i] = m_arCore->getModelMat();
         if (m_viewMode == CsStereoViewMode::Stereo) {
             s_viewMatrixList[i] =
-                glm::translate(vec3{m_stereoRenderer.getViewEyeOffs((StereoEye)i) * (i == 0 ? 1.f : -1.f), 0.f, 0.f}) *
+                glm::translate(vec3{m_stereoRenderer.getViewEyeOffs((stereoEye)i) * (i == 0 ? 1.f : -1.f), 0.f, 0.f}) *
                 m_arCore->getViewMat();
         } else {
             s_viewMatrixList[i] = m_arCore->getViewMat();
@@ -711,14 +711,14 @@ void CsStereoFbo::renderBackground() {
 
             if (m_viewMode == CsStereoViewMode::Stereo) {
                 m_foc_circ_pvm[0] = m_arCore->getProjMat() *
-                                    glm::translate(vec3{m_stereoRenderer.getViewEyeOffs(StereoEye::left), 0.f, 0.f}) *
+                                    glm::translate(vec3{m_stereoRenderer.getViewEyeOffs(stereoEye::left), 0.f, 0.f}) *
                                     m_arCore->getViewMat() * m_focus_circle_mat;
             } else {
                 m_foc_circ_pvm[0] = m_arCore->getProjMat() * m_arCore->getViewMat() * m_focus_circle_mat;
             }
 
             m_foc_circ_pvm[1] = m_arCore->getProjMat() *
-                                glm::translate(vec3{-m_stereoRenderer.getViewEyeOffs(StereoEye::right), 0.f, 0.f}) *
+                                glm::translate(vec3{-m_stereoRenderer.getViewEyeOffs(stereoEye::right), 0.f, 0.f}) *
                                 m_arCore->getViewMat() * m_focus_circle_mat;
 
             m_focSqShdr->begin();
@@ -738,14 +738,14 @@ void CsStereoFbo::drawPlane(ArPlane* plane) {
 
     if (m_viewMode == CsStereoViewMode::Stereo) {
         m_mvp[0] = m_arCore->getProjMat() *
-                   glm::translate(vec3{m_stereoRenderer.getViewEyeOffs(StereoEye::left), 0.f, 0.f}) *
+                   glm::translate(vec3{m_stereoRenderer.getViewEyeOffs(stereoEye::left), 0.f, 0.f}) *
                    m_arCore->getViewMat() * m_model_mat;
     } else {
         m_mvp[0] = m_arCore->getProjMat() * m_arCore->getViewMat() * m_model_mat;
     }
 
     m_mvp[1] = m_arCore->getProjMat() *
-               glm::translate(vec3{-m_stereoRenderer.getViewEyeOffs(StereoEye::right), 0.f, 0.f}) *
+               glm::translate(vec3{-m_stereoRenderer.getViewEyeOffs(stereoEye::right), 0.f, 0.f}) *
                m_arCore->getViewMat() * m_model_mat;
 
     m_planeShdr->setUniformMatrix4fv("mvp", &m_mvp[0][0][0], m_viewMode == CsStereoViewMode::Stereo ? 2 : 1);
@@ -887,7 +887,7 @@ void CsStereoFbo::renderFbos(float* extDrawMatr) {
         for (GLsizei i = 0; i < s_cam.size(); i++) {
             m_layerTexShdr->setUniform1f("layerNr", static_cast<float>(i));
             m_layerTexShdr->setUniform2f("centre", !i ? 0.1f : -0.1f, 0.0f);
-            m_layerTexShdr->setUniformMatrix4fv("trans", m_stereoRenderer.getEyeLensTrans((StereoEye)i));
+            m_layerTexShdr->setUniformMatrix4fv("trans", m_stereoRenderer.getEyeLensTrans((stereoEye)i));
             m_quad->draw();
         }
     } else {
@@ -912,7 +912,7 @@ void CsStereoFbo::setViewport(uint x, uint y, uint width, uint height, bool resi
     rebuildFbo();
     uptStereoRender();
 
-    m_stereoViewAspect = m_stereoRenderer.getFov(StereoEye::left)[0] / m_stereoRenderer.getFov(StereoEye::left)[2];
+    m_stereoViewAspect = m_stereoRenderer.getFov(stereoEye::left)[0] / m_stereoRenderer.getFov(stereoEye::left)[2];
 }
 
 void CsStereoFbo::setViewMode(CsStereoViewMode mode) {

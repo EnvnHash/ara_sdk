@@ -68,11 +68,11 @@ void SPObjectSelector::initDepthGenShader(uint nrCameras) {
         "// SPObjectSelector_gen Prototype\n"
         "layout(location = 0) in vec4 position; \n"
         "uniform mat4 " +
-        getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
         "; \n"
         "void main() { \n"
         "gl_Position = " +
-        getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
         " * position; \n"
         "}";
 
@@ -80,18 +80,18 @@ void SPObjectSelector::initDepthGenShader(uint nrCameras) {
                        ") in;\n"
                        "layout(triangle_strip, max_vertices=3) out;\n"
                        "uniform mat4 " +
-                       getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
+                       getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
                        "];\n"
                        "uniform mat4 " +
-                       getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
+                       getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
                        "];\n"
                        "void main() {\n"
                        "for (int i = 0; i < gl_in.length(); i++) \n"
                        "{ \n"
                        "gl_Layer = gl_InvocationID; \n"
                        "gl_Position = " +
-                       getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] + "[gl_InvocationID] * " +
-                       getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] +
+                       getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] + "[gl_InvocationID] * " +
+                       getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] +
                        "[gl_InvocationID] * gl_in[i].gl_Position; \n"
                        "EmitVertex(); \n"
                        "}\n "

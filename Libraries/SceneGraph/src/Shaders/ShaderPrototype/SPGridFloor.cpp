@@ -34,10 +34,10 @@ void SPGridFloor::rebuildShader(uint32_t nrCameras) {
         "layout(location = 1) in vec4 normal; \n"
         "layout(location = 2) in vec2 texCoord; \n"
         "uniform mat4 " +
-        getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
         "; \n"
         "uniform mat3 " +
-        getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] +
         "; \n"
         "\n"
         "out VS_GS { \n"
@@ -48,11 +48,11 @@ void SPGridFloor::rebuildShader(uint32_t nrCameras) {
         "\n"
         "void main() { \n"
         "\tvec4 wPos = " +
-        getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
         " * position; \n"
         "\tvertex_out.rawPos = wPos; \n"
         "\tvertex_out.normal = normalize(" +
-        getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] +
         " * normal.xyz); \n"
         "\tvertex_out.tex_coord = texCoord; \n"
         "\tgl_Position = position; \n"
@@ -78,10 +78,10 @@ void SPGridFloor::rebuildShader(uint32_t nrCameras) {
                        "\tvec4 ndc;\n"
                        "} vertex_out; \n"
                        "uniform mat4 " +
-                       getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
+                       getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
                        "];\n"
                        "uniform mat4 " +
-                       getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
+                       getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
                        "];\n"
                        "uniform float floorSwitch[" +
                        to_string(nrCameras) +
@@ -96,10 +96,10 @@ void SPGridFloor::rebuildShader(uint32_t nrCameras) {
                        "\t\tfor (int i = 0; i < gl_in.length(); i++) { \n"
                        "\t\t\tgl_Layer = gl_InvocationID; \n"
                        "\t\t\tvec4 wPos = " +
-                       getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] +
+                       getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] +
                        "[gl_InvocationID] * vertex_in[i].rawPos; \n"
                        "\t\t\tvec4 p = " +
-                       getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] +
+                       getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] +
                        "[gl_InvocationID] * wPos; \n"
                        "\t\t\tgl_Position = bool(fishEye[gl_InvocationID]) ? "
                        "fishEyePos(wPos): p; \n"

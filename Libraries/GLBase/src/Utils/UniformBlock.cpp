@@ -16,13 +16,15 @@
 
 #include "Utils/UniformBlock.h"
 
+using namespace std;
+
 namespace ara {
 
-UniformBlock::UniformBlock(GLuint program, const std::string &blockName) {
+UniformBlock::UniformBlock(GLuint program, const string &blockName) {
     init(program, blockName);
 }
 
-void UniformBlock::init(GLuint program, const std::string &blockName) {
+void UniformBlock::init(GLuint program, const string &blockName) {
     m_program = program;
     glUseProgram(m_program);
 
@@ -38,9 +40,8 @@ void UniformBlock::init(GLuint program, const std::string &blockName) {
     }
 }
 
-void UniformBlock::addVarName(const std::string& name, void *inVal, GLenum type) {
-    auto it =
-        std::ranges::find_if(m_valPairs, [name](const ubBlockVar &ub) { return ub.name == name; });
+void UniformBlock::addVarName(const string& name, void *inVal, GLenum type) {
+    auto it = ranges::find_if(m_valPairs, [name](const ubBlockVar &ub) { return ub.name == name; });
     if (it != m_valPairs.end()) {
         return;
     }
@@ -66,9 +67,8 @@ void UniformBlock::addVarName(const std::string& name, void *inVal, GLenum type)
     }
 }
 
-void UniformBlock::changeVarName(const std::string &name, void *inVal, GLenum type) {
-    auto item =
-        std::ranges::find_if(m_valPairs, [name](const ubBlockVar &it) { return it.name == name; });
+void UniformBlock::changeVarName(const string &name, void *inVal, GLenum type) {
+    auto item = ranges::find_if(m_valPairs, [name](const ubBlockVar &it) { return it.name == name; });
 
     if (item != m_valPairs.end()) {
         item->name   = name;
@@ -95,9 +95,8 @@ void UniformBlock::changeVarName(const std::string &name, void *inVal, GLenum ty
         LOGE << "UniformBlock::changeVarName Error, name not found ";
 }
 
-ubBlockVar* UniformBlock::getVar(const std::string &name) {
-    auto it = std::ranges::find_if(m_valPairs,
-                                   [name](const ubBlockVar &ub) { return ub.name == name; });
+ubBlockVar* UniformBlock::getVar(const string &name) {
+    auto it = ranges::find_if(m_valPairs, [name](const ubBlockVar &ub) { return ub.name == name; });
     return (it != m_valPairs.end() ? &(*it) : nullptr);
 }
 
@@ -144,7 +143,10 @@ void UniformBlock::update() {
                 default:
                     break;
             }
-            memcpy(&m_buffer[0] + m_offset[i], src, m_size[i] * TypeSize(m_type[i]));
+
+            std::copy(reinterpret_cast<uint8_t*>(src), reinterpret_cast<uint8_t*>(src) + m_size[i] * TypeSize(m_type[i]),
+                      reinterpret_cast<uint8_t*>(&m_buffer[0] + m_offset[i]));
+            //memcpy(&m_buffer[0] + m_offset[i], src, m_size[i] * TypeSize(m_type[i]));
             ++i;
         }
 
@@ -160,7 +162,7 @@ void UniformBlock::update() {
 }
 
 size_t UniformBlock::TypeSize(GLenum type) {
-    static std::unordered_map<GLenum, size_t> typeSizes = {
+    static unordered_map<GLenum, size_t> typeSizes = {
         { GL_FLOAT, sizeof(GLfloat) },
         { GL_FLOAT_VEC2, sizeof(GLfloat) * 2 },
         { GL_FLOAT_VEC3, sizeof(GLfloat) * 3 },

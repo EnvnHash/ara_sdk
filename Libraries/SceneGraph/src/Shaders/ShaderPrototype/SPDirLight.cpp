@@ -37,7 +37,7 @@ SPDirLight::SPDirLight(sceneData* sd) : ShaderProto(sd) {
     for (uint i = 0; i < 4; i++) {
 	    vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
     }
-    vert += "uniform mat3 " + getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] + "; \n";
+    vert += "uniform mat3 " + getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] + "; \n";
 
     vert += STRINGIFY(
 	out VS_FS {

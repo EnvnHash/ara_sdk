@@ -59,14 +59,14 @@ void SPSkyBox::rebuildShader(uint32_t nrCameras) {
                        "\tvec3 tex_coord; \n"
                        "} vertex_out; \n"
                        "uniform mat4 " +
-                       getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
+                       getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
                        "];\n"
                        "uniform mat4 " +
-                       getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
+                       getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
                        "];\n"
                        "void main() {\n"
                        "\tmat4 normMat = mat4(mat3(transpose(inverse(" +
-                       getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] +
+                       getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] +
                        "[gl_InvocationID]))));\n"
                        "\tfor (int i = 0; i < gl_in.length(); i++) { \n"
                        "\tgl_Layer = gl_InvocationID; \n"
@@ -75,7 +75,7 @@ void SPSkyBox::rebuildShader(uint32_t nrCameras) {
 #endif
                        "\t\tvertex_out.tex_coord = pos[i].xyz;\n"
                        "\t\tgl_Position = " +
-                       getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] +
+                       getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] +
                        "[gl_InvocationID] * normMat * pos[i]; \n"
                        "\t\tEmitVertex(); \n"
                        "\t}\n "

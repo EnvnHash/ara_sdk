@@ -51,7 +51,7 @@ void ShadowMapVsmArray::rebuildShader(uint nrLights) {
                 std::to_string(limitNrLights) +
                 "];\n"
                 "uniform mat4 " +
-                getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+                getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
                 "; \n"
                 "uniform int lightIndIsActMesh;\n"
                 "out GS_FS { vec4 position; } v_out; \n";
@@ -60,7 +60,7 @@ void ShadowMapVsmArray::rebuildShader(uint nrLights) {
             if (lightIndIsActMesh != gl_InvocationID) {
                 for (int i = 0; i < gl_in.length(); i++) {
                     gl_Layer = gl_InvocationID;
-                                        vec4 pos = m_pv[gl_InvocationID] *) + getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] + STRINGIFY(*gl_in[i].gl_Position;
+                                        vec4 pos = m_pv[gl_InvocationID] *) + getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] + STRINGIFY(*gl_in[i].gl_Position;
 					gl_Position = pos;
 					v_out.position = pos;
 					EmitVertex();

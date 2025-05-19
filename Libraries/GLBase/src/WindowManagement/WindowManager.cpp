@@ -64,7 +64,7 @@ void WindowManager::iterate(bool only_open_windows) {
     m_lastTime = actTime;
 
     if (m_showFps && (m_lastTime - m_lastPrintFps) > m_printFpsIntv) {
-        printf("FPS: %f dt: %f\n", 1.0 / m_medDt, m_medDt);
+        LOG <<  "FPS: " << (1.0 / m_medDt) << " dt: " << m_medDt;
         m_lastPrintFps = m_lastTime;
     }
 
@@ -92,7 +92,6 @@ void WindowManager::iterate(bool only_open_windows) {
             } else if (it->getDrawFunc()) {
                 it->getDrawFunc()(m_lastTime, m_medDt, m_winInd);
             }
-
             it->swap();
         }
         ++m_winInd;
@@ -325,18 +324,18 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
         };
 
         // always pass all interaction through the global HID callback functions
-        win->setKeyCallback(WindowManager::globalKeyCb);
-        win->setCharCallback(WindowManager::globalCharCb);
-        win->setMouseButtonCallback(WindowManager::globalMouseButCb);
-        win->setCursorPosCallback(WindowManager::globalMouseCursorCb);
-        win->setWindowSizeCallback(WindowManager::globalWindowSizeCb);
-        win->setWindowCloseCallback(WindowManager::globalWindowCloseCb);
-        win->setWindowMaximizeCallback(WindowManager::globalWindowMaximizeCb);
-        win->setWindowIconifyCallback(WindowManager::globalWindowIconifyCb);
-        win->setWindowFocusCallback(WindowManager::globalWindowFocusCb);
-        win->setWindowPosCallback(WindowManager::globalWindowPosCb);
-        win->setScrollCallback(WindowManager::globalScrollCb);
-        win->setWindowRefreshCallback(WindowManager::globalWindowRefreshCb);
+        win->setWinCallback(winCb::Key, WindowManager::globalKeyCb);
+        win->setWinCallback(winCb::Char, WindowManager::globalCharCb);
+        win->setWinCallback(winCb::MouseButton, WindowManager::globalMouseButCb);
+        win->setWinCallback(winCb::CursorPos, WindowManager::globalMouseCursorCb);
+        win->setWinCallback(winCb::WindowSize, WindowManager::globalWindowSizeCb);
+        win->setWinCallback(winCb::WindowClose, WindowManager::globalWindowCloseCb);
+        win->setWinCallback(winCb::WindowMaximize, WindowManager::globalWindowMaximizeCb);
+        win->setWinCallback(winCb::WindowIconify, WindowManager::globalWindowIconifyCb);
+        win->setWinCallback(winCb::WindowFocus, WindowManager::globalWindowFocusCb);
+        win->setWinCallback(winCb::WindowPos, WindowManager::globalWindowPosCb);
+        win->setWinCallback(winCb::Scroll, WindowManager::globalScrollCb);
+        win->setWinCallback(winCb::WindowRefresh, WindowManager::globalWindowRefreshCb);
     }
 
 #ifdef ARA_USE_GLFW

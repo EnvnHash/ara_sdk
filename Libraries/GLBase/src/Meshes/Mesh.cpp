@@ -265,10 +265,10 @@ void Mesh::calcSmoothNormals() {
 }
 
 // should happen before transforming
-void Mesh::genTexCoord(TexCordGenType _type) {
+void Mesh::genTexCoord(texCordGenType _type) {
     // loop through the positions
     switch (_type) {
-        case TexCordGenType::PlaneProjection:
+        case texCordGenType::PlaneProjection:
 
             // get the normal of the first triangle
             glm::vec3 normal = glm::cross(glm::vec3(m_positions[0], m_positions[1], m_positions[2]),

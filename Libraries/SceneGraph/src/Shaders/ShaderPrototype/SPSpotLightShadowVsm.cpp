@@ -50,10 +50,10 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
 #endif
 
     if (!s_useUniformBlock) {
-        vert += "uniform mat4 " + getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+        vert += "uniform mat4 " + getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
                 "; \n"
                 "uniform mat3 " +
-                getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] + "; \n";
+                getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] + "; \n";
 
         if (!s_lights.empty()) vert += "uniform mat4 shadow_matrix[" + std::to_string(s_lights.size()) + "]; \n";
     } else
@@ -72,14 +72,14 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
         "\n"
         "void main() { \n"
         "vec4 wPos = " +
-        getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
         " * position; \n"
         "vertex_out.rawPos = wPos; \n";
     if (!s_lights.empty())
         vert += "for (int i=0;i<" + std::to_string(s_lights.size()) +
                 "; i++) vertex_out.shadow_coord[i] = shadow_matrix[i] * "
                 "position;\n";
-    vert += "vertex_out.normal = normalize(" + getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] +
+    vert += "vertex_out.normal = normalize(" + getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] +
             " * normal.xyz); \n"
             "vertex_out.tex_coord = texCoord; \n"
             "vertex_out.color = color; \n"
@@ -115,13 +115,13 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
     if (!s_lights.empty()) geom += "uniform mat4 shadow_matrix[" + to_string(s_lights.size()) + "]; \n";
 
     if (!s_useUniformBlock) {
-        geom += "uniform mat4 " + getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
+        geom += "uniform mat4 " + getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) +
                 "];\n"
                 //"uniform mat4 " +
-                // getStdMatrixNames()[toType(StdMatNameInd::ViewMat)] + "[" +
+                // getStdMatrixNames()[toType(stdMatNameInd::ViewMat)] + "[" +
                 // to_string(nrCameras) + "];\n"
                 "uniform mat4 " +
-                getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
+                getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) +
                 "];\n"
                 "uniform int skipForInd; \n"
                 "uniform int camLimit; \n"
@@ -151,10 +151,10 @@ void SPSpotLightShadowVsm::rebuildShader(uint32_t nrCameras) {
         "\t\t\tgl_ViewportIndex = gl_InvocationID; \n"
 #endif
         "\t\t\tvec4 wPos = " +
-        getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] +
         "[gl_InvocationID] * vertex_in[i].rawPos; \n"
         "\t\t\tvec4 p = " +
-        getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] +
+        getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] +
         "[gl_InvocationID] * wPos; \n"
         "\t\t\tgl_Position = bool(fishEye[gl_InvocationID]) ? "
         "fishEyePos(wPos): p; \n";
@@ -601,7 +601,7 @@ void SPSpotLightShadowVsm::sendParShadowMapPass(SceneNode *node, SceneNode *pare
 
     if (!s_lights.empty() && m_shadowGen->getShader()) {
         m_shadowGen->getShader()->setUniformMatrix4fv("m_pv", &m_pv_mats[0][0][0], static_cast<int>(s_lights.size()));
-        m_shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)], value_ptr(node->getModelMat(parent)));
+        m_shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(stdMatNameInd::ModelMat)], value_ptr(node->getModelMat(parent)));
     }
 }
 

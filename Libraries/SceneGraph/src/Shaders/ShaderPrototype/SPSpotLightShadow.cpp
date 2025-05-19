@@ -41,7 +41,7 @@ void SPSpotLightShadow::rebuildShader() {
         vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
     }
 
-    vert += "uniform mat3 " + getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] +
+    vert += "uniform mat3 " + getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] +
             "; \n"
             "uniform mat4 shadow_matrix[" +
             to_string(m_maxNrParLights) +
@@ -60,11 +60,11 @@ void SPSpotLightShadow::rebuildShader() {
             "\n"
             "void main() { \n"
             "vec4 wPos = " +
-            getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +
+            getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +
             " * position; \n"
             "vertex_out.rawPos = wPos; \n"
             "wPos = " +
-            getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] +
+            getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] +
             " * wPos; \n"
             "for (int i=0;i<nrLights; i++) {\n"
             "vertex_out.shadow_coord[i] = shadow_matrix[i] * position;\n"
@@ -72,12 +72,12 @@ void SPSpotLightShadow::rebuildShader() {
             "vertex_out.tex_coord = texCoord; \n"
             "vertex_out.color = color; \n"
             "vertex_out.normal = normalize(" +
-            getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] +
+            getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] +
             " * normal.xyz); \n"
             "\n"
             "gl_Position = " +
-            getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] + " * " +
-            getStdMatrixNames()[toType(StdMatNameInd::ViewMat)] +
+            getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] + " * " +
+            getStdMatrixNames()[toType(stdMatNameInd::ViewMat)] +
             " * wPos; \n"
             "}";
 
@@ -323,7 +323,7 @@ void SPSpotLightShadow::sendPar(CameraSet *cs, double time, SceneNode *node, Sce
         }
 
         m_shadowGen->getShader()->setUniformMatrix4fv("m_pv", &m_pv_mats[0][0][0], static_cast<uint>(s_lights.size()));
-        m_shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(StdMatNameInd::ModelMat)],
+        m_shadowGen->getShader()->setUniformMatrix4fv(getStdMatrixNames()[toType(stdMatNameInd::ModelMat)],
                                                     value_ptr(node->getModelMat(parent)));
 
     } else if ((pass == renderPass::scene || pass == renderPass::gizmo) && s_shader) {

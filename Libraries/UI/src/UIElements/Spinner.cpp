@@ -147,7 +147,7 @@ Texture* Spinner::setImage(const filesystem::path& filepath, int mipmapLevels) {
 
     m_filepath = filepath;
     auto& texCol = getSharedRes()->glbase->textureCollector();
-    m_tex = texCol.addFromAssetManager(filepath, 8);
+    m_tex = texCol.addFromAssetManager(filepath.string(), 8);
     texCol.addRemoveCb(filepath.string(), [this]{
         m_tex = nullptr;
     });

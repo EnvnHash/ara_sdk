@@ -33,7 +33,7 @@ public:
     void invertNormals();
     void calcNormals();
     void calcSmoothNormals();
-    void genTexCoord(TexCordGenType type);
+    void genTexCoord(texCordGenType type);
     void push_back(GLfloat *coords, int count);
     void push_back_any(CoordType t, GLfloat *vertices, int count);
 

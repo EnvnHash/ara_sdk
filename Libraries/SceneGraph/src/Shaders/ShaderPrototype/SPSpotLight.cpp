@@ -37,7 +37,7 @@ SPSpotLight::SPSpotLight(sceneData* sd) : ShaderProto(sd) {
                       layout(location = 2) in vec2 texCoord; layout(location = 3) in vec4 color;);
 
     for (uint i = 0; i < 4; i++) vert += "uniform mat4 " + getStdMatrixNames()[i] + "; \n";
-    vert += "uniform mat3 " + getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] + "; \n";
+    vert += "uniform mat3 " + getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] + "; \n";
 
     vert += STRINGIFY(
 		out VS_FS {

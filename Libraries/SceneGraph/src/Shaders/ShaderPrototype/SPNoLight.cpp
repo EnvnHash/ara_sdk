@@ -40,8 +40,8 @@ void SPNoLight::rebuildShader(uint32_t nrCameras) {
         layout(location = 3) in vec4 color; \n);
 
     if (!s_useUniformBlock) {
-        vert += "uniform mat4 " + getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] +"; \n"
-                "uniform mat3 " + getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] + "; \n";
+        vert += "uniform mat4 " + getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] +"; \n"
+                "uniform mat3 " + getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] + "; \n";
         if (!s_lights.empty()) vert += "uniform mat4 shadow_matrix[" + std::to_string(s_lights.size()) + "]; \n";
     } else {
         vert += getNodeDataUb(nrCameras);
@@ -56,9 +56,9 @@ void SPNoLight::rebuildShader(uint32_t nrCameras) {
         "} vertex_out; \n"
         "\n"
         "void main() { \n"
-        "vec4 wPos = " + getStdMatrixNames()[toType(StdMatNameInd::ModelMat)] + " * position; \n"
+        "vec4 wPos = " + getStdMatrixNames()[toType(stdMatNameInd::ModelMat)] + " * position; \n"
         "vertex_out.rawPos = wPos; \n"
-        "vertex_out.normal = normalize(" + getStdMatrixNames()[toType(StdMatNameInd::NormalMat)] + " * normal.xyz); \n"
+        "vertex_out.normal = normalize(" + getStdMatrixNames()[toType(stdMatNameInd::NormalMat)] + " * normal.xyz); \n"
         "vertex_out.tex_coord = texCoord; \n"
         "vertex_out.color = color; \n"
         "gl_Position = position; \n"
@@ -86,8 +86,8 @@ void SPNoLight::rebuildShader(uint32_t nrCameras) {
         "} vertex_out; \n";
 
     if (!s_useUniformBlock) {
-        geom += "uniform mat4 " + getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) + "];\n"
-                "uniform mat4 " + getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) + "];\n"
+        geom += "uniform mat4 " + getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] + "[" + to_string(nrCameras) + "];\n"
+                "uniform mat4 " + getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] + "[" + to_string(nrCameras) + "];\n"
                 "uniform int skipForInd; \n"
                 "uniform int camLimit; \n"
                 "uniform vec2 texMin;\n"
@@ -108,8 +108,8 @@ void SPNoLight::rebuildShader(uint32_t nrCameras) {
 #ifndef ARA_USE_GLES31  // GLES does not support multiple viewports
         "\t\t\tgl_ViewportIndex = gl_InvocationID; \n"
 #endif
-        "\t\t\tvec4 wPos = " + getStdMatrixNames()[toType(StdMatNameInd::CamModelMat)] + "[gl_InvocationID] * vertex_in[i].rawPos; \n"
-        "\t\t\tvec4 p = " + getStdMatrixNames()[toType(StdMatNameInd::ProjectionMat)] + "[gl_InvocationID] * wPos; \n"
+        "\t\t\tvec4 wPos = " + getStdMatrixNames()[toType(stdMatNameInd::CamModelMat)] + "[gl_InvocationID] * vertex_in[i].rawPos; \n"
+        "\t\t\tvec4 p = " + getStdMatrixNames()[toType(stdMatNameInd::ProjectionMat)] + "[gl_InvocationID] * wPos; \n"
         "\t\t\tgl_Position = p; \n"
         "\t\t\tvertex_out.normal = vertex_in[i].normal; \n"
         "\t\t\tvec2 tc = bool(normTexCoord) ? (vertex_in[i].tex_coord - texMin) / (texMax - texMin) : vertex_in[i].tex_coord; \n"

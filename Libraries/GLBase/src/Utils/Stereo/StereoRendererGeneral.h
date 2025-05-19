@@ -13,12 +13,12 @@ namespace ara {
 class StereoRendererGeneral {
 public:
     void   init(void *extData = nullptr);
-    float *getEyeLensTrans(StereoEye eye);
+    float *getEyeLensTrans(stereoEye eye);
 
     VAO& getVao(int i) { return m_vao[i]; }
 
-    [[nodiscard]] std::array<float, 4> &getFov(StereoEye i) const { return m_lensDist->getFov(i); }
-    [[nodiscard]] static float          getViewEyeOffs(StereoEye eye) { return LensDistortion::getViewEyeOffs(eye); }
+    [[nodiscard]] std::array<float, 4> &getFov(stereoEye i) const { return m_lensDist->getFov(i); }
+    [[nodiscard]] static float          getViewEyeOffs(stereoEye eye) { return LensDistortion::getViewEyeOffs(eye); }
 
     void setScreenParam(glm::vec2 dpi, glm::vec2 screen_size) {
         m_scrPar.m_xdpi        = dpi.x;
