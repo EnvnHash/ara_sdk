@@ -167,30 +167,38 @@ void UIWindow::initToCurrentCtx() {
 void UIWindow::initHidCallbacks() {
     // set hid callbacks. This must be done this way, as GlFW expects static c-style callbacks, which is not possible
     // when aiming for modular c++ style window architectures
-    m_winHandle->addKeyCb([this](int p1, int p2, int p3, int p4) { key_callback(p1, p2, p3, p4); });
-    m_winHandle->setCharCb([this](unsigned int p1) { char_callback(p1); });
-    m_winHandle->setMouseButtonCb([this](int button, int action, int mods) { mouseBut_callback(button, action, mods); });
-    m_winHandle->setMouseCursorCb([this](double x, double y) { cursor_callback(x, y); });
-    m_winHandle->setWindowSizeCb([this](int w, int h) { window_size_callback(w, h); });
-    m_winHandle->setScrollCb([this](double xOffs, double yOffs) { scroll_callback(xOffs, yOffs); });
-    m_winHandle->setWindowPosCb([this](int posX, int posY) { window_pos_callback(posX, posY); });
-    m_winHandle->setWindowMaximizeCb([this](int maximized) { window_maximize_callback(maximized); });
-    m_winHandle->setWindowFocusCb([this](int focused) { window_focus_callback(focused); });
-    m_winHandle->setWindowIconfifyCb([this](int iconified) { window_minimize_callback(iconified); });
-    m_winHandle->setCloseCb([this] { window_close_callback(); });
-    m_winHandle->setWindowRefreshCb([this] { window_refresh_callback(); });
+    std::unordered_map<winCb, winHidCb> hidCbMap {
+        { winCb::Key, [this](int key, int scancode, int action, int mods) { keyCallback(key, scancode, action, mods); } },
+        { winCb::MouseButton, [this](int button, int action, int mods) { mouseButCallback(button, action, mods); } },
+        { winCb::WindowClose, [this] { window_close_callback(); } },
+        { winCb::WindowRefresh, [this] { window_refresh_callback(); } },
+        { winCb::CursorPos, static_cast<std::function<void(double, double)>>( [this](double x, double y) {
+            cursorCallback(x, y); } ) },
+        { winCb::Char, static_cast<std::function<void(unsigned int)>>([this](unsigned int p1) { charCallback(p1); } ) },
+        { winCb::WindowSize, static_cast<std::function<void(int, int)>>( [this](int w, int h) { window_size_callback(w, h); } ) },
+        { winCb::Scroll, static_cast< std::function<void(double, double)> >( [this](double xOffs, double yOffs) {
+            scrollCallback(xOffs, yOffs); } ) },
+        { winCb::WindowPos, static_cast<std::function<void(double, double)> >( [this](int posX, int posY) { window_pos_callback(posX, posY); } ) },
+        { winCb::WindowMaximize, static_cast<std::function<void(int)>>( [this](int maximized) { window_maximize_callback(maximized); } ) },
+        { winCb::WindowFocus, static_cast<std::function<void(int)>>( [this](int focused) { window_focus_callback(focused); } ) },
+        { winCb::WindowIconify, static_cast<std::function<void(int)>>( [this](int iconified) { window_minimize_callback(iconified); } ) },
+    };
+
+    for(auto &[key, func] : hidCbMap) {
+        m_winHandle->setWinCallback(key, func);
+    }
 }
 
 void UIWindow::initColors() {
-    m_colors[uiColors::background]     = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
-    m_colors[uiColors::darkBackground] = glm::vec4(0.12f, 0.12f, 0.12f, 1.f);
-    m_colors[uiColors::sepLine]        = glm::vec4(0.3f, 0.3f, 0.3f, 1.f);
-    m_colors[uiColors::font]           = glm::vec4(0.8f, 0.8f, 0.8f, 1.f);
-    m_colors[uiColors::highlight]      = glm::vec4(0.f, 0.6f, 0.87f, 1.f);
-    m_colors[uiColors::black]          = glm::vec4(0.f, 0.f, 0.f, 1.f);
-    m_colors[uiColors::blue]           = glm::vec4(0.f, 0.6f, 0.9f, 1.f);
-    m_colors[uiColors::darkBlue]       = glm::vec4(0.f, 0.36f, 0.5f, 1.f);
-    m_colors[uiColors::white]          = glm::vec4(1.f, 1.f, 1.f, 1.f);
+    m_colors[uiColors::background]     = vec4{0.2f, 0.2f, 0.2f, 1.f};
+    m_colors[uiColors::darkBackground] = vec4{0.12f, 0.12f, 0.12f, 1.f};
+    m_colors[uiColors::sepLine]        = vec4{0.3f, 0.3f, 0.3f, 1.f};
+    m_colors[uiColors::font]           = vec4{0.8f, 0.8f, 0.8f, 1.f};
+    m_colors[uiColors::highlight]      = vec4{0.f, 0.6f, 0.87f, 1.f};
+    m_colors[uiColors::black]          = vec4{0.f, 0.f, 0.f, 1.f};
+    m_colors[uiColors::blue]           = vec4{0.f, 0.6f, 0.9f, 1.f};
+    m_colors[uiColors::darkBlue]       = vec4{0.f, 0.36f, 0.5f, 1.f};
+    m_colors[uiColors::white]          = vec4{1.f, 1.f, 1.f, 1.f};
 }
 
 void UIWindow::initGLResources() {
@@ -560,7 +568,7 @@ void UIWindow::getActualMonitorMaxArea(int win_xpos, int win_ypos) {
 }
 
 /** HID callbacks called from the glfw event loop */
-void UIWindow::key_callback(int key, int scancode, int action, int mods) {
+void UIWindow::keyCallback(int key, int scancode, int action, int mods) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     int  outKey  = key;
     bool isAlt   = (key == GLSG_KEY_LEFT_ALT) || (key == GLSG_KEY_RIGHT_ALT);
@@ -623,7 +631,7 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
 #endif
 }
 
-void UIWindow::char_callback(unsigned int codepoint) {
+void UIWindow::charCallback(unsigned int codepoint) {
     WindowBase::osChar(codepoint);
     iterate();
 }
@@ -631,7 +639,7 @@ void UIWindow::char_callback(unsigned int codepoint) {
 /** input in virtual pixels. The inconsistency between windows and osx (Windows
  * returns real pixels, macOS returns virtual (hdpi independent) pixels) is
  * fixed for GLFWWindows before this method is called **/
-void UIWindow::cursor_callback(double xpos, double ypos) {
+void UIWindow::cursorCallback(double xpos, double ypos) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     m_lastMouseX = xpos;
     m_lastMouseY = ypos;
@@ -643,7 +651,7 @@ void UIWindow::cursor_callback(double xpos, double ypos) {
 #endif
 }
 
-void UIWindow::mouseBut_callback(int button, int action, int mods) {
+void UIWindow::mouseButCallback(int button, int action, int mods) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
 
 #ifdef ARA_USE_GLFW
@@ -673,7 +681,7 @@ void UIWindow::mouseBut_callback(int button, int action, int mods) {
 #endif
 }
 
-void UIWindow::scroll_callback(double xoffset, double yoffset) {
+void UIWindow::scrollCallback(double xoffset, double yoffset) {
     WindowBase::osWheel(static_cast<float>(yoffset));  // degree
     iterate();
 }
@@ -1313,6 +1321,7 @@ void UIWindow::setMouseCursorVisible(bool val) {
         }
 #endif
 }
+
 
 void UIWindow::addGlobalWinPosCb(void* ptr, const std::function<void(int, int)>& f) {
     m_globalWinPosCb[ptr] = f;

@@ -75,7 +75,6 @@ public:
     void        destroy() override {}
     void        resize(GLsizei width, GLsizei height) override {}
     void       *getNativeCtx() override { return nullptr; }
-    void        onWindowSize(int width, int height) override {}
     void        minimize() override {}
     void        restore() override {}
     static bool isMinimized() { return false; }

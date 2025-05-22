@@ -96,11 +96,11 @@ public:
 #endif
 
     // non-synchronized HID callbacks, called from the glfw event loop
-    virtual void key_callback(int key, int scancode, int action, int mods);
-    virtual void char_callback(unsigned int codepoint);
-    virtual void cursor_callback(double xpos, double ypos);
-    virtual void mouseBut_callback(int button, int action, int mods);
-    virtual void scroll_callback(double xoffset, double yoffset);
+    virtual void keyCallback(int key, int scancode, int action, int mods);
+    virtual void charCallback(unsigned int codepoint);
+    virtual void cursorCallback(double xpos, double ypos);
+    virtual void mouseButCallback(int button, int action, int mods);
+    virtual void scrollCallback(double xoffset, double yoffset);
     virtual void window_pos_callback(int xpos, int ypos);
     virtual void window_focus_callback(int focused);
     virtual void window_maximize_callback(int maximized);
@@ -218,18 +218,8 @@ public:
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     void swap() { m_winHandle->swap(); }
-    void addKeyCb(const std::function<void(int, int, int, int)>& f) const { m_winHandle->addKeyCb(f); }
-    void setCharCb(const std::function<void(int)>& f) const { m_winHandle->setCharCb(f); }
-    void setMouseButtonCb(const std::function<void(int, int, int)>& f) const { m_winHandle->setMouseButtonCb(f); }
-    void setMouseCursorCb(const std::function<void(double, double)>& f) const { m_winHandle->setMouseCursorCb(f); }
-    void setWindowSizeCb(const std::function<void(int, int)>& f) const { m_winHandle->setWindowSizeCb(f); }
-    void setScrollCb(const std::function<void(double, double)>& f) const { m_winHandle->setScrollCb(f); }
-    void setWindowPosCb(const std::function<void(int, int)>& f) const { m_winHandle->setWindowPosCb(f); }
-    void setWindowMaximizeCb(const std::function<void(int)>& f) const { m_winHandle->setWindowMaximizeCb(f); }
-    void setWindowIconfifyCb(const std::function<void(int)>& f) const { m_winHandle->setWindowIconfifyCb(f); }
-    void setWindowFocusCb(const std::function<void(int)>& f) const { m_winHandle->setWindowFocusCb(f); }
-    void setCloseCb(const std::function<void()>& f) const { m_winHandle->setCloseCb(f); }
-    void setWindowRefreshCb(const std::function<void()>& f) const { m_winHandle->setWindowRefreshCb(f); }
+    // void addKeyCb(const std::function<void(int, int, int, int)>& f) const { m_winHandle->addKeyCb(f); }
+    void setWinCallback(const winCb& tp, const winHidCb& f) { m_winHandle->setWinCallback(tp, f); }
 #endif
     void setBlockDraw(bool val) { m_blockDraw = val; }
     bool isBlockDraw() const { return m_blockDraw; }
@@ -312,7 +302,7 @@ protected:
     std::unordered_map<uiColors, glm::vec4>                   m_colors;
     Shaders*                                                  m_stdTexMulti = nullptr;
 
-    // Pseudo Event Based Structure
+    // Pseudo Event-Based Structure
     std::map<winProcStep, ProcStep> m_procSteps;
 
     glm::ivec4 monitorMaxArea{};

@@ -38,17 +38,14 @@ public:
     [[maybe_unused]] void runMainLoop(std::function<void(double time, double dt, unsigned int ctxNr)> f);
 
     /**
-     * there are several ways to manage multi window rendering. iterate() is for
-     * single thread non-event based rendering. This method iterates through all
-     * windows, calls the draw callback function set for them, polls the events
-     * and calls a framebuffer swap -> execute the gl command queue
-     */
+     * there are several ways to manage multi window rendering. iterate() is for single thread non-event based rendering.
+     * This method iterates through all windows, calls the draw callback function set for them, polls the events and
+     * calls a framebuffer swap -> execute the gl command queue */
     void iterate(bool only_open_windows);
 
     /**
      * iterate through all windows and call the windows startDrawThread() method, thus starting a new thread with the
-     * windows draw loop
-     */
+     * windows draw loop */
     void startThreadedRendering() const;
 
     /** stop all drawing windows */
@@ -73,6 +70,7 @@ public:
 
     /** global Keyboard callback function, will be called from all contexts
      * context individual keyboard callbacks are called from here */
+    /*
     static void globalKeyCb(GLContext ctx, int key, int scancode, int action, int mods);
     static void globalCharCb(GLContext ctx, unsigned int codepoint);
     static void globalMouseButCb(GLContext ctx, int button, int action, int mods);
@@ -84,7 +82,7 @@ public:
     static void globalWindowFocusCb(GLContext ctx, int flag);
     static void globalWindowPosCb(GLContext ctx, int posx, int posy);
     static void globalScrollCb(GLContext ctx, double posx, double posy);
-    static void globalWindowRefreshCb(GLContext ctx);
+    static void globalWindowRefreshCb(GLContext ctx);*/
 
     [[maybe_unused]] void setSwapInterval(unsigned int winNr, bool swapInterval) const;
 
@@ -98,33 +96,16 @@ public:
     void                                loadMouseCursors();
 #endif
 
-    [[maybe_unused]] unsigned int getMonitorWidth(unsigned int winNr) const;
-    [[maybe_unused]] unsigned int getMonitorHeight(unsigned int winNr) const;
-
+    [[maybe_unused]] unsigned int   getMonitorWidth(unsigned int winNr) const;
+    [[maybe_unused]] unsigned int   getMonitorHeight(unsigned int winNr) const;
     /** make a specific context visible */
-    void open(unsigned int nr) const {
-        if (m_windows.size() > nr) {
-            m_windows[nr]->open();
-        }
-    }
-
+    void                            open(unsigned int nr) const;
     /** make a specific context inVisible */
-    void hide(unsigned int nr) const {
-        if (m_windows.size() > nr) {
-            m_windows[nr]->hide();
-        }
-    }
-
+    void                            hide(unsigned int nr) const;
     /** close all glfw windows that have been added through this WindowManager instance before */
-    [[maybe_unused]] void closeAll() {
-        m_run = false;
-        for (const auto &it : m_windows) {
-            it->close();
-        }
-    }
-
-    void stop() { m_run = false; }
-    bool isRunning() const { return m_run; }
+    [[maybe_unused]] void           closeAll();
+    void                            stop() { m_run = false; }
+    bool                            isRunning() const { return m_run; }
 
     [[maybe_unused]] int getDispOffsetX(unsigned int idx) const {
         return m_dispOffsets.size() > idx ? m_dispOffsets[idx].first : 0;
@@ -137,13 +118,14 @@ public:
     [[maybe_unused]] GLWindow *getFirstWin() const {
         return m_windows.empty() ? nullptr : m_windows.front().get();
     }
+
     [[maybe_unused]] GLWindow *getBack() const  { return m_windows.back().get(); }
     std::vector<std::unique_ptr<GLWindow>>        *getWindows() { return &m_windows; }
     GLWindow                                      *getFocusedWin() const { return m_focusedWin; }
     [[maybe_unused]] uint32_t                      getNrWindows() const { return static_cast<uint32_t>(m_windows.size()); }
     [[maybe_unused]] unsigned int                  getNrDisplays() const { return m_dispCount; }
     [[maybe_unused]] std::vector<DisplayBasicInfo> getDisplays() { return m_displayInfo; }
-    [[maybe_unused]] void                          setPrintFps(bool _val) { m_showFps = _val; }
+    [[maybe_unused]] void                          setPrintFps(bool val) { m_showFps = val; }
     void                                           setFixFocus(GLWindow *win) { m_fixFocusWin = win; }
     GLWindow                                      *getFixFocus() const { return m_fixFocusWin; }
     void                                           setAssetManager(AssetManager *res) { m_assetManager = res; }
@@ -161,128 +143,50 @@ public:
 #endif
     }
 
-    [[maybe_unused]] void addGlobalKeyCb(void *ptr, std::function<void(GLContext, int, int, int, int)> f) {
-        m_globalKeyCb[ptr] = std::move(f);
+    void addGlobalHidCb(winCb tp, void* ptr, const winCtxHidCb& f) {
+        m_globalWinHidCpMap[tp].insert_or_assign(ptr, f);
     }
 
-    [[maybe_unused]] void addGlobalCharCb(void *ptr, std::function<void(GLContext, unsigned int)> f) {
-        m_globalCharCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addGlobalMouseButtonCb(void *ptr, std::function<void(GLContext, int, int, int)> f) {
-        m_globalButtonCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void removeGlobalMouseButtonCb(void *ptr) {
-        if (const auto it = m_globalButtonCb.find(ptr); it != m_globalButtonCb.end()) {
-            m_globalButtonCb.erase(it);
+    void removeGlobalHidCb(winCb tp, void *ptr) {
+        if (const auto it = m_globalWinHidCpMap[tp].find(ptr); it != m_globalWinHidCpMap[tp].end()) {
+            m_globalWinHidCpMap[tp].erase(it);
         }
-    }
-
-    [[maybe_unused]] void addGlobalMouseCursorCb(void *ptr, std::function<void(GLContext, double, double)> f) {
-        m_globalMouseCursorCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinResizeCb(void *ptr, std::function<void(GLContext, int, int)> f) {
-        m_globalWinResizeCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinCloseCb(void *ptr, std::function<void(GLContext)> f) {
-        m_globalWinCloseCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinMaximizeCb(void *ptr, std::function<void(GLContext, int)> f) {
-        m_globalWinMaximizeCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinPosCb(void *ptr, std::function<void(GLContext, int, int)> f) {
-        m_globalWinPosCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinScrollCb(void *ptr, std::function<void(GLContext, double, double)> f) {
-        m_globalScrollCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinIconifyCb(void *ptr, std::function<void(GLContext, int)> f) {
-        m_globalWinIconifyCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinFocusCb(void *ptr, std::function<void(GLContext, int)> f) {
-        m_globalWinFocusCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinRefreshCb(void *ptr, std::function<void(GLContext)> f) {
-        m_globalWinRefreshCbMap[ptr] = std::move(f);
     }
 
     void callGlobalMouseButCb(int button) const;
     void addEvtLoopCb(const std::function<bool()> &);
 
     static void error_callback(int error, const char *description) {
-        printf(" GFLW ERROR: %s \n", description);
+        LOGE << " GFLW ERROR: " << description;
         fputs(description, stderr);
     }
 
-    // ----------------------------------------------------------
-    // Set of interactive functions for independent sequence calls (marco.m_g)
-    // These are useful if we want to call certain functions before and after
-    // the render cycle.
-    // ------------------------------
+    // Set of interactive functions for independent sequence calls (marco.g)
+    // These are useful if we want to call certain functions before and after the render cycle.
+    void IterateAll(bool only_open_windows, std::function<void(double time, double dt, unsigned int ctxNr)> render_function);
 
-    void IterateAll(bool                                                            only_open_windows,
-                    std::function<void(double time, double dt, unsigned int ctxNr)> render_function) {
-        if ((m_globalDrawFunc = std::move(render_function))) {
-            iterate(only_open_windows);
-        }
-    }
-
-    [[maybe_unused]] void EndMainLoop() const {
-        for (auto &it : m_windows) {
-            it->destroy(false);
-        }
-        GLWindow::terminateLibrary();
-    }
+    [[maybe_unused]] void EndMainLoop() const;
 
 #ifdef ARA_USE_GLFW
     GLFWcursor *m_diagResizeAscCursor  = nullptr;
     GLFWcursor *m_diagResizeDescCursor = nullptr;
 #endif
 private:
+    /*void setWinHidCbMap(winCb cbTp, GLFWWindow* win){
+        m_winHidCbMap[cbTp][win->getCtx()] = [win, cbTp, this](auto&...args) {
+            win->onWinHid(cbTp, args...);
+        };
+    }*/
+
     std::vector<glWinPar>                  m_addWindows;
     std::vector<std::unique_ptr<GLWindow>> m_windows;
     std::vector<DisplayBasicInfo>          m_displayInfo;
     std::vector<std::pair<int, int>>       m_dispOffsets;
     std::vector<std::function<bool()>>     m_evtLoopCbs;
 
-    std::function<void(double, double, unsigned int)> m_globalDrawFunc;
-
-    // window specific HID callbacks
-    std::unordered_map<GLContext, std::function<void(int, int, int, int)>> m_keyCbMap;
-    std::unordered_map<GLContext, std::function<void(unsigned int)>>       m_charCbMap;
-    std::unordered_map<GLContext, std::function<void(int, int, int)>>      m_mouseButCbMap;
-    std::unordered_map<GLContext, std::function<void(double, double)>>     m_cursorCbMap;
-    std::unordered_map<GLContext, std::function<void(int, int)>>           m_winResizeCbMap;
-    std::unordered_map<GLContext, std::function<void()>>                   m_winCloseCbMap;
-    std::unordered_map<GLContext, std::function<void(int, int)>>           m_winPosCbMap;
-    std::unordered_map<GLContext, std::function<void(double, double)>>     m_scrollCbMap;
-    std::unordered_map<GLContext, std::function<void(int)>>                m_winMaxmimizeCbMap;
-    std::unordered_map<GLContext, std::function<void(int)>>                m_winIconfifyCbMap;
-    std::unordered_map<GLContext, std::function<void(int)>>                m_winFocusCbMap;
-    std::unordered_map<GLContext, std::function<void()>>                   m_winRefreshCbMap;
-
-    // global HID callbacks
-    std::unordered_map<void *, std::function<void(GLContext, int, int, int, int)>> m_globalKeyCb;
-    std::unordered_map<void *, std::function<void(GLContext, unsigned int)>>       m_globalCharCb;
-    std::unordered_map<void *, std::function<void(GLContext, int, int, int)>>      m_globalButtonCb;
-    std::unordered_map<void *, std::function<void(GLContext, double, double)>>     m_globalMouseCursorCb;
-    std::unordered_map<void *, std::function<void(GLContext, int, int)>>           m_globalWinResizeCb;
-    std::unordered_map<void *, std::function<void(GLContext, int)>>                m_globalWinMaximizeCb;
-    std::unordered_map<void *, std::function<void(GLContext, int)>>                m_globalWinIconifyCb;
-    std::unordered_map<void *, std::function<void(GLContext, int)>>                m_globalWinFocusCb;
-    std::unordered_map<void *, std::function<void(GLContext)>>                     m_globalWinCloseCb;
-    std::unordered_map<void *, std::function<void(GLContext, int, int)>>           m_globalWinPosCb;
-    std::unordered_map<void *, std::function<void(GLContext, double, double)>>     m_globalScrollCb;
-    std::unordered_map<void *, std::function<void(GLContext)>>                     m_globalWinRefreshCbMap;
+    std::function<void(double, double, unsigned int)>                   m_globalDrawFunc;
+    std::unordered_map<winCb, std::unordered_map<GLContext, winHidCb>>  m_winHidCbMap;
+    std::unordered_map<winCb, std::unordered_map<void*, winCtxHidCb>>   m_globalWinHidCpMap;
 
     std::list<Conditional *> m_semaqueue;
 

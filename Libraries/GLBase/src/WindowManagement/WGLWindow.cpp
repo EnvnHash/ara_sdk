@@ -420,9 +420,7 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
         }
 
         case WM_CLOSE: {
-            if (thisWin->m_callbacks.close) {
-                thisWin->m_callbacks.close();
-            }
+            this->onWinHid(winCb::Close);
             PostQuitMessage(0);  // Send A Quit Message
             return 0;            // Jump Back
         }
@@ -1064,13 +1062,12 @@ void WGLWindow::inputCursorPos(double xpos, double ypos) {
 
     m_virtualCursorPosX = xpos;
     m_virtualCursorPosY = ypos;
-
-    if (m_callbacks.cursorPos) m_callbacks.cursorPos(xpos, ypos);
+    onWinHid(winCb::CursorPos, xpos, ypos);
 }
 
 // Notifies shared code that a window has lost or received input focus
 void WGLWindow::inputWindowFocus(bool focused) {
-    if (m_callbacks.focus) m_callbacks.focus(focused);
+    onWinHid(winCb::WindowFocus, focused);
 
     if (!focused) {
         for (int key = 0; key <= GLSG_KEY_LAST; key++) {
@@ -1081,7 +1078,9 @@ void WGLWindow::inputWindowFocus(bool focused) {
         }
 
         for (int button = 0; button <= GLSG_MOUSE_BUTTON_LAST; button++) {
-            if (m_mouseButtons[button] == GLSG_PRESS) inputMouseClick(button, GLSG_RELEASE, 0);
+            if (m_mouseButtons[button] == GLSG_PRESS) {
+                inputMouseClick(button, GLSG_RELEASE, 0);
+            }
         }
     }
 }
@@ -1097,10 +1096,7 @@ void WGLWindow::inputMouseClick(int button, int action, int mods) {
     }
 
     m_mouseButtons[button] = action == GLSG_RELEASE && m_stickyMouseButtons ? _GLSG_STICK : static_cast<char>(action);
-
-    if (m_callbacks.mouseButton) {
-        m_callbacks.mouseButton(button, action, mods);
-    }
+    onWinHid(winCb::MouseButton, button, action, mods);
 }
 
 // Notifies shared code of a Unicode codepoint input event
@@ -1114,12 +1110,9 @@ void WGLWindow::inputChar(unsigned int codepoint, int mods, bool plain) const {
         mods &= ~(GLSG_MOD_CAPS_LOCK | GLSG_MOD_NUM_LOCK);
     }
 
-    if (m_callbacks.charmods) {
-        m_callbacks.charmods(codepoint, mods);
-    }
-
-    if (plain && m_callbacks.character) {
-        m_callbacks.character(codepoint);
+    onWinHid(winCb::CharMods, codepoint, mods);
+    if (plain) {
+        onWinHid(winCb::Char, codepoint);
     }
 }
 
@@ -1146,9 +1139,7 @@ void WGLWindow::inputKey(int key, int scancode, int action, int mods) {
         mods &= ~(GLSG_MOD_CAPS_LOCK | GLSG_MOD_NUM_LOCK);
     }
 
-    if (m_callbacks.key) {
-        m_callbacks.key(key, scancode, action, mods);
-    }
+    onWinHid(winCb::Key, key, scancode, action, mods);
 }
 
 void WGLWindow::setInputMode(int mode, int value) {
@@ -1327,7 +1318,7 @@ void WGLWindow::getWindowSize(int* width, int* height) const {
 
 // Notifies shared code that a window has lost or received input focus
 void WGLWindow::windowFocus(bool focused) {
-    if (m_callbacks.focus) m_callbacks.focus(focused);
+    onWinHid(winCb::WindowFocus, focused);
 
     if (!focused) {
         for (int key = 0; key <= GLSG_KEY_LAST; key++) {
@@ -1338,7 +1329,9 @@ void WGLWindow::windowFocus(bool focused) {
         }
 
         for (int button = 0; button <= GLSG_MOUSE_BUTTON_LAST; button++) {
-            if (m_mouseButtons[button] == GLSG_PRESS) inputMouseClick(button, GLSG_RELEASE, 0);
+            if (m_mouseButtons[button] == GLSG_PRESS) {
+                inputMouseClick(button, GLSG_RELEASE, 0);
+            }
         }
     }
 }

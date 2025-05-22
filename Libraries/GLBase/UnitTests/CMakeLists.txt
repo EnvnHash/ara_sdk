@@ -18,13 +18,13 @@ file(GLOB GLBASE_UT_SRC
         CreateFbo.cpp
         CreateFbo.cpp
         CreateGLCtx.cpp
-        CreateWindow.cpp
         CtrlPointSerialization.cpp
         DrawQuad.cpp
         MemLeakTests/DrawQuadMemLeak.cpp
         GLBaseCreationDestruction.cpp
         GLBaseStopStart.cpp
         GLBaseStopStartResources.cpp
+        GLFWWindowTest.cpp
         GLRendererTest.cpp
         LoadTextureMipMap.cpp
         LoadTexture.cpp
@@ -57,7 +57,7 @@ if (NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
 endif ()
 
 if (UNIX AND NOT APPLE)
-    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} glfw assimp)
+    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} glfw assimp Xtst)
 elseif (APPLE)
     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
 else ()

@@ -45,10 +45,8 @@ public:
     bool resizeable   = true;
     bool transparent  = false;
     bool hidInput     = true;
-    bool hidExtern    = false;      // if false use HID management from GLFWWindow, if
-                                    // true from GLFWWindowManager
-    unsigned int nrSamples = 2;     // multisampling -> lower than 2 disables
-                                    // GL_POLYGON_SMOOTH, GL_LINE_SMOOTH, etc.
+    bool hidExtern    = false;      // if false use HID management from GLFWWindow, if true from GLFWWindowManager
+    unsigned int nrSamples = 2;     // multisampling -> lower than 2 disables GL_POLYGON_SMOOTH, GL_LINE_SMOOTH, etc.
     unsigned int bits      = 32;    // RGBA 8 bit
     glm::ivec2   shift{};           // offset relative to desktop origin
     int          monitorNr = 0;     // assign to specific monitor index, only relevant for fullscreen windows
@@ -72,26 +70,5 @@ typedef struct glVidMode {
     int blueBits;
     int refreshRate;
 } glVidMode;
-
-class WindowCallbacks {
-public:
-    std::function<void(unsigned int)>       character;
-    std::function<void(unsigned int, int)>  charmods;
-    std::function<void()>                   close;
-    std::function<void(double, double)>     cursorPos;
-    std::function<void(bool)>               cursorEnter;
-    std::function<void(int, const char **)> drop;
-    std::function<void(int, int)>           fbsize;
-    std::function<void(bool)>               focus;
-    std::function<void(bool)>               iconify;
-    std::function<void(int, int, int, int)> key;
-    std::function<void()>                   refresh;
-    std::function<void(bool)>               maximize;
-    std::function<void(int, int, int)>      mouseButton;
-    std::function<void(int, int)>           pos;
-    std::function<void(float, float)>       scale;
-    std::function<void(double, double)>     scroll;
-    std::function<void(int, int)>           size;
-};
 
 }  // namespace ara

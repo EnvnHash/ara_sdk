@@ -48,6 +48,25 @@ WindowManager::WindowManager(GLBase *glbase) : m_glbase(glbase) {
     GLWindow::terminateLibrary();
 }
 
+void WindowManager::open(unsigned int nr) const {
+    if (m_windows.size() > nr) {
+        m_windows[nr]->open();
+    }
+}
+
+void WindowManager::hide(unsigned int nr) const {
+    if (m_windows.size() > nr) {
+        m_windows[nr]->hide();
+    }
+}
+
+void WindowManager::closeAll() {
+    m_run = false;
+    for (const auto &it : m_windows) {
+        it->close();
+    }
+}
+
 void WindowManager::iterate(bool only_open_windows) {
     m_now        = system_clock::now();
     auto actTime = std::chrono::duration<double, std::milli>(m_now - m_startTime).count();
@@ -206,6 +225,20 @@ void WindowManager::stopEventLoop() {
     GLWindow::postEmptyEvent();
 }
 
+void WindowManager::IterateAll(bool                                                            only_open_windows,
+                std::function<void(double time, double dt, unsigned int ctxNr)> render_function) {
+    if ((m_globalDrawFunc = std::move(render_function))) {
+        iterate(only_open_windows);
+    }
+}
+
+[[maybe_unused]] void WindowManager::EndMainLoop() const {
+    for (auto &it : m_windows) {
+        it->destroy(false);
+    }
+    GLWindow::terminateLibrary();
+}
+
 void WindowManager::procEventQueue() {
     if (!m_evtLoopCbs.empty()) {
         bool funcSuccess = false;
@@ -283,48 +316,54 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
     }
 
     auto win = m_windows.back().get();
-
     if (gp.hidInput) {
-        // bind window HID callbacks to globalCallbacks by adding them to the
-        // callback maps
-        m_keyCbMap[win->getCtx()]      = [win](int p1, int p2, int p3, int p4) { win->onKey(p1, p2, p3, p4); };
-        m_charCbMap[win->getCtx()]     = [win](unsigned int p1) { win->onChar(p1); };
-        m_mouseButCbMap[win->getCtx()] = [win](int button, int action, int mods) {
-            win->onMouseButton(button, action, mods);
-        };
-        m_winCloseCbMap[win->getCtx()]     = [win] { win->onWindowClose(); };
-        m_winMaxmimizeCbMap[win->getCtx()] = [win](int maximized) { win->onWindowMaximize(maximized); };
-        m_winIconfifyCbMap[win->getCtx()]  = [win](int iconified) { win->onWindowIconify(iconified); };
-        m_winFocusCbMap[win->getCtx()]     = [win](int focused) { win->onWindowFocus(focused); };
-        m_winRefreshCbMap[win->getCtx()]   = [win] { win->onWindowRefresh(); };
-        m_scrollCbMap[win->getCtx()]       = [win](double xOffs, double yOffs) { win->onScroll(xOffs, yOffs); };
 
-        m_cursorCbMap[win->getCtx()] = [win](double x, double y) {
-#if defined(_WIN32) || defined(__linux__)
-            win->onMouseCursor(x / win->getContentScale().x, y / win->getContentScale().y);
-#else
-            win->onMouseCursor(x, y);
-#endif
+        /*
+        for (auto cbTp : { winCb::Char, winCb::MouseButton, winCb::WindowClose, winCb::WindowMaximize, winCb::WindowIconify, winCb::WindowFocus, winCb::Scroll }) {
+            setWinHidCbMap(cbTp, win);
+        }
+
+        // bind window HID callbacks to globalCallbacks by adding them to the callback map
+        m_winHidCbMap[winCb::Key][win->getCtx()] = [win](int p1, int p2, int p3, int p4) {
+            win->onKey(p1, p2, p3, p4);
         };
 
-        m_winResizeCbMap[win->getCtx()] = [win](int w, int h) {
+        m_winHidCbMap[winCb::CursorPos][win->getCtx()] = static_cast<std::function<void(double, double)>>([win](double x, double y) {
 #if defined(_WIN32) || defined(__linux__)
-            win->onWindowSize(static_cast<int>(static_cast<float>(w) / win->getContentScale().x), static_cast<int>(static_cast<float>(h) / win->getContentScale().x));
+            win->onWinHid(winCb::CursorPos, x / win->getContentScale().x, y / win->getContentScale().y);
 #else
-            win->onWindowSize(w, h);
+            win->onWinHid(winCb::CursorPos, x, y);
 #endif
-        };
-        m_winPosCbMap[win->getCtx()] = [win](int posX, int posY) {
+        });
+
+        m_winHidCbMap[winCb::WindowSize][win->getCtx()] = static_cast<std::function<void(int, int)>>([win](int w, int h) {
+#if defined(_WIN32) || defined(__linux__)
+            win->onWinHid(winCb::WindowSize, static_cast<int>(static_cast<float>(w) / win->getContentScale().x), static_cast<int>(static_cast<float>(h) / win->getContentScale().x));
+#else
+            win->onWinHid(winCb::WindowSize, w, h);
+#endif
+        });
+
+        m_winHidCbMap[winCb::WindowPos][win->getCtx()] = static_cast<std::function<void(int, int)>>([win](int posX, int posY) {
 #ifdef _WIN32
-            win->onWindowPos(static_cast<int>(static_cast<float>(posX) / win->getContentScale().x),
+            win->onWinHid(winCb::WindowPos, static_cast<int>(static_cast<float>(posX) / win->getContentScale().x),
                              static_cast<int>(static_cast<float>(posY) / win->getContentScale().x));
 #else
-            win->onWindowPos(posX, posY);
+            win->onWinHid(winCb::WindowPos, posX, posY);
 #endif
-        };
+        });
 
         // always pass all interaction through the global HID callback functions
-        win->setWinCallback(winCb::Key, WindowManager::globalKeyCb);
+        // this overwrites the standard local per-window HID callbacks
+        for (int i=0; i<toType(winCb::Size); ++i) {
+            auto cbTp = static_cast<winCb>(i);
+            winHidCb f = [this, cbTp](auto&... args) {
+                globalHidCb(cbTp, args...);
+            };
+            win->setWinCallback(cbTp, f);
+        }
+         */
+        /*win->setWinCallback(winCb::Key, WindowManager::globalKeyCb);
         win->setWinCallback(winCb::Char, WindowManager::globalCharCb);
         win->setWinCallback(winCb::MouseButton, WindowManager::globalMouseButCb);
         win->setWinCallback(winCb::CursorPos, WindowManager::globalMouseCursorCb);
@@ -335,7 +374,7 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
         win->setWinCallback(winCb::WindowFocus, WindowManager::globalWindowFocusCb);
         win->setWinCallback(winCb::WindowPos, WindowManager::globalWindowPosCb);
         win->setWinCallback(winCb::Scroll, WindowManager::globalScrollCb);
-        win->setWinCallback(winCb::WindowRefresh, WindowManager::globalWindowRefreshCb);
+        win->setWinCallback(winCb::WindowRefresh, WindowManager::globalWindowRefreshCb);*/
     }
 
 #ifdef ARA_USE_GLFW
@@ -358,64 +397,11 @@ void WindowManager::removeWin(GLWindow *win, bool terminateGLFW) {
     }
 
     // remove window callbacks
-    auto kcIt = m_keyCbMap.find(win->getCtx());
-    if (kcIt != m_keyCbMap.end()) {
-        m_keyCbMap.erase(kcIt);
-    }
-
-    auto ccIt = m_charCbMap.find(win->getCtx());
-    if (ccIt != m_charCbMap.end()) {
-        m_charCbMap.erase(ccIt);
-    }
-
-    auto mbIt = m_mouseButCbMap.find(win->getCtx());
-    if (mbIt != m_mouseButCbMap.end()) {
-        m_mouseButCbMap.erase(mbIt);
-    }
-
-    auto mcIt = m_cursorCbMap.find(win->getCtx());
-    if (mcIt != m_cursorCbMap.end()) {
-        m_cursorCbMap.erase(mcIt);
-    }
-
-    auto wrIt = m_winResizeCbMap.find(win->getCtx());
-    if (wrIt != m_winResizeCbMap.end()) {
-        m_winResizeCbMap.erase(wrIt);
-    }
-
-    auto wpIt = m_winPosCbMap.find(win->getCtx());
-    if (wpIt != m_winPosCbMap.end()) {
-        m_winPosCbMap.erase(wpIt);
-    }
-
-    auto wcIt = m_winCloseCbMap.find(win->getCtx());
-    if (wcIt != m_winCloseCbMap.end()) {
-        m_winCloseCbMap.erase(wcIt);
-    }
-
-    auto wmIt = m_winMaxmimizeCbMap.find(win->getCtx());
-    if (wmIt != m_winMaxmimizeCbMap.end()) {
-        m_winMaxmimizeCbMap.erase(wmIt);
-    }
-
-    auto scIt = m_scrollCbMap.find(win->getCtx());
-    if (scIt != m_scrollCbMap.end()) {
-        m_scrollCbMap.erase(scIt);
-    }
-
-    auto icIt = m_winIconfifyCbMap.find(win->getCtx());
-    if (icIt != m_winIconfifyCbMap.end()) {
-        m_winIconfifyCbMap.erase(icIt);
-    }
-
-    auto fmIt = m_winFocusCbMap.find(win->getCtx());
-    if (fmIt != m_winFocusCbMap.end()) {
-        m_winFocusCbMap.erase(fmIt);
-    }
-
-    auto wreIt = m_winRefreshCbMap.find(win->getCtx());
-    if (wreIt != m_winRefreshCbMap.end()) {
-        m_winRefreshCbMap.erase(wreIt);
+    for (auto& [cbTp, map] : m_winHidCbMap) {
+        auto kcIt = map.find(win->getCtx());
+        if (kcIt != map.end()) {
+            map.erase(kcIt);
+        }
     }
 
     if (m_shareCtx == win->getCtx()) {
@@ -435,8 +421,8 @@ void WindowManager::addEvtLoopCb(const std::function<bool()> &f) {
     m_evtLoopCbs.emplace_back(f);
 }
 
-// Note: all global...Cb are called on the main thread (same as startEventLoop()
-// )
+/*
+// Note: all global...Cb are called on the main thread (same as startEventLoop() )
 void WindowManager::globalKeyCb(GLContext ctx, int key, int scancode, int action, int mods) {
     // on asus GL503V debian linux with spanish keyboard layout, arrow left right are different keycodes glfw doesn't
     // seem to know them...
@@ -699,7 +685,7 @@ void WindowManager::globalWindowRefreshCb(GLContext ctx) {
         val(ctx);
     }
 }
-
+*/
 void WindowManager::setSwapInterval(unsigned int winNr, bool swapInterval) const {
     if (static_cast<unsigned int>(m_windows.size()) >= winNr) {
         m_windows[winNr]->setVSync(swapInterval);
@@ -715,7 +701,6 @@ void WindowManager::getHwInfo() {
 }
 
 #ifdef ARA_USE_GLFW
-
 std::vector<GLFWvidmode> WindowManager::getVideoModes() {
     if (m_dispOffsets.empty()) {
         for (int i = 0; i < m_dispCount; i++) {
@@ -791,7 +776,6 @@ void ara::WindowManager::loadMouseCursors() {
     m_diagResizeAscCursor  = createMouseCursor(mouseCursoIconAsc, 0.5f, 0.5f);
     m_diagResizeDescCursor = createMouseCursor(mouseCursoIconDesc, 0.5f, 0.5f);
 }
-
 #endif
 
 unsigned int WindowManager::getMonitorWidth(unsigned int winNr) const {
@@ -809,8 +793,8 @@ unsigned int WindowManager::getMonitorHeight(unsigned int winNr) const {
 }
 
 void WindowManager::callGlobalMouseButCb(int button) const {
-    for (const auto &val: m_globalButtonCb | views::values) {
-        val(nullptr, button, 0, 0);
+    for (auto& [key, winCtxHidCbFunc] : m_globalWinHidCpMap.at(winCb::MouseButton) ) {
+        std::get<std::function<void(GLContext, int, int, int)>>(winCtxHidCbFunc)(nullptr, button, 0, 0);
     }
 }
 }  // namespace ara

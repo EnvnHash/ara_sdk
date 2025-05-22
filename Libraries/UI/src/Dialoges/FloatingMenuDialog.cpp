@@ -20,7 +20,7 @@ FloatingMenuDialog::FloatingMenuDialog(const UIWindowParams& params) : UIWindow(
     m_base->setBackgroundColor(0.2f, 0.2f, 0.2f, 1.f);
 
     // add a callback to listen for clicks on all windows
-    m_glbase->getWinMan()->addGlobalMouseButtonCb(this, [this](GLFWwindow* win, int, int, int) {
+    m_glbase->getWinMan()->addGlobalHidCb(winCb::MouseButton, this, [this](GLFWwindow* win, int, int, int) {
         // sync with this window's gl thread
         addGlCb(this, "close", [this]() {
             if (!m_closing && getRootNode()->isInited()) {
@@ -48,7 +48,7 @@ FloatingMenuDialog::FloatingMenuDialog(const UIWindowParams& params) : UIWindow(
 
 void FloatingMenuDialog::close(bool direct) {
 #ifdef ARA_USE_GLFW
-    m_glbase->getWinMan()->removeGlobalMouseButtonCb(this);
+    m_glbase->getWinMan()->removeGlobalHidCb(winCb::MouseButton, this);
     UIWindow::close(true);
     if (getApplicationHandle()) {
         getApplicationHandle()->removeWindow(this);

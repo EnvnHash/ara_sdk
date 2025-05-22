@@ -20,6 +20,15 @@
 
 namespace ara {
 
+using winHidCb = std::variant<
+    std::function<void(unsigned int)>,
+    std::function<void(int, int, int, int)>,
+    std::function<void(int, int, int)>,
+    std::function<void(int, int)>,
+    std::function<void(int)>,
+    std::function<void(double, double)>,
+    std::function<void()>>;
+
 class GLWindowBase {
 public:
     GLWindowBase() = default;
@@ -44,91 +53,50 @@ public:
         m_iterate.notify();
     }
 
-    /** called when a key is pressed or released. Is called directly from GLFW.
-     * When the window has been created through GLFWWindowManager, this is
-     * called from there. */
-    void onKey(int key, int scancode, int action, int mods) const {
-        if (!m_hidBlocked) {
-            for (auto &it : m_keyCb) {
-                it(key, scancode, action, mods);
+    template <typename... Args>
+    void visitCallbacks(const winCb& key, const winHidCb& varFunc, std::function<void()> optFunc, Args&&... args) {
+        std::visit([&] (auto&& func) {
+            if constexpr (std::is_invocable_v<std::decay_t<decltype(func)>, Args...>) {
+                func(args...);
+                if (optFunc) {
+                    optFunc();
+                }
+            } else {
+                LOGE << "Error: Argument mismatch for winCb type \"" << winCbNames[key] << "\", num of args: " << sizeof...(args);
+            }
+        }, varFunc);
+    }
+
+    template <typename... Args>
+    void parseGlobalHidCb(const winCb& key, Args&&... args) {
+        if (m_globalHidCallbacks.contains(key)) {
+            for (const auto& [id, varFunc] : m_globalHidCallbacks[key]) {
+                visitCallbacks(key, varFunc, nullptr, args...);
             }
         }
     }
 
-    void onChar(unsigned int codepoint)  const {
-        if (!m_hidBlocked && m_charCb) {
-            m_charCb(codepoint);
+    template <typename... Args>
+    void onWinHid(const winCb& key, Args&&... args) {
+        if (m_winHidCallbacks.contains(key)) {
+            visitCallbacks(key, m_winHidCallbacks[key], [&]{ parseGlobalHidCb(key, args...); }, args...);
+        } else {
+            LOGE << "Error: No callback found for winCb \"" << winCbNames[key] << "\"";
         }
     }
-
-    void onMouseButton(int button, int action, int mods) const {
-        if (!m_hidBlocked && m_mouseButtonCb) {
-            m_mouseButtonCb(button, action, mods);
-        }
-    }
-
-    void onMouseCursor(double xpos, double ypos)  const {
-        if (!m_hidBlocked && m_mouseCursorCb) {
-            m_mouseCursorCb(xpos, ypos);
-        }
-    }
-
-    virtual void onWindowSize(int width, int height) = 0;
 
     virtual void onFrameBufferSize(int width, int height) {}
-
-    void onScroll(double xpos, double ypos) const {
-        if (!m_hidBlocked && m_scrollCb) {
-            m_scrollCb(xpos, ypos);
-        }
-    }
-    void onWindowPos(int xpos, int ypos) const {
-        if (m_windowPosCb) {
-            m_windowPosCb(xpos, ypos);
-        }
-    }
-    void onWindowMaximize(int flag) const {
-        if (m_windowMaximizeCb) {
-            m_windowMaximizeCb(flag);
-        }
-    }
-    void onWindowIconify(int flag) const {
-        if (m_windowIconfiyCb) {
-            m_windowIconfiyCb(flag);
-        }
-    }
-    void onWindowFocus(int flag)  const {
-        if (m_windowFocusCb) {
-            m_windowFocusCb(flag);
-        }
-    }
-    void onWindowClose() const {
-        if (m_closeCb) {
-            m_closeCb();
-        }
-    }
-    void onWindowRefresh() const {
-        if (m_windowRefreshCb) {
-            m_windowRefreshCb();
-        }
-    }
-
     static void onMouseEnter(bool val) {}
     static void onDrop(int count, const char **paths) {}
 
-    /** setters for HID callbacks */
-    void addKeyCb(const std::function<void(int, int, int, int)>& f) { m_keyCb.emplace_back(f); }
-    void setCharCb(const std::function<void(int)>& f) { m_charCb = f; }
-    void setMouseButtonCb(const std::function<void(int, int, int)>& f) { m_mouseButtonCb = f; }
-    void setMouseCursorCb(const std::function<void(double, double)>& f) { m_mouseCursorCb = f; }
-    void setWindowSizeCb(const std::function<void(int, int)>& f) { m_windowSizeCb = f; }
-    void setScrollCb(const std::function<void(double, double)>& f) { m_scrollCb = f; }
-    void setWindowPosCb(const std::function<void(int, int)>& f) { m_windowPosCb = f; }
-    void setWindowMaximizeCb(const std::function<void(int)>& f) { m_windowMaximizeCb = f; }
-    void setWindowIconfifyCb(const std::function<void(int)>& f) { m_windowIconfiyCb = f; }
-    void setWindowFocusCb(const std::function<void(int)>& f) { m_windowFocusCb = f; }
-    void setCloseCb(const std::function<void()>& f) { m_closeCb = f; }
-    void setWindowRefreshCb(const std::function<void()>& f) { m_windowRefreshCb = f; }
+    virtual void setWinCallback(winCb tp, const winHidCb& f) { m_winHidCallbacks.insert_or_assign(tp, f); }
+    virtual void addGlobalHidCallback(winCb tp, void* id, const winHidCb& f) { m_globalHidCallbacks[tp].emplace(id, f); }
+    virtual void removeGlobalHidCallback(winCb tp, void* id) {
+        if (m_globalHidCallbacks.contains(tp)) {
+            std::erase_if(m_globalHidCallbacks[tp], [id](auto &it) { return it.first == id; });
+        }
+    }
+
     std::function<bool(double, double, int)> &getDrawFunc() { return m_drawFunc; }
 
     int                 getKeyScancode(int key)  const { return m_scancodes[key]; }
@@ -159,7 +127,11 @@ public:
     int32_t             virt2RealX(int x) { return static_cast<int>(static_cast<float>(x) * getContentScale().x); }
     int32_t             virt2RealY(int y) { return static_cast<int>(static_cast<float>(y) * getContentScale().y); }
 
+
 protected:
+    std::unordered_map<winCb, winHidCb>                             m_winHidCallbacks;
+    std::unordered_map<winCb, std::unordered_map<void*, winHidCb>>  m_globalHidCallbacks;
+
     bool m_active{};               // Window Active Flag Set To TRUE By Default
     bool m_fullscreen           = false;  // Fullscreen Flag Set To Fullscreen Mode By Default
     bool m_isOpen               = false;
@@ -212,7 +184,7 @@ protected:
     std::thread m_msgLoop;  // Windows Message Structure
     std::thread m_drawThread;
 
-    WindowCallbacks m_callbacks;
+  //  WindowCallbacks m_callbacks;
     short int       m_scancodes[GLSG_KEY_LAST + 1]{};
     short int       m_keycodes[512]{};
     char            m_keys[GLSG_KEY_LAST + 1]{};
@@ -224,19 +196,6 @@ protected:
     std::vector<std::pair<float, float>>     monContScale;
     std::function<bool(double, double, int)> m_drawFunc;
     std::function<void()>                    m_glCb;
-
-    std::list<std::function<void(int, int, int, int)>> m_keyCb;
-    std::function<void(unsigned int)>                  m_charCb;
-    std::function<void(int, int, int)>                 m_mouseButtonCb;
-    std::function<void(double, double)>                m_mouseCursorCb;
-    std::function<void(int, int)>                      m_windowSizeCb;
-    std::function<void(double, double)>                m_scrollCb;
-    std::function<void(int, int)>                      m_windowPosCb;
-    std::function<void(int)>                           m_windowMaximizeCb;
-    std::function<void(int)>                           m_windowIconfiyCb;
-    std::function<void(int)>                           m_windowFocusCb;
-    std::function<void()>                              m_closeCb;
-    std::function<void()>                              m_windowRefreshCb;
 
     Conditional m_exitSignal;
     Conditional m_exitSema;

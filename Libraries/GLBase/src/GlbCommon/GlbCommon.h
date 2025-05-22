@@ -152,7 +152,23 @@ enum class cpEditMode : int32_t {
 enum class glFun : int { Enable = 0, Disable, BlendEquation, BlendFunc, PolygonMode };
 enum class changeWinEvent : int { OnResize, SetViewport, Maximize, Minimize, SetWinPos };
 enum class stereoEye : int { left = 0, right = 1, count = 2 };
-enum class winCb : int { Key = 0, Char, MouseButton, CursorPos, WindowSize, WindowClose, WindowMaximize, WindowIconify, WindowFocus, WindowPos, Scroll, WindowRefresh, Size };
+enum class winCb : int { Key = 0, Char, MouseButton, CursorPos, WindowSize, WindowClose, WindowMaximize, WindowIconify, WindowFocus, WindowPos, Scroll, WindowRefresh, CharMods, CursorEnter, Drop, Fbsize, Scale, Size };
+
+
+static inline std::unordered_map<winCb, std::string> winCbNames {
+    { winCb::Key, "Key" },
+    { winCb::Char, "Char" },
+    { winCb::MouseButton, "MouseButton" },
+    { winCb::CursorPos, "CursorPos" },
+    { winCb::WindowSize, "WindowSize" },
+    { winCb::WindowClose, "WindowClose" },
+    { winCb::WindowMaximize, "WindowMaximize" },
+    { winCb::WindowIconify, "WindowIconify" },
+    { winCb::WindowFocus, "WindowFocus" },
+    { winCb::WindowPos, "WindowPos" },
+    { winCb::Scroll, "Scroll" },
+    { winCb::WindowRefresh, "WindowRefresh" },
+};
 
 // process steps, order matters!!!, these are for fixed functionality that is used frequently
 enum winProcStep : int { Callbacks = 0, Tesselate, L1Lines, Select, ClearSel, Draw, Update, Count };

@@ -44,11 +44,22 @@
 #include <WindowManagement/GLWindowBase.h>
 
 namespace ara {
+
+using glfwAssignWinCbFunc = std::variant<
+    std::function<void(GLFWwindow*, void(*)(GLFWwindow*, int, int, int, int)) >,
+    std::function<void(GLFWwindow*, void(*)(GLFWwindow*, int, int, int)) >,
+    std::function<void(GLFWwindow*, void(*)(GLFWwindow*, int, int)) >,
+    std::function<void(GLFWwindow*, void(*)(GLFWwindow*, int)) >,
+    std::function<void(GLFWwindow*, void(*)(GLFWwindow*, unsigned int)) >,
+    std::function<void(GLFWwindow*, void(*)(GLFWwindow*, double, double)) >,
+    std::function<void(GLFWwindow*, void(*)(GLFWwindow*)) >
+>;
+
 class GLFWWindow : public GLWindowBase {
 public:
     ~GLFWWindow() override = default;
     bool create(const glWinPar &gp) override { return init(gp); }
-    int  init(const glWinPar &gp);
+    bool init(const glWinPar &gp);
     void initFullScreen(const glWinPar &gp);
     void initNonFullScreen(const glWinPar &gp);
 
@@ -78,30 +89,8 @@ public:
     void resize(GLsizei width, GLsizei height) override;
     void focus() const;
     void minimize() override { glfwIconifyWindow(m_window); }
-
-    void maximize() {
-#ifdef __APPLE__
-        // on macOS glfwMaximizeWindow doesn't work
-        m_restoreWinPar.x = getPosition().x;
-        m_restoreWinPar.y = getPosition().y;
-        m_restoreWinPar.z = getSize().x;
-        m_restoreWinPar.w = getSize().y;
-        glfwSetWindowPos(m_window, 0, 0);
-        resize(m_monWidth, m_monHeight);
-#else
-        glfwMaximizeWindow(m_window);
-#endif
-    }  /// must be called from main thread
-
-    void restore() override {
-#ifdef __APPLE__
-        // on macOS glfwMaximizeWindow doesn't work
-        glfwSetWindowPos(m_window, m_restoreWinPar.x, m_restoreWinPar.y);
-        resize(m_restoreWinPar.z, m_restoreWinPar.w);
-#else
-        glfwRestoreWindow(m_window);
-#endif
-    }
+    void maximize();  /// must be called from main thread
+    void restore() override;
 
     std::vector<GLFWvidmode>             getVideoModes();
     std::vector<std::pair<int, int>>     getMonitorOffsets();
@@ -127,10 +116,10 @@ public:
     GLFWmonitor **getMonitors() const { return m_monitors; }
     GLFWmonitor  *getMonitor(int i) const { return m_monitors[i]; }
     int           getNrMonitors() const { return m_count; }
-    uint32_t      getPosX() const override { return static_cast<int>(m_posXvirt); }      /// in virtual pixels
-    uint32_t      getPosY() const override { return static_cast<int>(m_posYvirt); }      /// in virtual pixels
-    int           getPosXReal() const { return static_cast<int>(m_posXreal); }  /// in real pixels
-    int           getPosYReal() const { return static_cast<int>(m_posYreal); }  /// in real pixels
+    uint32_t      getPosX() const override { return static_cast<int>(m_posVirt.x); }      /// in virtual pixels
+    uint32_t      getPosY() const override { return static_cast<int>(m_posVirt.y); }      /// in virtual pixels
+    int           getPosXReal() const { return static_cast<int>(m_posReal.x); }  /// in real pixels
+    int           getPosYReal() const { return static_cast<int>(m_posReal.y); }  /// in real pixels
     int           getFocus() const { return glfwGetWindowAttrib(m_window, GLFW_FOCUSED); }
     void*         getNativeCtx() override { return m_nativeHandle; }
     /// return virtual pixels
@@ -159,38 +148,24 @@ public:
     void setVSync(bool set) override { glfwSwapInterval(set); }
     void setBlockResizing(bool val) { m_blockResizing = val; }
     void setBlockMouseIconSwitch(bool val) { m_blockMouseIconSwitch = val; }
-
-    void setMouseCursor(WinMouseIcon iconTyp) const {
-        if (!m_blockMouseIconSwitch) {
-            glfwSetCursor(m_window, m_mouseCursors[toType(iconTyp)]);
-        }
-    }
-
+    void setMouseCursor(WinMouseIcon iconTyp) const;
     void setBlockHid(bool val) { m_hidBlocked = val; }
     static void setFloating(bool val) { glfwWindowHint(GLFW_FLOATING, val); }
 
-    // utility methods for unified window handling (GLFWWindow -> GLWindow)
-    void setKeyCallback(GLFWkeyfun f) const { glfwSetKeyCallback(m_window, f); }
-    void setCharCallback(GLFWcharfun f) const { glfwSetCharCallback(m_window, f); }
-    void setMouseButtonCallback(GLFWmousebuttonfun f) const { glfwSetMouseButtonCallback(m_window, f); }
-    void setCursorPosCallback(GLFWcursorposfun f) const { glfwSetCursorPosCallback(m_window, f); }
-    void setWindowSizeCallback(GLFWwindowsizefun f) const { glfwSetWindowSizeCallback(m_window, f); }
-    void setWindowCloseCallback(GLFWwindowclosefun f) const { glfwSetWindowCloseCallback(m_window, f); }
-    void setWindowMaximizeCallback(GLFWwindowmaximizefun f) const { glfwSetWindowMaximizeCallback(m_window, f); }
-    void setWindowIconifyCallback(GLFWwindowiconifyfun f) const { glfwSetWindowIconifyCallback(m_window, f); }
-    void setWindowFocusCallback(GLFWwindowfocusfun f) const { glfwSetWindowFocusCallback(m_window, f); }
-    void setWindowPosCallback(GLFWwindowposfun f) const { glfwSetWindowPosCallback(m_window, f); }
-    void setScrollCallback(GLFWscrollfun f) const { glfwSetScrollCallback(m_window, f); }
-    void setWindowRefreshCallback(GLFWwindowrefreshfun f) const { glfwSetWindowRefreshCallback(m_window, f); }
+    template <typename... Args>
+    static void onWinHidFromCtx(GLFWwindow *w, const winCb& key, Args&&... args) {
+        static_cast<GLFWWindow*>(glfwGetWindowUserPointer(w))->onWinHid(key, std::forward<Args>(args)...);
+    }
+
+    void setWinCallback(winCb tp, const winHidCb& f) override;
     void setOnCloseCb(std::function<void()> f) { m_onCloseCb = std::move(f); }
-    void onWindowSize(int width, int height) override;
+    void onWindowSize(int width, int height);
 
     static void  pollEvents() { glfwPollEvents(); }
     static void  waitEvents() { glfwWaitEvents(); }
     static void  postEmptyEvent() { glfwPostEmptyEvent(); }
     static void  setErrorCallback(GLFWerrorfun f) { glfwSetErrorCallback(f); }
     static void *getWindowUserPointer(GLFWwindow *win) { return glfwGetWindowUserPointer(win); }
-    
     static glm::vec2 getPrimaryMonitorWindowContentScale();
 
     static void initLibrary();
@@ -198,10 +173,7 @@ public:
     static void focusWin(GLFWwindow *win) { glfwFocusWindow(win); }
     void        removeMouseCursors();
     static void error_callback(int error, const char *description);
-
-    static void makeNoneCurrent() {
-        glfwMakeContextCurrent(nullptr);
-    }
+    static void makeNoneCurrent() { glfwMakeContextCurrent(nullptr); }
 
 protected:
     std::vector<GLFWvidmode>             m_modes;
@@ -227,10 +199,9 @@ protected:
     int   m_count     = 0;
     int   m_monWidth  = 0;
     int   m_monHeight = 0;
-    float m_posXvirt  = 0;
-    float m_posYvirt  = 0;
-    float m_posXreal  = 0;
-    float m_posYreal  = 0;
+
+    glm::vec2 m_posVirt{};
+    glm::vec2 m_posReal{};
 
     void *m_nativeHandle = nullptr;
 
@@ -245,6 +216,22 @@ protected:
 
     glm::ivec4 m_restoreWinPar{0};
     std::mutex m_drawMtx;
+
+    static inline std::array<glfwAssignWinCbFunc, toType(winCb::Size)> m_setGlfwCbMap {
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, int, int, int, int)){ glfwSetKeyCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, unsigned int)){ glfwSetCharCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, int, int, int)){ glfwSetMouseButtonCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, double, double)){ glfwSetCursorPosCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, int, int)){ glfwSetWindowSizeCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*)){ glfwSetWindowCloseCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, int)){ glfwSetWindowMaximizeCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, int)){ glfwSetWindowIconifyCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, int)){ glfwSetWindowFocusCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, int, int)){ glfwSetWindowPosCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*, double, double)){ glfwSetScrollCallback(w, f); },
+        [](GLFWwindow* w, void (*f)(GLFWwindow*)){ glfwSetWindowRefreshCallback(w, f); }
+    };
 };
+
 }  // namespace ara
 #endif

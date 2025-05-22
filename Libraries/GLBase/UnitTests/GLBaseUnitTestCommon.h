@@ -19,8 +19,14 @@
 
 #include <gtest/gtest.h>
 
-#ifdef _WIN32
+#ifdef __linux__
+#include <X11/Xlib.h>
+#include <X11/keysym.h>
+#elif _WIN32
 #include <crtdbg.h>
+#include <windows.h>
+#elif __APPLE__
+#include <ApplicationServices/ApplicationServices.h>
 #endif
 
 #include <GLBase.h>
@@ -57,6 +63,7 @@ static void createThreads(int nrThreads, std::vector<GLFWWindow>& windows, GLBas
         }
     }
 }
+
 
 #ifdef _WIN32
 static bool checkMemLeak(_CrtMemState& sNew, _CrtMemState& sOld, _CrtMemState& sDiff) {

@@ -91,84 +91,62 @@ public:
 
     // Notifies shared code of a cursor enter/leave event
     void inputCursorEnter(bool entered) const {
-        if (m_callbacks.cursorEnter) {
-            m_callbacks.cursorEnter(entered);
-        }
+        onWinHid(winCb::CursorEnter, entered);
     }
 
     // Notifies shared code of files or directories dropped on a window
     void inputDrop(int count, const char** paths) const {
-        if (m_callbacks.drop) {
-            m_callbacks.drop(count, paths);
-        }
+        onWinHid(winCb::Drop, paths);
     }
 
     // Notifies shared code that a window framebuffer has been resized. The size
     // is specified in pixels
     void inputFramebufferSize(int width, int height) const {
-        if (m_callbacks.fbsize) {
-            m_callbacks.fbsize(width, height);
-        }
+        onWinHid(winCb::Fbsize, width, height);
     }
 
     // Notifies shared code of a scroll event
     void inputScroll(double xoffset, double yoffset) const {
-        if (m_callbacks.scroll) {
-            m_callbacks.scroll(xoffset, yoffset);
-        }
+        onWinHid(winCb::Scroll, xoffset, yoffset);
     }
 
     // Notifies shared code that a window has been maximized or restored
     void inputWindowMaximize(bool maximized) const {
-        if (m_callbacks.maximize) {
-            m_callbacks.maximize(maximized);
-        }
+        onWinHid(winCb::WindowMaximize, maximized);
     }
 
     // Notifies shared code that a window content scale has changed
     // The scale is specified as the ratio between the current and default DPI
     void inputWindowContentScale(float xscale, float yscale) const {
-        if (m_callbacks.scale) {
-            m_callbacks.scale(xscale, yscale);
-        }
+        onWinHid(winCb::Scale, xscale, yscale);
     }
 
     // Notifies shared code that the user wishes to close a window
     void inputWindowCloseRequest() {
         m_shouldClose = true;
-        if (m_callbacks.close) {
-            m_callbacks.close();
-        }
+        onWinHid(winCb::Close);
     }
 
     // Notifies shared code that the window contents needs updating
     void inputWindowDamage() const {
-        if (m_callbacks.refresh) {
-            m_callbacks.refresh();
-        }
+        onWinHid(winCb::WindowRefresh);
     }
 
     // Notifies shared code that a window has been iconified or restored
     void inputWindowIconify(bool iconified) const {
-        if (m_callbacks.iconify) {
-            m_callbacks.iconify(iconified);
-        }
+        onWinHid(winCb::WindowIconify, iconified);
     }
 
     // Notifies shared code that a window has moved. The position is specified
     // in content area relative screen coordinates
     void inputWindowPos(int x, int y) const {
-        if (m_callbacks.pos) {
-            m_callbacks.pos(x, y);
-        }
+        onWinHid(winCb::WindowPos, x, y);
     }
 
     // Notifies shared code that a window has been resized. The size is
     // specified in screen coordinates
     void inputWindowSize(int width, int height) const {
-        if (m_callbacks.size) {
-            m_callbacks.size(width, height);
-        }
+        onWinHid(winCb::WindowSize, width, height);
     }
 
     void  inputWindowFocus(bool focused);

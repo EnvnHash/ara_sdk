@@ -25,7 +25,7 @@ using namespace std;
 
 namespace ara {
 
-int GLFWWindow::init(const glWinPar &gp) {
+bool GLFWWindow::init(const glWinPar &gp) {
     m_widthVirt  = gp.size.x;
     m_heightVirt = gp.size.y;
     m_monWidth   = 0;
@@ -100,11 +100,6 @@ int GLFWWindow::init(const glWinPar &gp) {
         glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
     }
 
-    // creation of new context crashes when using shareCont
-    if (!m_window) {
-        return false;
-    }
-
     glfwMakeContextCurrent(m_window);
 
 #ifdef _WIN32
@@ -130,8 +125,7 @@ int GLFWWindow::init(const glWinPar &gp) {
     // if there is content scaling on this display, adjust size and position
     m_widthReal  = fbWidth;
     m_heightReal = fbHeight;
-    m_posXreal   = gp.shift.x * m_contentScale.x;
-    m_posYreal   = gp.shift.y * m_contentScale.y;
+    m_posReal    = glm::vec2(gp.shift) * m_contentScale;
 #else
     m_widthReal  = (int)(static_cast<float>(m_widthVirt) * m_contentScale.x);
     m_heightReal = (int)(static_cast<float>(m_heightVirt) * m_contentScale.y);
@@ -139,7 +133,7 @@ int GLFWWindow::init(const glWinPar &gp) {
     m_posYreal   = (int)(gp.shift.y * m_contentScale.y);
 #endif
 
-    glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));
+    glfwSetWindowPos(m_window, static_cast<int>(m_posReal.x), static_cast<int>(m_posReal.y));
 
     if (gp.debug) {
         LOG << "Vendor:  " << glGetString(GL_VENDOR);
@@ -165,74 +159,6 @@ int GLFWWindow::init(const glWinPar &gp) {
     m_mouseCursors[toType(WinMouseIcon::hresize)]   = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
     m_mouseCursors[toType(WinMouseIcon::vresize)]   = glfwCreateStandardCursor(GLFW_VRESIZE_CURSOR);
     m_mouseCursors[toType(WinMouseIcon::crossHair)] = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR);
-
-    // if this window is an instance without the GLFWWindowManager, hid callback functions are set here unfortunately
-    // passing this classes member function as c-pointer would require them to be static what would mean that a
-    // second instance will overwrite them. To solve this problem, lambdas are used inside which a static cast happens
-    if (gp.hidInput && !gp.hidExtern) {
-        glfwSetWindowUserPointer(m_window, this);
-
-        auto keyCb = [](GLFWwindow *w, int key, int scancode, int action, int mods) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onKey(key, scancode, action, mods);
-        };
-        glfwSetKeyCallback(m_window, keyCb);
-
-        auto charCb = [](GLFWwindow *w, unsigned int codepoint) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onChar(codepoint);
-        };
-        glfwSetCharCallback(m_window, charCb);
-
-        auto mouseButCb = [](GLFWwindow *w, int button, int action, int mods) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onMouseButton(button, action, mods);
-        };
-        glfwSetMouseButtonCallback(m_window, mouseButCb);
-
-        auto scrollCb = [](GLFWwindow *w, double xpos, double ypos) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onScroll(xpos, ypos);
-        };
-        glfwSetScrollCallback(m_window, scrollCb);
-
-        auto windowCloseCb = [](GLFWwindow *w) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowClose();
-        };
-        glfwSetWindowCloseCallback(m_window, windowCloseCb);
-
-        auto windowMaxCb = [](GLFWwindow *w, int flag) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowMaximize(flag);
-        };
-        glfwSetWindowMaximizeCallback(m_window, windowMaxCb);
-
-        auto windowIconifyCb = [](GLFWwindow *w, int flag) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowIconify(flag);
-        };
-        glfwSetWindowIconifyCallback(m_window, windowIconifyCb);
-
-        auto windowFocusCb = [](GLFWwindow *w, int flag) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowFocus(flag);
-        };
-        glfwSetWindowFocusCallback(m_window, windowFocusCb);
-
-        auto windowSizeCb = [](GLFWwindow *w, int width, int height) {
-            auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
-#if defined(_WIN32) || defined(__linux__)
-            win->onWindowSize(static_cast<int>(static_cast<float>(width) / win->getContentScale().x),
-                              static_cast<int>(static_cast<float>(height) / win->getContentScale().y));
-#else
-            win->onWindowSize(width, height);
-#endif
-        };
-        glfwSetWindowSizeCallback(m_window, windowSizeCb);
-
-        auto mouseCursorCb = [](GLFWwindow *w, double xpos, double ypos) {
-            auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
-#if defined(_WIN32) || defined(__linux__)
-            win->onMouseCursor(xpos / static_cast<double>(win->getContentScale().x), ypos / static_cast<double>(win->getContentScale().y));
-#else
-            win->onMouseCursor(xpos, ypos);
-#endif
-        };
-        glfwSetCursorPosCallback(m_window, mouseCursorCb);
-    }
 
     m_inited = true;
     m_initSema.notify();
@@ -447,8 +373,8 @@ void GLFWWindow::onWindowSize(int width, int height) {
     m_widthVirt  = width;
     m_heightVirt = height;
 #endif
-    if (m_windowSizeCb) {
-        m_windowSizeCb(width, height);
+    if (m_winHidCallbacks.contains(winCb::WindowSize)) {
+        std::get<std::function<void(int, int)>>(m_winHidCallbacks.at(winCb::WindowSize))(width, height);
     }
 }
 
@@ -499,6 +425,30 @@ void GLFWWindow::focus() const {
     }
 }
 
+void GLFWWindow::maximize() {
+#ifdef __APPLE__
+    // on macOS glfwMaximizeWindow doesn't work
+        m_restoreWinPar.x = getPosition().x;
+        m_restoreWinPar.y = getPosition().y;
+        m_restoreWinPar.z = getSize().x;
+        m_restoreWinPar.w = getSize().y;
+        glfwSetWindowPos(m_window, 0, 0);
+        resize(m_monWidth, m_monHeight);
+#else
+    glfwMaximizeWindow(m_window);
+#endif
+}  /// must be called from main thread
+
+void GLFWWindow::restore() {
+#ifdef __APPLE__
+    // on macOS glfwMaximizeWindow doesn't work
+        glfwSetWindowPos(m_window, m_restoreWinPar.x, m_restoreWinPar.y);
+        resize(m_restoreWinPar.z, m_restoreWinPar.w);
+#else
+    glfwRestoreWindow(m_window);
+#endif
+}
+
 void GLFWWindow::removeMouseCursors() {
     if (m_window) {
         for (auto it : m_mouseCursors | std::views::filter([](const auto it){ return it != nullptr; })) {
@@ -529,16 +479,47 @@ void GLFWWindow::setSize(int inWidth, int inHeight) {
 
 /// input in virtual pixels
 void GLFWWindow::setPosition(int posx, int posy) {
-    m_posXvirt = static_cast<float>(posx);
-    m_posYvirt = static_cast<float>(posy);
-    m_posXreal = static_cast<float>(posx) * m_contentScale.x;
-    m_posYreal = static_cast<float>(posy) * m_contentScale.y;
+    m_posVirt = { static_cast<float>(posx),  static_cast<float>(posy) };
+    m_posReal = { static_cast<float>(posx) * m_contentScale.x, static_cast<float>(posy) * m_contentScale.y };
 #ifdef __APPLE__
-    glfwSetWindowPos(m_window, m_posXvirt, m_posYvirt);
+    glfwSetWindowPos(m_window, m_posVirt.x, m_posVirt.y);
 #else
-    glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));
+    glfwSetWindowPos(m_window, static_cast<int>(m_posReal.x), static_cast<int>(m_posReal.y));
 #endif
     iterate();
+}
+
+void GLFWWindow::setWinCallback(winCb tp, const winHidCb& f)  {
+    if (toType(tp) > toType(winCb::WindowRefresh)) {
+        return;
+    }
+
+    m_winHidCallbacks.insert_or_assign(tp, f);
+    glfwSetWindowUserPointer(m_window, this);
+
+    std::visit([this, tp](auto&& func) {
+        std::unordered_map<winCb, std::function<void()>> m {
+            { winCb::Key, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::Key, args...); }); } },
+            { winCb::Char, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::Char, args...); }); } },
+            { winCb::MouseButton, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::MouseButton, args...); }); } },
+            { winCb::CursorPos, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::CursorPos, args...); }); } },
+            { winCb::WindowSize, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::WindowSize, args...); }); } },
+            { winCb::WindowClose, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::WindowClose, args...); }); } },
+            { winCb::WindowMaximize, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::WindowMaximize, args...); }); } },
+            { winCb::WindowIconify, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::WindowIconify, args...); }); } },
+            { winCb::WindowFocus, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::WindowFocus, args...); }); } },
+            { winCb::WindowPos, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::WindowPos, args...); }); } },
+            { winCb::Scroll, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::Scroll, args...); }); } },
+            { winCb::WindowRefresh, [this, &func] { func(m_window, [](GLFWwindow *w, auto... args) { onWinHidFromCtx(w, winCb::WindowRefresh, args...); }); } },
+        };
+        m[tp]();
+    }, m_setGlfwCbMap[toType(tp)]);
+}
+
+void GLFWWindow::setMouseCursor(WinMouseIcon iconTyp) const {
+    if (!m_blockMouseIconSwitch) {
+        glfwSetCursor(m_window, m_mouseCursors[toType(iconTyp)]);
+    }
 }
 
 glm::vec2 GLFWWindow::getDpi() {
@@ -691,17 +672,13 @@ glm::ivec2 GLFWWindow::getPosition() {
     glm::ivec2 pos;
     glfwGetWindowPos(m_window, &pos.x, &pos.y);
 #ifdef __APPLE__
-    m_posXreal = static_cast<float>(pos.x * m_contentScale.x);
-    m_posYreal = static_cast<float>(pos.y * m_contentScale.y);
-    m_posXvirt = static_cast<float>(pos.x);
-    m_posYvirt = static_cast<float>(pos.y);
+    m_posReal = glm::vec2(pos) * m_contentScale;
+    m_posVirt = glm::vec2(pos);
 #else
-    m_posXreal = static_cast<float>(pos.x);
-    m_posYreal = static_cast<float>(pos.y);
-    m_posXvirt = static_cast<float>(pos.x) / m_contentScale.x;
-    m_posYvirt = static_cast<float>(pos.y) / m_contentScale.y;
+    m_posReal = glm::vec2(pos);
+    m_posVirt = m_posReal / m_contentScale;
 #endif
-    return glm::ivec2{static_cast<int>(m_posXvirt), static_cast<int>(m_posYvirt)};
+    return glm::ivec2(m_posVirt);
 }
 
 void GLFWWindow::close() {
