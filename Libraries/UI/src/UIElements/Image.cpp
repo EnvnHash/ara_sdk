@@ -696,6 +696,7 @@ void Image::removeGLResources() {
     if (m_texUniBlock.isInited()) {
     }
     m_tex = nullptr;
+    m_inited = false;
 }
 
 }  // namespace ara

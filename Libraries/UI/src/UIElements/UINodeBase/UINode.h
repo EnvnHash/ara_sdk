@@ -44,16 +44,9 @@ public:
         return nc;
     }
 
-    template <typename T>
-    T* addChild(int32_t x, int32_t y, int32_t w, int32_t h) {
-        T* nc = addChild<T>();
-        nc->setPos(x, y);
-        nc->setSize(w, h);
-        return nc;
-    }
-
-    template <typename T>
-    T* addChild(float x, float y, float w, float h) {
+    template <typename T, typename U>
+    requires std::integral<U> || std::floating_point<U>
+    T* addChild(U x, U y, U w, U h) {
         T* nc = addChild<T>();
         nc->setPos(x, y);
         nc->setSize(w, h);
@@ -232,21 +225,21 @@ public:
     void                setVaoOffset(GLuint v) { m_indDrawBlock.vaoOffset = v; }
     virtual void        clearDs() { m_indDrawBlock.drawSet = nullptr; }
 
-    GLuint                                  getVaoOffset() const { return m_indDrawBlock.vaoOffset; }
-    std::vector<DivVaoData>&                getDivData() { return m_indDrawBlock.vaoData; }
-    IndDrawBlock&                           getIndDrawBlock() { return m_indDrawBlock; }
-    uint32_t                                getMinChildId(uint32_t minId = UINT32_MAX);
-    uint32_t                                getMaxChildId(uint32_t maxId = 0);
-    std::vector<std::unique_ptr<UINode>>&   getChildren() { return m_children; }
-    [[nodiscard]] uint32_t                  getId() const { return m_objIdMin; }
-    [[nodiscard]] uint32_t                  getMinId() const { return m_objIdMin; }
-    [[nodiscard]] uint32_t                  getMaxId() const { return m_objIdMax; }
-    UINode*                                 getRoot();
-    UINode*                                 getParent() override { return m_parent; }
-    UINode*                                 getNode(const std::string& name);
-    UINode*                                 getNodeById(uint32_t searchID);
-    virtual float                           getValue() { return 0.f; }
-    virtual std::string&                    getName() { return m_name; }
+    auto                    getVaoOffset() const { return m_indDrawBlock.vaoOffset; }
+    auto&                   getDivData() { return m_indDrawBlock.vaoData; }
+    auto&                   getIndDrawBlock() { return m_indDrawBlock; }
+    uint32_t                getMinChildId(uint32_t minId = UINT32_MAX);
+    uint32_t                getMaxChildId(uint32_t maxId = 0);
+    auto&                   getChildren() { return m_children; }
+    [[nodiscard]] auto      getId() const { return m_objIdMin; }
+    [[nodiscard]] auto      getMinId() const { return m_objIdMin; }
+    [[nodiscard]] auto      getMaxId() const { return m_objIdMax; }
+    UINode*                 getRoot();
+    UINode*                 getParent() override { return m_parent; }
+    UINode*                 getNode(const std::string& name);
+    UINode*                 getNodeById(uint32_t searchID);
+    virtual float           getValue() { return 0.f; }
+    virtual std::string&    getName() { return m_name; }
 
     [[nodiscard]] bool containsObjectId(uint32_t id) const { return (id >= m_objIdMin && id <= m_objIdMax); }
 
@@ -264,11 +257,11 @@ public:
     void keyDownIt(hidData& data) override;
     void onCharIt(hidData& data) override;
 
-    std::filesystem::path       dataPath();
-    UIApplication*              getApp() const;
+    std::filesystem::path   dataPath();
+    UIApplication*          getApp() const;
 
-    bool                        isInBounds(glm::vec2& pos) override;
-    bool                        recChildrenBoundBox(glm::vec4& ref);
+    bool isInBounds(glm::vec2& pos) override;
+    bool recChildrenBoundBox(glm::vec4& ref);
 
     void            runOnMainThread(const std::function<bool()>& func, bool forcePush = false) const;
     WindowManager*  getWinMan();
