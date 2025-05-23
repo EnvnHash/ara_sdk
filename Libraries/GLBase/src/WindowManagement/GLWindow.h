@@ -34,12 +34,12 @@ using GLContext = void *;
 #endif
 
 using winCtxHidCb = std::variant<
-        std::function<void(GLContext, unsigned int)>,
-        std::function<void(GLContext, int, int, int, int)>,
-        std::function<void(GLContext, int, int, int)>,
-        std::function<void(GLContext, int, int)>,
-        std::function<void(GLContext, int)>,
-        std::function<void(GLContext, double, double)>,
-        std::function<void(GLContext)>>;
+    std::function<void(GLContext, unsigned int)>,
+    std::function<void(GLContext, int, int, int, int)>,
+    std::function<void(GLContext, int, int, int)>,
+    std::function<void(GLContext, int, int)>,
+    std::function<void(GLContext, int)>,
+    std::function<void(GLContext, double, double)>,
+    std::function<void(GLContext)>>;
 
 }  // namespace ara

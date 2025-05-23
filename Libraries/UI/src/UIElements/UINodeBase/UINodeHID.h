@@ -60,24 +60,12 @@ public:
     virtual void onResize() {}
 
     void addMouseHidCb(hidEvent evt, const std::function<void(hidData&)>& func, bool onHit = true);
-    void addMouseClickCb(const std::function<void(hidData&)>& func, bool onHit = true);
-    void addMouseClickRightCb(const std::function<void(hidData&)>& func, bool onHit = true);
-    void addMouseUpCb(const std::function<void(hidData&)>& func, bool onHit = true);
-    void addMouseUpRightCb(const std::function<void(hidData&)>& func, bool onHit = true);
-    void addMouseDragCb(const std::function<void(hidData&)>& func, bool onHit = true);
-    void addMouseMoveCb(const std::function<void(hidData&)>& func, bool onHit = true);
-    void addMouseWheelCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void clearMouseCb(hidEvent evt);
+
     void addMouseInCb(std::function<void(hidData&)> func, state st = state::m_state);
     void addMouseOutCb(std::function<void(hidData&)> func, state st = state::none);
 
     std::list<mouseCb>&             getMouseHidCb(hidEvent evt) { return m_mouseHidCb[evt]; }
-    std::list<mouseCb>&             getMouseDownCb() { return m_mouseHidCb[hidEvent::MouseDownLeft]; }
-    std::list<mouseCb>&             getMouseUpCb() { return m_mouseHidCb[hidEvent::MouseUpLeft]; }
-    std::list<mouseCb>&             getMouseDownRightCb() { return m_mouseHidCb[hidEvent::MouseDownRight]; }
-    std::list<mouseCb>&             getMouseUpRightCb() { return m_mouseHidCb[hidEvent::MouseUpRight]; }
-    std::list<mouseCb>&             getMouseDragCb() { return m_mouseHidCb[hidEvent::MouseDrag]; }
-    std::list<mouseCb>&             getMouseWheelCb() { return m_mouseHidCb[hidEvent::MouseWheel]; }
     std::function<void(hidData&)>*  getKeyDownCb() { return m_keyDownCb ? &m_keyDownCb : nullptr; }
     std::function<void(hidData&)>*  getKeyUpCb() { return m_keyUpCb ? &m_keyUpCb : nullptr; }
 

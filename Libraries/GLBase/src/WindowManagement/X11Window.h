@@ -63,8 +63,7 @@ public:
 class X11Window : public GLWindowBase {
 public:
     X11Window() : GLWindowBase() {}
-
-    ~X11Window() override;
+    ~X11Window() override = default;
 
     bool        create(const glWinPar &gp) override;
     void        open() override {}
@@ -93,18 +92,14 @@ public:
     void createKeyTables();
 
 #if defined(X_HAVE_UTF8_STRING)
-    unsigned int decodeUTF8(const char **s);
+    unsigned int    decodeUTF8(const char **s);
 #endif
-
-    long keySym2Unicode(unsigned int keysym);
-    void grabErrorHandler();
-    void releaseErrorHandler();
-
-    static int errorHandler(Display *display, XErrorEvent *event);
-
-    unsigned long getWindowProperty(Window window, Atom property, Atom type, unsigned char **value);
-
-    char **parseUriList(char *text, int *count);
+    long            keySym2Unicode(unsigned int keysym);
+    void            grabErrorHandler();
+    void            releaseErrorHandler();
+    static int      errorHandler(Display *display, XErrorEvent *event);
+    unsigned long   getWindowProperty(Window window, Atom property, Atom type, unsigned char **value);
+    char **         parseUriList(char *text, int *count);
 
     void enableCursor();
     void disableCursor();
@@ -177,7 +172,6 @@ protected:
 
     XIM       m_im{};  // XIM input method
     XIC       m_ic{};
-    short int m_keycodes[256];
     Time      m_keyPressTimes[256];  // The time of the last KeyPress event per
                                      // keycode, for discarding  duplicate key events
                                      // generated for some keys by ibus

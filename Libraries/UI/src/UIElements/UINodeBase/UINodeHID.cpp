@@ -88,9 +88,8 @@ void UINodeHID::mouseIn(hidData& data) {
     }
 
     if (!m_excludeFromStyles) {
-        // set state only in case there are styledefinitions for it. If this is
-        // not the case, we assume that this Node should ignore this state
-        // setState(state::highlighted, true);
+        // set state only in case there are styledefinitions for it. If this is not the case, we assume that this Node
+        // should ignore this state setState(state::highlighted, true);
         if (!m_setStyleFunc[state::highlighted].empty()) {
             setState(state::highlighted);
         }
@@ -115,7 +114,7 @@ void UINodeHID::mouseOut(hidData& data) {
         return;
     }
 
-    state lastState  = m_lastState;
+    auto lastState  = m_lastState;
     bool  changeBack = !m_setStyleFunc[state::highlighted].empty() && m_state != state::selected;
 
     // if the last state has no highlighted style definitions, the state didn't
@@ -134,41 +133,13 @@ void UINodeHID::mouseOut(hidData& data) {
         m_sharedRes->requestRedraw = true;
     }
 
-    for (const auto& it : m_mouseOutCb) {
-        it.second(data);
+    for (const auto& it : m_mouseOutCb | views::values) {
+        it(data);
     }
 }
 
 void UINodeHID::addMouseHidCb(hidEvent evt, const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[evt].emplace_back(std::make_pair(func, onHit));
-}
-
-void UINodeHID::addMouseClickCb(const std::function<void(hidData&)>& func, bool onHit) {
-    m_mouseHidCb[hidEvent::MouseDownLeft].emplace_back(std::make_pair(func, onHit));
-}
-
-void UINodeHID::addMouseClickRightCb(const std::function<void(hidData&)>& func, bool onHit) {
-    m_mouseHidCb[hidEvent::MouseDownRight].emplace_back(std::make_pair(func, onHit));
-}
-
-void UINodeHID::addMouseUpCb(const std::function<void(hidData&)>& func, bool onHit) {
-    m_mouseHidCb[hidEvent::MouseUpLeft].emplace_back(std::make_pair(func, onHit));
-}
-
-void UINodeHID::addMouseUpRightCb(const std::function<void(hidData&)>& func, bool onHit) {
-    m_mouseHidCb[hidEvent::MouseUpRight].emplace_back(std::make_pair(func, onHit));
-}
-
-void UINodeHID::addMouseDragCb(const std::function<void(hidData&)>& func, bool onHit) {
-    m_mouseHidCb[hidEvent::MouseDrag].emplace_back(std::make_pair(func, onHit));
-}
-
-void UINodeHID::addMouseMoveCb(const std::function<void(hidData&)>& func, bool onHit) {
-    m_mouseHidCb[hidEvent::MouseMove].emplace_back(std::make_pair(func, onHit));
-}
-
-void UINodeHID::addMouseWheelCb(const std::function<void(hidData&)>& func, bool onHit) {
-    m_mouseHidCb[hidEvent::MouseWheel].emplace_back(std::make_pair(func, onHit));
 }
 
 void UINodeHID::clearMouseCb(hidEvent evt) {

@@ -174,7 +174,7 @@ namespace ara::GLBaseUnitTest::GLFWWindowHidTest {
     TEST(GLBaseTest, LibGLFWWindowCharGlobalCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::Char, static_cast<std::function<void(unsigned int)>>([](unsigned int) { }));
-            win.addGlobalHidCallback(winCb::Char, nullptr, make_shared<winHidCb>([](unsigned int) { setCbCalled(); }));
+            win.addGlobalHidCallback(winCb::Char, nullptr, make_shared<winHidCb>(static_cast<std::function<void(unsigned int)>>([](unsigned int) { setCbCalled(); })));
         }, [] { SimulateKeyPress('B'); });
     }
 
@@ -182,56 +182,56 @@ namespace ara::GLBaseUnitTest::GLFWWindowHidTest {
     TEST(GLBaseTest, LibGLFWMouseButGlobCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::MouseButton, [](int, int, int) { });
-            win.addGlobalHidCallback(winCb::MouseButton, nullptr, [](int, int, int) { setCbCalled(); });
+            win.addGlobalHidCallback(winCb::MouseButton, nullptr, make_shared<winHidCb>([](int, int, int) { setCbCalled(); }));
         }, [] { SimulateMouseButtonClick(200, 200, 1); });
     }
 
     TEST(GLBaseTest, LibGLFWMouseCursorGlobCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::CursorPos, static_cast<std::function<void(double, double)>>([](double, double) { }));
-            win.addGlobalHidCallback(winCb::CursorPos, nullptr, static_cast<std::function<void(double, double)>>([](double, double) { setCbCalled(); }));
+            win.addGlobalHidCallback(winCb::CursorPos, nullptr, make_shared<winHidCb>(static_cast<std::function<void(double, double)>>([](double, double) { setCbCalled(); })));
         }, [] { SimulateMouseMovement(200, 200, 250, 250); });
     }
 
     TEST(GLBaseTest, LibGLFWScrollGlobCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::Scroll, static_cast<std::function<void(double, double)>>([](double, double) { }));
-            win.addGlobalHidCallback(winCb::Scroll, nullptr, static_cast<std::function<void(double, double)>>([](double, double) { setCbCalled(); }));
+            win.addGlobalHidCallback(winCb::Scroll, nullptr, make_shared<winHidCb>(static_cast<std::function<void(double, double)>>([](double, double) { setCbCalled(); })));
         }, [] { SimulateWheel(w->getCtx(), 20); });
     }
 
     TEST(GLBaseTest, LibGLFWWindowCloseGlobCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::WindowClose, [] { });
-            win.addGlobalHidCallback(winCb::WindowClose, nullptr, [] { setCbCalled(); });
+            win.addGlobalHidCallback(winCb::WindowClose, nullptr, make_shared<winHidCb>([] { setCbCalled(); }));
         }, [] { CloseWindow(w->getCtx()); });
     }
 
     TEST(GLBaseTest, LibGLFWWindowMaximizeGlobCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::WindowMaximize, static_cast<std::function<void(int)>>([](int) { }));
-            win.addGlobalHidCallback(winCb::WindowMaximize, nullptr, static_cast<std::function<void(int)>>([](int) { setCbCalled(); }));
+            win.addGlobalHidCallback(winCb::WindowMaximize, nullptr, make_shared<winHidCb>(static_cast<std::function<void(int)>>([](int) { setCbCalled(); })));
         }, [] { glfwMaximizeWindow(w->getCtx()); std::this_thread::sleep_for(std::chrono::milliseconds(200)); });
     }
 
     TEST(GLBaseTest, LibGLFWWindowFocusGlobCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::WindowFocus, static_cast<std::function<void(int)>>([](int) { }));
-            win.addGlobalHidCallback(winCb::WindowFocus, nullptr, static_cast<std::function<void(int)>>([](int) { setCbCalled(); }));
+            win.addGlobalHidCallback(winCb::WindowFocus, nullptr, make_shared<winHidCb>(static_cast<std::function<void(int)>>([](int) { setCbCalled(); })));
         }, [] { });
     }
 
     TEST(GLBaseTest, LibGLFWWindowSizeGlobCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::WindowSize, static_cast<std::function<void(int, int)>>([](int, int) { }));
-            win.addGlobalHidCallback(winCb::WindowSize, nullptr, static_cast<std::function<void(int, int)>>([](int, int) { setCbCalled(); }));
+            win.addGlobalHidCallback(winCb::WindowSize, nullptr, make_shared<winHidCb>(static_cast<std::function<void(int, int)>>([](int, int) { setCbCalled(); })));
         }, [] { w->resize(100, 100); });
     }
 
     TEST(GLBaseTest, LibGLFWWindowPosGlobCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::WindowPos, static_cast<std::function<void(int, int)>>([](int, int) { }));
-            win.addGlobalHidCallback(winCb::WindowPos, nullptr, static_cast<std::function<void(int, int)>>([](int, int) { setCbCalled(); }));
+            win.addGlobalHidCallback(winCb::WindowPos, nullptr, make_shared<winHidCb>(static_cast<std::function<void(int, int)>>([](int, int) { setCbCalled(); })));
         }, [] { w->setPosition(100, 100); });
     }
 #endif

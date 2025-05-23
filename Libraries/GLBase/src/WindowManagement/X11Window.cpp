@@ -156,7 +156,9 @@ bool X11Window::hasUsableInputMethodStyle() {
     bool       found  = false;
     XIMStyles *styles = nullptr;
 
-    if (XGetIMValues(m_im, XNQueryInputStyle, &styles, nullptr) != nullptr) return false;
+    if (XGetIMValues(m_im, XNQueryInputStyle, &styles, nullptr) != nullptr) {
+        return false;
+    }
 
     for (unsigned int i = 0; i < styles->count_styles; i++) {
         if (styles->supported_styles[i] == (XIMPreeditNothing | XIMStatusNothing)) {
@@ -170,14 +172,14 @@ bool X11Window::hasUsableInputMethodStyle() {
 }
 
 void X11Window::waitEvents() {
-    while (!XPending(m_display)) waitForEvent(nullptr);
-
+    while (!XPending(m_display)) {
+        waitForEvent(nullptr);
+    }
     pollEvents();
 }
 
 // Wait for data to arrive using select
-// This avoids blocking other threads via the per-display Xlib lock that also
-// covers GLX functions
+// This avoids blocking other threads via the per-display Xlib lock that also covers GLX functions
 bool X11Window::waitForEvent(double *timeout) {
     fd_set    fds   = {0};
     const int fd    = ConnectionNumber(m_display);
@@ -185,7 +187,9 @@ bool X11Window::waitForEvent(double *timeout) {
     FD_SET(fd, &fds);
 
     for (;;) {
-        if (select(count, &fds, nullptr, nullptr, nullptr) != -1 || errno != EINTR) return true;
+        if (select(count, &fds, nullptr, nullptr, nullptr) != -1 || errno != EINTR) {
+            return true;
+        }
     }
 }
 
@@ -200,17 +204,20 @@ void X11Window::pollEvents() {
         XNextEvent(m_display, &event);
 
         // HACK: Save scancode as some IMs clear the field in XFilterEvent
-        if (event.type == KeyPress || event.type == KeyRelease) keycode = event.xkey.keycode;
+        if (event.type == KeyPress || event.type == KeyRelease) {
+            keycode = event.xkey.keycode;
+        }
 
-        if (m_im) filtered = XFilterEvent(&event, None);
+        if (m_im) {
+            filtered = XFilterEvent(&event, None);
+        }
 
         if (m_xkb.available) {
             if (event.type == m_xkb.eventBase + XkbEventCode) {
-                if (((XkbEvent *)&event)->any.xkb_type == XkbStateNotify &&
-                    (((XkbEvent *)&event)->state.changed & XkbGroupStateMask)) {
-                    m_xkb.group = ((XkbEvent *)&event)->state.group;
+                if (reinterpret_cast<XkbEvent*>(&event)->any.xkb_type == XkbStateNotify &&
+                    (reinterpret_cast<XkbEvent*>(&event)->state.changed & XkbGroupStateMask)) {
+                    m_xkb.group = reinterpret_cast<XkbEvent*>(&event)->state.group;
                 }
-
                 return;
             }
         }
@@ -684,7 +691,7 @@ void X11Window::handleSelectionRequest(XEvent *event) {
 // Set the specified property to the selection converted to the requested target
 Atom X11Window::writeTargetToProperty(const XSelectionRequestEvent *request) {
     int        i;
-    char      *selectionString = NULL;
+    char      *selectionString = nullptr;
     const Atom formats[]       = {m_UTF8_STRING, XA_STRING};
     const int  formatCount     = sizeof(formats) / sizeof(formats[0]);
 
@@ -945,16 +952,13 @@ int X11Window::translateState(int state) {
 void X11Window::createKeyTables() {
     int scancode, scancodeMin, scancodeMax;
 
-    memset(m_keycodes, -1, sizeof(m_keycodes));
-    memset(m_scancodes, -1, sizeof(m_scancodes));
     m_xkb.major     = 1;
     m_xkb.minor     = 0;
     m_xkb.available = XkbQueryExtension(m_display, &m_xkb.majorOpcode, &m_xkb.eventBase, &m_xkb.errorBase, &m_xkb.major,
                                         &m_xkb.minor);
 
     if (m_xkb.available) {
-        // Use XKB to determine physical key locations independently of the
-        // current keyboard layout
+        // Use XKB to determine physical key locations independently of the current keyboard layout
 
         XkbDescPtr desc = XkbGetMap(m_display, 0, XkbUseCoreKbd);
         XkbGetNames(m_display, XkbKeyNamesMask | XkbKeyAliasesMask, desc);
@@ -1091,13 +1095,11 @@ void X11Window::createKeyTables() {
         for (scancode = scancodeMin; scancode <= scancodeMax; scancode++) {
             int key = GLSG_KEY_UNKNOWN;
 
-            // Map the key name to a GLFW key code. Note: We use the US
-            // keyboard layout. Because function keys aren't mapped correctly
-            // when using traditional KeySym translations, they are mapped
-            // here instead.
-            for (int i = 0; i < sizeof(keymap) / sizeof(keymap[0]); i++) {
-                if (strncmp(desc->names->keys[scancode].name, keymap[i].name, XkbKeyNameLength) == 0) {
-                    key = keymap[i].key;
+            // Map the key name to a GLFW key code. Note: We use the US keyboard layout. Because function keys aren't
+            // mapped correctly when using traditional KeySym translations, they are mapped here instead.
+            for (auto i : keymap) {
+                if (strncmp(desc->names->keys[scancode].name, i.name, XkbKeyNameLength) == 0) {
+                    key = i.key;
                     break;
                 }
             }
@@ -1111,15 +1113,15 @@ void X11Window::createKeyTables() {
                     continue;
                 }
 
-                for (int j = 0; j < sizeof(keymap) / sizeof(keymap[0]); j++) {
-                    if (strncmp(desc->names->key_aliases[i].alias, keymap[j].name, XkbKeyNameLength) == 0) {
-                        key = keymap[j].key;
+                for (auto j : keymap) {
+                    if (strncmp(desc->names->key_aliases[i].alias, j.name, XkbKeyNameLength) == 0) {
+                        key = j.key;
                         break;
                     }
                 }
             }
 
-            m_keycodes[scancode] = key;
+            m_keycodes[scancode] = static_cast<short int>(key);
         }
 
         XkbFreeNames(desc, XkbKeyNamesMask, True);
@@ -1139,7 +1141,9 @@ void X11Window::createKeyTables() {
         }
 
         // Store the reverse translation for faster key name lookup
-        if (m_keycodes[scancode] > 0) m_scancodes[m_keycodes[scancode]] = scancode;
+        if (m_keycodes[scancode] > 0) {
+            m_scancodes[m_keycodes[scancode]] = static_cast<short int>(scancode);
+        }
     }
 
     XFree(keysyms);
@@ -1180,12 +1184,13 @@ long X11Window::keySym2Unicode(unsigned int keysym) {
     // Binary search in table
     while (max >= min) {
         mid = (min + max) / 2;
-        if (keysymtab[mid].keysym < keysym)
+        if (keysymtab[mid].keysym < keysym) {
             min = mid + 1;
-        else if (keysymtab[mid].keysym > keysym)
+        } else if (keysymtab[mid].keysym > keysym) {
             max = mid - 1;
-        else
+        } else {
             return keysymtab[mid].ucs;
+        }
     }
 
     // No matching Unicode value found
@@ -1225,13 +1230,13 @@ unsigned long X11Window::getWindowProperty(Window window, Atom property, Atom ty
 // NOTE: This function destroys the provided string
 char **X11Window::parseUriList(char *text, int *count) {
     std::string prefix = "file://";
-    char      **paths  = NULL;
+    char      **paths  = nullptr;
     char       *line;
 
     *count = 0;
 
     while ((line = strtok(text, "\r\n"))) {
-        text = NULL;
+        text = nullptr;
 
         if (line[0] == '#') {
             continue;
@@ -1253,7 +1258,7 @@ char **X11Window::parseUriList(char *text, int *count) {
         while (*line) {
             if (line[0] == '%' && line[1] && line[2]) {
                 const char digits[3] = {line[1], line[2], '\0'};
-                *path                = strtol(digits, NULL, 16);
+                *path                = strtol(digits, nullptr, 16);
                 line += 2;
             } else {
                 *path = *line;
@@ -1304,7 +1309,7 @@ int X11Window::getWindowState() {
     struct {
         CARD32 state;
         Window icon;
-    } *state = NULL;
+    } *state = nullptr;
 
     if (getWindowProperty(m_win, m_WM_STATE, m_WM_STATE, (unsigned char **)&state) >= 2) {
         result = state->state;
@@ -1339,7 +1344,6 @@ void X11Window::close() {
     }
 }
 
-X11Window::~X11Window() {}
 }  // namespace ara
 
 #endif

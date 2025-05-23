@@ -316,7 +316,7 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
 
     auto win = m_windows.back().get();
     if (gp.hidInput) {
-        m_globalHidCallbacks
+        //m_globalHidCallbacks
 
         /*
         for (auto cbTp : { winCb::Char, winCb::MouseButton, winCb::WindowClose, winCb::WindowMaximize, winCb::WindowIconify, winCb::WindowFocus, winCb::Scroll }) {

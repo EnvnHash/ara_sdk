@@ -65,12 +65,8 @@ public:
         p.glbase        = &m_glbase;
 #if defined(__ANDROID__) && defined(ARA_ANDROID_PURE_NATIVE_APP)
         p.extWinHandle = static_cast<void*>(m_androidNativeWin);
-        m_uiWindows.emplace_back(std::make_unique<T>(p));
-#elif defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
-        m_uiWindows.emplace_back(std::make_unique<T>(p));
-#else
-        m_uiWindows.emplace_back(std::make_unique<T>(p));
 #endif
+        m_uiWindows.emplace_back(std::make_unique<T>(p));
 
         auto newWindow = m_uiWindows.back().get();
         if (newWindow->getProcSteps()) {

@@ -169,10 +169,10 @@ private:
     std::vector<std::function<bool()>>     m_evtLoopCbs;
 
     std::function<void(double, double, unsigned int)>                   m_globalDrawFunc;
-    //std::unordered_map<winCb, std::unordered_map<GLContext, winHidCb>>  m_winHidCbMap;
-    //std::unordered_map<winCb, std::unordered_map<void*, winCtxHidCb>>   m_globalWinHidCpMap;
+    std::unordered_map<winCb, std::unordered_map<GLContext, winHidCb>>  m_winHidCbMap;
+    std::unordered_map<winCb, std::unordered_map<void*, winCtxHidCb>>   m_globalWinHidCpMap;
 
-    std::unordered_map<winCb, std::unordered_map<void*, std::shared_ptr<winHidCb>>>  m_globalHidCallbacks;
+    //std::unordered_map<winCb, std::unordered_map<void*, std::shared_ptr<winHidCb>>>  m_globalHidCallbacks;
 
     std::list<Conditional *> m_semaqueue;
 

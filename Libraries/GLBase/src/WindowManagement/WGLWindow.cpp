@@ -30,11 +30,6 @@ namespace ara {
  */
 
 bool WGLWindow::create(const glWinPar& wp) {
-
-    //LPCWSTR title, uint32_t width, uint32_t height, uint32_t posX, uint32_t posY, uint32_t bits,
-                       //bool fullscreenflag, bool hidden, bool decorated, bool resizable, bool floating,
-                       //bool transparent, HGLRC m_shareCtx
-
     m_msgLoop = std::thread([this, wp]() {
         // createKeyTables();
         // loadLibraries();
@@ -53,16 +48,16 @@ bool WGLWindow::create(const glWinPar& wp) {
         m_sharedCtx   = static_cast<HGLRC>(wp.shareCont);
         m_fullscreen  = wp.fullScreen;  // Set The Global Fullscreen Flag
 
-        m_hInstance      = GetModuleHandle(nullptr);               // Grab An Instance For Our Window
+        m_hInstance      = GetModuleHandle(nullptr);            // Grab An Instance For Our Window
         wc.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;  // Redraw On Size, And Own DC For Window.
-        wc.lpfnWndProc   = static_cast<WNDPROC>(WndProc);                    // WndProc Handles Messages
+        wc.lpfnWndProc   = static_cast<WNDPROC>(WndProc);       // WndProc Handles Messages
         wc.cbClsExtra    = 0;                                   // No Extra Window Data
         wc.cbWndExtra    = 0;                                   // No Extra Window Data
         wc.hInstance     = m_hInstance;                         // Set The Instance
-        wc.hIcon         = LoadIcon(nullptr, IDI_WINLOGO);         // Load The Default Icon
-        wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);         // Load The Arrow Pointer
-        wc.hbrBackground = nullptr;                                // No Background Required For GL
-        wc.lpszMenuName  = nullptr;                                // We Don't Want A Menu
+        wc.hIcon         = LoadIcon(nullptr, IDI_WINLOGO);      // Load The Default Icon
+        wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);      // Load The Arrow Pointer
+        wc.hbrBackground = nullptr;                             // No Background Required For GL
+        wc.lpszMenuName  = nullptr;                             // We Don't Want A Menu
         m_thisClassName  = "OpenGL_" + std::to_string(reinterpret_cast<uint64_t>(this));
         wc.lpszClassName = StringToLPCWSTR(m_thisClassName);  // Set The Class Name
 
@@ -705,25 +700,16 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
             // if (thisWin->m_disabledCursorWindow == window)
             //     updateClipRect(window);
 
-            if (thisWin->m_iconified != iconified) thisWin->inputWindowIconify(iconified);
+            if (thisWin->m_iconified != iconified) {
+                thisWin->inputWindowIconify(iconified);
+            }
 
-            if (thisWin->m_maximized != maximized) thisWin->inputWindowMaximize(maximized);
+            if (thisWin->m_maximized != maximized) {
+                thisWin->inputWindowMaximize(maximized);
+            }
 
             thisWin->inputFramebufferSize(LOWORD(lParam), HIWORD(lParam));
             thisWin->inputWindowSize(LOWORD(lParam), HIWORD(lParam));
-
-            /*
-            if (thisWin->m_monitor && thisWin->m_iconified != iconified)
-            {
-                if (iconified)
-                    releaseMonitor(window);
-                else
-                {
-                    acquireMonitor(window);
-                    fitToMonitor(window);
-                }
-            }*/
-
             thisWin->m_iconified = iconified;
             thisWin->m_maximized = maximized;
             return 0;

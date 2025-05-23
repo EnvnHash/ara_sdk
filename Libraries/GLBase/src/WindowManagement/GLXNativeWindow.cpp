@@ -68,15 +68,6 @@ bool GLXNativeWindow::create(const glWinPar& wp) {
                 best_fbc = i;
                 break;
             }
-            //  printf( "  Matching fbconfig %d, visual ID 0x%2x: SAMPLE_BUFFERS
-            //  = %d, SAMPLES = %d\n",  i, vi -> visualid, samp_buf, samples );
-
-            /*
-              if ( best_fbc < 0 || samp_buf && samples > best_num_samp )
-                  best_fbc = i, best_num_samp = samples;
-              if ( worst_fbc < 0 || !samp_buf || samples < worst_num_samp )
-                  worst_fbc = i, worst_num_samp = samples;
-                  */
         }
         XFree(vi);
     }
@@ -190,7 +181,9 @@ bool GLXNativeWindow::create(const glWinPar& wp) {
     }
 
     // Verifying that context is a direct context
-    if (!glXIsDirect(display, ctx)) printf("Indirect GLX rendering context obtained\n");
+    if (!glXIsDirect(display, ctx)) {
+        printf("Indirect GLX rendering context obtained\n");
+    }
 
     //  glXSwapIntervalEXT(0);
     return true;
@@ -221,8 +214,13 @@ bool GLXNativeWindow::waitForEvent(double *timeout) {
 
             *timeout -= (getTimerValue() - base) / (double)getTimerFrequency();
 
-            if (result > 0) return true;
-            if ((result == -1 && error == EINTR) || *timeout <= 0.0) return false;
+            if (result > 0) {
+                return true;
+            }
+
+            if ((result == -1 && error == EINTR) || *timeout <= 0.0) {
+                return false;
+            }
         } else if (select(count, &fds, nullptr, nullptr, nullptr) != -1 || errno != EINTR)
             return true;
     }

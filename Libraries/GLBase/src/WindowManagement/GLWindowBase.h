@@ -184,8 +184,8 @@ protected:
     std::thread m_drawThread;
 
     //  WindowCallbacks m_callbacks;
-    std::array<short int, GLSG_KEY_LAST + 1>        m_scancodes{};
-    std::array<short int, 512>                      m_keycodes{};
+    std::array<short int, GLSG_KEY_LAST + 1>        m_scancodes{-1};
+    std::array<short int, 512>                      m_keycodes{-1};
     std::array<char, GLSG_KEY_LAST + 1>             m_keys{};
     std::array<char, GLSG_MOUSE_BUTTON_LAST + 1>    m_mouseButtons{};
     std::array<char, GLSG_KEY_LAST + 1>             m_keynames[5]{};
