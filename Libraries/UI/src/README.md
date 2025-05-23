@@ -17,7 +17,7 @@
 
 ### User Interaction
 
-- The SceneGraph UIWindow class, provides the following virtual methods which need to be bound to the underlying OS-specific HID managing library (like GLFW, QT or native OS calls):
+- The UIWindow class, provides the following virtual methods which need to be bound to the underlying OS-specific HID managing library (like GLFW, QT or native OS calls):
   - `onKeyDown(int keyNum, bool shiftPressed, bool _ctrlPressed, bool _altPressed)`
   - `onLeftMouseButtonDown(float _xPos, float _yPos)`
   - `onLeftMouseButtonDownNoDrag(float _xPos, float _yPos)`

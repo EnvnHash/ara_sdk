@@ -104,8 +104,7 @@ void WindowManager::iterate(bool only_open_windows) {
             glViewport(0, 0, static_cast<GLsizei>(it->getWidth()), static_cast<GLsizei>(it->getHeight()));
 
             // note: screen clearing is managed by draw function
-            // if there is global draw function set, take it, otherwise take the
-            // Windows' draw function
+            // if there is global draw function set, take it, otherwise take the Windows' draw function
             if (m_globalDrawFunc) {
                 m_globalDrawFunc(m_lastTime, m_medDt, m_winInd);
             } else if (it->getDrawFunc()) {
@@ -317,6 +316,7 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
 
     auto win = m_windows.back().get();
     if (gp.hidInput) {
+        m_globalHidCallbacks
 
         /*
         for (auto cbTp : { winCb::Char, winCb::MouseButton, winCb::WindowClose, winCb::WindowMaximize, winCb::WindowIconify, winCb::WindowFocus, winCb::Scroll }) {
@@ -335,7 +335,7 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
             win->onWinHid(winCb::CursorPos, x, y);
 #endif
         });
-
+m_winHidCbMap
         m_winHidCbMap[winCb::WindowSize][win->getCtx()] = static_cast<std::function<void(int, int)>>([win](int w, int h) {
 #if defined(_WIN32) || defined(__linux__)
             win->onWinHid(winCb::WindowSize, static_cast<int>(static_cast<float>(w) / win->getContentScale().x), static_cast<int>(static_cast<float>(h) / win->getContentScale().x));

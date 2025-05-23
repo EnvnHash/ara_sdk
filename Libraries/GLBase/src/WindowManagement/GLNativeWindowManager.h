@@ -51,18 +51,9 @@ public:
     /** add a new Window using the Window Wrapper class parameters are set via pre filled gWinPar struct */
     GLWindowBase *addWin(glWinPar& gp);
 
-    /** global Keyboard callback function, will be called from all contexts
-     * context individual keyboard callbacks are called from here */
-    void gWinKeyCallback(GLWindow *window, int key, int scancode, int action, int mods);
-    void gMouseButCallback(GLWindow *window, int button, int action, int mods);
-    void gMouseCursorCallback(GLWindow *window, double xpos, double ypos);
-    void setGlobalKeyCallback(const std::function<void(GLWindow *, int, int, int, int)>& f) { m_keyCbFun = f; }
-    void setGlobalMouseCursorCallback(const std::function<void(GLWindow *, double, double)>& f) { m_mouseCursorCbFun = f; }
-    void setGlobalMouseButtonCallback(const std::function<void(GLWindow *window, int button, int action, int mods)>& f) { m_mouseButtonCbFun = f; }
-    void setWinResizeCallback(const std::function<void(GLWindow *, int, int)>& f) { m_winResizeCbFun = f; }
-    void addKeyCallback(unsigned int winInd, const std::function<void(int, int, int, int)>& f);
-    void addMouseButCallback(unsigned int winInd, const std::function<void(int, int, int, double, double)>& f);
-    void addCursorCallback(unsigned int winInd, const std::function<void(double, double)>& f);
+    void setGlobalHidCallback(winCb tp, const std::shared_ptr<winHidCb>& f) { m_globalHidCallbacks[tp] = f; }
+    void setHidCallback(unsigned int winInd, winCb tp, const winHidCb& f) { m_windows[winInd]->setWinCallback(tp, f); }
+
     void setSwapInterval(unsigned int winNr, bool swapInterval) {
         //		if (static_cast<unsigned int>(windows.size()) >= winNr)
         //			windows[winNr]->setVSync(swapInterval);
@@ -79,19 +70,20 @@ public:
     /** close all glfw windows that have been added through this GWindowManager instance before */
     void closeAll();
     void stop() { m_run = false; }
-    bool isRunning() { return m_run; }
+    auto isRunning() const { return m_run; }
     int getDispOffsetX(unsigned int idx);
     int getDispOffsetY(unsigned int idx);
 
-    GLWindow                               *getBack() { return m_windows.back().get(); }
-    GLWindow                               *getFirstWin() { return m_windows.front().get(); }
-    std::vector<std::unique_ptr<GLWindow>> *getWindows() { return &m_windows; }
-    uint32_t                                getNrWindows() { return static_cast<uint32_t>(m_windows.size()); }
-    size_t                                  getNrDisplays() { return m_dispCount; }
-    std::mutex                             *getDrawMtx() { return &m_drawMtx; }
-    std::vector<NativeDisplay>              getDisplays() { return m_displays; }
-    void                                    setPrintFps(bool _val) { m_showFps = _val; }
-    void                                    setDispFunc(const std::function<void(double, double, unsigned int)>& f) { m_dispFunc = f; }
+    auto getBack() { return m_windows.back().get(); }
+    auto getFirstWin() { return m_windows.front().get(); }
+    auto getWindows() { return &m_windows; }
+    auto getNrWindows() const { return static_cast<uint32_t>(m_windows.size()); }
+    auto getNrDisplays() const { return m_dispCount; }
+    auto getDrawMtx() { return &m_drawMtx; }
+    auto getDisplays() { return m_displays; }
+
+    void setPrintFps(bool val) { m_showFps = val; }
+    void setDispFunc(const std::function<void(double, double, unsigned int)>& f) { m_dispFunc = f; }
 
     void IterateAll(bool only_open_windows, std::function<void(double time, double dt, unsigned int ctxNr)> render_function);
     void EndMainLoop();
@@ -105,10 +97,7 @@ public:
     std::vector<glVidMode>           m_dispModes;
     std::vector<std::pair<int, int>> m_dispOffsets;
 
-    std::function<void(GLWindow *, int, int, int, int)> m_keyCbFun;
-    std::function<void(GLWindow *, double, double)>     m_mouseCursorCbFun;
-    std::function<void(GLWindow *, int, int, int)>      m_mouseButtonCbFun;
-    std::function<void(GLWindow *, int, int)>           m_winResizeCbFun;
+    std::unordered_map<winCb, std::shared_ptr<winHidCb>>  m_globalHidCallbacks;
 
     bool                                   m_run = false;
     std::vector<std::unique_ptr<GLWindow>> m_windows;  // in order to use pointers to the windows of this arrays use unique_ptr.
@@ -117,7 +106,6 @@ private:
     std::mutex              m_drawMtx;
     std::vector<glWinPar>   m_addWindows;
 
-    // a vector may rearrange it element and thus change their pointer addresses
     std::map<GLWindow *, std::vector<std::function<void(int, int, int, int)>>>            m_keyCbMap;
     std::map<GLWindow *, std::vector<std::function<void(int, int, int, double, double)>>> m_mouseButCbMap;
     std::map<GLWindow *, std::vector<std::function<void(double, double)>>>                m_cursorCbMap;

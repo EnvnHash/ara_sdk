@@ -56,7 +56,6 @@ namespace ara::GLBaseUnitTest::GLFWWindowHidTest {
 */
     // GLFW callbacks
 #ifdef __linux__
-
     TEST(GLBaseTest, LibGLFWKeyCbTest) {
         hidTestBody([&](GLFWWindow& win){ glfwSetKeyCallback(win.getCtx(), [](auto ...args) { setCbCalled(); }); },
                     []{ SimulateKeyPress('B'); });
@@ -168,14 +167,14 @@ namespace ara::GLBaseUnitTest::GLFWWindowHidTest {
     TEST(GLBaseTest, LibGLFWWindowKeyGlobalCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::Key, [](int, int, int, int) { });
-            win.addGlobalHidCallback(winCb::Key, nullptr, [](int, int, int, int) { setCbCalled(); });
+            win.addGlobalHidCallback(winCb::Key, nullptr, make_shared<winHidCb>([](int, int, int, int) { setCbCalled(); } ));
         }, [] { SimulateKeyPress('B'); });
     }
 
     TEST(GLBaseTest, LibGLFWWindowCharGlobalCbTest) {
         hidTestBody([](GLFWWindow &win) {
             win.setWinCallback(winCb::Char, static_cast<std::function<void(unsigned int)>>([](unsigned int) { }));
-            win.addGlobalHidCallback(winCb::Char, nullptr, static_cast<std::function<void(unsigned int)>>([](unsigned int) { setCbCalled(); }));
+            win.addGlobalHidCallback(winCb::Char, nullptr, make_shared<winHidCb>([](unsigned int) { setCbCalled(); }));
         }, [] { SimulateKeyPress('B'); });
     }
 

@@ -54,7 +54,7 @@ public:
     }
 
     template <typename... Args>
-    void visitCallbacks(const winCb& key, const winHidCb& varFunc, std::function<void()> optFunc, Args&&... args) {
+    void visitCallbacks(const winCb& key, const winHidCb& varFunc, const std::function<void()>& optFunc, Args&&... args) {
         std::visit([&] (auto&& func) {
             if constexpr (std::is_invocable_v<std::decay_t<decltype(func)>, Args...>) {
                 func(args...);
@@ -70,8 +70,8 @@ public:
     template <typename... Args>
     void parseGlobalHidCb(const winCb& key, Args&&... args) {
         if (m_globalHidCallbacks.contains(key)) {
-            for (const auto& [id, varFunc] : m_globalHidCallbacks[key]) {
-                visitCallbacks(key, varFunc, nullptr, args...);
+            for (const auto& [id, varFuncPtr] : m_globalHidCallbacks[key]) {
+                visitCallbacks(key, *varFuncPtr.get(), nullptr, args...);
             }
         }
     }
@@ -90,7 +90,7 @@ public:
     static void onDrop(int count, const char **paths) {}
 
     virtual void setWinCallback(winCb tp, const winHidCb& f) { m_winHidCallbacks.insert_or_assign(tp, f); }
-    virtual void addGlobalHidCallback(winCb tp, void* id, const winHidCb& f) { m_globalHidCallbacks[tp].emplace(id, f); }
+    virtual void addGlobalHidCallback(winCb tp, void* id, const std::shared_ptr<winHidCb>& f) { m_globalHidCallbacks[tp].emplace(id, f); }
     virtual void removeGlobalHidCallback(winCb tp, void* id) {
         if (m_globalHidCallbacks.contains(tp)) {
             std::erase_if(m_globalHidCallbacks[tp], [id](auto &it) { return it.first == id; });
@@ -127,10 +127,9 @@ public:
     int32_t             virt2RealX(int x) { return static_cast<int>(static_cast<float>(x) * getContentScale().x); }
     int32_t             virt2RealY(int y) { return static_cast<int>(static_cast<float>(y) * getContentScale().y); }
 
-
 protected:
-    std::unordered_map<winCb, winHidCb>                             m_winHidCallbacks;
-    std::unordered_map<winCb, std::unordered_map<void*, winHidCb>>  m_globalHidCallbacks;
+    std::unordered_map<winCb, winHidCb> m_winHidCallbacks;
+    std::unordered_map<winCb, std::unordered_map<void*, std::shared_ptr<winHidCb>>>  m_globalHidCallbacks;
 
     bool m_active{};               // Window Active Flag Set To TRUE By Default
     bool m_fullscreen           = false;  // Fullscreen Flag Set To Fullscreen Mode By Default
@@ -172,7 +171,7 @@ protected:
     double m_virtualCursorPosX = 0;
     double m_virtualCursorPosY = 0;
 
-    glm::vec2 m_contentScale = glm::vec2{1.f, 1.f};
+    glm::vec2 m_contentScale{1.f, 1.f};
 
     uint32_t m_widthVirt  = 0;  /// in virtual pixels
     uint32_t m_heightVirt = 0;  /// in virtual pixels
@@ -184,12 +183,12 @@ protected:
     std::thread m_msgLoop;  // Windows Message Structure
     std::thread m_drawThread;
 
-  //  WindowCallbacks m_callbacks;
-    short int       m_scancodes[GLSG_KEY_LAST + 1]{};
-    short int       m_keycodes[512]{};
-    char            m_keys[GLSG_KEY_LAST + 1]{};
-    char            m_mouseButtons[GLSG_MOUSE_BUTTON_LAST + 1]{};
-    char            m_keynames[GLSG_KEY_LAST + 1][5]{};
+    //  WindowCallbacks m_callbacks;
+    std::array<short int, GLSG_KEY_LAST + 1>        m_scancodes{};
+    std::array<short int, 512>                      m_keycodes{};
+    std::array<char, GLSG_KEY_LAST + 1>             m_keys{};
+    std::array<char, GLSG_MOUSE_BUTTON_LAST + 1>    m_mouseButtons{};
+    std::array<char, GLSG_KEY_LAST + 1>             m_keynames[5]{};
 
     std::vector<glVidMode>                   modes;
     std::vector<std::pair<int, int>>         monOffsets;

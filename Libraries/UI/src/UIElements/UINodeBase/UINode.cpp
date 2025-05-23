@@ -151,14 +151,12 @@ uint32_t UINode::getMinChildId(uint32_t minId) {
 
 uint32_t UINode::getMaxChildId(uint32_t maxId) {
     auto nextMaxId = std::max(m_objIdMax, maxId);
-
     for (const auto& child : m_children) {
         if (child->getMaxId() > nextMaxId) {
             nextMaxId = child->getMaxId();
         }
         nextMaxId = child->getMaxChildId(nextMaxId);
     }
-
     return nextMaxId;
 }
 
@@ -208,7 +206,6 @@ bool UINode::isInBounds(glm::vec2& pos) {
     if (!m_visible || m_referenceDrawing) {
         return false;
     }
-
     return UINodeGeom::isInBounds(pos);
 }
 
@@ -799,7 +796,6 @@ void UINode::addGlCb(const std::string& identifier, const std::function<bool()>&
 
 void UINode::keyDownIt(hidData& data) {
     UINodeHID::keyDownIt(data);
-
     for (const auto& it : m_children) {
         it->keyDownIt(data);
     }
@@ -807,7 +803,6 @@ void UINode::keyDownIt(hidData& data) {
 
 void UINode::onCharIt(hidData& data) {
     UINodeHID::onCharIt(data);
-
     for (const auto& it : m_children) {
         it->onCharIt(data);
     }

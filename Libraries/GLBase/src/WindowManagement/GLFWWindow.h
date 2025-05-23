@@ -154,6 +154,7 @@ public:
 
     template <typename... Args>
     static void onWinHidFromCtx(GLFWwindow *w, const winCb& key, Args&&... args) {
+        // adjust parameters here
         static_cast<GLFWWindow*>(glfwGetWindowUserPointer(w))->onWinHid(key, std::forward<Args>(args)...);
     }
 

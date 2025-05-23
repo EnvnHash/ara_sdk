@@ -129,8 +129,7 @@ bool GLFWWindow::init(const glWinPar &gp) {
 #else
     m_widthReal  = (int)(static_cast<float>(m_widthVirt) * m_contentScale.x);
     m_heightReal = (int)(static_cast<float>(m_heightVirt) * m_contentScale.y);
-    m_posXreal   = (int)(gp.shift.x * m_contentScale.x);
-    m_posYreal   = (int)(gp.shift.y * m_contentScale.y);
+    m_posReal    = glm::vec2(gp.shift) * m_contentScale;
 #endif
 
     glfwSetWindowPos(m_window, static_cast<int>(m_posReal.x), static_cast<int>(m_posReal.y));
@@ -428,12 +427,12 @@ void GLFWWindow::focus() const {
 void GLFWWindow::maximize() {
 #ifdef __APPLE__
     // on macOS glfwMaximizeWindow doesn't work
-        m_restoreWinPar.x = getPosition().x;
-        m_restoreWinPar.y = getPosition().y;
-        m_restoreWinPar.z = getSize().x;
-        m_restoreWinPar.w = getSize().y;
-        glfwSetWindowPos(m_window, 0, 0);
-        resize(m_monWidth, m_monHeight);
+    m_restoreWinPar.x = getPosition().x;
+    m_restoreWinPar.y = getPosition().y;
+    m_restoreWinPar.z = getSize().x;
+    m_restoreWinPar.w = getSize().y;
+    glfwSetWindowPos(m_window, 0, 0);
+    resize(m_monWidth, m_monHeight);
 #else
     glfwMaximizeWindow(m_window);
 #endif
@@ -442,8 +441,8 @@ void GLFWWindow::maximize() {
 void GLFWWindow::restore() {
 #ifdef __APPLE__
     // on macOS glfwMaximizeWindow doesn't work
-        glfwSetWindowPos(m_window, m_restoreWinPar.x, m_restoreWinPar.y);
-        resize(m_restoreWinPar.z, m_restoreWinPar.w);
+    glfwSetWindowPos(m_window, m_restoreWinPar.x, m_restoreWinPar.y);
+    resize(m_restoreWinPar.z, m_restoreWinPar.w);
 #else
     glfwRestoreWindow(m_window);
 #endif

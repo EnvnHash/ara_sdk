@@ -168,6 +168,11 @@ static inline std::unordered_map<winCb, std::string> winCbNames {
     { winCb::WindowPos, "WindowPos" },
     { winCb::Scroll, "Scroll" },
     { winCb::WindowRefresh, "WindowRefresh" },
+    { winCb::CharMods, "CharMods" },
+    { winCb::CursorEnter, "CursorEnter" },
+    { winCb::Drop, "Drop" },
+    { winCb::Fbsize, "Fbsize" },
+    { winCb::Scale, "Scale" },
 };
 
 // process steps, order matters!!!, these are for fixed functionality that is used frequently
@@ -189,7 +194,7 @@ constexpr typename std::underlying_type<E>::type toType(E e) {
 class scissorStack {
 public:
     std::vector<glm::vec4> stack;
-    glm::vec4              active = glm::vec4{};
+    glm::vec4              active{};
 };
 
 class ProcStep {
@@ -259,9 +264,10 @@ public:
         consumed  = false;
         breakCbIt = false;
     }
+
     void getScreenMousePos(float devicePixelRatio) {
         mouse::getAbsMousePos(screenMousePos.x, screenMousePos.y);
-        screenMousePos = (glm::ivec2)((glm::vec2)screenMousePos / devicePixelRatio);
+        screenMousePos = static_cast<glm::ivec2>(static_cast<glm::vec2>(screenMousePos) / devicePixelRatio);
     }
 };
 
@@ -351,18 +357,18 @@ void   decomposeRot(const glm::mat4 &m, glm::quat &rot);
 
 // static inline GLuint restartIndex=0xFFFF;
 
-static inline std::vector<std::string> m_stdAttribNames{ "position", "normal", "texCoord", "color", "texCorMod", "velocity", "aux0", "aux1", "aux2", "aux3", "modMatr"};
-static inline std::vector<std::string> m_stdRecAttribNames{"rec_position",  "normal",       "rec_texCoord", "rec_color",
+static inline std::vector<std::string>  m_stdAttribNames{ "position", "normal", "texCoord", "color", "texCorMod", "velocity", "aux0", "aux1", "aux2", "aux3", "modMatr"};
+static inline std::vector<std::string>  m_stdRecAttribNames{"rec_position",  "normal",       "rec_texCoord", "rec_color",
                                                            "rec_texCorMod", "rec_velocity", "rec_aux0",     "rec_aux1",
                                                            "rec_aux2",      "rec_aux3",     "rec_modMatr"};
-static inline std::vector<int>         m_coTypeStdSize{4, 3, 2, 4, 4, 4, 4, 4, 4, 4, 16};
-static inline std::vector<int>         m_coTypeFragSize{4, 3, 2, 4, 4, 4, 4, 4, 4, 4, 16};
-static inline std::vector<int>         m_recCoTypeFragSize{4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 16};
-static inline std::vector<std::string> m_stdMatrixNames{"m_model", "m_cam_model", "m_view", "m_proj", "m_normal"};
-static inline std::string m_stdPvmMult{"gl_Position = m_proj * m_view * m_cam_model * m_model * position; \n"};
-static const inline glm::vec2          stdQuadVertices[4]{glm::vec2{0.f}, glm::vec2{1.f, 0.f}, glm::vec2{0.f, 1.f},
-                                                              glm::vec2{1.f, 1.f}};
-static const inline int                stdQuadInd[6]{0, 1, 3, 3, 2, 0};  // two triangles defining a m_quad
+static inline std::vector<int>          m_coTypeStdSize{4, 3, 2, 4, 4, 4, 4, 4, 4, 4, 16};
+static inline std::vector<int>          m_coTypeFragSize{4, 3, 2, 4, 4, 4, 4, 4, 4, 4, 16};
+static inline std::vector<int>          m_recCoTypeFragSize{4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 16};
+static inline std::vector<std::string>  m_stdMatrixNames{"m_model", "m_cam_model", "m_view", "m_proj", "m_normal"};
+static inline std::string               m_stdPvmMult{"gl_Position = m_proj * m_view * m_cam_model * m_model * position; \n"};
+static const inline std::array<glm::vec2, 4> stdQuadVertices{glm::vec2{0.f}, glm::vec2{1.f, 0.f}, glm::vec2{0.f, 1.f},
+                                                             glm::vec2{1.f, 1.f}};
+static const inline std::array<int, 6>  stdQuadInd{0, 1, 3, 3, 2, 0};  // two triangles defining a m_quad
 
 [[maybe_unused]] static const std::vector<std::string> &getStdAttribNames() { return m_stdAttribNames; }
 [[maybe_unused]] static const std::vector<std::string> &getStdRecAttribNames() { return m_stdRecAttribNames; }
