@@ -84,7 +84,7 @@ public:
     unsigned int    getMonitorHeight() { return 0; }
     int             getFocus() { return 1; }
     glm::ivec2      getLastMousePos() { return m_osWin ? m_osWin->getLastMousePos() : glm::ivec2 {}; }
-    int*            getWorkArea() { return m_osWin ? m_osWin->getWorkArea() : nullptr; }
+    glm::ivec4&     getWorkArea() override { return m_osWin ? m_osWin->getWorkArea() : m_workArea; }
 
     void setSize(int, int) {}
     void setPosition(int, int) {}
@@ -96,30 +96,31 @@ public:
 #endif
 
     // utility methods for unified window handling (EGLWindow -> GLWindow)
-    void setKeyCallback(std::function<void(EGLContext, int, int, int, int)> f) {}
-    void setCharCallback(std::function<void(EGLContext, unsigned int)> f) {}
-    void setMouseButtonCallback(std::function<void(EGLContext, int, int, int)> f) {}
-    void setCursorPosCallback(std::function<void(EGLContext, double, double)> f) {}
-    void setWindowSizeCallback(std::function<void(EGLContext, int, int)> f) {}
-    void setWindowCloseCallback(std::function<void(EGLContext)> f) {}
-    void setWindowMaximizeCallback(std::function<void(EGLContext, int)> f) {}
-    void setWindowIconifyCallback(std::function<void(EGLContext, int)> f) {}
-    void setWindowFocusCallback(std::function<void(EGLContext, int)> f) {}
-    void setWindowPosCallback(std::function<void(EGLContext, int, int)> f) {}
-    void setScrollCallback(std::function<void(EGLContext, double, double)> f) {}
-    void setWindowRefreshCallback(std::function<void(EGLContext)> f) {}
-    void setOnCloseCb(std::function<void()> f) { m_onCloseCb = std::move(f); }
+    void setKeyCallback(const std::function<void(EGLContext, int, int, int, int)>& f) {}
+    void setCharCallback(const std::function<void(EGLContext, unsigned int)>& f) {}
+    void setMouseButtonCallback(const std::function<void(EGLContext, int, int, int)>& f) {}
+    void setCursorPosCallback(const std::function<void(EGLContext, double, double)>& f) {}
+    void setWindowSizeCallback(const std::function<void(EGLContext, int, int)>& f) {}
+    void setWindowCloseCallback(const std::function<void(EGLContext)>& f) {}
+    void setWindowMaximizeCallback(const std::function<void(EGLContext, int)>& f) {}
+    void setWindowIconifyCallback(const std::function<void(EGLContext, int)>& f) {}
+    void setWindowFocusCallback(const std::function<void(EGLContext, int)>& f) {}
+    void setWindowPosCallback(const std::function<void(EGLContext, int, int)>& f) {}
+    void setScrollCallback(const std::function<void(EGLContext, double, double)>& f) {}
+    void setWindowRefreshCallback(const std::function<void(EGLContext)>& f) {}
+    void setOnCloseCb(const std::function<void()>& f) { m_onCloseCb = f; }
 
     static void waitEvents();
     static void pollEvents() {}
     static void postEmptyEvent();
-    static void setErrorCallback(std::function<void(int, const char*)> f) {}
+    static void setErrorCallback(const std::function<void(int, const char*)>& f) {}
     static void initLibrary() {}
     static void terminateLibrary() {}
     static void focusWin(EGLContext ctx) {}
     static void makeNoneCurrent() {
-        if (m_display && !eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
+        if (m_display && !eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) {
             LOGE << "EGLWindow, could not make none context current";
+        }
     }
 
     static void error_callback(int error, const char* description) {

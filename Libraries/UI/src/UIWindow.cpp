@@ -636,7 +636,9 @@ void UIWindow::cursor_callback(double xpos, double ypos) {
     m_lastMouseX = xpos;
     m_lastMouseY = ypos;
 
-    if (!m_winHandle->isRunning() || !m_winHandle->isInited()) return;
+    if (!m_winHandle->isRunning() || !m_winHandle->isInited()) {
+        return;
+    }
 
     WindowBase::osMouseMove(static_cast<float>(xpos), static_cast<float>(ypos), 0);
     iterate();  // -> procHID
@@ -655,17 +657,23 @@ void UIWindow::mouseBut_callback(int button, int action, int mods) {
     }
 #endif
 
-    if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_PRESS)
+    if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_PRESS) {
         WindowBase::osMouseDownLeft(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & GLSG_MOD_SHIFT,
                                     mods & GLSG_MOD_CONTROL, mods & GLSG_MOD_ALT);
+    }
 
-    if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_RELEASE) WindowBase::osMouseUpLeft();
+    if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_RELEASE) {
+        WindowBase::osMouseUpLeft();
+    }
 
-    if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_PRESS)
+    if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_PRESS) {
         WindowBase::osMouseDownRight(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & GLSG_MOD_SHIFT,
                                      mods & GLSG_MOD_CONTROL, mods & GLSG_MOD_ALT);
+    }
 
-    if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_RELEASE) WindowBase::osMouseUpRight();
+    if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_RELEASE) {
+        WindowBase::osMouseUpRight();
+    }
 
     iterate();  // the UIWindow's draw function needs to be called in order to
                 // have WindowBase::procHid(); be called
@@ -682,8 +690,8 @@ void UIWindow::scroll_callback(double xoffset, double yoffset) {
 void UIWindow::window_pos_callback(int xpos, int ypos) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     WindowBase::osSetWinPos([this, xpos, ypos] {
-        // this is also called on Windows when the window is minimized since there are invalid numbers, we have to
-        // filter those calls
+        // this is also called on Windows when the window is minimized since there are invalid
+        // numbers, we have to filter those calls
 
         // check if the window will be completely invisible
         auto wa = m_winHandle->getWorkArea();
@@ -697,7 +705,6 @@ void UIWindow::window_pos_callback(int xpos, int ypos) {
             for (auto &val: m_globalWinPosCb | views::values) {
                 val(xpos, ypos);
             }
-
             iterate();  // -> procHID
         }
     });

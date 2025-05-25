@@ -140,12 +140,11 @@ public:
     HWND  getHwndHandle() const { return m_hwndHandle; }
     HGLRC getHglrcHandle() const { return m_wglHandle; }
 #endif
-    auto    getWorkArea() { return m_workArea; }
-    auto    getIterateSema() { return &m_iterate; }
-    auto    getBlockResizing() const { return m_blockResizing; }
-    bool    getRequestOpen() const override { return m_requestOpen; }
-    bool    getRequestClose() const override { return m_requestClose; }
-    auto&   getOnCloseCb() { return m_onCloseCb; }
+    auto        getIterateSema() { return &m_iterate; }
+    auto        getBlockResizing() const { return m_blockResizing; }
+    bool        getRequestOpen() const override { return m_requestOpen; }
+    bool        getRequestClose() const override { return m_requestClose; }
+    auto&       getOnCloseCb() { return m_onCloseCb; }
 
     void requestOpen(bool val) override { m_requestOpen = val; }
     void requestClose(bool val) override { m_requestClose = val; }
@@ -211,7 +210,6 @@ protected:
 
     int monitorRefreshRate{};
     int useMonitor = 0;
-    glm::ivec4 m_workArea{};
 
     bool m_isOpen               = false;
     bool m_requestOpen          = false;

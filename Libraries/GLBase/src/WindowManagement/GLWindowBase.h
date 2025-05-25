@@ -146,7 +146,7 @@ public:
     virtual void*       getWin() { return nullptr; }
     virtual void*       getDisp() { return nullptr; }
     glm::ivec2          getLastMousePos() const { return {m_lastCursorPosX, m_lastCursorPosY}; };
-    static int*         getWorkArea() { return nullptr; }
+    virtual glm::ivec4& getWorkArea() { return m_workArea; }
     auto&               getContentScale() { return m_contentScale; }
     auto                isInited() const { return m_initSignaled; }
     virtual bool        isOpen() const { return m_isOpen; }
@@ -201,6 +201,7 @@ protected:
     double m_virtualCursorPosY = 0;
 
     glm::vec2 m_contentScale = glm::vec2{1.f, 1.f};
+    glm::ivec4 m_workArea{};
 
     uint32_t m_widthVirt  = 0;  /// in virtual pixels
     uint32_t m_heightVirt = 0;  /// in virtual pixels

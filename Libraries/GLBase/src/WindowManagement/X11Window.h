@@ -116,7 +116,6 @@ public:
     void *getWin() override { return &m_win; }
     void *getDisp() override { return m_display; }
     Atom &getWMDelMsg() { return s_wmDeleteMessage; }
-    int  *getWorkArea() { return m_workArea; }
 
 protected:
     Display *m_display = nullptr;
@@ -174,7 +173,6 @@ protected:
     int               m_warpCursorPosX    = 0;
     int               m_warpCursorPosY    = 0;
     inline static int m_errorCode         = 0;
-    int               m_workArea[4]       = {0};
 
     XIM       m_im{};  // XIM input method
     XIC       m_ic{};

@@ -117,6 +117,8 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
                                                                       ANativeWindow_getHeight(ctx->m_androidApp->window));
                 ctx->getGLBase()->g_androidDensity = density;
                 ctx->getGLBase()->g_androidDpi = { ctx->m_xdpi, ctx->m_ydpi };
+
+                // context is not ready at this point???
                 static_cast<UIApplication*>(app->userData)->init(nullptr);
             }
             break;
