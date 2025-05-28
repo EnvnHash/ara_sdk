@@ -33,45 +33,24 @@ public:
     UIApplication();
     ~UIApplication() override = default;
 
-    void init(const std::function<void()>& f) override;
-    void startUiThread(const std::function<void()>& f);
-
-    /// \brief initialization function for sequential rendering. A loop which calls the WindowManager's iterate function,
-    /// which will call all window's draw functions on after another
-    virtual void initThread(const std::function<void()>& initCb);
+    void init(std::function<void(UINode*)> initCb) override;
+    void initSingleThreaded(const std::function<void()>& initCb);
+    void initGLBase() override;
+    void startSingleUiThread(const std::function<void()>& f);
+    void initThread(const std::function<void()>& initCb);
+    void mainWinDefaultSetup();
 
     template <class T>
     T* addWindow(const UIWindowParams& params) {
-#ifndef ARA_USE_EGL
-        if (!m_glbase.isInited()) {
-            m_glbase.init(m_initRes);
-
-            // this is called from GLBase resource update thread, in order to not update Resource while they are used,
-            // only a flag is set and a redraw forced. Styles will be updated during UINode::draw iteration this is only
-            // needed in debug mode, when the resources can change during runtime
-            if (m_glbase.getAssetManager() && !m_glbase.getAssetManager()->usingComp()) {
-                m_glbase.setUpdtResCb([this] {
-                    for (const auto& it : m_uiWindows) {
-                        it->setResChanged(true);
-                        it->update();
-                    }
-                });
-            }
-        }
-#endif
-        // no context bound at this point
+        initGLBase();
 
         UIWindowParams p = params;
         p.glbase        = &m_glbase;
 #if defined(__ANDROID__) && defined(ARA_ANDROID_PURE_NATIVE_APP)
         p.extWinHandle = static_cast<void*>(m_androidNativeWin);
-        m_uiWindows.emplace_back(std::make_unique<T>(p));
-#elif defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
-        m_uiWindows.emplace_back(std::make_unique<T>(p));
-#else
-        m_uiWindows.emplace_back(std::make_unique<T>(p));
 #endif
 
+        m_uiWindows.emplace_back(std::make_unique<T>(p));
         auto newWindow = m_uiWindows.back().get();
         if (newWindow->getProcSteps()) {
             newWindow->getProcSteps()->at(Draw).active = true;
@@ -92,12 +71,7 @@ public:
 
     // called from UIWindow::close() when the removeFromApp bool is set
     void removeWindow(UIWindow* win) {
-        auto ptr = std::ranges::find_if(m_uiWindows,
-                                        [win](const std::unique_ptr<UIWindow>& w) { return w.get() == win; });
-
-        if (ptr != m_uiWindows.end()) {
-            m_uiWindows.erase(ptr);
-        }
+        std::erase_if(m_uiWindows, [win](const auto& it){ return it.get() == win; });
     }
 
     // utility function for connecting to properties. stores a local callback function add passes it as to the property
@@ -106,7 +80,7 @@ public:
     template <typename T>
     void onChanged(Property<T>* p, std::function<void(std::any)> f) {
         m_onValChangedCb[p] = std::make_shared<std::function<void(std::any)>>(f);
-        if (p) {
+        if (p != nullptr) {
             p->onPreChange(m_onValChangedCb[p]);
         }
     }
@@ -114,7 +88,6 @@ public:
     /// \brief initialization function for multithreaded rendering. This calls the WindowManager's
     /// startThreadedRendering function, which will start an individual drawing thread for each window
     virtual void startRenderLoop();
-    virtual void update() { m_iterate.notify(); }
 
     // Info dialoges
     virtual void openInfoDiag(const InfoDiagParams& params);
@@ -130,19 +103,19 @@ public:
     void      startEventLoop(); // run a pure event loop inside WindowManager, -> event will be distributed to all registered windows
 
     virtual void    setActiveModalWin(UIWindow* win);
-    void            setEnableMenuBar(bool val) { m_menuBarEnabled = val; }
-    void            setEnableWindowResizeHandles(bool val) { m_windowResizeHandlesEnabled = val; }
-    void            setMultisample(bool val) { m_multisample = val; }
-    void            setInitRes(bool val) { m_initRes = val; }
-    void            setOsWindowDecoration(bool val) { m_osWinDecoration = val; }
-    void            setRun(bool val) { m_run = val; }
+    void            setEnableMenuBar(const bool val) { m_menuBarEnabled = val; }
+    void            setEnableWindowResizeHandles(const bool val) { m_windowResizeHandlesEnabled = val; }
+    void            setMultisample(const bool val) { m_multisample = val; }
+    void            setInitRes(const bool val) { m_initRes = val; }
+    void            setOsWindowDecoration(const bool val) { m_osWinDecoration = val; }
+    void            setRun(const bool val) { m_run = val; }
     void            setDataModel(void* model) { m_dataModel = model; }
-    void            setScaleToMonitor(bool val) { m_scaleToMonitor = val; }
+    void            setScaleToMonitor(const bool val) { m_scaleToMonitor = val; }
 
     virtual std::filesystem::path dataPath();
 
-    UINode*     getRootNode(uint winIdx = 0) { return (m_uiWindows.size() > winIdx) ? m_uiWindows[winIdx]->getRootNode() : nullptr; }
-    UIWindow*   getWinBase(uint winIdx = 0) { return m_uiWindows.size() > winIdx ? m_uiWindows[winIdx].get() : nullptr; }
+    UINode*     getRootNode(const uint winIdx = 0) const { return (m_uiWindows.size() > winIdx) ? m_uiWindows[winIdx]->getRootNode() : nullptr; }
+    UIWindow*   getWinBase(const uint winIdx = 0) const { return m_uiWindows.size() > winIdx ? m_uiWindows[winIdx].get() : nullptr; }
     auto        getMainWindow() const { return m_mainWindow; }
     auto        getUIWindows() { return &m_uiWindows; }
     auto        getDataModel() const { return m_dataModel; }
@@ -152,7 +125,6 @@ public:
 
 protected:
     std::thread                                                               m_guiThread;
-    Conditional                                                               m_iterate;
     Conditional                                                               m_exitSema;
     Conditional                                                               m_loopExitSema;
     std::function<void()>                                                     m_infoDiagCreatedCb;

@@ -72,7 +72,7 @@ bool GLRenderer::init(const std::string& name, glm::ivec2 pos, glm::ivec2 dimens
         if (!s_inited) {
             glfwMakeContextCurrent(nullptr);
         }
-        m_glbase->startRenderLoop();
+        m_glbase->startGlCallbackProcLoop();
         // no context bound at this point
     }
 #endif

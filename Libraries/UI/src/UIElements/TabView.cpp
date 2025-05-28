@@ -51,7 +51,7 @@ UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode
                 return item->getId() == data.objId;
             });
             if (ret != m_tabArea->getChildren().end()) {
-                setActivateTab(std::distance( m_tabArea->getChildren().begin(), ret));
+                setActivateTab(static_cast<int32_t>(std::distance( m_tabArea->getChildren().begin(), ret)));
                 setDrawFlag();
                 getSharedRes()->requestRedraw = true;
             }

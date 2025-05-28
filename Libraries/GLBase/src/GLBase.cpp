@@ -52,7 +52,10 @@ bool GLBase::init(bool doInitResources, void *winHnd) {
             .createHidden = true,
             .hidInput     = false,
             .size         = { 5, 5 },
-            .shareCont    = winHnd
+            .shareCont    = winHnd,
+#ifdef __ANDROID__
+            .contScale   = {g_androidDensity , g_androidDensity}
+#endif
         });
     }
 #elif _WIN32
@@ -67,7 +70,7 @@ bool GLBase::init(bool doInitResources, void *winHnd) {
         initResources();
     }
 
-#ifdef ARA_USE_GLFW
+#if defined(ARA_USE_GLFW) || defined(__ANDROID__)
     GLWindow::makeNoneCurrent();
 #elif _WIN32
     wglMakeCurrent(nullptr, nullptr);
@@ -259,10 +262,10 @@ void GLBase::destroy(bool terminateGLFW) {
         return;
     }
 
-    if (g_loopRunning) {
+    if (g_glCallbackLoopRunning) {
         stopRenderLoop();
     }
-    g_openGlCbs.clear();
+    g_glCallbacks.clear();
 
     // gl render loop for sure is stopped at this point, that means also the gl context is unbound
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
@@ -320,19 +323,19 @@ unique_ptr<GLWindow> GLBase::createOpenGLCtx(bool initGLFW) {
 }
 #endif
 
-void GLBase::startRenderLoop() {
-    if (!g_loopRunning) {
+void GLBase::startGlCallbackProcLoop() {
+    if (!g_glCallbackLoopRunning) {
         // start a separate thread for processing
-        g_renderLoop = std::thread([this] { renderLoop(); });
-        g_renderLoop.detach();
+        g_glCallbackLoop = std::thread([this] { glCallbackLoop(); });
+        g_glCallbackLoop.detach();
 
         // wait for loop to be running
-        g_loopRunningSem.wait();
-        g_loopRunningSem.reset();
+        g_glCallbackLoopRunningSem.wait();
+        g_glCallbackLoopRunningSem.reset();
     }
 }
 
-void GLBase::renderLoop() {
+void GLBase::glCallbackLoop() {
 #ifdef ARA_USE_GLFW
     // initially make the GLBase context current
     if (!g_win) {
@@ -348,17 +351,19 @@ void GLBase::renderLoop() {
     if (!wglMakeCurrent(m_hdc, m_hRC)) LOGE << "m_glbase.renderLoop Error, could not make current context " << m_hRC;
 #endif
 
-    g_loopRunningSem.notify();  // wait until another thread is waiting for this notify
-    g_loopRunning = true;
+    g_glCallbackLoopRunningSem.notify();  // wait until another thread is waiting for this notify
+    g_glCallbackLoopRunning = true;
 
-    while (g_loopRunning) {
+    while (g_glCallbackLoopRunning) {
         g_sema.wait(0);  // wait infinitely
         g_mtx.lock();
-        // process the callbacks
-        for (auto it = g_openGlCbs.begin(); it != g_openGlCbs.end();) {
+
+        for (auto it = g_glCallbacks.begin(); it != g_glCallbacks.end();) {
             if (it->first()) {
-                if (it->second) it->second->notify();
-                it = g_openGlCbs.erase(it);
+                if (it->second) {
+                    it->second->notify();
+                }
+                it = g_glCallbacks.erase(it);
             } else {
                 ++it;
             }
@@ -367,7 +372,7 @@ void GLBase::renderLoop() {
         glFinish();
     }
 
-    g_loopRunning = false;
+    g_glCallbackLoopRunning = false;
 #ifdef ARA_USE_GLFW
     glfwMakeContextCurrent(nullptr);
 #elif _WIN32
@@ -378,8 +383,8 @@ void GLBase::renderLoop() {
 }
 
 void GLBase::stopRenderLoop() {
-    if (g_loopRunning) {
-        g_loopRunning = false;
+    if (g_glCallbackLoopRunning) {
+        g_glCallbackLoopRunning = false;
         g_sema.notify();  // notify in case the loop is waiting;
         g_loopExit.wait(0);
     }
@@ -531,7 +536,7 @@ void GLBase::addEvtCb(const std::function<bool()> &func, bool forcePush) {
 
 void GLBase::addGlCb(const std::function<bool()> &func, Conditional *sema) {
     std::unique_lock<std::mutex> lock(g_mtx);
-    g_openGlCbs.emplace_back(func, sema);
+    g_glCallbacks.emplace_back(func, sema);
     if (sema) {
         g_sema.notify();  // in the worst case, is sent before g_sema is waiting, true flag wait until another thread
                           // calls wait()
@@ -591,7 +596,7 @@ void GLBase::initAppMsg(const char *fontFile, int fontHeight, int screenWidth, i
 
 void GLBase::clearGlCbQueue() {
     unique_lock<std::mutex> lock(g_mtx);
-    g_openGlCbs.clear();
+    g_glCallbacks.clear();
 }
 
 void GLBase::setResRootPath(const std::string &str) {

@@ -16,7 +16,7 @@ TEST(GLBaseTest, GLBaseStopStartResources) {
         GLBase m_glbase;
         EXPECT_EQ(m_glbase.init(), true);
 
-        m_glbase.startRenderLoop(); // blocks until the loop is really running
+        m_glbase.startGlCallbackProcLoop(); // blocks until the loop is really running
 
         // push something into the queue to process
         Conditional sema;

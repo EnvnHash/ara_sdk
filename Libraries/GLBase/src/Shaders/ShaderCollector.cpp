@@ -449,14 +449,19 @@ Shaders *ShaderCollector::getUIColBorder() {
 }
 
 Shaders *ShaderCollector::getStdTexBorder() {
-    if (hasShader("std_tex_border")) return shaderCollection["std_tex_border"].get();
+    if (hasShader("std_tex_border")) {
+        return shaderCollection["std_tex_border"].get();
+    }
 
 #ifndef __EMSCRIPTEN__
-    std::string vert = STRINGIFY(layout(location = 0) in vec4 position; layout(location = 2) in vec2 texCoord;
-         out vec2 tex_coord; uniform mat4 m_pvm; void main() {
-             tex_coord   = texCoord;
-             gl_Position = m_pvm * position;
-         });
+    std::string vert = STRINGIFY(layout(location = 0) in vec4 position;
+        layout(location = 2) in vec2 texCoord;
+        out vec2 tex_coord;
+        uniform mat4 m_pvm;
+        void main() {
+            tex_coord   = texCoord;
+            gl_Position = m_pvm * position;
+        });
     vert = shdr_Header + "// tex border shader, vert\n" + vert;
 
 #else
@@ -469,10 +474,14 @@ Shaders *ShaderCollector::getStdTexBorder() {
 
 #ifndef __EMSCRIPTEN__
     std::string frag =
-        STRINGIFY(in vec2 tex_coord; layout(location = 0) out vec4 glFragColor; uniform sampler2D tex;
-                  uniform vec2 borderWidth; uniform vec4 borderColor; uniform vec4 color; void main() {
-                      vec2 border =
-                          vec2(tex_coord.x<borderWidth.x ? 1.0 : tex_coord.x>(1.0 - borderWidth.x) ? 1.0 : 0.0,
+        STRINGIFY(in vec2 tex_coord;
+        layout(location = 0) out vec4 glFragColor;
+        uniform sampler2D tex;
+        uniform vec2 borderWidth;
+        uniform vec4 borderColor;
+        uniform vec4 color;
+        void main() {
+            vec2 border = vec2(tex_coord.x<borderWidth.x ? 1.0 : tex_coord.x>(1.0 - borderWidth.x) ? 1.0 : 0.0,
                                tex_coord.y<borderWidth.y ? 1.0 : tex_coord.y>(1.0 - borderWidth.y) ? 1.0 : 0.0);
                       glFragColor = mix(texture(tex, tex_coord), borderColor, max(border.x, border.y));
                   });
@@ -634,24 +643,32 @@ Shaders *ShaderCollector::getStdClassicOpenGlLight() {
 }
 
 Shaders *ShaderCollector::getStdTex() {
-    if (hasShader("std_tex")) return shaderCollection["std_tex"].get();
+    if (hasShader("std_tex")) {
+        return shaderCollection["std_tex"].get();
+    }
 
     std::string vert = STRINGIFY(
-        layout(location = 0) in vec4 position; \n layout(location = 1) in vec4 normal; \n layout(location = 2) in vec2 texCoord; \n layout(location = 3) in vec4 color; \n uniform mat4 m_pvm; \n out vec2 tex_coord; \n void
-            main() {
-                \n tex_coord   = texCoord;
-                \n gl_Position = m_pvm * position;
-                \n
-            });
+        layout(location = 0) in vec4 position; \n
+        layout(location = 1) in vec4 normal; \n
+        layout(location = 2) in vec2 texCoord; \n
+        layout(location = 3) in vec4 color; \n
+        uniform mat4 m_pvm; \n
+        out vec2 tex_coord; \n
+        void main() { \n
+            tex_coord   = texCoord;\n
+            gl_Position = m_pvm * position;\n
+        });
 
     vert = shdr_Header + "// basic texture shader, vert\n" + vert;
 
-    std::string frag =
-        STRINGIFY(uniform sampler2D tex; \n in vec2 tex_coord; \n layout(location = 0) out vec4 color; \n void main() {
-            \n vec4 col = texture(tex, tex_coord);
+    std::string frag = STRINGIFY(
+        uniform sampler2D tex; \n
+        in vec2 tex_coord; \n
+        layout(location = 0) out vec4 color; \n
+        void main() {\n
+            vec4 col = texture(tex, tex_coord);
             if (col.a < 0.00001) discard;
-            color = col;
-            \n
+            color = col; \n
         });
 
     frag = shdr_Header + "// basic texture shader, frag\n" + frag;

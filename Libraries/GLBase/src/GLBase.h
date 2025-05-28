@@ -79,11 +79,11 @@ public:
     void appMsgStatic(size_t lineIdx, const char *format, ...);
     void initAppMsg(const char *fontFile, int fontHeight, int screenWidth, int screenHeight);
     void renderAppMsgs();
-    void startRenderLoop();
+    void startGlCallbackProcLoop();
     void stopRenderLoop();
     void addEvtCb(const std::function<bool()> &func, bool forcePush = false);
     void addGlCb(const std::function<bool()> &func, Conditional *sema = nullptr);
-    void renderLoop();
+    void glCallbackLoop();
     void initResources();
     void checkResourceChanges();
     void clearGlCbQueue();
@@ -133,7 +133,7 @@ public:
     auto    getNativeDeviceHndl() const { return g_nativeCtx.deviceHandle; }
     auto&   getShaderHeader() { return g_shaderCollector.getShaderHeader(); }
     auto    isInited() const { return g_inited; }
-    bool    isRunning() { return g_loopRunning; }
+    bool    isRunning() { return g_glCallbackLoopRunning; }
     auto    getAssetManager() { return g_assetManager.get(); }
     auto&   getLoopExitSema() { return g_loopExit; }
     auto&   perCtxQuads() { return g_perCtxQuad; }
@@ -188,31 +188,27 @@ protected:
     int32_t                         g_max_tex_units        = 0;
 
     std::unordered_map<void *, std::shared_ptr<Quad>> g_perCtxQuad;
-    std::list<std::pair<std::function<bool()>, Conditional *>> g_openGlCbs;
+    std::list<std::pair<std::function<bool()>, Conditional *>> g_glCallbacks;
 
-    bool g_inited          = false;
-    bool m_checkedCaps     = false;
-    bool g_useFallback     = false;
-    bool g_isIntelRenderer = false;
-    bool m_ctx             = false;
-    bool m_doResetCtx      = false;
-#ifdef ARA_USE_EGL
-    bool m_selfManagedCtx = false;
-#else
-    bool m_selfManagedCtx = true;
-#endif
-    void *m_enterCtx = nullptr;
+    bool g_inited           = false;
+    bool m_checkedCaps      = false;
+    bool g_useFallback      = false;
+    bool g_isIntelRenderer  = false;
+    bool m_ctx              = false;
+    bool m_doResetCtx       = false;
+    bool m_selfManagedCtx   = true;
+    void *m_enterCtx        = nullptr;
 
     std::thread::id g_mainThreadId;
-    std::thread     g_renderLoop;
+    std::thread     g_glCallbackLoop;
     std::thread     m_resUpdt;
     std::mutex      g_mtx;
 
-    std::atomic<bool> g_loopRunning = {false};
+    std::atomic<bool> g_glCallbackLoopRunning = {false};
     std::atomic<bool> m_resUpdtRun  = {false};
 
     Conditional              g_sema;
-    Conditional              g_loopRunningSem;
+    Conditional              g_glCallbackLoopRunningSem;
     Conditional              g_loopExit;
     Conditional              m_resUpdtExited;
     std::list<Conditional *> m_semaqueue;

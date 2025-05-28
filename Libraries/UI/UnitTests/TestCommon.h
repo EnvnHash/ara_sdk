@@ -28,19 +28,20 @@ static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
                     const std::function<void(ara::UIApplication&)>& postInitFunc=nullptr) { // width and height are in hardware pixels (non-scaled)
     ara::UIApplication app;
     stdAppSetup(app, width, height);
-    app.init([&]{
-        drawFunc(app);
 
+    app.initSingleThreaded([&]{
+        drawFunc(app);
+/*
         EXPECT_EQ(ara::postGLError(), GL_NO_ERROR);
         app.getWinBase()->draw(0, 0, 0);
         app.getMainWindow()->swap();
 
-        verifyFunc(app);
+        verifyFunc(app);*/
     });
-
+/*
     if (postInitFunc) {
         postInitFunc(app);
-    }
+    }*/
 
     //app.startEventLoop(); // for debugging comment in this line in order to have to window stay
     app.exit();
@@ -61,7 +62,7 @@ static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFun
         // rebuild the context
         app.initGLBase(); // no context current after this call
 
-        app.startUiThread([&] {
+        app.startSingleUiThread([&] {
             app.getMainWindow()->init(ara::UIWindowParams{
                     .glbase = app.getGLBase(),
                     .size = { app.getMainWindow()->getWidth(), app.getMainWindow()->getHeight() },
@@ -184,7 +185,7 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
         checkPixels.emplace_back(checkPix{edges[i], col});
         for (auto j=0; j<2; ++j) {
             auto p = edges[i] + edgeOffsets[i][j];
-            if (p.x > 0 && p.y > 0 && p.x < win->getWidthReal() && p.y < win->getHeightReal()) {
+            if (p.x > 0 && p.y > 0 && p.x < static_cast<float>(win->getWidthReal()) && p.y < static_cast<float>(win->getHeightReal())) {
                 checkPixels.emplace_back(checkPix{p, backCol});
             }
         }

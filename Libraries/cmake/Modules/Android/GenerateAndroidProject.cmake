@@ -139,6 +139,14 @@ macro (gen_android_proj APP_NAME DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER
             endforeach()
         endforeach()
 
+        if(NOT UIAPP_DERIVATE_CLASS_FILE_NAME_WE)
+            set(UIAPP_DERIVATE_CLASS_FILE_NAME_WE "UIApplication")
+        endif()
+
+        if(NOT UIAPP_DERIVATE_CLASS)
+            set(UIAPP_DERIVATE_CLASS "ara::UIApplication")
+        endif ()
+
         create_proj_structure(${APP_TYPE}) # creates symlinks to all sdk subdirs, the main.cpp and the UIApp.cpp
         create_settings_files()
 

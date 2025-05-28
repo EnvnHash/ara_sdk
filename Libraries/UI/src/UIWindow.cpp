@@ -90,7 +90,7 @@ void UIWindow::init(const UIWindowParams& par) {
 #ifdef ARA_USE_GLFW
     if (!par.initToCurrentCtx && m_restartGlBaseLoop) {
         GLWindow::makeNoneCurrent();
-        m_glbase->startRenderLoop();
+        m_glbase->startGlCallbackProcLoop();
         // no context bound at this point
     }
     // uiwindow context bound if not restartGlBaseLoop
@@ -99,8 +99,8 @@ void UIWindow::init(const UIWindowParams& par) {
 
 void UIWindow::initUIWindow(const UIWindowParams& par) {
 #ifndef ARA_USE_EGL
-    // check if GLBase render loop is running, if this is the case, stop it and start it later again. Otherwise,
-    // context sharing will fail
+    // check if GLBase render loop is running, if this is the case, stop it and start it later again.
+    // Otherwise, context sharing will fail
     if (m_glbase->isRunning()) {
         m_restartGlBaseLoop = true;
         m_glbase->stopRenderLoop();
@@ -119,7 +119,8 @@ void UIWindow::initUIWindow(const UIWindowParams& par) {
                 .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
                 .transparentFramebuffer = par.transparentFB,
                 .extWinHandle = par.extWinHandle,
-                .glbase = par.glbase
+                .glbase = par.glbase,
+                .contScale = { par.glbase->g_androidDensity, par.glbase->g_androidDensity }
         });
     } else {
         m_winHandle->makeCurrent();
@@ -182,26 +183,24 @@ void UIWindow::initHidCallbacks() {
 }
 
 void UIWindow::initColors() {
-    m_colors[uiColors::background]     = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
-    m_colors[uiColors::darkBackground] = glm::vec4(0.12f, 0.12f, 0.12f, 1.f);
-    m_colors[uiColors::sepLine]        = glm::vec4(0.3f, 0.3f, 0.3f, 1.f);
-    m_colors[uiColors::font]           = glm::vec4(0.8f, 0.8f, 0.8f, 1.f);
-    m_colors[uiColors::highlight]      = glm::vec4(0.f, 0.6f, 0.87f, 1.f);
-    m_colors[uiColors::black]          = glm::vec4(0.f, 0.f, 0.f, 1.f);
-    m_colors[uiColors::blue]           = glm::vec4(0.f, 0.6f, 0.9f, 1.f);
-    m_colors[uiColors::darkBlue]       = glm::vec4(0.f, 0.36f, 0.5f, 1.f);
-    m_colors[uiColors::white]          = glm::vec4(1.f, 1.f, 1.f, 1.f);
+    m_colors[uiColors::background]     = vec4(0.2f, 0.2f, 0.2f, 1.f);
+    m_colors[uiColors::darkBackground] = vec4(0.12f, 0.12f, 0.12f, 1.f);
+    m_colors[uiColors::sepLine]        = vec4(0.3f, 0.3f, 0.3f, 1.f);
+    m_colors[uiColors::font]           = vec4(0.8f, 0.8f, 0.8f, 1.f);
+    m_colors[uiColors::highlight]      = vec4(0.f, 0.6f, 0.87f, 1.f);
+    m_colors[uiColors::black]          = vec4(0.f, 0.f, 0.f, 1.f);
+    m_colors[uiColors::blue]           = vec4(0.f, 0.6f, 0.9f, 1.f);
+    m_colors[uiColors::darkBlue]       = vec4(0.f, 0.36f, 0.5f, 1.f);
+    m_colors[uiColors::white]          = vec4(1.f, 1.f, 1.f, 1.f);
 }
 
 void UIWindow::initGLResources() {
     // create the FBO to draw the SceneGraph and it's object map
-    if (m_multisample) {
-        m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(m_realSize.x), static_cast<int>(m_realSize.y), 1,
-                                                    GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1, 2, GL_CLAMP_TO_EDGE, false});
-    } else {
-        m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(m_realSize.x), static_cast<int>(m_realSize.y), 1,
-                                                    GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
-    }
+    GLenum target = m_multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+    int numSamples = m_multisample ? 2 : 1;
+    m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(m_realSize.x), static_cast<int>(m_realSize.y), 1,
+                                                GL_RGBA8, target, true, 1, 1, numSamples, GL_CLAMP_TO_EDGE, false});
+
     s_shCol.setShaderHeader(m_glbase->getShaderHeader());
 
     m_quad = make_unique<Quad>(QuadInitParams{
@@ -288,6 +287,10 @@ void UIWindow::initUI(const UIWindowParams& par) {
     } else {
         m_menuBarEnabled             = false;
         m_windowResizeHandlesEnabled = false;
+    }
+
+    if (par.initCb) {
+        par.initCb(m_uiRoot.get());
     }
 }
 
@@ -517,7 +520,8 @@ void UIWindow::copyToScreen() const {
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         glBlitFramebuffer(0, 0, m_sceneFbo->getWidth(), m_sceneFbo->getHeight(), 0, 0, m_sceneFbo->getWidth(),
-                          m_sceneFbo->getHeight(), GL_COLOR_BUFFER_BIT, GL_LINEAR);}
+                          m_sceneFbo->getHeight(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    }
 }
 
 void UIWindow::update() {
@@ -816,9 +820,15 @@ void UIWindow::onKeyDown(int key, bool shiftPressed, bool ctrlPressed, bool altP
 }
 
 void UIWindow::onKeyUp(int key, bool shiftReleased, bool ctrlReleased, bool altReleased) {
-    if (shiftReleased) m_hidData.shiftPressed = false;
-    if (ctrlReleased) m_hidData.ctrlPressed = false;
-    if (altReleased) m_hidData.altPressed = false;
+    if (shiftReleased) {
+        m_hidData.shiftPressed = false;
+    }
+    if (ctrlReleased) {
+        m_hidData.ctrlPressed = false;
+    }
+    if (altReleased) {
+        m_hidData.altPressed = false;
+    }
 
     m_hidData.procSteps = &m_procSteps;
     m_hidData.key       = key;

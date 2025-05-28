@@ -16,9 +16,9 @@ void UIApplicationBase::initGLBase() {
 #endif
 }
 
-void UIApplicationBase::startGLBaseRenderLoop() {
+void UIApplicationBase::startGLBaseProcCallbackLoop() {
 #ifdef ARA_USE_GLBASE
-    m_glbase.startRenderLoop();
+    m_glbase.startGlCallbackProcLoop();
 #endif
 }
 
@@ -40,7 +40,7 @@ void UIApplicationBase::mainWinIterate() const {
 #endif
 }
 
-void UIApplicationBase::glBaseIterate() {
+void UIApplicationBase::windowManagerIterate() {
 #if (defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)) && defined(ARA_USE_GLBASE)
     m_glbase.getWinMan()->iterate(true);  // iterate once on start then only after new event
 #endif
@@ -50,13 +50,14 @@ void UIApplicationBase::startThreadedRendering() {
 #if (defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)) && defined(ARA_USE_GLBASE) && !defined(__ANDROID__)
     // start GLFWWindowManager threaded rendering -> blocking
     m_glbase.getWinMan()->startThreadedRendering();
-    m_glbase.getWinMan()->startEventLoop();
 #endif
 }
 
 void UIApplicationBase::stopThreadedRendering() {
 #if (defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)) && defined(ARA_USE_GLBASE)
-    if (m_threadedWindowRendering) m_glbase.getWinMan()->stopThreadedRendering();  // exit GLFWWindow::runLoop
+    if (m_threadedWindowRendering) {
+        m_glbase.getWinMan()->stopThreadedRendering();  // exit GLFWWindow::runLoop
+    }
 
     m_glbase.getWinMan()->setBreakEvtLoop(true);  // avoid the event queue to iterate further
     m_glbase.getWinMan()->stopEventLoop();        // we are still in the eventqueue and thus can't

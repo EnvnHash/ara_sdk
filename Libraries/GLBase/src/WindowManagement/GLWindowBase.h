@@ -132,14 +132,14 @@ public:
     std::function<bool(double, double, int)> &getDrawFunc() { return m_drawFunc; }
 
     int                 getKeyScancode(int key)  const { return m_scancodes[key]; }
-    virtual uint32_t    getWidth() const { return m_widthVirt; }
-    virtual uint32_t    getHeight() const { return m_heightVirt; }
-    virtual uint32_t    getWidthReal() const { return m_widthReal; }
-    virtual uint32_t    getHeightReal() const { return m_heightReal; }
-    virtual uint32_t    getPosX() const { return m_offsX; }
-    virtual uint32_t    getPosY() const { return m_offsY; }
-    glm::ivec2          getSize() const { return {m_widthVirt, m_heightVirt}; }
-    glm::ivec2          getPosition() const { return {m_offsX, m_offsY}; }
+    virtual uint32_t    getWidth() const { return m_virtSize.x; }
+    virtual uint32_t    getHeight() const { return m_virtSize.y; }
+    virtual uint32_t    getWidthReal() const { return m_realSize.x; }
+    virtual uint32_t    getHeightReal() const { return m_realSize.y; }
+    virtual uint32_t    getPosX() const { return m_offs.x; }
+    virtual uint32_t    getPosY() const { return m_offs.y; }
+    glm::ivec2          getSize() const { return m_virtSize; }
+    glm::ivec2          getPosition() const { return m_offs; }
     auto                getInitSema() { return &m_initSema; }
     auto                getExitSema() { return &m_exitSema; }
     auto                getGlInitedSema() { return &m_glInitedSema; }
@@ -202,13 +202,9 @@ protected:
 
     glm::vec2 m_contentScale = glm::vec2{1.f, 1.f};
     glm::ivec4 m_workArea{};
-
-    uint32_t m_widthVirt  = 0;  /// in virtual pixels
-    uint32_t m_heightVirt = 0;  /// in virtual pixels
-    uint32_t m_widthReal  = 0;  /// in real pixels
-    uint32_t m_heightReal = 0;  /// in real pixels
-    uint32_t m_offsX      = 0;
-    uint32_t m_offsY      = 0;
+    glm::ivec2 m_virtSize{};  /// in virtual pixels
+    glm::ivec2 m_realSize{};  /// in real pixels
+    glm::ivec2 m_offs{};
 
     std::thread m_msgLoop;  // Windows Message Structure
     std::thread m_drawThread;

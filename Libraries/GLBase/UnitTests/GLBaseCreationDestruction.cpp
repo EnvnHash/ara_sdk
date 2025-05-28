@@ -19,7 +19,7 @@ TEST(GLBaseTest, GLBaseCreationDestruction) {
         GLBase m_glbase;
         // create a GLBase instance
         EXPECT_EQ(m_glbase.init(false), true);                  // init is synchronous
-        m_glbase.startRenderLoop();                             // blocks until the loop is really running
+        m_glbase.startGlCallbackProcLoop();                             // blocks until the loop is really running
 
         // push something into the queue to process
         m_glbase.addGlCbSync([&] {

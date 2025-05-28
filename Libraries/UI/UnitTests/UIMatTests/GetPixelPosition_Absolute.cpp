@@ -15,13 +15,14 @@ namespace ara::UiUnitTest::GetPixelPosition_Absolute {
 
 TEST(UITest, GetPixelPosition_Absolute) {
     UIApplication app;
-    app.setEnableMenuBar(false); app.setEnableWindowResizeHandles(false);
+    app.setEnableMenuBar(false);
+    app.setEnableWindowResizeHandles(false);
 
-    vec4 fgColor(0.f, 0.f, 1.f, 1.f);
-    vec4 bgColor(0.2f, 0.2f, 0.2f, 1.f);
+    vec4 fgColor{0.f, 0.f, 1.f, 1.f};
+    vec4 bgColor{0.2f, 0.2f, 0.2f, 1.f};
 
     // implicitly creates a window and runs the lambda before calling the draw function for the first time
-    app.init([&](){
+    app.initSingleThreaded([&](){
         // get the root node of the UI scenegraph
         auto rootNode = app.getRootNode();
 

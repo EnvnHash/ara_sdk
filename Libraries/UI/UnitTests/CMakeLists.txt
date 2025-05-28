@@ -16,10 +16,10 @@ include_directories(
 
 # add test source files
 file(GLOB UI_UT_SRC
-     ReloadGLContextTest.cpp
+     #ReloadGLContextTest.cpp
      #AlignTest.cpp
      #ButtonTests.cpp
-     #ComboBoxTest.cpp
+     ComboBoxTest.cpp
      #HidTest.cpp
      #ImageTest.cpp
      #ScrollViewTest.cpp

@@ -36,6 +36,7 @@ struct UIWindowParams {
     bool multisample = true;
     void* extWinHandle = nullptr;
     bool scaleToMonitor = false;
+    std::function<void(UINode*)> initCb;
 };
 
 struct InfoDiagParams {
@@ -185,6 +186,8 @@ public:
     bool        isOpen() const { return m_winHandle->isOpen(); }
     bool        isModal() const { return m_isModal; }
     void        pollEvents() { if (m_winHandle) m_winHandle->pollEvents(); }
+    void        setGlCb(const std::function<void()>& f) { if (m_winHandle) m_winHandle->setGlCb(f); }
+
 #else
     void* getWinHandle() { return m_winHandle; }
 #endif

@@ -1,13 +1,12 @@
-#include "UITestApp.h"
-
-
+#include <UITestApp.h>
+#include "Demo/DemoView.h"
 
 using namespace ara;
 
-int main(int argc, char* argv[]) {
-    UI_Test_App app;
-    app.init(nullptr);
-
+int main(int, char**) {
+    UITestApp app;
+	app.init(nullptr);
+	app.startEventLoop(); //blocking
 	return 0;
 }
 

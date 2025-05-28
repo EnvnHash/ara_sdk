@@ -15,40 +15,36 @@ namespace ara {
 class UIApplicationBase {
 public:
     virtual ~UIApplicationBase() = default;
+    virtual void init(std::function<void(UINode*)>) = 0;
 
-    /** this is meant for a simple one window setup. An initCb can be passed,
-     * that is supposed to configure the ui-scenegraph UI rendering is done in a
-     * separate thread, though this function is non-blocking For more complex
-     * applications it is recommended to overload this function and decide based
-     * on the application whether rendering should be done threaded or running
-     * as a blocking loop in the main-thread
-     */
-    virtual void init(const std::function<void()>& f) = 0;
-
-    void initGLBase();
+    virtual void initGLBase();
     /// start the global opengl processing loop in a separate thread
-    void startGLBaseRenderLoop();
+    void startGLBaseProcCallbackLoop();
     /// stops the global opengl processing loop
     void stopGLBaseRenderLoop();
     /// destroy the global opengl context and all its resources
     void destroyGLBase();
     /// cause a draw loop iteration on the main window
     void mainWinIterate() const;
-    /// causes a draw loop iteration on the glbase gl context
-    void glBaseIterate();
+    /// causes a draw loop iteration on the global WindowManager
+    void windowManagerIterate();
     /// calls startThreadedRendering and startEventLoop on the windowManager when GLFW or EGL is used, otherwise does nothing
     void startThreadedRendering();
     /// stops the uiwindow rendering threads and the eventLoop on the windowManager when GLFW or EGL is used, otherwise does nothing
     void stopThreadedRendering();
+
+    virtual void startSingleThreadUiRendering(const std::function<void(UINode*)>& initCb) {}
 
     /// get a reference to the WindowManager
     WindowManager* getWinMan() { return m_glbase.getWinMan(); }
     /// get a reference to GLBase instance containing all opengl related shared resources
     GLBase* getGLBase() { return &m_glbase; }
 
-    void setWinWidth(int w) { winSize.x = w; }
-    void setWinHeight(int g) { winSize.y = g; }
-    void setWinSize(const glm::ivec2& s) { winSize = s; }
+    virtual void update() { m_iterate.notify(); }
+
+    void setWinWidth(int w) { m_winSize.x = w; }
+    void setWinHeight(int g) { m_winSize.y = g; }
+    void setWinSize(const glm::ivec2& s) { m_winSize = s; }
 
 public:
     std::string m_internalPath;
@@ -67,7 +63,8 @@ protected:
 
     Conditional m_initSema;
     UIWindow*   m_mainWindow = nullptr;
-    glm::ivec2 winSize = { 1280, 720 };
+    Conditional m_iterate;
+    glm::ivec2  m_winSize = { 1280, 720 };
 
 #ifdef ARA_USE_GLBASE
     GLBase m_glbase;
