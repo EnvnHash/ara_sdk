@@ -43,7 +43,7 @@ TEST(GLBaseTest, GLBaseCreationDestruction) {
             return true;
         });
 
-        m_glbase.stopRenderLoop();                               // blocks until the loop is really finished
+        m_glbase.stopProcCallbackLoop();                               // blocks until the loop is really finished
         m_glbase.destroy(i == (nrIterations -
                                1));         // destroy the GLBase context. on the last iteration terminate glfw
 

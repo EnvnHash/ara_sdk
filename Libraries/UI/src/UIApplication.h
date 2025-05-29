@@ -33,7 +33,7 @@ public:
     UIApplication();
     ~UIApplication() override = default;
 
-    void init(std::function<void(UINode*)> initCb) override;
+    void init(std::function<void(UINode&)> initCb) override;
     void initSingleThreaded(const std::function<void()>& initCb);
     void initGLBase() override;
     void startSingleUiThread(const std::function<void()>& f);

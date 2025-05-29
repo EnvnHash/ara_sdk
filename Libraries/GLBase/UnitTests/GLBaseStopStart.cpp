@@ -42,7 +42,7 @@ TEST(GLBaseTest, GLBaseStopStart) {
         }, &sema);
         sema.wait(0);
 
-        m_glbase.stopRenderLoop();                                       // blocks until the loop is really finished
+        m_glbase.stopProcCallbackLoop();                                       // blocks until the loop is really finished
 
         std::cout << "." << std::flush;
     }

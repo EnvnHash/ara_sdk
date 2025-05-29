@@ -263,7 +263,7 @@ void GLBase::destroy(bool terminateGLFW) {
     }
 
     if (g_glCallbackLoopRunning) {
-        stopRenderLoop();
+        stopProcCallbackLoop();
     }
     g_glCallbacks.clear();
 
@@ -382,7 +382,7 @@ void GLBase::glCallbackLoop() {
     g_loopExit.notify();
 }
 
-void GLBase::stopRenderLoop() {
+void GLBase::stopProcCallbackLoop() {
     if (g_glCallbackLoopRunning) {
         g_glCallbackLoopRunning = false;
         g_sema.notify();  // notify in case the loop is waiting;

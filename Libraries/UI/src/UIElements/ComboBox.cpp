@@ -33,7 +33,7 @@ void ComboBox::init() {
     setHeight(getSharedRes()->gridSize.y);
     setBackgroundColor(getSharedRes()->colors->at(uiColors::sepLine));
 
-    auto downIcon = addChild<Image>();
+    const auto downIcon = addChild<Image>();
     downIcon->excludeFromObjMap(true);
     downIcon->setImg("Icons/icon-arrow-down.png", 1);
     downIcon->setSize(12, 1.f);

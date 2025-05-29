@@ -33,7 +33,7 @@ bool GLRenderer::init(const std::string& name, glm::ivec2 pos, glm::ivec2 dimens
     // start it later again. Otherwise context sharing will fail
     if (m_glbase && m_glbase->isRunning()) {
         restartGlBaseLoop = true;
-        m_glbase->stopRenderLoop();
+        m_glbase->stopProcCallbackLoop();
     }
 
     m_dim        = glm::vec2(dimension);

@@ -80,7 +80,7 @@ public:
     void initAppMsg(const char *fontFile, int fontHeight, int screenWidth, int screenHeight);
     void renderAppMsgs();
     void startGlCallbackProcLoop();
-    void stopRenderLoop();
+    void stopProcCallbackLoop();
     void addEvtCb(const std::function<bool()> &func, bool forcePush = false);
     void addGlCb(const std::function<bool()> &func, Conditional *sema = nullptr);
     void glCallbackLoop();

@@ -31,17 +31,17 @@ static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
 
     app.initSingleThreaded([&]{
         drawFunc(app);
-/*
+
         EXPECT_EQ(ara::postGLError(), GL_NO_ERROR);
         app.getWinBase()->draw(0, 0, 0);
         app.getMainWindow()->swap();
 
-        verifyFunc(app);*/
+        verifyFunc(app);
     });
-/*
+
     if (postInitFunc) {
         postInitFunc(app);
-    }*/
+    }
 
     //app.startEventLoop(); // for debugging comment in this line in order to have to window stay
     app.exit();
@@ -54,9 +54,9 @@ static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFun
     auto postVerifyFunc = [&](ara::UIApplication& app) {
         // remove all gl resources, but leave the window and its UINode tree untouched
         app.stop();
-        app.stopGLBaseRenderLoop();
+        app.stopGLBaseProcCallbackLoop();
 
-        app.getMainWindow()->removeGLResources(false); // make the window release all it's opengl resources
+        app.getMainWindow()->removeGLResources(); // make the window release all it's opengl resources
         app.getGLBase()->destroy(false); // remove glbase opengl resources
 
         // rebuild the context

@@ -143,7 +143,7 @@ public:
     virtual void eraseGlCb(void *cbName);
     virtual void clearGlCbQueue();
 
-    virtual void removeGLResources() {};
+    virtual void removeGLResources(bool removeSharedRes) {};
 
 public:
     bool              s_inited        = false;

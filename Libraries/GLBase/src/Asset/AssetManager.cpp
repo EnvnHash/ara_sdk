@@ -170,7 +170,7 @@ Font *AssetManager::loadFont(const string& path, int size, float pixRatio) {
 }
 
 bool AssetManager::checkForResSourceChange() {
-    if (usingComp() || !isOK()) {
+    if (usingComp() || !isOK() || m_resSysFile.empty()) {
         return false;
     }
 
@@ -258,7 +258,7 @@ void AssetManager::insertPreAndPostContent(std::vector<uint8_t>& vp) {
 }
 
 void AssetManager::callResSourceChange() {
-    if (usingComp() || !isOK()) {
+    if (usingComp() || !isOK() || m_resSysFile.empty()) {
         return;
     }
 

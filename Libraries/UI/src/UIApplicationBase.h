@@ -15,13 +15,13 @@ namespace ara {
 class UIApplicationBase {
 public:
     virtual ~UIApplicationBase() = default;
-    virtual void init(std::function<void(UINode*)>) = 0;
+    virtual void init(std::function<void(UINode&)>) = 0;
 
     virtual void initGLBase();
     /// start the global opengl processing loop in a separate thread
     void startGLBaseProcCallbackLoop();
     /// stops the global opengl processing loop
-    void stopGLBaseRenderLoop();
+    void stopGLBaseProcCallbackLoop();
     /// destroy the global opengl context and all its resources
     void destroyGLBase();
     /// cause a draw loop iteration on the main window

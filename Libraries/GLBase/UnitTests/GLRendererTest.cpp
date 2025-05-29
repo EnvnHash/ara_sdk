@@ -50,7 +50,7 @@ TEST(GLBaseTest, GLRendererTest) {
     m_glbase.getWinMan()->startEventLoop(); // blocking
     std::cout << std::endl;
 
-    m_glbase.stopRenderLoop();
+    m_glbase.stopProcCallbackLoop();
     m_glbase.destroy();
 }
 

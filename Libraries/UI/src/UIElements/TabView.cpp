@@ -8,7 +8,7 @@ using namespace std;
 
 namespace ara {
 
-TabView::TabView() : Div() {
+TabView::TabView() {
     setName(getTypeName<TabView>());
     m_canReceiveDrag = true;
     setFocusAllowed(false);
@@ -41,6 +41,7 @@ UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode
 
         // add a Tab-Button
         auto tab = m_tabArea->addChild<Button>();
+        tab->setBackgroundColor(m_tabButtBgColDeSel);
         tab->setFont("regular", 17, align::left, valign::center, textcolor);
         tab->setPadding(5.f, 0.f, 5.f, 0.f);
         tab->setText(title);
@@ -100,12 +101,12 @@ void TabView::arrangeTabs() {
     int            i = 0;
     eTable_CellGeo cg;
 
-    for (e_tab& t : m_Tab) {
+    for (auto&[title, ui_Node, tab, underline, selected] : m_Tab) {
         if (m_Tab.getCellGeo(cg, i++)) {
             if (cg.pixSize[0] > 0) {
-                t.tab->setPos(static_cast<int>(cg.pixPos[0]), static_cast<int>(cg.pixPos[1]));
-                t.tab->setSize(static_cast<int>(cg.pixSize[0]), static_cast<int>(cg.pixSize[1]));
-                t.tab->setBackgroundColor(t.selected ? m_tabButtBgColSel : m_tabButtBgColDeSel);
+                tab->setPos(static_cast<int>(cg.pixPos[0]), static_cast<int>(cg.pixPos[1]));
+                tab->setSize(static_cast<int>(cg.pixSize[0]), static_cast<int>(cg.pixSize[1]));
+                tab->setBackgroundColor(selected ? m_tabButtBgColSel : m_tabButtBgColDeSel);
             }
         }
     }

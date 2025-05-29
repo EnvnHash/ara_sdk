@@ -10,7 +10,7 @@ namespace ara {
 
 class UITestApp : public UIApplication {
 public:
-    void init(std::function<void(UINode*)> initCb) override;
+    void init(std::function<void(UINode&)> initCb) override;
 };
 
 }

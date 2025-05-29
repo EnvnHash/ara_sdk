@@ -254,7 +254,7 @@ void Image::updateDrawData() {
     Div::updateDrawData();
 
     if (m_useTexId) {
-        memset(&m_secPos[0], 0, 8);
+        m_secPos = {0,0};
         m_secSize.x = m_extTexWidth;
         m_secSize.y = m_extTexHeight;
         m_texSize.x = m_extTexWidth;
@@ -556,16 +556,14 @@ void Image::pushTexture(DrawSet& ds) {
 
 void Image::loadImg() {
     m_useTexId    = false;
-    const auto filename = m_imageFile;
-
     auto& texCol = getSharedRes()->glbase->textureCollector();
-    m_tex = texCol.addFromAssetManager(filename, m_mipMapLevel);
+    m_tex = texCol.addFromAssetManager(m_imageFile, m_mipMapLevel);
     if (m_tex){
         m_loaded    = true;
         m_texAspect = m_tex->getWidthF() / m_tex->getHeightF();
         m_texSize   = { m_tex->getWidth(), m_tex->getHeight() };
 
-        texCol.addRemoveCb(filename, [this]{
+        texCol.addRemoveCb(m_imageFile, [this]{
             m_tex = nullptr;
         });
 
@@ -632,7 +630,7 @@ bool Image::isInBounds(glm::vec2& pos) {
         return false;
     }
 
-    m_mpInBounds = UINodeGeom::isInBounds(pos);
+    m_mpInBounds = UINode::isInBounds(pos);
 
     if (!m_mpInBounds) {
         return false;
@@ -694,9 +692,14 @@ void Image::removeGLResources() {
         m_uplFbo.reset();
     }
     if (m_texUniBlock.isInited()) {
+        m_texUniBlock.removeGLResources();
     }
     m_tex = nullptr;
     m_inited = false;
+    if (getSharedRes() && getSharedRes()->glbase) {
+        auto& texCol = getSharedRes()->glbase->textureCollector();
+        texCol.removeRemoveCb(m_imageFile);
+    }
 }
 
 }  // namespace ara

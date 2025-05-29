@@ -22,9 +22,9 @@ void UIApplicationBase::startGLBaseProcCallbackLoop() {
 #endif
 }
 
-void UIApplicationBase::stopGLBaseRenderLoop() {
+void UIApplicationBase::stopGLBaseProcCallbackLoop() {
 #ifdef ARA_USE_GLBASE
-    m_glbase.stopRenderLoop();
+    m_glbase.stopProcCallbackLoop();
 #endif
 }
 
@@ -62,8 +62,7 @@ void UIApplicationBase::stopThreadedRendering() {
     m_glbase.getWinMan()->setBreakEvtLoop(true);  // avoid the event queue to iterate further
     m_glbase.getWinMan()->stopEventLoop();        // we are still in the eventqueue and thus can't
                                                   // wait for it to quit,
-    // so this will just set a bool flag, to make the queue quit, after this is
-    // done
+    // so this will just set a bool flag, to make the queue quit, after this is done
 #endif
 }
 

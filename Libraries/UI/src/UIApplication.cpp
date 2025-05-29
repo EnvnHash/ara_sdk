@@ -47,7 +47,7 @@ void UIApplication::mainWinDefaultSetup() {
     m_mainWindow->setEnableMenuBar(m_menuBarEnabled);
 }
 
-void UIApplication::init(std::function<void(UINode*)> initCb) {
+void UIApplication::init(std::function<void(UINode&)> initCb) {
     m_mainWindow = addWindow(UIWindowParams{
         .size           = m_winSize,
         .shift          = {100, 100},
@@ -65,6 +65,8 @@ void UIApplication::init(std::function<void(UINode*)> initCb) {
 }
 
 void UIApplication::initSingleThreaded(const std::function<void()>& initCb) {
+    m_threadedWindowRendering = false;
+
     m_mainWindow = addWindow(UIWindowParams{
         .size           = m_winSize,
         .shift          = {100, 100},
@@ -94,7 +96,6 @@ void UIApplication::startSingleUiThread(const std::function<void()>& initCb) {
 }
 
 void UIApplication::initThread(const std::function<void()>& initCb) {
-    m_threadedWindowRendering = false;
     m_mainWindow->makeCurrent();
 
     glViewport(0, 0, static_cast<GLsizei>(m_mainWindow->getWidthReal()), static_cast<GLsizei>(m_mainWindow->getHeightReal()));
@@ -110,7 +111,6 @@ void UIApplication::initThread(const std::function<void()>& initCb) {
     }
 
     m_run = true;
-
     while (m_run) {
         if (m_initSignaled) {
             m_iterate.wait(0);
@@ -126,8 +126,8 @@ void UIApplication::initThread(const std::function<void()>& initCb) {
 
     GLWindow::makeNoneCurrent();
 
-    m_loopExitSema.notify();
     m_initSignaled = false;
+    m_loopExitSema.notify();
 }
 
 void UIApplication::startRenderLoop() {
@@ -191,7 +191,7 @@ void UIApplication::showInfo(const std::string& msg, long minStayTime, int width
                              std::function<void()> onClose, std::function<void()> onInfoOpen) {
     m_infoDiagCreatedCb = std::move(onInfoOpen);
 
-    ivec2 diagPos = ivec2(0, 0);
+    ivec2 diagPos{0, 0};
     if (!m_uiWindows.empty()) {
         diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - width) / 2 + m_uiWindows.front()->getPosition().x;
         diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - height) / 2 + m_uiWindows.front()->getPosition().y;
@@ -210,7 +210,7 @@ void UIApplication::showInfo(const std::string& msg, long minStayTime, int width
 
 void UIApplication::showCancel(std::string msg, long minStayTime, int width, int height, bool isModal,
                                std::function<bool()> cancelCb) {
-    ivec2 diagPos = ivec2(0, 0);
+    ivec2 diagPos{0, 0};
     if (!m_uiWindows.empty()) {
         diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - width) / 2 + m_uiWindows.front()->getPosition().x;
         diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - height) / 2 + m_uiWindows.front()->getPosition().y;
@@ -228,8 +228,8 @@ void UIApplication::showCancel(std::string msg, long minStayTime, int width, int
 }
 
 void UIApplication::openInfoDiag(infoDiagType tp, const std::string& msg, const std::function<bool()>& onConfirm) {
-    ivec2 diagPos  = ivec2(0, 0);
-    ivec2 diagSize = ivec2(750, 150);
+    ivec2 diagPos{0, 0};
+    ivec2 diagSize{750, 150};
 
     if (!m_uiWindows.empty()) {
         diagPos = (m_uiWindows.front()->getSize() - diagSize) / 2 + m_uiWindows.front()->getPosition();
@@ -304,14 +304,12 @@ void UIApplication::exit() {
     // close windows and immediately remove them from the queue
     for (auto win = m_uiWindows.begin(); win != m_uiWindows.end();) {
         win->get()->close(true);
-        // call onCloseCallback
         win = m_uiWindows.erase(win);
     }
 
     stopThreadedRendering();
-    if (m_threadedWindowRendering) {
-        stopGLBaseRenderLoop();
-    }
+    stopGLBaseProcCallbackLoop();
+
     destroyGLBase();
     m_exitSema.notify();
 }
