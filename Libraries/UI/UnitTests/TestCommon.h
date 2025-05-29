@@ -28,7 +28,8 @@ static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
                     const std::function<void(ara::UIApplication&)>& postInitFunc=nullptr) { // width and height are in hardware pixels (non-scaled)
     ara::UIApplication app;
     stdAppSetup(app, width, height);
-    app.init([&]{
+
+    app.initSingleThreaded([&]{
         drawFunc(app);
 
         EXPECT_EQ(ara::postGLError(), GL_NO_ERROR);
@@ -53,15 +54,15 @@ static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFun
     auto postVerifyFunc = [&](ara::UIApplication& app) {
         // remove all gl resources, but leave the window and its UINode tree untouched
         app.stop();
-        app.stopGLBaseRenderLoop();
+        app.stopGLBaseProcCallbackLoop();
 
-        app.getMainWindow()->removeGLResources(false); // make the window release all it's opengl resources
+        app.getMainWindow()->removeGLResources(); // make the window release all it's opengl resources
         app.getGLBase()->destroy(false); // remove glbase opengl resources
 
         // rebuild the context
         app.initGLBase(); // no context current after this call
 
-        app.startUiThread([&] {
+        app.startSingleUiThread([&] {
             app.getMainWindow()->init(ara::UIWindowParams{
                     .glbase = app.getGLBase(),
                     .size = { app.getMainWindow()->getWidth(), app.getMainWindow()->getHeight() },
@@ -184,7 +185,7 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
         checkPixels.emplace_back(checkPix{edges[i], col});
         for (auto j=0; j<2; ++j) {
             auto p = edges[i] + edgeOffsets[i][j];
-            if (p.x > 0 && p.y > 0 && p.x < win->getWidthReal() && p.y < win->getHeightReal()) {
+            if (p.x > 0 && p.y > 0 && p.x < static_cast<float>(win->getWidthReal()) && p.y < static_cast<float>(win->getHeightReal())) {
                 checkPixels.emplace_back(checkPix{p, backCol});
             }
         }

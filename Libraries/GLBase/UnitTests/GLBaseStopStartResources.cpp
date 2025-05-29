@@ -16,7 +16,7 @@ TEST(GLBaseTest, GLBaseStopStartResources) {
         GLBase m_glbase;
         EXPECT_EQ(m_glbase.init(), true);
 
-        m_glbase.startRenderLoop(); // blocks until the loop is really running
+        m_glbase.startGlCallbackProcLoop(); // blocks until the loop is really running
 
         // push something into the queue to process
         Conditional sema;
@@ -41,7 +41,7 @@ TEST(GLBaseTest, GLBaseStopStartResources) {
         }, &sema);
         sema.wait(0);
 
-        m_glbase.stopRenderLoop();                                       // blocks until the loop is really finished
+        m_glbase.stopProcCallbackLoop();                                       // blocks until the loop is really finished
         m_glbase.destroy(true);
 
         std::cout << "." << std::flush;

@@ -13,6 +13,8 @@
 #include <WindowManagement/GLWindow.h>
 #include <WindowManagement/WindowBase.h>
 
+#include "UIElements/UINodeBase/UINode.h"
+
 namespace ara {
 
 class DrawManager;
@@ -36,6 +38,7 @@ struct UIWindowParams {
     bool multisample = true;
     void* extWinHandle = nullptr;
     bool scaleToMonitor = false;
+    std::function<void(UINode&)> initCb;
 };
 
 struct InfoDiagParams {
@@ -128,7 +131,7 @@ public:
 
     void fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed);
 
-    void removeGLResources(bool resetUINode);
+    void removeGLResources(bool removeSharedRes) override;
 
 protected:
     std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseDownLeftCb;
@@ -168,7 +171,7 @@ public:
     auto        getProcSteps() { return &m_procSteps; }
     auto        getShaderCollector() { return &s_shCol; }
     static auto getShaderProto(uint ind, std::string& name) { return nullptr; };
-    auto        getRootNode() { return (m_menuBarEnabled && m_contentRoot) ? m_contentRoot : m_uiRoot.get(); };
+    auto        getRootNode() { return (m_menuBarEnabled && m_contentRoot) ? m_contentRoot : &m_uiRoot; };
     auto        getMenuBar() { return m_menuBarEnabled ? m_menuBar : nullptr; };
     auto&       getColors() { return m_colors; };
     auto&       getColor(uiColors colName) { return m_colors[colName]; };
@@ -184,7 +187,9 @@ public:
     void        makeCurrent() const { if (m_winHandle) m_winHandle->makeCurrent(); }
     bool        isOpen() const { return m_winHandle->isOpen(); }
     bool        isModal() const { return m_isModal; }
-    void        pollEvents() { if (m_winHandle) m_winHandle->pollEvents(); }
+    void        pollEvents() const { if (m_winHandle) GLWindow::pollEvents(); }
+    void        setGlCb(const std::function<void()>& f) const { if (m_winHandle) m_winHandle->setGlCb(f); }
+
 #else
     void* getWinHandle() { return m_winHandle; }
 #endif
@@ -241,15 +246,15 @@ public:
 
     void         addWinCb(const std::function<void()>& f) { m_winProcCb.emplace_back(f); }
     virtual void open();
-    virtual void close(bool direct = false);
-    virtual bool closeEvtLoopCb();
+    virtual void close(bool direct = false, bool removeSharedRes = false);
+    virtual bool closeEvtLoopCb(bool removeSharedRes);
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     virtual void hide() { m_winHandle->hide(); }
     virtual void startRenderLoop();
     virtual void stopRenderLoop();
-    Conditional* getGlInitedSema() { return m_winHandle->getGlInitedSema(); }
-    bool         isInited() { return m_winHandle != nullptr && m_winHandle->isInited(); }
-    void         focus() { if (m_winHandle) m_winHandle->focus();}
+    Conditional* getGlInitedSema() const { return m_winHandle->getGlInitedSema(); }
+    bool         isInited() const { return m_winHandle != nullptr && m_winHandle->isInited(); }
+    void         focus() const { if (m_winHandle) m_winHandle->focus();}
 #else
     virtual void hide() {}
     void         setExtWinHnd(void* hnd) { m_winHandle = hnd; }
@@ -259,13 +264,13 @@ public:
 
     auto    resChanged() const { return m_resChanged; }
     auto    objMapVisible() const { return m_showObjMap; }
-    auto    getInputFocusNode() { return m_inputFocusNode; }
-    auto    getDraggingNode() { return m_draggingNode; }
+    auto    getInputFocusNode() const { return m_inputFocusNode; }
+    auto    getDraggingNode() const { return m_draggingNode; }
     auto    extGetWinOffs() { return m_extGetWinOffs; }
     auto&   getActMousePos() { return m_hidData.mousePos; }
-    auto    getSceneFbo() { return m_sceneFbo.get(); }
-    auto    usingSelfManagedCtx() { return !m_selfManagedCtx; }
-    auto    usingMultiSample() { return m_multisample; }
+    auto    getSceneFbo() const { return m_sceneFbo.get(); }
+    auto    usingSelfManagedCtx() const { return !m_selfManagedCtx; }
+    auto    usingMultiSample() const { return m_multisample; }
 
     void showObjMap(bool val) { m_showObjMap = val; }
     void resetDraggingNode() { m_draggingNode = nullptr; }
@@ -277,7 +282,7 @@ public:
     void removeGlCbs(void* cbName) { WindowBase::eraseGlCb(cbName); }
 
     // UI Elements
-    std::unique_ptr<UINode>               m_uiRoot;
+    UINode                                m_uiRoot;
     std::unique_ptr<ObjectMapInteraction> m_objSel;
     cpEditMode                            m_cp_editM = cpEditMode::Move;
 
@@ -346,7 +351,7 @@ protected:
 
     GLuint m_nullVao = 0;
 
-    hidData   m_hidData;
+    hidData m_hidData;
 
     std::filesystem::path              m_dataFolder;
     std::vector<std::function<void()>> m_winProcCb;

@@ -15,7 +15,7 @@ public:
     explicit FloatingMenuDialog(const UIWindowParams& params);
     ~FloatingMenuDialog() override = default;
 
-    void close(bool direct = false) override;
+    void close(bool direct = false, bool removeSharedRes = false) override;
 
     void setOnClose(const std::function<void(std::string)>& f) { m_onCloseFunc = f; }
     void setRemoveCb(const std::function<void()>& f) { m_removeCb = f; }

@@ -35,15 +35,15 @@ void UIAppAndroidNative::startAndroidEventLoop() {
                 return;
             }
 
-            // draw frame
-            if (win) {
-                m_glbase.getWinMan()->procEventQueue();
-                win->draw();
-            } else {
-                win = m_glbase.getWinMan()->getFirstWin();
+            // pass alooper to main window
+            if (m_glbase.getWinMan()->getWindows()->size() > 1) {
+                win = (m_glbase.getWinMan()->getWindows()->begin() +1)->get();
                 if (win) {
                     win->setALooper(ALooper_forThread());
                 }
+            }
+            if (win) {
+                update();
             }
         }
     }
@@ -52,11 +52,16 @@ void UIAppAndroidNative::startAndroidEventLoop() {
 int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* event) {
     auto ctx = static_cast<UIAppAndroidNative*>(app->userData);
 
+    if (ctx->getWinMan()->getWindows()->size() <= 1) {
+        return -1;
+    }
+
     switch (AInputEvent_getType(event)) {
         case AINPUT_EVENT_TYPE_MOTION: {
             float x   = AMotionEvent_getX(event, 0);
             float y   = AMotionEvent_getY(event, 0);
-            auto  win = ctx->getWinMan()->getFirstWin();
+            auto win = (ctx->getWinMan()->getWindows()->begin() +1)->get();
+
             if (!win) {
                 return -1;
             }
@@ -77,7 +82,9 @@ int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* e
                             win->onMouseCursor(x, y);
                             win->onMouseButton(GLSG_MOUSE_BUTTON_LEFT, GLSG_RELEASE, 0);
                             break;
-                        case AMOTION_EVENT_ACTION_MOVE: win->onMouseCursor(x, y); break;
+                        case AMOTION_EVENT_ACTION_MOVE:
+                            win->onMouseCursor(x, y);
+                            break;
                     }
                 } break;
                 default: break;

@@ -252,10 +252,10 @@ bool WGLWindow::init() {
         return false;  // Return false
     }
 
-    m_widthVirt  = rWnd.right - rWnd.left;
-    m_heightVirt = rWnd.bottom - rWnd.top;
-    m_offsX      = rWnd.left;
-    m_offsY      = rWnd.top;
+    m_virtSize.x = rWnd.right - rWnd.left;
+    m_virtSize.y = rWnd.bottom - rWnd.top;
+    m_offs.x     = rWnd.left;
+    m_offs.y     = rWnd.top;
 
     SetWindowLongPtrW(m_hWnd, 0, reinterpret_cast<LONG_PTR>(this));
 

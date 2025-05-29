@@ -407,16 +407,17 @@ void decomposeRot(const mat4 &m, quat &rot) {
 
 /** there is no glGetTexImage in GLES, so bind the texture to a FBO and use
  * glReadPixels */
-void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pixelType, int width, int height,
-                     GLubyte *pixels) {
+void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pixelType, int width,
+                     int height, GLubyte *pixels) {
     GLuint fbo;
+    GLint lastBoundFbo;
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &lastBoundFbo);
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, target, textureObj, 0);
-
     glReadPixels(0, 0, width, height, format, pixelType, pixels);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, lastBoundFbo);
     glDeleteFramebuffers(1, &fbo);
 }
 

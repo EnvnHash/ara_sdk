@@ -17,7 +17,7 @@ TEST(GLBaseTest, GLBaseStopStart) {
     // create and destroy the GLBase context - there should be no timeouts, deadlocks or memleaks
     int nrIterations = 50;
     for (int i = 0; i < nrIterations; i++) {
-        m_glbase.startRenderLoop();                                      // blocks until the loop is really running
+        m_glbase.startGlCallbackProcLoop();                                      // blocks until the loop is really running
 
         // push something into the queue to process
         Conditional sema;
@@ -42,7 +42,7 @@ TEST(GLBaseTest, GLBaseStopStart) {
         }, &sema);
         sema.wait(0);
 
-        m_glbase.stopRenderLoop();                                       // blocks until the loop is really finished
+        m_glbase.stopProcCallbackLoop();                                       // blocks until the loop is really finished
 
         std::cout << "." << std::flush;
     }

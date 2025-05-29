@@ -11,7 +11,7 @@ TEST(GLBaseTest, GLRendererTest) {
     GLBase m_glbase;
 
     ASSERT_TRUE(m_glbase.init()); // needs the resources for TestPattern to work
-    m_glbase.startRenderLoop();
+    m_glbase.startGlCallbackProcLoop();
 
     int nrIt = 10;
     for (int i = 0; i < nrIt; i++) {
@@ -50,7 +50,7 @@ TEST(GLBaseTest, GLRendererTest) {
     m_glbase.getWinMan()->startEventLoop(); // blocking
     std::cout << std::endl;
 
-    m_glbase.stopRenderLoop();
+    m_glbase.stopProcCallbackLoop();
     m_glbase.destroy();
 }
 

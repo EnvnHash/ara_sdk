@@ -90,20 +90,25 @@ void UIWindow::init(const UIWindowParams& par) {
 #ifdef ARA_USE_GLFW
     if (!par.initToCurrentCtx && m_restartGlBaseLoop) {
         GLWindow::makeNoneCurrent();
-        m_glbase->startRenderLoop();
+        m_glbase->startGlCallbackProcLoop();
         // no context bound at this point
     }
     // uiwindow context bound if not restartGlBaseLoop
 #endif
+
+    if (par.initCb) {
+        par.initCb(*m_contentRoot);
+        m_sharedRes.requestRedraw = true;
+    }
 }
 
 void UIWindow::initUIWindow(const UIWindowParams& par) {
 #ifndef ARA_USE_EGL
-    // check if GLBase render loop is running, if this is the case, stop it and start it later again. Otherwise,
-    // context sharing will fail
+    // check if GLBase render loop is running, if this is the case, stop it and start it later again.
+    // Otherwise, context sharing will fail
     if (m_glbase->isRunning()) {
         m_restartGlBaseLoop = true;
-        m_glbase->stopRenderLoop();
+        m_glbase->stopProcCallbackLoop();
     }
 #endif
 
@@ -119,7 +124,8 @@ void UIWindow::initUIWindow(const UIWindowParams& par) {
                 .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
                 .transparentFramebuffer = par.transparentFB,
                 .extWinHandle = par.extWinHandle,
-                .glbase = par.glbase
+                .glbase = par.glbase,
+                .contScale = { par.glbase->g_androidDensity, par.glbase->g_androidDensity }
         });
     } else {
         m_winHandle->makeCurrent();
@@ -161,7 +167,9 @@ void UIWindow::initToCurrentCtx() {
     });
 #endif
     m_glbase->init();  // makes no context current
-    m_winHandle->makeCurrent();
+    if (m_winHandle) {
+        m_winHandle->makeCurrent();
+    }
 }
 
 void UIWindow::initHidCallbacks() {
@@ -182,26 +190,24 @@ void UIWindow::initHidCallbacks() {
 }
 
 void UIWindow::initColors() {
-    m_colors[uiColors::background]     = glm::vec4(0.2f, 0.2f, 0.2f, 1.f);
-    m_colors[uiColors::darkBackground] = glm::vec4(0.12f, 0.12f, 0.12f, 1.f);
-    m_colors[uiColors::sepLine]        = glm::vec4(0.3f, 0.3f, 0.3f, 1.f);
-    m_colors[uiColors::font]           = glm::vec4(0.8f, 0.8f, 0.8f, 1.f);
-    m_colors[uiColors::highlight]      = glm::vec4(0.f, 0.6f, 0.87f, 1.f);
-    m_colors[uiColors::black]          = glm::vec4(0.f, 0.f, 0.f, 1.f);
-    m_colors[uiColors::blue]           = glm::vec4(0.f, 0.6f, 0.9f, 1.f);
-    m_colors[uiColors::darkBlue]       = glm::vec4(0.f, 0.36f, 0.5f, 1.f);
-    m_colors[uiColors::white]          = glm::vec4(1.f, 1.f, 1.f, 1.f);
+    m_colors[uiColors::background]     = vec4(0.2f, 0.2f, 0.2f, 1.f);
+    m_colors[uiColors::darkBackground] = vec4(0.12f, 0.12f, 0.12f, 1.f);
+    m_colors[uiColors::sepLine]        = vec4(0.3f, 0.3f, 0.3f, 1.f);
+    m_colors[uiColors::font]           = vec4(0.8f, 0.8f, 0.8f, 1.f);
+    m_colors[uiColors::highlight]      = vec4(0.f, 0.6f, 0.87f, 1.f);
+    m_colors[uiColors::black]          = vec4(0.f, 0.f, 0.f, 1.f);
+    m_colors[uiColors::blue]           = vec4(0.f, 0.6f, 0.9f, 1.f);
+    m_colors[uiColors::darkBlue]       = vec4(0.f, 0.36f, 0.5f, 1.f);
+    m_colors[uiColors::white]          = vec4(1.f, 1.f, 1.f, 1.f);
 }
 
 void UIWindow::initGLResources() {
     // create the FBO to draw the SceneGraph and it's object map
-    if (m_multisample) {
-        m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(m_realSize.x), static_cast<int>(m_realSize.y), 1,
-                                                    GL_RGBA8, GL_TEXTURE_2D_MULTISAMPLE, true, 1, 1, 2, GL_CLAMP_TO_EDGE, false});
-    } else {
-        m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(m_realSize.x), static_cast<int>(m_realSize.y), 1,
-                                                    GL_RGBA8, GL_TEXTURE_2D, true, 1, 1, 1, GL_CLAMP_TO_EDGE, false});
-    }
+    GLenum target = m_multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+    int numSamples = m_multisample ? 2 : 1;
+    m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(m_realSize.x), static_cast<int>(m_realSize.y), 1,
+                                                GL_RGBA8, target, true, 1, 1, numSamples, GL_CLAMP_TO_EDGE, false});
+
     s_shCol.setShaderHeader(m_glbase->getShaderHeader());
 
     m_quad = make_unique<Quad>(QuadInitParams{
@@ -237,15 +243,12 @@ void UIWindow::initGL() const {
 }
 
 void UIWindow::initUI(const UIWindowParams& par) {
-    if (!m_uiRoot) {
-        m_uiRoot = make_unique<UINode>();
-        m_uiRoot->setSharedRes(&m_sharedRes);
-        m_uiRoot->setName("root");  // set the name of this UINode
-    }
+    m_uiRoot.setSharedRes(&m_sharedRes);
+    m_uiRoot.setName("root");  // set the name of this UINode
 
     if (!par.initToCurrentCtx) {
         if (!m_contentRoot) {
-            m_contentRoot = m_uiRoot->addChild<UINode>();
+            m_contentRoot = m_uiRoot.addChild<UINode>();
             m_contentRoot->setName("ContentRoot");
             m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2));
             m_contentRoot->setAlignY(valign::bottom);
@@ -254,7 +257,7 @@ void UIWindow::initUI(const UIWindowParams& par) {
 #if defined(ARA_USE_GLFW)
         // create a MenuBar
         if (!m_menuBar) {
-            m_menuBar = m_uiRoot->addChild<MenuBar>();
+            m_menuBar = m_uiRoot.addChild<MenuBar>();
             m_menuBar->setPadding(m_stdPadding * 3, m_stdPadding, m_stdPadding * 3, m_stdPadding);
             m_menuBar->setAlignY(valign::top);
             m_menuBar->setSize(1.f, m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2);
@@ -281,7 +284,7 @@ void UIWindow::initUI(const UIWindowParams& par) {
         }
 
         if (!m_windowResizeAreas) {
-            m_windowResizeAreas = m_uiRoot->addChild<WindowResizeAreas>();
+            m_windowResizeAreas = m_uiRoot.addChild<WindowResizeAreas>();
             m_windowResizeAreas->setSize(1.f, 1.f);
         }
 #endif
@@ -329,18 +332,20 @@ void UIWindow::open() {
 #endif
 }
 
-void UIWindow::close(bool direct) {
+void UIWindow::close(bool direct, bool removeSharedRes) {
     if (!s_inited) {
         return;
     }
     if (!direct) {
-        m_glbase->runOnMainThread([this] { return closeEvtLoopCb(); });
+        m_glbase->runOnMainThread([this, removeSharedRes] {
+            return closeEvtLoopCb(removeSharedRes);
+        });
     } else {
-        closeEvtLoopCb();
+        closeEvtLoopCb(removeSharedRes);
     }
 }
 
-bool UIWindow::closeEvtLoopCb() {
+bool UIWindow::closeEvtLoopCb(bool removeSharedRes) {
     // if this was called from a key event callback, it will cause a crash because we are still iterating through
     // GLFWWindow member variables. check if the window was already closed;
     if (!s_inited) {
@@ -348,9 +353,9 @@ bool UIWindow::closeEvtLoopCb() {
     }
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    if (m_selfManagedCtx) {
+    if (m_selfManagedCtx && m_winHandle) {
         if (m_isModal || m_glbase->getWinMan()->getFixFocus()) {
-            if (m_winHandle && m_glbase->getWinMan()->getFixFocus() == m_winHandle) {
+            if (m_glbase->getWinMan()->getFixFocus() == m_winHandle) {
                 m_glbase->getWinMan()->setFixFocus(nullptr);
             }
 
@@ -359,25 +364,20 @@ bool UIWindow::closeEvtLoopCb() {
             }
         }
 
-        if (m_winHandle) {
+        if (m_winHandle->isRunning()) {
             // set a callback to be called when the window draw loop exits, but
             // the gl context is still valid remove all resources and cleanup
-            m_winHandle->setOnCloseCb([this] {
-                removeGLResources(true);
+            m_winHandle->setOnCloseCb([this, removeSharedRes] {
+                removeGLResources(removeSharedRes);
             });
 
             m_winHandle->stopDrawThread();  // also calls close() on GLFWWindow
+        } else {
+            m_winHandle->makeCurrent();
+            removeGLResources(removeSharedRes);
+            GLWindow::makeNoneCurrent();
         }
-    }
-#endif
 
-    // removes the window from the GLFWWindowsManager's m_windows array, i.e. destroys the Window and its context
-    // m_winHandle is invalid afterward
-#ifdef ARA_USE_GLFW
-    if (m_selfManagedCtx && m_winHandle) {
-        if (m_winHandle->getOnCloseCb()) {
-            m_winHandle->getOnCloseCb()();
-        }
         m_glbase->getWinMan()->removeWin(m_winHandle, false);
     }
 #endif
@@ -468,10 +468,10 @@ void UIWindow::drawNodeTree() {
     // clear the objId FBO
     m_objSel->reset();
 
-    // Note: at the end of m_uiRoot->drawAsRoot the drawSets VAOs are updated,
+    // Note: at the end of m_uiRoot.drawAsRoot the drawSets VAOs are updated,
     // which is a synchronization point between CPU and GPU on systems with a
     // slow bus this might kill a considerable amount of performance
-    m_uiRoot->drawAsRoot(m_objSel->getIdCtr());
+    m_uiRoot.drawAsRoot(m_objSel->getIdCtr());
 
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawMan->draw();
@@ -517,7 +517,8 @@ void UIWindow::copyToScreen() const {
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         glBlitFramebuffer(0, 0, m_sceneFbo->getWidth(), m_sceneFbo->getHeight(), 0, 0, m_sceneFbo->getWidth(),
-                          m_sceneFbo->getHeight(), GL_COLOR_BUFFER_BIT, GL_LINEAR);}
+                          m_sceneFbo->getHeight(), GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    }
 }
 
 void UIWindow::update() {
@@ -794,7 +795,7 @@ void UIWindow::onKeyDown(int key, bool shiftPressed, bool ctrlPressed, bool altP
         m_showObjMap = !m_showObjMap;
         m_sharedRes.setDrawFlag();
     } else if (key == GLSG_KEY_D && shiftPressed && !ctrlPressed) {
-        m_uiRoot->dump();
+        m_uiRoot.dump();
     }
 
     m_hidData.shiftPressed = shiftPressed;
@@ -816,9 +817,15 @@ void UIWindow::onKeyDown(int key, bool shiftPressed, bool ctrlPressed, bool altP
 }
 
 void UIWindow::onKeyUp(int key, bool shiftReleased, bool ctrlReleased, bool altReleased) {
-    if (shiftReleased) m_hidData.shiftPressed = false;
-    if (ctrlReleased) m_hidData.ctrlPressed = false;
-    if (altReleased) m_hidData.altPressed = false;
+    if (shiftReleased) {
+        m_hidData.shiftPressed = false;
+    }
+    if (ctrlReleased) {
+        m_hidData.ctrlPressed = false;
+    }
+    if (altReleased) {
+        m_hidData.altPressed = false;
+    }
 
     m_hidData.procSteps = &m_procSteps;
     m_hidData.key       = key;
@@ -1038,10 +1045,6 @@ void UIWindow::onMouseUpRight() {
 void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
     fillHidData(hidEvent::MouseMove, xpos, ypos, m_hidData.shiftPressed, m_hidData.ctrlPressed, m_hidData.altPressed);
 
-    if (!m_uiRoot) {
-        return;
-    }
-
     auto foundNode = m_opi.foundNode;
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()){
@@ -1135,9 +1138,7 @@ void UIWindow::onSetViewport(int x, int y, int width, int height) {
     s_orthoMat = ortho(0.f, s_windowViewport.z, s_windowViewport.w, 0.f);
     m_sceneFbo->resize(s_viewPort.z, s_viewPort.w);
 
-    if (m_uiRoot) {
-        m_uiRoot->setViewport(0.f, 0.f, s_windowViewport.z, s_windowViewport.w);
-    }
+    m_uiRoot.setViewport(0.f, 0.f, s_windowViewport.z, s_windowViewport.w);
 
     glViewport(0, 0, static_cast<GLsizei>(s_viewPort.z), static_cast<GLsizei>(s_viewPort.w));
 
@@ -1155,10 +1156,6 @@ void UIWindow::onSetViewport(int x, int y, int width, int height) {
 }
 
 void UIWindow::onNodeRemove(UINode *node) {
-    if (!node) {
-        return;
-    }
-
     removeGlobalMouseDownLeftCb(node);
 
     if (m_inputFocusNode && m_inputFocusNode == node) {
@@ -1183,13 +1180,8 @@ void UIWindow::onNodeRemove(UINode *node) {
 }
 
 int32_t UIWindow::getObjAtPos(glm::vec2& pos, hidEvent evt) {
-    if (!m_uiRoot) {
-        m_opi.foundNode = nullptr;
-        return 0;
-    }
-
-    m_opi.it             = m_uiRoot->getChildren().end() - 1; // take the last element of the tree
-    m_opi.list           = &m_uiRoot->getChildren();
+    m_opi.it             = m_uiRoot.getChildren().end() - 1; // take the last element of the tree
+    m_opi.list           = &m_uiRoot.getChildren();
     m_opi.pos            = pos;
     m_opi.foundNode      = nullptr;
     m_opi.treeLevel      = 0;
@@ -1239,9 +1231,7 @@ void UIWindow::setBlockHid(bool val) {
     m_blockHID = val;
 
     // block all but the menu bar
-    if (m_uiRoot) {
-        m_uiRoot->setHIDBlocked(val);
-    }
+    m_uiRoot.setHIDBlocked(val);
 
     if (m_selfManagedCtx && m_menuBarEnabled && val && m_menuBar) {
         m_menuBar->setHIDBlocked(false);
@@ -1267,7 +1257,9 @@ void UIWindow::setAppIcon(std::string &path) {
     std::vector<uint8_t> vp;
     m_glbase->getAssetManager()->loadResource(nullptr, vp, "app_icon_placeholder.png");
 
-    if (vp.empty()) return;
+    if (vp.empty()) {
+        return;
+    }
 
     FIBITMAP          *pBitmap;
     FreeImg_MemHandler mh(&vp[0], vp.size());
@@ -1466,9 +1458,7 @@ void UIWindow::stopRenderLoop() {
 
 void UIWindow::setResChanged(bool val) {
     m_resChanged = val;
-    if (m_uiRoot) {
-        m_uiRoot->reqTreeChanged(true);
-    }
+    m_uiRoot.reqTreeChanged(true);
 }
 
 void UIWindow::addGlCb(void* cbName, const std::string& fName, const std::function<bool()>& func) {
@@ -1532,7 +1522,7 @@ std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, st
 }
 #endif
 
-void UIWindow::removeGLResources(bool resetUINode) {
+void UIWindow::removeGLResources(bool removeSharedRes) {
     s_shCol.clear();  // remove gl resources
 
     if (!m_texCol.empty()){
@@ -1551,21 +1541,19 @@ void UIWindow::removeGLResources(bool resetUINode) {
         m_sceneFbo.reset();
     }
 
-    if (m_sharedRes.res && m_sharedRes.res->getGLFont().getCount()) {
+    if (removeSharedRes && m_sharedRes.res && m_sharedRes.res->getGLFont().getCount()) {
         m_sharedRes.res->clearGLFont();
     }
 
-    if (m_sharedRes.drawMan){
+    if (removeSharedRes && m_sharedRes.drawMan){
         m_sharedRes.drawMan->clear();
     }
 
-    if (resetUINode) {
-        m_uiRoot.reset();
-    } else {
-        UINode::itrNodes(m_uiRoot.get(), [](UINode *node) {
-            node->removeGLResources();
-        });
-    }
+    m_sharedRes.win = nullptr;
+
+    UINode::itrNodes(&m_uiRoot, [](UINode *node) {
+        node->removeGLResources();
+    });
 
     s_inited = false;
 }

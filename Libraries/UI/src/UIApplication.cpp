@@ -21,36 +21,73 @@ UIApplication::UIApplication() :
 #endif
 {}
 
-void UIApplication::init(const std::function<void()>& initCb) {
-    initGLBase();
-#ifdef _NO_CRT_STDIO_INLINE
-    LOG << "_NO_CRT_STDIO_INLINE defined";
+void UIApplication::initGLBase() {
+#ifdef ARA_USE_GLBASE
+    if (!m_glbase.isInited()) {
+        m_glbase.init(m_initRes);
+
+        // this is called from GLBase resource update thread, in order to not update Resource while they are used,
+        // only a flag is set and a redraw forced. Styles will be updated during UINode::draw iteration this is only
+        // needed in debug mode, when the resources can change during runtime
+        if (m_glbase.getAssetManager() && !m_glbase.getAssetManager()->usingComp()) {
+            m_glbase.setUpdtResCb([this] {
+                for (const auto& it : m_uiWindows) {
+                    it->setResChanged(true);
+                    it->update();
+                }
+            });
+        }
+    }
 #endif
+}
 
-    // create the main UI-Window
-    m_mainWindow = addWindow(UIWindowParams{
-        .size = winSize,
-        .shift = {100, 100},
-        .osDecoration = m_osWinDecoration,
-        .transparentFB = false,
-        .multisample = m_multisample,
-        .scaleToMonitor = m_scaleToMonitor
-    });
-
+void UIApplication::mainWinDefaultSetup() {
     m_mainWindow->setApplicationHandle(this);
     m_mainWindow->setEnableWindowResizeHandles(m_windowResizeHandlesEnabled);
     m_mainWindow->setEnableMenuBar(m_menuBarEnabled);
+}
+
+void UIApplication::init(std::function<void(UINode&)> initCb) {
+    m_mainWindow = addWindow(UIWindowParams{
+        .size           = m_winSize,
+        .shift          = {100, 100},
+        .osDecoration   = m_osWinDecoration,
+        .transparentFB  = false,
+        .multisample    = m_multisample,
+        .scaleToMonitor = m_scaleToMonitor,
+        .initCb         = initCb,
+    });
+
+    mainWinDefaultSetup();
+    startThreadedRendering();
+    startGLBaseProcCallbackLoop();
+    m_inited = true;
+}
+
+void UIApplication::initSingleThreaded(const std::function<void()>& initCb) {
+    m_threadedWindowRendering = false;
+
+    m_mainWindow = addWindow(UIWindowParams{
+        .size           = m_winSize,
+        .shift          = {100, 100},
+        .osDecoration   = m_osWinDecoration,
+        .transparentFB  = false,
+        .multisample    = m_multisample,
+        .scaleToMonitor = m_scaleToMonitor
+    });
+
+    mainWinDefaultSetup();
 
     // deactivate the context of the newly created window, otherwise it will be blocked by the main thread and the
     // guiThread won't be able to make it current
     GLWindow::makeNoneCurrent();
 
-    startUiThread(initCb);
-    startGLBaseRenderLoop();
+    startSingleUiThread(initCb);
+    startGLBaseProcCallbackLoop();
     m_inited = true;
 }
 
-void UIApplication::startUiThread(const std::function<void()>& initCb) {
+void UIApplication::startSingleUiThread(const std::function<void()>& initCb) {
     m_guiThread = std::thread([this, &initCb] {
         initThread(initCb);
     });
@@ -59,7 +96,6 @@ void UIApplication::startUiThread(const std::function<void()>& initCb) {
 }
 
 void UIApplication::initThread(const std::function<void()>& initCb) {
-    m_threadedWindowRendering = false;
     m_mainWindow->makeCurrent();
 
     glViewport(0, 0, static_cast<GLsizei>(m_mainWindow->getWidthReal()), static_cast<GLsizei>(m_mainWindow->getHeightReal()));
@@ -75,13 +111,12 @@ void UIApplication::initThread(const std::function<void()>& initCb) {
     }
 
     m_run = true;
-
     while (m_run) {
         if (m_initSignaled) {
             m_iterate.wait(0);
         }
 
-        glBaseIterate();
+        windowManagerIterate();
 
         if (!m_initSignaled) {
             m_initSema.notify();
@@ -91,16 +126,14 @@ void UIApplication::initThread(const std::function<void()>& initCb) {
 
     GLWindow::makeNoneCurrent();
 
-    m_loopExitSema.notify();
     m_initSignaled = false;
+    m_loopExitSema.notify();
 }
 
 void UIApplication::startRenderLoop() {
-    m_glbase.startRenderLoop();
-
+    m_glbase.startGlCallbackProcLoop();
     m_mainThreadId = this_thread::get_id();
     m_inited       = true;
-
     startThreadedRendering();
 }
 
@@ -158,7 +191,7 @@ void UIApplication::showInfo(const std::string& msg, long minStayTime, int width
                              std::function<void()> onClose, std::function<void()> onInfoOpen) {
     m_infoDiagCreatedCb = std::move(onInfoOpen);
 
-    ivec2 diagPos = ivec2(0, 0);
+    ivec2 diagPos{0, 0};
     if (!m_uiWindows.empty()) {
         diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - width) / 2 + m_uiWindows.front()->getPosition().x;
         diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - height) / 2 + m_uiWindows.front()->getPosition().y;
@@ -177,7 +210,7 @@ void UIApplication::showInfo(const std::string& msg, long minStayTime, int width
 
 void UIApplication::showCancel(std::string msg, long minStayTime, int width, int height, bool isModal,
                                std::function<bool()> cancelCb) {
-    ivec2 diagPos = ivec2(0, 0);
+    ivec2 diagPos{0, 0};
     if (!m_uiWindows.empty()) {
         diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - width) / 2 + m_uiWindows.front()->getPosition().x;
         diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - height) / 2 + m_uiWindows.front()->getPosition().y;
@@ -195,8 +228,8 @@ void UIApplication::showCancel(std::string msg, long minStayTime, int width, int
 }
 
 void UIApplication::openInfoDiag(infoDiagType tp, const std::string& msg, const std::function<bool()>& onConfirm) {
-    ivec2 diagPos  = ivec2(0, 0);
-    ivec2 diagSize = ivec2(750, 150);
+    ivec2 diagPos{0, 0};
+    ivec2 diagSize{750, 150};
 
     if (!m_uiWindows.empty()) {
         diagPos = (m_uiWindows.front()->getSize() - diagSize) / 2 + m_uiWindows.front()->getPosition();
@@ -215,16 +248,12 @@ void UIApplication::openInfoDiag(infoDiagType tp, const std::string& msg, const 
 
 void UIApplication::setActiveModalWin(UIWindow *win) {
     if (win) {
-        for (auto &it : m_uiWindows) {
-            if (it && it.get() != win) {
-                it->setBlockHid(true);
-            }
+        for (const auto &it : m_uiWindows | views::filter([win](auto& i) { return i && i.get() != win; })) {
+            it->setBlockHid(true);
         }
     } else {
-        for (auto &it : m_uiWindows) {
-            if (it) {
-                it->setBlockHid(false);
-            }
+        for (const auto &it : m_uiWindows | views::filter([](auto& i) { return i != nullptr; })) {
+            it->setBlockHid(false);
         }
     }
 }
@@ -236,7 +265,7 @@ void UIApplication::startEventLoop() {
 }
 
 std::filesystem::path UIApplication::dataPath() {
-        return m_mainWindow ? m_mainWindow->getSharedRes()->dataPath : std::filesystem::current_path();
+    return m_mainWindow ? m_mainWindow->getSharedRes()->dataPath : std::filesystem::current_path();
 }
 
 void UIApplication::closeInfoDiag() {
@@ -275,14 +304,12 @@ void UIApplication::exit() {
     // close windows and immediately remove them from the queue
     for (auto win = m_uiWindows.begin(); win != m_uiWindows.end();) {
         win->get()->close(true);
-        // call onCloseCallback
         win = m_uiWindows.erase(win);
     }
 
     stopThreadedRendering();
-    if (m_threadedWindowRendering) {
-        stopGLBaseRenderLoop();
-    }
+    stopGLBaseProcCallbackLoop();
+
     destroyGLBase();
     m_exitSema.notify();
 }

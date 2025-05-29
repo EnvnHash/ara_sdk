@@ -85,8 +85,7 @@ void WindowManager::iterate(bool only_open_windows) {
             glViewport(0, 0, static_cast<GLsizei>(it->getWidth()), static_cast<GLsizei>(it->getHeight()));
 
             // note: screen clearing is managed by draw function
-            // if there is global draw function set, take it, otherwise take the
-            // Windows' draw function
+            // if there is global draw function set, take it, otherwise take the Windows' draw function
             if (m_globalDrawFunc) {
                 m_globalDrawFunc(m_lastTime, m_medDt, m_winInd);
             } else if (it->getDrawFunc()) {

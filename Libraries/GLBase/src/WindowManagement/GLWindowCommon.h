@@ -61,6 +61,7 @@ public:
     bool  transparentFramebuffer = false;
     void *extWinHandle           = nullptr;
     void *glbase                 = nullptr;
+    glm::vec2 contScale{1.f, 1.f};
     std::string title            = "GLBase";
 };
 

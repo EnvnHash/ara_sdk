@@ -28,29 +28,30 @@ std::unique_ptr<GLWindowBase> EGLWindow::m_osWin;        // EGL display connecti
 EGLDisplay                    EGLWindow::m_display = nullptr;  // EGL display connection
 
 int EGLWindow::init(const glWinPar& gp) {
-    m_widthVirt   = gp.size.x;
-    m_heightVirt  = gp.size.y;
-    m_widthReal   = gp.size.x;
-    m_heightReal  = gp.size.y;
-    m_orientation = orientation::default_ori;
-    m_glbase      = static_cast<GLBase*>(gp.glbase);
+    m_virtSize      = gp.size;
+    m_realSize      = gp.size;
+    m_contentScale  = gp.contScale;
+    m_orientation   = orientation::default_ori;
 
 #ifndef __APPLE__
     EGLint majorVersion = 0;
     EGLint minorVersion = 0;
 
 #ifdef __ANDROID__
-    m_esContext.eglNativeWindow = static_cast<ANativeWindow*>(gp.extWinHandle);
+    if (gp.extWinHandle) {
+        m_esContext.eglNativeWindow = static_cast<ANativeWindow*>(gp.extWinHandle);
 
-    // For Android, get the width/height from the window rather than what the application requested.
-    m_esContext.width  = ANativeWindow_getWidth(m_esContext.eglNativeWindow);
-    m_esContext.height = ANativeWindow_getHeight(m_esContext.eglNativeWindow);
-
-    // calculate a scaling factor for the devices dpi setting (is set in UIApplication::android_handle_cmd)
-    m_contentScale = vec2{m_glbase->g_androidDensity, m_glbase->g_androidDensity};
+        // For Android, in case of a non off-screen context, get the width/height from the window
+        // rather than what the application requested.
+        m_esContext.width  = ANativeWindow_getWidth(m_esContext.eglNativeWindow);
+        m_esContext.height = ANativeWindow_getHeight(m_esContext.eglNativeWindow);
+    } else {
+        m_esContext.width  = m_realSize.x;
+        m_esContext.height = m_realSize.y;
+    }
 #else
-    m_esContext.width  = m_widthVirt;
-    m_esContext.height = m_heightVirt;
+    m_esContext.width  = m_virtSize.x;
+    m_esContext.height = m_virtSize.y;
 #endif
 
 #ifdef __ANDROID__
@@ -77,47 +78,45 @@ int EGLWindow::init(const glWinPar& gp) {
     EGLConfig config = nullptr;
     auto      flags  = ES_WINDOW_RGB | ES_WINDOW_DEPTH | ES_WINDOW_STENCIL;
 
-    {
-        EGLint numConfigs   = 0;
-        EGLint attribList[] = {EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8, EGL_ALPHA_SIZE,
-                               (flags & ES_WINDOW_ALPHA) ? 8 : EGL_DONT_CARE, EGL_DEPTH_SIZE,
-                               (flags & ES_WINDOW_DEPTH) ? 8 : EGL_DONT_CARE, EGL_STENCIL_SIZE,
-                               (flags & ES_WINDOW_STENCIL) ? 8 : EGL_DONT_CARE, EGL_SAMPLE_BUFFERS,
-                               (flags & ES_WINDOW_MULTISAMPLE) ? 1 : 0,
-                               // if EGL_KHR_create_context extension is supported, then we will
-                               // use EGL_OPENGL_ES3_BIT_KHR instead of EGL_OPENGL_ES2_BIT in the
-                               // attribute list
-                               EGL_RENDERABLE_TYPE, GetContextRenderableType(m_esContext.eglDisplay), EGL_NONE};
+    EGLint numConfigs   = 0;
+    EGLint attribList[] = {EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8, EGL_ALPHA_SIZE,
+                           (flags & ES_WINDOW_ALPHA) ? 8 : EGL_DONT_CARE, EGL_DEPTH_SIZE,
+                           (flags & ES_WINDOW_DEPTH) ? 8 : EGL_DONT_CARE, EGL_STENCIL_SIZE,
+                           (flags & ES_WINDOW_STENCIL) ? 8 : EGL_DONT_CARE, EGL_SAMPLE_BUFFERS,
+                           (flags & ES_WINDOW_MULTISAMPLE) ? 1 : 0,
+                           // if EGL_KHR_create_context extension is supported, then we will
+                           // use EGL_OPENGL_ES3_BIT_KHR instead of EGL_OPENGL_ES2_BIT in the
+                           // attribute list
+                           EGL_RENDERABLE_TYPE, GetContextRenderableType(m_esContext.eglDisplay), EGL_NONE};
 
-        // Choose config
-        eglChooseConfig(m_esContext.eglDisplay, attribList, nullptr, 0, &numConfigs);
-        std::unique_ptr<EGLConfig[]> supportedConfigs(new EGLConfig[numConfigs]);
-        assert(supportedConfigs);
-        eglChooseConfig(m_esContext.eglDisplay, attribList, supportedConfigs.get(), numConfigs, &numConfigs);
-        assert(numConfigs);
+    // Choose config
+    eglChooseConfig(m_esContext.eglDisplay, attribList, nullptr, 0, &numConfigs);
+    std::unique_ptr<EGLConfig[]> supportedConfigs(new EGLConfig[numConfigs]);
+    assert(supportedConfigs);
+    eglChooseConfig(m_esContext.eglDisplay, attribList, supportedConfigs.get(), numConfigs, &numConfigs);
+    assert(numConfigs);
 
-        auto i = 0;
-        for (; i < numConfigs; i++) {
-            auto&  cfg = supportedConfigs[i];
-            EGLint r, m_g, b, d;
-            if (eglGetConfigAttrib(m_esContext.eglDisplay, cfg, EGL_RED_SIZE, &r) &&
-                eglGetConfigAttrib(m_esContext.eglDisplay, cfg, EGL_GREEN_SIZE, &m_g) &&
-                eglGetConfigAttrib(m_esContext.eglDisplay, cfg, EGL_BLUE_SIZE, &b) &&
-                eglGetConfigAttrib(m_esContext.eglDisplay, cfg, EGL_DEPTH_SIZE, &d) && r == 8 && m_g == 8 && b == 8 &&
-                d == 0) {
-                config = supportedConfigs[i];
-                break;
-            }
+    auto i = 0;
+    for (; i < numConfigs; i++) {
+        auto&  cfg = supportedConfigs[i];
+        EGLint r, m_g, b, d;
+        if (eglGetConfigAttrib(m_esContext.eglDisplay, cfg, EGL_RED_SIZE, &r)
+            && eglGetConfigAttrib(m_esContext.eglDisplay, cfg, EGL_GREEN_SIZE, &m_g)
+            && eglGetConfigAttrib(m_esContext.eglDisplay, cfg, EGL_BLUE_SIZE, &b)
+            && eglGetConfigAttrib(m_esContext.eglDisplay, cfg, EGL_DEPTH_SIZE, &d)
+            && r == 8 && m_g == 8 && b == 8 && d == 0) {
+            config = supportedConfigs[i];
+            break;
         }
+    }
 
-        if (i == numConfigs) {
-            config = supportedConfigs[0];
-        }
+    if (i == numConfigs) {
+        config = supportedConfigs[0];
+    }
 
-        if (config == nullptr) {
-            LOGE << "Unable to initialize EGLConfig";
-            return -1;
-        }
+    if (config == nullptr) {
+        LOGE << "Unable to initialize EGLConfig";
+        return -1;
     }
 
 #ifdef __ANDROID__
@@ -132,7 +131,19 @@ int EGLWindow::init(const glWinPar& gp) {
 #endif
 
     // Create a surface
-    m_esContext.eglSurface = eglCreateWindowSurface(m_esContext.eglDisplay, config, m_esContext.eglNativeWindow, nullptr);
+    if (gp.extWinHandle) {
+        m_esContext.eglSurface = eglCreateWindowSurface(m_esContext.eglDisplay, config,
+                                                        m_esContext.eglNativeWindow, nullptr);
+    } else {
+        EGLint pbufferAttribs[] = {
+                EGL_WIDTH, gp.size.x, // Desired width of the pbuffer
+                EGL_HEIGHT, gp.size.y, // Desired height of the pbuffer
+                EGL_NONE // Terminating attribute
+        };
+        m_esContext.eglSurface = eglCreatePbufferSurface(m_esContext.eglDisplay, config,
+                                                         pbufferAttribs);
+    }
+
     if (m_esContext.eglSurface == EGL_NO_SURFACE) {
         LOGE << "EGLWindow Error eglCreateWindowSurface failed";
         return GL_FALSE;
@@ -156,12 +167,12 @@ int EGLWindow::init(const glWinPar& gp) {
     int w, h;
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_WIDTH, &w);
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_HEIGHT, &h);
-    m_widthVirt  = static_cast<uint32_t>(std::round(static_cast<float>(w) / m_contentScale.x));
-    m_heightVirt = static_cast<uint32_t>(std::round(static_cast<float>(h) / m_contentScale.y));
-    m_widthReal  = w;
-    m_heightReal = h;
-    LOG << " EGLWindow virtual size: " << m_widthVirt << "x" << m_heightVirt << " hw size: " << m_widthReal << "x"
-        << m_heightReal;
+    m_virtSize.x  = static_cast<int32_t>(std::round(static_cast<float>(w) / m_contentScale.x));
+    m_virtSize.y = static_cast<int32_t>(std::round(static_cast<float>(h) / m_contentScale.y));
+    m_realSize.x  = w;
+    m_realSize.y = h;
+    LOG << " EGLWindow virtual size: " << m_virtSize.x << "x" << m_virtSize.y << " hw size: " << m_realSize.x << "x"
+        << m_realSize.y;
 
     // Check openGL on the system
     auto opengl_info = {GL_VENDOR, GL_RENDERER, GL_VERSION, GL_EXTENSIONS};
@@ -177,11 +188,12 @@ int EGLWindow::init(const glWinPar& gp) {
 
 #endif  // #ifndef __APPLE__
 
-    m_startTime = system_clock::now();
-    m_inited    = true;
+    m_startTime     = system_clock::now();
+    m_inited        = true;
     m_initSema.notify();
-    m_run          = true;
-    m_initSignaled = true;
+    m_run           = true;
+    m_initSignaled  = true;
+    m_isOpen        = true;
 
     return GL_TRUE;
 }
@@ -242,7 +254,7 @@ void EGLWindow::stopDrawThread() {
 void EGLWindow::draw() {
     m_lastTime   = system_clock::now();
     auto actDifF = std::chrono::duration<double, std::milli>(m_lastTime - m_startTime).count();
-    glViewport(0, 0, m_widthReal, m_heightReal);
+    glViewport(0, 0, m_realSize.x, m_realSize.y);
 
     if (m_drawFunc(actDifF * 1000.0, 0, 0)) {
         swap();
@@ -281,8 +293,8 @@ void EGLWindow::destroy(bool val) {
 }
 
 void EGLWindow::onWindowSize(int width, int height) {
-    m_widthVirt  = width;
-    m_heightVirt = height;
+    m_virtSize.x  = width;
+    m_virtSize.y = height;
     if (m_windowSizeCb) {
         m_windowSizeCb(width, height);
     }
@@ -295,13 +307,13 @@ void EGLWindow::checkSize() {
 
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_WIDTH, &w);
     eglQuerySurface(m_esContext.eglDisplay, m_esContext.eglSurface, EGL_HEIGHT, &h);
-    m_widthVirt  = static_cast<uint32_t>(std::round(static_cast<float>(w) / m_contentScale.x));
-    m_heightVirt = static_cast<uint32_t>(std::round(static_cast<float>(h) / m_contentScale.y));
-    m_widthReal  = static_cast<uint32_t>(w);
-    m_heightReal = static_cast<uint32_t>(h);
+    m_virtSize.x = static_cast<int32_t>(std::round(static_cast<float>(w) / m_contentScale.x));
+    m_virtSize.y = static_cast<int32_t>(std::round(static_cast<float>(h) / m_contentScale.y));
+    m_realSize.x = static_cast<int32_t>(w);
+    m_realSize.y = static_cast<int32_t>(h);
 
     if (m_windowSizeCb) {
-        m_windowSizeCb(static_cast<int32_t>(m_widthVirt), static_cast<int32_t>(m_heightVirt));
+        m_windowSizeCb(static_cast<int32_t>(m_virtSize.x), static_cast<int32_t>(m_virtSize.y));
     }
 }
 

@@ -103,7 +103,7 @@ auto TextureCollector::remove(const std::filesystem::path &fileName) {
     if (!m_texMap.empty() && !fileName.empty()) {
         auto it = m_texMap.find(fn);
         if (it != m_texMap.end()) {
-            for (auto &cb : it->second.removeCbs) {
+            for (auto &cb : it->second.removeCbs | views::values) {
                 cb();
             }
             return m_texMap.erase(it);
@@ -113,9 +113,16 @@ auto TextureCollector::remove(const std::filesystem::path &fileName) {
 }
 
 void TextureCollector::addRemoveCb(const std::string &fileName, const std::function<void()>& f) {
+    const auto it = m_texMap.find(fileName);
+    if (it != m_texMap.end()) {
+        it->second.removeCbs.emplace(fileName, f);
+    }
+}
+
+void TextureCollector::removeRemoveCb(const std::string &fileName) {
     auto it = m_texMap.find(fileName);
     if (it != m_texMap.end()) {
-        it->second.removeCbs.emplace_back(f);
+        it->second.removeCbs.erase(fileName);
     }
 }
 

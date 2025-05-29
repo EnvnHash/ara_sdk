@@ -17,7 +17,7 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
 	)
 
-set(SOURCES main.cpp UITestApp.cpp)
+set(SOURCES UITestApp.cpp main.cpp)
 
 file(GLOB DEMO_SOURCES "Demo/*.h" "Demo/*.cpp")
 

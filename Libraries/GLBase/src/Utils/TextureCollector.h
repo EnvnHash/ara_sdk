@@ -27,9 +27,9 @@ class AssetManager;
 
 class TextureCollectorElement {
 public:
-    Texture                             texture;
-    std::list<std::function<void()>>    removeCbs;
-    std::filesystem::file_time_type     time{};
+    Texture                                                 texture;
+    std::unordered_map<std::string, std::function<void()>>  removeCbs;
+    std::filesystem::file_time_type                         time{};
 };
 
 class TextureCollector {
@@ -40,6 +40,7 @@ public:
     Texture *addFromMem(const std::filesystem::path &fileName, const std::filesystem::path &dataPath, int32_t mipMapLevel);
     Texture *addFromAssetManager(const std::string &fn, int mipMapLevel);
     void addRemoveCb(const std::string &fileName, const std::function<void()>& f);
+    void removeRemoveCb(const std::string &fileName);
     auto remove(const std::filesystem::path &fileName);
     Texture *checkForExistence(const std::string &fileName, const std::filesystem::path *dataPath,
                                const std::function<Texture*()>& f);

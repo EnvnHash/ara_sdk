@@ -20,7 +20,7 @@ TEST(UITest, SetXSetY)
     app.setMultisample(false);
 
     // implicitly creates a window and runs the lambda before calling the draw function for the first time
-    app.init([&](){
+    app.initSingleThreaded([&](){
         // get the root node of the UI scenegraph
         auto rootNode = app.getRootNode();
 

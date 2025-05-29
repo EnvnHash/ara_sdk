@@ -46,10 +46,10 @@ FloatingMenuDialog::FloatingMenuDialog(const UIWindowParams& params) : UIWindow(
 #endif
 }
 
-void FloatingMenuDialog::close(bool direct) {
+void FloatingMenuDialog::close(bool direct, bool removeSharedRes) {
 #ifdef ARA_USE_GLFW
     m_glbase->getWinMan()->removeGlobalMouseButtonCb(this);
-    UIWindow::close(true);
+    UIWindow::close(true, false);
     if (getApplicationHandle()) {
         getApplicationHandle()->removeWindow(this);
     }

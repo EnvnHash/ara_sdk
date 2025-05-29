@@ -22,12 +22,12 @@
 #include <utility>
 
 using namespace std;
+using namespace glm;
 
 namespace ara {
 
 int GLFWWindow::init(const glWinPar &gp) {
-    m_widthVirt  = gp.size.x;
-    m_heightVirt = gp.size.y;
+    m_virtSize  = gp.size;
     m_monWidth   = 0;
     m_monHeight  = 0;
 
@@ -77,7 +77,7 @@ int GLFWWindow::init(const glWinPar &gp) {
         initNonFullScreen(gp);
     }
 
-    m_window = glfwCreateWindow(m_widthVirt, m_heightVirt, "", gp.fullScreen ? m_mon : nullptr, static_cast<GLFWwindow *>(gp.shareCont));
+    m_window = glfwCreateWindow(m_virtSize.x, m_virtSize.y, "", gp.fullScreen ? m_mon : nullptr, static_cast<GLFWwindow *>(gp.shareCont));
     if (!m_window) {
         LOGE << " GWindow ERROR creating window";
         return false;
@@ -128,18 +128,15 @@ int GLFWWindow::init(const glWinPar &gp) {
 
 #ifndef __APPLE__
     // if there is content scaling on this display, adjust size and position
-    m_widthReal  = fbWidth;
-    m_heightReal = fbHeight;
-    m_posXreal   = gp.shift.x * m_contentScale.x;
-    m_posYreal   = gp.shift.y * m_contentScale.y;
+    m_realSize = { fbWidth, fbHeight };
+    m_posReal = { gp.shift.x * m_contentScale.x, gp.shift.y * m_contentScale.y };
 #else
-    m_widthReal  = (int)(static_cast<float>(m_widthVirt) * m_contentScale.x);
-    m_heightReal = (int)(static_cast<float>(m_heightVirt) * m_contentScale.y);
-    m_posXreal   = (int)(gp.shift.x * m_contentScale.x);
-    m_posYreal   = (int)(gp.shift.y * m_contentScale.y);
+    m_realSize.x  = (int)(static_cast<float>(m_virtSize.x) * m_contentScale.x);
+    m_realSize.y = (int)(static_cast<float>(m_virtSize.y) * m_contentScale.y);
+    m_posReal   = { (int)(gp.shift.x * m_contentScale.x), (int)(gp.shift.y * m_contentScale.y) };
 #endif
 
-    glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));
+    glfwSetWindowPos(m_window, static_cast<int>(m_posReal.x), static_cast<int>(m_posReal.y));
 
     if (gp.debug) {
         LOG << "Vendor:  " << glGetString(GL_VENDOR);
@@ -294,8 +291,8 @@ void GLFWWindow::initFullScreen(const glWinPar &gp) {
     glfwWindowHint(GLFW_SAMPLES, gp.nrSamples);
 
     monitorRefreshRate = useThisMode->refreshRate;
-    m_widthVirt        = useThisMode->width;
-    m_heightVirt       = useThisMode->height;
+    m_virtSize.x       = useThisMode->width;
+    m_virtSize.y       = useThisMode->height;
     m_monWidth         = useThisMode->width;
     m_monHeight        = useThisMode->height;
 }
@@ -355,10 +352,10 @@ void GLFWWindow::initLibrary() {
     }
 }
 
-void GLFWWindow::runLoop(std::function<bool(double, double, int)> f, bool eventBased, bool terminateGLFW,
+void GLFWWindow::runLoop(const std::function<bool(double, double, int)>& f, bool eventBased, bool terminateGLFW,
                          bool destroyWinOnExit) {
     bool unlock      = false;
-    m_drawFunc       = std::move(f);
+    m_drawFunc       = f;
     m_run            = true;
     m_eventBasedLoop = eventBased;
 
@@ -375,11 +372,11 @@ void GLFWWindow::runLoop(std::function<bool(double, double, int)> f, bool eventB
         // don't draw when iconified
         if (!glfwGetWindowAttrib(m_window, GLFW_ICONIFIED)) {
             draw();
-        }
 
-        if (m_run && m_glCb) {
-            m_glCb();
-            m_glCb = nullptr;
+            if (m_glCb) {
+                m_glCb();
+                m_glCb = nullptr;
+            }
         }
 
         if (eventBased && !m_initSignaled) {
@@ -393,9 +390,11 @@ void GLFWWindow::runLoop(std::function<bool(double, double, int)> f, bool eventB
     if (m_onCloseCb) {
         m_onCloseCb();
     }
+
     if (destroyWinOnExit) {
         glfwDestroyWindow(m_window);
     }
+
     if (terminateGLFW) {
         glfwTerminate();
     }
@@ -405,14 +404,14 @@ void GLFWWindow::runLoop(std::function<bool(double, double, int)> f, bool eventB
 
 void GLFWWindow::draw() {
     m_lastTime = glfwGetTime();
-    glViewport(0, 0, m_widthReal, m_heightReal);
+    glViewport(0, 0, m_realSize.x, m_realSize.y);
 
     if (m_drawFunc(m_lastTime, 0, 0)) {
         glfwSwapBuffers(m_window);
     }
 }
 
-void GLFWWindow::startDrawThread(std::function<bool(double, double, int)> f) {
+void GLFWWindow::startDrawThread(const std::function<bool(double, double, int)>& f) {
     if (!isRunning()) {
         m_drawThread = std::thread(&GLFWWindow::runLoop, this, f, true, false, false);
         m_drawThread.detach();
@@ -435,17 +434,17 @@ void GLFWWindow::onWindowSize(int width, int height) {
     // be sure that the window doesn't change it's size if this is not desired
 #ifdef _WIN32
     if (m_blockResizing) {
-        if (width != m_widthVirt || height != m_heightVirt) glfwSetWindowSize(m_window, m_widthVirt, m_heightVirt);
+        if (width != m_virtSize.x || height != m_virtSize.y) glfwSetWindowSize(m_window, m_virtSize.x, m_virtSize.y);
         return;
     }
 #endif
 
 #ifdef __APPLE__
-    m_widthVirt  = (int)(static_cast<float>(width) * m_contentScale.x);
-    m_heightVirt = (int)(static_cast<float>(height) * m_contentScale.y);
+    m_virtSize.x  = (int)(static_cast<float>(width) * m_contentScale.x);
+    m_virtSize.y = (int)(static_cast<float>(height) * m_contentScale.y);
 #else
-    m_widthVirt  = width;
-    m_heightVirt = height;
+    m_virtSize.x  = width;
+    m_virtSize.y = height;
 #endif
     if (m_windowSizeCb) {
         m_windowSizeCb(width, height);
@@ -486,8 +485,8 @@ void GLFWWindow::destroy(bool terminate) {
 void GLFWWindow::resize(GLsizei width, GLsizei height)  {
     bool unlock = m_drawMtx.try_lock();
     glfwSetWindowSize(m_window, width, height);
-    m_widthVirt  = width;
-    m_heightVirt = height;
+    m_virtSize.x  = width;
+    m_virtSize.y = height;
     if (unlock) {
         m_drawMtx.unlock();
     }
@@ -514,29 +513,29 @@ void GLFWWindow::error_callback(int error, const char *description) {
 
 /// input in virtual pixels
 void GLFWWindow::setSize(int inWidth, int inHeight) {
-    m_widthVirt  = inWidth;
-    m_heightVirt = inHeight;
-    m_widthReal  = static_cast<int>(static_cast<float>(inWidth) * m_contentScale.x);
-    m_heightReal = static_cast<int>(static_cast<float>(inHeight) * m_contentScale.y);
+    m_virtSize.x  = inWidth;
+    m_virtSize.y = inHeight;
+    m_realSize.x  = static_cast<int>(static_cast<float>(inWidth) * m_contentScale.x);
+    m_realSize.y = static_cast<int>(static_cast<float>(inHeight) * m_contentScale.y);
 #ifdef __APPLE__
     glfwSetWindowSize(m_window, inWidth, inHeight);
 #else
     // glfw calls immediately the corresponding callback without passing through glfwWaitEvents
-    glfwSetWindowSize(m_window, m_widthReal, m_heightReal);
+    glfwSetWindowSize(m_window, m_realSize.x, m_realSize.y);
 #endif
     iterate();
 }
 
 /// input in virtual pixels
 void GLFWWindow::setPosition(int posx, int posy) {
-    m_posXvirt = static_cast<float>(posx);
-    m_posYvirt = static_cast<float>(posy);
-    m_posXreal = static_cast<float>(posx) * m_contentScale.x;
-    m_posYreal = static_cast<float>(posy) * m_contentScale.y;
+    m_posVirt.x = static_cast<float>(posx);
+    m_posVirt.y = static_cast<float>(posy);
+    m_posReal.x = static_cast<float>(posx) * m_contentScale.x;
+    m_posReal.y = static_cast<float>(posy) * m_contentScale.y;
 #ifdef __APPLE__
     glfwSetWindowPos(m_window, m_posXvirt, m_posYvirt);
 #else
-    glfwSetWindowPos(m_window, static_cast<int>(m_posXreal), static_cast<int>(m_posYreal));
+    glfwSetWindowPos(m_window, static_cast<int>(m_posReal.x), static_cast<int>(m_posReal.y));
 #endif
     iterate();
 }
@@ -669,39 +668,31 @@ glm::vec2 GLFWWindow::getPrimaryMonitorWindowContentScale() {
 }
 
 /// returns virtual coordinates
-glm::ivec2 GLFWWindow::getSize()  {
-    glm::ivec2 size;
+ivec2 GLFWWindow::getSize()  {
+    ivec2 size;
     glfwGetWindowSize(m_window, &size.x, &size.y);
 #ifdef __APPLE__
-    m_widthVirt  = size.x;
-    m_heightVirt = size.y;
-    m_widthReal  = size.x * m_contentScale.x;
-    m_heightReal = size.y * m_contentScale.y;
+    m_virtSize = size;
+    m_realSize = size * m_contentScale;
 #else
-    m_widthReal  = size.x;
-    m_heightReal = size.y;
-    m_widthVirt  = static_cast<uint32_t>(size.x / m_contentScale.x);
-    m_heightVirt = static_cast<uint32_t>(size.y / m_contentScale.y);
+    m_realSize = size;
+    m_virtSize = static_cast<ivec2>(static_cast<vec2>(size) / m_contentScale);
 #endif
-    return glm::ivec2{static_cast<int>(m_widthVirt), static_cast<int>(m_heightVirt)};
+    return m_virtSize;
 }
 
 /// returns virtual coordinates
-glm::ivec2 GLFWWindow::getPosition() {
-    glm::ivec2 pos;
+ivec2 GLFWWindow::getPosition() {
+    ivec2 pos;
     glfwGetWindowPos(m_window, &pos.x, &pos.y);
 #ifdef __APPLE__
-    m_posXreal = static_cast<float>(pos.x * m_contentScale.x);
-    m_posYreal = static_cast<float>(pos.y * m_contentScale.y);
-    m_posXvirt = static_cast<float>(pos.x);
-    m_posYvirt = static_cast<float>(pos.y);
+    m_posReal = static_cast<vec2>(pos * m_contentScale);
+    m_posVirt = static_cast<vec2>(pos);
 #else
-    m_posXreal = static_cast<float>(pos.x);
-    m_posYreal = static_cast<float>(pos.y);
-    m_posXvirt = static_cast<float>(pos.x) / m_contentScale.x;
-    m_posYvirt = static_cast<float>(pos.y) / m_contentScale.y;
+    m_posReal = static_cast<vec2>(pos);
+    m_posVirt = static_cast<vec2>(pos) / m_contentScale;
 #endif
-    return glm::ivec2{static_cast<int>(m_posXvirt), static_cast<int>(m_posYvirt)};
+    return m_posVirt;
 }
 
 void GLFWWindow::close() {
