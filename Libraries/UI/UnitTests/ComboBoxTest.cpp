@@ -21,7 +21,7 @@ namespace ara::UiUnitTest::ComboBoxTest {
     void addCombo(UIApplication& app, bool& flag) {
         auto rootNode = app.getMainWindow()->getRootNode();
         auto combo = rootNode->addChild<ComboBox>();
-        /*
+
         combo->setMenuName("ComboBox");
         combo->setPos(0,50);
         combo->setSize(200,40);
@@ -36,7 +36,7 @@ namespace ara::UiUnitTest::ComboBoxTest {
         combo->addEntry("Entry 1", [&]{ LOG << " entry one "; flag = true; });
         combo->addEntry("Entry 2", [&]{ LOG << " entry two "; });
         combo->addEntry("Entry 3", [&]{ LOG << " entry three "; });
-        combo->addEntry("Entry 4", [&]{ LOG << " entry four "; });*/
+        combo->addEntry("Entry 4", [&]{ LOG << " entry four "; });
     }
 
     void openMenu(UIApplication& app) {
@@ -58,7 +58,7 @@ namespace ara::UiUnitTest::ComboBoxTest {
               //                        app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
         }, 600, 400);
     }
-/*
+
     TEST(UITest, ComboBoxTestClicked) {
         bool entryOne = false;
         appBody([&](UIApplication& app){
@@ -103,5 +103,5 @@ namespace ara::UiUnitTest::ComboBoxTest {
             ASSERT_TRUE(entryOne);
         }, 600, 400);
     }
- */
+ 
 }

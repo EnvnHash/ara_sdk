@@ -73,7 +73,10 @@ void UIWindow::init(const UIWindowParams& par) {
         initColors();
 
         m_minWinSize = ivec2{300, 300};
-        m_sharedRes  = UISharedRes{static_cast<void *>(this), &s_shCol, m_winHandle,m_objSel.get(), m_quad.get(), m_normQuad.get(), getOrthoMat(), m_dataFolder, &m_procSteps, this, false, &m_colors, glm::ivec2(60, 30), m_stdPadding, &m_minWinSize, m_glbase->getAssetManager(), &m_nullVao, m_drawMan, m_glbase};
+        m_sharedRes  = UISharedRes{static_cast<void *>(this), &s_shCol, m_winHandle,m_objSel.get(),
+            m_quad.get(), m_normQuad.get(), getOrthoMat(), m_dataFolder, &m_procSteps, this,
+            false, &m_colors, glm::ivec2(60, 30), m_stdPadding, &m_minWinSize,
+            m_glbase->getAssetManager(), &m_nullVao, m_drawMan, m_glbase};
 
         initUI(par);
         initGL();
@@ -332,20 +335,20 @@ void UIWindow::open() {
 #endif
 }
 
-void UIWindow::close(bool direct, bool removeSharedRes) {
+void UIWindow::close(const bool direct) {
     if (!s_inited) {
         return;
     }
     if (!direct) {
-        m_glbase->runOnMainThread([this, removeSharedRes] {
-            return closeEvtLoopCb(removeSharedRes);
+        m_glbase->runOnMainThread([this] {
+            return closeEvtLoopCb();
         });
     } else {
-        closeEvtLoopCb(removeSharedRes);
+        closeEvtLoopCb();
     }
 }
 
-bool UIWindow::closeEvtLoopCb(bool removeSharedRes) {
+bool UIWindow::closeEvtLoopCb() {
     // if this was called from a key event callback, it will cause a crash because we are still iterating through
     // GLFWWindow member variables. check if the window was already closed;
     if (!s_inited) {
@@ -367,14 +370,14 @@ bool UIWindow::closeEvtLoopCb(bool removeSharedRes) {
         if (m_winHandle->isRunning()) {
             // set a callback to be called when the window draw loop exits, but
             // the gl context is still valid remove all resources and cleanup
-            m_winHandle->setOnCloseCb([this, removeSharedRes] {
-                removeGLResources(removeSharedRes);
+            m_winHandle->setOnCloseCb([this] {
+                removeGLResources();
             });
 
             m_winHandle->stopDrawThread();  // also calls close() on GLFWWindow
         } else {
             m_winHandle->makeCurrent();
-            removeGLResources(removeSharedRes);
+            removeGLResources();
             GLWindow::makeNoneCurrent();
         }
 
@@ -1143,7 +1146,7 @@ void UIWindow::onSetViewport(int x, int y, int width, int height) {
     glViewport(0, 0, static_cast<GLsizei>(s_viewPort.z), static_cast<GLsizei>(s_viewPort.w));
 
     if (clearFonts && m_sharedRes.res && m_sharedRes.drawMan) {
-        m_sharedRes.res->clearGLFont();
+        m_sharedRes.res->clearGLFonts();
         m_sharedRes.drawMan->clearFonts();
     }
 
@@ -1432,7 +1435,7 @@ void UIWindow::setEnableWindowResizeHandles(bool val) {
     }
 }
 
-void UIWindow::setEnableMinMaxButtons(bool val) {
+void UIWindow::setEnableMinMaxButtons(const bool val) const {
     m_menuBar->setEnableMinMaxButtons(val);
 }
 
@@ -1522,7 +1525,7 @@ std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, st
 }
 #endif
 
-void UIWindow::removeGLResources(bool removeSharedRes) {
+void UIWindow::removeGLResources() {
     s_shCol.clear();  // remove gl resources
 
     if (!m_texCol.empty()){
@@ -1541,11 +1544,11 @@ void UIWindow::removeGLResources(bool removeSharedRes) {
         m_sceneFbo.reset();
     }
 
-    if (removeSharedRes && m_sharedRes.res && m_sharedRes.res->getGLFont().getCount()) {
-        m_sharedRes.res->clearGLFont();
-    }
+    // if ( m_sharedRes.res && m_sharedRes.res->getGLFont().getCount()) {
+    //     m_sharedRes.res->clearGLFont();
+    // }
 
-    if (removeSharedRes && m_sharedRes.drawMan){
+    if (m_sharedRes.drawMan){
         m_sharedRes.drawMan->clear();
     }
 

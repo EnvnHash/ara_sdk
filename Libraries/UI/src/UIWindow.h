@@ -131,7 +131,7 @@ public:
 
     void fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed);
 
-    void removeGLResources(bool removeSharedRes) override;
+    void removeGLResources() override;
 
 protected:
     std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseDownLeftCb;
@@ -166,7 +166,7 @@ public:
     void setShiftPressed(bool val) { m_hidData.shiftPressed = val; }
     void setEnableMenuBar(bool val);
     void setEnableWindowResizeHandles(bool val);
-    void setEnableMinMaxButtons(bool val);
+    void setEnableMinMaxButtons(bool val) const;
 
     auto        getProcSteps() { return &m_procSteps; }
     auto        getShaderCollector() { return &s_shCol; }
@@ -246,8 +246,8 @@ public:
 
     void         addWinCb(const std::function<void()>& f) { m_winProcCb.emplace_back(f); }
     virtual void open();
-    virtual void close(bool direct = false, bool removeSharedRes = false);
-    virtual bool closeEvtLoopCb(bool removeSharedRes);
+    virtual void close(bool direct = false);
+    virtual bool closeEvtLoopCb();
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     virtual void hide() { m_winHandle->hide(); }
     virtual void startRenderLoop();

@@ -36,6 +36,7 @@ public:
     };
 
     AssetManager(const std::string &data_root_path, const std::string &compilation_filepath, GLBase *glbasconst);
+    ~AssetManager() { clearGLFonts(); }
 
     bool     Load(const std::string &path);
     bool     Reload();
@@ -99,7 +100,7 @@ public:
     AssetImageBase *img(const std::string& path);
 
     [[nodiscard]] bool isOK() const { return m_loadState; }
-    bool usingComp() { return m_assetLoader.usingCmrc(); }
+    static bool usingComp() { return AssetLoader::usingCmrc(); }
 
     bool checkForResSourceChange();
     bool checkForChangesInFolderFiles();
@@ -114,7 +115,7 @@ public:
 
     // Fonts
     Font       *getGLFont(std::string font_type_path, int size, float pixRatio);
-    void        clearGLFont() { m_fontList.clear(); }
+    void        clearGLFonts() { m_fontList.clear(); }
     std::mutex *getMtx() { return &m_updtMtx; }
     FontList&   getGLFont() { return m_fontList; }
 
