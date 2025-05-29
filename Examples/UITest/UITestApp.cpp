@@ -15,9 +15,6 @@ using namespace ara;
 
 void UITestApp::init(std::function<void(UINode&)>) {
     UIApplication::init([](UINode& rootNode){
-
-        rootNode.dump();
-
         auto tabView = rootNode.addChild<TabView>(10, 10, 1200, 700, glm::vec4(.3f, .3f, .3f, 1.f), glm::vec4(.1f, .1f, .1f, 1.f));
         tabView->setPos(0,0);
         tabView->setSize(1.f,1.f);

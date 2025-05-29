@@ -47,8 +47,7 @@ void UIApplicationBase::windowManagerIterate() {
 }
 
 void UIApplicationBase::startThreadedRendering() {
-#if (defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)) && defined(ARA_USE_GLBASE) && !defined(__ANDROID__)
-    // start GLFWWindowManager threaded rendering -> blocking
+#if (defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)) && defined(ARA_USE_GLBASE)
     m_glbase.getWinMan()->startThreadedRendering();
 #endif
 }

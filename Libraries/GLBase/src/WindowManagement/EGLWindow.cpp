@@ -191,8 +191,10 @@ int EGLWindow::init(const glWinPar& gp) {
     m_startTime     = system_clock::now();
     m_inited        = true;
     m_initSema.notify();
+#ifndef __ANDROID__
     m_run           = true;
     m_initSignaled  = true;
+#endif
     m_isOpen        = true;
 
     return GL_TRUE;

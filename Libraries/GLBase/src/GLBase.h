@@ -21,6 +21,7 @@
 #include <Utils/Typo/TypoGlyphMap.h>
 #include <Shaders/ShaderCollector.h>
 #include <WindowManagement/WindowManager.h>
+#include <Asset/AssetManager.h>
 
 // NOTE: FBOs and VAOs can't be shared since they don't contain actual data
 

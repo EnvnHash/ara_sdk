@@ -434,8 +434,7 @@ void WindowManager::addEvtLoopCb(const std::function<bool()> &f) {
     m_evtLoopCbs.emplace_back(f);
 }
 
-// Note: all global...Cb are called on the main thread (same as startEventLoop()
-// )
+// Note: all global...Cb are called on the main thread (same as startEventLoop())
 void WindowManager::globalKeyCb(GLContext ctx, int key, int scancode, int action, int mods) {
     // on asus GL503V debian linux with spanish keyboard layout, arrow left right are different keycodes glfw doesn't
     // seem to know them...
