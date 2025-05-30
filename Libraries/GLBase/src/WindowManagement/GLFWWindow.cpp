@@ -533,7 +533,7 @@ void GLFWWindow::setPosition(int posx, int posy) {
     m_posReal.x = static_cast<float>(posx) * m_contentScale.x;
     m_posReal.y = static_cast<float>(posy) * m_contentScale.y;
 #ifdef __APPLE__
-    glfwSetWindowPos(m_window, m_posXvirt, m_posYvirt);
+    glfwSetWindowPos(m_window, m_posVirt.x, m_posVirt.y);
 #else
     glfwSetWindowPos(m_window, static_cast<int>(m_posReal.x), static_cast<int>(m_posReal.y));
 #endif
@@ -686,7 +686,7 @@ ivec2 GLFWWindow::getPosition() {
     ivec2 pos;
     glfwGetWindowPos(m_window, &pos.x, &pos.y);
 #ifdef __APPLE__
-    m_posReal = static_cast<vec2>(pos * m_contentScale);
+    m_posReal = static_cast<vec2>(pos) * m_contentScale;
     m_posVirt = static_cast<vec2>(pos);
 #else
     m_posReal = static_cast<vec2>(pos);
