@@ -983,16 +983,17 @@ void WGLWindow::updateClipRect() const {
 
 // Updates key names according to the current keyboard layout
 void WGLWindow::updateKeyNamesWin32() {
-    BYTE state[256] = {0};
-
-    memset(m_keynames, 0, sizeof(m_keynames));
+    std::array<BYTE, 256> state = {};
+    std::ranges::fill(m_keynames, std::array<char, GLSG_KEY_LAST + 1>{});
 
     for (int key = GLSG_KEY_SPACE; key <= GLSG_KEY_LAST; key++) {
         UINT  vk;
-        WCHAR chars[16];
+        std::array<WCHAR, 16> chars{};
 
         int scancode = m_scancodes[key];
-        if (scancode == -1) continue;
+        if (scancode == -1) {
+            continue;
+        }
 
         if (key >= GLSG_KEY_KP_0 && key <= GLSG_KEY_KP_ADD) {
             const UINT vks[] = {VK_NUMPAD0, VK_NUMPAD1, VK_NUMPAD2,  VK_NUMPAD3,  VK_NUMPAD4,
@@ -1000,18 +1001,20 @@ void WGLWindow::updateKeyNamesWin32() {
                                 VK_DECIMAL, VK_DIVIDE,  VK_MULTIPLY, VK_SUBTRACT, VK_ADD};
 
             vk = vks[key - GLSG_KEY_KP_0];
-        } else
+        } else {
             vk = MapVirtualKey(scancode, MAPVK_VSC_TO_VK);
-
-        int length = ToUnicode(vk, scancode, state, chars, sizeof(chars) / sizeof(WCHAR), 0);
-
-        if (length == -1) {
-            length = ToUnicode(vk, scancode, state, chars, sizeof(chars) / sizeof(WCHAR), 0);
         }
 
-        if (length < 1) continue;
+        int length = ToUnicode(vk, scancode, state.data(), chars.data(), static_cast<int>(chars.size()), 0);
+        if (length == -1) {
+            length = ToUnicode(vk, scancode, state.data(), chars.data(), static_cast<int>(chars.size()), 0);
+        }
 
-        WideCharToMultiByte(CP_UTF8, 0, chars, 1, m_keynames[key], sizeof(m_keynames[key]), nullptr, nullptr);
+        if (length < 1) {
+            continue;
+        }
+
+        WideCharToMultiByte(CP_UTF8, 0, chars.data(), 1, m_keynames[key].data(), sizeof(m_keynames[key]), nullptr, nullptr);
     }
 }
 
@@ -1361,8 +1364,9 @@ void WGLWindow::freeLibraries() const {
 }
 
 void WGLWindow::createKeyTables() {
-    memset(m_keycodes, -1, sizeof(m_keycodes));
-    memset(m_scancodes, -1, sizeof(m_scancodes));
+    std::ranges::fill(m_keycodes, -1);
+    std::ranges::fill(m_scancodes, -1);
+
 
     m_keycodes[0x00B] = GLSG_KEY_0;
     m_keycodes[0x002] = GLSG_KEY_1;

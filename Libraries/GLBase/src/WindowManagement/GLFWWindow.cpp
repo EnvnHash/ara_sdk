@@ -673,10 +673,10 @@ ivec2 GLFWWindow::getSize()  {
     glfwGetWindowSize(m_window, &size.x, &size.y);
 #ifdef __APPLE__
     m_virtSize = size;
-    m_realSize = size * m_contentScale;
+    m_realSize = vec2(size) * m_contentScale;
 #else
     m_realSize = size;
-    m_virtSize = static_cast<ivec2>(static_cast<vec2>(size) / m_contentScale);
+    m_virtSize = ivec2(vec2(size) / m_contentScale);
 #endif
     return m_virtSize;
 }
@@ -686,11 +686,11 @@ ivec2 GLFWWindow::getPosition() {
     ivec2 pos;
     glfwGetWindowPos(m_window, &pos.x, &pos.y);
 #ifdef __APPLE__
-    m_posReal = static_cast<vec2>(pos) * m_contentScale;
-    m_posVirt = static_cast<vec2>(pos);
+    m_posReal = vec2(pos) * m_contentScale;
+    m_posVirt = vec2(pos);
 #else
-    m_posReal = static_cast<vec2>(pos);
-    m_posVirt = static_cast<vec2>(pos) / m_contentScale;
+    m_posReal = vec2(pos);
+    m_posVirt = vec2(pos) / m_contentScale;
 #endif
     return m_posVirt;
 }
