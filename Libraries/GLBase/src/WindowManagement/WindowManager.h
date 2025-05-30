@@ -133,26 +133,11 @@ public:
     [[maybe_unused]] unsigned int getMonitorHeight(unsigned int winNr) const;
 
     /** make a specific context visible */
-    void open(unsigned int nr) const {
-        if (m_windows.size() > nr) {
-            m_windows[nr]->open();
-        }
-    }
-
+    void open(unsigned int nr) const;
     /** make a specific context inVisible */
-    void hide(unsigned int nr) const {
-        if (m_windows.size() > nr) {
-            m_windows[nr]->hide();
-        }
-    }
-
+    void hide(unsigned int nr) const;
     /** close all glfw windows that have been added through this WindowManager instance before */
-    [[maybe_unused]] void closeAll() {
-        m_run = false;
-        for (const auto &it : m_windows) {
-            it->close();
-        }
-    }
+    [[maybe_unused]] void closeAll();
 
     void stop() { m_run = false; }
     bool isRunning() const { return m_run; }
@@ -168,21 +153,22 @@ public:
     [[maybe_unused]] GLWindow *getFirstWin() const {
         return m_windows.empty() ? nullptr : m_windows.front().get();
     }
-    [[maybe_unused]] GLWindow *getBack() const  { return m_windows.back().get(); }
-    std::vector<std::unique_ptr<GLWindow>>        *getWindows() { return &m_windows; }
-    GLWindow                                      *getFocusedWin() const { return m_focusedWin; }
-    [[maybe_unused]] uint32_t                      getNrWindows() const { return static_cast<uint32_t>(m_windows.size()); }
-    [[maybe_unused]] unsigned int                  getNrDisplays() const { return m_dispCount; }
-    [[maybe_unused]] std::vector<DisplayBasicInfo> getDisplays() { return m_displayInfo; }
-    [[maybe_unused]] void                          setPrintFps(bool _val) { m_showFps = _val; }
-    void                                           setFixFocus(GLWindow *win) { m_fixFocusWin = win; }
-    GLWindow                                      *getFixFocus() const { return m_fixFocusWin; }
-    void                                           setAssetManager(AssetManager *res) { m_assetManager = res; }
-    AssetManager                                   *getAssetManager() { return m_assetManager; }
-    [[maybe_unused]] std::thread::id               getMainThreadId() { return m_mainThreadId; }
-    void                                           setMainThreadId(std::thread::id inId) { m_mainThreadId = inId; }
-    void                                           setBreakEvtLoop(bool val) { m_breakEvtLoop = val; }
-    [[maybe_unused]] std::mutex                   *getGlobMouseLoopMtx() { return &m_globMouseLoopMtx; }
+
+    [[maybe_unused]] auto   getBack() const  { return m_windows.back().get(); }
+    auto                    getWindows() { return &m_windows; }
+    auto                    getFocusedWin() const { return m_focusedWin; }
+    [[maybe_unused]] auto   getNrWindows() const { return static_cast<uint32_t>(m_windows.size()); }
+    [[maybe_unused]] auto   getNrDisplays() const { return m_dispCount; }
+    [[maybe_unused]] auto   getDisplays() { return m_displayInfo; }
+    [[maybe_unused]] void   setPrintFps(bool _val) { m_showFps = _val; }
+    void                    setFixFocus(GLWindow *win) { m_fixFocusWin = win; }
+    auto                    getFixFocus() const { return m_fixFocusWin; }
+    void                    setAssetManager(AssetManager *res) { m_assetManager = res; }
+    auto                    getAssetManager() { return m_assetManager; }
+    [[maybe_unused]] auto   getMainThreadId() { return m_mainThreadId; }
+    void                    setMainThreadId(std::thread::id inId) { m_mainThreadId = inId; }
+    void                    setBreakEvtLoop(bool val) { m_breakEvtLoop = val; }
+    [[maybe_unused]] auto   getGlobMouseLoopMtx() { return &m_globMouseLoopMtx; }
 
     static WindowManager *getThis(GLContext ctx) {
 #ifdef ARA_USE_GLFW
@@ -192,16 +178,8 @@ public:
 #endif
     }
 
-    void addGlobalHidCb(winCb tp, void* ptr, const winCtxHidCb& f) {
-        m_globalWinHidCpMap[tp].insert_or_assign(ptr, f);
-    }
-
-    void removeGlobalHidCb(winCb tp, void *ptr) {
-        if (const auto it = m_globalWinHidCpMap[tp].find(ptr); it != m_globalWinHidCpMap[tp].end()) {
-            m_globalWinHidCpMap[tp].erase(it);
-        }
-    }
-
+    void addGlobalHidCb(winCb tp, void* ptr, const winCtxHidCb& f);
+    void removeGlobalHidCb(winCb tp, void *ptr);
     void addEvtLoopCb(const std::function<bool()> &);
 
     static void error_callback(int error, const char *description) {

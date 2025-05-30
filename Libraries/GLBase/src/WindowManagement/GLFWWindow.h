@@ -60,7 +60,6 @@ public:
      */
     void    runLoop(const std::function<bool(double, double, int)>& f, bool eventBased = false, bool terminateGLFW = true,
                  bool destroyWinOnExit = true);
-    void    execGlCb();
     void    cleanUp(bool terminateGLFW, bool destroyWinOnExit);
     void    startDrawThread(const std::function<bool(double, double, int)>& f);
     void    stopDrawThread();

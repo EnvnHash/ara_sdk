@@ -381,13 +381,6 @@ void GLFWWindow::runLoop(const std::function<bool(double, double, int)>& f, bool
     cleanUp(terminateGLFW, destroyWinOnExit);
 }
 
-void GLFWWindow::execGlCb() {
-    if (m_glCb) {
-        m_glCb();
-        m_glCb = nullptr;
-    }
-}
-
 void GLFWWindow::cleanUp(bool terminateGLFW, bool destroyWinOnExit) {
     m_run = false;
 

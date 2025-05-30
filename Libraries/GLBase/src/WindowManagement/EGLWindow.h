@@ -46,10 +46,11 @@ public:
      * @param terminateGLFW shall GLFW be terminated when the loop exits? in
      * case of multiple window it probably shouldn't
      */
-    void runLoop(std::function<bool(double, double, int)> f, bool eventBased = false, bool destroyWinOnExit = true);
-    void startDrawThread(std::function<bool(double, double, int)> f);
+    void runLoop(const std::function<bool(double, double, int)>& f, bool eventBased = false, bool destroyWinOnExit = true);
+    void startDrawThread(const std::function<bool(double, double, int)>& f);
     void stopDrawThread();
     void draw();
+    void procEventQueue();
 
     void            open() override;
     void            close() override;
@@ -111,7 +112,8 @@ public:
     void setOnCloseCb(const std::function<void()>& f) { m_onCloseCb = f; }
 
     static void waitEvents();
-    static void pollEvents() {}
+    static void pollEvents();
+    static void addEventToQueue(const std::function<bool()>& f) { m_eventQueue.emplace_back(f); }
     static void postEmptyEvent();
     static void setErrorCallback(const std::function<void(int, const char*)>& f) {}
     static void initLibrary() {}
@@ -132,20 +134,14 @@ public:
     static EGLDisplay                    m_display;  // EGL display connection
 
 protected:
-    EGLint     m_eglWindowOpacity;   ///< 0-255 window alpha value
-    glm::ivec4 m_initialClearColor;  ///< 0-255 window alpha value
-
-    ESContext m_esContext;
-
+    glm::ivec4  m_initialClearColor{};  ///< 0-255 window alpha value
+    ESContext   m_esContext{};
     EGLSurface  m_surface         = nullptr;
     EGLConfig   m_eglConfig       = nullptr;
     EGLint      m_eglVersionMajor = -1;
     EGLint      m_eglVersionMinor = -1;
-    EGLint      m_format;
+    EGLint      m_format{};
     orientation m_orientation = orientation::default_ori;
-    EGLint      m_num_config;
-
-    void* m_userData = nullptr;
 
     std::chrono::system_clock::time_point m_lastTime;
     std::chrono::system_clock::time_point m_startTime;
@@ -153,6 +149,9 @@ protected:
     float                 m_androidDefaultDpi = 160.f;
     GLBase*               m_glbase            = nullptr;
     std::function<void()> m_onCloseCb;
+
+    static inline std::vector<std::function<bool()>> m_eventQueue;
+    static inline std::mutex m_eventQueueMtx;
 
 #ifdef __ANDROID__
     ALooper* m_looper = nullptr;

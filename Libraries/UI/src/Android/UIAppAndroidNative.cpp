@@ -51,7 +51,6 @@ void UIAppAndroidNative::startAndroidEventLoop() {
 
 int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* event) {
     auto ctx = static_cast<UIAppAndroidNative*>(app->userData);
-
     if (ctx->getWinMan()->getWindows()->size() <= 1) {
         return -1;
     }
@@ -75,15 +74,27 @@ int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* e
                     int action = AKeyEvent_getAction(event) & AMOTION_EVENT_ACTION_MASK;
                     switch (action) {
                         case AMOTION_EVENT_ACTION_DOWN:
-                            win->onMouseCursor(x, y);
-                            win->onMouseButton(GLSG_MOUSE_BUTTON_LEFT, GLSG_PRESS, 0);
+                            win->addEventToQueue([win, x, y] {
+                                win->onMouseCursor(x, y);
+                                win->onMouseButton(GLSG_MOUSE_BUTTON_LEFT, GLSG_PRESS, 0);
+                                return true;
+                            });
+                            win->iterate();
                             break;
                         case AMOTION_EVENT_ACTION_UP:
-                            win->onMouseCursor(x, y);
-                            win->onMouseButton(GLSG_MOUSE_BUTTON_LEFT, GLSG_RELEASE, 0);
+                            win->addEventToQueue([win, x, y] {
+                                win->onMouseCursor(x, y);
+                                win->onMouseButton(GLSG_MOUSE_BUTTON_LEFT, GLSG_RELEASE, 0);
+                                return true;
+                            });
+                            win->iterate();
                             break;
                         case AMOTION_EVENT_ACTION_MOVE:
-                            win->onMouseCursor(x, y);
+                            win->addEventToQueue([win, x, y] {
+                                win->onMouseCursor(x, y);
+                                return true;
+                            });
+                            win->iterate();
                             break;
                     }
                 } break;
@@ -119,11 +130,11 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
             // The window is being shown, get it ready.
             if (ctx->m_androidApp->window && !ctx->m_inited) {
                 m_hasWindow                         = true;
-                ctx->m_androidNativeWin            = ctx->m_androidApp->window;
-                float density                      = ctx->get_density(ANativeWindow_getWidth(ctx->m_androidApp->window),
+                ctx->m_androidNativeWin             = ctx->m_androidApp->window;
+                float density                       = ctx->get_density(ANativeWindow_getWidth(ctx->m_androidApp->window),
                                                                       ANativeWindow_getHeight(ctx->m_androidApp->window));
-                ctx->getGLBase()->g_androidDensity = density;
-                ctx->getGLBase()->g_androidDpi = { ctx->m_xdpi, ctx->m_ydpi };
+                ctx->getGLBase()->g_androidDensity  = density;
+                ctx->getGLBase()->g_androidDpi      = { ctx->m_xdpi, ctx->m_ydpi };
 
                 // context is not ready at this point???
                 static_cast<UIApplication*>(app->userData)->init(nullptr);
@@ -181,7 +192,7 @@ int32_t UIAppAndroidNative::get_orientation() {
     if (!m_androidApp) return -1;
 
     JNIEnv* jni = nullptr;
-    m_androidApp->activity->vm->AttachCurrentThread(&jni, NULL);
+    m_androidApp->activity->vm->AttachCurrentThread(&jni, nullptr);
     if (jni) {
         auto classNativeActivity = jni->FindClass("android/app/NativeActivity");
         auto classWindowManager  = jni->FindClass("android/view/WindowManager");

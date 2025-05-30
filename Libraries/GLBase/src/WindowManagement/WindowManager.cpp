@@ -353,9 +353,38 @@ void WindowManager::removeWin(GLWindow *win, bool terminateGLFW) {
     }
 }
 
+void WindowManager::open(unsigned int nr) const {
+    if (m_windows.size() > nr) {
+        m_windows[nr]->open();
+    }
+}
+
+void WindowManager::hide(unsigned int nr) const {
+    if (m_windows.size() > nr) {
+        m_windows[nr]->hide();
+    }
+}
+
+void WindowManager::closeAll() {
+    m_run = false;
+    for (const auto &it : m_windows) {
+        it->close();
+    }
+}
+
 void WindowManager::addEvtLoopCb(const std::function<bool()> &f) {
     std::unique_lock<std::mutex> l(m_evtLoopCbMtx);
     m_custEventQueue.emplace_back(f);
+}
+
+void WindowManager::addGlobalHidCb(winCb tp, void* ptr, const winCtxHidCb& f) {
+    m_globalWinHidCpMap[tp].insert_or_assign(ptr, f);
+}
+
+void WindowManager::removeGlobalHidCb(winCb tp, void *ptr) {
+    if (const auto it = m_globalWinHidCpMap[tp].find(ptr); it != m_globalWinHidCpMap[tp].end()) {
+        m_globalWinHidCpMap[tp].erase(it);
+    }
 }
 
 // Note: all global...Cb are called on the main thread (same as startEventLoop())

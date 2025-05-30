@@ -53,6 +53,13 @@ public:
         m_iterate.notify();
     }
 
+    void execGlCb() {
+        if (m_run && m_glCb) {
+            m_glCb();
+            m_glCb = nullptr;
+        }
+    }
+
     /** called when a key is pressed or released. Is called directly from GLFW.
      * When the window has been created through GLFWWindowManager, this is
      * called from there. */
@@ -225,9 +232,9 @@ protected:
     std::array<char, GLSG_MOUSE_BUTTON_LAST + 1>        m_mouseButtons{};
     std::array<std::array<char, GLSG_KEY_LAST + 1>, 5>  m_keynames{};
 
-    std::vector<glVidMode>                   modes;
-    std::vector<std::pair<int, int>>         monOffsets;
-    std::vector<std::pair<float, float>>     monContScale;
+    std::vector<glVidMode>                   m_modes;
+    std::vector<std::pair<int, int>>         m_monOffsets;
+    std::vector<std::pair<float, float>>     m_monContScale;
     std::function<bool(double, double, int)> m_drawFunc;
     std::function<void()>                    m_glCb;
 

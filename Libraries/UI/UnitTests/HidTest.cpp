@@ -109,9 +109,10 @@ static void checkCbCalled(std::unordered_map<hidEvent, bool>& cbCalled, bool exp
     EXPECT_EQ(cbCalled[hidEvent::MouseUpRight], expVal);
 }
 
-static void simulateAndCheckClick(UIApplication& app, HidNode* div, std::unordered_map<hidEvent, bool> cb,
+static void simulateAndCheckClick(UIApplication& app, HidNode* div, std::unordered_map<hidEvent, bool>& cb,
                                   glm::vec2 pos, bool expectedValue) {
     auto mainWin = app.getMainWindow();
+
     simulateClickLeftRight(mainWin, div, pos, expectedValue);
 
     app.getWinBase()->draw(0, 0, 0);

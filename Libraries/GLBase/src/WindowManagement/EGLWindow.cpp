@@ -200,8 +200,7 @@ int EGLWindow::init(const glWinPar& gp) {
     return GL_TRUE;
 }
 
-void EGLWindow::runLoop(std::function<bool(double, double, int)> f, bool eventBased, bool destroyWinOnExit) {
-    bool unlock      = false;
+void EGLWindow::runLoop(const std::function<bool(double, double, int)>& f, bool eventBased, bool destroyWinOnExit) {
     m_drawFunc       = f;
     m_run            = true;
     m_eventBasedLoop = eventBased;
@@ -217,12 +216,10 @@ void EGLWindow::runLoop(std::function<bool(double, double, int)> f, bool eventBa
         }
 
         m_forceRedraw = false;
+        pollEvents();
         draw();
-
-        if (m_run && m_glCb) {
-            m_glCb();
-            m_glCb = nullptr;
-        }
+        execGlCb();
+        
         if (eventBased && !m_initSignaled) {
             m_initSignaled = true;
             m_glInitedSema.notify();
@@ -237,7 +234,23 @@ void EGLWindow::runLoop(std::function<bool(double, double, int)> f, bool eventBa
     m_exitSignal.notify();
 }
 
-void EGLWindow::startDrawThread(std::function<bool(double, double, int)> f) {
+void EGLWindow::pollEvents() {
+    if (!m_eventQueue.empty()) {
+        unique_lock l(m_eventQueueMtx);
+
+        bool funcSuccess = false;
+        for (auto it = m_eventQueue.begin(); it != m_eventQueue.end();) {
+            funcSuccess = (*it)();
+            if (funcSuccess) {
+                it = m_eventQueue.erase(it);
+            } else {
+                ++it;
+            }
+        }
+    }
+}
+
+void EGLWindow::startDrawThread(const std::function<bool(double, double, int)>& f) {
     if (!isRunning()) {
         m_drawThread = std::thread(&EGLWindow::runLoop, this, f, true, false);
         m_drawThread.detach();
