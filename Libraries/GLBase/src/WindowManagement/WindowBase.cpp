@@ -56,15 +56,14 @@ void WindowBase::iterateGlCallbacks() {
 }
 
 // process hid events, received in the WinBase HID callbacks
-// this function passes down HID events to the UINodes and by this assure
-// that all UINode HID functions are called within the GL-context of their
-// parent window
+// this function passes down HID events to the UINodes and by this assure that all UINode HID functions are called within
+// the GL-context of their parent window
 void WindowBase::procHid() {
     if (s_hidEvents.empty()) {
         return;
     }
 
-    unique_lock<mutex> lock(s_procHidMtx);
+    unique_lock lock(s_procHidMtx);
 
     // key events have to be treated differently. mouse events can always be
     // overwritten with the latest event, but there may be multiple different key

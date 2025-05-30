@@ -13,25 +13,35 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+
 #pragma once
 
 #ifdef ARA_USE_GLFW
-
 #include "WindowManagement/GLFWWindow.h"
-
-namespace ara {
-using GLWindow  = GLFWWindow;
-using GLContext = GLFWwindow *;
-}  // namespace ara
 #elif ARA_USE_EGL
 #include "WindowManagement/EGLWindow.h"
+#endif
+
 namespace ara {
+
+#ifdef ARA_USE_GLFW
+using GLWindow  = GLFWWindow;
+using GLContext = GLFWwindow *;
+#elif ARA_USE_EGL
 using GLWindow  = EGLWindow;
 using GLContext = EGLContext;
-}  // namespace ara
 #else
-namespace ara {
 using GLWindow  = void;
 using GLContext = void *;
-}  // namespace ara
 #endif
+
+using winCtxHidCb = std::variant<
+    std::function<void(GLContext, unsigned int)>,
+    std::function<void(GLContext, int, int, int, int)>,
+    std::function<void(GLContext, int, int, int)>,
+    std::function<void(GLContext, int, int)>,
+    std::function<void(GLContext, int)>,
+    std::function<void(GLContext, double, double)>,
+    std::function<void(GLContext)>>;
+
+}  // namespace ara

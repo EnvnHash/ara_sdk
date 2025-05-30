@@ -51,23 +51,25 @@ void UIEdit::init() {
 }
 
 void UIEdit::initSelBgShader() {
-    std::string vert = STRINGIFY(layout(location = 0) in vec4 position;\n
-        uniform nodeData { \n
-            uniform mat4 mvp; \n
-            uniform vec4 color; \n
-        }; \n
-        void main() { \n
-            gl_Position = mvp * position; \n
+    std::string vert = STRINGIFY(
+        layout(location = 0) in vec4 position;  \n
+        uniform nodeData {                      \n
+            uniform mat4 mvp;                   \n
+            uniform vec4 color;                 \n
+        };                                      \n
+        void main() {                           \n
+            gl_Position = mvp * position;       \n
     });
     vert = ShaderCollector::getShaderHeader() + "\n// UIEdit selection background shader, vert\n" + vert;
 
-    std::string frag = STRINGIFY(layout(location = 0) out vec4 fragColor;\n
-        uniform nodeData { \n
-            uniform mat4 mvp; \n
-            uniform vec4 color; \n
-        }; \n
-        void main() { \n
-            fragColor = color; \n
+    std::string frag = STRINGIFY(
+        layout(location = 0) out vec4 fragColor;    \n
+        uniform nodeData {                          \n
+            uniform mat4 mvp;                       \n
+            uniform vec4 color;                     \n
+        };                                          \n
+        void main() {                               \n
+            fragColor = color;                      \n
     });
     frag = ShaderCollector::getShaderHeader() + "\n// UIEdit selection background shader, frag\n" + frag;
 
@@ -364,9 +366,9 @@ void UIEdit::prepareSelBgVao() {
     }
 
     int i = 0;
-    for (auto &it : lines)
+    for (auto &[start, end] : lines)
         for (auto &v : m_vtxPos) {
-            m_backPos[i] = vec4{glm::min(m_size, it.first + v * it.second) * getPixRatio(), 0.f, 1.f};
+            m_backPos[i] = vec4{glm::min(m_size, start + v * end) * getPixRatio(), 0.f, 1.f};
             ++i;
         }
 
@@ -535,7 +537,7 @@ void UIEdit::keyDown(hidData& data) {
     }
 
     if (!getSelRange(m_charSelection)) {
-        if (data.key == GLSG_KEY_BACKSPACE && (m_CaretIndex > 0 && !m_Text.empty())) {
+        if (data.key == GLSG_KEY_BACKSPACE && m_CaretIndex > 0 && !m_Text.empty()) {
             m_Text.erase(std::min<int>(std::max<int>((m_CaretIndex--) - 1, 0), static_cast<int>(m_Text.size()) - 1), 1);
             reqUpdtGlyphs(true);
         } else if (data.key == GLSG_KEY_DELETE && (m_CaretIndex < static_cast<int>(m_Text.size()))) {

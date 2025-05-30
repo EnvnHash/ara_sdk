@@ -152,7 +152,27 @@ enum class cpEditMode : int32_t {
 enum class glFun : int { Enable = 0, Disable, BlendEquation, BlendFunc, PolygonMode };
 enum class changeWinEvent : int { OnResize, SetViewport, Maximize, Minimize, SetWinPos };
 enum class stereoEye : int { left = 0, right = 1, count = 2 };
-enum class winCb : int { Key = 0, Char, MouseButton, CursorPos, WindowSize, WindowClose, WindowMaximize, WindowIconify, WindowFocus, WindowPos, Scroll, WindowRefresh, Size };
+enum class winCb : int { Key = 0, Char, MouseButton, CursorPos, WindowSize, WindowClose, WindowMaximize, WindowIconify, WindowFocus, WindowPos, Scroll, WindowRefresh, CharMods, CursorEnter, Drop, Fbsize, Scale, Size };
+
+static inline std::unordered_map<winCb, std::string> winCbNames {
+    { winCb::Key, "Key" },
+    { winCb::Char, "Char" },
+    { winCb::MouseButton, "MouseButton" },
+    { winCb::CursorPos, "CursorPos" },
+    { winCb::WindowSize, "WindowSize" },
+    { winCb::WindowClose, "WindowClose" },
+    { winCb::WindowMaximize, "WindowMaximize" },
+    { winCb::WindowIconify, "WindowIconify" },
+    { winCb::WindowFocus, "WindowFocus" },
+    { winCb::WindowPos, "WindowPos" },
+    { winCb::Scroll, "Scroll" },
+    { winCb::WindowRefresh, "WindowRefresh" },
+    { winCb::CharMods, "CharMods" },
+    { winCb::CursorEnter, "CursorEnter" },
+    { winCb::Drop, "Drop" },
+    { winCb::Fbsize, "Fbsize" },
+    { winCb::Scale, "Scale" },
+};
 
 // process steps, order matters!!!, these are for fixed functionality that is used frequently
 enum winProcStep : int { Callbacks = 0, Tesselate, L1Lines, Select, ClearSel, Draw, Update, Count };
@@ -245,7 +265,7 @@ public:
     }
     void getScreenMousePos(float devicePixelRatio) {
         mouse::getAbsMousePos(screenMousePos.x, screenMousePos.y);
-        screenMousePos = (glm::ivec2)((glm::vec2)screenMousePos / devicePixelRatio);
+        screenMousePos = static_cast<glm::ivec2>(static_cast<glm::vec2>(screenMousePos) / devicePixelRatio);
     }
 };
 
@@ -344,9 +364,9 @@ static inline std::vector<int>         m_coTypeFragSize{4, 3, 2, 4, 4, 4, 4, 4, 
 static inline std::vector<int>         m_recCoTypeFragSize{4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 16};
 static inline std::vector<std::string> m_stdMatrixNames{"m_model", "m_cam_model", "m_view", "m_proj", "m_normal"};
 static inline std::string m_stdPvmMult{"gl_Position = m_proj * m_view * m_cam_model * m_model * position; \n"};
-static const inline glm::vec2          stdQuadVertices[4]{glm::vec2{0.f}, glm::vec2{1.f, 0.f}, glm::vec2{0.f, 1.f},
+static const inline std::array          stdQuadVertices{glm::vec2{0.f}, glm::vec2{1.f, 0.f}, glm::vec2{0.f, 1.f},
                                                               glm::vec2{1.f, 1.f}};
-static const inline int                stdQuadInd[6]{0, 1, 3, 3, 2, 0};  // two triangles defining a m_quad
+static inline constexpr std::array     stdQuadInd{0, 1, 3, 3, 2, 0};  // two triangles defining a m_quad
 
 [[maybe_unused]] static const std::vector<std::string> &getStdAttribNames() { return m_stdAttribNames; }
 [[maybe_unused]] static const std::vector<std::string> &getStdRecAttribNames() { return m_stdRecAttribNames; }

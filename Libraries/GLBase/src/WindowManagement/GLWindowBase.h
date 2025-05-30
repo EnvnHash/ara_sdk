@@ -20,6 +20,15 @@
 
 namespace ara {
 
+using winHidCb = std::variant<
+    std::function<void(unsigned int)>,
+    std::function<void(int, int, int, int)>,
+    std::function<void(int, int, int)>,
+    std::function<void(int, int)>,
+    std::function<void(int)>,
+    std::function<void(double, double)>,
+    std::function<void()>>;
+
 class GLWindowBase {
 public:
     GLWindowBase() = default;

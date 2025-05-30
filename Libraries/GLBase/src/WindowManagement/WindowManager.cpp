@@ -139,7 +139,7 @@ std::thread WindowManager::getOutOfBoundsHIDLoop() {
             for (int i = 0; i < 2; i++) {
                 if (isOutOfBounds && mousePressed[i] && !m_didSend[i]) {
                     m_didSend[i] = true;
-                    callGlobalMouseButCb(i == 0 ? GLFW_MOUSE_BUTTON_LEFT : GLFW_MOUSE_BUTTON_RIGHT);
+                    callGlobalHidCb(this, winCb::MouseButton, i == 0 ? GLFW_MOUSE_BUTTON_LEFT : GLFW_MOUSE_BUTTON_RIGHT);
                 }
 
                 if (!mousePressed[i] && m_didSend[i]) {
@@ -154,8 +154,8 @@ std::thread WindowManager::getOutOfBoundsHIDLoop() {
 #endif
 
 void WindowManager::startEventLoop() {
+#ifndef __ANDROID__
     GLWindow::makeNoneCurrent();  // be sure no context is current in order to be able to create new windows
-
     m_run          = true;
     m_mainThreadId = this_thread::get_id();
 
@@ -164,30 +164,11 @@ void WindowManager::startEventLoop() {
     auto th = getOutOfBoundsHIDLoop();
 #endif
 
-    bool funcSuccess = false;
     m_startEventLoopSema.notify();
 
     while (m_run) {
         GLWindow::waitEvents();  // process HID callbacks, there is a regular interval from glfw aprox. each second
-        if (!m_evtLoopCbs.empty()) {
-            m_evtLoopCbMtx.lock();
-
-            // process the event loop callbacks
-            for (auto it = m_evtLoopCbs.begin(); it != m_evtLoopCbs.end();) {
-                funcSuccess = (*it)();
-                if (m_breakEvtLoop) {
-                    break;
-                }
-
-                if (funcSuccess) {
-                    it = m_evtLoopCbs.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-
-            m_evtLoopCbMtx.unlock();
-        }
+        procEventQueue();
     }
 
 #ifdef _WIN32
@@ -196,8 +177,9 @@ void WindowManager::startEventLoop() {
     }
 #endif
 
-    m_evtLoopCbs.clear();
+    m_custEventQueue.clear();
     m_stopEventLoopSema.notify();
+#endif
 }
 
 void WindowManager::stopEventLoop() {
@@ -206,27 +188,22 @@ void WindowManager::stopEventLoop() {
 }
 
 void WindowManager::procEventQueue() {
-    if (!m_evtLoopCbs.empty()) {
+    if (!m_custEventQueue.empty()) {
         bool funcSuccess = false;
-#ifndef __ANDROID__
         m_evtLoopCbMtx.lock();
-#endif
-        // process the event loop callbacks
-        for (auto it = m_evtLoopCbs.begin(); it != m_evtLoopCbs.end();) {
+        for (auto it = m_custEventQueue.begin(); it != m_custEventQueue.end();) {
             funcSuccess = (*it)();
             if (m_breakEvtLoop) {
                 break;
             }
 
             if (funcSuccess) {
-                it = m_evtLoopCbs.erase(it);
+                it = m_custEventQueue.erase(it);
             } else {
                 ++it;
             }
         }
-#ifndef __ANDROID__
         m_evtLoopCbMtx.unlock();
-#endif
     }
 }
 
@@ -286,55 +263,56 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
     if (gp.hidInput) {
         // bind window HID callbacks to globalCallbacks by adding them to the
         // callback maps
-        m_keyCbMap[win->getCtx()]      = [win](int p1, int p2, int p3, int p4) { win->onKey(p1, p2, p3, p4); };
-        m_charCbMap[win->getCtx()]     = [win](unsigned int p1) { win->onChar(p1); };
-        m_mouseButCbMap[win->getCtx()] = [win](int button, int action, int mods) {
+        m_winHidCbMap[winCb::Key][win->getCtx()]      = [win](int p1, int p2, int p3, int p4) { win->onKey(p1, p2, p3, p4); };
+        m_winHidCbMap[winCb::Char][win->getCtx()]     = std::function([win](unsigned int p1) { win->onChar(p1); });
+        m_winHidCbMap[winCb::MouseButton][win->getCtx()] = [win](int button, int action, int mods) {
             win->onMouseButton(button, action, mods);
         };
-        m_winCloseCbMap[win->getCtx()]     = [win] { win->onWindowClose(); };
-        m_winMaxmimizeCbMap[win->getCtx()] = [win](int maximized) { win->onWindowMaximize(maximized); };
-        m_winIconfifyCbMap[win->getCtx()]  = [win](int iconified) { win->onWindowIconify(iconified); };
-        m_winFocusCbMap[win->getCtx()]     = [win](int focused) { win->onWindowFocus(focused); };
-        m_winRefreshCbMap[win->getCtx()]   = [win] { win->onWindowRefresh(); };
-        m_scrollCbMap[win->getCtx()]       = [win](double xOffs, double yOffs) { win->onScroll(xOffs, yOffs); };
+        m_winHidCbMap[winCb::WindowClose][win->getCtx()]     = [win] { win->onWindowClose(); };
+        m_winHidCbMap[winCb::WindowMaximize][win->getCtx()] = std::function([win](int maximized) { win->onWindowMaximize(maximized); });
+        m_winHidCbMap[winCb::WindowIconify][win->getCtx()]  = std::function([win](int iconified) { win->onWindowIconify(iconified); });
+        m_winHidCbMap[winCb::WindowFocus][win->getCtx()]     = std::function([win](int focused) { win->onWindowFocus(focused); });
+        m_winHidCbMap[winCb::WindowRefresh][win->getCtx()]   = [win] { win->onWindowRefresh(); };
+        m_winHidCbMap[winCb::Scroll][win->getCtx()]       = std::function([win](double xOffs, double yOffs) { win->onScroll(xOffs, yOffs); });
 
-        m_cursorCbMap[win->getCtx()] = [win](double x, double y) {
+        m_winHidCbMap[winCb::CursorPos][win->getCtx()] = std::function([win](double x, double y) {
 #if defined(_WIN32) || defined(__linux__)
             win->onMouseCursor(x / win->getContentScale().x, y / win->getContentScale().y);
 #else
             win->onMouseCursor(x, y);
 #endif
-        };
+        });
 
-        m_winResizeCbMap[win->getCtx()] = [win](int w, int h) {
+        m_winHidCbMap[winCb::WindowSize][win->getCtx()] = std::function([win](int w, int h) {
 #if defined(_WIN32) || defined(__linux__)
             win->onWindowSize(static_cast<int>(static_cast<float>(w) / win->getContentScale().x), static_cast<int>(static_cast<float>(h) / win->getContentScale().x));
 #else
             win->onWindowSize(w, h);
 #endif
-        };
-        m_winPosCbMap[win->getCtx()] = [win](int posX, int posY) {
+        });
+
+        m_winHidCbMap[winCb::WindowPos][win->getCtx()] = std::function([win](int posX, int posY) {
 #ifdef _WIN32
             win->onWindowPos(static_cast<int>(static_cast<float>(posX) / win->getContentScale().x),
                              static_cast<int>(static_cast<float>(posY) / win->getContentScale().x));
 #else
             win->onWindowPos(posX, posY);
 #endif
-        };
+        });
 
         // always pass all interaction through the global HID callback functions
-        win->setKeyCallback(WindowManager::globalKeyCb);
-        win->setCharCallback(WindowManager::globalCharCb);
-        win->setMouseButtonCallback(WindowManager::globalMouseButCb);
-        win->setCursorPosCallback(WindowManager::globalMouseCursorCb);
-        win->setWindowSizeCallback(WindowManager::globalWindowSizeCb);
-        win->setWindowCloseCallback(WindowManager::globalWindowCloseCb);
-        win->setWindowMaximizeCallback(WindowManager::globalWindowMaximizeCb);
-        win->setWindowIconifyCallback(WindowManager::globalWindowIconifyCb);
-        win->setWindowFocusCallback(WindowManager::globalWindowFocusCb);
-        win->setWindowPosCallback(WindowManager::globalWindowPosCb);
-        win->setScrollCallback(WindowManager::globalScrollCb);
-        win->setWindowRefreshCallback(WindowManager::globalWindowRefreshCb);
+        win->setKeyCallback(globalKeyCb);
+        win->setCharCallback(globalCharCb);
+        win->setMouseButtonCallback(globalMouseButCb);
+        win->setCursorPosCallback(globalMouseCursorCb);
+        win->setWindowSizeCallback(globalWindowSizeCb);
+        win->setWindowCloseCallback(globalWindowCloseCb);
+        win->setWindowMaximizeCallback(globalWindowMaximizeCb);
+        win->setWindowIconifyCallback(globalWindowIconifyCb);
+        win->setWindowFocusCallback(globalWindowFocusCb);
+        win->setWindowPosCallback(globalWindowPosCb);
+        win->setScrollCallback(globalScrollCb);
+        win->setWindowRefreshCallback(globalWindowRefreshCb);
     }
 
 #ifdef ARA_USE_GLFW
@@ -355,66 +333,12 @@ void WindowManager::removeWin(GLWindow *win, bool terminateGLFW) {
     if (!win) {
         return;
     }
-
     // remove window callbacks
-    auto kcIt = m_keyCbMap.find(win->getCtx());
-    if (kcIt != m_keyCbMap.end()) {
-        m_keyCbMap.erase(kcIt);
-    }
-
-    auto ccIt = m_charCbMap.find(win->getCtx());
-    if (ccIt != m_charCbMap.end()) {
-        m_charCbMap.erase(ccIt);
-    }
-
-    auto mbIt = m_mouseButCbMap.find(win->getCtx());
-    if (mbIt != m_mouseButCbMap.end()) {
-        m_mouseButCbMap.erase(mbIt);
-    }
-
-    auto mcIt = m_cursorCbMap.find(win->getCtx());
-    if (mcIt != m_cursorCbMap.end()) {
-        m_cursorCbMap.erase(mcIt);
-    }
-
-    auto wrIt = m_winResizeCbMap.find(win->getCtx());
-    if (wrIt != m_winResizeCbMap.end()) {
-        m_winResizeCbMap.erase(wrIt);
-    }
-
-    auto wpIt = m_winPosCbMap.find(win->getCtx());
-    if (wpIt != m_winPosCbMap.end()) {
-        m_winPosCbMap.erase(wpIt);
-    }
-
-    auto wcIt = m_winCloseCbMap.find(win->getCtx());
-    if (wcIt != m_winCloseCbMap.end()) {
-        m_winCloseCbMap.erase(wcIt);
-    }
-
-    auto wmIt = m_winMaxmimizeCbMap.find(win->getCtx());
-    if (wmIt != m_winMaxmimizeCbMap.end()) {
-        m_winMaxmimizeCbMap.erase(wmIt);
-    }
-
-    auto scIt = m_scrollCbMap.find(win->getCtx());
-    if (scIt != m_scrollCbMap.end()) {
-        m_scrollCbMap.erase(scIt);
-    }
-
-    auto icIt = m_winIconfifyCbMap.find(win->getCtx());
-    if (icIt != m_winIconfifyCbMap.end()) {
-        m_winIconfifyCbMap.erase(icIt);
-    }
-
-    auto fmIt = m_winFocusCbMap.find(win->getCtx());
-    if (fmIt != m_winFocusCbMap.end()) {
-        m_winFocusCbMap.erase(fmIt);
-    }
-
-    auto wreIt = m_winRefreshCbMap.find(win->getCtx());
-    if (wreIt != m_winRefreshCbMap.end()) {
-        m_winRefreshCbMap.erase(wreIt);
+    for (auto& [cbTp, map] : m_winHidCbMap) {
+        auto kcIt = map.find(win->getCtx());
+        if (kcIt != map.end()) {
+            map.erase(kcIt);
+        }
     }
 
     if (m_shareCtx == win->getCtx()) {
@@ -431,7 +355,7 @@ void WindowManager::removeWin(GLWindow *win, bool terminateGLFW) {
 
 void WindowManager::addEvtLoopCb(const std::function<bool()> &f) {
     std::unique_lock<std::mutex> l(m_evtLoopCbMtx);
-    m_evtLoopCbs.emplace_back(f);
+    m_custEventQueue.emplace_back(f);
 }
 
 // Note: all global...Cb are called on the main thread (same as startEventLoop())
@@ -450,159 +374,45 @@ void WindowManager::globalKeyCb(GLContext ctx, int key, int scancode, int action
 
     // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method pass a pointer
     // to this WindowManager instance to glfw, to be used inside the HID callback functions
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
 
-    // go through the window specific keyCallback vectors and call the corresponding functions
-    auto winIt = winMan->m_keyCbMap.find(ctx);
-    if (winIt != winMan->m_keyCbMap.end()) {
-        winIt->second(key, scancode, action, mods);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalKeyCb | views::values) {
-        val(ctx, key, scancode, action, mods);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::Key, key, scancode, action, mods);
 }
 
 void WindowManager::globalCharCb(GLContext ctx, unsigned int codepoint) {
-    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
-
-    // go through the window specific keyCallback vectors and call the corresponding functions
-    auto winIt = winMan->m_charCbMap.find(ctx);
-    if (winIt != winMan->m_charCbMap.end()) {
-        winIt->second(codepoint);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalCharCb | views::values) {
-        val(ctx, codepoint);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::Char, codepoint);
 }
 
 void WindowManager::globalMouseButCb(GLContext ctx, int button, int action, int mods) {
-    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
-
-    // go through the mouseCallback vectors and call the corresponding functions of the actual window that is the
-    // rootWidget callback of this window
-    auto winIt = winMan->m_mouseButCbMap.find(ctx);
-    if (winIt != winMan->m_mouseButCbMap.end()) {
-        winIt->second(button, action, mods);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalButtonCb | views::values) {
-        val(ctx, button, action, mods);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::MouseButton, button, action, mods);
 }
 
 void WindowManager::globalMouseCursorCb(GLContext ctx, double xpos, double ypos) {
-    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method
+    callWinAndGlobalHidCb(ctx, winCb::CursorPos, xpos, ypos);
+
+    // save last mouse Pos
     auto winMan = getThis(ctx);
     if (!winMan) {
         return;
     }
-
-    // go through the cursorCallback vectors and call the corresponding functions
-    auto cbIt = winMan->m_cursorCbMap.find(ctx);
-    if (cbIt != winMan->m_cursorCbMap.end()) {
-        cbIt->second(xpos, ypos);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalMouseCursorCb | views::values) {
-        val(ctx, xpos, ypos);
-    }
-
-    // save last mouse Pos
     winMan->m_lastMouseX = xpos;
     winMan->m_lastMouseY = ypos;
 }
 
 void WindowManager::globalWindowSizeCb(GLContext ctx, int width, int height) {
-    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
+    callWinAndGlobalHidCb(ctx, winCb::WindowSize, width, height);
 
-    // go through the windowSizeCallback vectors and call the corresponding functions
-    auto cbIt = winMan->m_winResizeCbMap.find(ctx);
-    if (cbIt != winMan->m_winResizeCbMap.end()) {
-        cbIt->second(width, height);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalWinResizeCb | views::values) {
-        val(ctx, width, height);
-    }
 }
 
 void WindowManager::globalWindowCloseCb(GLContext ctx) {
-    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
-
-    // go through the keyCallback vectors and call the corresponding functions
-    auto cbIt = winMan->m_winCloseCbMap.find(ctx);
-    if (cbIt != winMan->m_winCloseCbMap.end()) {
-        cbIt->second();
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalWinCloseCb | views::values) {
-        val(ctx);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::WindowClose);
 }
 
 void WindowManager::globalWindowMaximizeCb(GLContext ctx, int flag) {
-    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
-
-    // go through the keyCallback vectors and call the corresponding functions
-    auto cbIt = winMan->m_winMaxmimizeCbMap.find(ctx);
-    if (cbIt != winMan->m_winMaxmimizeCbMap.end()) {
-        cbIt->second(flag);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalWinMaximizeCb | views::values) {
-        val(ctx, flag);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::WindowMaximize, flag);
 }
 
 void WindowManager::globalWindowIconifyCb(GLContext ctx, int flag) {
-    // get the window user pointer -> this is the GWindowManger instance, set above in "addWin" method
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
-
-    // go through the keyCallback vectors and call the corresponding functions
-    auto cbIt = winMan->m_winIconfifyCbMap.find(ctx);
-    if (cbIt != winMan->m_winIconfifyCbMap.end()) {
-        cbIt->second(flag);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalWinIconifyCb | views::values) {
-        val(ctx, flag);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::WindowIconify, flag);
 }
 
 void WindowManager::globalWindowFocusCb(GLContext ctx, int flag) {
@@ -626,76 +436,19 @@ void WindowManager::globalWindowFocusCb(GLContext ctx, int flag) {
         winMan->m_focusedWin = winIt->get();
     }
 
-    // go through the keyCallback vectors and call the corresponding functions
-    auto cbIt = winMan->m_winFocusCbMap.find(ctx);
-    if (cbIt != winMan->m_winFocusCbMap.end()) {
-        cbIt->second(flag);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalWinFocusCb | views::values) {
-        val(ctx, flag);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::WindowFocus, flag);
 }
 
 void WindowManager::globalWindowPosCb(GLContext ctx, int posx, int posy) {
-    // get the window user pointer -> this is the GWindowManger instance, set
-    // above in "addWin" method
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
-
-    // go through the keyCallback vectors and call the corresponding functions
-    auto cbIt = winMan->m_winPosCbMap.find(ctx);
-    if (cbIt != winMan->m_winPosCbMap.end()) {
-        cbIt->second(posx, posy);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalWinPosCb | views::values) {
-        val(ctx, posx, posy);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::WindowPos, posx, posy);
 }
 
 void WindowManager::globalScrollCb(GLContext ctx, double posx, double posy) {
-    // get the window user pointer -> this is the GWindowManger instance, set
-    // above in "addWin" method
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
-
-    // go through the keyCallback vectors and call the corresponding functions
-    auto cbIt = winMan->m_scrollCbMap.find(ctx);
-    if (cbIt != winMan->m_scrollCbMap.end()) {
-        cbIt->second(posx, posy);
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalScrollCb | views::values) {
-        val(ctx, posx, posy);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::Scroll, posx, posy);
 }
 
 void WindowManager::globalWindowRefreshCb(GLContext ctx) {
-    // get the window user pointer -> this is the GWindowManger instance, set
-    // above in "addWin" method
-    auto winMan = getThis(ctx);
-    if (!winMan) {
-        return;
-    }
-
-    // go through the keyCallback vectors and call the corresponding functions
-    auto cbIt = winMan->m_winRefreshCbMap.find(ctx);
-    if (cbIt != winMan->m_winRefreshCbMap.end()) {
-        cbIt->second();
-    }
-
-    // call the global function which applies for all windows
-    for (auto &val: winMan->m_globalWinRefreshCbMap | views::values) {
-        val(ctx);
-    }
+    callWinAndGlobalHidCb(ctx, winCb::WindowRefresh);
 }
 
 void WindowManager::setSwapInterval(unsigned int winNr, bool swapInterval) const {
@@ -806,11 +559,6 @@ unsigned int WindowManager::getMonitorHeight(unsigned int winNr) const {
     return 0;
 }
 
-void WindowManager::callGlobalMouseButCb(int button) const {
-    for (const auto &val: m_globalButtonCb | views::values) {
-        val(nullptr, button, 0, 0);
-    }
-}
 }  // namespace ara
 
 #endif

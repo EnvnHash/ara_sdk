@@ -180,9 +180,7 @@ public:
     void setOnCloseCb(const std::function<void()>& f) { m_onCloseCb = f; }
     void onWindowSize(int width, int height) override;
 
-    static void  pollEvents() {
-        glfwPollEvents();
-    }
+    static void  pollEvents() { glfwPollEvents(); }
     static void  waitEvents() { glfwWaitEvents(); }
     static void  postEmptyEvent() { glfwPostEmptyEvent(); }
     static void  setErrorCallback(const GLFWerrorfun& f) { glfwSetErrorCallback(f); }

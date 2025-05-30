@@ -71,6 +71,37 @@ public:
 
     void removeWin(GLWindow *win, bool terminateGLFW = true);
 
+    template <typename T, typename... Args>
+    static void resolveWinCbFunc(const T& cb, Args&&... args) {
+        std::visit([&] (auto&& func) {
+            if constexpr (std::is_invocable_v<std::decay_t<decltype(func)>, Args...>) {
+                func(args...);
+            }
+        }, cb);
+    }
+
+    template <typename... Args>
+    static void callGlobalHidCb(WindowManager* winMan, winCb tp, Args... args) {
+        if (winMan->m_globalWinHidCpMap.find(tp) != winMan->m_globalWinHidCpMap.end()) {
+            for (auto& [key, winCtxHidCbFunc] : winMan->m_globalWinHidCpMap[tp] ) {
+                resolveWinCbFunc<winCtxHidCb>(winCtxHidCbFunc, args...);
+            }
+        }
+    }
+
+    template <typename... Args>
+    static void callWinAndGlobalHidCb(GLContext& ctx, winCb tp, Args&&... args) {
+        auto winMan = getThis(ctx);
+        if (winMan) {
+            auto winIt = winMan->m_winHidCbMap[tp].find(ctx);
+            if (winIt != winMan->m_winHidCbMap[tp].end()) {
+                resolveWinCbFunc<winHidCb>(winIt->second, args...);
+            }
+
+            callGlobalHidCb(winMan, tp, args...);
+        }
+    }
+
     /** global Keyboard callback function, will be called from all contexts
      * context individual keyboard callbacks are called from here */
     static void globalKeyCb(GLContext ctx, int key, int scancode, int action, int mods);
@@ -161,61 +192,16 @@ public:
 #endif
     }
 
-    [[maybe_unused]] void addGlobalKeyCb(void *ptr, std::function<void(GLContext, int, int, int, int)> f) {
-        m_globalKeyCb[ptr] = std::move(f);
+    void addGlobalHidCb(winCb tp, void* ptr, const winCtxHidCb& f) {
+        m_globalWinHidCpMap[tp].insert_or_assign(ptr, f);
     }
 
-    [[maybe_unused]] void addGlobalCharCb(void *ptr, std::function<void(GLContext, unsigned int)> f) {
-        m_globalCharCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addGlobalMouseButtonCb(void *ptr, std::function<void(GLContext, int, int, int)> f) {
-        m_globalButtonCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void removeGlobalMouseButtonCb(void *ptr) {
-        if (const auto it = m_globalButtonCb.find(ptr); it != m_globalButtonCb.end()) {
-            m_globalButtonCb.erase(it);
+    void removeGlobalHidCb(winCb tp, void *ptr) {
+        if (const auto it = m_globalWinHidCpMap[tp].find(ptr); it != m_globalWinHidCpMap[tp].end()) {
+            m_globalWinHidCpMap[tp].erase(it);
         }
     }
 
-    [[maybe_unused]] void addGlobalMouseCursorCb(void *ptr, std::function<void(GLContext, double, double)> f) {
-        m_globalMouseCursorCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinResizeCb(void *ptr, std::function<void(GLContext, int, int)> f) {
-        m_globalWinResizeCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinCloseCb(void *ptr, std::function<void(GLContext)> f) {
-        m_globalWinCloseCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinMaximizeCb(void *ptr, std::function<void(GLContext, int)> f) {
-        m_globalWinMaximizeCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinPosCb(void *ptr, std::function<void(GLContext, int, int)> f) {
-        m_globalWinPosCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinScrollCb(void *ptr, std::function<void(GLContext, double, double)> f) {
-        m_globalScrollCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinIconifyCb(void *ptr, std::function<void(GLContext, int)> f) {
-        m_globalWinIconifyCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinFocusCb(void *ptr, std::function<void(GLContext, int)> f) {
-        m_globalWinFocusCb[ptr] = std::move(f);
-    }
-
-    [[maybe_unused]] void addWinRefreshCb(void *ptr, std::function<void(GLContext)> f) {
-        m_globalWinRefreshCbMap[ptr] = std::move(f);
-    }
-
-    void callGlobalMouseButCb(int button) const;
     void addEvtLoopCb(const std::function<bool()> &);
 
     static void error_callback(int error, const char *description) {
@@ -224,9 +210,8 @@ public:
     }
 
     // ----------------------------------------------------------
-    // Set of interactive functions for independent sequence calls (marco.m_g)
-    // These are useful if we want to call certain functions before and after
-    // the render cycle.
+    // Set of interactive functions for independent sequence calls (marco.g)
+    // These are useful if we want to call certain functions before and after the render cycle.
     // ------------------------------
 
     void IterateAll(bool                                                            only_open_windows,
@@ -252,37 +237,12 @@ private:
     std::vector<std::unique_ptr<GLWindow>> m_windows;
     std::vector<DisplayBasicInfo>          m_displayInfo;
     std::vector<std::pair<int, int>>       m_dispOffsets;
-    std::vector<std::function<bool()>>     m_evtLoopCbs;
+    std::vector<std::function<bool()>>     m_custEventQueue;
 
     std::function<void(double, double, unsigned int)> m_globalDrawFunc;
 
-    // window specific HID callbacks
-    std::unordered_map<GLContext, std::function<void(int, int, int, int)>> m_keyCbMap;
-    std::unordered_map<GLContext, std::function<void(unsigned int)>>       m_charCbMap;
-    std::unordered_map<GLContext, std::function<void(int, int, int)>>      m_mouseButCbMap;
-    std::unordered_map<GLContext, std::function<void(double, double)>>     m_cursorCbMap;
-    std::unordered_map<GLContext, std::function<void(int, int)>>           m_winResizeCbMap;
-    std::unordered_map<GLContext, std::function<void()>>                   m_winCloseCbMap;
-    std::unordered_map<GLContext, std::function<void(int, int)>>           m_winPosCbMap;
-    std::unordered_map<GLContext, std::function<void(double, double)>>     m_scrollCbMap;
-    std::unordered_map<GLContext, std::function<void(int)>>                m_winMaxmimizeCbMap;
-    std::unordered_map<GLContext, std::function<void(int)>>                m_winIconfifyCbMap;
-    std::unordered_map<GLContext, std::function<void(int)>>                m_winFocusCbMap;
-    std::unordered_map<GLContext, std::function<void()>>                   m_winRefreshCbMap;
-
-    // global HID callbacks
-    std::unordered_map<void *, std::function<void(GLContext, int, int, int, int)>> m_globalKeyCb;
-    std::unordered_map<void *, std::function<void(GLContext, unsigned int)>>       m_globalCharCb;
-    std::unordered_map<void *, std::function<void(GLContext, int, int, int)>>      m_globalButtonCb;
-    std::unordered_map<void *, std::function<void(GLContext, double, double)>>     m_globalMouseCursorCb;
-    std::unordered_map<void *, std::function<void(GLContext, int, int)>>           m_globalWinResizeCb;
-    std::unordered_map<void *, std::function<void(GLContext, int)>>                m_globalWinMaximizeCb;
-    std::unordered_map<void *, std::function<void(GLContext, int)>>                m_globalWinIconifyCb;
-    std::unordered_map<void *, std::function<void(GLContext, int)>>                m_globalWinFocusCb;
-    std::unordered_map<void *, std::function<void(GLContext)>>                     m_globalWinCloseCb;
-    std::unordered_map<void *, std::function<void(GLContext, int, int)>>           m_globalWinPosCb;
-    std::unordered_map<void *, std::function<void(GLContext, double, double)>>     m_globalScrollCb;
-    std::unordered_map<void *, std::function<void(GLContext)>>                     m_globalWinRefreshCbMap;
+    std::unordered_map<winCb, std::unordered_map<GLContext, winHidCb>>  m_winHidCbMap;
+    std::unordered_map<winCb, std::unordered_map<void*, winCtxHidCb>>   m_globalWinHidCpMap;
 
     std::list<Conditional *> m_semaqueue;
 

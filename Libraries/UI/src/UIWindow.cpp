@@ -578,7 +578,10 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
         { GLSG_KEY_LEFT, 18 },
         { GLSG_KEY_RIGHT, 20 },
     };
-    outKey = specialKeys[key];
+
+    if (specialKeys.find(key) != specialKeys.end()) {
+        outKey = specialKeys[key];
+    }
 
     if (action == GLSG_PRESS || action == GLSG_REPEAT) {
         WindowBase::osKeyDown(outKey, (mods & GLSG_MOD_SHIFT) || isShift, (mods & GLSG_MOD_CONTROL) || isCtrl,

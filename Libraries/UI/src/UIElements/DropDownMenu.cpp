@@ -26,7 +26,7 @@ DropDownMenu::DropDownMenu(const std::string& styleClass) : Div(styleClass) {
 
 DropDownMenu::~DropDownMenu() {
 #ifdef ARA_USE_GLFW
-    getWinMan()->removeGlobalMouseButtonCb(this);
+    getWinMan()->removeGlobalHidCb(winCb::MouseButton, this);
     if (auto uiWin = getWindow()) {
         uiWin->removeGlobalMouseDownLeftCb(this);
         uiWin->removeGlobalMouseDownRightCb(this);
@@ -61,13 +61,13 @@ void DropDownMenu::init() {
     // add a callback to listen for clicks also outside the window bounds
     // be sure the callback exits only once
 #ifdef ARA_USE_GLFW
-    getWinMan()->removeGlobalMouseButtonCb(this);
-    getWinMan()->addGlobalMouseButtonCb(this, [this](GLFWwindow* win, int button, int action, int mods) {
+    getWinMan()->removeGlobalHidCb(winCb::MouseButton, this);
+    getWinMan()->addGlobalHidCb(winCb::MouseButton, this, [this](GLFWwindow* win, int button, int action, int mods) {
         if (!m_open || m_closing) {
             return;
         }
 
-        auto uiWin = getWindow();
+        const auto uiWin = getWindow();
         if (!uiWin) {
             return;
         }
@@ -144,11 +144,11 @@ void DropDownMenu::mouseDown(hidData& data) {
 
 void DropDownMenu::globalMouseDown(hidData& data) {
     // close the menu if it is open and the user clicked somewhere outside the menu
-    bool isChild          = static_cast<uint32_t>(data.objId) >= getId() &&
-                            static_cast<uint32_t>(data.objId) <= getMaxChildId();
-    bool isEntryListChild = m_entryList
-                            && static_cast<uint32_t>(data.objId) >= m_entryList->getId()
-                            && static_cast<uint32_t>(data.objId) <= m_entryList->getMaxChildId();
+    const bool isChild          = static_cast<uint32_t>(data.objId) >= getId() &&
+                                  static_cast<uint32_t>(data.objId) <= getMaxChildId();
+    const bool isEntryListChild = m_entryList
+                                  && static_cast<uint32_t>(data.objId) >= m_entryList->getId()
+                                  && static_cast<uint32_t>(data.objId) <= m_entryList->getMaxChildId();
 
     if (isInited() && m_open && !isChild && !isEntryListChild) {
         close();

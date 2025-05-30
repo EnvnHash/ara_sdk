@@ -32,60 +32,60 @@ public:
 
     // direct HID input (non-sync)
     virtual void osKeyDown(int keyNum, bool shiftPressed, bool ctrlPressed, bool altPressed) {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_keyEvents[hidEvent::KeyDown].emplace_back([this, keyNum, shiftPressed, ctrlPressed, altPressed]() {
             onKeyDown(keyNum, shiftPressed, ctrlPressed, altPressed);
         });
     }
 
     virtual void osKeyUp(int keyNum, bool shiftPressed, bool ctrlPressed, bool altPressed) {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_keyEvents[hidEvent::KeyUp].emplace_back([this, keyNum, shiftPressed, ctrlPressed, altPressed]() {
             onKeyUp(keyNum, shiftPressed, ctrlPressed, altPressed);
         });
     }
 
     virtual void osChar(unsigned int codepoint) {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_hidEvents[hidEvent::onChar] = [this, codepoint]() { onChar(codepoint); };
     }
 
     virtual void osMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_hidEvents[hidEvent::MouseDownLeft] = [this, xPos, yPos, shiftPressed, ctrlPressed, altPressed]() {
             onMouseDownLeft(xPos, yPos, shiftPressed, ctrlPressed, altPressed);
         };
     }
 
     virtual void osMouseDownLeftNoDrag(float xPos, float yPos) {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_hidEvents[hidEvent::MouseDownLeftNoDrag] = [this, xPos, yPos]() { onMouseDownLeftNoDrag(xPos, yPos); };
     }
 
     virtual void osMouseUpLeft() {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_hidEvents[hidEvent::MouseUpLeft] = [this]() { onMouseUpLeft(); };
     }
 
     virtual void osMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_hidEvents[hidEvent::MouseDownRight] = [this, xPos, yPos, shiftPressed, ctrlPressed, altPressed]() {
             onMouseDownRight(xPos, yPos, shiftPressed, ctrlPressed, altPressed);
         };
     }
 
     virtual void osMouseUpRight() {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_hidEvents[hidEvent::MouseUpRight] = [this]() { onMouseUpRight(); };
     }
 
     virtual void osMouseMove(float xPos, float yPos, ushort mode) {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_hidEvents[hidEvent::MouseMove] = [this, xPos, yPos, mode]() { onMouseMove(xPos, yPos, mode); };
     }
 
     virtual void osWheel(float deg) {
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_hidEvents[hidEvent::MouseWheel] = [this, deg]() { onWheel(deg); };
     }
 
@@ -93,27 +93,27 @@ public:
         if (!width || !height) {
             return;
         }
-        std::unique_lock<std::mutex> lock(s_procHidMtx);
+        std::unique_lock lock(s_procHidMtx);
         s_hidEvents[hidEvent::SetViewport] = [this, x, y, width, height]() { onSetViewport(x, y, width, height); };
     }
 
     virtual void osMinimize(std::function<void()> f) {
-        std::unique_lock<std::mutex> lock(s_changeWinMtx);
+        std::unique_lock lock(s_changeWinMtx);
         s_changeWinEvents[changeWinEvent::Minimize] = std::move(f);
     }
 
     virtual void osMaximize(std::function<void()> f) {
-        std::unique_lock<std::mutex> lock(s_changeWinMtx);
+        std::unique_lock lock(s_changeWinMtx);
         s_changeWinEvents[changeWinEvent::Maximize] = std::move(f);
     }
 
     virtual void osSetWinPos(std::function<void()> f) {
-        std::unique_lock<std::mutex> lock(s_changeWinMtx);
+        std::unique_lock lock(s_changeWinMtx);
         s_changeWinEvents[changeWinEvent::SetWinPos] = std::move(f);
     }
 
     virtual void osResize(std::function<void()> f) {
-        std::unique_lock<std::mutex> lock(s_changeWinMtx);
+        std::unique_lock lock(s_changeWinMtx);
         s_changeWinEvents[changeWinEvent::OnResize] = std::move(f);
     }
 
