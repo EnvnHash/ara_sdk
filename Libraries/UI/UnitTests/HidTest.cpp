@@ -109,6 +109,17 @@ static void checkCbCalled(std::unordered_map<hidEvent, bool>& cbCalled, bool exp
     EXPECT_EQ(cbCalled[hidEvent::MouseUpRight], expVal);
 }
 
+static void simulateAndCheckClick(UIApplication& app, HidNode* div, std::unordered_map<hidEvent, bool> cb,
+                                  glm::vec2 pos, bool expectedValue) {
+    auto mainWin = app.getMainWindow();
+    simulateClickLeftRight(mainWin, div, pos, expectedValue);
+
+    app.getWinBase()->draw(0, 0, 0);
+    mainWin->swap();
+
+    checkCbCalled(cb, expectedValue);
+}
+
 TEST(UITest, HidDefaultTest) {
     HidNode* div = nullptr;
     appBody([&](UIApplication& app){
@@ -117,8 +128,7 @@ TEST(UITest, HidDefaultTest) {
         compareFrameBufferToImage(filesystem::current_path() / "hid_node_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight());
 
-        auto mainWin = app.getMainWindow();
-        mainWin->onMouseDownLeft(150, 100, false, false, false);
+        app.getMainWindow()->onMouseDownLeft(150, 100, false, false, false);
         EXPECT_TRUE(div->m_clicked[hidEvent::MouseDownLeft]);         // div should not be clickable
     }, 600, 400);
 }
@@ -128,8 +138,7 @@ TEST(UITest, HidDivClickTest) {
     appBody([&](UIApplication& app){
         div = addDiv(app);
     }, [&](UIApplication& app){
-        auto mainWin = app.getMainWindow();
-        simulateClickLeftRight(mainWin, div, {150, 100}, true);
+        simulateClickLeftRight(app.getMainWindow(), div, {150, 100}, true);
     }, 600, 400);
 }
 
@@ -138,25 +147,19 @@ TEST(UITest, HidDivClickNegTest) {
     appBody([&](UIApplication& app){
         div = addDiv(app);
     }, [&](UIApplication& app){
-        auto mainWin = app.getMainWindow();
-        simulateClickLeftRight(mainWin, div, {260, 100}, false);
+        simulateClickLeftRight(app.getMainWindow(), div, {260, 100}, false);
     }, 600, 400);
 }
 
 TEST(UITest, HidDivClickCallbackTest) {
     HidNode* div = nullptr;
     auto cbCalled = initCallbacks();
+
     appBody([&](UIApplication& app){
         div = addDiv(app);
         setHidCallbacks(div, cbCalled);
     }, [&](UIApplication& app){
-        auto mainWin = app.getMainWindow();
-        simulateClickLeftRight(mainWin, div, {150, 100}, true);
-
-        app.getWinBase()->draw(0, 0, 0);
-        mainWin->swap();
-
-        checkCbCalled(cbCalled, true);
+        simulateAndCheckClick(app, div, cbCalled, {150, 100}, true);
     }, 600, 400);
 }
 
@@ -171,13 +174,7 @@ TEST(UITest, HidDivClickCallbackNegTest) {
         compareFrameBufferToImage(filesystem::current_path() / "hid_node_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight());
 
-        auto mainWin = app.getMainWindow();
-        simulateClickLeftRight(mainWin, div, {260, 100}, false);
-
-        app.getWinBase()->draw(0, 0, 0);
-        mainWin->swap();
-
-        checkCbCalled(cbCalled, false);
+        simulateAndCheckClick(app, div, cbCalled, {260, 100}, false);
     }, 600, 400);
 }
 
