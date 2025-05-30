@@ -216,39 +216,6 @@ void X11Window::pollEvents() {
         }
 
         if (event.type == GenericEvent) {
-            //            if (m_xi.available)
-            //            {
-            //                X11Window* window = m_disabledCursorWindow;
-            //
-            //                if (window &&
-            //                    m_rawMouseMotion &&
-            //                    event.xcookie.extension == m_xi.majorOpcode &&
-            //                    XGetEventData(m_display, &event.xcookie) &&
-            //                    event.xcookie.evtype == XI_RawMotion)
-            //                {
-            //                    XIRawEvent* re =
-            //                    (XIRawEvent*)event.xcookie.data; if
-            //                    (re->valuators.mask_len)
-            //                    {
-            //                        const double* values = re->raw_values;
-            //                        double xpos = m_virtualCursorPosX;
-            //                        double ypos = m_virtualCursorPosY;
-            //
-            //                        if (XIMaskIsSet(re->valuators.mask, 0))
-            //                        {
-            //                            xpos += *values;
-            //                            values++;
-            //                        }
-            //
-            //                        if (XIMaskIsSet(re->valuators.mask, 1))
-            //                            ypos += *values;
-            //
-            //                        onMouseCursor(xpos, ypos);
-            //                    }
-            //                }
-            //
-            //                XFreeEventData(m_display, &event.xcookie);
-            //            }
             return;
         }
 
@@ -272,16 +239,6 @@ void X11Window::pollEvents() {
                 const int plain = !(mods & (GLSG_MOD_CONTROL | GLSG_MOD_ALT));
 
                 if (m_ic) {
-                    // HACK: Do not report the key press events duplicated by
-                    // XIM
-                    //       Duplicate key releases are filtered out implicitly
-                    //       by the GLFW key repeat logic in _glfwInputKey A
-                    //       timestamp per key is used to handle simultaneous
-                    //       keys
-                    // NOTE: Always allow the first event for each key through
-                    //       (the server never sends a timestamp of zero)
-                    // NOTE: Timestamp difference is compared to handle
-                    // wrap-around
                     Time diff = event.xkey.time - m_keyPressTimes[keycode];
                     if (diff == event.xkey.time || (diff > 0 && diff < (1 << 31))) {
                         if (keycode) onKey(key, keycode, GLSG_PRESS, mods);
@@ -333,12 +290,6 @@ void X11Window::pollEvents() {
                 } else {
                     KeySym keysym;
                     XLookupString(&event.xkey, nullptr, 0, &keysym, nullptr);
-
-                    //_glfwInputKey(window, key, keycode, GLSG_PRESS, mods);
-
-                    const long character = keySym2Unicode(keysym);
-                    // if (character != -1)
-                    //   _glfwInputChar(window, character, mods, plain);
                 }
 
                 return;
@@ -349,25 +300,12 @@ void X11Window::pollEvents() {
                 const int mods = translateState(event.xkey.state);
 
                 if (!m_xkb.detectable) {
-                    // HACK: Key repeat events will arrive as
-                    // KeyRelease/KeyPress
-                    //       pairs with similar or identical time stamps
-                    //       The key repeat logic in _glfwInputKey expects only
-                    //       key presses to repeat, so detect and discard
-                    //       release events
                     if (XEventsQueued(m_display, QueuedAfterReading)) {
                         XEvent next;
                         XPeekEvent(m_display, &next);
 
                         if (next.type == KeyPress && next.xkey.window == event.xkey.window &&
                             next.xkey.keycode == keycode) {
-                            // HACK: The time of repeat events sometimes doesn't
-                            //       match that of the press event, so add an
-                            //       epsilon
-                            //       Toshiyuki Takahashi can press a button
-                            //       16 times per second so it's fairly safe to
-                            //       assume that no human is pressing the key 50
-                            //       times per second (value is ms)
                             if ((next.xkey.time - event.xkey.time) < 20) {
                                 // This is very likely a server-generated key
                                 // repeat event, so ignore it
@@ -396,11 +334,6 @@ void X11Window::pollEvents() {
                     onScroll(0.0, 1.0);
                 else if (event.xbutton.button == Button5)
                     onScroll(0.0, -1.0);
-                //                else if (event.xbutton.button == Button6)
-                //                    onScroll(1.0, 0.0);
-                //                else if (event.xbutton.button == Button7)
-                //                    onScroll(-1.0, 0.0);
-
                 else {
                     // Additional buttons after 7 are treated as regular buttons
                     // We subtract 4 to fill the gap left by scroll input above
@@ -420,16 +353,6 @@ void X11Window::pollEvents() {
                 } else if (event.xbutton.button == Button3) {
                     onMouseButton(GLSG_MOUSE_BUTTON_RIGHT, GLSG_RELEASE, mods);
                 }
-                //                else if (event.xbutton.button > Button7)
-                //                {
-                //                    // Additional buttons after 7 are treated
-                //                    as regular buttons
-                //                    // We subtract 4 to fill the gap left by
-                //                    scroll input above
-                //                    onMouseButton(event.xbutton.button -
-                //                    Button1 - 4, GLSG_RELEASE, mods);
-                //                }
-
                 return;
             }
 
@@ -437,12 +360,6 @@ void X11Window::pollEvents() {
                 // XEnterWindowEvent is XCrossingEvent
                 const int x = event.xcrossing.x;
                 const int y = event.xcrossing.y;
-
-                // HACK: This is a workaround for WMs (KWM, Fluxbox) that
-                // otherwise
-                //       ignore the defined cursor for hidden cursor mode
-                // if (m_cursorMode == GLSG_CURSOR_HIDDEN)
-                //    updateCursorImage(window);
 
                 onMouseEnter(true);
                 onMouseCursor(x, y);
@@ -462,21 +379,19 @@ void X11Window::pollEvents() {
                 const int y = event.xmotion.y;
 
                 if (x != m_warpCursorPosX || y != m_warpCursorPosY) {
-                    // The cursor was moved by something other than GLFW
-
+                    // The cursor was moved by something else than GLFW
                     if (m_cursorMode == GLSG_CURSOR_DISABLED) {
-                        //                        if (m_disabledCursorWindow !=
-                        //                        window)
-                        //                            return;
-
-                        if (m_rawMouseMotion) return;
+                        if (m_rawMouseMotion) {
+                            return;
+                        }
 
                         const int dx = x - m_lastCursorPosX;
                         const int dy = y - m_lastCursorPosY;
 
                         onMouseCursor(m_virtualCursorPosX + dx, m_virtualCursorPosY + dy);
-                    } else
+                    } else {
                         onMouseCursor(x, y);
+                    }
                 }
 
                 m_lastCursorPosX = x;
@@ -485,12 +400,12 @@ void X11Window::pollEvents() {
             }
 
             case ConfigureNotify: {
-                if (event.xconfigure.width != m_widthVirt || event.xconfigure.height != m_heightVirt) {
+                if (event.xconfigure.width != m_virtSize.x || event.xconfigure.height != m_virtSize.y) {
                     onFrameBufferSize(event.xconfigure.width, event.xconfigure.height);
                     onWindowSize(event.xconfigure.width, event.xconfigure.height);
 
-                    m_widthVirt  = event.xconfigure.width;
-                    m_heightVirt = event.xconfigure.height;
+                    m_virtSize.x  = event.xconfigure.width;
+                    m_virtSize.y = event.xconfigure.height;
                 }
 
                 int xpos = event.xconfigure.x;
@@ -506,13 +421,15 @@ void X11Window::pollEvents() {
                     XTranslateCoordinates(m_display, m_parent, m_root, xpos, ypos, &xpos, &ypos, &dummy);
 
                     releaseErrorHandler();
-                    if (m_errorCode == BadWindow) return;
+                    if (m_errorCode == BadWindow) {
+                        return;
+                    }
                 }
 
-                if (xpos != m_offsX || ypos != m_offsY) {
+                if (xpos != m_offs.x || ypos != m_offs.y) {
                     onWindowPos(xpos, ypos);
-                    m_offsX = xpos;
-                    m_offsY = ypos;
+                    m_offs.x = xpos;
+                    m_offs.y = ypos;
                 }
 
                 return;
@@ -530,14 +447,11 @@ void X11Window::pollEvents() {
                     if (protocol == None) return;
 
                     if (protocol == m_WM_DELETE_WINDOW) {
-                        // The window manager was asked to close the window, for
-                        // example by the user pressing a 'close' window
+                        // The window manager was asked to close the window, e,g. by the user pressing a 'close' window
                         // decoration button
                         onWindowClose();
                     } else if (protocol == m_NET_WM_PING) {
-                        // The window manager is pinging the application to
-                        // ensure it's still responding to events
-
+                        // The window manager is pinging the application to ensure it's still responding to events
                         XEvent reply         = event;
                         reply.xclient.window = m_root;
 
@@ -666,14 +580,17 @@ void X11Window::pollEvents() {
 
             case FocusIn: {
                 if (event.xfocus.mode == NotifyGrab || event.xfocus.mode == NotifyUngrab) {
-                    // Ignore focus events from popup indicator windows, window
-                    // menu key chords and window dragging
+                    // Ignore focus events from popup indicator windows, window menu key chords and window dragging
                     return;
                 }
 
-                if (m_cursorMode == GLSG_CURSOR_DISABLED) disableCursor();
+                if (m_cursorMode == GLSG_CURSOR_DISABLED) {
+                    disableCursor();
+                }
 
-                if (m_ic) XSetICFocus(m_ic);
+                if (m_ic) {
+                    XSetICFocus(m_ic);
+                }
 
                 onWindowFocus(1);
                 return;
@@ -681,19 +598,21 @@ void X11Window::pollEvents() {
 
             case FocusOut: {
                 if (event.xfocus.mode == NotifyGrab || event.xfocus.mode == NotifyUngrab) {
-                    // Ignore focus events from popup indicator windows, window
-                    // menu key chords and window dragging
+                    // Ignore focus events from popup indicator windows, window menu key chords and window dragging
                     return;
                 }
 
-                if (m_cursorMode == GLSG_CURSOR_DISABLED) enableCursor();
+                if (m_cursorMode == GLSG_CURSOR_DISABLED) {
+                    enableCursor();
+                }
 
-                if (m_ic) XUnsetICFocus(m_ic);
+                if (m_ic) {
+                    XUnsetICFocus(m_ic);
+                }
 
-                if (
-                    // m_monitor &&
-                    m_autoIconify)
+                if (m_autoIconify) {
                     onWindowIconify(1);
+                }
 
                 onWindowFocus(0);
                 return;
@@ -713,29 +632,10 @@ void X11Window::pollEvents() {
 
                     const bool iconified = (state == IconicState);
                     if (m_iconified != iconified) {
-                        // if (window->monitor) {
-                        //                            if (iconified)
-                        //                                releaseMonitor();
-                        //                            else
-                        //                                acquireMonitor();
-                        // }
-
                         m_iconified = iconified;
                         onWindowIconify(iconified);
                     }
                 }
-                //                else if (event.xproperty.atom ==
-                //                m_NET_WM_STATE)
-                //                {
-                //                    const bool maximized =
-                //                    _glfwPlatformWindowMaximized(window); if
-                //                    (m_maximized != maximized)
-                //                    {
-                //                        m_maximized = maximized;
-                //                        onWindowMaximize(maximized);
-                //                    }
-                //                }
-
                 return;
             }
 
@@ -950,14 +850,14 @@ int X11Window::translateKeySyms(const KeySym *keysyms, int width) {
         case XK_F25:
             return GLSG_KEY_F25;
 
-            // Numeric keypad
+        // Numeric keypad
         case XK_KP_Divide: return GLSG_KEY_KP_DIVIDE;
         case XK_KP_Multiply: return GLSG_KEY_KP_MULTIPLY;
         case XK_KP_Subtract: return GLSG_KEY_KP_SUBTRACT;
         case XK_KP_Add:
             return GLSG_KEY_KP_ADD;
 
-            // These should have been detected in secondary keysym test above!
+        // These should have been detected in secondary keysym test above!
         case XK_KP_Insert: return GLSG_KEY_KP_0;
         case XK_KP_End: return GLSG_KEY_KP_1;
         case XK_KP_Down: return GLSG_KEY_KP_2;
@@ -972,10 +872,10 @@ int X11Window::translateKeySyms(const KeySym *keysyms, int width) {
         case XK_KP_Enter:
             return GLSG_KEY_KP_ENTER;
 
-            // Last resort: Check for printable keys (should not happen if the
-            // XKB extension is available). This will give a layout dependent
-            // mapping (which is wrong, and we may miss some keys, especially on
-            // non-US keyboards), but it's better than nothing...
+        // Last resort: Check for printable keys (should not happen if the
+        // XKB extension is available). This will give a layout dependent
+        // mapping (which is wrong, and we may miss some keys, especially on
+        // non-US keyboards), but it's better than nothing...
         case XK_a: return GLSG_KEY_A;
         case XK_b: return GLSG_KEY_B;
         case XK_c: return GLSG_KEY_C;
@@ -1050,8 +950,8 @@ int X11Window::translateState(int state) {
 void X11Window::createKeyTables() {
     int scancode, scancodeMin, scancodeMax;
 
-    memset(m_keycodes, -1, sizeof(m_keycodes));
-    memset(m_scancodes, -1, sizeof(m_scancodes));
+    std::ranges::fill(m_keycodes, -1);
+    std::ranges::fill(m_scancodes, -1);
     m_xkb.major     = 1;
     m_xkb.minor     = 0;
     m_xkb.available = XkbQueryExtension(m_display, &m_xkb.majorOpcode, &m_xkb.eventBase, &m_xkb.errorBase, &m_xkb.major,
@@ -1387,20 +1287,9 @@ void X11Window::enableCursor() {
 
 // Apply disabled cursor mode to a focused window
 void X11Window::disableCursor() {
-    if (m_rawMouseMotion) enableRawMouseMotion();
-
-    //    m_disabledCursorWindow = this;
-    //    _glfwPlatformGetCursorPos(window,
-    //                              m_restoreCursorPosX,
-    //                              m_restoreCursorPosY);
-    //    //updateCursorImage();
-    //    //_glfwCenterCursorInContentArea(window);
-    //    XGrabPointer(m_display, m_win, True,
-    //                 ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-    //                 GrabModeAsync, GrabModeAsync,
-    //                 m_win,
-    //                 m_hiddenCursorHandle,
-    //                 CurrentTime);
+    if (m_rawMouseMotion) {
+        enableRawMouseMotion();
+    }
 }
 
 // Enable XI2 raw mouse motion events
@@ -1422,7 +1311,7 @@ int X11Window::getWindowState() {
     struct {
         CARD32 state;
         Window icon;
-    } *state = NULL;
+    } *state = nullptr;
 
     if (getWindowProperty(m_win, m_WM_STATE, m_WM_STATE, (unsigned char **)&state) >= 2) {
         result = state->state;
@@ -1457,7 +1346,6 @@ void X11Window::close() {
     }
 }
 
-X11Window::~X11Window() {}
 }  // namespace ara
 
 #endif

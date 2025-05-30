@@ -62,9 +62,8 @@ public:
 
 class X11Window : public GLWindowBase {
 public:
-    X11Window() : GLWindowBase() {}
-
-    ~X11Window() override;
+    X11Window() = default;
+    ~X11Window() override = default;
 
     bool        create(const glWinPar &gp) override;
     void        open() override {}
@@ -119,10 +118,10 @@ public:
 
 protected:
     Display *m_display = nullptr;
-    Window   m_win;
-    Window   m_root;
-    Window   m_parent;
-    Colormap m_colormap;
+    Window   m_win{};
+    Window   m_root{};
+    Window   m_parent{};
+    Colormap m_colormap{};
 
     Atom s_wmDeleteMessage{};
     Atom m_WM_PROTOCOLS{};
@@ -176,8 +175,8 @@ protected:
 
     XIM       m_im{};  // XIM input method
     XIC       m_ic{};
-    short int m_keycodes[256];
-    Time      m_keyPressTimes[256];  // The time of the last KeyPress event per
+    std::array<short int, 256> m_keycodes{};
+    std::array<Time, 256>      m_keyPressTimes{};  // The time of the last KeyPress event per
                                      // keycode, for discarding  duplicate key events
                                      // generated for some keys by ibus
     xkb  m_xkb{};
