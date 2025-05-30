@@ -122,7 +122,7 @@ void GLRenderer::freeGLResources() {
     }
 }
 
-void GLRenderer::loadTypo(filesystem::path typoPath) {
+void GLRenderer::loadTypo(const filesystem::path& typoPath) {
     if (!m_typo && s_inited) {
         m_typo = make_unique<TypoGlyphMap>(static_cast<uint>(m_dim.x), static_cast<uint>(m_dim.y));
         m_typo->loadFont((m_dataPath / typoPath).string().c_str(), &s_shCol);

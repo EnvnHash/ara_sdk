@@ -139,10 +139,7 @@ int GLFWWindow::init(const glWinPar &gp) {
     glfwSetWindowPos(m_window, static_cast<int>(m_posReal.x), static_cast<int>(m_posReal.y));
 
     if (gp.debug) {
-        LOG << "Vendor:  " << glGetString(GL_VENDOR);
-        LOG << "Renderer: " << glGetString(GL_RENDERER);
-        LOG << "Version:  " << glGetString(GL_VERSION);
-        LOG << "GLSL:     " << glGetString(GL_SHADING_LANGUAGE_VERSION);
+        printGLVersion();
     }
 
     if (gp.nrSamples > 2) {

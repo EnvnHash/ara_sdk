@@ -397,8 +397,7 @@ void GLBase::createCtx() {
 #if !defined(ARA_USE_GLFW) && defined(_WIN32)
     // in case any context is current, make none current
     wglMakeCurrent(nullptr, nullptr);
-
-    HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(NULL);
+    HINSTANCE hInstance = (HINSTANCE)::GetModuleHandle(nullptr);
 
     // register a window class for subsequent use in calls to the CreateWindow
     // or CreateWindowEx function.
@@ -411,9 +410,9 @@ void GLBase::createCtx() {
         .cbClsExtra    = 0;
         .hInstance     = hInstance;
         .hIcon         = LoadIcon(hInstance, IDI_WINLOGO);
-        .hCursor       = LoadCursor(NULL, IDC_ARROW);
-        .hbrBackground = NULL;  // No Background Required For GL
-        .lpszMenuName  = NULL;
+        .hCursor       = LoadCursor(nullptr, IDC_ARROW);
+        .hbrBackground = nullptr;  // No Background Required For GL
+        .lpszMenuName  = nullptr;
         .lpszClassName = m_wglClassName.c_str();  // Set The Class Name
         .hIconSm       = LoadIcon(wcex.hInstance, IDI_WINLOGO);
     };
@@ -456,19 +455,8 @@ void GLBase::createCtx() {
     m_hRC = wglCreateContext(m_hdc); // Create the OpenGL Rendering Context.
     wglMakeCurrent(m_hdc, m_hRC);
 
-    // init GLEW
-    glewExperimental = GL_TRUE;
-    if (glewInit() != GLEW_OK) {
-        LOGE << "GLEW ERROR: " << glewGetErrorString(err);
-        return;
-    }
-
-    err = glGetError();  // remove glew standard error
-
-    LOG << "Vendor:   " << glGetString(GL_VENDOR) << "\n"
-        << "Renderer: " << glGetString(GL_RENDERER) << "\n"
-        << "Version:  " << glGetString(GL_VERSION) << "\n"
-        << "GLSL:     " << glGetString(GL_SHADING_LANGUAGE_VERSION);
+    initGLEW();
+    printGLVersion();
 #endif
 }
 

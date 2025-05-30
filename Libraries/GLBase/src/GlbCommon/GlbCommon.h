@@ -383,4 +383,11 @@ std::vector<glm::vec2> get2DRing(int nrPoints);
 
 bool initGLEW();
 
+static void printGLVersion() {
+    LOG << "Vendor:   " << glGetString(GL_VENDOR) << "\n"
+    << "Renderer: " << glGetString(GL_RENDERER) << "\n"
+    << "Version:  " << glGetString(GL_VERSION) << "\n"
+    << "GLSL:     " << glGetString(GL_SHADING_LANGUAGE_VERSION);
+}
+
 }  // namespace ara

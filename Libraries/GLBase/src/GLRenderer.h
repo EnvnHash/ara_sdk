@@ -33,11 +33,9 @@ public:
 #endif
 
     virtual void     initGL();
-    virtual void     loadTypo(std::filesystem::path typoPath);
+    virtual void     loadTypo(const std::filesystem::path& typoPath);
     virtual void     update();
     virtual void     iterate();
-    virtual Shaders *initExportShdr();
-    virtual Shaders *initExportBlendShdr();
 
     bool draw(double time, double dt, int ctxNr) override;
 
@@ -73,7 +71,6 @@ public:
 #endif
 
     virtual void close(bool direct = false);
-
     virtual bool closeEvtLoopCb();
 
     // void close()                     { if (s_inited && m_winHandle)
@@ -99,9 +96,9 @@ public:
     void            onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
     void            onMouseUpRight() override {}
     void            onMouseMove(float xPos, float yPos, ushort mode) override {}
-    virtual void onWheel(int _deg) {}
-    void         onResizeDone() override {}
-    void         onSetViewport(int x, int y, int width, int height) override {}
+    virtual void    onWheel(int _deg) {}
+    void            onResizeDone() override {}
+    void            onSetViewport(int x, int y, int width, int height) override {}
 
 protected:
     GLBase               *m_glbase = nullptr;
