@@ -36,8 +36,6 @@ public:
     virtual void     loadTypo(std::filesystem::path typoPath);
     virtual void     update();
     virtual void     iterate();
-    virtual Shaders *initVwfRenderShdr();
-    virtual Shaders *initFlatWarpShdr();
     virtual Shaders *initExportShdr();
     virtual Shaders *initExportBlendShdr();
 
@@ -89,22 +87,18 @@ public:
     glm::ivec2  getPosition() const { return m_winHandle ? m_winHandle->getPosition() : glm::ivec2(0.f, 0.f); }
 #endif
 
-    Shaders      *getVwfShader() const { return m_vwfShader; }
-    Shaders      *getFlatWarpShader() const { return m_flatWarpShader; }
-    Shaders      *getExportShader() const { return m_exportShader; }
-    Shaders      *getExportBlendShader() const { return m_exportBlendShader; }
-    Quad         *getStdQuad() const { return m_stdQuad.get(); }
-    Quad         *getStdFlipQuad() const { return m_flipQuad.get(); }
-    TypoGlyphMap *getTypo() const { return m_typo.get(); }
-    void          onKeyDown(int keyNum, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
-    void          onKeyUp(int keyNum, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
-    void          onChar(unsigned int codepoint) override {}
-    void onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
-    void onMouseDownLeftNoDrag(float xPos, float yPos) override {}
-    void onMouseUpLeft() override {}
-    void onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
-    void onMouseUpRight() override {}
-    void onMouseMove(float xPos, float yPos, ushort mode) override {}
+    Quad            *getStdQuad() const { return m_stdQuad.get(); }
+    Quad            *getStdFlipQuad() const { return m_flipQuad.get(); }
+    TypoGlyphMap    *getTypo() const { return m_typo.get(); }
+    void            onKeyDown(int keyNum, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
+    void            onKeyUp(int keyNum, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
+    void            onChar(unsigned int codepoint) override {}
+    void            onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
+    void            onMouseDownLeftNoDrag(float xPos, float yPos) override {}
+    void            onMouseUpLeft() override {}
+    void            onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
+    void            onMouseUpRight() override {}
+    void            onMouseMove(float xPos, float yPos, ushort mode) override {}
     virtual void onWheel(int _deg) {}
     void         onResizeDone() override {}
     void         onSetViewport(int x, int y, int width, int height) override {}
@@ -116,10 +110,6 @@ protected:
     Shaders              *m_stdCol            = nullptr;
     Shaders              *m_testPicShdr       = nullptr;
     Shaders              *m_stdTex            = nullptr;
-    Shaders              *m_vwfShader         = nullptr;
-    Shaders              *m_flatWarpShader    = nullptr;
-    Shaders              *m_exportShader      = nullptr;
-    Shaders              *m_exportBlendShader = nullptr;
 
     glm::vec2 m_dim{};
     glm::vec2 m_pos{};

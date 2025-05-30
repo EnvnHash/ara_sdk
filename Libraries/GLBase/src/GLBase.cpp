@@ -357,17 +357,7 @@ void GLBase::glCallbackLoop() {
     while (g_glCallbackLoopRunning) {
         g_sema.wait(0);  // wait infinitely
         g_mtx.lock();
-
-        for (auto it = g_glCallbacks.begin(); it != g_glCallbacks.end();) {
-            if (it->first()) {
-                if (it->second) {
-                    it->second->notify();
-                }
-                it = g_glCallbacks.erase(it);
-            } else {
-                ++it;
-            }
-        }
+        iterateGlCallback();
         g_mtx.unlock();
         glFinish();
     }
@@ -380,6 +370,19 @@ void GLBase::glCallbackLoop() {
 #endif
 
     g_loopExit.notify();
+}
+
+void GLBase::iterateGlCallback() {
+    for (auto it = g_glCallbacks.begin(); it != g_glCallbacks.end();) {
+        if (it->first()) {
+            if (it->second) {
+                it->second->notify();
+            }
+            it = g_glCallbacks.erase(it);
+        } else {
+            ++it;
+        }
+    }
 }
 
 void GLBase::stopProcCallbackLoop() {

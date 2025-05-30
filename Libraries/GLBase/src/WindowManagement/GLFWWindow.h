@@ -58,13 +58,14 @@ public:
      * @param terminateGLFW shall GLFW be terminated when the loop exits? in case of multiple window it probably shouldn't
      * @param destroyWinOnExit destroy window on exit
      */
-    void runLoop(const std::function<bool(double, double, int)>& f, bool eventBased = false, bool terminateGLFW = true,
+    void    runLoop(const std::function<bool(double, double, int)>& f, bool eventBased = false, bool terminateGLFW = true,
                  bool destroyWinOnExit = true);
-
-    void   startDrawThread(const std::function<bool(double, double, int)>& f);
-    void   stopDrawThread();
-    void   draw();
-    double getFps();
+    void    execGlCb();
+    void    cleanUp(bool terminateGLFW, bool destroyWinOnExit);
+    void    startDrawThread(const std::function<bool(double, double, int)>& f);
+    void    stopDrawThread();
+    void    draw();
+    double  getFps();
 
     /** also sets the focus to the respective window */
     void open() override;

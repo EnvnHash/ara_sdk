@@ -287,6 +287,9 @@ public:
     cpEditMode                            m_cp_editM = cpEditMode::Move;
 
 protected:
+    void handleModalWindow() const;
+    void stopDrawThread();
+
     GLBase*            m_glbase            = nullptr;
     UINode*            m_lastHoverFound    = nullptr;
     UINode*            m_draggingNode      = nullptr;

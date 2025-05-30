@@ -85,6 +85,7 @@ public:
     void addEvtCb(const std::function<bool()> &func, bool forcePush = false);
     void addGlCb(const std::function<bool()> &func, Conditional *sema = nullptr);
     void glCallbackLoop();
+    void iterateGlCallback();
     void initResources();
     void checkResourceChanges();
     void clearGlCbQueue();

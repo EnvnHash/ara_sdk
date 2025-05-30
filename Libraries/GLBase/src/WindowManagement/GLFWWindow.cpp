@@ -372,11 +372,7 @@ void GLFWWindow::runLoop(const std::function<bool(double, double, int)>& f, bool
         // don't draw when iconified
         if (!glfwGetWindowAttrib(m_window, GLFW_ICONIFIED)) {
             draw();
-
-            if (m_glCb) {
-                m_glCb();
-                m_glCb = nullptr;
-            }
+            execGlCb();
         }
 
         if (eventBased && !m_initSignaled) {
@@ -385,6 +381,17 @@ void GLFWWindow::runLoop(const std::function<bool(double, double, int)>& f, bool
         }
     }
 
+    cleanUp(terminateGLFW, destroyWinOnExit);
+}
+
+void GLFWWindow::execGlCb() {
+    if (m_glCb) {
+        m_glCb();
+        m_glCb = nullptr;
+    }
+}
+
+void GLFWWindow::cleanUp(bool terminateGLFW, bool destroyWinOnExit) {
     m_run = false;
 
     if (m_onCloseCb) {

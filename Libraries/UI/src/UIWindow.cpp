@@ -357,29 +357,8 @@ bool UIWindow::closeEvtLoopCb() {
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     if (m_selfManagedCtx && m_winHandle) {
-        if (m_isModal || m_glbase->getWinMan()->getFixFocus()) {
-            if (m_glbase->getWinMan()->getFixFocus() == m_winHandle) {
-                m_glbase->getWinMan()->setFixFocus(nullptr);
-            }
-
-            if (m_appHandle) {
-                m_appHandle->setActiveModalWin(nullptr);  // just sets flags
-            }
-        }
-
-        if (m_winHandle->isRunning()) {
-            // set a callback to be called when the window draw loop exits, but
-            // the gl context is still valid remove all resources and cleanup
-            m_winHandle->setOnCloseCb([this] {
-                removeGLResources();
-            });
-
-            m_winHandle->stopDrawThread();  // also calls close() on GLFWWindow
-        } else {
-            m_winHandle->makeCurrent();
-            removeGLResources();
-            GLWindow::makeNoneCurrent();
-        }
+        handleModalWindow();
+        stopDrawThread();
 
         m_glbase->getWinMan()->removeWin(m_winHandle, false);
     }
@@ -388,6 +367,34 @@ bool UIWindow::closeEvtLoopCb() {
     m_winHandle = nullptr;
     s_inited    = false;
     return true;
+}
+
+void UIWindow::handleModalWindow() const {
+    if (m_isModal || m_glbase->getWinMan()->getFixFocus()) {
+        if (m_glbase->getWinMan()->getFixFocus() == m_winHandle) {
+            m_glbase->getWinMan()->setFixFocus(nullptr);
+        }
+
+        if (m_appHandle) {
+            m_appHandle->setActiveModalWin(nullptr);  // just sets flags
+        }
+    }
+}
+
+void UIWindow::stopDrawThread() {
+    if (m_winHandle->isRunning()) {
+        // set a callback to be called when the window draw loop exits, but
+        // the gl context is still valid remove all resources and cleanup
+        m_winHandle->setOnCloseCb([this] {
+            removeGLResources();
+        });
+
+        m_winHandle->stopDrawThread();  // also calls close() on GLFWWindow
+    } else {
+        m_winHandle->makeCurrent();
+        removeGLResources();
+        GLWindow::makeNoneCurrent();
+    }
 }
 
 /** if this function doesn't draw avoid the swap to be called afterwards. the return value indicates whether a swap is
@@ -1530,26 +1537,10 @@ std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, st
 
 void UIWindow::removeGLResources() {
     s_shCol.clear();  // remove gl resources
-
-    if (!m_texCol.empty()){
-        m_texCol.clear();
-    }
-
-    if (m_quad) {
-        m_quad.reset();
-    }
-
-    if (m_normQuad) {
-        m_normQuad.reset();
-    }
-
-    if (m_sceneFbo) {
-        m_sceneFbo.reset();
-    }
-
-    // if ( m_sharedRes.res && m_sharedRes.res->getGLFont().getCount()) {
-    //     m_sharedRes.res->clearGLFont();
-    // }
+    m_texCol.clear();
+    m_quad.reset();
+    m_normQuad.reset();
+    m_sceneFbo.reset();
 
     if (m_sharedRes.drawMan){
         m_sharedRes.drawMan->clear();
