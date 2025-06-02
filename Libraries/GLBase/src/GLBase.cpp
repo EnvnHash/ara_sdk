@@ -54,7 +54,7 @@ bool GLBase::init(bool doInitResources, void *winHnd) {
             .size         = { 5, 5 },
             .shareCont    = winHnd,
 #ifdef __ANDROID__
-            .contScale   = {g_androidDensity , g_androidDensity}
+            .contScale   = { g_androidDensity , g_androidDensity }
 #endif
         });
     }
@@ -85,7 +85,9 @@ bool GLBase::init(bool doInitResources, void *winHnd) {
 /// OpenGL 3.2 compatibilty
 /// </summary>
 void GLBase::checkCapabilities() {
-    if (m_checkedCaps) return;
+    if (m_checkedCaps) {
+        return;
+    }
 
     // Compute Shaders -> core since 4.3 (Surface Generator)
     // shaderbuffer storage -> 4.3
@@ -165,7 +167,6 @@ void GLBase::checkCapabilities() {
 /// </summary>
 void GLBase::initToThisCtx() {
     initGLEW();
-
     checkCapabilities();
 
     g_shaderCollector.getStdCol();  // init std col shader
@@ -280,9 +281,10 @@ void GLBase::destroy(bool terminateGLFW) {
     if (m_resUpdtRun) {
         m_resUpdtRun = false;
         m_resUpdtExited.wait();
-        g_assetManager.reset();
-        g_assetManager = nullptr;
     }
+
+    g_assetManager.reset();
+    g_assetManager = nullptr;
 
     g_textureCollector.clear();
 
