@@ -41,9 +41,7 @@ void UIWindow::init(const UIWindowParams& par) {
 
     if (!par.initToCurrentCtx) {
         initUIWindow(par);
-#ifndef ARA_USE_EGL
     } else if (!m_glbase->isInited()) {
-#endif
         initToCurrentCtx();
     }
 
@@ -83,6 +81,7 @@ void UIWindow::init(const UIWindowParams& par) {
         UIWindow::onSetViewport(0, 0, m_virtSize.x, m_virtSize.y);
 
         m_stdTex = s_shCol.getStdTex();
+        m_stdCol = s_shCol.getStdCol();
         if (m_multisample) {
             m_stdTexMulti = s_shCol.getStdTexMulti();
         }
@@ -106,15 +105,6 @@ void UIWindow::init(const UIWindowParams& par) {
 }
 
 void UIWindow::initUIWindow(const UIWindowParams& par) {
-#ifndef ARA_USE_EGL
-    // check if GLBase render loop is running, if this is the case, stop it and start it later again.
-    // Otherwise, context sharing will fail
-    if (m_glbase->isRunning()) {
-        m_restartGlBaseLoop = true;
-        m_glbase->stopProcCallbackLoop();
-    }
-#endif
-
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     if (!m_winHandle) {
         m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{
@@ -467,6 +457,7 @@ void UIWindow::drawNodeTree() {
 #ifdef __ANDROID__
     glClear(GL_COLOR_BUFFER_BIT);
 #endif
+    glViewport(0,0,m_realSize.x, m_realSize.y);
 
     m_sceneFbo->bind();
     m_sceneFbo->clear();  // also clears depth
@@ -1545,6 +1536,8 @@ void UIWindow::removeGLResources() {
     if (m_sharedRes.drawMan){
         m_sharedRes.drawMan->clear();
     }
+
+    m_drawMan->clear();
 
     m_sharedRes.win = nullptr;
 

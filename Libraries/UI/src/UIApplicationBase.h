@@ -16,6 +16,7 @@ class UIApplicationBase {
 public:
     virtual ~UIApplicationBase() = default;
     virtual void init(std::function<void(UINode&)>) = 0;
+    virtual void resume() {}
 
     virtual void initGLBase();
     /// start the global opengl processing loop in a separate thread
@@ -36,9 +37,10 @@ public:
     virtual void startSingleThreadUiRendering(const std::function<void(UINode*)>& initCb) {}
 
     /// get a reference to the WindowManager
-    WindowManager* getWinMan() { return m_glbase.getWinMan(); }
+    auto getWinMan() { return m_glbase.getWinMan(); }
     /// get a reference to GLBase instance containing all opengl related shared resources
-    GLBase* getGLBase() { return &m_glbase; }
+    auto getGLBase() { return &m_glbase; }
+    auto getMainWindow() const { return m_mainWindow; }
 
     virtual void update() { m_iterate.notify(); }
 

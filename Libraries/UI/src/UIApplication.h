@@ -46,9 +46,6 @@ public:
 
         UIWindowParams p = params;
         p.glbase        = &m_glbase;
-#if defined(__ANDROID__) && defined(ARA_ANDROID_PURE_NATIVE_APP)
-        p.extWinHandle = static_cast<void*>(m_androidNativeWin);
-#endif
 
         m_uiWindows.emplace_back(std::make_unique<T>(p));
         auto newWindow = m_uiWindows.back().get();
@@ -116,7 +113,6 @@ public:
 
     UINode*     getRootNode(const uint winIdx = 0) const { return (m_uiWindows.size() > winIdx) ? m_uiWindows[winIdx]->getRootNode() : nullptr; }
     UIWindow*   getWinBase(const uint winIdx = 0) const { return m_uiWindows.size() > winIdx ? m_uiWindows[winIdx].get() : nullptr; }
-    auto        getMainWindow() const { return m_mainWindow; }
     auto        getUIWindows() { return &m_uiWindows; }
     auto        getDataModel() const { return m_dataModel; }
 

@@ -40,19 +40,10 @@ int EGLWindow::init(const glWinPar& gp) {
 #ifdef __ANDROID__
     if (gp.extWinHandle) {
         m_esContext.eglNativeWindow = static_cast<ANativeWindow*>(gp.extWinHandle);
-
-        // For Android, in case of a non off-screen context, get the width/height from the window
-        // rather than what the application requested.
-        m_esContext.width  = ANativeWindow_getWidth(m_esContext.eglNativeWindow);
-        m_esContext.height = ANativeWindow_getHeight(m_esContext.eglNativeWindow);
-    } else {
-        m_esContext.width  = m_realSize.x;
-        m_esContext.height = m_realSize.y;
     }
-#else
+#endif
     m_esContext.width  = m_virtSize.x;
     m_esContext.height = m_virtSize.y;
-#endif
 
 #ifdef __ANDROID__
     if ((m_esContext.eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY)) == EGL_NO_DISPLAY) {
@@ -252,7 +243,7 @@ void EGLWindow::pollEvents() {
 
 void EGLWindow::startDrawThread(const std::function<bool(double, double, int)>& f) {
     if (!isRunning()) {
-        m_drawThread = std::thread(&EGLWindow::runLoop, this, f, true, false);
+        m_drawThread = std::thread(&EGLWindow::runLoop, this, f, true, true);
         m_drawThread.detach();
     }
 }

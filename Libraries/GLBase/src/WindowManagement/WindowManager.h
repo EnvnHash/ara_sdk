@@ -138,6 +138,7 @@ public:
     void hide(unsigned int nr) const;
     /** close all glfw windows that have been added through this WindowManager instance before */
     [[maybe_unused]] void closeAll();
+    void destroyAll();
 
     void stop() { m_run = false; }
     bool isRunning() const { return m_run; }
@@ -192,17 +193,15 @@ public:
     // These are useful if we want to call certain functions before and after the render cycle.
     // ------------------------------
 
-    void IterateAll(bool                                                            only_open_windows,
-                    std::function<void(double time, double dt, unsigned int ctxNr)> render_function) {
+    void IterateAll(bool                                              only_open_windows,
+                    std::function<void(double, double, unsigned int)> render_function) {
         if ((m_globalDrawFunc = std::move(render_function))) {
             iterate(only_open_windows);
         }
     }
 
-    [[maybe_unused]] void EndMainLoop() const {
-        for (auto &it : m_windows) {
-            it->destroy(false);
-        }
+    [[maybe_unused]] void EndMainLoop() {
+        destroyAll();
         GLWindow::terminateLibrary();
     }
 

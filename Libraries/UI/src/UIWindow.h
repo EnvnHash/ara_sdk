@@ -255,6 +255,7 @@ public:
     Conditional* getGlInitedSema() const { return m_winHandle->getGlInitedSema(); }
     bool         isInited() const { return m_winHandle != nullptr && m_winHandle->isInited(); }
     void         focus() const { if (m_winHandle) m_winHandle->focus();}
+    void         invalidateWinHandle() { m_winHandle = nullptr; }
 #else
     virtual void hide() {}
     void         setExtWinHnd(void* hnd) { m_winHandle = hnd; }
@@ -315,6 +316,7 @@ protected:
     std::unique_ptr<Quad>                                     m_normQuad;
     Shaders*                                                  m_fboDrawShdr = nullptr;
     Shaders*                                                  m_stdTex      = nullptr;
+    Shaders*                                                  m_stdCol      = nullptr;
     Shaders*                                                  m_debugShdr   = nullptr;
     std::unordered_map<std::string, std::unique_ptr<Texture>> m_texCol;
     std::unordered_map<uiColors, glm::vec4>                   m_colors;

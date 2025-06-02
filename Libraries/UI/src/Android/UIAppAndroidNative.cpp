@@ -12,7 +12,6 @@
 namespace ara {
 
 UIAppAndroidNative::UIAppAndroidNative() : UIApplicationBase() {
-    m_threadedWindowRendering = false;
 }
 
 void UIAppAndroidNative::startAndroidEventLoop() {
@@ -36,14 +35,19 @@ void UIAppAndroidNative::startAndroidEventLoop() {
             }
 
             // pass alooper to main window
-            if (m_glbase.getWinMan()->getWindows()->size() > 1) {
+            if (m_glbase.getWinMan()->getWindows()->size() > 1 && !win) {
                 win = (m_glbase.getWinMan()->getWindows()->begin() +1)->get();
                 if (win) {
                     win->setALooper(ALooper_forThread());
                 }
             }
-            if (win) {
+
+            if (m_glbase.getWinMan()->getWindows()->size() > 1 && win) {
                 update();
+            }
+
+            if (win && m_glbase.getWinMan()->getWindows()->size() == 0) {
+                win = nullptr;
             }
         }
     }
@@ -110,38 +114,47 @@ int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* e
 }
 
 void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
-    auto ctx = static_cast<UIAppAndroidNative*>(app->userData);
-
-    if (!ctx) {
-        return;
-    }
-    if (!ctx->m_androidApp) {
+    auto uiApp = static_cast<UIAppAndroidNative*>(app->userData);
+    if (!uiApp || !uiApp->m_androidApp) {
         return;
     }
 
     switch (cmd) {
         case APP_CMD_SAVE_STATE:
             // The system has asked us to save our current state.  Do so.
-            ctx->m_androidApp->savedState                        = malloc(sizeof(android_app_state));
-            *static_cast<android_app_state*>(ctx->m_androidApp->savedState) = ctx->m_saved_state;
-            ctx->m_androidApp->savedStateSize                    = sizeof(android_app_state);
+            uiApp->m_androidApp->savedState = malloc(sizeof(android_app_state));
+            *static_cast<android_app_state*>(uiApp->m_androidApp->savedState) = uiApp->m_saved_state;
+            uiApp->m_androidApp->savedStateSize = sizeof(android_app_state);
             break;
         case APP_CMD_INIT_WINDOW:
             // The window is being shown, get it ready.
-            if (ctx->m_androidApp->window && !ctx->m_inited) {
+            if (uiApp->m_androidApp->window) {
                 m_hasWindow                         = true;
-                ctx->m_androidNativeWin             = ctx->m_androidApp->window;
-                float density                       = ctx->get_density(ANativeWindow_getWidth(ctx->m_androidApp->window),
-                                                                      ANativeWindow_getHeight(ctx->m_androidApp->window));
-                ctx->getGLBase()->g_androidDensity  = density;
-                ctx->getGLBase()->g_androidDpi      = { ctx->m_xdpi, ctx->m_ydpi };
-
-                // context is not ready at this point???
-                static_cast<UIApplication*>(app->userData)->init(nullptr);
+                uiApp->m_androidNativeWin           = uiApp->m_androidApp->window;
+                auto winSize = glm::ivec2{ANativeWindow_getWidth(uiApp->m_androidApp->window),
+                                          ANativeWindow_getHeight(uiApp->m_androidApp->window)};
+                float density                       = uiApp->get_density(winSize.x, winSize.y);
+                uiApp->getGLBase()->g_androidDensity  = density;
+                uiApp->getGLBase()->g_androidDpi      = {uiApp->m_xdpi, uiApp->m_ydpi };
+                uiApp->setWinSize(winSize);
+                if (!uiApp->m_inited) {
+                    static_cast<UIApplication*>(app->userData)->init(nullptr);
+                } else {
+                    static_cast<UIApplication*>(app->userData)->resume();
+                }
             }
             break;
         case APP_CMD_TERM_WINDOW:
             // The window is being hidden or closed, clean it up.
+            if (uiApp->m_androidApp->window && uiApp->m_inited) {
+                uiApp->stopThreadedRendering();
+                auto winMan = uiApp->getWinMan();
+                uiApp->getMainWindow()->removeGLResources();
+                uiApp->getGLBase()->destroy(false); // remove glbase opengl resources
+                winMan->getWindows()->clear();
+                uiApp->getMainWindow()->invalidateWinHandle();
+                uiApp->m_androidApp->window = nullptr;
+            }
             break;
         case APP_CMD_GAINED_FOCUS:
             m_hasFocus = true;
@@ -153,7 +166,7 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
         case APP_CMD_WINDOW_RESIZED: break;
         case APP_CMD_WINDOW_REDRAW_NEEDED: break;
         case APP_CMD_CONTENT_RECT_CHANGED: {
-            auto win = ctx->getWinMan()->getFirstWin();
+            auto win = uiApp->getWinMan()->getFirstWin();
             if (win) {
                 win->checkSize();
             }
@@ -162,25 +175,25 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
         } break;
         case APP_CMD_LOW_MEMORY: break;
         case APP_CMD_START:
-            for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onStart]) {
-                it(&ctx->m_cmd_data);
+            for (const auto& it : uiApp->m_appStateCbs[android_app_cmd::onStart]) {
+                it(&uiApp->m_cmd_data);
             }
             m_isVisible = true;
             break;
         case APP_CMD_RESUME:
-            for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onResume]) {
-                it(&ctx->m_cmd_data);
+            for (const auto& it : uiApp->m_appStateCbs[android_app_cmd::onResume]) {
+                it(&uiApp->m_cmd_data);
             }
             break;
         case APP_CMD_PAUSE:
-            for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onPause]) {
-                it(&ctx->m_cmd_data);
+            for (const auto& it : uiApp->m_appStateCbs[android_app_cmd::onPause]) {
+                it(&uiApp->m_cmd_data);
             }
             m_isVisible = false;
             break;
         case APP_CMD_STOP:
-            for (const auto& it : ctx->m_appStateCbs[android_app_cmd::onStop]) {
-                it(&ctx->m_cmd_data);
+            for (const auto& it : uiApp->m_appStateCbs[android_app_cmd::onStop]) {
+                it(&uiApp->m_cmd_data);
             }
             break;
         case APP_CMD_DESTROY: break;
