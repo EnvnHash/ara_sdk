@@ -102,7 +102,6 @@ public:
     [[nodiscard]] bool isOK() const { return m_loadState; }
     static bool usingComp() { return AssetLoader::usingCmrc(); }
 
-    bool checkForResSourceChange();
     bool checkForChangesInFolderFiles();
     void callResSourceChange();
     void callForChangesInFolderFiles();
@@ -133,7 +132,6 @@ private:
     //std::string                     m_dataRootPath;
     std::string                     m_resFilePath;
     std::filesystem::file_time_type m_resFileLastTime;
-    std::filesystem::path           m_resSysFile;
     bool                            m_loadState = false;
 
     std::unordered_map<std::string, std::filesystem::file_time_type> m_resFolderFiles;

@@ -21,6 +21,8 @@ private:
     std::function<void()>   m_onShow;
 };
 
+enum class CarrouselMode : int { fitAllOnScreen = 0, fitOneSlideOnScreen };
+
 class Carrousel : public UIStack, public Div {
 public:
     Carrousel();
@@ -34,12 +36,18 @@ public:
     CarrouselSlide* add(const std::string& styleclass);
     void postAdd(CarrouselSlide* sl);
 
-    void rotate(float pos) const;
+    void rotate(float pos);
+    void rotateAllOnScreen(float pos);
+    void rotateFitOneOnScreen(float pos);
+
     bool isRotating();
     bool isCurrent(CarrouselSlide* sl);
+    glm::ivec2 getAbsSlideSize();
+
     void show(int32_t);
     void show(const std::string& name) override {};
     void showSelector(bool val) const;
+    void setMode(CarrouselMode m) { m_carMode = m; }
 
 private:
     Div*                            m_content = nullptr;
@@ -49,5 +57,10 @@ private:
     bool                            m_getDragDir = true;
     int32_t                         m_currentIdx = -1;
     int32_t                         m_moveToIdx = -1;
+    float                           m_dragStartPos = 0.f;
+    float                           m_dragSlidePos = 0.f;
+    float                           m_mouseDragThresh = 60.f;
+    CarrouselMode                   m_carMode = CarrouselMode::fitAllOnScreen;
+    glm::ivec2                      m_inset {100, 10};
 };
 }

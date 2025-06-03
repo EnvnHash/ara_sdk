@@ -169,18 +169,6 @@ Font *AssetManager::loadFont(const string& path, int size, float pixRatio) {
     return m_fontList.add(v, path, size, pixRatio);
 }
 
-bool AssetManager::checkForResSourceChange() {
-    if (usingComp() || !isOK() || m_resSysFile.empty()) {
-        return false;
-    }
-
-    try {
-        return filesystem::last_write_time(m_resSysFile) != m_resFileLastTime;
-    } catch (...) {
-        return false;
-    }
-}
-
 bool AssetManager::checkForChangesInFolderFiles() {
     if (usingComp() || !isOK()) {
         return false;
@@ -190,17 +178,17 @@ bool AssetManager::checkForChangesInFolderFiles() {
     bool change = false;
 
     // check for file deletion or modification
-    for (auto &e: m_resFolderFiles) {
-        if (!filesystem::exists(e.first)) {
+    for (auto &[filename, lastChangeTime] : m_resFolderFiles) {
+        if (!filesystem::exists(filename)) {
             change = true;
             break;
         } else {
             try {
-                ft = filesystem::last_write_time(e.first);
+                ft = filesystem::last_write_time(filename);
             } catch (...) {
             }
 
-            if (ft != e.second) {
+            if (ft != lastChangeTime) {
                 change = true;
             }
         }
@@ -258,54 +246,39 @@ void AssetManager::insertPreAndPostContent(std::vector<uint8_t>& vp) {
 }
 
 void AssetManager::callResSourceChange() {
-    if (usingComp() || !isOK() || m_resSysFile.empty()) {
+    if (usingComp() || !isOK()) {
         return;
     }
 
-    filesystem::file_time_type ft;
+    std::unique_lock<mutex> lock(m_updtMtx);
+    ResNode::Ptr nroot;
 
-    try {
-        ft = filesystem::last_write_time(m_resSysFile);
-    } catch (...) {
-        return;
-    }
+    nroot = std::make_unique<ResNode>("root", m_glbase);
+    nroot->setAssetManager(this);
 
-    // std::unique_lock<mutex> lock(m_updtMtx);
+    SrcFile              sfile(m_glbase);
+    std::vector<uint8_t> vp;
 
-    if (ft != m_resFileLastTime) {
-        ResNode::Ptr nroot;
+    loadResource(nullptr, vp, m_resFilePath);
+    insertPreAndPostContent(vp);
 
-        LOG << "\x1B[93mRes-File Changed (" << m_resSysFile << ") \x1B[37m";
+    if (sfile.process(nroot.get(), vp)) {
+        nroot->preprocess();
+        nroot->process();
 
-        nroot = std::make_unique<ResNode>("root", m_glbase);
-        nroot->setAssetManager(this);
+        bool err = true;
 
-        SrcFile              sfile(m_glbase);
-        std::vector<uint8_t> vp;
-
-        loadResource(nullptr, vp, m_resFilePath);
-        insertPreAndPostContent(vp);
-
-        if (sfile.process(nroot.get(), vp)) {
-            nroot->preprocess();
-            nroot->process();
-
-            bool err = true;
-
-            if (nroot->errList.empty() && nroot->load() && nroot->errList.empty()) {
-                m_rootNode = std::move(nroot);
-                err      = false;
-            }
-
-            if (err) {
-                LOGE << "New resource file has errors";
-                for (ResNode::e_error &e : nroot->errList) {
-                    LOGE << "Line " << std::to_string(e.lineIndex + 1) << " " << e.errorString;
-                }
-            }
+        if (nroot->errList.empty() && nroot->load() && nroot->errList.empty()) {
+            m_rootNode = std::move(nroot);
+            err      = false;
         }
 
-        m_resFileLastTime = ft;
+        if (err) {
+            LOGE << "New resource file has errors";
+            for (ResNode::e_error &e : nroot->errList) {
+                LOGE << "Line " << std::to_string(e.lineIndex + 1) << " " << e.errorString;
+            }
+        }
     }
 }
 

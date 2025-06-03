@@ -225,8 +225,7 @@ void GLBase::initResources() {
 }
 
 void GLBase::checkResourceChanges() {
-    bool changed = g_assetManager->checkForResSourceChange();
-    changed      = changed || g_assetManager->checkForChangesInFolderFiles();
+    bool changed = g_assetManager->checkForChangesInFolderFiles();
 
     if (changed) {
 #ifdef ARA_USE_GLFW
