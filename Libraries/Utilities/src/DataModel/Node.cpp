@@ -234,6 +234,7 @@ void Node::load(bool fromAssets) {
         auto str = al.loadAssetAsString(m_fileName);
         json j = json::parse(str);
         deserialize(j);
+        m_fileName = al.getAssetPath() / m_fileName;
     }
 
     if (m_watchFile && m_watchFile->time == filesystem::file_time_type{}) {
