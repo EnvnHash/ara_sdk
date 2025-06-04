@@ -123,14 +123,16 @@ void GLBase::checkCapabilities() {
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &g_caps.max_tex_units);
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &g_caps.max_tex_size);
 #ifndef ARA_USE_GLES31
+#ifndef __APPLE__
     glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS, &g_caps.max_framebuffer_layers);
+    glGetIntegerv(GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS, &g_caps.max_compute_shader_block);
+#endif
     glGetIntegerv(GL_MAX_GEOMETRY_SHADER_INVOCATIONS, &g_caps.max_shader_invoc);
     glGetIntegerv(GL_MULTISAMPLE, &g_caps.multisample);
 #else
     glGetIntegerv(GL_MAX_FRAMEBUFFER_LAYERS_EXT, &g_caps.max_framebuffer_layers);
     glGetIntegerv(GL_MAX_GEOMETRY_SHADER_INVOCATIONS_EXT, &g_caps.max_shader_invoc);
 #endif
-    glGetIntegerv(GL_MAX_COMPUTE_SHADER_STORAGE_BLOCKS, &g_caps.max_compute_shader_block);
     glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &g_caps.max_nr_layers);
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &g_caps.max_nr_attachments);
     glGetIntegerv(GL_MAX_SAMPLES, &g_caps.max_nr_samples);

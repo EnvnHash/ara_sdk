@@ -37,23 +37,21 @@ static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
         app.getMainWindow()->swap();
 
         verifyFunc(app);
+        app.setRunFlag(false); // for debugging comment this line in order to have to window stay
     });
 
     if (postInitFunc) {
         postInitFunc(app);
     }
 
-    //app.startEventLoop(); // for debugging comment in this line in order to have to window stay
     app.exit();
 }
 
 static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFunc,
                          const std::function<void(ara::UIApplication&)>& verifyFunc,
                          int width = 1280, int height = 720) {
-
     auto postVerifyFunc = [&](ara::UIApplication& app) {
         // remove all gl resources, but leave the window and its UINode tree untouched
-        app.stop();
         app.stopGLBaseProcCallbackLoop();
 
         app.getMainWindow()->removeGLResources(); // make the window release all it's opengl resources
@@ -62,7 +60,7 @@ static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFun
         // rebuild the context
         app.initGLBase(); // no context current after this call
 
-        app.startSingleUiThread([&] {
+        app.initThread([&] {
             app.getMainWindow()->init(ara::UIWindowParams{
                     .glbase = app.getGLBase(),
                     .size = { app.getMainWindow()->getWidth(), app.getMainWindow()->getHeight() },
@@ -80,6 +78,7 @@ static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFun
             app.getMainWindow()->swap();
 
             verifyFunc(app);
+            app.setRunFlag(false);
         });
     };
 

@@ -48,6 +48,7 @@ TEST(UITest, SetXSetY)
         mainWin->swap();
 
         checkQuad(mainWin, { posX, posY }, { width, height }, col, {});
+        app.setRunFlag(false);
     });
 
     //app.startEventLoop(); // for debugging comment in this line in order to have to window stay

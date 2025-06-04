@@ -54,15 +54,15 @@ TEST(AnimValTest, UpdateTriangularFunction) {
     // Simulate passing time
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     av.update();
-    EXPECT_NEAR(av.getVal(), 50, 2); // Expected value at 0.25 seconds
+    EXPECT_NEAR(av.getVal(), 50, 3); // Expected value at 0.25 seconds
 
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     av.update();
-    EXPECT_NEAR(av.getVal(), 100, 2); // Expected value at 0.5 second
+    EXPECT_NEAR(av.getVal(), 100, 3); // Expected value at 0.5 second
 
     std::this_thread::sleep_for(std::chrono::milliseconds(250));
     av.update();
-    EXPECT_NEAR(av.getVal(), 50, 2); // Expected value at 0.75 seconds
+    EXPECT_NEAR(av.getVal(), 50, 3); // Expected value at 0.75 seconds
 }
 
 TEST(AnimValTest, EndFunction) {

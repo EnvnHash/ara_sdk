@@ -85,8 +85,9 @@ void UIApplication::initSingleThreaded(const std::function<void()>& initCb) {
     // guiThread won't be able to make it current
     GLWindow::makeNoneCurrent();
 
-    startSingleUiThread(initCb);
     startGLBaseProcCallbackLoop();
+    initThread(initCb);
+
     m_inited = true;
 }
 
@@ -100,6 +101,7 @@ void UIApplication::startSingleUiThread(const std::function<void()>& initCb) {
 
 void UIApplication::initThread(const std::function<void()>& initCb) {
     m_mainWindow->makeCurrent();
+    m_run = true;
 
     glViewport(0, 0, static_cast<GLsizei>(m_mainWindow->getWidthReal()), static_cast<GLsizei>(m_mainWindow->getHeightReal()));
     glClearColor(0.f, 0.f, 0.f, 1.f);
@@ -113,7 +115,6 @@ void UIApplication::initThread(const std::function<void()>& initCb) {
         mainWinIterate();
     }
 
-    m_run = true;
     while (m_run) {
         if (m_initSignaled) {
             m_iterate.wait(0);

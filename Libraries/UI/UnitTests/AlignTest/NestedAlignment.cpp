@@ -21,7 +21,7 @@ TEST(UITest, NestedAlignment)
     FIBITMAP* pBitmap;
 
     // implicitly creates a window and runs the lambda before calling the draw function for the first time
-    app.init([&](){
+    app.init([&]{
         Texture m_texture(app.getGLBase());
 
         // get the root node of the UI scenegraph
@@ -154,9 +154,8 @@ TEST(UITest, NestedAlignment)
                 texData++; refTex++;
             }
         }
+        app.setRunFlag(false);
     });
-
-    //app.startEventLoop(); // for debugging comment in this line in order to have to window stay
 
     // the above method will return when the draw function was executed once
     // exit immediately!

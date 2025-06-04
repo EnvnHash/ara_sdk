@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
 project(GLBase_UnitTests VERSION 0.1 LANGUAGES CXX)
 
+set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
+
 include(GeneralSettings)
+include(VisualStudioSettings)
+include(UtilitiesDepInclude)
 include(UnitTestDependencies)
+include(ResCompInclude)
 
 include_directories(
         ${CMAKE_SOURCE_DIR}/Libraries/GLBase/src
@@ -12,27 +17,26 @@ include_directories(
 
 # add test source files
 file(GLOB GLBASE_UT_SRC
-        TypoGlyphMapTest.cpp
-        ContextSharing.cpp
-        #ContextSharingFbo.cpp
-        CreateFbo.cpp
-        CreateFbo.cpp
-        CreateGLCtx.cpp
-        CreateWindow.cpp
-        CtrlPointSerialization.cpp
-        DrawQuad.cpp
-        MemLeakTests/DrawQuadMemLeak.cpp
-        GLBaseCreationDestruction.cpp
-        GLBaseStopStart.cpp
-        GLBaseStopStartResources.cpp
-        GLRendererTest.cpp
-        LoadTextureMipMap.cpp
-        LoadTexture.cpp
-        NativeWindow.cpp
-        PolygonTest.cpp
-        PolygonSerializationHps.cpp
-        PolygonSerialization.cpp
-        ThreadedWindow.cpp
+    TypoGlyphMapTest.cpp
+    ContextSharing.cpp
+    #ContextSharingFbo.cpp
+    CreateFbo.cpp
+    CreateGLCtx.cpp
+    CreateWindow.cpp
+    CtrlPointSerialization.cpp
+    DrawQuad.cpp
+    MemLeakTests/DrawQuadMemLeak.cpp
+    GLBaseCreationDestruction.cpp
+    GLBaseStopStart.cpp
+    GLBaseStopStartResources.cpp
+    GLRendererTest.cpp
+    LoadTextureMipMap.cpp
+    LoadTexture.cpp
+    NativeWindow.cpp
+    PolygonTest.cpp
+    PolygonSerializationHps.cpp
+    PolygonSerialization.cpp
+    ThreadedWindow.cpp
 )
 
 add_executable(${PROJECT_NAME} ${GLBASE_UT_SRC})
@@ -42,14 +46,6 @@ gtest_add_tests(TARGET ${PROJECT_NAME}
         TEST_SUFFIX .noArgs
         TEST_LIST noArgsTests
 )
-
-include(GLBaseDepInclude)
-include(GLBaseDependencies)
-include(GLBaseCopyDependencies)
-include(ResCompInclude)
-include(UtilitiesDependencies)
-include(UtilitiesDepInclude)
-include(Gtk3Include)
 
 set(TARGET_LIBS gmock_main gtest_main GLBase Utilities)
 if (NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
@@ -64,6 +60,13 @@ else ()
     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} Dwmapi.lib)
 endif ()
 
+include(GLBaseDepInclude)
+include(GLBaseDependencies)
+include(GLBaseCopyDependencies)
+include(ResCompInclude)
+include(UtilitiesDependencies)
+include(UtilitiesDepInclude)
+include(Gtk3Include)
 
 #copy GLBase to executable dir
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

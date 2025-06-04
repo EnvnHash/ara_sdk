@@ -35,32 +35,32 @@ TypoGlyphMap::TypoGlyphMap(uint32_t screenWidth, uint32_t screenHeight)
 
 void TypoGlyphMap::initShader() {
 #ifndef __EMSCRIPTEN__
-    std::string vert =
-        STRINGIFY(layout(location = 0) in vec4 position;\n
-            layout(location = 2) in vec2 texCoord;\n
-            uniform mat4 m_pvm;\n
-            uniform vec2 scale;\n
-            uniform vec2 trans;\n
-            out vec2 tex_coord;\n
-            const vec2[4] vertices = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n
-            void main() { \n
-                tex_coord   = vec2(vertices[gl_VertexID].x, 1.0 - vertices[gl_VertexID].y); \n
-                gl_Position = m_pvm * vec4(vertices[gl_VertexID] * scale + trans, 0.0, 1.0); \n
-            });
 
+    std::string vert =
+            STRINGIFY(layout(location = 0) in vec4 position;        \n
+                              layout(location = 2) in vec2 texCoord;\n
+                              uniform mat4 m_pvm;                   \n
+                              uniform vec2 scale;                   \n
+                              uniform vec2 trans;                   \n
+                              out vec2 tex_coord;                   \n
+                              const vec2[4] vertices = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n
+                              void main() {                         \n
+                              tex_coord   = vec2(vertices[gl_VertexID].x, 1.0 - vertices[gl_VertexID].y); \n
+                              gl_Position = m_pvm * vec4(vertices[gl_VertexID] * scale + trans, 0.0, 1.0); \n
+                      });
     vert = m_shCol->getShaderHeader() + "// basic texture shader, vert\n" + vert;
 
     std::string frag = STRINGIFY(
-        uniform sampler2D tex;\n
-        uniform vec2 tex_scale;\n
-        uniform vec2 tex_offs;\n
-        uniform vec4 color;\n
-        in vec2 tex_coord;\n
-        layout(location = 0) out vec4 fragColor;\n
-        void main() { \n
-            vec2 t_tex_coord = tex_coord * tex_scale + tex_offs;
-            float   c        = texture(tex, t_tex_coord).r;\n
-            fragColor        = vec4(color.rgb, color.a * c); \n
+        uniform sampler2D tex;                                      \n
+        uniform vec2 tex_scale;                                     \n
+        uniform vec2 tex_offs;                                      \n
+        uniform vec4 color;                                         \n
+        in vec2 tex_coord;                                          \n
+        layout(location = 0) out vec4 fragColor;                    \n
+        void main() {                                               \n
+            vec2 t_tex_coord = tex_coord * tex_scale + tex_offs;    \n
+            float   c        = texture(tex, t_tex_coord).r;         \n
+            fragColor        = vec4(color.rgb, color.a * c);        \n
         });
 
     frag = m_shCol->getShaderHeader() + "// basic texture shader, frag\n" + frag;
@@ -85,15 +85,18 @@ void TypoGlyphMap::initShader() {
     m_typoShader = m_shCol->add("TypoGlyphMap_draw", vert, frag);
 
     vert = STRINGIFY(
-        uniform mat4 m_pvm;\n uniform vec2 pix_off = vec2(0, 0);\n uniform vec2 pix_size = vec2(0, 0);\n out vec2 tex_coord;\n out vec4 t_pos;\n void
-            main() {
-                \n const vec2[4] vertices = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));
-                \n vec2  v                = vertices[gl_VertexID];
-                \n       tex_coord        = v;
-                \n       t_pos            = vec4(pix_off.x + v.x * pix_size.x, pix_off.y + v.y * pix_size.y, 0, 1);
-                \n       gl_Position      = m_pvm * t_pos;
-                \n
-            });
+        uniform mat4 m_pvm;                             \n
+        uniform vec2 pix_off = vec2(0, 0);              \n
+        uniform vec2 pix_size = vec2(0, 0);             \n
+        out vec2 tex_coord;                             \n
+        out vec4 t_pos;                                 \n
+        void main() {                                   \n
+            const vec2[4] vertices = vec2[4](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0), vec2(1.0, 1.0));\n
+            vec2  v          = vertices[gl_VertexID];   \n
+            tex_coord        = v;                       \n
+            t_pos            = vec4(pix_off.x + v.x * pix_size.x, pix_off.y + v.y * pix_size.y, 0, 1);\n
+            gl_Position      = m_pvm * t_pos;           \n
+        });
 
     vert = "// TypoGlyphMap_m_draw, vert\n" + m_shCol->getShaderHeader() + vert;
 
@@ -115,29 +118,29 @@ void TypoGlyphMap::initShader() {
 
     frag           = "// TypoGlyphMap_m_draw, frag\n" + m_shCol->getShaderHeader() + frag;
     m_typoShader_m = m_shCol->add("TypoGlyphMap_m_draw", vert, frag);
-
     m_shaderInited = true;
 }
 
-void TypoGlyphMap::loadFont(const char *_file, ShaderCollector *_shCol) {
-    m_shCol = _shCol;
+void TypoGlyphMap::loadFont(const char *file, ShaderCollector *shCol) {
+    m_shCol = shCol;
 
-    if (filesystem::exists(filesystem::path(string(_file)))) {
+    if (filesystem::exists(filesystem::path(string(file)))) {
         try {
-            m_fontFile = ifstream(_file, ios_base::in | ios_base::binary);
+            m_fontFile = ifstream(file, ios_base::in | ios_base::binary);
             m_fontFile.seekg(0, std::ios::end);
             m_fontBuffer.resize(m_fontFile.tellg());
             m_fontFile.seekg(0);
             m_fontFile.read(&m_fontBuffer[0], m_fontBuffer.size());
 
             // prepare font
-            if (!stbtt_InitFont(&m_info, reinterpret_cast<unsigned char *>(&m_fontBuffer[0]), 0))
-                throw runtime_error("TypoGlyphMap::loadFont> failed");
+            if (!stbtt_InitFont(&m_info, reinterpret_cast<unsigned char *>(&m_fontBuffer[0]), 0)) {
+                throw runtime_error("TypoGlyphMap::loadFont failed");
+            }
         } catch (runtime_error &e) {
             LOGE << "could not load font: " << e.what() << endl;
         }
     } else
-        LOGE << "TypoGlyphMap::loadFont> Couldn't open: (" << _file << ") - file does not exist";
+        LOGE << "TypoGlyphMap::loadFont Error: Couldn't open: (" << file << ") - file does not exist";
 }
 
 void TypoGlyphMap::bakeFont(int fontSize) {

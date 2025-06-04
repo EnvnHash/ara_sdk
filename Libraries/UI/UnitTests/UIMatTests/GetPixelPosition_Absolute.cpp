@@ -57,6 +57,7 @@ TEST(UITest, GetPixelPosition_Absolute) {
         ASSERT_EQ(div2->getWinPos().x, std::round(static_cast<float>(div0_size.x) * div2_pos.x + div0_pos.x));
         ASSERT_EQ(div2->getWinPos().y, std::round(static_cast<float>(div0_size.y) * div2_pos.y + div0_pos.y));
 
+        app.setRunFlag(false);
     });
 
     // the above method will return when the draw function was executed once exit immediately!

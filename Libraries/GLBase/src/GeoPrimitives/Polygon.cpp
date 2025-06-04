@@ -112,50 +112,50 @@ void Polygon::drawOutline(GLenum drawMode, TFO *tfo) {
 void Polygon::initTessShader() {
     if (!m_shCol) return;
 
-    string vert = STRINGIFY(precise layout(location = 0) in vec4 position;\n
-                                        layout(location = 2) in vec2 texCoord;\n
-                                        out FS_TC { \n
-                                        int ind; \n
-                                        vec2 texCoord; \n
-                                } vertOut; \n
-                                        void main() { \n
-                                        vertOut.ind = int(position.z); \n
-                                        vertOut.texCoord = texCoord; \n
-                                        gl_Position = vec4(position.xy, 0.f, 1.0); \n
-                                });
+    string vert = STRINGIFY(layout(location = 0) in vec4 position;  \n
+        layout(location = 2) in vec2 texCoord;                              \n
+        out FS_TC {                                                         \n
+            int ind;                                                        \n
+            vec2 texCoord;                                                  \n
+        } vertOut;                                                          \n
+        void main() {                                                       \n
+            vertOut.ind = int(position.z);                                  \n
+            vertOut.texCoord = texCoord;                                    \n
+            gl_Position = vec4(position.xy, 0.f, 1.0);                      \n
+        });
     vert = "// polygon tesselation shader, vert\n" + m_shCol->getShaderHeader() + vert;
 
     string cont = STRINGIFY(layout(vertices = 3) out;\n
-                                        in FS_TC { \n
-                                        int ind; \n
-                                        vec2 texCoord; \n
-                                } vertIn[]; \n  // note although TC execution is per vertex, inputs provide access to all patches vertices
-                                        \n
-                                        out TC_TE { \n
-                                        vec2 texCoord; \n
-                                        int calcTex; \n
-                                } vertOut[]; \n // note: per vertex, can only we indexed via gl_InvocationID, TC execution is per vertex
-                                        \n
-                                        uniform int maxDiff; \n
-                                        uniform vec2 fboSize; \n
-                                        uniform float segsPerPixel; \n
-                                        \n
-                                        void main() { \n
-                                        gl_TessLevelInner[0] = 1.0;  \n// center
+        in FS_TC { \n
+            int ind; \n
+            vec2 texCoord; \n
+        } vertIn[]; \n  // note although TC execution is per vertex, inputs provide access to all patches vertices
+                \n
+        out TC_TE { \n
+            vec2 texCoord; \n
+            int calcTex; \n
+        } vertOut[]; \n // note: per vertex, can only we indexed via gl_InvocationID, TC execution is per vertex
+        \n
+        uniform int maxDiff; \n
+        uniform vec2 fboSize; \n
+        uniform float segsPerPixel; \n
+        \n
+        void main() { \n
+            gl_TessLevelInner[0] = 1.0;  \n// center
 
-                                        // calculate amount of subdivision
-                                        int pairDiff[3]; \n
-                                        for (int i=0; i<3;i++) { \n
-                                        pairDiff[i] = abs(vertIn[i].ind - vertIn[(i+1) %3].ind); \n
-                                } \n
-                                        // if this triangle side is not an edge, subdivide it
-                                        for (int i=0; i<3;i++) { \n
-                                        gl_TessLevelOuter[(i+2) %3] = pairDiff[i] != 1 ? 2.0 : 1.0;  \n// second point pair of the input patch
-                                }\n
-                                        gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position; \n
-                                        vertOut[gl_InvocationID].texCoord = vertIn[gl_InvocationID].texCoord; \n
-                                        vertOut[gl_InvocationID].calcTex = int(pairDiff[gl_InvocationID] != 1); \n
-                                });
+            // calculate amount of subdivision
+            int pairDiff[3]; \n
+            for (int i=0; i<3;i++) { \n
+                pairDiff[i] = abs(vertIn[i].ind - vertIn[(i+1) %3].ind); \n
+            }\n
+            // if this triangle side is not an edge, subdivide it
+            for (int i=0; i<3;i++) { \n
+                gl_TessLevelOuter[(i+2) %3] = pairDiff[i] != 1 ? 2.0 : 1.0;  \n// second point pair of the input patch
+            }\n
+            gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position; \n
+            vertOut[gl_InvocationID].texCoord = vertIn[gl_InvocationID].texCoord; \n
+            vertOut[gl_InvocationID].calcTex = int(pairDiff[gl_InvocationID] != 1); \n
+    });
     cont = "// polygon tesselation shader, vert\n" + m_shCol->getShaderHeader() + cont;
 
     // tesselation evaluation shader deals with path vertices in form of
@@ -172,38 +172,40 @@ void Polygon::initTessShader() {
     // if gl_TessCoord.z == 0.0 we are on [2], take y coord [1]
 
     string eval = STRINGIFY(layout(triangles, equal_spacing, ccw) in;
-                                        in TC_TE{\n
-                        vec2 texCoord; \n
-                        int calcTex; \n
-                } vertIn[]; \n  // access to all patches vertices from the TC stage, although TE is invocated per Vertex
-                                        out TE_FS { \n
-                                        vec2 texCoord; \n
-                                } vertOut; \n
-                                        uniform mat4 m_pvm;
-                                        void main() {
-                                        vec4 iPoint = gl_TessCoord.x * gl_in[0].gl_Position
-                                        + gl_TessCoord.y * gl_in[1].gl_Position
-                                        + gl_TessCoord.z * gl_in[2].gl_Position;
-                                        vertOut.texCoord = gl_TessCoord.x * vertIn[0].texCoord
-                                        + gl_TessCoord.y * vertIn[1].texCoord
-                                        + gl_TessCoord.z * vertIn[2].texCoord;
-                                        gl_Position = iPoint;
-                                });
+        in TC_TE{\n
+            vec2 texCoord; \n
+            int calcTex; \n
+        } vertIn[]; \n  // access to all patches vertices from the TC stage, although TE is invocated per Vertex
+        out TE_FS { \n
+            vec2 texCoord; \n
+        } vertOut; \n
+        uniform mat4 m_pvm;
+        void main() {
+            vec4 iPoint = gl_TessCoord.x * gl_in[0].gl_Position
+                        + gl_TessCoord.y * gl_in[1].gl_Position
+                        + gl_TessCoord.z * gl_in[2].gl_Position;
+            vertOut.texCoord = gl_TessCoord.x * vertIn[0].texCoord
+                        + gl_TessCoord.y * vertIn[1].texCoord
+                        + gl_TessCoord.z * vertIn[2].texCoord;
+            gl_Position = iPoint;
+        });
     eval = "// polygon tesselation shader, vert\n" + m_shCol->getShaderHeader() + eval;
 
     string frag = STRINGIFY(layout(location = 0) out vec4 fragColor;\n
-                                        in TE_FS { \n
-                                        vec2 texCoord; \n
-                                } vertIn; \n  // access to all patches vertices from the TC stage, although TE is invocated per Vertex
-                                        uniform sampler2D tex;\n
-                                        uniform vec4 color;\n
-                                        void main() { \n
-                                        fragColor = texture(tex, vertIn.texCoord);
-                                        // fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-                                });
+        in TE_FS { \n
+            vec2 texCoord; \n
+        } vertIn; \n  // access to all patches vertices from the TC stage, although TE is invocated per Vertex
+        uniform sampler2D tex;\n
+        uniform vec4 color;\n
+        void main() { \n
+            fragColor = texture(tex, vertIn.texCoord);
+            // fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        });
     frag = "// polygon tesselation shader, vert\n" + m_shCol->getShaderHeader() + frag;
 
-    if (m_shCol->hasShader("PolygonTessShader")) m_shCol->deleteShader("PolygonTessShader");
+    if (m_shCol->hasShader("PolygonTessShader")) {
+        m_shCol->deleteShader("PolygonTessShader");
+    }
 
     m_tessShdr = m_shCol->add("PolygonTessShader", vert, cont, eval, std::string(), frag);
 }

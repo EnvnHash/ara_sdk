@@ -47,6 +47,7 @@ public:
     void setWinWidth(int w) { m_winSize.x = w; }
     void setWinHeight(int g) { m_winSize.y = g; }
     void setWinSize(const glm::ivec2& s) { m_winSize = s; }
+    void setRunFlag(bool val) { m_run = val; }
 
 public:
     std::string m_internalPath;

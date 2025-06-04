@@ -14,7 +14,8 @@ namespace ara::UiUnitTest::GetPixelPosition_ParentRelative {
 
 TEST(UITest, GetPixelPosition_ParentRealtive) {
     UIApplication app;
-    app.setEnableMenuBar(false); app.setEnableWindowResizeHandles(false);
+    app.setEnableMenuBar(false);
+    app.setEnableWindowResizeHandles(false);
 
     glm::vec4 fgColor(0.f, 0.f, 1.f, 1.f);
     glm::vec4 bgColor(0.2f, 0.2f, 0.2f, 1.f);
@@ -58,8 +59,8 @@ TEST(UITest, GetPixelPosition_ParentRealtive) {
 
         ASSERT_EQ(div2->getPos().x, std::round(static_cast<float>(div0_size.x * div2_pos.x)));
         ASSERT_EQ(div2->getPos().y, std::round(static_cast<float>(div0_size.y * div2_pos.y)));
+        app.setRunFlag(false);
     });
-
 
     // the above method will return when the draw function was executed once exit immediately!
     app.exit();

@@ -7,6 +7,7 @@ include(GeneralSettings)
 include(VisualStudioSettings)
 include(UnitTestDependencies)
 include(UtilitiesDepInclude)
+include(ResCompInclude)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/Libraries/UI/src
@@ -37,24 +38,25 @@ gtest_add_tests(TARGET      ${PROJECT_NAME}
                 TEST_LIST   noArgsTests
 )
 
-include(GLBaseDepInclude)
-include(GLBaseDependencies)
-include(GLBaseCopyDependencies)
-include(UtilitiesDependencies)
-include(UtilitiesDepInclude)
-
 set(TARGET_LIBS gmock_main gtest_main GLBase SceneGraph UI Utilities)
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
-     list(APPEND TARGET_LIBS resources)
+    list(APPEND TARGET_LIBS resources)
 endif()
 
 if (UNIX AND NOT APPLE)
-     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} glfw assimp)
+    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} glfw assimp)
 elseif(APPLE)
-     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
+    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
 else()
-     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} Dwmapi.lib)
+    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} Dwmapi.lib)
 endif()
+
+include(GLBaseDepInclude)
+include(GLBaseDependencies)
+include(GLBaseCopyDependencies)
+include(ResCompInclude)
+include(UtilitiesDependencies)
+include(UtilitiesDepInclude)
 
 include(CreateSymLink)
 create_symlink(${ARA_SDK_SOURCE_DIR}/Assets/resdata ${CMAKE_CURRENT_BINARY_DIR}/resdata)

@@ -13,7 +13,7 @@ namespace ara::SceneGraphUnitTest::ImageTests {
 Image* addImage(UIApplication &app, const std::string& imageFile, const glm::ivec2& size={400,400},
     const glm::vec4& bgCol = {0.5f, 0.2f, 0.2f, 1.f}, int mipMap=1) {
     auto img = app.getMainWindow()->getRootNode()->addChild<Image>();
-    img->setImg((filesystem::current_path() / "resdata" / "test" / imageFile).string(), mipMap);
+    img->setImg(( std::filesystem::path("test") / imageFile).string(), mipMap);
     img->setSize(size.x, size.y);
     img->setBackgroundColor(bgCol.r, bgCol.g, bgCol.b, bgCol.a);
     img->setAlign(align::center, valign::center);

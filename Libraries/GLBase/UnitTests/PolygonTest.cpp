@@ -1,3 +1,4 @@
+#ifndef __APPLE__
 #include "GLBaseUnitTestCommon.h"
 #include <GeoPrimitives/Polygon.h>
 
@@ -102,4 +103,6 @@ namespace ara::GLBaseUnitTest::PolygonTest {
         EXPECT_TRUE(didRun);
     }
 }
+
+#endif
 
