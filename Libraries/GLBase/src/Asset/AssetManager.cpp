@@ -176,15 +176,17 @@ bool AssetManager::checkForChangesInFolderFiles() {
 
     filesystem::file_time_type ft;
     bool change = false;
+    auto dataPath = m_assetLoader.getAssetPath();
 
     // check for file deletion or modification
     for (auto &[filename, lastChangeTime] : m_resFolderFiles) {
-        if (!filesystem::exists(filename)) {
+        auto p = dataPath / filename;
+        if (!filesystem::exists(p)) {
             change = true;
             break;
         } else {
             try {
-                ft = filesystem::last_write_time(filename);
+                ft = filesystem::last_write_time(p);
             } catch (...) {
             }
 

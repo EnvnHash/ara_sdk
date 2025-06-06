@@ -149,8 +149,7 @@ void UIApplication::openInfoDiag(const InfoDiagParams& params) {
             auto ptr   = m_infoDiag;
             m_infoDiag = nullptr;
             ptr->addCloseEvent(nullptr);  // frees GLFWWindow instance in GLFWWindowManager
-            removeWindow(ptr);            // remove the dialog from the m_uiWindow vector
-                                          // -> calls dtor
+            removeWindow(ptr);            // remove the dialog from the m_uiWindow vector -> calls dtor
         }
 
         // create an info dialog window center above the main Window
@@ -161,7 +160,7 @@ void UIApplication::openInfoDiag(const InfoDiagParams& params) {
         m_infoDiag->setConfirmCb(params.onConfirm);
         m_infoDiag->setCloseCb(params.onClose);
         m_infoDiag->setCancelCb(params.onCancel);
-        m_infoDiag->setMinStayTime(params.minStayTime);
+        m_infoDiag->setMinStayTime(static_cast<int>(params.minStayTime));
         m_infoDiag->setRemoveCb([this] {
             m_glbase.runOnMainThread([this] {
                 if (m_infoDiag) {
@@ -173,13 +172,13 @@ void UIApplication::openInfoDiag(const InfoDiagParams& params) {
             });
         });
 
-        // m_infoDiag->setType manipulated the m_setStyleFunc, so must be done
-        // sync with gl loop
+        // m_infoDiag->setType manipulated the m_setStyleFunc, so must be done sync with gl loop
         m_infoDiag->addGlCb(this, "setTp", [this, &params] {
             m_infoDiag->setType(params.tp);  // causes a rebuildCustomStyle
             return true;
         });
 
+        GLWindow::makeNoneCurrent();
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
         m_infoDiag->startRenderLoop();
 #endif
