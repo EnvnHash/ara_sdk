@@ -126,6 +126,17 @@ public:
         signalChange(cbType::postChange);
     }
 
+    Node* findParentByType(const std::string& typeStr) {
+        Node* par = parent();
+        {
+            std::unique_lock<std::mutex> l(m_mtx);
+            while (par && par->typeName() != typeStr) {
+                par = par->parent();
+            }
+        }
+        return par;
+    }
+
     std::deque<Node*> findChildrenByType(const std::string& typeStr) {
         std::deque<Node*> outList;
         {
