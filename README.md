@@ -34,8 +34,6 @@ All dependencies are checked out and unzipped automatically.
 
 [Utilities](Libraries/Utilities/src/README.md) FileSystem, Network, String and other utilities
 
-[VideoInput](Libraries/VideoInput/src/README.md) Wrapper Classes for audio/video processing
-
 
 ## Building on Android
 
