@@ -9,7 +9,9 @@ namespace ara {
 
 void UISharedRes::reqRedraw() {
     requestRedraw = true;
+#ifndef __ANDROID__
     winHandle->iterate();
+#endif
 }
 
 }
