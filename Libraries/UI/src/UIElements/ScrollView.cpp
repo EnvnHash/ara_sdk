@@ -15,9 +15,7 @@ ScrollView::ScrollView() : Div() {
 #ifdef __ANDROID__
     setCanReceiveDrag(true);
 #endif
-    m_content = dynamic_cast<Div*>(UINode::addChild(make_unique<Div>()));
-    m_content->setName("content");
-    m_content->excludeFromObjMap(true);
+    m_content = UINode::addChild<Div>(UINodePars{ .name = "content" });
 }
 
 void ScrollView::init() {
@@ -31,7 +29,6 @@ void ScrollView::init() {
                 pv = n->splitValue(',');
             }
         }
-
         m_origPadding = vec4{pv.f(0), pv.f(1, pv.f(0)), pv.f(2, pv.f(0)), pv.f(3, pv.f(0))};
     } else {
         m_origPadding = m_padding;
@@ -39,22 +36,24 @@ void ScrollView::init() {
 
     // the scroll view size should always stay the same, independent of the scrollbars visibility to achieve this padding
     // is applied when the bars become visible
-    ui_HSB = UINode::addChild<UIHScrollBar>();
+    ui_HSB = UINode::addChild<UIHScrollBar>(UINodePars{
+        .size = ivec2(-m_scrollBarSize, m_scrollBarSize),
+        .fgColor = m_sharedRes->colors->at(uiColors::sepLine),
+        .bgColor = m_sharedRes->colors->at(uiColors::background)
+    });
     ui_HSB->setAlign(align::left, valign::bottom);
-    ui_HSB->setSize(-m_scrollBarSize, m_scrollBarSize);  // if both are needed, then take size, so they don't overlap
-    ui_HSB->setColor(m_sharedRes->colors->at(uiColors::sepLine));
-    ui_HSB->setBackgroundColor(m_sharedRes->colors->at(uiColors::background));
     ui_HSB->excludeFromParentViewTrans(true);
     ui_HSB->excludeFromScissoring(true);
     ui_HSB->excludeFromPadding(true);
     ui_HSB->excludeFromOutOfBorderCheck(true);
     ui_HSB->setVisibility(false);
 
-    ui_VSB = UINode::addChild<UIVScrollBar>();
+    ui_VSB = UINode::addChild<UIVScrollBar>(UINodePars{
+        .size = ivec2{m_scrollBarSize, -m_scrollBarSize},
+        .fgColor = m_sharedRes->colors->at(uiColors::sepLine),
+        .bgColor = m_sharedRes->colors->at(uiColors::background)
+    });
     ui_VSB->setAlign(align::right, valign::top);
-    ui_VSB->setSize(m_scrollBarSize, -m_scrollBarSize);  // if both are needed, then take size, so they don't overlap
-    ui_VSB->setColor(m_sharedRes->colors->at(uiColors::sepLine));
-    ui_VSB->setBackgroundColor(m_sharedRes->colors->at(uiColors::background));
     ui_VSB->excludeFromParentViewTrans(true);
     ui_VSB->excludeFromScissoring(true);
     ui_VSB->excludeFromPadding(true);
@@ -62,16 +61,17 @@ void ScrollView::init() {
     ui_VSB->setVisibility(false);
 
     // little div to cover the corner in case both scrollbars are showing
-    m_corner = UINode::addChild<Div>();
-    m_corner->setName("UIScrollBarCorner");
+    m_corner = UINode::addChild<Div>(UINodePars{
+        .size = ivec2{m_scrollBarSize, m_scrollBarSize},
+        .bgColor = m_sharedRes->colors->at(uiColors::background),
+        .name = "UIScrollBarCorner"
+    });
     m_corner->setAlign(align::right, valign::bottom);
-    m_corner->setSize(m_scrollBarSize, m_scrollBarSize);  // if both are needed, then take size so they don't overlap
     m_corner->excludeFromParentViewTrans(true);
     m_corner->excludeFromScissoring(true);
     m_corner->excludeFromPadding(true);
     m_corner->excludeFromOutOfBorderCheck(true);
     m_corner->setVisibility(false);
-    m_corner->setBackgroundColor(m_sharedRes->colors->at(uiColors::background));
 }
 
 void ScrollView::updtMatrIt(scissorStack* ss) {

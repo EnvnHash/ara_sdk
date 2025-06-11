@@ -130,7 +130,6 @@ void UINodeHID::mouseOut(hidData& data) {
             it();
         }
 
-        // takes about 90 microseconds for 16 lambdas in debug or 10 microseconds in release
         m_sharedRes->requestRedraw = true;
     }
 

@@ -20,8 +20,8 @@ TabView* addTabView(UIApplication& app, std::array<bool, 3>& checks) {
 
     auto tabView = rootNode->addChild<TabView>(UINodePars{
         .size = vec2{1.f, 1.f},
-        .fgColor = {.3f, .3f, .3f, 1.f},
-        .bgColor = {.1f, .1f, .1f, 1.f}
+        .fgColor = vec4{.3f, .3f, .3f, 1.f},
+        .bgColor = vec4{.1f, .1f, .1f, 1.f}
     });
 
     tabView->setPadding(10.f);
