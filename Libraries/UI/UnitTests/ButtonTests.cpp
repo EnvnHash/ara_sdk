@@ -18,8 +18,8 @@ Button* setupTestButton(UIApplication& app) {
 
     auto button = rootNode->addChild<Button>(UINodePars{
         .size = buttSize,
-        .fgColor = {0.f, 0.f, 1.f, 1.f},
-        .bgColor = {0.2f, 0.2f, 0.2f, 1.f} });
+        .fgColor = vec4{0.f, 0.f, 1.f, 1.f},
+        .bgColor = vec4{0.2f, 0.2f, 0.2f, 1.f} });
 
     button->setFontSize(30);
     button->setText("HelloBut");
