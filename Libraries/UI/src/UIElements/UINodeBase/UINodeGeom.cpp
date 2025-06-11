@@ -76,9 +76,12 @@ void UINodeGeom::calcContentTransMat() {
 }
 
 void UINodeGeom::calcNormMat() {
-    p[0] = *m_parentMat * vec4(m_pos.x, m_pos.y, 0.f, 1.f);
-    p[1] = *m_parentMat * vec4(m_pos.x + m_size.x, m_pos.y + m_size.y, 0.f, 1.f);
+    std::array<glm::vec4, 2> p{
+        *m_parentMat * vec4(m_pos.x, m_pos.y, 0.f, 1.f),
+        *m_parentMat * vec4(m_pos.x + m_size.x, m_pos.y + m_size.y, 0.f, 1.f)
+    };
 
+    std::array<glm::vec2, 2> pN{};
     for (int i = 0; i < 2; i++) {
         pN[i]   = vec2(p[i]) / vec2(m_viewPort.z, m_viewPort.w);
         pN[i].y = 1.f - pN[i].y;

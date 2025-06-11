@@ -437,9 +437,6 @@ protected:
 
     state m_state     = state::none;
     state m_lastState = state::none;
-
-    std::array<glm::vec4, 2> p{};
-    std::array<glm::vec2, 2> pN{};
 };
 
 }

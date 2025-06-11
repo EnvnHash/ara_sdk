@@ -29,8 +29,11 @@ class WindowManager;
 struct UINodePars {
     std::variant<glm::ivec2, glm::vec2> pos{};
     std::variant<glm::ivec2, glm::vec2> size{};
-    glm::vec4 fgColor{};
-    glm::vec4 bgColor{};
+    std::optional<glm::vec4> fgColor{};
+    std::optional<glm::vec4> bgColor{};
+    std::optional<std::string> name{};
+    std::optional<std::string> style{};
+    std::optional<bool> excludeFromObjMap{};
 };
 
 class UINode : public UINodeHID {
@@ -62,8 +65,22 @@ public:
             }
         }, arg.size);
 
-        node->setColor(arg.fgColor);
-        node->setBackgroundColor(arg.bgColor);
+        if (arg.fgColor) {
+            node->setColor(arg.fgColor.value());
+        }
+
+        if (arg.bgColor) {
+            node->setBackgroundColor(arg.bgColor.value());
+        }
+
+        node->setName(arg.name.value_or(""));
+
+        if (arg.style){
+            node->addStyleClass(arg.style.value());
+        }
+
+        node->excludeFromObjMap(arg.excludeFromObjMap.value_or(false));
+
         return static_cast<T*>(node);
     }
 

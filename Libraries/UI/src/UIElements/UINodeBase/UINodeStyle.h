@@ -23,7 +23,7 @@ public:
     virtual void clearStyles();
     virtual void applyStyle();
 
-    void setStyleInitCol(const std::string& propName, const glm::vec4& col, state st);
+    void         setStyleInitCol(const std::string& propName, const glm::vec4& col, state st);
     virtual void setBorderColor(float r, float g, float b, float a, state st = state::m_state);
     virtual void setBorderColor(const glm::vec4& col, state st = state::m_state);
     virtual void setColor(float r, float g, float b, float a, state st = state::m_state);
