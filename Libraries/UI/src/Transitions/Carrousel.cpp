@@ -13,19 +13,8 @@ CarrouselSlide::CarrouselSlide() : Div() {
     setName(getTypeName<CarrouselSlide>());
 }
 
-CarrouselSlide::CarrouselSlide(const std::string& styleClass)  {
-    setName(getTypeName<CarrouselSlide>());
-    UINode::addStyleClass(styleClass);
-}
-
 Carrousel::Carrousel() : Div() {
     setName(getTypeName<Carrousel>());
-    initFixedChildren();
-}
-
-Carrousel::Carrousel(const std::string& styleClass)  {
-    setName(getTypeName<Carrousel>());
-    UINode::addStyleClass(styleClass);
     initFixedChildren();
 }
 
@@ -82,8 +71,8 @@ CarrouselSlide* Carrousel::add() {
     return m_slides.back();
 }
 
-CarrouselSlide* Carrousel::add(const std::string& styleclass) {
-    m_slides.emplace_back(m_content->addChild<CarrouselSlide>(styleclass));
+CarrouselSlide* Carrousel::add(const UINodePars& pars) {
+    m_slides.emplace_back(m_content->addChild<CarrouselSlide>(pars));
     postAdd(m_slides.back());
     return m_slides.back();
 }

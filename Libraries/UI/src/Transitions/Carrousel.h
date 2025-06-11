@@ -13,8 +13,6 @@ namespace ara {
 class CarrouselSlide : public Div {
 public:
     CarrouselSlide();
-    explicit CarrouselSlide(const std::string& styleClass);
-
     void setOnShowFunc(const std::function<void()>& f) { m_onShow = f; }
 
 private:
@@ -26,14 +24,13 @@ enum class CarrouselMode : int { fitAllOnScreen = 0, fitOneSlideOnScreen };
 class Carrousel : public UIStack, public Div {
 public:
     Carrousel();
-    explicit Carrousel(const std::string& styleClass);
 
     void initFixedChildren();
     void mouseUp(hidData& data) override;
     void mouseDrag(hidData& data) override;
 
     CarrouselSlide* add();
-    CarrouselSlide* add(const std::string& styleclass);
+    CarrouselSlide* add(const UINodePars& pars);
     void postAdd(CarrouselSlide* sl);
 
     void rotate(float pos);
