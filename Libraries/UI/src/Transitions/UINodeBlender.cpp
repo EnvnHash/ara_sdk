@@ -61,12 +61,12 @@ void UINodeBlender::transition(transType tt, double dur) {
                 m_nodes[type::back]->setVisibility(true);
             }
 
-            m_root->getSharedRes()->requestRedraw = true;
+            m_root->getSharedRes()->reqRedraw();
 
             if (m_blendPos.getEndFunc()) {
                 // node may not be initialized at this point
                 if (!m_nodes[type::back]->isInited()) {
-                    m_nodes[type::back]->getSharedRes()->requestRedraw = true;
+                    m_nodes[type::back]->getSharedRes()->reqRedraw();
                     m_nodes[type::back]->addGlCb("retryUINodeBlenderFrontToBack", [this]{
                         m_blendPos.getEndFunc()();
                         return true;
@@ -85,7 +85,7 @@ void UINodeBlender::transition(transType tt, double dur) {
 
             m_root->addGlCb("nodeBlend", [this] {
                 m_blendPos.update();
-                m_root->getSharedRes()->requestRedraw = true;
+                m_root->getSharedRes()->reqRedraw();
                 return m_blendPos.stopped();
             });
         }

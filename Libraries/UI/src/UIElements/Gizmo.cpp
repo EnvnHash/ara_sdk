@@ -628,7 +628,7 @@ void Gizmo::drag(const hidData& data)
                     static_cast<float>(data.mousePosNodeRel.y) / getSize().y,
                     data.shiftPressed, data.altPressed, data.ctrlPressed, m_rotScale);
 
-    getSharedRes()->requestRedraw = true;
+    getSharedRes()->reqRedraw();
 }
 
 void Gizmo::mouseUp(hidData& data) {
@@ -639,7 +639,7 @@ void Gizmo::mouseUp(hidData& data) {
     for (const auto& it : m_axisLabels) {
         it->mouseUp(data);
         if (data.consumed && getSharedRes()) {
-            getSharedRes()->requestRedraw = true;
+            getSharedRes()->reqRedraw();
             return;
         }
     }
@@ -733,7 +733,7 @@ void Gizmo::mouseMove(hidData& data) {
     for (const auto& it : m_axisLabels) {
         it->mouseMove(data);
         if (data.consumed) {
-            if (getSharedRes()) getSharedRes()->requestRedraw = true;
+            if (getSharedRes()) getSharedRes()->reqRedraw();
             return;
         }
     }
@@ -753,7 +753,7 @@ void Gizmo::excludeLabelsFromStyles(bool val) {
         lbl->excludeFromStyles(val);
     }
 
-    getSharedRes()->requestRedraw = true;
+    getSharedRes()->reqRedraw();
 }
 
 }

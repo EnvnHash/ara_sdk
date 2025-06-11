@@ -215,7 +215,7 @@ void Scene3DTool::connectUINodes() {
                         }
                     }
                     setDrawFlag();
-                    getSharedRes()->requestRedraw = true;
+                    getSharedRes()->reqRedraw();
                 });
         */
     }
@@ -654,7 +654,7 @@ void Scene3DTool::enableNetCamHighlight(bool val) {
         });
 
         m_scene3D->setDrawProcSteps();
-        getSharedRes()->requestRedraw = true;
+        getSharedRes()->reqRedraw();
     }
 }
 

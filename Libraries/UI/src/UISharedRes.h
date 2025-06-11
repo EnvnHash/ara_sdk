@@ -44,6 +44,8 @@ public:
     std::shared_ptr<DrawManager>                               drawMan;
     GLBase*                                                    glbase     = nullptr;
 
+    void reqRedraw();
+
     void setDrawFlag(bool val = true) const {
         if (procSteps) {
             procSteps->at(Draw).active = true;

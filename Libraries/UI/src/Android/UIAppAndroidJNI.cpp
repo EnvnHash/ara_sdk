@@ -87,7 +87,7 @@ void UIAppAndroidJNI::OnDrawFrame() {
         m_mainWindow->getSharedRes()->setDrawFlag();
         m_mainWindow->draw(0, 0, 0);
 
-        m_mainWindow->getSharedRes()->requestRedraw = true;
+        m_mainWindow->getSharedRes()->reqRedraw();
 
         // proc force redraw if requested
         if (m_mainWindow->getSharedRes()->requestRedraw) {

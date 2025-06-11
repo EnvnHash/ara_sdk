@@ -430,7 +430,7 @@ bool Scene3DBase::drawFunc(const uint32_t& objId) {
         m_typo->print(-0.95f, 0.9f, fpsStr, m_fontSize, &typocol[0]);
     }
 
-    if (m_permRedraw && getSharedRes()) getSharedRes()->requestRedraw = true;
+    if (m_permRedraw && getSharedRes()) getSharedRes()->reqRedraw();
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -446,7 +446,7 @@ bool Scene3DBase::drawFunc(const uint32_t& objId) {
 void Scene3DBase::setPermRedraw(bool val) {
     m_permRedraw = val;
     if (getSharedRes()) {
-        getSharedRes()->requestRedraw = true;
+        getSharedRes()->reqRedraw();
     }
 }
 
@@ -462,7 +462,7 @@ void Scene3DBase::updateMatrix() {
          static_cast<int>(m_sceneRenderCam->getFbo()->getHeight()) != static_cast<int>(m_size.y * getWindow()->getPixelRatio()))) {
         updateScene3DBaseViewport(0.f, 0.f, m_size.x * getWindow()->getPixelRatio(),
                                   m_size.y * getWindow()->getPixelRatio());
-        getSharedRes()->requestRedraw = true;
+        getSharedRes()->reqRedraw();
     }
 }
 
@@ -762,7 +762,7 @@ void Scene3DBase::mouseDrag(hidData& data) {
     m_reqRenderPasses[renderPass::objectMap] = true;
 
     setDrawFlag();
-    getSharedRes()->requestRedraw = true;
+    getSharedRes()->reqRedraw();
 
     data.consumed = true;
 }
@@ -777,7 +777,7 @@ void Scene3DBase::mouseWheel(hidData& data) {
     m_reqRenderPasses[renderPass::shadowMap] = true;
     m_reqRenderPasses[renderPass::objectMap] = true;
 
-    getSharedRes()->requestRedraw = true;
+    getSharedRes()->reqRedraw();
     data.consumed = true;
 }
 

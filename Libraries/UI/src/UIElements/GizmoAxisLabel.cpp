@@ -55,7 +55,7 @@ bool GizmoAxisLabel::updateCamFade() const {
     if (m_gizmo->getCamera() && !m_gizmo->getCamera()->fadeTransfStopped()) {
         m_gizmo->getCamera()->updateFade();
         setDrawFlag();
-        m_gizmo->getSharedRes()->requestRedraw = true;
+        m_gizmo->getSharedRes()->reqRedraw();
         return true;
     }
     return false;
@@ -86,7 +86,7 @@ void GizmoAxisLabel::mouseOut(hidData& data) {
     // custom drawing with z-pos and Fbos and thus custom sharedRes, the
     // requestRedraw Flag isn't set into ui node trees sharedRes, so do it here
     if (m_gizmo && m_gizmo->getSharedRes()) {
-        m_gizmo->getSharedRes()->requestRedraw = true;
+        m_gizmo->getSharedRes()->reqRedraw();
     }
 }
 
@@ -162,7 +162,7 @@ void GizmoAxisLabel::mouseUp(hidData& data) {
     }
 
     setDrawFlag();
-    getSharedRes()->requestRedraw = true;
+    getSharedRes()->reqRedraw();
     data.consumed                = true;
     m_leftPressed                 = false;
 }

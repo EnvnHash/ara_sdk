@@ -250,7 +250,7 @@ bool ARCoreCam::drawFunc(const uint32_t& objId) {
     m_bgQuad->draw(GL_TRIANGLE_STRIP);
 
     if (getSharedRes())
-        getSharedRes()->requestRedraw = true;
+        getSharedRes()->reqRedraw();
 
     -----    if (!m_arCore->isTracking() || (m_arCore->isTracking() &&
     m_arCore->getAnchor()))

@@ -42,7 +42,7 @@ void Carrousel::mouseDrag(hidData& data) {
             m_moveToIdx = std::min(m_currentIdx + (data.movedPix.x < 1 ? 1 : -1), static_cast<int32_t>(m_slides.size()) -1);
             if (m_moveToIdx != m_currentIdx) {
                 show(m_moveToIdx);
-                getSharedRes()->requestRedraw = true;
+                getSharedRes()->reqRedraw();
             }
 
             m_getDragDir = false;
@@ -103,7 +103,7 @@ void Carrousel::show(int32_t toIdx) {
 
     addGlCb("carrousel_rot", [this]{
         m_blend.update();
-        getSharedRes()->requestRedraw = true;
+        getSharedRes()->reqRedraw();
         return m_blend.stopped();
     });
 }

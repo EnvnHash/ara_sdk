@@ -71,7 +71,7 @@ void TransformWidget::init() {
 
                     if (m_mousePressed) {
                         setDrawFlag();
-                        getSharedRes()->requestRedraw = true;
+                        getSharedRes()->reqRedraw();
                     }
 
                     return !m_mousePressed;
