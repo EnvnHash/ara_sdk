@@ -22,20 +22,20 @@ public:
         onChanged<T>(prop, [this, prop](std::any val) {
             m_slider->setValue(static_cast<float>((std::any_cast<T>(val) - prop->getMin()) /
                                                   static_cast<float>(prop->getMax() - prop->getMin())));
-            m_Edit->setValue(std::any_cast<T>(val));
+            m_edit->setValue(std::any_cast<T>(val));
         });
 
         if (typeid(T) == typeid(int)) {
-            m_Edit->changeValType(UIEdit::num_int);
-            m_Edit->addEnterCb([prop](const std::string& txt) { (*prop) = static_cast<T>(atoi(txt.c_str())); }, prop);
+            m_edit->changeValType(UIEdit::num_int);
+            m_edit->addEnterCb([prop](const std::string& txt) { (*prop) = static_cast<T>(atoi(txt.c_str())); }, prop);
         } else if (typeid(T) == typeid(float) || typeid(T) == typeid(double)) {
-            m_Edit->changeValType(UIEdit::num_fp);
-            m_Edit->addEnterCb([prop](const std::string& txt) { (*prop) = static_cast<T>(atof(txt.c_str())); }, prop);
+            m_edit->changeValType(UIEdit::num_fp);
+            m_edit->addEnterCb([prop](const std::string& txt) { (*prop) = static_cast<T>(atof(txt.c_str())); }, prop);
         }
 
-        m_Edit->setMinMax(prop->getMin(), prop->getMax());
-        m_Edit->setValue((*prop)());
-        m_Edit->setStep(prop->getStep());
+        m_edit->setMinMax(prop->getMin(), prop->getMax());
+        m_edit->setValue((*prop)());
+        m_edit->setStep(prop->getStep());
 
         m_slider->addMouseDragCb([this, prop](hidData& data) {
             auto newValue = static_cast<T>(
@@ -45,7 +45,7 @@ public:
             if (!m_onMouseUpUpdtMode) {
                 (*prop) = newValue;
             } else {
-                m_Edit->setValue(newValue);
+                m_edit->setValue(newValue);
             }
             data.consumed = true;
         });
@@ -74,23 +74,23 @@ public:
         }
     }
     void setUseWheel(bool val) const {
-        if (m_Edit) {
-            m_Edit->setUseWheel(val);
+        if (m_edit) {
+            m_edit->setUseWheel(val);
         }
     }
     void setPrecision(int prec) const {
-        if (m_Edit) {
-            m_Edit->setPrecision(prec);
+        if (m_edit) {
+            m_edit->setPrecision(prec);
         }
     }
     void setSliderOnMouseUpUpdtMode(bool val) { m_onMouseUpUpdtMode = val; }
     void setValueChgCb(const std::function<void()>& f) { m_valChangeCb = f; }
-    [[nodiscard]] UIEdit* getEdit() const { return m_Edit; }
+    [[nodiscard]] UIEdit* getEdit() const { return m_edit; }
 
 private:
     Label*                m_label             = nullptr;
     Slider*               m_slider            = nullptr;
-    UIEdit*               m_Edit              = nullptr;
+    UIEdit*               m_edit              = nullptr;
     bool                  m_onMouseUpUpdtMode = false;
     std::function<void()> m_valChangeCb;
 };

@@ -33,7 +33,6 @@ public:
     };
 
     Label();
-    explicit Label(const std::string& styleClass);
     explicit Label(const LabelInitData& initData);
     ~Label() override = default;
 

@@ -20,15 +20,6 @@ ScrollView::ScrollView() : Div() {
     m_content->excludeFromObjMap(true);
 }
 
-ScrollView::ScrollView(const std::string& styleClass) : Div(styleClass) {
-    setName(getTypeName<ScrollView>());
-    setFocusAllowed(false);
-    setScissorChildren(true);
-    m_content = dynamic_cast<Div*>(UINode::addChild(make_unique<Div>()));
-    m_content->setName("content");
-    m_content->excludeFromObjMap(true);
-}
-
 void ScrollView::init() {
     // padding may come from code or from stylesheet. in the case of stylesheets, this value won't be available at this
     // moment, so check if there's a padding entry for this element in the stylesheets and do read it directly,
@@ -225,13 +216,6 @@ void ScrollView::setPadding(float left, float top, float right, float bot) {
 void ScrollView::setPadding(glm::vec4& val) {
     m_origPadding = val;
     UINode::setPadding(val);
-}
-
-UINode* ScrollView::addChild(std::unique_ptr<UINode>&& child) {
-    if (!m_content) {
-        return nullptr;
-    }
-    return m_content->addChild(std::move(child));
 }
 
 }  // namespace ara

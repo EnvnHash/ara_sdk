@@ -22,17 +22,20 @@ InfoDialog::InfoDialog(const UIWindowParams& params) : UIWindow(params) {
     setEnableWindowResizeHandles(false);
     setEnableMenuBar(false);
 
-    auto base = getRootNode()->addChild<Div>("infoDiag");
+    auto base = getRootNode()->addChild<Div>();
+    base->addStyleClass("infoDiag");
     base->setPadding(10);
     base->setBorderWidth(1);
     base->setBorderColor(110.f / 255.f, 110.f / 255.f, 110.f / 255.f, 1.f);
     base->setBackgroundColor(30.f / 255.f, 30.f / 255.f, 30.f / 255.f, 1.f);
 
-    m_msgLabel = base->addChild<Label>("infoDiag.message");
+    m_msgLabel = base->addChild<Label>();
+    m_msgLabel->addStyleClass("infoDiag.message");
     m_msgLabel->setName("InfoDialogMessage");
     if (!m_infoMsg.empty()) m_msgLabel->setText(m_infoMsg);
 
-    m_okButton = base->addChild<Button>("infoDiag.okButt");
+    m_okButton = base->addChild<Button>();
+    m_okButton->addStyleClass("infoDiag.okButt");
     m_okButton->setVisibility(false);
     m_okButton->addMouseClickCb([this](hidData& data) {
         m_glbase->runOnMainThread([this] {
@@ -41,7 +44,8 @@ InfoDialog::InfoDialog(const UIWindowParams& params) : UIWindow(params) {
         });
     });
 
-    m_cancelButton = base->addChild<Button>("infoDiag.cancelButt");
+    m_cancelButton = base->addChild<Button>();
+    m_cancelButton->addStyleClass("infoDiag.cancelButt");
     m_cancelButton->setVisibility(false);
     m_cancelButton->addMouseClickCb([this](hidData& data) {
         m_glbase->runOnMainThread([this] {

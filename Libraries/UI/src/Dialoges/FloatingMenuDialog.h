@@ -26,11 +26,9 @@ public:
             return nullptr;
         }
 
-        T* newItem;
+        auto newItem = m_base->addChild<T>();
         if (!style.empty()) {
-            newItem = m_base->addChild<T>(std::move(style));
-        } else {
-            newItem = m_base->addChild<T>();
+            newItem->addStyleClass(style);
         }
 
         static_cast<UINode*>(newItem)->addMouseUpCb([this, returnValue](hidData& data) {

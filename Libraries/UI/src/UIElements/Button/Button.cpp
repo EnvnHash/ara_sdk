@@ -13,12 +13,6 @@ Button::Button() : Label() {
     Label::setScissorChildren(true);
 }
 
-Button::Button(const std::string& styleClass) : Label(styleClass) {
-    setName(getTypeName<Button>());
-    setFocusAllowed(false);
-    Label::setScissorChildren(true);
-}
-
 Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::string& text,
                pair<align, valign> align, const std::string& font_type, int font_height)
     : Label(LabelInitData{

@@ -11,15 +11,19 @@
 
 
 using namespace std;
+using namespace glm;
 
 namespace ara::UiUnitTest::TabViewTest {
 
 TabView* addTabView(UIApplication& app, std::array<bool, 3>& checks) {
     auto rootNode = app.getMainWindow()->getRootNode();
 
-    auto tabView = rootNode->addChild<TabView>(10, 10, 1200, 800, glm::vec4(.3f, .3f, .3f, 1.f), glm::vec4(.1f, .1f, .1f, 1.f));
-    tabView->setPos(0,0);
-    tabView->setSize(1.f,1.f);
+    auto tabView = rootNode->addChild<TabView>(UINodePars{
+        .size = vec2{1.f, 1.f},
+        .fgColor = {.3f, .3f, .3f, 1.f},
+        .bgColor = {.1f, .1f, .1f, 1.f}
+    });
+
     tabView->setPadding(10.f);
 
     for (auto i=0; i<3; i++) {

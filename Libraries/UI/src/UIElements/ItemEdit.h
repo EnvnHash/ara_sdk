@@ -12,7 +12,6 @@ namespace ara {
 class ItemEdit : public UITable, public ItemRef {
 public:
     ItemEdit();
-    explicit ItemEdit(const std::string& styleClass);
     ~ItemEdit() override = default;
     void init() override;
 

@@ -17,7 +17,6 @@ public:
     enum class transAlign : int { objectRelative = 0, worldRelative };
 
     TransformWidget();
-    explicit TransformWidget(const std::string& styleClass);
     ~TransformWidget() override;
 
     void init() override;

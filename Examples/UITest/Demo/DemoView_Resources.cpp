@@ -19,29 +19,37 @@ void DemoView_Resources::init() {
     setPadding(10);
     fontList.setGlbase(m_glbase);
 
-    addChild(make_unique<Label>("text_test"));
+    auto lb = addChild(make_unique<Label>());
+    lb->addStyleClass("text_test");
 
-    auto dp= addChild<Div>("styles.rdiv");
-    dp->addChild<Div>("styles.irdiv");
+    auto dp= addChild<Div>();
+    dp->addStyleClass("styles.rdiv");
+    auto c = dp->addChild<Div>();
+    c->addStyleClass("styles.irdiv");
 
-    auto image = addChild<Image>("chtest.sample-image");
+    auto image = addChild<Image>();
+    image->addStyleClass("chtest.sample-image");
     image->setLod(3);
 
-    image = addChild<Image>("chtest.icon");
+    image = addChild<Image>();
+    image->addStyleClass("chtest.icon");
     image->setPos(150,100);
     image->setSize(300,200);
 
-    image = addChild<Image>("chtest.icon");
+    image = addChild<Image>();
+    image->addStyleClass("chtest.icon");
     image->setPos(150,350);
     image->setSize(300,200);
     image->setSelected(isSelected());
 
-    image = addChild<Image>("one.but1");
+    image = addChild<Image>();
+    image->addStyleClass("one.but1");
     image->setPos(150,600);
     image->setSize(300,200);
     image->selectSection(1);
 
-    auto imgBut =addChild<ImageButton>("chtest.sample-imageButton");
+    auto imgBut =addChild<ImageButton>();
+    imgBut->addStyleClass("chtest.sample-imageButton");
     imgBut->setIsToggle(true);
     imgBut->setToggleCb([this](bool val){
         LOG << "val " << val;

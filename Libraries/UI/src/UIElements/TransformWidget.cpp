@@ -25,16 +25,9 @@ TransformWidget::TransformWidget() : Div() {
     m_excludeFromParentScissoring = true;
 }
 
-TransformWidget::TransformWidget(const std::string& styleClass) : Div(styleClass) {
-    m_canReceiveDrag = true;
-    setName(getTypeName<TransformWidget>());
-    setFocusAllowed(false);
-    setScissorChildren(false);
-    m_excludeFromParentScissoring = true;
-}
-
 void TransformWidget::init() {
-    m_buttCont = addChild<Div>(getStyleClass() + ".buttCont");
+    m_buttCont = addChild<Div>();
+    m_buttCont->addStyleClass(getStyleClass() + ".buttCont");
     m_buttCont->addMouseClickCb([this](hidData& data) { getWindow()->setInputFocusNode(this); });
     m_buttCont->setScissorChildren(false);
 
@@ -89,16 +82,15 @@ void TransformWidget::init() {
         }
 
         for (int j = 0; j < 4; j++) {
-            m_arrowLabels[i][j] = m_buttCont->addChild<Label>(
-                getStyleClass() + ((i == 0 ? ".lbl_trans_" : ".lbl_rot_") + m_arrowName[j]));
+            m_arrowLabels[i][j] = m_buttCont->addChild<Label>();
+            m_arrowLabels[i][j]->addStyleClass(getStyleClass() + ((i == 0 ? ".lbl_trans_" : ".lbl_rot_") + m_arrowName[j]));
             m_arrowLabels[i][j]->setName(((i == 0 ? "AR_lbl_trans_" : "AR_lbl_rot_") + m_arrowName[j]));
             m_arrowLabels[i][j]->excludeFromObjMap(true);
         }
 
         for (int j = 0; j < static_cast<int>(twPlane::count); j++) {
-            m_planeSwitcher[i][j] = m_buttCont->addChild<ImageButton>(
-                getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_" + string(enum_name(static_cast<twPlane>(j))));
-
+            m_planeSwitcher[i][j] = m_buttCont->addChild<ImageButton>();
+            m_planeSwitcher[i][j]->addStyleClass(getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_" + string(enum_name(static_cast<twPlane>(j))));
             m_planeSwitcher[i][j]->setIsToggle(true);
             m_planeSwitcher[i][j]->setLod(0.f);
             m_planeSwitcher[i][j]->setObjUsesTexAlpha(true);

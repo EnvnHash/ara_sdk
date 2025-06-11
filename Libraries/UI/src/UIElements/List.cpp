@@ -14,11 +14,6 @@ ListBase::ListBase() {
     setFocusAllowed(false);
 }
 
-ListBase::ListBase(const std::string& styleClass) : ScrollView(styleClass) {
-    setName(getTypeName<ListBase>());
-    setFocusAllowed(false);
-}
-
 void ListBase::init() {
     ScrollView::init();
 

@@ -18,12 +18,6 @@ DropDownMenu::DropDownMenu() : Div() {
     UINode::loadStyleDefaults();
 }
 
-DropDownMenu::DropDownMenu(const std::string& styleClass) : Div(styleClass) {
-    setName(getTypeName<DropDownMenu>());
-    setFocusAllowed(false);
-    UINode::loadStyleDefaults();
-}
-
 DropDownMenu::~DropDownMenu() {
 #ifdef ARA_USE_GLFW
     getWinMan()->removeGlobalHidCb(winCb::MouseButton, this);
@@ -110,7 +104,8 @@ void DropDownMenu::open() {
     m_menuEntryButt->setSelected(true);
 
     // create on top of all nodes
-    m_entryList = getRoot()->addChild<Div>(getStyleClass() + ".list");
+    m_entryList = getRoot()->addChild<Div>();
+    m_entryList->addStyleClass(getStyleClass() + ".list");
     m_entryList->setName("DDM_EntryList");
     m_entryList->setPos(static_cast<int>(m_menuEntryButt->getWinPos().x),
                         static_cast<int>(m_menuEntryButt->getWinPos().y + static_cast<float>(m_sharedRes->gridSize.y)));

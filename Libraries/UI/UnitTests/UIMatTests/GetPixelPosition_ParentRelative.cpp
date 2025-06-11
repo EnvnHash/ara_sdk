@@ -26,18 +26,26 @@ TEST(UITest, GetPixelPosition_ParentRealtive) {
         auto rootNode = app.getRootNode();
 
         // create a Div, standard alignment is top, left (align::left, valign::top, with Pivot: pivotX::left, pivotY::top
-        glm::ivec2 div0_pos{20, 20};
+        glm::ivec2 div0_pos{20, 500};
         glm::ivec2 div0_size{600, 500};
-        auto div0 = rootNode->addChild<Div>(div0_pos.x, div0_pos.y, div0_size.x, div0_size.y, &bgColor[0], nullptr);
+        auto div0 = rootNode->addChild<Div>();
+        div0->setPos(div0_pos);
+        div0->setSize(div0_size);
+        div0->setColor(bgColor);
 
         // create a Div inside the first div (same left / top alignment)
         glm::ivec2 div1_pos{25, 25};
         glm::ivec2 div1_size{100, 100};
-        auto div1 = div0->addChild<Div>(div1_pos.x, div1_pos.y, div1_size.x, div1_size.y, &fgColor[0], nullptr);
+        auto div1 = div0->addChild<Div>();
+        div1->setPos(div1_pos);
+        div1->setSize(div1_size);
+        div1->setColor(fgColor);
 
         // create a Div inside the first div (same left / top alignment) position in RELATIVE coords
         glm::vec2 div2_pos{0.3f, 0.2f};
-        auto div2 = div0->addChild<Div>(div2_pos.x, div2_pos.y, 0.2f, 0.2f);
+        auto div2 = div0->addChild<Div>();
+        div2->setPos(div2_pos);
+        div2->setSize(glm::vec2{0.2f, 0.2f});
         div2->setBackgroundColor(fgColor);
 
         // by calling draw, the UINode tree gets iterated and all matrices are calculated

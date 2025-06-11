@@ -7,7 +7,6 @@ namespace ara {
 class ScrollView : public Div {
 public:
     ScrollView();
-    explicit ScrollView(const std::string& styleClass);
     ~ScrollView() override = default;
 
     void init() override;
@@ -35,7 +34,10 @@ public:
     void blockHorScroll(bool val) { m_blockHorScroll = val; }
     void setAdaptContentTrans(bool val) { m_adaptContentTrans = val; }
 
-    UINode* addChild(std::unique_ptr<UINode>&& child) override;
+    template <typename T, typename... Args>
+    T* addContent(Args&& ... args) {
+        return m_content ? m_content->addChild<T>(args...) : nullptr;
+    }
 
     template <typename T>
     T* addChild() {

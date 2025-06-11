@@ -18,7 +18,6 @@ class FBO;
 class Gizmo : public Image {
 public:
     Gizmo();
-    explicit Gizmo(const std::string& styleClass);
     ~Gizmo() override { delete m_crossVao; };
 
     void init() override;

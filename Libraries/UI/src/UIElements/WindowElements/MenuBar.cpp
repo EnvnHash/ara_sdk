@@ -31,13 +31,15 @@ void MenuBar::init() {
     m_iconsRightSide->setX(8);
 
     if (m_showButtons) {
-        m_menButtons[butType::close] = m_iconsRightSide->addChild<ImageButton>("menuBar.close");
+        m_menButtons[butType::close] = m_iconsRightSide->addChild<ImageButton>();
+        m_menButtons[butType::close]->addStyleClass("menuBar.close");
         m_menButtons[butType::close]->setAltText("Close");
         m_menButtons[butType::close]->setClickedCb(m_closeFunc);
         m_menButtons[butType::close]->setName("close_button");
 
         if (m_enableMinMaxButtons) {
-            m_menButtons[butType::maximize] = m_iconsRightSide->addChild<ImageButton>("menuBar.maximize");
+            m_menButtons[butType::maximize] = m_iconsRightSide->addChild<ImageButton>();
+            m_menButtons[butType::maximize]->addStyleClass("menuBar.maximize");
             m_menButtons[butType::maximize]->setAltText("Maximize");
             m_menButtons[butType::maximize]->setIsToggle(true);
             m_menButtons[butType::maximize]->setToggleCb([this](bool state) {
@@ -53,7 +55,8 @@ void MenuBar::init() {
             });
             m_menButtons[butType::maximize]->setName("maximize_button");
 
-            m_menButtons[butType::minimize] = m_iconsRightSide->addChild<ImageButton>("menuBar.minimize");
+            m_menButtons[butType::minimize] = m_iconsRightSide->addChild<ImageButton>();
+            m_menButtons[butType::minimize]->addStyleClass("menuBar.minimize");
             m_menButtons[butType::minimize]->setAltText("Minimize");
             m_menButtons[butType::minimize]->setClickedCb([this] {
                 if (m_enableMinMaxButtons && m_minimizeFunc) {

@@ -23,10 +23,6 @@ Scene3DTool::Scene3DTool() {
     setName(getTypeName<Scene3DTool>());
 }
 
-Scene3DTool::Scene3DTool(const std::string &styleClass) : Div(styleClass) {
-    setName(getTypeName<Scene3DTool>());
-}
-
 Scene3DTool::~Scene3DTool() {
     if (m_sharedRes && m_sharedRes->win) {
         auto uiWin = static_cast<UIWindow *>(m_sharedRes->win);

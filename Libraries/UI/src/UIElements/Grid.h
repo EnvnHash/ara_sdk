@@ -11,7 +11,6 @@ namespace ara {
 class Grid : public Div {
 public:
     Grid();
-    explicit Grid(const std::string& styleClass);
     ~Grid() override = default;
 
     void init() override;

@@ -17,11 +17,6 @@ ItemEdit::ItemEdit() : m_rowHeight(30.f) {
     setFocusAllowed(false);
 }
 
-ItemEdit::ItemEdit(const std::string& styleClass) : UITable(styleClass) {
-    setName(getTypeName<ItemEdit>());
-    setFocusAllowed(false);
-}
-
 void ItemEdit::init() {
     // get all Item's children
     if (m_item) {

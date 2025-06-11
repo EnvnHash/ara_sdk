@@ -15,26 +15,28 @@ PropSlider::PropSlider() : Div() {
     setScissorChildren(true);
     PropSlider::addStyleClass("propertySlider");  // NOTE: there must be a valid entry of this in the res.txt !!!!
 
-    m_label = addChild<Label>(getStyleClass() + ".label");
+    m_label = addChild<Label>();
+    m_label->addStyleClass(getStyleClass() + ".label");
     m_label->setWidth(0.15f);
     m_label->setTextAlignX(align::left);
     m_label->setFontSize(21);
 
-    m_slider = addChild<Slider>(getStyleClass() + ".slider");
+    m_slider = addChild<Slider>();
+    m_slider->addStyleClass(getStyleClass() + ".slider");
     m_slider->setAlign(align::left, valign::center);
     m_slider->setKnobProportion(.8f);
     m_slider->setValue(0.f);
 
-    m_Edit = addChild<UIEdit>(UIEdit::num_fp);
-    m_Edit->addStyleClass(getStyleClass() + ".edit");
-    m_Edit->setUseWheel(true);
-    m_Edit->setOnLostFocusCb([this] {
+    m_edit = addChild<UIEdit>(UIEdit::num_fp);
+    m_edit->addStyleClass(getStyleClass() + ".edit");
+    m_edit->setUseWheel(true);
+    m_edit->setOnLostFocusCb([this] {
         if (m_onLostFocusCb) {
             m_onLostFocusCb();
         }
     });
 
-    m_slider->setNumEdit(m_Edit);
+    m_slider->setNumEdit(m_edit);
 }
 
 void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
@@ -46,16 +48,16 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
     onChanged<glm::vec2>(prop, [this, prop, idx](const std::any &val) {
         auto v = std::any_cast<glm::vec2>(val);
         m_slider->setValue((v[idx] - prop->getMin()[idx]) / (prop->getMax()[idx] - prop->getMin()[idx]));
-        m_Edit->setValue(v[idx]);
+        m_edit->setValue(v[idx]);
         if (m_valChangeCb) {
             m_valChangeCb();
         }
     });
 
-    m_Edit->changeValType(UIEdit::num_fp);
+    m_edit->changeValType(UIEdit::num_fp);
 
     // update property on element changes
-    m_Edit->addEnterCb(
+    m_edit->addEnterCb(
         [prop, idx](const std::string& txt) {
             glm::vec2 lastVal = (*prop)();
             lastVal[idx]      = static_cast<float>(atof(txt.c_str()));
@@ -70,7 +72,7 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
             lastVal[idx]      = newVal;
             (*prop)           = lastVal;  // to be done this way in order to cause a onPreChange()
         } else {
-            m_Edit->setValue(newVal);
+            m_edit->setValue(newVal);
         }
     });
     m_slider->setValue(((*prop)()[idx] - prop->getMin()[idx]) / (prop->getMax()[idx] - prop->getMin()[idx]));
@@ -82,16 +84,16 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
         }
     });
 
-    m_Edit->setMinMax(prop->getMin()[idx], prop->getMax()[idx]);
-    m_Edit->setStep(prop->getStep()[idx]);
-    m_Edit->setValue((*prop)()[idx]);
+    m_edit->setMinMax(prop->getMin()[idx], prop->getMax()[idx]);
+    m_edit->setStep(prop->getStep()[idx]);
+    m_edit->setValue((*prop)()[idx]);
 }
 
 void PropSlider::addStyleClass(const std::string& styleClass) {
     UINode::addStyleClass(styleClass);
 
-    if (m_Edit && m_slider && m_label) {
-        m_Edit->addStyleClass(getStyleClass() + ".edit");
+    if (m_edit && m_slider && m_label) {
+        m_edit->addStyleClass(getStyleClass() + ".edit");
         m_slider->addStyleClass(getStyleClass() + ".slider");
         m_label->addStyleClass(getStyleClass() + ".label");
     }

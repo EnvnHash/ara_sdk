@@ -9,11 +9,30 @@ DemoView_ScrollView_2::DemoView_ScrollView_2() : DemoView("Scroll View demo",glm
     setName(getTypeName<DemoView_ScrollView_2>());
 }
 
-UITable* DemoView_ScrollView_2::addTable(UINode* rootNode) {
-    auto taux = rootNode->addChild<UITable>();
+void DemoView_ScrollView_2::init() {
+    setPadding(10);
+
+    auto taux = addTable();
+    auto ui_SV =  taux->setCell<ScrollView>(1, 1);
+    ui_SV->setBackgroundColor(.1f, .1f, .1f, 1.f);
+
+    auto nt = addNestedTable(ui_SV);
+    nt->setDynamicWidth(true);
+    nt->setDynamicHeight(true);
+
+    addLabels(nt);
+
+    auto l = taux->setCell(0, 1, make_unique<Label>());
+    l->setFont("regular", 22,  align::center, valign::center, glm::vec4(1.f));
+    l->setBackgroundColor(.1f, .2f, .3f, 1.f);
+    l->setText("SCROLL VIEW SAMPLE (Variable size)");
+}
+
+UITable* DemoView_ScrollView_2::addTable() {
+    auto taux = addChild<UITable>();
     taux->setAlignY(valign::bottom);
     taux->setColor(.1f, .1f, .2f, 1.f);
-    taux->setBackgroundColor(.0f, .0f, .0f, 1.0f);
+    taux->setBackgroundColor(.0f, .0f, .0f, 1.f);
     taux->setSpacing(10, 10);
 
     taux->insertRow(-1,1,45,false,true);
@@ -26,9 +45,9 @@ UITable* DemoView_ScrollView_2::addTable(UINode* rootNode) {
     return taux;
 }
 
-UITable* DemoView_ScrollView_2::addNestedTable(UINode* node) {
-    auto nt = node->addChild<UITable>(UITableParameters{
-        .size = {600.f, 200.f},
+UITable* DemoView_ScrollView_2::addNestedTable(ScrollView* scrollView) {
+    auto nt = scrollView->addContent<UITable>(UITableParameters{
+        .size = ivec2{ 600, 200 },
         .margin = { 2, 2 },
         .spacing = { 10, 10 }
     });
@@ -43,10 +62,9 @@ UITable* DemoView_ScrollView_2::addNestedTable(UINode* node) {
 }
 
 void DemoView_ScrollView_2::addLabels(UITable* nt) {
-    int i;
-    glm::vec4 color_text(1.f);
+    vec4 color_text(1.f);
 
-    for (i = 0; i < 20; i++) {
+    for (int i = 0; i < 20; i++) {
         nt->insertRow(-1, 1, 100, false, false);
 
         std::stringstream ss;
@@ -57,23 +75,3 @@ void DemoView_ScrollView_2::addLabels(UITable* nt) {
     }
 }
 
-void DemoView_ScrollView_2::init() {
-    setPadding(10);
-
-    auto taux = addTable(this);
-
-    auto ui_SV =  taux->setCell<ScrollView>(1, 1);
-    ui_SV->setPos(0, 0);
-    ui_SV->setBackgroundColor(.1f, .1f, .1f, 1.f);
-
-    auto nt = addNestedTable(ui_SV);
-    nt->setDynamicWidth(true);
-    nt->setDynamicHeight(true);
-
-    addLabels(nt);
-
-    auto l = taux->setCell(0, 1, make_unique<Label>());
-    l->setFont("regular", 22,  align::center, valign::center, glm::vec4(1.f));
-    l->setBackgroundColor(.1f, .2f, .3f, 1.f);
-    l->setText("SCROLL VIEW SAMPLE (Variable size)");
-}

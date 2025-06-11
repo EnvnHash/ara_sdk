@@ -8,7 +8,6 @@ class Button;
 class DropDownMenu : public Div {
 public:
     DropDownMenu();
-    explicit DropDownMenu(const std::string& styleClass);
     ~DropDownMenu() override;
 
     void init() override;

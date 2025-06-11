@@ -14,30 +14,39 @@ UITable::UITable() {
     m_canReceiveDrag = true;
 }
 
-UITable::UITable(const std::string& styleClass) : Div(styleClass) {
-    setName(getTypeName<UITable>());
-    setFocusAllowed(false);
-    m_canReceiveDrag = true;
-}
-
 UITable::UITable(const UITableParameters& par) {
     setName(getTypeName<UITable>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;
 
-    setPos(par.pos);
-    setSize(par.size);
+    std::visit([this](auto&& arg) {
+        if (arg.x != 0 || arg.y != 0) {
+            setPos(arg);
+        }
+    }, par.pos);
+
+    std::visit([this](auto&& arg) {
+        if (arg.x != 0 || arg.y != 0) {
+            setSize(arg);
+        }
+    }, par.size);
+
     UITable::setColor(.1f, .1f, .1f, 1.f);
 
     if (par.fgColorPtr) {
         UITable::setColor(par.fgColorPtr.value()[0], par.fgColorPtr.value()[1], par.fgColorPtr.value()[2], par.fgColorPtr.value()[3]);
+    } else if (par.fgColor) {
+        UITable::setColor(par.fgColor.value()[0], par.fgColor.value()[1], par.fgColor.value()[2], par.fgColor.value()[3]);
     }
+
     if (par.bgColorPtr) {
         UINode::setBackgroundColor(par.bgColorPtr.value()[0], par.bgColorPtr.value()[1], par.bgColorPtr.value()[2], par.bgColorPtr.value()[3]);
+    } else if (par.bgColor) {
+        UITable::setBackgroundColor(par.bgColor.value());
     }
 
     UITable::setMargins(par.margin.x, par.margin.y);
-    UITable::setSpacing(par.padding.x, par.padding.y);
+    UITable::setSpacing(par.spacing.x, par.spacing.y);
 
     bool updateCells = false;
     if (par.topology.y) {
@@ -59,21 +68,21 @@ int UITable::geo_Update() {
     m_geoUpdating = true;
 
     if (getDynamicWidth()) {
-        float v = m_Cells(1).calculatePixGeo(t_Margin[0][0], t_Margin[1][0], t_Spacing[0]);
+        float v = m_Cells(1).calculatePixGeo(m_margin[0].x, m_margin[1].x, m_spacing.x);
         if (v != getContentSize().x) {
             setWidth(static_cast<int>(v));
         }
     }
 
     if (getDynamicHeight()) {
-        float v = m_Cells(0).calculatePixGeo(t_Margin[0][1], t_Margin[1][1], t_Spacing[1]);
+        float v = m_Cells(0).calculatePixGeo(m_margin[0].y, m_margin[1].y, m_spacing.y);
         if (v != getContentSize().y) {
             setHeight(static_cast<int>(v));
         }
     }
 
-    if (!m_Cells.updateGeo(getContentSize().x, getContentSize().y, t_Margin[0][0], t_Margin[0][1], t_Margin[1][0],
-                           t_Margin[1][1], t_Spacing[0], t_Spacing[1])) {
+    if (!m_Cells.updateGeo(getContentSize().x, getContentSize().y, m_margin[0].x, m_margin[0].y, m_margin[1].x,
+                           m_margin[1].y, m_spacing.x, m_spacing.y)) {
         return 0;
     }
 

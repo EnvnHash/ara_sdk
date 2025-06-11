@@ -25,6 +25,14 @@ class UIApplication;
 class UIWindow;
 class WindowManager;
 
+
+struct UINodePars {
+    std::variant<glm::ivec2, glm::vec2> pos{};
+    std::variant<glm::ivec2, glm::vec2> size{};
+    glm::vec4 fgColor{};
+    glm::vec4 bgColor{};
+};
+
 class UINode : public UINodeHID {
 public:
     UINode();
@@ -33,55 +41,31 @@ public:
     virtual void init() {}
 
     template <typename T, typename... Args>
+    requires (sizeof...(Args) != 1 || (!std::is_same_v<Args, UINodePars> && ...))
     T* addChild(Args&& ... args) {
         return static_cast<T*>(UINode::addChild(std::make_unique<T>(args...)));
     }
 
-    template <typename T, typename U>
-    requires std::integral<U> || std::floating_point<U>
-    T* addChild(U x, U y, U w, U h) {
-        T* nc = addChild<T>();
-        nc->setPos(x, y);
-        nc->setSize(w, h);
-        return nc;
-    }
+    template<typename T>
+    T* addChild(const UINodePars& arg) {
+        auto node = UINode::addChild(std::make_unique<T>());
 
-    template <typename T>
-    T* addChild(int32_t x, int32_t y, int32_t w, int32_t h, const float* fgcolor, const float* bkcolor) {
-        T*    nc = addChild<T>();
-        auto* n  = static_cast<UINode*>(nc);
-        n->setPos(x, y);
-        n->setSize(w, h);
-        if (fgcolor != nullptr) {
-            n->setColor(fgcolor[0], fgcolor[1], fgcolor[2], fgcolor[3]);
-        }
-        if (bkcolor != nullptr) {
-            n->setBackgroundColor(bkcolor[0], bkcolor[1], bkcolor[2], bkcolor[3]);
-        }
-        return nc;
-    }
+        std::visit([node](auto&& arg) {
+            if (arg.x != 0 || arg.y != 0) {
+                node->setPos(arg);
+            }
+        }, arg.pos);
 
-    template <typename T>
-    T* addChild(int32_t x, int32_t y, int32_t w, int32_t h, glm::vec4 fgcolor, glm::vec4 bkcolor) {
-        T*    nc = addChild<T>();
-        auto* n  = static_cast<UINode*>(nc);
-        n->setPos(x, y);
-        n->setSize(w, h);
-        n->setColor(fgcolor);
-        n->setBackgroundColor(bkcolor);
-        return nc;
-    }
+        std::visit([node](auto&& arg) {
+            if (arg.x != 0 || arg.y != 0) {
+                node->setSize(arg);
+            }
+        }, arg.size);
 
-    template <typename T>
-    T* addChild(int32_t x, int32_t y, int32_t w, int32_t h, std::filesystem::path path) {
-        T*    nc = addChild<T>();
-        auto* n  = static_cast<UINode*>(nc);
-        n->setPos(x, y);
-        n->setSize(w, h);
-        n->setPath(std::move(path));
-        return nc;
+        node->setColor(arg.fgColor);
+        node->setBackgroundColor(arg.bgColor);
+        return static_cast<T*>(node);
     }
-
 
     template <typename T>
     T* insertChild(int32_t position) {

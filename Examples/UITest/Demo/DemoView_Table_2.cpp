@@ -10,8 +10,8 @@ DemoView_Table_2::DemoView_Table_2() : DemoView("Table demo 2 / Table in table /
 
 void DemoView_Table_2::init() {
     ui_Table = addChild<UITable>(UITableParameters{
-        .pos = { 0.f, 100.f },
-        .size = { getContentSize().x, getContentSize().y - 100.f },
+        .pos = ivec2{ 0.f, 100 },
+        .size = ivec2{ getContentSize().x, getContentSize().y - 100 },
         .spacing = { 8, 8 }
     });
 
@@ -27,7 +27,7 @@ void DemoView_Table_2::init() {
     ui_Table->insertColumn(-1,1,50);
 
     auto taux = ui_Table->setCell<UITable>(1, 1,
-                                           make_unique<UITable>(UITableParameters{ .size = {300.f, 200.f},
+                                           make_unique<UITable>(UITableParameters{ .size = vec2{300.f, 200.f},
                                                                                    .topology = {3, 3}}));
     taux->setSize(1.f, 1.f);
     taux->setSpacing(8, 8);

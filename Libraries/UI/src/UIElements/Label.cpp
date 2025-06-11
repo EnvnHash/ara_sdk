@@ -18,14 +18,6 @@ Label::Label() {
     setFocusAllowed(false);
 }
 
-Label::Label(const std::string& styleClass) : Div(styleClass) {
-#ifndef FORCE_INMEDIATEMODE_RENDERING
-    m_drawImmediate = false;
-#endif
-    setName(getTypeName<Label>());
-    setFocusAllowed(false);
-}
-
 Label::Label(const LabelInitData &initData) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;

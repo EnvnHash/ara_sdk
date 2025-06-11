@@ -27,13 +27,6 @@ Gizmo::Gizmo() {
     setScissorChildren(false);
 }
 
-Gizmo::Gizmo(const std::string& styleClass) : Image(styleClass) {
-    m_canReceiveDrag = true;
-    setName(getTypeName<Gizmo>());
-    setFocusAllowed(false);
-    setScissorChildren(false);
-}
-
 void Gizmo::init() {
     m_drawMan = make_unique<DrawManagerGizmo>(m_glbase);
 
@@ -162,23 +155,29 @@ void Gizmo::init() {
     m_auxSharedRes.orthoMat = &m_auxOrtho;
     m_auxUIRoot.setSharedRes(&m_auxSharedRes);
 
-    m_axisLabelX = m_auxUIRoot.addChild<GizmoAxisLabel>(getStyleClass() + ".labelX");
+    m_axisLabelX = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelX->addStyleClass(getStyleClass() + ".labelX");
     m_axisLabelX->setName("x-pos");
     m_axisLabelX->setHasLabel(true);
 
-    m_axisLabelY = m_auxUIRoot.addChild<GizmoAxisLabel>(getStyleClass() + ".labelY");
+    m_axisLabelY = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelY->addStyleClass(getStyleClass() + ".labelY");
     m_axisLabelY->setName("y-pos");
     m_axisLabelY->setHasLabel(true);
 
-    m_axisLabelZ = m_auxUIRoot.addChild<GizmoAxisLabel>(getStyleClass() + ".labelZ");
+    m_axisLabelZ = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelZ->addStyleClass(getStyleClass() + ".labelZ");
     m_axisLabelZ->setName("z-pos");
     m_axisLabelZ->setHasLabel(true);
 
-    m_axisLabelXNeg = m_auxUIRoot.addChild<GizmoAxisLabel>(getStyleClass() + ".labelXN");
+    m_axisLabelXNeg = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelXNeg->addStyleClass(getStyleClass() + ".labelXN");
     m_axisLabelXNeg->setName("x-neg");
-    m_axisLabelYNeg = m_auxUIRoot.addChild<GizmoAxisLabel>(getStyleClass() + ".labelYN");
+    m_axisLabelYNeg = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelYNeg->addStyleClass(getStyleClass() + ".labelYN");
     m_axisLabelYNeg->setName("y-neg");
-    m_axisLabelZNeg = m_auxUIRoot.addChild<GizmoAxisLabel>(getStyleClass() + ".labelZN");
+    m_axisLabelZNeg = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelZNeg->addStyleClass(getStyleClass() + ".labelZN");
     m_axisLabelZNeg->setName("z-neg");
 
     m_axisLabels.emplace_back(m_axisLabelX);

@@ -6,12 +6,13 @@
 namespace ara {
 
 struct UITableParameters {
-    glm::vec2 pos{};
-    glm::vec2 size{};
+    std::variant<glm::vec2, glm::ivec2> pos{};
+    std::variant<glm::vec2, glm::ivec2> size{};
     glm::ivec2 topology{};
-    glm::vec2 margin = {0, 0};
-    glm::vec2 padding = {0, 0};
-    glm::vec2 spacing = {0, 0};
+    glm::vec2 margin{};
+    glm::vec2 spacing{};
+    std::optional<glm::vec4> fgColor{};
+    std::optional<glm::vec4> bgColor{};
     std::optional<float*> fgColorPtr {};
     std::optional<float*> bgColorPtr {};
 };
@@ -24,7 +25,6 @@ public:
     } e_cell;
 
     UITable();
-    UITable(const std::string& styleClass);
     UITable(const UITableParameters& par);
     ~UITable() override = default;
 
@@ -32,18 +32,18 @@ public:
     virtual int getColumnCount() { return m_Cells(1).getCount(); }
 
     virtual void setSpacing(float px, float py) {
-        t_Spacing[0] = px;
-        t_Spacing[1] = py;
+        m_spacing.x = px;
+        m_spacing.y = py;
     }  // Table cell padding
 
     virtual void setTLMargin(float dx, float dy) {
-        t_Margin[0][0] = dx;
-        t_Margin[0][1] = dy;
+        m_margin[0].x = dx;
+        m_margin[0].y = dy;
     }  // Table Top-Left margins
 
     virtual void setBRMargin(float dx, float dy) {
-        t_Margin[1][0] = dx;
-        t_Margin[1][1] = dy;
+        m_margin[1].x = dx;
+        m_margin[1].y = dy;
     }  // Table Bottom-Right margins
 
     virtual void setMargins(float dx, float dy) {
@@ -121,8 +121,8 @@ public:
 private:
     CellTable<e_cell> m_Cells;
 
-    float t_Spacing[2]   = {0, 0};
-    float t_Margin[2][2] = {{0, 0}, {0, 0}};
+    glm::vec2 m_spacing{};
+    std::array<glm::vec2, 2> m_margin{};
 
     unsigned mouseEvent = 0;
 

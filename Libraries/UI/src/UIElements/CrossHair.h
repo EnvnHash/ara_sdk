@@ -11,7 +11,6 @@ namespace ara {
 class CrossHair : public Div {
 public:
     CrossHair();
-    CrossHair(const std::string& styleClass);
     ~CrossHair() override = default;
 
     void init() override;

@@ -11,7 +11,6 @@ namespace ara {
 class WindowResizeAreas : public UINode {
 public:
     WindowResizeAreas();
-
     ~WindowResizeAreas() override = default;
 
     void init() override;

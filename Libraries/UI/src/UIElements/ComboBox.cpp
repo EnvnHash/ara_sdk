@@ -57,7 +57,8 @@ void ComboBox::open() {
     }
 
     // create on top of all nodes
-    m_entryList = getRoot()->addChild<ScrollView>(getStyleClass() + ".list");
+    m_entryList = getRoot()->addChild<ScrollView>();
+    m_entryList->addStyleClass(getStyleClass() + ".list");
     m_entryList->setPos(static_cast<int>(getWinPos().x), static_cast<int>(getWinPos().y + getSharedRes()->gridSize.y));
     m_entryList->setWidth(static_cast<int>(getSize().x));
     m_entryList->setBorderRadius(5);

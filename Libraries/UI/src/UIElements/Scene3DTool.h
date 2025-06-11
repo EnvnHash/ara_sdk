@@ -29,7 +29,6 @@ public:
     enum class toolState : int { objToolBlocked = 0, allUnBlocked };
 
     Scene3DTool();
-    explicit Scene3DTool(const std::string& styleClass);
     ~Scene3DTool() override;
 
     void init() override;

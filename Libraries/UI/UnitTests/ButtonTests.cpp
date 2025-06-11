@@ -14,11 +14,13 @@ namespace ara::UiUnitTest::ButtonTests{
 
 Button* setupTestButton(UIApplication& app) {
     auto rootNode = app.getMainWindow()->getRootNode();
-    vec4 fgColor(0.f, 0.f, 1.f, 1.f);
-    vec4 bgColor(0.2f, 0.2f, 0.2f, 1.f);
     ivec2 buttSize{200, 100};
 
-    auto button = rootNode->addChild<Button>(0, 0, buttSize.x, buttSize.y, fgColor, bgColor);
+    auto button = rootNode->addChild<Button>(UINodePars{
+        .size = buttSize,
+        .fgColor = {0.f, 0.f, 1.f, 1.f},
+        .bgColor = {0.2f, 0.2f, 0.2f, 1.f} });
+
     button->setFontSize(30);
     button->setText("HelloBut");
     button->setTextAlign(align::center, valign::center);

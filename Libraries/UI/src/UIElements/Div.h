@@ -11,8 +11,6 @@ namespace ara {
 class Div : public UINode {
 public:
     Div();
-
-    explicit Div(const std::string& styleClass);
     ~Div() override = default;
 
     bool draw(uint32_t &objId) override;

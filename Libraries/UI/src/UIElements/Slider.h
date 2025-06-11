@@ -25,7 +25,6 @@ public:
 
     UINode* addChild(std::unique_ptr<UINode> child);
 
-    void ctorInit();
     void init() override;
 
     virtual void    addMouseDragCb(const std::function<void(hidData&)>& func) { m_knob->addMouseDragCb(func); }

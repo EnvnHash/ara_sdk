@@ -27,16 +27,6 @@ Image::Image() : Div() {
 #endif
 }
 
-Image::Image(const std::string& styleClass) : Div(styleClass) {
-    setName(getTypeName<Image>());
-    setFocusAllowed(false);
-    Image::initDefaults();
-#ifndef FORCE_INMEDIATEMODE_RENDERING
-    m_imgDB.stdInit();
-    m_drawImmediate = false;
-#endif
-}
-
 Image::Image(const std::string& file, int mipMapLevel, bool keep_aspect, align ax, valign ay) : Div() {
     setName(getTypeName<Image>());
     setFocusAllowed(false);

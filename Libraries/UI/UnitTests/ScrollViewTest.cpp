@@ -33,12 +33,14 @@ UITable* addTable(UINode* rootNode) {
     return taux;
 }
 
-UITable* addNestedTable(UINode* node) {
-    auto nt = dynamic_cast<UITable *>(node->addChild(make_unique<UITable>(vec2{}, vec2{600.f, 200.f}, vec2{})));
-    nt->setSpacing(8, 8);
-    nt->setMargins(2, 2);
-    nt->setColor(.2f, .2f, .2f, 1.f);
-    nt->setBackgroundColor(.1f, .1f, .2f, 1.0f);
+UITable* addNestedTable(ScrollView* scrollView) {
+    auto nt = scrollView->addContent<UITable>(UITableParameters{
+        .size = vec2{600.f, 200.f},
+        .margin = {2,2},
+        .spacing = {8,8},
+        .fgColor = vec4{.2f, .2f, .2f, 1.f},
+        .bgColor = vec4{.1f, .1f, .2f, 1.0f}
+    });
 
     nt->insertColumn(-1,1,80,false,false,50,150);			// column with size limits [50..150]
     nt->insertColumn(-1,1,300,false,false);
@@ -49,8 +51,8 @@ UITable* addNestedTable(UINode* node) {
 
 void addLabels(UITable* nt) {
     int i;
-    glm::vec4 color_bg(.1f,.2f,.3f,1.f);
-    glm::vec4 color_text(1.f);
+    vec4 color_bg(.1f,.2f,.3f,1.f);
+    vec4 color_text(1.f);
 
     for (i = 0; i < 20; i++) {
         std::stringstream ss;
@@ -131,7 +133,6 @@ TEST(UITest, ScrollViewIntable) {
         auto taux = addTable(rootNode);
 
         auto ui_SV =  taux->setCell<ScrollView>(1, 1);
-        ui_SV->setPos(0, 0);
         ui_SV->setBackgroundColor(.1f, .1f, .1f, 1.f);
 
         auto nt = addNestedTable(ui_SV);

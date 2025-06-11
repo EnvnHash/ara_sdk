@@ -20,23 +20,12 @@ public:
 #endif
         setName(getTypeName<ListItemBase>());
     }
-
-    explicit ListItemBase(const std::string& styleClass) : Div(styleClass) {
-#ifdef __ANDROID__
-        setCanReceiveDrag(true);
-#endif
-        setName(getTypeName<ListItemBase>());
-    }
 };
 
 template <typename T>
 class ListItem : public ListItemBase {
 public:
     ListItem() {
-        setName(getTypeName<ListItem>());
-    }
-
-    explicit ListItem(const std::string& styleClass) : ListItemBase(styleClass) {
         setName(getTypeName<ListItem>());
     }
 
@@ -136,10 +125,11 @@ public:
         int i = 0;
         if (m_items) {
             for (auto li = m_items->begin(); li != m_items->end(); ++li) {
-                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
+                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>()));
                 if (!m_uiItems.back()) {
                     continue;
                 }
+                m_uiItems.back()->addStyleClass(getStyleClass() + ".item");
                 m_uiItems.back()->setData(&*li, i);
                 m_uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
                     if (!m_clickCb || !m_items) {
@@ -151,8 +141,9 @@ public:
             }
         } else if (m_itemsVec) {
             for (auto li = m_itemsVec->begin(); li != m_itemsVec->end(); ++li) {
-                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
+                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>()));
                 if (!m_uiItems.back()) continue;
+                m_uiItems.back()->addStyleClass(getStyleClass() + ".item");
                 m_uiItems.back()->setData(&(*li), i);
                 m_uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
                     if (!m_clickCb || !m_itemsVec) return;
@@ -162,10 +153,11 @@ public:
             }
         } else if (m_listProp) {
             for (auto li = m_listProp->begin(); li != m_listProp->end(); ++li) {
-                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>(getStyleClass() + ".item")));
+                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>()));
                 if (!m_uiItems.back()) {
                     continue;
                 }
+                m_uiItems.back()->addStyleClass(getStyleClass() + ".item");
                 m_uiItems.back()->setData(&*li, i);
                 m_uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
                     if (!m_clickCb) {

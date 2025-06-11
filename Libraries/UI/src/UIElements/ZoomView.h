@@ -15,7 +15,6 @@ namespace ara {
 class ZoomView : public Div {
 public:
     ZoomView();
-    explicit ZoomView(const std::string& styleClass);
     ~ZoomView() override = default;
 
     void init() override;

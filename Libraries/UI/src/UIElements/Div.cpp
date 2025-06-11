@@ -19,15 +19,6 @@ Div::Div() {
 #endif
 }
 
-Div::Div(const std::string& styleClass) {
-    setName(getTypeName<Div>());
-    UINode::addStyleClass(styleClass);
-#ifndef FORCE_INMEDIATEMODE_RENDERING
-    m_indDrawBlock.stdInit();
-    m_drawImmediate = false;
-#endif
-}
-
 void Div::updateDrawData() {
     if (m_drawImmediate) {
         if (!m_uniBlock.isInited()) {

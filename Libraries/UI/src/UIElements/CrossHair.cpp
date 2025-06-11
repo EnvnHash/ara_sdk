@@ -20,15 +20,6 @@ CrossHair::CrossHair() {
 #endif
 }
 
-CrossHair::CrossHair(const std::string& styleClass)  {
-    setName(getTypeName<CrossHair>());
-    UINode::addStyleClass(styleClass);
-    excludeFromObjMap(true);
-#ifndef FORCE_INMEDIATEMODE_RENDERING
-    m_drawImmediate = false;
-#endif
-}
-
 void CrossHair::init() {
     std::string vert = STRINGIFY(
         layout(location = 0) in vec4 position; \n

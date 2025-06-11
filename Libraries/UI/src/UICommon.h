@@ -80,8 +80,7 @@ public:
     glm::vec2 texCoord{};
     glm::vec4 color{};
     glm::vec4 aux0{};
-    glm::vec4 aux1{};   /// aux1 (Div: x:borderWidth, y:borderHeight,
-                        /// z:borderRadiusX, w:borderRadiusY
+    glm::vec4 aux1{};   /// aux1 (Div: x:borderWidth, y:borderHeight, z:borderRadiusX, w:borderRadiusY
     glm::vec4 aux2{};
     glm::vec4 aux3{};
 };

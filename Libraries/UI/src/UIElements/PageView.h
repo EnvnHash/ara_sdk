@@ -7,7 +7,6 @@ namespace ara {
 class PageView : public Div {
 public:
     PageView();
-
     ~PageView() override = default;
 
     virtual UINode* addPage(std::unique_ptr<UINode> child);
