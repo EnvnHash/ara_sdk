@@ -14,7 +14,7 @@ UITable* DemoView_ScrollView_2::addTable(UINode* rootNode) {
     taux->setAlignY(valign::bottom);
     taux->setColor(.1f, .1f, .2f, 1.f);
     taux->setBackgroundColor(.0f, .0f, .0f, 1.0f);
-    taux->t_setSpacing(10, 10);
+    taux->setSpacing(10, 10);
 
     taux->insertRow(-1,1,45,false,true);
     taux->insertRow(-1,1,0,false,false);
@@ -27,9 +27,12 @@ UITable* DemoView_ScrollView_2::addTable(UINode* rootNode) {
 }
 
 UITable* DemoView_ScrollView_2::addNestedTable(UINode* node) {
-    auto nt = dynamic_cast<UITable *>(node->addChild(make_unique<UITable>(vec2{}, vec2{600.f, 200.f}, ivec2{})));
-    nt->t_setMargins(2, 2);
-    nt->t_setSpacing(10, 10);
+    auto nt = node->addChild<UITable>(UITableParameters{
+        .size = {600.f, 200.f},
+        .margin = { 2, 2 },
+        .spacing = { 10, 10 }
+    });
+
     nt->setColor(.2f, .2f, .2f, 1.f);
     nt->setBackgroundColor(.1f, .1f, .2f, 1.0f);
 

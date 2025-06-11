@@ -108,8 +108,8 @@ void UI_ElementsOverview::addInfoDialogButton(UINode* root, int heightStep) {
 
 void UI_ElementsOverview::addTable(UINode* root) {
     auto table = (UITable*)root->addChild(make_unique<UITable>(350.f, 0.f, 800.f, 300.f, 4, 3));
-    table->t_setSpacing(8, 8);
-    table->t_setMargins(5, 5);
+    table->setSpacing(8, 8);
+    table->setMargins(5, 5);
     vec4 m_textColor = vec4(1.f, 1.f, 1.f, 1.f);
 
     for (int i = 0; i < table->getRowCount(); i++)

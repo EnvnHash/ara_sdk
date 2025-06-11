@@ -5,6 +5,17 @@
 
 namespace ara {
 
+struct UITableParameters {
+    glm::vec2 pos{};
+    glm::vec2 size{};
+    glm::ivec2 topology{};
+    glm::vec2 margin = {0, 0};
+    glm::vec2 padding = {0, 0};
+    glm::vec2 spacing = {0, 0};
+    std::optional<float*> fgColorPtr {};
+    std::optional<float*> bgColorPtr {};
+};
+
 class UITable : public Div {
 public:
     typedef struct e_cell {
@@ -14,32 +25,30 @@ public:
 
     UITable();
     UITable(const std::string& styleClass);
-    UITable(glm::vec2 pos, glm::vec2 size, glm::ivec2 topology, glm::vec2 margin = {0, 0},
-            glm::vec2 padding = {0, 0}, const float* fg_color = nullptr, const float* bg_color = nullptr);
-    UITable(float h_margin, float v_margin, float h_padding, float v_padding, const float* fg_color, const float* bg_color);
+    UITable(const UITableParameters& par);
     ~UITable() override = default;
 
     virtual int getRowCount() { return m_Cells(0).getCount(); }
     virtual int getColumnCount() { return m_Cells(1).getCount(); }
 
-    virtual void t_setSpacing(float px, float py) {
+    virtual void setSpacing(float px, float py) {
         t_Spacing[0] = px;
         t_Spacing[1] = py;
     }  // Table cell padding
 
-    virtual void t_setTLMargin(float dx, float dy) {
+    virtual void setTLMargin(float dx, float dy) {
         t_Margin[0][0] = dx;
         t_Margin[0][1] = dy;
     }  // Table Top-Left margins
 
-    virtual void t_setBRMargin(float dx, float dy) {
+    virtual void setBRMargin(float dx, float dy) {
         t_Margin[1][0] = dx;
         t_Margin[1][1] = dy;
     }  // Table Bottom-Right margins
 
-    virtual void t_setMargins(float dx, float dy) {
-        t_setTLMargin(dx, dy);
-        t_setBRMargin(dx, dy);
+    virtual void setMargins(float dx, float dy) {
+        setTLMargin(dx, dy);
+        setBRMargin(dx, dy);
     }  // Table margins
 
     virtual UINode* setCell(int row, int column, const std::vector<std::unique_ptr<UINode>>::iterator& nodeIt);
@@ -94,7 +103,7 @@ public:
     /** add a new UINode to the Table */
     template <typename T>
     T* setCell(int row, int column, std::unique_ptr<T> node = nullptr) {
-        if (int idx; (idx = m_Cells.rc2index(row, column, true)) >= 0) {
+        if (int idx; (idx = m_Cells.rowColumnToIndex(row, column, true)) >= 0) {
             T* newNode;
             if (node) {
                 newNode = static_cast<T *>(m_Cells[idx].ui_node->addChild(std::move(node)));

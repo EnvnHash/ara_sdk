@@ -20,48 +20,39 @@ UITable::UITable(const std::string& styleClass) : Div(styleClass) {
     m_canReceiveDrag = true;
 }
 
-UITable::UITable(vec2 pos, vec2 size, ivec2 topology, vec2 margin, vec2 padding, const float* fg_color, const float* bg_color) {
+UITable::UITable(const UITableParameters& par) {
     setName(getTypeName<UITable>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;
 
-    setPos(static_cast<int>(pos.x), static_cast<int>(pos.y));
-    setSize(static_cast<int>(size.x), static_cast<int>(size.y));
+    setPos(par.pos);
+    setSize(par.size);
     UITable::setColor(.1f, .1f, .1f, 1.f);
 
-    if (fg_color) {
-        UITable::setColor(fg_color[0], fg_color[1], fg_color[2], fg_color[3]);
+    if (par.fgColorPtr) {
+        UITable::setColor(par.fgColorPtr.value()[0], par.fgColorPtr.value()[1], par.fgColorPtr.value()[2], par.fgColorPtr.value()[3]);
     }
-    if (bg_color) {
-        UINode::setBackgroundColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
+    if (par.bgColorPtr) {
+        UINode::setBackgroundColor(par.bgColorPtr.value()[0], par.bgColorPtr.value()[1], par.bgColorPtr.value()[2], par.bgColorPtr.value()[3]);
     }
 
-    UITable::t_setMargins(margin.x, margin.y);
-    UITable::t_setSpacing(padding.x, padding.y);
+    UITable::setMargins(par.margin.x, par.margin.y);
+    UITable::setSpacing(par.padding.x, par.padding.y);
 
-    m_Cells(0).add(topology.y);
-    m_Cells(1).add(topology.x);
+    bool updateCells = false;
+    if (par.topology.y) {
+        m_Cells(0).add(par.topology.y);
+        updateCells = true;
+    }
+    if (par.topology.x) {
+        m_Cells(1).add(par.topology.x);
+        updateCells = true;
+    }
 
-    UITable::initNewCellNode();
+    if (updateCells) {
+        UITable::initNewCellNode();
+    }
     UITable::geo_Update();
-}
-
-UITable::UITable(float h_margin, float v_margin, float h_padding, float v_padding, const float* fg_color, const float* bg_color) {
-    setName(getTypeName<UITable>());
-    setFocusAllowed(false);
-    m_canReceiveDrag = true;
-
-    UITable::setColor(.1f, .1f, .1f, 1.f);
-
-    if (fg_color) {
-        UITable::setColor(fg_color[0], fg_color[1], fg_color[2], fg_color[3]);
-    }
-    if (bg_color) {
-        UINode::setBackgroundColor(bg_color[0], bg_color[1], bg_color[2], bg_color[3]);
-    }
-
-    UITable::t_setMargins(h_margin, v_margin);
-    UITable::t_setSpacing(h_padding, v_padding);
 }
 
 int UITable::geo_Update() {
@@ -116,7 +107,7 @@ int UITable::geo_Update() {
 
 /** to be used for moving UINodes from existing parents to the table */
 UINode* UITable::setCell(int row, int column, const vector<unique_ptr<UINode> >::iterator& nodeIt) {
-    if (int idx; (idx = m_Cells.rc2index(row, column, true)) >= 0) {
+    if (int idx; (idx = m_Cells.rowColumnToIndex(row, column, true)) >= 0) {
         // get the cell's ui_node
         auto cell = m_Cells[idx].ui_node;
 
@@ -231,7 +222,7 @@ void UITable::initNewCellNode() {
 
 bool UITable::clearCell(int row, int column, bool updateGeo) {
     int idx;
-    if ((idx = m_Cells.rc2index(row, column, true)) < 0) {
+    if ((idx = m_Cells.rowColumnToIndex(row, column, true)) < 0) {
         return false;
     }
 
@@ -254,7 +245,7 @@ bool UITable::removeRow(int row) {
         vector<vector<e_cell>::iterator> cellsToDelete;
         for (int col = 0; col < m_Cells(1).getCount(); col++) {
             int idx;
-            if ((idx = m_Cells.rc2index(row, col, true)) < 0) {
+            if ((idx = m_Cells.rowColumnToIndex(row, col, true)) < 0) {
                 return false;
             }
 

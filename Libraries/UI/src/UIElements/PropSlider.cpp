@@ -20,12 +20,12 @@ PropSlider::PropSlider() : Div() {
     m_label->setTextAlignX(align::left);
     m_label->setFontSize(21);
 
-    m_Slider = addChild<Slider>(getStyleClass() + ".slider");
-    m_Slider->setAlign(align::left, valign::center);
-    m_Slider->setKnobProportion(.8f);
-    m_Slider->setValue(0.f);
+    m_slider = addChild<Slider>(getStyleClass() + ".slider");
+    m_slider->setAlign(align::left, valign::center);
+    m_slider->setKnobProportion(.8f);
+    m_slider->setValue(0.f);
 
-    m_Edit = dynamic_cast<UIEdit *>(UINode::addChild(make_unique<UIEdit>(UIEdit::num_fp)));
+    m_Edit = addChild<UIEdit>(UIEdit::num_fp);
     m_Edit->addStyleClass(getStyleClass() + ".edit");
     m_Edit->setUseWheel(true);
     m_Edit->setOnLostFocusCb([this] {
@@ -34,7 +34,7 @@ PropSlider::PropSlider() : Div() {
         }
     });
 
-    m_Slider->setNumEdit(m_Edit);
+    m_slider->setNumEdit(m_Edit);
 }
 
 void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
@@ -44,8 +44,8 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
 
     // update elements when property changes
     onChanged<glm::vec2>(prop, [this, prop, idx](const std::any &val) {
-        glm::vec2 v = std::any_cast<glm::vec2>(val);
-        m_Slider->setValue((v[idx] - prop->getMin()[idx]) / (prop->getMax()[idx] - prop->getMin()[idx]));
+        auto v = std::any_cast<glm::vec2>(val);
+        m_slider->setValue((v[idx] - prop->getMin()[idx]) / (prop->getMax()[idx] - prop->getMin()[idx]));
         m_Edit->setValue(v[idx]);
         if (m_valChangeCb) {
             m_valChangeCb();
@@ -63,8 +63,8 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
         },
         prop);
 
-    m_Slider->addMouseDragCb([this, prop, idx](hidData& data) {
-        float newVal = m_Slider->getValue() * (prop->getMax()[idx] - prop->getMin()[idx]) + prop->getMin()[idx];
+    m_slider->addMouseDragCb([this, prop, idx](hidData& data) {
+        float newVal = m_slider->getValue() * (prop->getMax()[idx] - prop->getMin()[idx]) + prop->getMin()[idx];
         if (!m_onMouseUpUpdtMode) {
             glm::vec2 lastVal = (*prop)();
             lastVal[idx]      = newVal;
@@ -73,11 +73,11 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
             m_Edit->setValue(newVal);
         }
     });
-    m_Slider->setValue(((*prop)()[idx] - prop->getMin()[idx]) / (prop->getMax()[idx] - prop->getMin()[idx]));
-    m_Slider->getKnob()->addMouseUpCb([this, prop, idx](hidData& data) {
+    m_slider->setValue(((*prop)()[idx] - prop->getMin()[idx]) / (prop->getMax()[idx] - prop->getMin()[idx]));
+    m_slider->getKnob()->addMouseUpCb([this, prop, idx](hidData& data) {
         if (m_onMouseUpUpdtMode) {
             glm::vec2 lastVal = (*prop)();
-            lastVal[idx] = m_Slider->getValue() * (prop->getMax()[idx] - prop->getMin()[idx]) + prop->getMin()[idx];
+            lastVal[idx] = m_slider->getValue() * (prop->getMax()[idx] - prop->getMin()[idx]) + prop->getMin()[idx];
             (*prop)      = lastVal;  // to be done this way in order to cause a onPreChange()
         }
     });
@@ -90,9 +90,9 @@ void PropSlider::setProp(Property<glm::vec2>* prop, int idx) {
 void PropSlider::addStyleClass(const std::string& styleClass) {
     UINode::addStyleClass(styleClass);
 
-    if (m_Edit && m_Slider && m_label) {
+    if (m_Edit && m_slider && m_label) {
         m_Edit->addStyleClass(getStyleClass() + ".edit");
-        m_Slider->addStyleClass(getStyleClass() + ".slider");
+        m_slider->addStyleClass(getStyleClass() + ".slider");
         m_label->addStyleClass(getStyleClass() + ".label");
     }
 }

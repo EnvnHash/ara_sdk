@@ -17,8 +17,8 @@ namespace ara::SceneGraphUnitTest::ScrollViewTest{
 UITable* addTable(UINode* rootNode) {
     auto taux = rootNode->addChild<UITable>();
     taux->setAlignY(valign::bottom);
-    taux->t_setSpacing(8, 8);
-    taux->t_setMargins(0, 0);
+    taux->setSpacing(8, 8);
+    taux->setMargins(0, 0);
     taux->setColor(.2f, 0.2f, 0.2f, 1.f);
     taux->setBackgroundColor(.0f, .0f, .0f, 1.0f);
 
@@ -35,8 +35,8 @@ UITable* addTable(UINode* rootNode) {
 
 UITable* addNestedTable(UINode* node) {
     auto nt = dynamic_cast<UITable *>(node->addChild(make_unique<UITable>(vec2{}, vec2{600.f, 200.f}, vec2{})));
-    nt->t_setSpacing(8, 8);
-    nt->t_setMargins(2, 2);
+    nt->setSpacing(8, 8);
+    nt->setMargins(2, 2);
     nt->setColor(.2f, .2f, .2f, 1.f);
     nt->setBackgroundColor(.1f, .1f, .2f, 1.0f);
 

@@ -364,7 +364,7 @@ bool Table::getCellGeo(eTable_CellGeo &cg, int index) {
                : getCellGeo(cg, index / m_Mat[1].getCount(), index % m_Mat[1].getCount());
 }
 
-int Table::rc2index(int row, int column, bool validate) {
+int Table::rowColumnToIndex(int row, int column, bool validate) {
     int idx = row * m_Mat[1].getCount() + column;
     if (!validate) {
         return idx;
@@ -372,7 +372,7 @@ int Table::rc2index(int row, int column, bool validate) {
     return (row < 0 || row >= m_Mat[0].getCount()) || (column < 0 || column >= m_Mat[1].getCount()) ? -1 : idx;
 }
 
-bool Table::index2rc(int &row, int &column, int index, bool validate) {
+bool Table::indexToRowColumn(int &row, int &column, int index, bool validate) {
     int nc;
 
     if ((nc = m_Mat[1].getCount()) <= 0) {

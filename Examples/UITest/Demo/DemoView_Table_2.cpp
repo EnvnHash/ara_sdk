@@ -9,9 +9,12 @@ DemoView_Table_2::DemoView_Table_2() : DemoView("Table demo 2 / Table in table /
 }
 
 void DemoView_Table_2::init() {
-    ui_Table = (UITable*) addChild(make_unique<UITable>(vec2{0.f, 100.f}, vec2{getContentSize().x, getContentSize().y - 100.f}, ivec2{}));
-    ui_Table->t_setSpacing(8, 8);
-    ui_Table->t_setMargins(0, 0);
+    ui_Table = addChild<UITable>(UITableParameters{
+        .pos = { 0.f, 100.f },
+        .size = { getContentSize().x, getContentSize().y - 100.f },
+        .spacing = { 8, 8 }
+    });
+
     ui_Table->setColor(.2f, 0.2f, 0.2f, 1.f);
     ui_Table->setBackgroundColor(.0f, .0f, .0f, 1.0f);
 
@@ -23,10 +26,12 @@ void DemoView_Table_2::init() {
     ui_Table->insertColumn(-1,1,0);
     ui_Table->insertColumn(-1,1,50);
 
-    auto taux = ui_Table->setCell<UITable>(1, 1, make_unique<UITable>(vec2{}, vec2{300.f, 200.f}, ivec2{3, 3}));
+    auto taux = ui_Table->setCell<UITable>(1, 1,
+                                           make_unique<UITable>(UITableParameters{ .size = {300.f, 200.f},
+                                                                                   .topology = {3, 3}}));
     taux->setSize(1.f, 1.f);
-    taux->t_setSpacing(8, 8);
-    taux->t_setMargins(0, 0);
+    taux->setSpacing(8, 8);
+    taux->setMargins(0, 0);
     taux->setColor(.4f, .4f, 0.6f, 1.f);
     taux->setBackgroundColor(.2f, .2f, .2f, 1.0f);
 

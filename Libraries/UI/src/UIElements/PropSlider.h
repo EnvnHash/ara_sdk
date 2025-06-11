@@ -20,7 +20,7 @@ public:
         if (!prop) return;
 
         onChanged<T>(prop, [this, prop](std::any val) {
-            m_Slider->setValue(static_cast<float>((std::any_cast<T>(val) - prop->getMin()) /
+            m_slider->setValue(static_cast<float>((std::any_cast<T>(val) - prop->getMin()) /
                                                   static_cast<float>(prop->getMax() - prop->getMin())));
             m_Edit->setValue(std::any_cast<T>(val));
         });
@@ -37,8 +37,9 @@ public:
         m_Edit->setValue((*prop)());
         m_Edit->setStep(prop->getStep());
 
-        m_Slider->addMouseDragCb([this, prop](hidData& data) {
-            auto newValue = static_cast<T>(m_Slider->getValue() * (static_cast<float>(prop->getMax()) - static_cast<float>(prop->getMin())) +
+        m_slider->addMouseDragCb([this, prop](hidData& data) {
+            auto newValue = static_cast<T>(
+                m_slider->getValue() * (static_cast<float>(prop->getMax()) - static_cast<float>(prop->getMin())) +
                                static_cast<float>(prop->getMin()));
             newValue = static_cast<T>(static_cast<int>(static_cast<float>(newValue) / static_cast<float>(prop->getStep()))) * prop->getStep();
             if (!m_onMouseUpUpdtMode) {
@@ -49,15 +50,16 @@ public:
             data.consumed = true;
         });
 
-        m_Slider->getKnob()->addMouseUpCb([this, prop](hidData& data) {
+        m_slider->getKnob()->addMouseUpCb([this, prop](hidData& data) {
             if (m_onMouseUpUpdtMode) {
-                auto newValue = static_cast<T>(m_Slider->getValue() * (static_cast<float>(prop->getMax()) - static_cast<float>(prop->getMin())) +
+                auto newValue = static_cast<T>(
+                    m_slider->getValue() * (static_cast<float>(prop->getMax()) - static_cast<float>(prop->getMin())) +
                                    static_cast<float>(prop->getMin()));
                 newValue = static_cast<T>(static_cast<int>(static_cast<float>(newValue) / static_cast<float>(prop->getStep()))) * prop->getStep();
                 (*prop)  = newValue;
             }
         });
-        m_Slider->setValue(static_cast<float>(((*prop)() - prop->getMin()) / static_cast<float>(prop->getMax() - prop->getMin())));
+        m_slider->setValue(static_cast<float>(((*prop)() - prop->getMin()) / static_cast<float>(prop->getMax() - prop->getMin())));
     }
 
     void setProp(Property<int>* prop) { setProp<int>(prop); }
@@ -87,7 +89,7 @@ public:
 
 private:
     Label*                m_label             = nullptr;
-    Slider*               m_Slider            = nullptr;
+    Slider*               m_slider            = nullptr;
     UIEdit*               m_Edit              = nullptr;
     bool                  m_onMouseUpUpdtMode = false;
     std::function<void()> m_valChangeCb;

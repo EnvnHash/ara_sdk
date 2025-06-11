@@ -129,7 +129,7 @@ public:
                                                             ? m_listProp->size()
                                                             : 1),
                            m_rowHeight);
-        m_table->t_setSpacing(m_space.x, m_space.y);
+        m_table->setSpacing(m_space.x, m_space.y);
 
         m_uiItems.clear();
 

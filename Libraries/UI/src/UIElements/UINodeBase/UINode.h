@@ -32,16 +32,9 @@ public:
 
     virtual void init() {}
 
-    template <typename T>
-    T* addChild() {
-        return static_cast<T*>(UINode::addChild(static_cast<std::unique_ptr<UINode>>(std::make_unique<T>())));
-    }
-
-    template <typename T>
-    T* addChild(const std::string& styleClass) {
-        T* nc = addChild<T>();
-        nc->addStyleClass(styleClass);
-        return nc;
+    template <typename T, typename... Args>
+    T* addChild(Args&& ... args) {
+        return static_cast<T*>(UINode::addChild(std::make_unique<T>(args...)));
     }
 
     template <typename T, typename U>

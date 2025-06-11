@@ -25,45 +25,44 @@ public:
 
     UINode* addChild(std::unique_ptr<UINode> child);
 
+    void ctorInit();
     void init() override;
 
-    virtual void addMouseDragCb(const std::function<void(hidData&)>& func) { m_knob->addMouseDragCb(func); }
+    virtual void    addMouseDragCb(const std::function<void(hidData&)>& func) { m_knob->addMouseDragCb(func); }
+    virtual void    adjustKnob();
+    void            updateMatrix() override;
 
-    virtual void adjustKnob();
-    void         updateMatrix() override;
+    float           getValue() override { return m_normValue * (m_max - m_min) + m_min; }
+    virtual float   getScaledVal(float in);
+    virtual float   getUnScaled(float in);
+    int             getKnobWidth() const { return m_knobWidth; }
+    float           getMaxDragWay() { return (m_maxDragWay = getSize().x - static_cast<float>(m_knobWidth)); }
+    float           getScaledNormValue() const  { return m_scaledNormValue; }
+    SliderKnob*     getKnob() const { return m_knob; }
 
-    float getValue() override { return m_normValue * (m_max - m_min) + m_min; }
+    void            setNumEdit(UIEdit* edit) { m_numEdit = edit; }
+    void            setMin(float min) { m_min = min; }
+    void            setMax(float max) { m_max = max; }
+    void            setValueChangeCb(std::function<void(float)> f) { m_valueChangeCb = std::move(f); }
+    void            setAbsValue(float val) override;
+    void            setValue(float val) override;
+    virtual void    setValuePtr(float* val);
+    void            setValueString(std::string val) { m_valueAsString = std::move(val); }
+    void            setScale(sliderScale scaling) { m_scaling = scaling; }
+    void            reset() { m_valueAsString = ""; }
+    float           setKnobProportion(float nprop) { return (m_knobProportion = nprop); }
 
-    virtual float getScaledVal(float in);
-    virtual float getUnScaled(float in);
+    void setMaxDragWay(float val) {
+        m_maxDragWay    = val;
+        m_maxDragWayRel = m_maxDragWay / getSize().x;
+    }
 
-    int   getKnobWidth() const { return m_knobWidth; }
-    float getMaxDragWay() { return (m_maxDragWay = getSize().x - static_cast<float>(m_knobWidth)); }
-    float getScaledNormValue() const  { return m_scaledNormValue; }
-    void  setNumEdit(UIEdit* edit) { m_numEdit = edit; }
-    void  setLineColor(float r, float g, float b, float a) {
+    void setLineColor(float r, float g, float b, float a) {
         m_lineColor.r = r;
         m_lineColor.g = g;
         m_lineColor.b = b;
         m_lineColor.a = a;
     }
-    void setMin(float min) { m_min = min; }
-    void setMax(float max) { m_max = max; }
-    void setValueChangeCb(std::function<void(float)> f) { m_valueChangeCb = std::move(f); }
-
-    void         setAbsValue(float val) override;
-    void         setValue(float val) override;
-    virtual void setValuePtr(float* val);
-
-    void setValueString(std::string val) { m_valueAsString = std::move(val); }
-    void setScale(sliderScale scaling) { m_scaling = scaling; }
-    void setMaxDragWay(float val) {
-        m_maxDragWay    = val;
-        m_maxDragWayRel = m_maxDragWay / getSize().x;
-    }
-    void        reset() { m_valueAsString = ""; }
-    float       setKnobProportion(float nprop) { return (m_knobProportion = nprop); }
-    SliderKnob* getKnob() const { return m_knob; }
 
 private:
     UINode*     m_numView   = nullptr;

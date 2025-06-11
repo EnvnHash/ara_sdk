@@ -106,8 +106,8 @@ public:
     bool     getCellGeo(eTable_CellGeo &cg, int row, int col);
     bool     getCellGeo(eTable_CellGeo &cg, int index);
 
-    int rc2index(int row, int column, bool validate);  // if validate : will check if row and column are in range
-    bool index2rc(int &row, int &column, int index, bool validate);
+    int  rowColumnToIndex(int row, int column, bool validate);  // if validate : will check if row and column are in range
+    bool indexToRowColumn(int &row, int &column, int index, bool validate);
 
     virtual void reset() {}
 

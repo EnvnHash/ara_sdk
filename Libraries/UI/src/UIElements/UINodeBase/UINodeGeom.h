@@ -111,6 +111,13 @@ public :
         setCoord(posY, coordComp::y, st);
     }
 
+    template<typename T>
+    requires std::is_same_v<T, glm::ivec2> || std::is_same_v<T, glm::vec2>
+    void setPos(T pos, state st = state::m_state) {
+        setCoord(pos.x, coordComp::x, st);
+        setCoord(pos.y, coordComp::y, st);
+    }
+
     virtual void       setZPos(float val) { m_zPos = val; }
 
     /** set width in absolute pixels (int), in relative percentage (float) 0-1 **/
@@ -131,6 +138,13 @@ public :
     void setSize(T width, U height, state st = state::m_state) {
         setSizeComp(width, coordComp::x, st);
         setSizeComp(height, coordComp::y, st);
+    }
+
+    template<typename T>
+    requires std::is_same_v<T, glm::ivec2> || std::is_same_v<T, glm::vec2>
+    void setSize(T size, state st = state::m_state) {
+        setSizeComp(size.x, coordComp::x, st);
+        setSizeComp(size.y, coordComp::y, st);
     }
 
     /** implicitly sets pivot to same value  */
