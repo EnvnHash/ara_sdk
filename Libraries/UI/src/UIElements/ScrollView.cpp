@@ -15,7 +15,7 @@ ScrollView::ScrollView() : Div() {
 #ifdef __ANDROID__
     setCanReceiveDrag(true);
 #endif
-    m_content = UINode::addChild<Div>(UINodePars{ .name = "content" });
+    m_content = UINode::addChild<Div>({ .name = "content" });
 }
 
 void ScrollView::init() {
@@ -63,7 +63,7 @@ void ScrollView::init() {
     });
 
     // little div to cover the corner in case both scrollbars are showing
-    m_corner = UINode::addChild<Div>(UINodePars{
+    m_corner = UINode::addChild<Div>({
         .size = ivec2{m_scrollBarSize, m_scrollBarSize},
         .bgColor = m_sharedRes->colors->at(uiColors::background),
         .name = "UIScrollBarCorner",

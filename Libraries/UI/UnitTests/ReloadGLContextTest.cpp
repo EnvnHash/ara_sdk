@@ -26,7 +26,7 @@ TEST(UITest, ReloadGLContextQuadTests) {
 
 TEST(UITest, ReloadGLContextImageTests) {
     appRestartGL([&](UIApplication& app){
-        app.getMainWindow()->getRootNode()->addChild<Image>(UINodePars{ .size = ivec2{ 300, 300 } })->setImg("checkerboard_small.png", 1);
+        app.getMainWindow()->getRootNode()->addChild<Image>({ .size = ivec2{ 300, 300 } })->setImg("checkerboard_small.png", 1);
     }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "image_reload.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
@@ -36,7 +36,7 @@ TEST(UITest, ReloadGLContextImageTests) {
 
 TEST(UITest, ReloadGLContextLabelTests) {
     appRestartGL([&](UIApplication& app){
-        auto label = app.getMainWindow()->getRootNode()->addChild<Label>(UINodePars{ .pos = ivec2{10, 10}, .size = ivec2{400, 100} });
+        auto label = app.getMainWindow()->getRootNode()->addChild<Label>({ .pos = ivec2{10, 10}, .size = ivec2{400, 100} });
         label->setFont("regular", 21, align::left, valign::top, {1.f, 1.f, 1.f, 1.f});
         label->setText("Test Test Test Test");
     }, [&](UIApplication& app){

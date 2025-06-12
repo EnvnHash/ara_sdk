@@ -33,7 +33,7 @@ void DemoView_Edit::init() {
     ed->setFontSize(19);
     ed->setSingleLine();
 
-    addChild<Label>(UINodePars{ .style = getStyleClass()+".ed-sl-label" });
+    addChild<Label>({ .style = getStyleClass()+".ed-sl-label" });
 
     ed = addChild<UIEdit>();
     ed->addStyleClass(getStyleClass()+".ed-sl");
@@ -44,7 +44,7 @@ void DemoView_Edit::init() {
     ed->setOnLostFocusCb([]{ LOG << "lost focus";  });
     ed->setUseWheel(true);
 
-    addChild<Label>(UINodePars{ .style = getStyleClass()+".ed-sl-label-float" });
+    addChild<Label>({ .style = getStyleClass()+".ed-sl-label-float" });
 
     ed = addChild<UIEdit>(UINodePars{ .style = getStyleClass()+".ed-sl-float" });
     ed->setOpt(UIEdit::single_line | UIEdit::num_fp);
@@ -59,5 +59,5 @@ void DemoView_Edit::init() {
     ed->setText("Test Multi-Line Edit:\rLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque ligula, tristique euismod scelerisque ut, finibus id libero. Praesent sagittis consectetur consequat. Integer et elit sed lorem finibus placerat in sit amet libero. Praesent sed nibh nec magna auctor aliquam quis ultrices sapien. Integer ullamcorper volutpat felis, condimentum facilisis mauris dignissim sed. Donec tempus non lorem vel facilisis. Sed pulvinar lorem in nulla facilisis sodales. Praesent commodo consectetur cursus. Sed tristique, nunc a suscipit hendrerit, nulla metus dapibus orci, non ultrices leo nulla eget ligula. Duis porta neque rutrum metus varius varius. Maecenas tincidunt varius leo. Duis risus leo, rutrum a ante sit amet, egestas cursus massa. Mauris aliquet lobortis ultrices.");
     ed->setUseWheel(true);
 
-    addChild<Label>(UINodePars{ .style = getStyleClass()+".label" });
+    addChild<Label>({ .style = getStyleClass()+".label" });
 }

@@ -77,7 +77,7 @@ ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
 
     int chHeight = 40;
     for (int i = 0; i < nrSubElements; i++) {
-        scrollView->addChild<Div>(UINodePars{
+        scrollView->addChild<Div>({
             .pos = ivec2{10, (chHeight +10) * i },
             .size = ivec2{30, chHeight},
             .bgColor = vec4{0.7f, 0.7f, 0.7f, 1.f}

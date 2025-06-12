@@ -10,7 +10,7 @@ DemoView::DemoView(std::string title, glm::vec4 bk_color) : Div() {
     setBackgroundColor(bk_color);
     setPadding(20);
 
-    m_label = addChild<Label>(UINodePars{ .size = ivec2{400,60} });
+    m_label = addChild<Label>({ .size = ivec2{400,60} });
     m_label->setFont("regular", 28, align::left, valign::top, m_textcolor);
     m_label->setText(title);
 

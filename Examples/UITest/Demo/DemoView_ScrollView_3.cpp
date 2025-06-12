@@ -47,7 +47,7 @@ void DemoView_ScrollView_3::Unit::init() {
         .font_height = 22
     });
 
-    addChild<Image>(UINodePars{
+    addChild<Image>({
         .size = ivec2{110, 110},
         .alignX = align::center,
         .alignY = valign::center

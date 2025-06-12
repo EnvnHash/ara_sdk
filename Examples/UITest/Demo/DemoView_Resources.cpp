@@ -19,28 +19,28 @@ void DemoView_Resources::init() {
     setPadding(10);
     fontList.setGlbase(m_glbase);
 
-    addChild<Label>(UINodePars{ .style = "text_test" });
+    addChild<Label>({ .style = "text_test" });
 
-    auto dp = addChild<Div>(UINodePars{ .style = "styles.rdiv" });
+    auto dp = addChild<Div>({ .style = "styles.rdiv" });
 
-    dp->addChild<Div>(UINodePars{ .style = "styles.irdiv" });
+    dp->addChild<Div>({ .style = "styles.irdiv" });
 
-    addChild<Image>(UINodePars{ .style = "chtest.sample-image" })->setLod(3);
+    addChild<Image>({ .style = "chtest.sample-image" })->setLod(3);
 
-    addChild<Image>(UINodePars{
+    addChild<Image>({
         .pos = ivec2{150,100},
         .size = ivec2{300,200},
         .style = "chtest.icon"
     });
 
-    auto image = addChild<Image>(UINodePars{
+    auto image = addChild<Image>({
         .pos = ivec2{150,350},
         .size = ivec2{300,200},
         .style = "chtest.icon"
     });
     image->setSelected(isSelected());
 
-    image = addChild<Image>(UINodePars{
+    image = addChild<Image>({
         .pos = ivec2{150,600},
         .size = ivec2{300,200},
         .style = "one.but1"
