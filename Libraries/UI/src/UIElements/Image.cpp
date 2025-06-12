@@ -27,20 +27,6 @@ Image::Image() : Div() {
 #endif
 }
 
-/*
-Image::Image(const std::string& file, int mipMapLevel, bool keep_aspect, align ax, valign ay) : Div() {
-    setName(getTypeName<Image>());
-    setFocusAllowed(false);
-    Image::initDefaults();
-    m_imageFile   = file;
-    m_mipMapLevel = mipMapLevel;
-    setAlign(ax, ay);
-#ifndef FORCE_INMEDIATEMODE_RENDERING
-    m_imgDB.stdInit();
-    m_drawImmediate = false;
-#endif
-}*/
-
 void Image::initDefaults() {
     m_imgFlags    = 0;
     m_imgScale    = 1.f;

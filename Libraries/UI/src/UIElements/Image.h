@@ -19,7 +19,6 @@ class Texture;
 class Image : public Div {
 public:
     Image();
-    //Image(const std::string& file, int mipMapLevel, bool keep_aspect, align ax = align::center, valign ay = valign::center);
     ~Image() override = default;
 
     void            init() override;
