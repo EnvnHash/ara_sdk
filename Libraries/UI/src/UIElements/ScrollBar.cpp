@@ -39,8 +39,8 @@ void ScrollBar::updateMatrix() {
 
     // set size of drag area in percentage (parentBound / childrenBound)
     m_dragAreaSizeRel   = sv->getSize() / m_bbSize;
-    m_dragAreaSizePix.x = sv->ui_HSB->getSize().x * m_dragAreaSizeRel.x;
-    m_dragAreaSizePix.y = sv->ui_VSB->getSize().y * m_dragAreaSizeRel.y;
+    m_dragAreaSizePix.x = sv->m_HSB->getSize().x * m_dragAreaSizeRel.x;
+    m_dragAreaSizePix.y = sv->m_VSB->getSize().y * m_dragAreaSizeRel.y;
 
     if (s_Type == horizontal) {
         m_dragArea->setSize(m_dragAreaSizeRel.x, 1.f);
@@ -51,8 +51,8 @@ void ScrollBar::updateMatrix() {
     // calculate the position of the scrollbars in relation to the content offset
 
     // maximum distance in pixels, the area the dragArea can be dragged
-    m_maxScrollBarDragWay.x = sv->ui_HSB->getSize().x - m_dragAreaSizePix.x;
-    m_maxScrollBarDragWay.y = sv->ui_VSB->getSize().y - m_dragAreaSizePix.y;
+    m_maxScrollBarDragWay.x = sv->m_HSB->getSize().x - m_dragAreaSizePix.x;
+    m_maxScrollBarDragWay.y = sv->m_VSB->getSize().y - m_dragAreaSizePix.y;
 
     // the maximum offset the content can have inside the scrollview
     m_maxScrollOffset = m_bbSize - sv->getSize();

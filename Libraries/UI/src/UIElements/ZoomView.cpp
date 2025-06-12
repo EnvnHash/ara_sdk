@@ -46,8 +46,8 @@ void ZoomView::init() {
     //--------------------------------------------------------------------------------------
 
     ui_zoomSlider = ui_bottomMenu->addChild<PropSlider>();
-    ui_zoomSlider->setProp(&m_zoomProp);
-    onChanged<float>(&m_zoomProp, [this](const std::any& val) {
+    ui_zoomSlider->setProp(m_zoomProp);
+    onChanged<float>(m_zoomProp, [this](const std::any& val) {
         if (ui_workingArea) {
             if (m_zoomUseWheel) {
                 ui_workingArea->setZoomWithCenter(std::any_cast<float>(val) * 0.01f, getWindow()->getActMousePos());
@@ -63,7 +63,7 @@ void ZoomView::init() {
 
     ui_zoomSlider->addStyleClass("zoom_view.zoom_slider");
     ui_zoomSlider->setLabel("Zoom");
-    ui_zoomSlider->setProp(&m_zoomProp);
+    ui_zoomSlider->setProp(m_zoomProp);
     ui_zoomSlider->setPrecision(1);
     ui_zoomSlider->setValueChgCb([this] { m_zoomUseWheel = false; });
     ui_zoomSlider->setOnLostFocusCb([this] { getWindow()->setInputFocusNode(this, false); });

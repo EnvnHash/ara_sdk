@@ -63,13 +63,8 @@ public:
     class Unit : public Div {
     public:
         Unit(): Div() {}
-
         void            init() override;
-        void            setColor(glm::vec4& col) { m_fontColor = col; }
-        void            setColor(float r, float g, float b, float a) { m_fontColor.r = r; m_fontColor.g = g; m_fontColor.b = b; m_fontColor.a = a; }
-
         std::string		m_Title;
-        glm::vec4		m_fontColor;
     };
 
     DemoView_ScrollView_3();

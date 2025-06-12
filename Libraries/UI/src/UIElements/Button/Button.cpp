@@ -21,8 +21,8 @@ Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::s
           .text_color = text_color,
           .bg_color = bg_color,
           .text = text,
-          .ax = align.first,
-          .ay = align.second,
+          .text_align_x = align.first,
+          .text_align_y = align.second,
           .font_type = font_type,
           .font_height=0
       }), m_typoColor({0.f, 0.f, 0.f, 1.f}) {
@@ -105,12 +105,8 @@ void Button::toggle(bool val) {
     setDrawFlag();
 }
 
-void Button::setProp(Property<bool>* prop) {
-    if (!prop) {
-        return;
-    }
-
-    m_prop = prop;
+void Button::setProp(Property<bool>& prop) {
+    m_prop = &prop;
     onChanged<bool>(prop, [this](const std::any &val) {
         bool v = std::any_cast<bool>(val);
         if (v != (m_state == state::selected)) {
@@ -119,7 +115,7 @@ void Button::setProp(Property<bool>* prop) {
         }
     });
 
-    toggle((*prop)());
+    toggle(prop());
     setDrawFlag();
 }
 

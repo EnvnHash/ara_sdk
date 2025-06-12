@@ -3,6 +3,8 @@
 #include <UIElements/Div.h>
 #include <Utils/Typo/FontGlyphVector.h>
 #include <Utils/VAO.h>
+#include <UISharedRes.h>
+#include <UIWindow.h>
 
 namespace ara {
 
@@ -11,11 +13,13 @@ class Font;
 struct LabelInitData {
     glm::ivec2 pos{};
     glm::ivec2 size{};
+    align alignX{};
+    valign alignY{};
     glm::vec4 text_color{};
     glm::vec4 bg_color{};
     const std::string& text;
-    align ax{};
-    valign ay{};
+    align text_align_x{};
+    valign text_align_y{};
     const std::string& font_type;
     int font_height=0;
 };
@@ -55,8 +59,6 @@ public:
     void          clearDs() override;
     void          loadStyleDefaults() override;
     void          updateStyleIt(ResNode *node, state st, const std::string& styleClass) override;
-    virtual void  setProp(Property<std::string> *prop);
-    virtual void  setProp(Property<std::filesystem::path> *prop);
 
     void setFont(const std::string& fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st = state::m_state);
     void setColor(float r, float g, float b, float a, state st = state::m_state) override;
@@ -69,6 +71,21 @@ public:
     void setFontType(std::string fontType, state st = state::m_state);
 
     glm::vec2 &getTextBoundSize();
+
+    template<typename T>
+    requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
+    void setProp(Property<T> &prop) {
+        onChanged<T>(prop, [this](const std::any& val) {
+            if (getSharedRes()) {
+                // is this really necessary as glcallback??? basically nothing gl-ish  is happening on setText
+                static_cast<UIWindow *>(getSharedRes()->win)->addGlCb(this, "chgTxt", [this, val] {
+                    setText(std::any_cast<T>(val).string());
+                    return true;
+                });
+            }
+        });
+        setText(typeid(T) == typeid(std::string) ? prop() : prop().string());
+    }
 
 protected:
     void setEditPixSpace(float width, float height, bool set_flag = true);

@@ -29,8 +29,10 @@ Label::Label(const LabelInitData &initData) {
     Div::setBackgroundColor(initData.bg_color);
     Div::setColor(initData.text_color);
     setText(initData.text);
-    setTextAlign(initData.ax, initData.ay);
+    setTextAlign(initData.text_align_x, initData.text_align_y);
     setFontSize(initData.font_height);
+    setAlignX(initData.alignX);
+    setAlignY(initData.alignY);
 }
 
 void Label::loadStyleDefaults() {
@@ -138,33 +140,6 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
         m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size]() { setFontSize(size); };
         m_setStyleFunc[st][styleInit::fontFontFamily] = [this, font]() { setFontType(font); };
     }
-}
-
-void Label::setProp(Property<std::string>* prop) {
-    onChanged<std::string>(prop, [this](const std::any& val) {
-        if (m_sharedRes)
-            // is this really necessary as glcallback??? basically nothing
-            // gl-ish is happening on setText
-            static_cast<UIWindow *>(m_sharedRes->win)->addGlCb(this, "chgTxt", [this, val] {
-                setText(std::any_cast<std::string>(val));
-                return true;
-            });
-    });
-    setText((*prop)());
-}
-
-void Label::setProp(Property<std::filesystem::path>* prop) {
-    onChanged<std::filesystem::path>(prop, [this](const std::any& val) {
-        if (m_sharedRes) {
-            // is this really necessary as glcallback??? basically nothing
-            // gl-ish  is happening on setText
-            static_cast<UIWindow *>(m_sharedRes->win)->addGlCb(this, "chgTxt", [this, val] {
-                setText(std::any_cast<std::filesystem::path>(val).string());
-                return true;
-            });
-        }
-    });
-    setText((*prop)().string());
 }
 
 glm::vec4 Label::calculateMask() const {

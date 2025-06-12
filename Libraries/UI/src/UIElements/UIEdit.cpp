@@ -706,6 +706,14 @@ void UIEdit::globalMouseDown(hidData& data) {
     }
 }
 
+void UIEdit::setTextDist(const std::string &str) {
+    setText(str);
+}
+
+void UIEdit::setTextDist(const std::filesystem::path& p) {
+    setText(p.string());
+}
+
 void UIEdit::setText(const std::string &str) {
     bool updt = str.size() != m_Text.size();
     m_Text.assign(str, 0, std::min(m_MaxCount, static_cast<int>(str.size())));
@@ -1024,148 +1032,73 @@ void UIEdit::changeValType(unsigned long t) {
 
 void UIEdit::clearProp() {
     if (m_stringProp) {
-        removeOnChanged<std::string>(m_stringProp);
+        removeOnChanged<std::string>(*m_stringProp);
         removeEnterCb(m_stringProp);
         setOnLostFocusCb(nullptr);
     }
 }
 
-void UIEdit::setProp(Property<std::string> *prop) {
-    if (!prop) return;
-    m_stringProp = prop;
-    onChanged<std::string>(prop, [this](const std::any &val) { setText(std::any_cast<std::string>(val)); });
-    addEnterCb([prop](const std::string &txt) { *prop = txt; }, prop);
-    setOnLostFocusCb([this, prop] { *prop = m_Text; });
-    setText((*prop)());
-}
-
-void UIEdit::setProp(Property<std::filesystem::path> *prop) {
-    onChanged<std::filesystem::path>(
-        prop, [this](const std::any &val) { setText(std::any_cast<std::filesystem::path>(val).string()); });
-    addEnterCb([prop](std::filesystem::path txt) { *prop = std::filesystem::path(std::move(txt)); }, prop);
-    setOnLostFocusCb([this, prop] { *prop = std::filesystem::path(m_Text); });
-    setText((*prop)().string());
-}
-
-void UIEdit::setProp(Property<int> *prop) {
-    setOpt(UIEdit::single_line | UIEdit::num_int);
-
-    onChanged<int>(prop, [this](const std::any &val) { setText(std::to_string(std::any_cast<int>(val))); });
-    addEnterCb([prop](const std::string &txt) { (*prop) = atoi(txt.c_str()); }, prop);
-    setOnLostFocusCb([this, prop] { (*prop) = getIntValue(); });
-    setMinMax(prop->getMin(), prop->getMax());
-    setStep(prop->getStep());
-    setText(std::to_string((*prop)()));
-    setUseWheel(true);
-}
-
-void UIEdit::setProp(Property<float> *prop) {
-    setOpt(UIEdit::single_line | UIEdit::num_fp);
-
-    onChanged<float>(prop, [this](const std::any &val) { setValue(std::any_cast<float>(val)); });
-    addEnterCb([prop](const std::string &txt) { *prop = static_cast<float>(atof(txt.c_str())); }, prop);
-    setOnLostFocusCb([this, prop] { *prop = static_cast<float>(atof(m_Text.c_str())); });
-    setMinMax(prop->getMin(), prop->getMax());
-    setStep(prop->getStep());
-    setValue((*prop)());
-    setUseWheel(true);
-}
-
-void UIEdit::setProp(Property<glm::ivec2> *prop, int idx) {
-    onChanged<glm::ivec2>(prop, [this, idx](std::any val) { setValue(std::any_cast<glm::ivec2>(val)[idx]); });
-    addEnterCb(
-        [prop, idx](const std::string &txt) {
-            glm::ivec2 newVal = (*prop)();
-            newVal[idx]       = atoi(txt.c_str());
-            (*prop)           = newVal;
-        },
-        prop);
-    setOnLostFocusCb([this, prop, idx] {
-        glm::ivec2 newVal = (*prop)();
-        newVal[idx]       = atoi(m_Text.c_str());
-        (*prop)           = newVal;
-    });
-
-    setOpt(UIEdit::num_int);
-    setMinMax(prop->getMin()[idx], prop->getMax()[idx]);
-    setStep(prop->getStep()[idx]);
-    setValue((*prop)()[idx]);
-    setUseWheel(true);
-}
-
-void UIEdit::setProp(Property<glm::vec2> *prop, int idx) {
-    onChanged<glm::vec2>(prop, [this, idx](std::any val) { setValue(std::any_cast<glm::vec2>(val)[idx]); });
-    addEnterCb(
-        [prop, idx](const std::string &txt) {
-            glm::vec2 newVal = (*prop)();
-            newVal[idx]      = static_cast<float>(atof(txt.c_str()));
-            (*prop)          = newVal;
-        },
-        prop);
-    setOnLostFocusCb([this, prop, idx] {
-        glm::vec2 newVal = (*prop)();
-        newVal[idx]      = static_cast<float>(atof(m_Text.c_str()));
-        (*prop)          = newVal;
-    });
-
-    setMinMax(prop->getMin()[idx], prop->getMax()[idx]);
-    setStep(prop->getStep()[idx]);
-    setValue((*prop)()[idx]);
-    setUseWheel(true);
-}
-
-void UIEdit::setProp(Property<glm::vec3> *prop, int idx) {
-    onChanged<glm::vec3>(prop, [this, idx](std::any val) { setValue(std::any_cast<glm::vec3>(val)[idx]); });
-    addEnterCb(
-        [prop, idx](const std::string &txt) {
-            glm::vec3 newVal = (*prop)();
-            newVal[idx]      = static_cast<float>(atof(txt.c_str()));
-            (*prop)          = newVal;
-        },
-        prop);
-    setOnLostFocusCb([this, prop, idx] {
-        glm::vec3 newVal = (*prop)();
-        newVal[idx]      = static_cast<float>(atof(m_Text.c_str()));
-        (*prop)          = newVal;
-    });
-
-    setMinMax(prop->getMin()[idx], prop->getMax()[idx]);
-    setStep(prop->getStep()[idx]);
-    setValue((*prop)()[idx]);
-    setUseWheel(true);
-}
-
-void UIEdit::setProp(Property<glm::ivec3> *prop, int idx) {
-    onChanged<glm::ivec3>(prop, [this, idx](std::any val) { setValue(std::any_cast<glm::ivec3>(val)[idx]); });
-    addEnterCb(
-        [prop, idx](const std::string &txt) {
-            glm::ivec3 newVal = (*prop)();
-            newVal[idx]       = atoi(txt.c_str());
-            (*prop)           = newVal;
-        },
-        prop);
-    setOnLostFocusCb([this, prop, idx] {
-        glm::ivec3 newVal = (*prop)();
-        newVal[idx]       = atoi(m_Text.c_str());
-        (*prop)           = newVal;
-    });
-
-    setMinMax(prop->getMin()[idx], prop->getMax()[idx]);
-    setStep(prop->getStep()[idx]);
-    setValue((*prop)()[idx]);
-    setUseWheel(true);
-}
-
 void UIEdit::setPropItem(Item *item) {
     if (item && item->isPropertyItem) {
         if (item->m_typeId == tpi::tp_string) {
-            setProp( dynamic_cast<PropertyItemUi<std::string> *>(item)->getPtr());
+            setProp<std::string>( *dynamic_cast<PropertyItemUi<std::string>*>(item)->getPtr());
         } else if (item->m_typeId == tpi::tp_int32) {
-            setProp( dynamic_cast<PropertyItemUi<int32_t> *>(item)->getPtr());
+            setProp<int32_t>( *dynamic_cast<PropertyItemUi<int32_t> *>(item)->getPtr());
         } else if (item->m_typeId == tpi::tp_float) {
-            setProp( dynamic_cast<PropertyItemUi<float> *>(item)->getPtr());
+            setProp<float>( *dynamic_cast<PropertyItemUi<float> *>(item)->getPtr());
         }
     }
+}
+
+void UIEdit::blockEdit(bool val) {
+    m_blockEdit      = val;
+    m_glyphsPrepared = false;
+}
+
+void UIEdit::removeEnterCb(void* ptr) {
+    if (auto it = m_onEnterCb.find(ptr); it != m_onEnterCb.end()) {
+        m_onEnterCb.erase(it);
+    }
+}
+
+void UIEdit::setMinMax(int min, int max) {
+    m_minInt = min;
+    m_maxInt = max;
+}
+
+void UIEdit::setMinMax(float min, float max) {
+    m_minF = min;
+    m_maxF = max;
+}
+void UIEdit::setMinMax(double min, double max) {
+    m_minD = min;
+    m_maxD = max;
+}
+
+void UIEdit::setBkSelColor(glm::vec4 c) {
+    m_BkSelColor     = c;
+    m_glyphsPrepared = false;
+}
+
+void UIEdit::setCaretColor(glm::vec4 c, state st) {
+    m_caretColor     = c;
+    m_glyphsPrepared = false;
+    setStyleInitVal("caret-color",
+                    "rgba(" + std::to_string(c.r * 255.f) + "," + std::to_string(c.g * 255.f) + "," +
+                    std::to_string(c.b * 255.f) + "," + std::to_string(c.a * 255.f) + ")",
+                    st);
+}
+
+void UIEdit::setCaretColor(float r, float g, float b, float a, state st) {
+    m_caretColor.r   = r;
+    m_caretColor.g   = g;
+    m_caretColor.b   = b;
+    m_caretColor.a   = a;
+    m_glyphsPrepared = false;
+    setStyleInitVal("caret-color",
+                    "rgba(" + std::to_string(r * 255.f) + "," + std::to_string(g * 255.f) + "," +
+                    std::to_string(b * 255.f) + "," + std::to_string(a * 255.f) + ")",
+                    st);
 }
 
 }  // namespace ara

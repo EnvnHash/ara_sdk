@@ -5,16 +5,20 @@
 
 namespace ara {
 
-struct UITableParameters {
-    std::variant<glm::vec2, glm::ivec2> pos{};
-    std::variant<glm::vec2, glm::ivec2> size{};
-    glm::ivec2 topology{};
-    glm::vec2 margin{};
-    glm::vec2 spacing{};
+class UITableParameters  {
+public:
+    std::variant<glm::ivec2, glm::vec2> pos{};
+    std::variant<glm::ivec2, glm::vec2> size{};
     std::optional<glm::vec4> fgColor{};
     std::optional<glm::vec4> bgColor{};
-    std::optional<float*> fgColorPtr {};
-    std::optional<float*> bgColorPtr {};
+    std::optional<align> alignX{};
+    std::optional<valign> alignY{};
+    std::optional<glm::ivec2> topology{};
+    std::optional<glm::vec2> margin{};
+    std::optional<glm::vec2> spacing{};
+    auto getTiedOptionals() const {
+        return std::tie(fgColor, bgColor, alignX, alignY, topology, margin, spacing);
+    }
 };
 
 class UITable : public Div {

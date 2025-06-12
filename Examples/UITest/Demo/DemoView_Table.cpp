@@ -9,12 +9,14 @@ DemoView_Table::DemoView_Table() : DemoView("Table demo",glm::vec4(.1f,.1f,.1f,1
 }
 
 void DemoView_Table::init() {
+    auto a = UITableParameters();
+
     ui_Table = addChild<UITable>(UITableParameters{
         .pos = ivec2{ 0.f, 100 },
         .size = ivec2{ getContentSize().x, getContentSize().y - 100 },
-        .topology = { 4, 3 },
-        .margin = { 5, 5 },
-        .spacing = { 8, 8 }
+        .topology = ivec2{ 4, 3 },
+        .margin = ivec2{ 5, 5 },
+        .spacing = ivec2{ 8, 8 }
     });
 
     for (int i = 0; i < ui_Table->getRowCount(); i++) {

@@ -31,36 +31,30 @@ UITable::UITable(const UITableParameters& par) {
         }
     }, par.size);
 
-    UITable::setColor(.1f, .1f, .1f, 1.f);
-
-    if (par.fgColorPtr) {
-        UITable::setColor(par.fgColorPtr.value()[0], par.fgColorPtr.value()[1], par.fgColorPtr.value()[2], par.fgColorPtr.value()[3]);
-    } else if (par.fgColor) {
-        UITable::setColor(par.fgColor.value()[0], par.fgColor.value()[1], par.fgColor.value()[2], par.fgColor.value()[3]);
-    }
-
-    if (par.bgColorPtr) {
-        UINode::setBackgroundColor(par.bgColorPtr.value()[0], par.bgColorPtr.value()[1], par.bgColorPtr.value()[2], par.bgColorPtr.value()[3]);
-    } else if (par.bgColor) {
-        UITable::setBackgroundColor(par.bgColor.value());
-    }
-
-    UITable::setMargins(par.margin.x, par.margin.y);
-    UITable::setSpacing(par.spacing.x, par.spacing.y);
-
     bool updateCells = false;
-    if (par.topology.y) {
-        m_Cells(0).add(par.topology.y);
-        updateCells = true;
-    }
-    if (par.topology.x) {
-        m_Cells(1).add(par.topology.x);
-        updateCells = true;
-    }
+    std::array<std::function<void()>, 7> funcMap {
+            [&] { auto c = par.fgColor.value(); UITable::setColor(c.r, c.g, c.b, c.a); },
+            [&] { UITable::setBackgroundColor(par.bgColor.value()); },
+            [&] { setAlignX(par.alignX.value()); },
+            [&] { setAlignY(par.alignY.value()); },
+            [&] {
+                if (par.topology.value().y) {
+                    m_Cells(0).add(par.topology.value().y);
+                    updateCells = true;
+                }
+                if (par.topology.value().x) {
+                    m_Cells(1).add(par.topology.value().x);
+                    updateCells = true;
+                } },
+            [&] { UITable::setMargins(par.margin.value().x, par.margin.value().y); },
+            [&] { UITable::setSpacing(par.spacing.value().x, par.spacing.value().y); },
+    };
+    iterateOptionals(par.getTiedOptionals(), arrayToTuple(funcMap), std::make_index_sequence<funcMap.size()>{});
 
     if (updateCells) {
         UITable::initNewCellNode();
     }
+
     UITable::geo_Update();
 }
 

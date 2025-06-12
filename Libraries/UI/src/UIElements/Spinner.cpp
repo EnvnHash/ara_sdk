@@ -18,13 +18,13 @@ Spinner::Spinner() : Div() {
     UINode::setColor(1.f, 1.f, 1.f, 1.f);
 }
 
-Spinner::Spinner(const filesystem::path& filepath, int x, int y, unsigned width, unsigned height) : Div() {
+Spinner::Spinner(SpinnerPars& pars) : Div() {
     setName(getTypeName<Spinner>());
     setFocusAllowed(false);
-    setPos(static_cast<int>(x), static_cast<int>(y));
-    setSize(static_cast<int>(width), static_cast<int>(height == 0 ? width : height));
+    setPos(pars.pos);
+    setSize(pars.size.x, pars.size.y == 0 ? pars.size.x : pars.size.y);
     UINode::setColor(1.f, 1.f, 1.f, 1.f);
-    m_filepath = filepath;
+    m_filepath = pars.filepath;
 }
 
 void Spinner::init() {

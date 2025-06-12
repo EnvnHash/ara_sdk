@@ -23,7 +23,7 @@ public:
     void mouseIn(hidData& data) override;
     void mouseOut(hidData& data) override;
 
-    virtual void setProp(Property<bool>* prop);
+    virtual void setProp(Property<bool>& prop);
     virtual void setStateImg(const std::string& file, imgType tp, int mipMapLevel = 8);
     virtual void setToggleState(uint32_t st);
     virtual void setObjUsesTexAlpha(bool val);

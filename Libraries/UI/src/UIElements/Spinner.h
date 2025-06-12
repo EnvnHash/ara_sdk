@@ -7,10 +7,16 @@ namespace ara {
 class AssetImageBase;
 class Texture;
 
+struct SpinnerPars{
+    const std::filesystem::path& filepath;
+    glm::ivec2 pos{};
+    glm::ivec2 size{};
+};
+
 class Spinner : public Div {
 public:
     Spinner();
-    Spinner(const std::filesystem::path& filepath, int x, int y, unsigned width, unsigned height);
+    Spinner(SpinnerPars& pars);
     ~Spinner() override = default;
 
     void init() override;

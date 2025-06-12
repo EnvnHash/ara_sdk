@@ -19,7 +19,7 @@ public:
     void click(hidData& data);
     void toggle(bool val);
 
-    virtual void setProp(Property<bool> *prop);
+    virtual void setProp(Property<bool> &prop);
 
     [[maybe_unused]] void setAltText(const char *alt_text) { m_alt_text = std::string(alt_text); }
     [[maybe_unused]] void setAltTextFontSize(uint32_t fontSize) { m_altTextFontSize = fontSize; }

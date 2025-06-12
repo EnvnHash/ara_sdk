@@ -911,7 +911,7 @@ void UINode::util_FillRect(ivec2 pos, ivec2 size, vec4 col, Shaders* shdr, Quad*
     glBindVertexArray(0);
 }
 
-void UINode::util_FillRect(ivec2 pos, ivec2 size, float* color, Shaders* shdr, Quad* quad) {
+void UINode::util_FillRect(const ivec2& pos, const ivec2& size, float* color, Shaders* shdr, Quad* quad) {
     return util_FillRect(pos, size, {color[0], color[1], color[2], color[3]}, shdr, quad);
 }
 

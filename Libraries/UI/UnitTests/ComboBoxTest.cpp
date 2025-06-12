@@ -10,6 +10,7 @@
 #include <UIElements/Div.h>
 
 using namespace std;
+using namespace glm;
 
 namespace ara::UiUnitTest::ComboBoxTest {
 
@@ -20,18 +21,19 @@ namespace ara::UiUnitTest::ComboBoxTest {
 
     void addCombo(UIApplication& app, bool& flag) {
         auto rootNode = app.getMainWindow()->getRootNode();
-        auto combo = rootNode->addChild<ComboBox>();
+        auto combo = rootNode->addChild<ComboBox>(UINodePars{
+            .pos = ivec2{0,50},
+            .size = ivec2{200,40},
+            .fgColor = vec4{1.f, 1.f, 1.f, 1.f},
+            .bgColor = vec4{.1f, .1f, .1f, 1.f},
+            .borderWidth = 2,
+            .borderRadius = 5,
+            .borderColor = rootNode->getSharedRes()->colors->at(uiColors::blue),
+            .padding = vec4{5.f, 5.f, 5.f, 5.f}
+        });
 
         combo->setMenuName("ComboBox");
-        combo->setPos(0,50);
-        combo->setSize(200,40);
         combo->setFontType("regular");
-        combo->setPadding(5.f);
-        combo->setBackgroundColor(.1f, .1f, .1f, 1.f);
-        combo->setBorderRadius(5);
-        combo->setBorderWidth(2);
-        combo->setBorderColor(rootNode->getSharedRes()->colors->at(uiColors::blue));
-        combo->setColor(1.f, 1.f, 1.f, 1.f);
 
         combo->addEntry("Entry 1", [&]{ LOG << " entry one "; flag = true; });
         combo->addEntry("Entry 2", [&]{ LOG << " entry two "; });
@@ -103,5 +105,5 @@ namespace ara::UiUnitTest::ComboBoxTest {
             ASSERT_TRUE(entryOne);
         }, 600, 400);
     }
- 
+
 }

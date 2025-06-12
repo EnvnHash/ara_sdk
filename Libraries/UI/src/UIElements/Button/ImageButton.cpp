@@ -287,7 +287,7 @@ void ImageButton::mouseUp(hidData& data) {
     }
 }
 
-void ImageButton::setProp(Property<bool> *prop) {
+void ImageButton::setProp(Property<bool>& prop) {
     onChanged<bool>(prop, [this](const std::any &val) {
         bool v = std::any_cast<bool>(val);
         if (isSelected() != v) {
@@ -295,8 +295,8 @@ void ImageButton::setProp(Property<bool> *prop) {
         }
     });
 
-    setToggleCb([prop](bool val) { *prop = val; });
-    setSelected((*prop)());
+    setToggleCb([&prop](bool val) { prop = val; });
+    setSelected(prop());
 }
 
 void ImageButton::setIsToggle(bool val, bool multiToggle) {

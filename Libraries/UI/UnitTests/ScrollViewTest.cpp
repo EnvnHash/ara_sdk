@@ -15,12 +15,13 @@ using namespace std;
 namespace ara::SceneGraphUnitTest::ScrollViewTest{
 
 UITable* addTable(UINode* rootNode) {
-    auto taux = rootNode->addChild<UITable>();
-    taux->setAlignY(valign::bottom);
-    taux->setSpacing(8, 8);
-    taux->setMargins(0, 0);
-    taux->setColor(.2f, 0.2f, 0.2f, 1.f);
-    taux->setBackgroundColor(.0f, .0f, .0f, 1.0f);
+    auto taux = rootNode->addChild<UITable>(UITableParameters{
+        .fgColor = vec4{.2f, 0.2f, 0.2f, 1.f},
+        .bgColor = vec4{.0f, .0f, .0f, 1.f},
+        .alignY = valign::bottom,
+        .margin = ivec2{0, 0},
+        .spacing = ivec2{8, 8},
+    });
 
     taux->insertRow(-1,1,40,false,true);						// fixed row
     taux->insertRow(-1,1,0,false,false);
@@ -34,12 +35,12 @@ UITable* addTable(UINode* rootNode) {
 }
 
 UITable* addNestedTable(ScrollView* scrollView) {
-    auto nt = scrollView->addContent<UITable>(UITableParameters{
+    auto nt = scrollView->addChild<UITable>(UITableParameters{
         .size = vec2{600.f, 200.f},
-        .margin = {2,2},
-        .spacing = {8,8},
         .fgColor = vec4{.2f, .2f, .2f, 1.f},
-        .bgColor = vec4{.1f, .1f, .2f, 1.0f}
+        .bgColor = vec4{.1f, .1f, .2f, 1.0f},
+        .margin = ivec2{2,2},
+        .spacing = ivec2{8,8},
     });
 
     nt->insertColumn(-1,1,80,false,false,50,150);			// column with size limits [50..150]
@@ -59,7 +60,7 @@ void addLabels(UITable* nt) {
         ss << std::setw(2) << std::setfill('0') << i;
 
         nt->insertRow(-1, 1, 100, false, false);						// fixed row
-        auto l = nt->setCell(i, 0, make_unique<Label>() );
+        auto l = nt->setCell<Label>(i, 0);
         l->setFont("regular", 22,  align::center, valign::center, color_text);
         l->setBackgroundColor(color_bg);
         l->setText(ss.str());
@@ -67,19 +68,20 @@ void addLabels(UITable* nt) {
 }
 
 ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
-    auto scrollView = rootNode->addChild<ScrollView>();
-    scrollView->setAlign(align::center, valign::center);
-    scrollView->setSize(0.7f, 0.7f);
-    scrollView->setBackgroundColor(0.f, 0.f, 0.5f, 1.f);
+    auto scrollView = rootNode->addChild<ScrollView>(UINodePars{
+        .size = vec2{0.7f, 0.7f},
+        .bgColor = vec4{0.f, 0.f, 0.5f, 1.f},
+        .alignX = align::center,
+        .alignY = valign::center,
+    });
 
-    vec4 bgColor = {0.7f, 0.7f, 0.7f, 1.f};
     int chHeight = 40;
-
     for (int i = 0; i < nrSubElements; i++) {
-        auto ch = scrollView->addChild<Div>();
-        ch->setPos(10, (chHeight +10) * i );
-        ch->setSize(30, chHeight);
-        ch->setBackgroundColor(bgColor);
+        scrollView->addChild<Div>(UINodePars{
+            .pos = ivec2{10, (chHeight +10) * i },
+            .size = ivec2{30, chHeight},
+            .bgColor = vec4{0.7f, 0.7f, 0.7f, 1.f}
+        });
     }
 
     return scrollView;

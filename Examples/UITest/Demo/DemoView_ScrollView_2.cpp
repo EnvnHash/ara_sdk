@@ -22,18 +22,19 @@ void DemoView_ScrollView_2::init() {
 
     addLabels(nt);
 
-    auto l = taux->setCell(0, 1, make_unique<Label>());
+    auto l = taux->setCell<Label>(0, 1);
     l->setFont("regular", 22,  align::center, valign::center, glm::vec4(1.f));
     l->setBackgroundColor(.1f, .2f, .3f, 1.f);
     l->setText("SCROLL VIEW SAMPLE (Variable size)");
 }
 
 UITable* DemoView_ScrollView_2::addTable() {
-    auto taux = addChild<UITable>();
-    taux->setAlignY(valign::bottom);
-    taux->setColor(.1f, .1f, .2f, 1.f);
-    taux->setBackgroundColor(.0f, .0f, .0f, 1.f);
-    taux->setSpacing(10, 10);
+    auto taux = addChild<UITable>(UITableParameters{
+        .fgColor = vec4{.1f, .1f, .2f, 1.f},
+        .bgColor = vec4{.0f, .0f, .0f, 1.f},
+        .alignY = valign::bottom,
+        .spacing = ivec2{ 10, 10 },
+    });
 
     taux->insertRow(-1,1,45,false,true);
     taux->insertRow(-1,1,0,false,false);
@@ -46,14 +47,13 @@ UITable* DemoView_ScrollView_2::addTable() {
 }
 
 UITable* DemoView_ScrollView_2::addNestedTable(ScrollView* scrollView) {
-    auto nt = scrollView->addContent<UITable>(UITableParameters{
+    auto nt = scrollView->addChild<UITable>(UITableParameters{
         .size = ivec2{ 600, 200 },
-        .margin = { 2, 2 },
-        .spacing = { 10, 10 }
+        .fgColor = vec4{.2f, .2f, .2f, 1.f},
+        .bgColor = vec4{.1f, .1f, .2f, 1.f},
+        .margin = ivec2{ 2, 2 },
+        .spacing = ivec2{ 10, 10 },
     });
-
-    nt->setColor(.2f, .2f, .2f, 1.f);
-    nt->setBackgroundColor(.1f, .1f, .2f, 1.0f);
 
     nt->insertColumn(-1,1,80,false,false,50,150);			// column with size limits [50..150]
     nt->insertColumn(-1,1,300,false,false);

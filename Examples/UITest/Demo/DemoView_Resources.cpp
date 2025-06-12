@@ -19,37 +19,37 @@ void DemoView_Resources::init() {
     setPadding(10);
     fontList.setGlbase(m_glbase);
 
-    auto lb = addChild(make_unique<Label>());
-    lb->addStyleClass("text_test");
+    addChild<Label>(UINodePars{ .style = "text_test" });
 
-    auto dp= addChild<Div>();
-    dp->addStyleClass("styles.rdiv");
-    auto c = dp->addChild<Div>();
-    c->addStyleClass("styles.irdiv");
+    auto dp = addChild<Div>(UINodePars{ .style = "styles.rdiv" });
 
-    auto image = addChild<Image>();
-    image->addStyleClass("chtest.sample-image");
-    image->setLod(3);
+    dp->addChild<Div>(UINodePars{ .style = "styles.irdiv" });
 
-    image = addChild<Image>();
-    image->addStyleClass("chtest.icon");
-    image->setPos(150,100);
-    image->setSize(300,200);
+    addChild<Image>(UINodePars{ .style = "chtest.sample-image" })->setLod(3);
 
-    image = addChild<Image>();
-    image->addStyleClass("chtest.icon");
-    image->setPos(150,350);
-    image->setSize(300,200);
+    addChild<Image>(UINodePars{
+        .pos = ivec2{150,100},
+        .size = ivec2{300,200},
+        .style = "chtest.icon"
+    });
+
+    auto image = addChild<Image>(UINodePars{
+        .pos = ivec2{150,350},
+        .size = ivec2{300,200},
+        .style = "chtest.icon"
+    });
     image->setSelected(isSelected());
 
-    image = addChild<Image>();
-    image->addStyleClass("one.but1");
-    image->setPos(150,600);
-    image->setSize(300,200);
+    image = addChild<Image>(UINodePars{
+        .pos = ivec2{150,600},
+        .size = ivec2{300,200},
+        .style = "one.but1"
+    });
     image->selectSection(1);
 
-    auto imgBut =addChild<ImageButton>();
-    imgBut->addStyleClass("chtest.sample-imageButton");
+    auto imgBut = addChild<ImageButton>(UINodePars{
+        .style = "chtest.sample-imageButton"
+    });
     imgBut->setIsToggle(true);
     imgBut->setToggleCb([this](bool val){
         LOG << "val " << val;

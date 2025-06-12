@@ -56,20 +56,20 @@ void ItemEdit::init() {
 
                     if (it->m_typeId == tpi::tp_float) {
                         const auto pit = dynamic_cast<PropertyItemUi<float>*>(it.get());
-                        pSlid->setProp(pit->getPtr());
+                        pSlid->setProp(*pit->getPtr());
                     } else if (it->m_typeId == tpi::tp_double) {
                         const auto pit = dynamic_cast<PropertyItemUi<double>*>(it.get());
-                        pSlid->setProp(pit->getPtr());
+                        pSlid->setProp(*pit->getPtr());
                     } else if (it->m_typeId == tpi::tp_int32) {
                         const auto pit = dynamic_cast<PropertyItemUi<int>*>(it.get());
-                        pSlid->setProp(pit->getPtr());
+                        pSlid->setProp(*pit->getPtr());
                     }
                 } else if (it->m_typeId == tpi::tp_bool) {
                     const auto cb = setCell<Button>(row, 1);
                     cb->setIsToggle(true);
                     cb->addStyleClass(getStyleClass() + ".checkBox");
                     const auto pit = dynamic_cast<PropertyItemUi<bool>*>(it.get());
-                    cb->setProp(pit->getPtr());
+                    cb->setProp(*pit->getPtr());
                 }
                 ++row;
             }

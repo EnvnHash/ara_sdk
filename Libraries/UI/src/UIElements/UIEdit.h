@@ -24,11 +24,7 @@ public:
     ~UIEdit() override;
 
     void changeValType(unsigned long t);
-
-    void blockEdit(bool val) {
-        m_blockEdit      = val;
-        m_glyphsPrepared = false;
-    }
+    void blockEdit(bool val);
 
     Font* UpdateDGV(bool* checkFontTexture) override;
 
@@ -46,96 +42,102 @@ public:
     void updateFontGeo() override;
     void clearDs() override;
 
-    void setText(const std::string& str);
+    void setTextDist(const std::string& str);
+    void setTextDist(const std::filesystem::path& p);
+    void setText(const std::string &str);
     void setValue(float val) override;
     void setValue(double val);
     void setValue(int val);
 
     [[nodiscard]] int getIntValue() const { return m_iValue; }
 
-    bool setSelRangeAll();
-    bool setSelRange(int lo_index, int hi_index);
-    bool getSelRange(glm::ivec2& range);  // range should receive 2 values
-    void clearSelRange();
-    bool eraseContent(int lo_index, int hi_index);
-    void setTextCb(std::function<void(std::string)> func) { m_setTextCb = std::move(func); }
-    void addEnterCb(std::function<void(std::string)> func, void* ptr) { m_onEnterCb[ptr] = std::move(func); }
-    void removeEnterCb(void* ptr) {
-        if (auto it = m_onEnterCb.find(ptr); it != m_onEnterCb.end()) {
-            m_onEnterCb.erase(it);
-        }
-    }
-    void clearEnterCb() { m_onEnterCb.clear(); }
-    void setMin(int min) { m_minInt = min; }
-    void setMax(int max) { m_maxInt = max; }
-    void setMinMax(int min, int max) {
-        m_minInt = min;
-        m_maxInt = max;
-    }
+    bool                setSelRangeAll();
+    bool                setSelRange(int lo_index, int hi_index);
+    bool                getSelRange(glm::ivec2& range);  // range should receive 2 values
+    void                clearSelRange();
+    bool                eraseContent(int lo_index, int hi_index);
+    void                setTextCb(std::function<void(std::string)> func) { m_setTextCb = std::move(func); }
+    void                addEnterCb(std::function<void(std::string)> func, void* ptr) { m_onEnterCb[ptr] = std::move(func); }
+    void                removeEnterCb(void* ptr);
+    void                clearEnterCb() { m_onEnterCb.clear(); }
+    void                setMin(int min) { m_minInt = min; }
+    void                setMax(int max) { m_maxInt = max; }
+    void                setMinMax(int min, int max);
     void                setMin(float min) { m_minF = min; }
     [[nodiscard]] float getMin() const { return m_minF; }
     void                setMax(float max) { m_maxF = max; }
     [[nodiscard]] float getMax() const { return m_maxF; }
-    void                setMinMax(float min, float max) {
-        m_minF = min;
-        m_maxF = max;
-    }
-    void setMinMax(double min, double max) {
-        m_minD = min;
-        m_maxD = max;
-    }
-    void        setStep(double step) { m_stepD = step; }
-    void        setStep(float step) { m_stepF = step; }
-    void        setStep(int step) { m_stepI = step; }
-    void        setPrecision(int prec) { m_precision = prec; }
-    void        incValue(float amt, cfState cf);
-    void        clampValue();
+    void                setMinMax(float min, float max);
+    void                setMinMax(double min, double max) ;
+    void                setStep(double step) { m_stepD = step; }
+    void                setStep(float step) { m_stepF = step; }
+    void                setStep(int step) { m_stepI = step; }
+    void                setPrecision(int prec) { m_precision = prec; }
+    void                incValue(float amt, cfState cf);
+    void                clampValue();
+    void                setBkSelColor(glm::vec4 c);
+    void                setUseWheel(bool val) { m_useWheel = val; }
+    void                setCaretColor(glm::vec4 c, state st = state::m_state) ;
+    void                setCaretColor(float r, float g, float b, float a, state st = state::m_state) ;
+    void                setCaretWidth(int w) { m_caretWidth = w; }
+    virtual void        setPropItem(Item* item);
+    virtual void        clearProp();
 
-    static bool isValidIntInput(const std::string& str) {
-        return std::regex_match(str, std::regex("[-+]|(\\+|-)?[[:digit:]]+"));
-    }
-    static bool isValidFloatInput(std::string& str) {
-        return std::regex_match(str, std::regex("[-+]|[-+]?([0-9]*\\.[0-9]+|[0-9]+)")) ||
-               std::regex_match(str, std::regex("[-+]|[-+]?([0-9]*\\.)"));
+    template<typename T>
+    requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
+    void setProp(Property<T> &prop) {
+        m_stringProp = &prop;
+        onChanged<T>(prop, [this](const std::any &val) { setText(std::any_cast<T>(val)); });
+        addEnterCb([&prop](const std::string &txt) { prop = txt; }, &prop);
+        setOnLostFocusCb([this, &prop] { prop = T(m_Text); });
+        setTextDist(prop());
     }
 
-    void setBkSelColor(glm::vec4 c) {
-        m_BkSelColor     = c;
-        m_glyphsPrepared = false;
-    }
-    void setUseWheel(bool val) { m_useWheel = val; }
-    void setCaretColor(glm::vec4 c, state st = state::m_state) {
-        m_caretColor     = c;
-        m_glyphsPrepared = false;
-        setStyleInitVal("caret-color",
-                        "rgba(" + std::to_string(c.r * 255.f) + "," + std::to_string(c.g * 255.f) + "," +
-                            std::to_string(c.b * 255.f) + "," + std::to_string(c.a * 255.f) + ")",
-                        st);
-    }
-    void setCaretColor(float r, float g, float b, float a, state st = state::m_state) {
-        m_caretColor.r   = r;
-        m_caretColor.g   = g;
-        m_caretColor.b   = b;
-        m_caretColor.a   = a;
-        m_glyphsPrepared = false;
-        setStyleInitVal("caret-color",
-                        "rgba(" + std::to_string(r * 255.f) + "," + std::to_string(g * 255.f) + "," +
-                            std::to_string(b * 255.f) + "," + std::to_string(a * 255.f) + ")",
-                        st);
-    }
-    void setCaretWidth(int w) { m_caretWidth = w; }
+    template<typename T>
+    requires std::is_integral_v<T> || std::is_floating_point_v<T>
+    void setProp(Property<T> &prop) {
+        setOpt(UIEdit::single_line | (std::is_floating_point_v<T> ? UIEdit::num_fp : UIEdit::num_int));
 
-    void         setProp(Property<std::string>* prop) override;
-    void         setProp(Property<std::filesystem::path>* prop) override;
-    virtual void setProp(Property<int>* prop);
-    virtual void setProp(Property<float>* prop);
-    virtual void setProp(Property<glm::ivec2>* prop, int idx);
-    virtual void setProp(Property<glm::vec2>* prop, int idx);
-    virtual void setProp(Property<glm::vec3>* prop, int idx);
-    virtual void setProp(Property<glm::ivec3>* prop, int idx);
-    virtual void setPropItem(Item* item);
+        onChanged<T>(prop, [this](const std::any &val) { setText(std::to_string(std::any_cast<T>(val))); });
+        addEnterCb([&prop](const std::string &txt) {
+            prop = std::is_floating_point_v<T> ? static_cast<float>(atof(txt.c_str())) : atoi(txt.c_str());
+        }, &prop);
+        setOnLostFocusCb([this, &prop] {
+            prop = std::is_floating_point_v<T> ? static_cast<float>(atof(m_Text.c_str())) : getIntValue();
+        });
+        setMinMax(prop.getMin(), prop.getMax());
+        setStep(prop.getStep());
+        if (std::is_floating_point_v<T>){
+            setValue(prop());
+        } else {
+            setText(std::to_string(prop()));
+        }
+        setUseWheel(true);
+    }
 
-    virtual void clearProp();
+    template<typename T>
+    requires std::is_same_v<T, glm::ivec2> || std::is_same_v<T, glm::ivec3> || std::is_same_v<T, glm::vec2> || std::is_same_v<T, glm::vec3>
+    void setProp(Property<T> &prop, int idx) {
+        bool isFloat = typeid(prop()[0]) == typeid(float);
+        onChanged<T>(prop, [this, idx](std::any val) { setValue(std::any_cast<T>(val)[idx]); });
+        addEnterCb([&prop, idx, isFloat](const std::string &txt) {
+            auto newVal = prop();
+            newVal[idx] = isFloat ? static_cast<float>(atof(txt.c_str())) : atoi(txt.c_str());
+            prop        = newVal;
+        }, &prop);
+
+        setOnLostFocusCb([this, &prop, idx, isFloat] {
+            auto newVal = prop();
+            newVal[idx] = isFloat ? static_cast<float>(atof(m_Text.c_str())) : atoi(m_Text.c_str());
+            prop        = newVal;
+        });
+
+        setOpt(isFloat ? UIEdit::num_fp : UIEdit::num_int);
+        setMinMax(prop.getMin()[idx], prop.getMax()[idx]);
+        setStep(prop.getStep()[idx]);
+        setValue(prop()[idx]);
+        setUseWheel(true);
+    }
 
 protected:
     void keyDown(hidData& data) override;
@@ -213,13 +215,13 @@ protected:
     Property<std::string>* m_stringProp = nullptr;
 
     // temporary local variables
-    glm::vec2 m_tCaretPos{0.f};
+    glm::vec2 m_tCaretPos{};
     int       m_tCi[2]{};  /// first and last character index
-    glm::vec2 cp{0.f}, aux{0.f};
-    glm::vec2 posLimit{0.f};
-    glm::vec2 m_posLT{0.f};
-    glm::vec2 m_posRB{0.f};
-    glm::vec2 m_lSize{0.f};
+    glm::vec2 cp{}, aux{};
+    glm::vec2 posLimit{};
+    glm::vec2 m_posLT{};
+    glm::vec2 m_posRB{};
+    glm::vec2 m_lSize{};
     float     m_x1   = 0.f;
     float     m_x2   = 0.f;
     float     m_y1   = 0.f;

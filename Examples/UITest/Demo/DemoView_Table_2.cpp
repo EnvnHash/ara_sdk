@@ -12,7 +12,7 @@ void DemoView_Table_2::init() {
     ui_Table = addChild<UITable>(UITableParameters{
         .pos = ivec2{ 0.f, 100 },
         .size = ivec2{ getContentSize().x, getContentSize().y - 100 },
-        .spacing = { 8, 8 }
+        .spacing = ivec2{ 8, 8 }
     });
 
     ui_Table->setColor(.2f, 0.2f, 0.2f, 1.f);
@@ -28,7 +28,7 @@ void DemoView_Table_2::init() {
 
     auto taux = ui_Table->setCell<UITable>(1, 1,
                                            make_unique<UITable>(UITableParameters{ .size = vec2{300.f, 200.f},
-                                                                                   .topology = {3, 3}}));
+                                                                                   .topology = ivec2{3, 3}}));
     taux->setSize(1.f, 1.f);
     taux->setSpacing(8, 8);
     taux->setMargins(0, 0);

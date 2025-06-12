@@ -35,71 +35,20 @@ public:
     void setAdaptContentTrans(bool val) { m_adaptContentTrans = val; }
 
     template <typename T, typename... Args>
-    T* addContent(Args&& ... args) {
-        return m_content ? m_content->addChild<T>(args...) : nullptr;
+    requires (sizeof...(Args) != 1 || (!std::is_same_v<Args, UINodePars> && ...))
+    T* addChild(Args&& ... args) {
+        return m_content->addChild<T>(args...);
     }
 
-    template <typename T>
-    T* addChild() {
-        if (!m_content) {
-            return nullptr;
-        }
-        return static_cast<T*>(m_content->addChild(std::make_unique<T>()));
-    }
-
-    template <typename T>
-    T* addChild(const std::string& styleClass) {
-        if (!m_content) {
-            return nullptr;
-        }
-        auto nc = m_content->addChild<T>();
-        nc->addStyleClass(styleClass);
-        return nc;
-    }
-
-
-    template <typename T, CoordinateType C>
-    T* addChild(C x, C y, C w, C h) {
-        if (!m_content) {
-            return nullptr;
-        }
-        auto nc = m_content->addChild<T>();
-        nc->setPos(x, y);
-        nc->setSize(w, h);
-        return nc;
-    }
-
-    template <typename T>
-    T* addChild(int x, int y, int w, int h, const float* fgcolor, const float* bkcolor) {
-        auto n = addChild<T>(x, y, w, h);
-        if (fgcolor != nullptr) {
-            n->setColor(fgcolor[0], fgcolor[1], fgcolor[2], fgcolor[3]);
-        }
-        if (bkcolor != nullptr) {
-            n->setBackgroundColor(bkcolor[0], bkcolor[1], bkcolor[2], bkcolor[3]);
-        }
-        return n;
-    }
-
-    template <typename T>
-    T* addChild(int x, int y, int w, int h, glm::vec4 fgcolor, glm::vec4 bkcolor) {
-        auto n = addChild<T>(x, y, w, h);
-        n->setColor(fgcolor);
-        n->setBackgroundColor(bkcolor);
-        return n;
-    }
-
-    template <typename T>
-    T* addChild(int x, int y, int w, int h, std::filesystem::path path) {
-        auto n = addChild<T>(x, y, w, h);
-        n->setPath(std::move(path));
-        return n;
+    template<typename T>
+    T* addChild(const UINodePars& arg) {
+        return m_content->addChild<T>(arg);
     }
 
     int m_scrollBarSize = 16;
 
-    ScrollBar* ui_VSB    = nullptr;
-    ScrollBar* ui_HSB    = nullptr;
+    ScrollBar* m_VSB    = nullptr;
+    ScrollBar* m_HSB    = nullptr;
     Div*       m_corner  = nullptr;
     Div*       m_content = nullptr;
 
@@ -120,10 +69,6 @@ protected:
     bool    m_adaptContentTrans = false;
     bool    m_needH             = false;
     bool    m_needV             = false;
-
-    // temporary local values made member values for performance reasons;
-    std::pair<bool, bool> itRes;
-    std::pair<bool, bool> boolPair;
 };
 
 }  // namespace ara

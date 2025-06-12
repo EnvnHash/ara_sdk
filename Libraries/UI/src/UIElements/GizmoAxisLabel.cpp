@@ -17,12 +17,6 @@ GizmoAxisLabel::GizmoAxisLabel() : Image() {
     m_drawImmediate = true;
 }
 
-GizmoAxisLabel::GizmoAxisLabel(const std::string& file, int mipMapLevel, bool keep_aspect, align ax, valign ay)
-    : Image(file, mipMapLevel, keep_aspect, ax, ay) {
-    setName(getTypeName<GizmoAxisLabel>());
-    m_drawImmediate = true;
-}
-
 void GizmoAxisLabel::init() {
     m_hasDepth       = true;
     m_canReceiveDrag = true;

@@ -36,42 +36,45 @@ void ScrollView::init() {
 
     // the scroll view size should always stay the same, independent of the scrollbars visibility to achieve this padding
     // is applied when the bars become visible
-    ui_HSB = UINode::addChild<UIHScrollBar>(UINodePars{
+    m_HSB = UINode::addChild<UIHScrollBar>(UINodePars{
         .size = ivec2(-m_scrollBarSize, m_scrollBarSize),
         .fgColor = m_sharedRes->colors->at(uiColors::sepLine),
-        .bgColor = m_sharedRes->colors->at(uiColors::background)
+        .bgColor = m_sharedRes->colors->at(uiColors::background),
+        .alignX = align::left,
+        .alignY = valign::bottom,
+        .visible = false,
+        .excludeFromParentViewTrans = true,
+        .excludeFromScissoring = true,
+        .excludeFromPadding = true,
+        .excludeFromOutOfBorderCheck = true
     });
-    ui_HSB->setAlign(align::left, valign::bottom);
-    ui_HSB->excludeFromParentViewTrans(true);
-    ui_HSB->excludeFromScissoring(true);
-    ui_HSB->excludeFromPadding(true);
-    ui_HSB->excludeFromOutOfBorderCheck(true);
-    ui_HSB->setVisibility(false);
 
-    ui_VSB = UINode::addChild<UIVScrollBar>(UINodePars{
+    m_VSB = UINode::addChild<UIVScrollBar>(UINodePars{
         .size = ivec2{m_scrollBarSize, -m_scrollBarSize},
         .fgColor = m_sharedRes->colors->at(uiColors::sepLine),
-        .bgColor = m_sharedRes->colors->at(uiColors::background)
+        .bgColor = m_sharedRes->colors->at(uiColors::background),
+        .alignX = align::right,
+        .alignY = valign::top,
+        .visible = false,
+        .excludeFromParentViewTrans = true,
+        .excludeFromScissoring = true,
+        .excludeFromPadding = true,
+        .excludeFromOutOfBorderCheck = true
     });
-    ui_VSB->setAlign(align::right, valign::top);
-    ui_VSB->excludeFromParentViewTrans(true);
-    ui_VSB->excludeFromScissoring(true);
-    ui_VSB->excludeFromPadding(true);
-    ui_VSB->excludeFromOutOfBorderCheck(true);
-    ui_VSB->setVisibility(false);
 
     // little div to cover the corner in case both scrollbars are showing
     m_corner = UINode::addChild<Div>(UINodePars{
         .size = ivec2{m_scrollBarSize, m_scrollBarSize},
         .bgColor = m_sharedRes->colors->at(uiColors::background),
-        .name = "UIScrollBarCorner"
+        .name = "UIScrollBarCorner",
+        .alignX = align::right,
+        .alignY = valign::bottom,
+        .visible = false,
+        .excludeFromParentViewTrans = true,
+        .excludeFromScissoring = true,
+        .excludeFromPadding = true,
+        .excludeFromOutOfBorderCheck = true
     });
-    m_corner->setAlign(align::right, valign::bottom);
-    m_corner->excludeFromParentViewTrans(true);
-    m_corner->excludeFromScissoring(true);
-    m_corner->excludeFromPadding(true);
-    m_corner->excludeFromOutOfBorderCheck(true);
-    m_corner->setVisibility(false);
 }
 
 void ScrollView::updtMatrIt(scissorStack* ss) {
@@ -101,12 +104,12 @@ void ScrollView::updtMatrIt(scissorStack* ss) {
     m_needV = !m_blockVerScroll && m_size.y < (m_bb.w - m_bb.y + m_origPadding.y + m_origPadding.w);
     m_needH = !m_blockHorScroll && m_size.x < (m_bb.z - m_bb.x + m_origPadding.x + m_origPadding.z);
 
-    if (ui_HSB && ui_HSB->isVisible() != m_needH) {
-        ui_HSB->setVisibility(m_needH);
+    if (m_HSB && m_HSB->isVisible() != m_needH) {
+        m_HSB->setVisibility(m_needH);
     }
 
-    if (ui_VSB && ui_VSB->isVisible() != m_needV) {
-        ui_VSB->setVisibility(m_needV);
+    if (m_VSB && m_VSB->isVisible() != m_needV) {
+        m_VSB->setVisibility(m_needV);
     }
 
     if (m_corner && m_corner->isVisible() != (m_needH && m_needV)) {
@@ -122,18 +125,18 @@ void ScrollView::updtMatrIt(scissorStack* ss) {
     // check if we need to update the matrices
     if (m_newPadd.x != m_padding.z || m_newPadd.y != m_padding.w) {
         if (m_needH && m_needV) {
-            if (ui_HSB) {
-                ui_HSB->setWidth(-m_scrollBarSize);
+            if (m_HSB) {
+                m_HSB->setWidth(-m_scrollBarSize);
             }
-            if (ui_VSB) {
-                ui_VSB->setHeight(-m_scrollBarSize);
+            if (m_VSB) {
+                m_VSB->setHeight(-m_scrollBarSize);
             }
         } else {
-            if (ui_HSB) {
-                ui_HSB->setWidth(1.f);
+            if (m_HSB) {
+                m_HSB->setWidth(1.f);
             }
-            if (ui_VSB) {
-                ui_VSB->setHeight(1.f);
+            if (m_VSB) {
+                m_VSB->setHeight(1.f);
             }
         }
 
@@ -159,7 +162,7 @@ std::vector<std::unique_ptr<UINode>>* ScrollView::getContChildren() const {
 }
 
 void ScrollView::mouseWheel(hidData& data) {
-    if (ui_VSB && ui_VSB->isVisible()) {
+    if (m_VSB && m_VSB->isVisible()) {
         setScrollOffset(m_offs.x, data.degrees * 100 + getContentTransTransl().y);
         if (m_scrollCb) {
             m_scrollCb();
@@ -169,7 +172,7 @@ void ScrollView::mouseWheel(hidData& data) {
 
 #ifdef __ANDROID__
 void ScrollView::mouseDrag(hidData& data) {
-    if (ui_VSB && ui_VSB->isVisible()) {
+    if (m_VSB && m_VSB->isVisible()) {
         if (data.dragStart) {
             m_dragInitOffs = getContentTransTransl();
         }

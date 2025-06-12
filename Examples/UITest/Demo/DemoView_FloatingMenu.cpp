@@ -16,12 +16,14 @@ DemoView_FloatingMenu::DemoView_FloatingMenu() : DemoView("FloatingMenu", glm::v
 }
 
 void DemoView_FloatingMenu::init() {
-    auto div = addChild<Div>();
-    div->setAlign(align::center, valign::center);
-    div->setSize(0.8f, 0.8f);
-    div->setBorderWidth(10);
-    div->setBorderColor(0.7f, 0.7f, 0.7f, 1.f);
-    div->setBackgroundColor(0.3f, 0.3f, 0.3f, 1.f);
+    auto div = addChild<Div>(UINodePars{
+        .size = vec2(0.8f, 0.8f),
+        .bgColor = vec4{0.3f, 0.3f, 0.3f, 1.f},
+        .alignX = align::center,
+        .alignY = valign::center,
+        .borderWidth = 10,
+        .borderColor = vec4{0.7f, 0.7f, 0.7f, 1.f},
+    });
 
     div->addMouseClickRightCb([this](hidData& data) {
         runOnMainThread([this, data] {
@@ -60,9 +62,10 @@ void DemoView_FloatingMenu::init() {
         });
     });
 
-    auto lbl = div->addChild<Label>();
-    lbl->setPos(10, 10);
-    lbl->setSize(280, 30);
+    auto lbl = div->addChild<Label>(UINodePars{
+        .pos = ivec2{10, 10},
+        .size = ivec2{280, 30},
+    });
     lbl->setText("Right click inside this area");
     //, align::left, valign::top, "regular", 20)));
 }

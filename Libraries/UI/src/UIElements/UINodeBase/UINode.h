@@ -25,15 +25,32 @@ class UIApplication;
 class UIWindow;
 class WindowManager;
 
-
-struct UINodePars {
+class UINodePars {
+public:
     std::variant<glm::ivec2, glm::vec2> pos{};
     std::variant<glm::ivec2, glm::vec2> size{};
     std::optional<glm::vec4> fgColor{};
     std::optional<glm::vec4> bgColor{};
     std::optional<std::string> name{};
     std::optional<std::string> style{};
+    std::optional<align> alignX{};
+    std::optional<valign> alignY{};
+    std::optional<uint32_t> borderWidth{};
+    std::optional<uint32_t> borderRadius{};
+    std::optional<glm::vec4> borderColor{};
+    std::optional<glm::vec4> padding{};
+    std::optional<bool> visible{};
     std::optional<bool> excludeFromObjMap{};
+    std::optional<bool> excludeFromParentViewTrans{};
+    std::optional<bool> excludeFromScissoring{};
+    std::optional<bool> excludeFromPadding{};
+    std::optional<bool> excludeFromOutOfBorderCheck{};
+
+    auto getTiedOptionals() const {
+        return std::tie(fgColor, bgColor, name, style, alignX, alignY, borderWidth, borderRadius, borderColor, padding,
+                        visible, excludeFromObjMap, excludeFromParentViewTrans, excludeFromScissoring, excludeFromPadding,
+                        excludeFromOutOfBorderCheck);
+    }
 };
 
 class UINode : public UINodeHID {
@@ -65,21 +82,25 @@ public:
             }
         }, arg.size);
 
-        if (arg.fgColor) {
-            node->setColor(arg.fgColor.value());
-        }
-
-        if (arg.bgColor) {
-            node->setBackgroundColor(arg.bgColor.value());
-        }
-
-        node->setName(arg.name.value_or(""));
-
-        if (arg.style){
-            node->addStyleClass(arg.style.value());
-        }
-
-        node->excludeFromObjMap(arg.excludeFromObjMap.value_or(false));
+        std::array<std::function<void()>, 16> funcMap {
+            [&arg, &node] { node->setColor(arg.fgColor.value()); },
+            [&arg, &node] { node->setBackgroundColor(arg.bgColor.value()); },
+            [&arg, &node] { node->setName(arg.name.value()); },
+            [&arg, &node] { node->addStyleClass(arg.style.value()); },
+            [&arg, &node] { node->setAlignX(arg.alignX.value()); },
+            [&arg, &node] { node->setAlignY(arg.alignY.value()); },
+            [&arg, &node] { node->setBorderWidth(arg.borderWidth.value()); },
+            [&arg, &node] { node->setBorderRadius(arg.borderRadius.value()); },
+            [&arg, &node] { node->setBorderColor(arg.borderColor.value()); },
+            [&arg, &node] { auto p = arg.padding.value(); node->setPadding(p.x, p.y, p.z, p.w); },
+            [&arg, &node] { node->setVisibility(arg.visible.value()); },
+            [&arg, &node] { node->excludeFromObjMap(arg.excludeFromObjMap.value()); },
+            [&arg, &node] { node->excludeFromParentViewTrans(arg.excludeFromParentViewTrans.value()); },
+            [&arg, &node] { node->excludeFromScissoring(arg.excludeFromScissoring.value()); },
+            [&arg, &node] { node->excludeFromPadding(arg.excludeFromPadding.value()); },
+            [&arg, &node] { node->excludeFromOutOfBorderCheck(arg.excludeFromOutOfBorderCheck.value()); }
+        };
+        iterateOptionals(arg.getTiedOptionals(), arrayToTuple(funcMap), std::make_index_sequence<funcMap.size()>{});
 
         return static_cast<T*>(node);
     }
@@ -112,11 +133,9 @@ public:
     // weak_ptr.lock() checking its weak_ptr reference inside the Property is
     // deleted implicitly
     template <typename T>
-    void onChanged(Property<T>* prop, std::function<void(std::any)> f) {
-        if (prop) {
-            m_onValChangedCb[prop] = std::make_shared<std::function<void(std::any)>>(f);
-            prop->onPreChange(m_onValChangedCb[prop]);
-        }
+    void onChanged(Property<T>& prop, std::function<void(std::any)> f) {
+        m_onValChangedCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);
+        prop.onPreChange(m_onValChangedCb[&prop]);
     }
 
     template <typename T>
@@ -129,29 +148,27 @@ public:
 
     // utility method to also immediately execute the function
     template <typename T>
-    void execAndBind(Property<T>* prop, std::function<void(std::any)> f) {
+    void execAndBind(Property<T>& prop, std::function<void(std::any)> f) {
         onChanged<T>(prop, f);
-        f((*prop)());
+        f(prop());
     }
 
     template <typename T>
-    void onChanged(ListProperty<T>* prop, std::function<void(std::any)> f) {
-        if (prop) {
-            m_onValChangedCb[prop] = std::make_shared<std::function<void(std::any)>>(f);
-            prop->onChanged(m_onValChangedCb[prop]);
-        }
+    void onChanged(ListProperty<T>& prop, std::function<void(std::any)> f) {
+        m_onValChangedCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);
+        prop.onChanged(m_onValChangedCb[&prop]);
     }
 
     // utility method to also immediately execute the function
     template <typename T>
-    void execAndBind(ListProperty<T>* prop, std::function<void(std::any)> f) {
+    void execAndBind(ListProperty<T>& prop, std::function<void(std::any)> f) {
         onChanged<T>(prop, f);
-        f((*prop)());
+        f(prop());
     }
 
     template <typename T>
-    void removeOnChanged(Property<T>* prop) {
-        m_onValChangedCb[prop] = nullptr;
+    void removeOnChanged(Property<T>& prop) {
+        m_onValChangedCb[&prop] = nullptr;
     }
 
     virtual UINode* addChild(std::unique_ptr<UINode>&& child);
@@ -289,7 +306,7 @@ public:
     }
 
     void util_FillRect(glm::ivec2 pos, glm::ivec2 size, glm::vec4 col = {1.f, 1.f, 1.f, 1.f}, Shaders* shdr=nullptr, Quad* quad=nullptr);
-    void util_FillRect(glm::ivec2 pos, glm::ivec2 size, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
+    void util_FillRect(const glm::ivec2& pos, const glm::ivec2& size, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
     void util_FillRect(glm::ivec4& r, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
 
 protected:

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <GlbCommon/GlbCommon.h>
+#include <regex>
 
 namespace ara {
 
@@ -100,5 +101,33 @@ public:
     uint32_t                vaoOffset = 0;
     DrawSet*                drawSet   = nullptr;
 };
+
+static bool isValidIntInput(const std::string& str) {
+    return std::regex_match(str, std::regex("[-+]|(\\+|-)?[[:digit:]]+"));
+}
+
+static bool isValidFloatInput(std::string& str) {
+    return std::regex_match(str, std::regex("[-+]|[-+]?([0-9]*\\.[0-9]+|[0-9]+)")) ||
+           std::regex_match(str, std::regex("[-+]|[-+]?([0-9]*\\.)"));
+}
+
+template <typename Array, std::size_t... I>
+constexpr auto arrayToTupleImpl(const Array& a, std::index_sequence<I...>) {
+    return std::make_tuple(a[I]...);
+}
+
+template <typename T, std::size_t N, typename Indx = std::make_index_sequence<N>>
+constexpr auto arrayToTuple(const std::array<T, N>& a) {
+    return arrayToTupleImpl(a, Indx{});
+}
+
+static void assignOptional(bool hasValue, const std::function<void()>& f) {
+    if (hasValue) f();
+}
+
+template <std::size_t... I>
+void iterateOptionals(const auto& t, const auto& funcMap, const std::index_sequence<I...>&) {
+    (assignOptional(std::get<I>(t).has_value(), std::get<I>(funcMap)), ...);
+}
 
 }
