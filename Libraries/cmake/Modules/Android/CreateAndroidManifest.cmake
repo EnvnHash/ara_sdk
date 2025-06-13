@@ -1,5 +1,4 @@
-macro (create_android_manifest APP_TYPE APP_ICON_NAME)
-
+macro (create_android_manifest APP_TYPE APP_ICON_NAME APP_ORIENTATION)
     set(manifest)
     list(APPEND manifest "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"
@@ -37,6 +36,11 @@ macro (create_android_manifest APP_TYPE APP_ICON_NAME)
         list(APPEND manifest "\t\t<activity android:name=\".${PROJECT_NAME}Activity\"
             android:theme=\"@style/Theme.AppCompat.NoActionBar\"")
     endif()
+
+    if (NOT ${APP_ORIENTATION} STREQUAL "")
+        message(STATUS "got APP_ORIENTATION")
+        list(APPEND manifest "\n\t\t\tandroid:screenOrientation=\"${APP_ORIENTATION}\"")
+    endif ()
 
     list(APPEND manifest "
             android:label=\"${PROJECT_NAME}\"

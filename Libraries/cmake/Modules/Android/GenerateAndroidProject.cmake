@@ -55,7 +55,7 @@ macro (extract_class_name deri)
 endmacro()
 
 # APP_TYPE 0 = Pure native app without JAVA, APPTYPE = 1 Java MainActivity and JNI
-macro (gen_android_proj APP_NAME DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER)
+macro (gen_android_proj APP_NAME DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER APP_ORIENTATION)
     message(STATUS "Generating Android Project")
     if (NOT DEFINED ENV{ANDROID_NDK_HOME})
         message("GenerateAndroidProject.cmake Error!! Environmental variable ANDROID_NDK_HOME not set!! Aborting Android Studio project generation")
@@ -150,7 +150,7 @@ macro (gen_android_proj APP_NAME DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER
         create_proj_structure(${APP_TYPE}) # creates symlinks to all sdk subdirs, the main.cpp and the UIApp.cpp
         create_settings_files()
 
-        create_android_manifest(${APP_TYPE} ${APP_ICON_NAME}) # AndroidManifest.xml
+        create_android_manifest(${APP_TYPE} ${APP_ICON_NAME} ${APP_ORIENTATION}) # AndroidManifest.xml
         create_app_build_gradle(${APP_NAME})
         create_android_cmakelists(${APP_TYPE} ${ASSETS_FOLDER})
         create_app_key(${APP_NAME})
