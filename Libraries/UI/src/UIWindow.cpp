@@ -129,6 +129,10 @@ void UIWindow::initUIWindow(const UIWindowParams& par) {
                 .glbase = par.glbase,
                 .contScale = { par.glbase->g_androidDensity, par.glbase->g_androidDensity }
         });
+        if (!m_winHandle) {
+            LOGE << "UIWindow::initUIWindow Error: Couldn't create new Window";
+            return;
+        }
     } else {
         m_winHandle->makeCurrent();
     }

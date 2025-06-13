@@ -114,7 +114,7 @@ std::thread WindowManager::getOutOfBoundsHIDLoop() {
 
         while (m_run) {
             {
-                unique_lock<mutex> lock(m_globMouseLoopMtx);
+                unique_lock lock(m_globMouseLoopMtx);
                 mousePressed[0] = (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
                 mousePressed[1] = (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0;
 
@@ -229,9 +229,10 @@ void WindowManager::stopThreadedRendering() const {
 }
 
 GLWindow *WindowManager::addWin(const glWinPar& gp) {
+
 #ifdef _WIN32
     {
-        unique_lock<mutex> lock(m_globMouseLoopMtx);
+        unique_lock lock(m_globMouseLoopMtx);
 #endif
         m_windows.emplace_back(make_unique<GLWindow>());
 

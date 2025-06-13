@@ -83,7 +83,7 @@ public:
     template <typename... Args>
     static void callGlobalHidCb(WindowManager* winMan, winCb tp, Args... args) {
         if (winMan->m_globalWinHidCpMap.find(tp) != winMan->m_globalWinHidCpMap.end()) {
-            for (auto& [key, winCtxHidCbFunc] : winMan->m_globalWinHidCpMap[tp] ) {
+            for (auto &winCtxHidCbFunc : winMan->m_globalWinHidCpMap[tp] | std::views::values) {
                 resolveWinCbFunc<winCtxHidCb>(winCtxHidCbFunc, args...);
             }
         }
