@@ -236,12 +236,13 @@ void Node::load(bool fromAssets) {
         ifstream i(m_fileName);
         i >> j;
         deserialize(j);
+        m_fileNameForWatcher = m_fileName;
     } else {
         AssetLoader al;
         auto str = al.loadAssetAsString(m_fileName);
         json j = json::parse(str);
         deserialize(j);
-        m_fileName = al.getAssetPath() / m_fileName;
+        m_fileNameForWatcher = al.getAssetPath() / m_fileName;
     }
 
     if (m_watchFile && m_watchFile->time == filesystem::file_time_type{}) {
@@ -418,8 +419,8 @@ void Node::checkWatchThreadRunning() {
 void Node::setWatch(bool val) {
 #ifndef ARA_USE_CMRC
     m_watch = val;
-    if (!m_fileName.empty()) {
-        checkAndAddWatchPath(m_fileName.string());
+    if (!m_fileNameForWatcher.empty()) {
+        checkAndAddWatchPath(m_fileNameForWatcher.string());
         iterateChildren(*this, [&val, this](Node& nd){
             if (&nd != this) {
                 nd.setWatch(val);

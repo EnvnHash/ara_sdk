@@ -1,7 +1,7 @@
 macro (create_android_manifest APP_TYPE APP_ICON_NAME)
     set(oneValueArgs APP_ORIENTATION)
-    cmake_parse_arguments(create_android_manifest "" "${oneValueArgs}" "" ${ARGN})
-
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+    
     set(manifest)
     list(APPEND manifest "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"
@@ -40,9 +40,8 @@ macro (create_android_manifest APP_TYPE APP_ICON_NAME)
             android:theme=\"@style/Theme.AppCompat.NoActionBar\"")
     endif()
 
-    if (create_android_manifest_APP_ORIENTATION)
-        message(STATUS "got APP_ORIENTATION")
-        list(APPEND manifest "\n\t\t\tandroid:screenOrientation=\"${create_android_manifest_APP_ORIENTATION}\"")
+    if (arg_APP_ORIENTATION)
+        list(APPEND manifest "\n\t\t\tandroid:screenOrientation=\"${arg_APP_ORIENTATION}\"")
     endif ()
 
     list(APPEND manifest "

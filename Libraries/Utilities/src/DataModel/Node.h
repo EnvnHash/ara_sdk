@@ -248,6 +248,7 @@ protected:
     std::mutex                                      m_mtx;
     std::list<std::shared_ptr<Node>>                m_children;
     std::filesystem::path                           m_fileName;
+    std::filesystem::path                           m_fileNameForWatcher;
     std::atomic<bool>                               m_undoing{false};
     Node*                                           m_undoBufRoot = nullptr;
     std::deque<std::vector<std::uint8_t>>           m_undoBuf;
