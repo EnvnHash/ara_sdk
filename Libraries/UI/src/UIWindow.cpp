@@ -1206,7 +1206,7 @@ void UIWindow::onNodeRemove(UINode *node) {
     }
 }
 
-int32_t UIWindow::getObjAtPos(glm::vec2& pos, hidEvent evt) {
+int32_t UIWindow::getObjAtPos(vec2& pos, hidEvent evt) {
     m_opi.it             = m_uiRoot.getChildren().end() - 1; // take the last element of the tree
     m_opi.list           = &m_uiRoot.getChildren();
     m_opi.pos            = pos;
@@ -1214,6 +1214,7 @@ int32_t UIWindow::getObjAtPos(glm::vec2& pos, hidEvent evt) {
     m_opi.treeLevel      = 0;
     m_opi.foundTreeLevel = -1;
     m_opi.event          = evt;
+    m_opi.parents.clear();
 
     UINode::objPosIt(m_opi);
 

@@ -142,6 +142,7 @@ public:
     virtual void eraseGlCb(void *cbName, const std::string &fName);
     virtual void eraseGlCb(void *cbName);
     virtual void clearGlCbQueue();
+    void clearHidEvents() { s_hidEvents.clear(); }
 
     virtual void removeGLResources() {}
 
