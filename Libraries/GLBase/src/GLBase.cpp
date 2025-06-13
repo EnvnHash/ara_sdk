@@ -60,7 +60,7 @@ bool GLBase::init(bool doInitResources, void *winHnd) {
     }
 #elif _WIN32
     // create an invisible window with a valid gl context which will contain the resources and be shared to all context
-    // that are created afterwards
+    // that are created afterward
     createCtx();
 #endif
 
@@ -70,11 +70,7 @@ bool GLBase::init(bool doInitResources, void *winHnd) {
         initResources();
     }
 
-#if defined(ARA_USE_GLFW) || defined(__ANDROID__)
     GLWindow::makeNoneCurrent();
-#elif _WIN32
-    wglMakeCurrent(nullptr, nullptr);
-#endif
 
     g_inited = true;
     return g_win ? true : false;
@@ -306,8 +302,6 @@ void GLBase::destroy(bool terminateGLFW) {
 /// </summary>
 #ifdef ARA_USE_GLFW
 unique_ptr<GLWindow> GLBase::createOpenGLCtx(bool initGLFW) {
-    // unique_lock<mutex> lock(g_mtx);
-
     auto     gwin = make_unique<GLWindow>();
     glWinPar gp;
     gp.createHidden = true;

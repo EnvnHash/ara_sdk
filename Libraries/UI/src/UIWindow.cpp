@@ -105,6 +105,15 @@ void UIWindow::init(const UIWindowParams& par) {
 }
 
 void UIWindow::initUIWindow(const UIWindowParams& par) {
+#ifndef ARA_USE_EGL
+    // check if GLBase render loop is running, if this is the case, stop it and start it later again. Otherwise,
+    // context sharing will fail
+    if (m_glbase->isRunning()) {
+        m_restartGlBaseLoop = true;
+        m_glbase->stopProcCallbackLoop();
+    }
+#endif
+
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     if (!m_winHandle) {
         m_winHandle = m_glbase->getWinMan()->addWin(glWinPar{

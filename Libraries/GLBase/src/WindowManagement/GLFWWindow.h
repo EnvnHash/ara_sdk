@@ -194,9 +194,7 @@ public:
     void        removeMouseCursors();
     static void error_callback(int error, const char *description);
 
-    static void makeNoneCurrent() {
-        glfwMakeContextCurrent(nullptr);
-    }
+    static void makeNoneCurrent() { glfwMakeContextCurrent(nullptr); }
 
 protected:
     std::vector<GLFWvidmode>             m_modes;

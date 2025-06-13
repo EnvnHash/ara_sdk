@@ -36,7 +36,7 @@ int GLFWWindow::init(const glWinPar &gp) {
     // Initialize the library
     if (gp.doInit && !glfwInit()) {
         LOGE << "GLFW init failed!!!!";
-        return true;
+        return false;
     }
 
     // get all the information about the m_monitors
@@ -79,7 +79,7 @@ int GLFWWindow::init(const glWinPar &gp) {
 
     m_window = glfwCreateWindow(m_virtSize.x, m_virtSize.y, "", gp.fullScreen ? m_mon : nullptr, static_cast<GLFWwindow *>(gp.shareCont));
     if (!m_window) {
-        LOGE << " GWindow ERROR creating window";
+        LOGE << "GLFWWindow ERROR creating window";
         return false;
     }
 
@@ -318,8 +318,7 @@ void GLFWWindow::initNonFullScreen(const glWinPar &gp) {
 #if defined(_WIN32) || defined(__linux__)
     glfwWindowHint(GLFW_SCALE_TO_MONITOR,
                    gp.scaleToMonitor ? GL_TRUE : GL_FALSE);  // if GL_FALSE pixel sizing is 1:1 if GL_TRUE the
-    // required size will be different from the
-    // resulting window size
+                                                                  // required size will be different from the resulting window size
 #endif
 
 #ifdef __APPLE__
