@@ -178,6 +178,7 @@ public:
     void                                    deserialize(const nlohmann::json& j);
     void                                    load(const std::filesystem::path& filePath);
     void                                    loadFromAssets(const std::filesystem::path& filePath);
+    virtual void                            load();
     virtual void                            load(bool fromAssets);
     void                                    loadFromString(const std::string& str);
     void                                    saveAs(const std::filesystem::path& filePath);

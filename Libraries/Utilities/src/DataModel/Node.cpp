@@ -220,6 +220,10 @@ void Node::loadFromAssets(const filesystem::path& filePath) {
     load(true);
 }
 
+void Node::load() {
+    load(m_useAssetLoader);
+}
+
 void Node::load(bool fromAssets) {
     m_useAssetLoader = fromAssets;
 
