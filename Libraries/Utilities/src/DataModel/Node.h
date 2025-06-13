@@ -192,9 +192,11 @@ public:
     void                                    changeVal(const std::function<void()>& f);
     void                                    setUndoBuffer(bool enabled, size_t size);
     void                                    checkAndAddWatchPath(const std::string& fn);
+    void                                    checkWatchThreadRunning();
     virtual void                            setWatch(bool val);
     void                                    startWatchThread();
-    void                                    stopWatchThread();
+    static void                             watchThreadIterate();
+    static void                             stopWatchThread();
 
     std::mutex&                             mutex() { return m_mtx; }
     std::list<std::shared_ptr<Node>>&       children() const { return const_cast<std::list<std::shared_ptr<Node>>&>(m_children); }
@@ -227,6 +229,7 @@ public:
     static inline std::thread               m_watchThrd;
     static inline std::mutex                m_watchMtx;
     static inline std::atomic<bool>         m_watchThreadRunning{false};
+    static inline std::atomic<bool>         m_useWatchThread{true};
     static inline std::list<NodeWatchFile>  m_watchFiles;
 
 protected:
@@ -249,6 +252,8 @@ protected:
     std::deque<std::vector<std::uint8_t>>           m_undoBuf;
     std::deque<std::vector<std::uint8_t>>::iterator m_undoBufIt;
     size_t                                          m_maxUndoBufSize=0;
+
+    static inline std::filesystem::file_time_type   m_initFt{};
 
     std::unordered_map<cbType, std::unordered_map<void *, std::function<void()>>> m_changeCb {
         { cbType::preChange, {}},

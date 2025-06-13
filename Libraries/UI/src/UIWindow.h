@@ -189,6 +189,7 @@ public:
     bool        isModal() const { return m_isModal; }
     void        pollEvents() const { if (m_winHandle) GLWindow::pollEvents(); }
     void        setGlCb(const std::function<void()>& f) const { if (m_winHandle) m_winHandle->setGlCb(f); }
+    void        setDrawMtx(std::mutex* mtx) { m_extDrawMtx = mtx; }
 
 #else
     void* getWinHandle() { return m_winHandle; }
@@ -366,6 +367,7 @@ protected:
     std::chrono::time_point<std::chrono::system_clock> m_lastLeftMouseDown;
 
     std::list<UINode*>  m_draggingNodeTree;
+    std::mutex*         m_extDrawMtx = nullptr;
 };
 
 }  // namespace ara

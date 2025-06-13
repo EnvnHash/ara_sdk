@@ -30,12 +30,15 @@ Node::Node() {
 
 Node::~Node() {
     if (!m_fileName.empty()) {
-        auto r = ranges::find_if(m_watchFiles, [&](auto& it) {
+        const auto r = ranges::find_if(m_watchFiles, [&](auto& it) {
             return it.path.string() == m_fileName;
         });
         if (r != m_watchFiles.end()) {
-            unique_lock<std::mutex> lock(m_watchMtx);
+            auto canLock = m_watchMtx.try_lock();
             m_watchFiles.erase(r);
+            if (canLock) {
+                m_watchMtx.unlock();
+            }
         }
     }
 }
@@ -167,8 +170,8 @@ void Node::deserialize(const string& str) {
 void Node::deserialize(const json& j) {
     if (serializeValues() != getValues(j)) {
         deserializeValues(j);
-        for (const auto& it: m_changeCb[cbType::postChange]) {
-            it.second();
+        for (const auto& [fst, func] : m_changeCb[cbType::postChange]) {
+            func();
         }
     }
 
@@ -185,10 +188,10 @@ void Node::deserialize(const json& j) {
                 // assure correct order
                 auto childIt = find_if(m_children.begin(), m_children.end(), [&](auto& el){ return el.get() == it->second; });
                 auto childIdx = distance(m_children.begin(), childIt);
-                auto jChildIdx = distance(j["children"].begin(), jChild);
-                if (childIdx != jChildIdx) {
+                    auto jChildIdx = distance(j["children"].begin(), jChild);
+                    if (childIdx != jChildIdx) {
                     m_children.splice(next(m_children.begin(), jChildIdx), m_children, childIt);
-                }
+                    }
                 existingChildren.erase(it);
             } else {
                 // Create a new child and add it to the node
@@ -401,6 +404,13 @@ void Node::checkAndAddWatchPath(const string& fn) {
     }
 }
 
+void Node::checkWatchThreadRunning() {
+    if (!m_watchThreadRunning && m_useWatchThread) {
+        m_watchThreadRunning = true;
+        startWatchThread();
+    }
+}
+
 void Node::setWatch(bool val) {
 #ifndef ARA_USE_CMRC
     m_watch = val;
@@ -412,9 +422,8 @@ void Node::setWatch(bool val) {
             }
         });
 
-        if (val && !m_watchThreadRunning) {
-            m_watchThreadRunning = true;
-            Node::startWatchThread();
+        if (val) {
+            checkWatchThreadRunning();
         }
     }
 #endif
@@ -422,37 +431,38 @@ void Node::setWatch(bool val) {
 
 void Node::startWatchThread() {
 #ifndef ARA_USE_CMRC
-    m_watchThrd = thread([&]{
-        filesystem::file_time_type init_ft{};
+    m_watchThrd = thread([this]{
         while (m_watchThreadRunning) {
-            {
-                unique_lock<std::mutex> lock(m_watchMtx);
-                try {
-                    for (auto &wfIt : m_watchFiles) {
-                        if (filesystem::exists(wfIt.path)) {
-                            auto ft = filesystem::last_write_time(wfIt.path);
-                            if (ft != init_ft && ft != wfIt.time) {
-                                // the file may actually being written to, file size needs to be constant
-                                if (wfIt.fileSize != filesystem::file_size(wfIt.path)) {
-                                    wfIt.fileSize = filesystem::file_size(wfIt.path);
-                                } else {
-                                    LOG << "Detected File change: " << wfIt.path;
-                                    wfIt.node->load(m_useAssetLoader);
-                                    LOG << " loading finished after File change: " << wfIt.path;
-                                    wfIt.time = ft;
-                                }
-                            }
-                        }
-                    }
-                } catch (...) {
-                    LOGE << "Node file watcher caught an error checking files";
-                }
-            }
-            this_thread::sleep_for(1.0s);
+            watchThreadIterate();
+            this_thread::sleep_for(0.7s);
         }
     });
     m_watchThrd.detach();
 #endif
+}
+
+void Node::watchThreadIterate() {
+    unique_lock lock(m_watchMtx);
+    try {
+        for (auto &wfIt : m_watchFiles) {
+            if (exists(wfIt.path)) {
+                auto ft = filesystem::last_write_time(wfIt.path);
+                if (ft != m_initFt && ft != wfIt.time) {
+                    // the file may actually being written to, file size needs to be constant
+                    if (wfIt.fileSize != file_size(wfIt.path)) {
+                        wfIt.fileSize = file_size(wfIt.path);
+                    } else {
+                        LOG << "Detected File change: " << wfIt.path;
+                        wfIt.node->load();
+                        LOG << " loading finished after File change: " << wfIt.path;
+                        wfIt.time = ft;
+                    }
+                }
+            }
+        }
+    } catch (...) {
+        LOGE << "Node file watcher caught an error checking files";
+    }
 }
 
 void Node::stopWatchThread() {

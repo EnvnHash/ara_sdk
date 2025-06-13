@@ -34,9 +34,8 @@ void Image::setWatch(bool val) {
     if (!m_imgPath.empty()) {
         auto comp_path = (fs(m_dataPath) / fs(m_imgPath)).string();
         checkAndAddWatchPath(comp_path);
-        if (val && !m_watchThreadRunning) {
-            m_watchThreadRunning = true;
-            Node::startWatchThread();
+        if (val) {
+            checkWatchThreadRunning();
         }
     }
 }
