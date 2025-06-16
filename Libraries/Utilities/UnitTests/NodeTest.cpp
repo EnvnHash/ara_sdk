@@ -20,6 +20,23 @@ using json = nlohmann::json;
 
 namespace ara {
 
+class TestClass : public Node {
+public:
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(m_arg1, m_arg2, m_arg3)
+
+    TestClass() {
+        Node::setTypeName<TestClass>();
+        m_changeCb[cbType::postChange].emplace(this, [this]{
+            m_changeCalled++;
+        });
+    }
+
+    int m_arg1 = 1;
+    float m_arg2 = 2.f;
+    double m_arg3 = 3.0;
+    size_t m_changeCalled = 0;
+};
+
 TEST(Functional_Node, Parent) {
     Node nd;
     nd.setName("Root");
@@ -106,6 +123,20 @@ TEST(Functional_Node, RemoveChild) {
 
     nd1.pop();
     EXPECT_EQ(nd1.children().size(), 0);
+}
+
+TEST(Functional_Node, ChangedCb) {
+    TestClass tc;
+    auto j = tc.asJson();
+    tc.deserialize(j);
+    EXPECT_EQ(tc.m_changeCalled, 0);
+
+    j = tc.asJson();
+    j["arg1"] = 2;
+    j["arg2"] = 3.f;
+    j["arg3"] = 4.0;
+    tc.deserialize(j);
+    EXPECT_EQ(tc.m_changeCalled, 1);
 }
 
 TEST(Functional_Node, SignalAddChild) {
