@@ -6,6 +6,8 @@ Cross-platform application framework for 2D User Interfaces (similar to QT) and 
 [![CMake build on ubuntu, windows, macos](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/07c680603b224268815644255071746f)](https://app.codacy.com/gh/EnvnHash/ara_sdk/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
+![Ara Snapshot](Documentation/images/ara_snapshot.png)
+
 ## Building
 
 ### Linux, MacOS and Windows
