@@ -36,6 +36,8 @@ class TextureCollector {
 public:
     void init(GLBase *glBase) { m_glBase = glBase; }
     Texture *add(const std::filesystem::path &fileName);
+    void addCommon(const std::string &fn, int32_t mipMapLevel, const std::filesystem::path *dataPath);
+    Texture *add(const char* filePtr, size_t size, const std::string &fn, const std::filesystem::path *dataPath, int32_t mipMapLevel);
     Texture *add(std::vector<uint8_t>& vp, const std::string &fileName, const std::filesystem::path *dataPath, int32_t mipMapLevel);
     Texture *addFromMem(const std::filesystem::path &fileName, const std::filesystem::path &dataPath, int32_t mipMapLevel);
     Texture *addFromAssetManager(const std::string &fn, int mipMapLevel);

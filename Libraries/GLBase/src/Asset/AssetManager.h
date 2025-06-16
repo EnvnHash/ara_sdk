@@ -99,6 +99,10 @@ public:
     Font           *loadFont(const std::string& path, int size, float pixRatio);
     AssetImageBase *img(const std::string& path);
 
+#ifdef ARA_USE_CMRC
+    std::pair<const char*, size_t> loadResource(ResNode *node, const std::string& path);
+#endif
+
     [[nodiscard]] bool isOK() const { return m_loadState; }
     static bool usingComp() { return AssetLoader::usingCmrc(); }
 

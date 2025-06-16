@@ -59,20 +59,20 @@ Texture *TextureCollector::addFromMem(const std::filesystem::path &fileName, con
 
 Texture *TextureCollector::addFromAssetManager(const std::string &fn, int mipMapLevel) {
     return checkForExistence(fn, nullptr, [&]  {
+/*#ifdef ARA_USE_CMRC
+        auto& al = m_glBase->getAssetManager()->getAssetLoader();
+        auto ret = al.loadAssetToMem(fn);
+        return add(std::get<const char*>(ret), std::get<size_t>(ret), fn, &al.getAssetPath(), mipMapLevel);
+#else*/
         std::vector<uint8_t> vp;
         auto& al = m_glBase->getAssetManager()->getAssetLoader();
         al.loadAssetToMem(vp, fn);
         return add(vp, fn, &al.getAssetPath(), mipMapLevel);
+//#endif
     });
 }
 
-Texture *TextureCollector::add(std::vector<uint8_t>& vp, const std::string &fn, const std::filesystem::path *dataPath, int32_t mipMapLevel) {
-    if (vp.empty()) {
-        return nullptr;
-    }
-
-    m_texMap[fn].texture.setGlbase(m_glBase);
-    m_texMap[fn].texture.loadFromMemPtr(&vp[0], vp.size(), GL_TEXTURE_2D, mipMapLevel);
+void TextureCollector::addCommon(const std::string &fn, int32_t mipMapLevel, const std::filesystem::path *dataPath) {
     m_texMap[fn].texture.setFiltering(GL_LINEAR, mipMapLevel == 0 ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR);
 #ifndef ARA_USE_GLES31
     m_texMap[fn].texture.setWraping(GL_CLAMP_TO_BORDER);
@@ -94,7 +94,23 @@ Texture *TextureCollector::add(std::vector<uint8_t>& vp, const std::string &fn, 
         LOGE << "TextureCollector::addFromMem Error: std::runtime_error: " << e.what();
     }
 #endif
+}
 
+Texture *TextureCollector::add(const char* filePtr, size_t size, const std::string &fn, const std::filesystem::path *dataPath, int32_t mipMapLevel) {
+    m_texMap[fn].texture.setGlbase(m_glBase);
+    m_texMap[fn].texture.loadFromMemPtr((void*)filePtr, size, GL_TEXTURE_2D, mipMapLevel);
+    addCommon(fn, mipMapLevel, dataPath);
+    return &m_texMap[fn].texture;
+}
+
+Texture *TextureCollector::add(std::vector<uint8_t>& vp, const std::string &fn, const std::filesystem::path *dataPath, int32_t mipMapLevel) {
+    if (vp.empty()) {
+        return nullptr;
+    }
+
+    m_texMap[fn].texture.setGlbase(m_glBase);
+    m_texMap[fn].texture.loadFromMemPtr(&vp[0], vp.size(), GL_TEXTURE_2D, mipMapLevel);
+    addCommon(fn, mipMapLevel, dataPath);
     return &m_texMap[fn].texture;
 }
 

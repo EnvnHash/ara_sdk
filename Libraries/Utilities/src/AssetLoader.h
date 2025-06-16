@@ -20,6 +20,7 @@
 #include <util_common.h>
 
 using memRet = std::pair<size_t, std::filesystem::file_time_type>;
+using memPtr = std::tuple<const char*, size_t, std::filesystem::file_time_type>;
 
 namespace ara {
 
@@ -27,6 +28,10 @@ class AssetLoader {
 public:
     static std::string loadAssetAsString(const std::filesystem::path& path);
     static std::string loadAssetAsString(const std::string& path);
+
+#ifdef ARA_USE_CMRC
+    static memPtr loadAssetToMem(const std::string& path);
+#endif
 
     static memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::filesystem::path& path);
     static memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::string& path);

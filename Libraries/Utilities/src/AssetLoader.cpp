@@ -96,11 +96,31 @@ memRet AssetLoader::loadAssetToMem(vector<uint8_t>& buf, const string& path) {
     }
 
     return { buf.size(), std::filesystem::file_time_type{} };
-
+    
 #else
     return { ReadBinFile(buf, compPath), filesystem::last_write_time(compPath) };
 #endif
 }
+
+#ifdef ARA_USE_CMRC
+memPtr AssetLoader::loadAssetToMem(const string& path) {
+    auto compPath = resolveAssetPath(path);
+    auto compPathStr = getSanitizedAssetPath(compPath);
+    auto fs = cmrc::ara::get_filesystem();
+
+    if (!fs.exists(compPathStr)) {
+        LOGE << "Could not get " << compPathStr << " from cmrc file system";
+        return { nullptr, 0, std::filesystem::file_time_type{} };
+    }
+
+    auto file = fs.open(compPathStr);
+    if (file.size() == 0) {
+        return { nullptr, 0, std::filesystem::file_time_type{} };
+    }
+
+    return { file.begin(), file.size(), std::filesystem::file_time_type{} };
+}
+#endif
 
 string AssetLoader::getSanitizedAssetPath(const filesystem::path& p) {
 #ifdef _WIN32

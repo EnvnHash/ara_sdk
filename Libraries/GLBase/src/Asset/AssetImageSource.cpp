@@ -58,14 +58,22 @@ void AssetImageSource::loadImg(int mimMapLevel) {
         throw runtime_error("ImgPath(" + m_imgPath + ") not found");
     }
 
+#ifdef ARA_USE_CMRC
+    auto ret = m_assetManager->loadResource(this, m_imgPath);
+    if (std::get<size_t>(ret) <= 0) {
+        throw runtime_error("Cannot load resource " + m_imgPath);
+    }
+    m_texture->loadFromMemPtr((void*)std::get<const char*>(ret), std::get<size_t>(ret), GL_TEXTURE_2D, mimMapLevel);
+#else
     std::vector<uint8_t> resdata;
     if (m_assetManager->loadResource(this, resdata, m_imgPath) <= 0) {
         throw runtime_error("Cannot load resource " + m_imgPath);
     }
-
+    
     m_texture->keepBitmap(true);
     m_texture->setFileName(m_imgPath);
     m_texture->loadFromMemPtr(&resdata[0], resdata.size(), GL_TEXTURE_2D, mimMapLevel);
+#endif
 
     m_texSize.x = static_cast<int>(m_texture->getWidth());
     m_texSize.y = static_cast<int>(m_texture->getHeight());

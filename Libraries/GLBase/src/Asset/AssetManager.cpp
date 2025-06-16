@@ -155,11 +155,29 @@ size_t AssetManager::loadResource(ResNode *node, std::vector<uint8_t> &dest, con
         }
     }
 
-    auto ts = m_assetLoader.loadAssetToMem(dest, path);
+    auto ts = AssetLoader::loadAssetToMem(dest, path);
     m_resFolderFiles[path] = ts.second;
 
     return ts.first;
 }
+
+#ifdef ARA_USE_CMRC
+std::pair<const char*, size_t> AssetManager::loadResource(ResNode *node, const string& path) {
+    if (node) {
+        e_file_bind eb{node->getPath(), path};
+        if (ranges::find_if(m_fileBind, [&](const e_file_bind &e) {
+                return e.file_path == eb.file_path && e.node_path == eb.node_path;
+            }) == m_fileBind.end()) {
+            m_fileBind.emplace_back(eb);
+        }
+    }
+
+    auto ts = AssetLoader::loadAssetToMem(path);
+    m_resFolderFiles[path] = std::get<std::filesystem::file_time_type>(ts);
+
+    return { std::get<const char*>(ts), std::get<size_t>(ts) };
+}
+#endif
 
 Font *AssetManager::loadFont(const string& path, int size, float pixRatio) {
     std::vector<uint8_t> v;
@@ -176,7 +194,7 @@ bool AssetManager::checkForChangesInFolderFiles() {
 
     filesystem::file_time_type ft;
     bool change = false;
-    auto dataPath = m_assetLoader.getAssetPath();
+    auto dataPath= AssetLoader::getAssetPath();
 
     // check for file deletion or modification
     for (auto &[filename, lastChangeTime] : m_resFolderFiles) {
