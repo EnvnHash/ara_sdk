@@ -45,10 +45,10 @@
 *		1.1     May  7, 2014		Support of density maps
 *		1.0     May  6, 2014
 */
+
 #pragma once
 
 #include <util_common.h>
-
 
 namespace PoissonGenerator {
 
@@ -88,17 +88,13 @@ static GridPoint imageToGrid(const Point& P, float cellSize) {
 }
 
 struct Grid {
-   std::vector<std::vector<Point>> grid_;
-   int w_, h_;
-   float cellSize_;
-
-   Grid(int w, int h, float cellSize)
-       : w_(w), h_(h), cellSize_(cellSize), grid_(h, std::vector<Point>(w)) {}
+    Grid(int w, int h, float cellSize)
+            : w_(w), h_(h), cellSize_(cellSize), grid_(h, std::vector<Point>(w)) {}
 
    void insert(const Point& p) {
        const GridPoint g = imageToGrid(p, cellSize_);
        if (g.x >= 0 && g.x < w_ && g.y >= 0 && g.y < h_) {
-           grid_[g.y][g.x] = p;
+           grid_[g.x][g.y] = p;
        }
    }
 
@@ -110,34 +106,32 @@ struct Grid {
        for (int i = g.x - D; i <= g.x + D; ++i) {
            for (int j = g.y - D; j <= g.y + D; ++j) {
                if (i >= 0 && i < w_ && j >= 0 && j < h_) {
-                   const Point& P = grid_[j][i];
-                   if (P.valid_ && getDistance(P, point) < minDist) return true;
+                   const Point P = grid_[i][j];
+
+                   if (P.valid_ && getDistance(P, point) < minDist)
+                       return true;
                }
            }
        }
 
        return false;
    }
+
+   int w_, h_;
+   float cellSize_;
+   std::vector<std::vector<Point>> grid_;
 };
 
-static std::random_device rd;          // Obtain a random number from hardware
-static std::mt19937 gen(rd());       // Seed the generator
-
-static float getRandF(float min, float max) {
-   std::uniform_real_distribution<> dis(0.0, max); // Define the range
-   return static_cast<float>(dis(gen));
-}
-
 static Point popRandom(std::vector<Point>& points) {
-   const int idx = static_cast<int>(getRandF(0.f, points.size() - 1));
+   const int idx = static_cast<int>(ara::getRandF(0.f, points.size() - 1));
    const Point p = points[idx];
    points.erase(points.begin() + idx);
    return p;
 }
 
 static Point generateRandomPointAround(const Point& p, float minDist) {
-   const float R1 = getRandF(0.f, 1.f);
-   const float R2 = getRandF(0.f, 1.f);
+   const float R1 = ara::getRandF(0.f, 1.f);
+   const float R2 = ara::getRandF(0.f, 1.f);
 
    const float radius = minDist * (R1 + 1.0f);
    const float angle = 2.f * static_cast<float>(M_PI) * R2;
@@ -153,49 +147,77 @@ static Point generateRandomPointAround(const Point& p, float minDist) {
   Circle  - 'true' to fill a circle, 'false' to fill a rectangle
   MinDist - minimal distance estimator, use negative value for default
 **/
-static std::vector<Point> generatePoissonPoints(uint32_t numPoints, bool isCircle = true,
-                                        uint32_t newPointsCount = 30, float minDist = -1.0f) {
+static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
+                                        bool isCircle = true,
+                                        uint32_t newPointsCount = 30,
+                                        float minDist = -1.0f) {
+   // if we want to generate a Poisson square shape, multiply the estimate number of points by PI/4 due to reduced shape area
+   if (!isCircle) {
+       const double Pi_4 = 0.785398163397448309616; // PI/4
+       numPoints = static_cast<int>(Pi_4 * numPoints);
+   }
+
    if (minDist < 0.0f) {
        minDist = std::sqrt(static_cast<float>(numPoints)) / static_cast<float>(numPoints);
    }
 
-   if (!numPoints) return {};
+   std::vector<Point> samplePoints;
+   std::vector<Point> processList;
 
-   const float cellSize = minDist / std::sqrt(2.0f);
-   const int gridW = static_cast<int>(std::ceil(1.0f / cellSize));
-   const int gridH = static_cast<int>(std::ceil(1.0f / cellSize));
+   if (!numPoints)
+       return samplePoints;
+
+   // create the grid
+    const float cellSize = minDist / std::sqrt(2.0f);
+    const int gridW = static_cast<int>(std::ceil(1.0f / cellSize));
+    const int gridH = static_cast<int>(std::ceil(1.0f / cellSize));
 
    Grid grid(gridW, gridH, cellSize);
 
    Point firstPoint;
    do {
-       firstPoint.x = getRandF(0.f, 1.f);
-       firstPoint.y = getRandF(0.f, 1.f);
+       firstPoint = Point(ara::getRandF(0.f, 1.f), ara::getRandF(0.f, 1.f));
    } while (!(isCircle ? firstPoint.isInCircle() : firstPoint.isInRectangle()));
 
-   std::vector<Point> samplePoints{firstPoint};
-   std::deque<Point> processList{firstPoint};
-
+   // update containers
+   processList.emplace_back(firstPoint);
+   samplePoints.emplace_back(firstPoint);
    grid.insert(firstPoint);
 
-   constexpr float pi_4 = 0.785398163397448309616; // PI/4
-   numPoints = isCircle ? numPoints : static_cast<int>(pi_4 * numPoints);
+#if POISSON_PROGRESS_INDICATOR
+   size_t progress = 0;
+#endif
 
-   while (!processList.empty() && samplePoints.size() < numPoints) {
-       const Point point = processList.front();
-       processList.pop_front();
+   // generate new points for each point in the queue
+   while (!processList.empty() && samplePoints.size() <= numPoints) {
+#if POISSON_PROGRESS_INDICATOR
+       // a progress indicator, kind of
+       if ((samplePoints.size()) % 1000 == 0) {
+           const size_t newProgress = 200 * (samplePoints.size() + processList.size()) / numPoints;
+           if (newProgress != progress) {
+               progress = newProgress;
+               std::cout << ".";
+           }
+       }
+#endif // POISSON_PROGRESS_INDICATOR
+
+       const Point point = popRandom(processList);
 
        for (uint32_t i = 0; i < newPointsCount; ++i) {
-           auto newPoint = generateRandomPointAround(point, minDist);
-           if ((isCircle ? newPoint.isInCircle() : newPoint.isInRectangle())
-               && !grid.isInNeighbourhood(newPoint, minDist)
-           ) {
-               processList.push_back(newPoint);
+           const Point newPoint = generateRandomPointAround(point, minDist);
+           const bool canFitPoint = isCircle ? newPoint.isInCircle() : newPoint.isInRectangle();
+
+           if (canFitPoint && !grid.isInNeighbourhood(newPoint, minDist)) {
+               processList.emplace_back(newPoint);
                samplePoints.emplace_back(newPoint);
                grid.insert(newPoint);
            }
        }
    }
+
+#if POISSON_PROGRESS_INDICATOR
+   std::cout << std::endl << std::endl;
+#endif // POISSON_PROGRESS_INDICATOR
 
    return samplePoints;
 }
@@ -247,10 +269,8 @@ static std::vector<Point> generateJitteredGridPoints(uint32_t numPoints,
                // generate a new point until it is within the boundaries
            } while (!p.isInRectangle());
 
-           if (isCircle) {
-               if (!p.isInCircle()) {
-                   continue;
-               }
+           if (isCircle && !p.isInCircle()){
+               continue;
            }
 
            samplePoints.push_back(p);
