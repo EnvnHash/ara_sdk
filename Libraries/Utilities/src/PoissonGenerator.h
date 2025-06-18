@@ -50,6 +50,8 @@
 
 #include <util_common.h>
 
+#include "GlbCommon/GlbConstants.h"
+
 namespace PoissonGenerator {
 
 static const char* Version = "1.6.1 (16/02/2024)";
@@ -123,7 +125,7 @@ struct Grid {
 };
 
 static Point popRandom(std::vector<Point>& points) {
-   const int idx = static_cast<int>(ara::getRandF(0.f, points.size() - 1));
+   const int idx = static_cast<int>(ara::getRandF(0.f, static_cast<float>(points.size()) - 1));
    const Point p = points[idx];
    points.erase(points.begin() + idx);
    return p;
