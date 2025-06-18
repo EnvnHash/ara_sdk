@@ -10,6 +10,18 @@
 * \author support@linderdaum.com   http://www.linderdaum.com   http://blog.linderdaum.com
 */
 
+/*
+  Usage example:
+
+     #define POISSON_PROGRESS_INDICATOR 1
+     #include "PoissonGenerator.h"
+     ...
+     PoissonGenerator::DefaultPRNG PRNG;
+     const auto Points = PoissonGenerator::generatePoissonPoints( NumPoints, PRNG );
+     ...
+     const auto Points = PoissonGenerator::generateVogelPoints( NumPoints );
+*/
+
 // Fast Poisson Disk Sampling in Arbitrary Dimensions
 // http://people.cs.ubc.ca/~rbridson/docs/bridson-siggraph07-poissondisk.pdf
 
@@ -33,10 +45,10 @@
 *		1.1     May  7, 2014		Support of density maps
 *		1.0     May  6, 2014
 */
-
 #pragma once
 
 #include <util_common.h>
+
 
 namespace PoissonGenerator {
 
@@ -48,26 +60,16 @@ struct Point {
    float x = 0.0f;
    float y = 0.0f;
    bool valid_ = false;
-   //
-   bool isInRectangle() const {
-       return x >= 0 && y >= 0 && x <= 1 && y <= 1;
-   }
-   //
-   bool isInCircle() const {
+
+   constexpr bool isInRectangle() const { return x >= 0 && y >= 0 && x <= 1 && y <= 1; }
+   constexpr bool isInCircle() const {
        const float fx = x - 0.5f;
        const float fy = y - 0.5f;
        return (fx * fx + fy * fy) <= 0.25f;
    }
-   Point& operator+(const Point& p) {
-       x += p.x;
-       y += p.y;
-       return *this;
-   }
-   Point& operator-(const Point& p) {
-       x -= p.x;
-       y -= p.y;
-       return *this;
-   }
+
+   Point& operator+(const Point& p) { x += p.x; y += p.y; return *this; }
+   Point& operator-(const Point& p) { x -= p.x; y -= p.y; return *this; }
 };
 
 struct GridPoint {
@@ -77,77 +79,72 @@ struct GridPoint {
    int y;
 };
 
-static float getDistance(const Point& P1, const Point& P2) {
-   return sqrt((P1.x - P2.x) * (P1.x - P2.x) + (P1.y - P2.y) * (P1.y - P2.y));
+inline float getDistance(const Point& P1, const Point& P2) {
+   return std::sqrt((P1.x - P2.x) * (P1.x - P2.x) + (P1.y - P2.y) * (P1.y - P2.y));
 }
 
 static GridPoint imageToGrid(const Point& P, float cellSize) {
-   return GridPoint((int)(P.x / cellSize), (int)(P.y / cellSize));
+   return {(int)(P.x / cellSize), (int)(P.y / cellSize)};
 }
 
 struct Grid {
-   Grid(int w, int h, float cellSize) : w_(w), h_(h), cellSize_(cellSize) {
-       grid_.resize(h_);
-       for (auto i = grid_.begin(); i != grid_.end(); i++) {
-           i->resize(w);
-       }
-   }
+   std::vector<std::vector<Point>> grid_;
+   int w_, h_;
+   float cellSize_;
+
+   Grid(int w, int h, float cellSize)
+       : w_(w), h_(h), cellSize_(cellSize), grid_(h, std::vector<Point>(w)) {}
+
    void insert(const Point& p) {
        const GridPoint g = imageToGrid(p, cellSize_);
-       grid_[g.x][g.y] = p;
+       if (g.x >= 0 && g.x < w_ && g.y >= 0 && g.y < h_) {
+           grid_[g.y][g.x] = p;
+       }
    }
-   bool isInNeighbourhood(const Point& point, float minDist, float cellSize) {
-       const GridPoint g = imageToGrid(point, cellSize);
 
-       // number of adjucent cells to look for neighbour points
-       const int D = 5;
+   bool isInNeighbourhood(const Point& point, float minDist) const {
+       const GridPoint g = imageToGrid(point, cellSize_);
 
-       // scan the neighbourhood of the point in the grid
-       for (int i = g.x - D; i <= g.x + D; i++) {
-           for (int j = g.y - D; j <= g.y + D; j++) {
+       constexpr int D = 5;
+
+       for (int i = g.x - D; i <= g.x + D; ++i) {
+           for (int j = g.y - D; j <= g.y + D; ++j) {
                if (i >= 0 && i < w_ && j >= 0 && j < h_) {
-                   const Point P = grid_[i][j];
-
-                   if (P.valid_ && getDistance(P, point) < minDist)
-                       return true;
+                   const Point& P = grid_[j][i];
+                   if (P.valid_ && getDistance(P, point) < minDist) return true;
                }
            }
        }
 
        return false;
    }
-
-private:
-   int w_;
-   int h_;
-   float cellSize_;
-   std::vector<std::vector<Point>> grid_;
 };
 
+static std::random_device rd;          // Obtain a random number from hardware
+static std::mt19937 gen(rd());       // Seed the generator
+
+static float getRandF(float min, float max) {
+   std::uniform_real_distribution<> dis(0.0, max); // Define the range
+   return static_cast<float>(dis(gen));
+}
+
 static Point popRandom(std::vector<Point>& points) {
-   const int idx = static_cast<int>(ara::getRandF(0.f, points.size() - 1));
+   const int idx = static_cast<int>(getRandF(0.f, points.size() - 1));
    const Point p = points[idx];
    points.erase(points.begin() + idx);
    return p;
 }
 
 static Point generateRandomPointAround(const Point& p, float minDist) {
-   // start with non-uniform distribution
-   const float R1 = ara::getRandF(0.f, 1.f);
-   const float R2 = ara::getRandF(0.f, 1.f);
+   const float R1 = getRandF(0.f, 1.f);
+   const float R2 = getRandF(0.f, 1.f);
 
-   // radius should be between MinDist and 2 * MinDist
    const float radius = minDist * (R1 + 1.0f);
+   const float angle = 2.f * static_cast<float>(M_PI) * R2;
 
-   // random angle
-   const float angle = 2 * 3.141592653589f * R2;
-
-   // the new point is generated around the point (x, y)
-   const float x = p.x + radius * cos(angle);
-   const float y = p.y + radius * sin(angle);
-
-   return Point(x, y);
+   return {p.x + radius * std::cos(angle), p.y + radius * std::sin(angle)};
 }
+
 
 /**
   Return a vector of generated points
@@ -156,81 +153,49 @@ static Point generateRandomPointAround(const Point& p, float minDist) {
   Circle  - 'true' to fill a circle, 'false' to fill a rectangle
   MinDist - minimal distance estimator, use negative value for default
 **/
-static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
-                                        bool isCircle = true,
-                                        uint32_t newPointsCount = 30,
-                                        float minDist = -1.0f) {
-   numPoints *= 2;
-
-   // if we want to generate a Poisson square shape, multiply the estimate number of points by PI/4 due to reduced shape area
-   if (!isCircle) {
-       const double Pi_4 = 0.785398163397448309616; // PI/4
-       numPoints = static_cast<int>(Pi_4 * numPoints);
-   }
-
+static std::vector<Point> generatePoissonPoints(uint32_t numPoints, bool isCircle = true,
+                                        uint32_t newPointsCount = 30, float minDist = -1.0f) {
    if (minDist < 0.0f) {
-       minDist = sqrt(float(numPoints)) / float(numPoints);
+       minDist = std::sqrt(static_cast<float>(numPoints)) / static_cast<float>(numPoints);
    }
 
-   std::vector<Point> samplePoints;
-   std::vector<Point> processList;
+   if (!numPoints) return {};
 
-   if (!numPoints)
-       return samplePoints;
-
-   // create the grid
-   const float cellSize = minDist / sqrt(2.0f);
-
-   const int gridW = (int)ceil(1.0f / cellSize);
-   const int gridH = (int)ceil(1.0f / cellSize);
+   const float cellSize = minDist / std::sqrt(2.0f);
+   const int gridW = static_cast<int>(std::ceil(1.0f / cellSize));
+   const int gridH = static_cast<int>(std::ceil(1.0f / cellSize));
 
    Grid grid(gridW, gridH, cellSize);
 
    Point firstPoint;
    do {
-       firstPoint = Point(ara::getRandF(0.f, 1.f), ara::getRandF(0.f, 1.f));
+       firstPoint.x = getRandF(0.f, 1.f);
+       firstPoint.y = getRandF(0.f, 1.f);
    } while (!(isCircle ? firstPoint.isInCircle() : firstPoint.isInRectangle()));
 
-   // update containers
-   processList.push_back(firstPoint);
-   samplePoints.push_back(firstPoint);
+   std::vector<Point> samplePoints{firstPoint};
+   std::deque<Point> processList{firstPoint};
+
    grid.insert(firstPoint);
 
-#if POISSON_PROGRESS_INDICATOR
-   size_t progress = 0;
-#endif
+   constexpr float pi_4 = 0.785398163397448309616; // PI/4
+   numPoints = isCircle ? numPoints : static_cast<int>(pi_4 * numPoints);
 
-   // generate new points for each point in the queue
-   while (!processList.empty() && samplePoints.size() <= numPoints) {
-#if POISSON_PROGRESS_INDICATOR
-       // a progress indicator, kind of
-       if ((samplePoints.size()) % 1000 == 0) {
-           const size_t newProgress = 200 * (samplePoints.size() + processList.size()) / numPoints;
-           if (newProgress != progress) {
-               progress = newProgress;
-               std::cout << ".";
-           }
-       }
-#endif // POISSON_PROGRESS_INDICATOR
+   while (!processList.empty() && samplePoints.size() < numPoints) {
+       const Point point = processList.front();
+       processList.pop_front();
 
-       const Point point = popRandom(processList);
-
-       for (uint32_t i = 0; i < newPointsCount; i++) {
-           const Point newPoint = generateRandomPointAround(point, minDist);
-           const bool canFitPoint = isCircle ? newPoint.isInCircle() : newPoint.isInRectangle();
-
-           if (canFitPoint && !grid.isInNeighbourhood(newPoint, minDist, cellSize)) {
+       for (uint32_t i = 0; i < newPointsCount; ++i) {
+           auto newPoint = generateRandomPointAround(point, minDist);
+           if ((isCircle ? newPoint.isInCircle() : newPoint.isInRectangle())
+               && !grid.isInNeighbourhood(newPoint, minDist)
+           ) {
                processList.push_back(newPoint);
-               samplePoints.push_back(newPoint);
+               samplePoints.emplace_back(newPoint);
                grid.insert(newPoint);
-               continue;
            }
        }
    }
-
-#if POISSON_PROGRESS_INDICATOR
-   std::cout << std::endl << std::endl;
-#endif // POISSON_PROGRESS_INDICATOR
 
    return samplePoints;
 }
@@ -249,7 +214,6 @@ static Point sampleVogelDisk(uint32_t idx, uint32_t numPoints, float phi) {
 **/
 static std::vector<Point> generateVogelPoints(uint32_t numPoints, bool isCircle = true, float phi = 0.0f, Point center = Point(0.5f, 0.5f)) {
    std::vector<Point> samplePoints;
-
    samplePoints.reserve(numPoints);
 
    const uint32_t numSamples = isCircle ? 4 * numPoints : numPoints;
@@ -271,7 +235,8 @@ static std::vector<Point> generateJitteredGridPoints(uint32_t numPoints,
                                              Point center = Point(0.5f, 0.5f)) {
    std::vector<Point> samplePoints;
    samplePoints.reserve(numPoints);
-   const uint32_t gridSize = uint32_t(sqrt(numPoints));
+
+   const auto gridSize = uint32_t(sqrt(numPoints));
 
    for (uint32_t x = 0; x != gridSize; x++) {
        for (uint32_t y = 0; y != gridSize; y++) {
@@ -282,8 +247,10 @@ static std::vector<Point> generateJitteredGridPoints(uint32_t numPoints,
                // generate a new point until it is within the boundaries
            } while (!p.isInRectangle());
 
-           if (isCircle && !p.isInCircle()){
-               continue;
+           if (isCircle) {
+               if (!p.isInCircle()) {
+                   continue;
+               }
            }
 
            samplePoints.push_back(p);
@@ -296,7 +263,7 @@ static std::vector<Point> generateJitteredGridPoints(uint32_t numPoints,
 namespace {
 
 // http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
-float radicalInverse_VdC(uint32_t bits) {
+static float radicalInverse_VdC(uint32_t bits) {
    bits = (bits << 16u) | (bits >> 16u);
    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
@@ -305,8 +272,8 @@ float radicalInverse_VdC(uint32_t bits) {
    return float(float(bits) * 2.3283064365386963e-10); // / 0x100000000
 }
 
-Point hammersley2d(uint32_t i, uint32_t N) {
-   return Point(float(i) / float(N), radicalInverse_VdC(i));
+static Point hammersley2d(uint32_t i, uint32_t N) {
+   return {float(i) / float(N), radicalInverse_VdC(i)};
 }
 
 } // namespace
@@ -316,14 +283,10 @@ Point hammersley2d(uint32_t i, uint32_t N) {
 **/
 static std::vector<Point> generateHammersleyPoints(uint32_t numPoints) {
    std::vector<Point> samplePoints;
-
    samplePoints.reserve(numPoints);
-
-   const uint32_t gridSize = uint32_t(sqrt(numPoints));
 
    for (uint32_t i = 0; i != numPoints; i++) {
        Point p = hammersley2d(i, numPoints);
-
        samplePoints.push_back(p);
    }
    return samplePoints;
