@@ -55,8 +55,8 @@ TEST(Utilities_UnitTests, MappedFileTest) {
 
 TEST(Utilities_UnitTests, AssetLoaderMappedBinaryTest) {
     auto memPtr = AssetLoader::mapAssetToMem(filesystem::path("test") / "small_data.bin");
-    EXPECT_EQ(std::get<size_t>(memPtr), 5);
-    checkBinData(std::get<const uint8_t*>(memPtr));
+    EXPECT_EQ(memPtr.size, 5);
+    checkBinData(memPtr.data);
     AssetLoader::unMapAsset(memPtr);
 }
 

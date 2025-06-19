@@ -20,12 +20,17 @@
 #include <util_common.h>
 
 using memRet = std::pair<size_t, std::filesystem::file_time_type>;
-using memPtr = std::tuple<const uint8_t*, size_t, std::filesystem::file_time_type>;
 
 namespace ara {
 
 class AssetLoader {
 public:
+    struct memPtr {
+        const uint8_t* data{};
+        size_t size{};
+        std::filesystem::file_time_type modTime{};
+    };
+
     template<typename T>
     requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
     static std::string loadAssetAsString(const T& path);
@@ -71,7 +76,7 @@ template std::string AssetLoader::loadAssetAsString<std::filesystem::path>(const
 template memRet AssetLoader::loadAssetToMem<std::string>(std::vector<uint8_t>&, const std::string&);
 template memRet AssetLoader::loadAssetToMem<std::filesystem::path>(std::vector<uint8_t>& buf, const std::filesystem::path&);
 
-template memPtr AssetLoader::mapAssetToMem<std::string>(const std::string&);
-template memPtr AssetLoader::mapAssetToMem<std::filesystem::path>(const std::filesystem::path&);
+template AssetLoader::memPtr AssetLoader::mapAssetToMem<std::string>(const std::string&);
+template AssetLoader::memPtr AssetLoader::mapAssetToMem<std::filesystem::path>(const std::filesystem::path&);
 
 }

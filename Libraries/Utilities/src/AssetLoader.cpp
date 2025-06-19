@@ -101,7 +101,7 @@ memRet AssetLoader::loadAssetToMem(vector<uint8_t>& buf, const T& path) {
 
 template<typename T>
 requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
-memPtr AssetLoader::mapAssetToMem(const T& path) {
+AssetLoader::memPtr AssetLoader::mapAssetToMem(const T& path) {
     auto compPath = resolveAssetPath(path);
 #ifdef ARA_USE_CMRC
     auto compPathStr = getSanitizedAssetPath(compPath);
@@ -126,7 +126,7 @@ memPtr AssetLoader::mapAssetToMem(const T& path) {
 
 void AssetLoader::unMapAsset(memPtr& memPtr) {
 #ifndef ARA_USE_CMRC
-    MappedFile::unmap(std::get<const uint8_t*>(memPtr), std::get<size_t>(memPtr));
+    MappedFile::unmap(memPtr.data, memPtr.size);
 #endif
 }
 
