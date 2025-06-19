@@ -47,10 +47,13 @@ TEST(Utilities_UnitTests, AssetLoaderBinaryTest) {
 }
 
 TEST(Utilities_UnitTests, MappedFileTest) {
+#ifdef ARA_USE_CMRC
+#else
     MappedFile mf((filesystem::path("resdata") / "test" / "small_data.bin").string());
     EXPECT_EQ(mf.size(), 5);
     checkBinData(mf());
     mf.unmap();
+#endif
 }
 
 TEST(Utilities_UnitTests, AssetLoaderMappedBinaryTest) {

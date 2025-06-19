@@ -60,10 +60,10 @@ void AssetImageSource::loadImg(int mimMapLevel) {
 
 #ifdef ARA_USE_CMRC
     auto ret = m_assetManager->loadResource(this, m_imgPath);
-    if (std::get<size_t>(ret) <= 0) {
+    if (ret.second <= 0) {
         throw runtime_error("Cannot load resource " + m_imgPath);
     }
-    m_texture->loadFromMemPtr((void*)std::get<const char*>(ret), std::get<size_t>(ret), GL_TEXTURE_2D, mimMapLevel);
+    m_texture->loadFromMemPtr((void*)ret.first, std::get<size_t>(ret), GL_TEXTURE_2D, mimMapLevel);
 #else
     std::vector<uint8_t> resdata;
     if (m_assetManager->loadResource(this, resdata, m_imgPath) <= 0) {

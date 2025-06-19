@@ -117,7 +117,7 @@ AssetLoader::memPtr AssetLoader::mapAssetToMem(const T& path) {
         return { nullptr, 0, std::filesystem::file_time_type{} };
     }
 
-    return { file.begin(), file.size(), std::filesystem::file_time_type{} };
+    return { (uint8_t*)file.begin(), file.size(), std::filesystem::file_time_type{} };
 #else
     MappedFile mf(compPath.string());
     return { mf(), mf.size(), std::filesystem::file_time_type{} };

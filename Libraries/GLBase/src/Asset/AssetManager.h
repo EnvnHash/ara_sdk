@@ -100,7 +100,7 @@ public:
     AssetImageBase *img(const std::string& path) const;
 
 #ifdef ARA_USE_CMRC
-    std::pair<const char*, size_t> loadResource(ResNode *node, const std::string& path);
+    std::pair<const uint8_t*, size_t> loadResource(ResNode *node, const std::string& path);
 #endif
 
     [[nodiscard]] bool isOK() const { return m_loadState; }

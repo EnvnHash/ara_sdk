@@ -158,7 +158,7 @@ size_t AssetManager::loadResource(ResNode *node, std::vector<uint8_t> &dest, con
 }
 
 #ifdef ARA_USE_CMRC
-std::pair<const char*, size_t> AssetManager::loadResource(ResNode *node, const string& path) {
+std::pair<const uint8_t*, size_t> AssetManager::loadResource(ResNode *node, const string& path) {
     if (node) {
         e_file_bind eb{node->getPath(), path};
         if (ranges::find_if(m_fileBind, [&](const e_file_bind &e) {
@@ -168,10 +168,10 @@ std::pair<const char*, size_t> AssetManager::loadResource(ResNode *node, const s
         }
     }
 
-    auto ts = AssetLoader::loadAssetToMem(path);
-    m_resFolderFiles[path] = std::get<std::filesystem::file_time_type>(ts);
+    auto ts = AssetLoader::mapAssetToMem(path);
+    m_resFolderFiles[path] = ts.modTime;
 
-    return { std::get<const char*>(ts), std::get<size_t>(ts) };
+    return { ts.data, ts.size };
 }
 #endif
 
