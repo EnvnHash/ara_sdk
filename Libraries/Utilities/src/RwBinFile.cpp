@@ -21,7 +21,7 @@ namespace ara {
 std::size_t ReadBinFile(std::vector<uint8_t> &vp, const std::filesystem::path& filepath) {
     vp.clear();
 
-    if (!std::filesystem::exists(filepath)) {
+    if (!exists(filepath)) {
         LOGE << "ReadBinFile Error, " << filepath.string() << " does not exist";
         return false;
     }

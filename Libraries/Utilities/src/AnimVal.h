@@ -36,10 +36,10 @@ public:
 template <typename T>
 class AnimVal : public AnimValBase {
 public:
-    AnimVal() : m_run(false), m_delay(0.0) {}
+    AnimVal() = default;
 
     explicit AnimVal(AnimFunc func, std::function<void()> endFunc = nullptr)
-        : m_func(func), m_run(false), m_delay(0.0), m_endFunc(std::move(endFunc)) {}
+        : m_func(func), m_endFunc(std::move(endFunc)) {}
 
     void update() override {
         if (m_run) {
@@ -117,7 +117,7 @@ public:
         return m_blendVal;
     }
 
-    bool isWaiting() const {
+    [[nodiscard]] bool isWaiting() const {
         return m_perc == 0.f;
     }
 

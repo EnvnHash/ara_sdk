@@ -34,7 +34,7 @@ public:
     void postAdd(CarrouselSlide* sl);
 
     void rotate(float pos);
-    void rotateAllOnScreen(float pos);
+    void rotateAllOnScreen(float pos) const;
     void rotateFitOneOnScreen(float pos);
 
     bool isRotating();

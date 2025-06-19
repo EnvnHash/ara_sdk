@@ -9,11 +9,11 @@ using namespace glm;
 
 namespace ara {
 
-CarrouselSlide::CarrouselSlide() : Div() {
+CarrouselSlide::CarrouselSlide() {
     setName(getTypeName<CarrouselSlide>());
 }
 
-Carrousel::Carrousel() : Div() {
+Carrousel::Carrousel() {
     setName(getTypeName<Carrousel>());
     initFixedChildren();
 }
@@ -21,15 +21,19 @@ Carrousel::Carrousel() : Div() {
 void Carrousel::initFixedChildren() {
     m_transTime = 0.5;
 
-    m_content = addChild<Div>();
-    m_content->setName("CarouselContent");
-    m_content->setAlign(ara::align::center, ara::valign::center);
+    m_content = addChild<Div>({
+        .name = "CarouselContent",
+        .alignX = align::center,
+        .alignY = valign::center,
+    });
 
-    m_selector = addChild<Div>();
-    m_selector->setBorderColor(0.f, 0.f, 0.f, 0.8f);
-    m_selector->setBorderWidth(1);
-    m_selector->setBorderRadius(6);
-    m_selector->setAlign(align::center, valign::center);
+    m_selector = addChild<Div>({
+        .alignX = align::center,
+        .alignY = valign::center,
+        .borderWidth = 1,
+        .borderRadius = 6,
+        .borderColor = vec4{0.f, 0.f, 0.f, 0.8f},
+    });
 }
 
 void Carrousel::mouseDrag(hidData& data) {
@@ -42,7 +46,6 @@ void Carrousel::mouseDrag(hidData& data) {
             m_moveToIdx = std::min(m_currentIdx + (data.movedPix.x < 1 ? 1 : -1), static_cast<int32_t>(m_slides.size()) -1);
             if (m_moveToIdx != m_currentIdx) {
                 show(m_moveToIdx);
-                getSharedRes()->reqRedraw();
             }
 
             m_getDragDir = false;
@@ -78,7 +81,7 @@ CarrouselSlide* Carrousel::add(const UINodePars& pars) {
 }
 
 void Carrousel::postAdd(CarrouselSlide* sl) {
-    sl->setAlign(ara::align::center, ara::valign::center);
+    sl->setAlign(align::center, valign::center);
     sl->setBorderRadius(20);
     sl->setBorderWidth(10);
     rotate(0.f);
@@ -122,14 +125,14 @@ void Carrousel::rotate(float pos) {
     m_dragStartPos = pos;
 }
 
-void Carrousel::rotateAllOnScreen(float pos) {
+void Carrousel::rotateAllOnScreen(float pos) const {
     int i = 0;
     float relSlideWidth = 1.f / static_cast<float>(m_slides.size());
     m_selector->setWidth(relSlideWidth);
 
     for (const auto& slid : m_slides) {
         slid->setSize(relSlideWidth, 1.f);
-        slid->setX((static_cast<float>(i) - (static_cast<float>(m_slides.size() -1) * pos)) * relSlideWidth);
+        slid->setX(static_cast<float>(i) - static_cast<float>(m_slides.size() - 1) * pos * relSlideWidth);
         i++;
     }
 }
@@ -141,10 +144,12 @@ void Carrousel::rotateFitOneOnScreen(float pos) {
     auto relSlideSize = vec2(absSlideSize) / m_contentSize;
 
     for (const auto& slid : m_slides) {
-        slid->setSize(relSlideSize.x, relSlideSize.y);
-        float slidOffs = static_cast<float>(i) * relSlideSize.x;
+        if (slid->getSize() != relSlideSize) {
+            slid->setSize(relSlideSize.x, relSlideSize.y);
+        }
+        auto slidOffs = static_cast<float>(i) * relSlideSize.x;
         slid->setX(slidOffs - pos * relSlideSize.x * static_cast<float>(m_slides.size() -1));
-        i++;
+        ++i;
     }
 }
 
@@ -161,7 +166,7 @@ bool Carrousel::isCurrent(CarrouselSlide* sl) {
 }
 
 glm::ivec2 Carrousel::getAbsSlideSize() {
-    auto cs = getContentSize();
+    const auto cs = getContentSize();
     return ivec2(cs) - m_inset;
 }
 

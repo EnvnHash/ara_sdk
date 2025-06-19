@@ -63,7 +63,7 @@ public:
     enum class cbType : int { preChange=0, postChange, preAddChild, postAddChild, preRemoveChild, postRemoveChild, Size };
 
     Node();
-    ~Node();
+    virtual ~Node();
 
     template <class T>
     T& push() {

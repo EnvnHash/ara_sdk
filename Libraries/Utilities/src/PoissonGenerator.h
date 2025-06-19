@@ -63,8 +63,8 @@ struct Point {
    float y = 0.0f;
    bool valid_ = false;
 
-   constexpr bool isInRectangle() const { return x >= 0 && y >= 0 && x <= 1 && y <= 1; }
-   constexpr bool isInCircle() const {
+   [[nodiscard]] constexpr bool isInRectangle() const { return x >= 0 && y >= 0 && x <= 1 && y <= 1; }
+   [[nodiscard]] constexpr bool isInCircle() const {
        const float fx = x - 0.5f;
        const float fy = y - 0.5f;
        return (fx * fx + fy * fy) <= 0.25f;
@@ -100,7 +100,7 @@ struct Grid {
        }
    }
 
-   bool isInNeighbourhood(const Point& point, float minDist) const {
+   [[nodiscard]] bool isInNeighbourhood(const Point& point, float minDist) const {
        const GridPoint g = imageToGrid(point, cellSize_);
 
        constexpr int D = 5;
@@ -155,7 +155,7 @@ static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
                                         float minDist = -1.0f) {
    // if we want to generate a Poisson square shape, multiply the estimate number of points by PI/4 due to reduced shape area
    if (!isCircle) {
-       const double Pi_4 = 0.785398163397448309616; // PI/4
+       constexpr double Pi_4 = 0.785398163397448309616; // PI/4
        numPoints = static_cast<int>(Pi_4 * numPoints);
    }
 
@@ -225,12 +225,12 @@ static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
 }
 
 static Point sampleVogelDisk(uint32_t idx, uint32_t numPoints, float phi) {
-   const float kGoldenAngle = 2.4f;
+   constexpr float kGoldenAngle = 2.4f;
 
    const float r = sqrtf(float(idx) + 0.5f) / sqrtf(float(numPoints));
-   const float theta = idx * kGoldenAngle + phi;
+   const float theta = static_cast<float>(idx) * kGoldenAngle + phi;
 
-   return Point(r * cosf(theta), r * sinf(theta));
+   return {r * cosf(theta), r * sinf(theta)};
 }
 
 /**
@@ -267,7 +267,7 @@ static std::vector<Point> generateJitteredGridPoints(uint32_t numPoints,
            Point p;
            do {
                const Point offs = generateRandomPointAround(Point(0, 0), jitterRadius) - center + Point(0.5f, 0.5f);
-               p = Point(float(x) / gridSize, float(y) / gridSize) + offs;
+               p = Point(static_cast<float>(x) / static_cast<float>(gridSize), static_cast<float>(y) / static_cast<float>(gridSize)) + offs;
                // generate a new point until it is within the boundaries
            } while (!p.isInRectangle());
 
@@ -282,8 +282,6 @@ static std::vector<Point> generateJitteredGridPoints(uint32_t numPoints,
    return samplePoints;
 }
 
-namespace {
-
 // http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
 static float radicalInverse_VdC(uint32_t bits) {
    bits = (bits << 16u) | (bits >> 16u);
@@ -297,8 +295,6 @@ static float radicalInverse_VdC(uint32_t bits) {
 static Point hammersley2d(uint32_t i, uint32_t N) {
    return {float(i) / float(N), radicalInverse_VdC(i)};
 }
-
-} // namespace
 
 /**
   Return a vector of generated points
