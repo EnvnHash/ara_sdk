@@ -30,6 +30,15 @@ using memRet = std::pair<size_t, std::filesystem::file_time_type>;
 
 namespace ara {
 
+template std::string AssetLoader::loadAssetAsString<std::string>(const std::string&);
+template std::string AssetLoader::loadAssetAsString<std::filesystem::path>(const std::filesystem::path&);
+
+template memRet AssetLoader::loadAssetToMem<std::string>(std::vector<uint8_t>&, const std::string&);
+template memRet AssetLoader::loadAssetToMem<std::filesystem::path>(std::vector<uint8_t>& buf, const std::filesystem::path&);
+
+template AssetLoader::memPtr AssetLoader::mapAssetToMem<std::string>(const std::string&);
+template AssetLoader::memPtr AssetLoader::mapAssetToMem<std::filesystem::path>(const std::filesystem::path&);
+
 template<typename T>
 requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
 string AssetLoader::loadAssetAsString(const T& path) {

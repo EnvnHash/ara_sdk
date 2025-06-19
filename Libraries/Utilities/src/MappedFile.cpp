@@ -86,7 +86,7 @@ std::pair<uint8_t*, size_t> MappedFile::mapFileMmap(const std::string& path) {
 #ifdef HAVE_MMAP
   	int fd{};
     try {
-		fd = open(path, O_RDONLY);
+		fd = open(path.c_str(), O_RDONLY);
 		if (fd < 0) {
            throw("MappedFile::mapFileWin Error: open failed");
 		}
@@ -98,7 +98,7 @@ std::pair<uint8_t*, size_t> MappedFile::mapFileMmap(const std::string& path) {
 		}
 
 		// we don't need to lseek again as mmap ignores the offset
-		data = static_cast<uint8_t*>(mmap(nullptr, sz, PROT_READ, MAP_SHARED, fd, 0));
+		auto data = static_cast<uint8_t*>(mmap(nullptr, sz, PROT_READ, MAP_SHARED, fd, 0));
 		if (data == MAP_FAILED) {
 			data = nullptr;
 		}
@@ -164,7 +164,7 @@ void MappedFile::unmap(const uint8_t* data, size_t sz) {
 #ifdef _WIN32
 	UnmapViewOfFile(data);
 #elif HAVE_MMAP
-	munmap(data, sz);
+	munmap((void*)data, sz);
 #else /* !_WIN32 && !HAVE_MMAP */
 	free(data);
 #endif /* !_WIN32 && !HAVE_MMAP */
