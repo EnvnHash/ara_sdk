@@ -19,8 +19,6 @@
 #include <Utils/Texture.h>
 #include <WindowManagement/GLFWWindow.h>
 
-#include <utility>
-
 using namespace std;
 using namespace glm;
 
