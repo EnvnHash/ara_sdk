@@ -66,7 +66,7 @@ public:
     void addContext(void *ctx);
     void destroyCtx();
     void removeContext(void *ctx);
-    void shareCtx();
+    void shareCtx() const;
     void checkCapabilities();
     void initToThisCtx();
     void destroy(bool terminateGLFW = true);

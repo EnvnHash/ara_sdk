@@ -350,7 +350,6 @@ void GLFWWindow::initLibrary() {
 
 void GLFWWindow::runLoop(const std::function<bool(double, double, int)>& f, bool eventBased, bool terminateGLFW,
                          bool destroyWinOnExit) {
-    bool unlock      = false;
     m_drawFunc       = f;
     m_run            = true;
     m_eventBasedLoop = eventBased;

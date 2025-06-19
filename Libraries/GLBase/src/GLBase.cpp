@@ -136,7 +136,7 @@ void GLBase::checkCapabilities() {
 
 #ifdef __APPLE__
     // on osx 10.15 intel HD 4000 there is a problem with mimap generation ...
-    // simply doesnt work so disable it by force
+    // simply doesn't work so disable it by force
     std::string renderer((char *)glGetString(GL_RENDERER));
     std::size_t found = renderer.find("Intel");
     if (found != std::string::npos) {
@@ -182,9 +182,9 @@ void GLBase::initResources() {
     if (!g_assetManager) {
         g_assetManager = make_unique<AssetManager>(g_resRootPath, "res_comp", this);
 
-        if (g_assetManager->Load(g_resFile)) {
+        if (g_assetManager->load(g_resFile)) {
             LOG << "[OK] GLBase Resource file " << g_resRootPath + "/" + g_resFile << " loaded. "
-              << (g_assetManager->usingComp() ? " Used compiled binary asset file" : "");
+              << (AssetManager::usingComp() ? " Used compiled binary asset file" : "");
         } else {
             for (ResNode::e_error &err : g_assetManager->getRoot()->errList) {
                 LOGE << "Line " << err.lineIndex + 1 << " err:" << err.errorString;
@@ -201,7 +201,7 @@ void GLBase::initResources() {
 #endif
 
 #ifndef __ANDROID__
-        if (!g_assetManager->usingComp()) {
+        if (!AssetManager::usingComp()) {
             m_resUpdtRun = true;
 
             // start resources files update loop
@@ -223,14 +223,11 @@ void GLBase::initResources() {
 }
 
 void GLBase::checkResourceChanges() {
-    bool changed = g_assetManager->checkForChangesInFolderFiles();
-
-    if (changed) {
+    if (g_assetManager->checkForChangesInFolderFiles()) {
 #ifdef ARA_USE_GLFW
         // style updating must be sync with the gl loop
         // get the actually focused window and push the update to its glqueue
-        GLFWWindow *win = getWinMan()->getFocusedWin();
-        if (win) {
+        if (const auto win = getWinMan()->getFocusedWin()) {
             win->setGlCb([&] {
                 // Resources reside inside GLBase to not consume more memory
                 // than necessary threaded access to the resources is provided
@@ -419,11 +416,11 @@ void GLBase::createCtx() {
         return;
     }
 
-    // create an message window for receiving the windows messages from the core
+    // create a message window for receiving the windows messages from the core
     // (WS_VISIBLE not set and no ShowWindow() call)
     string name = "GLBaseWin";
     m_hWnd      = CreateWindowA(m_wglClassName.c_str(), name.c_str(), WS_POPUPWINDOW, 0, 0, 10,
-                                10,  // ..anything, the window is invisible
+                                10,  // ...anything, the window is invisible
                                 nullptr, nullptr, hInstance, nullptr);
 
     if (!m_hWnd) throw std::exception("CreateWindow failed");
@@ -496,11 +493,11 @@ LRESULT CALLBACK m_glbase.WGLMessageHandler(HWND hWnd, UINT message, WPARAM wPar
 }
 #endif
 
-void GLBase::shareCtx() {
+void GLBase::shareCtx() const {
     if (!g_contexts.empty()) {
         auto c = getGLCtx();
 #ifdef _WIN32
-        wglShareLists((HGLRC)g_contexts.front(), (HGLRC)c.ctx);
+        wglShareLists(static_cast<HGLRC>(g_contexts.front()), static_cast<HGLRC>(c.ctx));
 #endif
     }
 }

@@ -35,11 +35,11 @@ public:
         int         size;
     };
 
-    AssetManager(const std::string &data_root_path, const std::string &compilation_filepath, GLBase *glbasconst);
+    AssetManager(const std::string &data_root_path, const std::string &compilation_filepath, GLBase *glbase);
     ~AssetManager() { clearGLFonts(); }
 
-    bool     Load(const std::string &path);
-    bool     Reload();
+    bool     load(const std::string &path);
+    bool     reload();
     void     insertPreAndPostContent(std::vector<uint8_t>& vp);
 
     [[nodiscard]] ResNode *getRoot() const { return m_rootNode.get(); }
@@ -97,7 +97,7 @@ public:
     // resources
     size_t          loadResource(ResNode *node, std::vector<uint8_t> &dest, const std::string& path);
     Font           *loadFont(const std::string& path, int size, float pixRatio);
-    AssetImageBase *img(const std::string& path);
+    AssetImageBase *img(const std::string& path) const;
 
 #ifdef ARA_USE_CMRC
     std::pair<const char*, size_t> loadResource(ResNode *node, const std::string& path);

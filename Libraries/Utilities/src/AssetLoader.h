@@ -20,21 +20,25 @@
 #include <util_common.h>
 
 using memRet = std::pair<size_t, std::filesystem::file_time_type>;
-using memPtr = std::tuple<const char*, size_t, std::filesystem::file_time_type>;
+using memPtr = std::tuple<const uint8_t*, size_t, std::filesystem::file_time_type>;
 
 namespace ara {
 
 class AssetLoader {
 public:
-    static std::string loadAssetAsString(const std::filesystem::path& path);
-    static std::string loadAssetAsString(const std::string& path);
+    template<typename T>
+    requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
+    static std::string loadAssetAsString(const T& path);
 
-#ifdef ARA_USE_CMRC
-    static memPtr loadAssetToMem(const std::string& path);
-#endif
+    template<typename T>
+    requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
+    static memRet loadAssetToMem(std::vector<uint8_t>& buf, const T& path);
 
-    static memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::filesystem::path& path);
-    static memRet loadAssetToMem(std::vector<uint8_t>& buf, const std::string& path);
+    template<typename T>
+    requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
+    static memPtr mapAssetToMem(const T& path);
+
+    static void unMapAsset(memPtr& memPtr);
 
     static std::string getSanitizedAssetPath(const std::filesystem::path& p);
 
@@ -46,7 +50,7 @@ public:
         return m_assetPath / p;
     }
 
-    std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
+    static std::filesystem::file_time_type getLastFileUpdate(const std::string& path);
     static std::filesystem::path& getAssetPath() { return m_assetPath; }
 
     static bool usingCmrc() {
@@ -60,5 +64,14 @@ public:
 private:
     static inline std::filesystem::path m_assetPath;
 };
+
+template std::string AssetLoader::loadAssetAsString<std::string>(const std::string&);
+template std::string AssetLoader::loadAssetAsString<std::filesystem::path>(const std::filesystem::path&);
+
+template memRet AssetLoader::loadAssetToMem<std::string>(std::vector<uint8_t>&, const std::string&);
+template memRet AssetLoader::loadAssetToMem<std::filesystem::path>(std::vector<uint8_t>& buf, const std::filesystem::path&);
+
+template memPtr AssetLoader::mapAssetToMem<std::string>(const std::string&);
+template memPtr AssetLoader::mapAssetToMem<std::filesystem::path>(const std::filesystem::path&);
 
 }

@@ -96,7 +96,7 @@ public:
     template<typename T>
     requires std::is_integral_v<T> || std::is_floating_point_v<T>
     void setProp(Property<T> &prop) {
-        setOpt(UIEdit::single_line | (std::is_floating_point_v<T> ? UIEdit::num_fp : UIEdit::num_int));
+        setOpt(single_line | (std::is_floating_point_v<T> ? num_fp : num_int));
 
         onChanged<T>(prop, [this](const std::any &val) { setText(std::to_string(std::any_cast<T>(val))); });
         addEnterCb([&prop](const std::string &txt) {

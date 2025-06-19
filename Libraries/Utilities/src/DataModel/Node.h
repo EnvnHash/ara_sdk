@@ -31,8 +31,7 @@ public:
     NodeFactory(const NodeFactory&) = delete;
 
     [[nodiscard]] std::shared_ptr<Node> create(const std::string& className) const {
-        auto it = m_creators.find(className);
-        if (it != m_creators.end()) {
+        if (const auto it = m_creators.find(className); it != m_creators.end()) {
             return it->second();
         }
         return nullptr;
@@ -120,7 +119,7 @@ public:
     void setTypeName() {
         signalChange(cbType::preChange);
         {
-            std::unique_lock<std::mutex> l(m_mtx);
+            std::unique_lock l(m_mtx);
             setTypeName(ara::getTypeName<T>());
         }
         signalChange(cbType::postChange);
@@ -129,7 +128,7 @@ public:
     Node* findParentByType(const std::string& typeStr) {
         Node* par = parent();
         {
-            std::unique_lock<std::mutex> l(m_mtx);
+            std::unique_lock l(m_mtx);
             while (par && par->typeName() != typeStr) {
                 par = par->parent();
             }
@@ -140,7 +139,7 @@ public:
     std::deque<Node*> findChildrenByType(const std::string& typeStr) {
         std::deque<Node*> outList;
         {
-            std::unique_lock<std::mutex> l(m_mtx);
+            std::unique_lock l(m_mtx);
             iterateChildren(*this, [&outList, &typeStr] (Node& node) {
                 if (node.typeName() == typeStr) {
                     outList.emplace_back(&node);
@@ -153,9 +152,9 @@ public:
     std::deque<Node*> findChildrenByTypes(const std::list<std::string>& typeStrList) {
         std::deque<Node*> outList;
         {
-            std::unique_lock<std::mutex> l(m_mtx);
+            std::unique_lock l(m_mtx);
             iterateChildren(*this, [&outList, &typeStrList] (Node& node) {
-                auto res = std::find_if(typeStrList.begin(), typeStrList.end(), [&node](auto& it){
+                auto res = std::ranges::find_if(typeStrList, [&node](auto& it){
                     return it == node.typeName();
                 });
                 if (res != typeStrList.end()) {

@@ -287,21 +287,21 @@ public:
                          const std::function<void*(const std::unique_ptr<UINode>&, void*)>& f) {
         result = f(node, result);
         for (const auto& it : node->getChildren()) {
-            UINode::itrNodes(it, result, f);
+            itrNodes(it, result, f);
         }
     }
 
     static void itrNodes(const std::unique_ptr<UINode>& node, const std::function<void(const std::unique_ptr<UINode>&)>& f) {
         f(node);
         for (const auto& it : node->getChildren()) {
-            UINode::itrNodes(it, f);
+            itrNodes(it, f);
         }
     }
 
     static void itrNodes(UINode* node, const std::function<void(UINode*)>& f)  {
         f(node);
         for (auto& it : node->getChildren()) {
-            UINode::itrNodes(it.get(), f);
+            itrNodes(it.get(), f);
         }
     }
 

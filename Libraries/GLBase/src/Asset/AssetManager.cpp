@@ -26,14 +26,14 @@ namespace ara {
 
 AssetManager::AssetManager(const string &data_root_path, const string &compilation_filepath, GLBase *glbase)
     : m_glbase(glbase) {
-    m_assetLoader.setAssetPath(data_root_path);
+    ara::AssetLoader::setAssetPath(data_root_path);
     m_fontList.setGlbase(glbase);
 
     m_rootNode = std::make_unique<ResNode>("root", m_glbase);
     m_rootNode->setAssetManager(this);
 }
 
-bool AssetManager::Load(const string &path) {
+bool AssetManager::load(const string &path) {
     SrcFile sfile(m_glbase);
 
     m_loadState   = true;
@@ -59,7 +59,7 @@ bool AssetManager::Load(const string &path) {
             }
 
             // get fonts
-            if (auto fontsNode = findNode("fonts")) {
+            if (const auto fontsNode = findNode("fonts")) {
                 for (const auto &f : fontsNode->m_node) {
                     m_fontLUT.insert({f->m_name, e_font_lut{f->m_value, 20}});
                 }
@@ -77,7 +77,7 @@ bool AssetManager::Load(const string &path) {
 }
 
 bool AssetManager::getvalue(string &dest, const string &path) {
-    auto node = findNode<AssetFont>(path);
+    const auto node = findNode<AssetFont>(path);
     if (!node) {
         return false;
     }
@@ -86,8 +86,8 @@ bool AssetManager::getvalue(string &dest, const string &path) {
     return true;
 }
 
-bool AssetManager::getvalue(string &dest, const string &path, int index) {
-    auto node = findNode<AssetFont>(path);
+bool AssetManager::getvalue(string &dest, const string &path, const int index) {
+    const auto node = findNode<AssetFont>(path);
     if (!node) {
         return false;
     }
@@ -103,17 +103,16 @@ bool AssetManager::getvalue(string &dest, const string &path, int index) {
 }
 
 float *AssetManager::color(const string& path) {
-    auto c = findNode<AssetColor>(path);
+    const auto c = findNode<AssetColor>(path);
     return c == nullptr ? default_Color : c->getColor4fv();
 }
 
-Font *AssetManager::font(const string& path, float pixRatio) {
-    auto font = findNode<AssetFont>(path);
+Font *AssetManager::font(const string& path, const float pixRatio) {
+    const auto font = findNode<AssetFont>(path);
     auto f    = getGLFont(string("Fonts/verdana.ttf"), 20, pixRatio);
 
     if (font != nullptr) {
-        Font *faux;
-        if ((faux = getGLFont(font->m_FontPath, font->m_Size, pixRatio)) != nullptr) {
+        if (Font *faux; (faux = getGLFont(font->m_FontPath, font->m_Size, pixRatio)) != nullptr) {
             f = faux;
         }
     }
@@ -121,17 +120,16 @@ Font *AssetManager::font(const string& path, float pixRatio) {
     return f;
 }
 
-Font *AssetManager::getGLFont(string font_type_path, int size, float pixRatio) {
+Font *AssetManager::getGLFont(string font_type_path, const int size, const float pixRatio) {
     if (m_fontLUT.contains(font_type_path)) {
-        e_font_lut f   = m_fontLUT[font_type_path];
-        font_type_path = f.path;
+        auto [path, size]   = m_fontLUT[font_type_path];
+        font_type_path = path;
     }
 
     auto f = m_fontList.find(font_type_path, size, pixRatio);
 
     if (!f) {
-        std::vector<uint8_t> vp;
-        if (loadResource(nullptr, vp, font_type_path) > 0) {
+        if (std::vector<uint8_t> vp; loadResource(nullptr, vp, font_type_path) > 0) {
             if ((f = m_fontList.add(vp, font_type_path, size, pixRatio)) != nullptr) {
                 return f;
             }
@@ -147,18 +145,16 @@ Font *AssetManager::getGLFont(string font_type_path, int size, float pixRatio) {
 
 size_t AssetManager::loadResource(ResNode *node, std::vector<uint8_t> &dest, const string& path) {
     if (node) {
-        e_file_bind eb{node->getPath(), path};
-        if (ranges::find_if(m_fileBind, [&](const e_file_bind &e) {
+        if (e_file_bind eb{node->getPath(), path}; ranges::find_if(m_fileBind, [&](const e_file_bind &e) {
                  return e.file_path == eb.file_path && e.node_path == eb.node_path;
              }) == m_fileBind.end()) {
             m_fileBind.emplace_back(eb);
         }
     }
 
-    auto ts = AssetLoader::loadAssetToMem(dest, path);
-    m_resFolderFiles[path] = ts.second;
-
-    return ts.first;
+    auto [sz, modTime] = AssetLoader::loadAssetToMem(dest, path);
+    m_resFolderFiles[path] = modTime;
+    return sz;
 }
 
 #ifdef ARA_USE_CMRC
@@ -179,7 +175,7 @@ std::pair<const char*, size_t> AssetManager::loadResource(ResNode *node, const s
 }
 #endif
 
-Font *AssetManager::loadFont(const string& path, int size, float pixRatio) {
+Font *AssetManager::loadFont(const string& path, const int size, const float pixRatio) {
     std::vector<uint8_t> v;
     if (loadResource(nullptr, v, path) <= 0) {
         return nullptr;
@@ -194,17 +190,16 @@ bool AssetManager::checkForChangesInFolderFiles() {
 
     filesystem::file_time_type ft;
     bool change = false;
-    auto dataPath= AssetLoader::getAssetPath();
+    const auto dataPath = AssetLoader::getAssetPath();
 
     // check for file deletion or modification
     for (auto &[filename, lastChangeTime] : m_resFolderFiles) {
-        auto p = dataPath / filename;
-        if (!filesystem::exists(p)) {
+        if (auto p = dataPath / filename; !exists(p)) {
             change = true;
             break;
         } else {
             try {
-                ft = filesystem::last_write_time(p);
+                ft = last_write_time(p);
             } catch (...) {
             }
 
@@ -217,7 +212,7 @@ bool AssetManager::checkForChangesInFolderFiles() {
     return change;
 }
 
-bool AssetManager::Reload() {
+bool AssetManager::reload() {
     ResNode::Ptr nroot;
 
     nroot = std::make_unique<ResNode>("root", m_glbase);
@@ -246,8 +241,8 @@ bool AssetManager::Reload() {
 
         if (err) {
             LOGE << "New resource file has errors";
-            for (ResNode::e_error &e : nroot->errList) {
-                LOGE << "Line " << std::to_string(e.lineIndex + 1) << " " << e.errorString;
+            for (auto &[lineIndex, errorString] : nroot->errList) {
+                LOGE << "Line " << std::to_string(lineIndex + 1) << " " << errorString;
             }
         }
     }
@@ -270,7 +265,7 @@ void AssetManager::callResSourceChange() {
         return;
     }
 
-    std::unique_lock<mutex> lock(m_updtMtx);
+    std::unique_lock lock(m_updtMtx);
     ResNode::Ptr nroot;
 
     nroot = std::make_unique<ResNode>("root", m_glbase);
@@ -295,8 +290,8 @@ void AssetManager::callResSourceChange() {
 
         if (err) {
             LOGE << "New resource file has errors";
-            for (ResNode::e_error &e : nroot->errList) {
-                LOGE << "Line " << std::to_string(e.lineIndex + 1) << " " << e.errorString;
+            for (auto &[lineIndex, errorString] : nroot->errList) {
+                LOGE << "Line " << std::to_string(lineIndex + 1) << " " << errorString;
             }
         }
     }
@@ -309,8 +304,7 @@ void AssetManager::callForChangesInFolderFiles() {
 
     // Check for new files...
     for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator("resdata")) {
-        auto fileStr = file.path().string();
-        if (!m_resFolderFiles.contains(fileStr)) {
+        if (auto fileStr = file.path().string(); !m_resFolderFiles.contains(fileStr)) {
             m_resFolderFiles[fileStr] = filesystem::last_write_time(file);
         }
     }
@@ -321,18 +315,18 @@ void AssetManager::callForChangesInFolderFiles() {
     do {
         keep = false;
 
-        for (auto &e : m_resFolderFiles) {
-            if (!filesystem::exists(e.first)) {
-                m_resFolderFiles.erase(e.first);
+        for (auto &[folder, modTime] : m_resFolderFiles) {
+            if (!filesystem::exists(folder)) {
+                m_resFolderFiles.erase(folder);
                 keep = true;
                 break;
             } else {
                 try {
-                    ft = filesystem::last_write_time(e.first);
+                    ft = filesystem::last_write_time(folder);
                 } catch (...) {
                 }
 
-                if (ft != e.second) {
+                if (ft != modTime) {
                     /*
                     auto str = e.first.path().string();
                     std::replace(str.begin(), str.end(), '\\', '/');
@@ -346,7 +340,7 @@ void AssetManager::callForChangesInFolderFiles() {
     } while (keep);
 }
 
-void AssetManager::propagateFileChange(bool deleted, const string &fpath) {
+void AssetManager::propagateFileChange(const bool deleted, const string &fpath) {
     if (usingComp()) {
         return;
     }
@@ -354,9 +348,9 @@ void AssetManager::propagateFileChange(bool deleted, const string &fpath) {
     ResNode *node;
     LOG << "PROPAGATE " << fpath;
 
-    for (e_file_bind &fb : m_fileBind) {
-        if (fb.file_path == fpath) {
-            if ((node = findNode(fb.node_path)) != nullptr) {
+    for (auto &[node_path, file_path] : m_fileBind) {
+        if (file_path == fpath) {
+            if ((node = findNode(node_path)) != nullptr) {
                 LOG << "propagate to " << fpath;
                 node->onResourceChange(deleted, fpath);
             }
@@ -364,19 +358,19 @@ void AssetManager::propagateFileChange(bool deleted, const string &fpath) {
     }
 }
 
-AssetImageBase *AssetManager::img(const string& path) {
+AssetImageBase *AssetManager::img(const string& path) const {
     auto node = findNode(path);
     return !node || !(typeid(node[0]) == typeid(AssetImageSource)
         || typeid(node[0]) == typeid(AssetImageSection)) ? nullptr : dynamic_cast<AssetImageBase *>(node);
 }
 
 std::string AssetManager::value(const std::string &path) {
-    auto node = findNode<AssetFont>(path);
+    const auto node = findNode<AssetFont>(path);
     return node ? node->m_value : std::string{};
 }
 
 std::string AssetManager::value(const std::string &path, const std::string& def) {
-    auto node = findNode<AssetFont>(path);
+    const auto node = findNode<AssetFont>(path);
     return node ? node->m_value : std::string{};
 }
 

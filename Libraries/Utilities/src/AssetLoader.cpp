@@ -18,6 +18,7 @@
 #include <AssetLoader.h>
 #include <RwBinFile.h>
 #include <string_utils.h>
+#include <MappedFile.h>
 
 #ifdef ARA_USE_CMRC
 #include <cmrc/cmrc.hpp>
@@ -29,11 +30,9 @@ using memRet = std::pair<size_t, std::filesystem::file_time_type>;
 
 namespace ara {
 
-string AssetLoader::loadAssetAsString(const filesystem::path& path) {
-    return loadAssetAsString(path.string());
-}
-
-string AssetLoader::loadAssetAsString(const string& path) {
+template<typename T>
+requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
+string AssetLoader::loadAssetAsString(const T& path) {
     auto compPath = resolveAssetPath(path);
     try {
 #ifdef ARA_USE_CMRC
@@ -67,11 +66,9 @@ string AssetLoader::loadAssetAsString(const string& path) {
     return {};
 }
 
-memRet AssetLoader::loadAssetToMem(vector<uint8_t>& buf, const filesystem::path& path) {
-    return loadAssetToMem(buf, path.string());
-}
-
-memRet AssetLoader::loadAssetToMem(vector<uint8_t>& buf, const string& path) {
+template<typename T>
+requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
+memRet AssetLoader::loadAssetToMem(vector<uint8_t>& buf, const T& path) {
     auto compPath = resolveAssetPath(path);
 #ifdef ARA_USE_CMRC
     buf.clear();
@@ -102,9 +99,11 @@ memRet AssetLoader::loadAssetToMem(vector<uint8_t>& buf, const string& path) {
 #endif
 }
 
-#ifdef ARA_USE_CMRC
-memPtr AssetLoader::loadAssetToMem(const string& path) {
+template<typename T>
+requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
+memPtr AssetLoader::mapAssetToMem(const T& path) {
     auto compPath = resolveAssetPath(path);
+#ifdef ARA_USE_CMRC
     auto compPathStr = getSanitizedAssetPath(compPath);
     auto fs = cmrc::ara::get_filesystem();
 
@@ -119,8 +118,17 @@ memPtr AssetLoader::loadAssetToMem(const string& path) {
     }
 
     return { file.begin(), file.size(), std::filesystem::file_time_type{} };
-}
+#else
+    MappedFile mf(compPath.string());
+    return { mf(), mf.size(), std::filesystem::file_time_type{} };
 #endif
+}
+
+void AssetLoader::unMapAsset(memPtr& memPtr) {
+#ifndef ARA_USE_CMRC
+    MappedFile::unmap(std::get<const uint8_t*>(memPtr), std::get<size_t>(memPtr));
+#endif
+}
 
 string AssetLoader::getSanitizedAssetPath(const filesystem::path& p) {
 #ifdef _WIN32

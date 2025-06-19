@@ -36,6 +36,7 @@ file(GLOB COMMON_SRC
         RwBinFile.cpp
         string_utils.cpp
         Table.cpp
+        MappedFile.cpp
         ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/easywsclient/easywsclient.cpp
 )
 
