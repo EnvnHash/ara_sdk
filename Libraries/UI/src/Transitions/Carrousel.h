@@ -29,13 +29,7 @@ public:
     void mouseUp(hidData& data) override;
     void mouseDrag(hidData& data) override;
 
-    template <typename ...Args>
-    CarrouselSlide* add(Args... args) {
-        m_slides.emplace_back(m_content->addChild<CarrouselSlide>(args...));
-        postAdd(m_slides.back());
-        return m_slides.back();
-    }
-
+    CarrouselSlide* add(const std::optional<UINodePars>& par=std::nullopt);
     void postAdd(CarrouselSlide* sl);
 
     void rotate(float pos);
