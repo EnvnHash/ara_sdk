@@ -99,12 +99,14 @@ void Carrousel::show(int32_t toIdx) {
     });
 }
 
-CarrouselSlide* Carrousel::add(const std::optional<UINodePars>& par) {
-    if (par.has_value()) {
-        m_slides.emplace_back(m_content->addChild<CarrouselSlide>(par.value()));
-    } else {
-        m_slides.emplace_back(m_content->addChild<CarrouselSlide>());
-    }
+CarrouselSlide* Carrousel::add() {
+    m_slides.emplace_back(m_content->addChild<CarrouselSlide>());
+    postAdd(m_slides.back());
+    return m_slides.back();
+}
+
+CarrouselSlide* Carrousel::add(const UINodePars& pars) {
+    m_slides.emplace_back(m_content->addChild<CarrouselSlide>(pars));
     postAdd(m_slides.back());
     return m_slides.back();
 }

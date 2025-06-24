@@ -13,8 +13,8 @@ class Font;
 struct LabelPars {
     glm::ivec2 pos{};
     glm::ivec2 size{};
-    align align{};
-    valign valign{};
+    ara::align align{};
+    ara::valign valign{};
     glm::vec4 text_color{};
     glm::vec4 bg_color{};
     const std::string& text;

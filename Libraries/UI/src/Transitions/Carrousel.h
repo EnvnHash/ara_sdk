@@ -29,7 +29,8 @@ public:
     void mouseUp(hidData& data) override;
     void mouseDrag(hidData& data) override;
 
-    CarrouselSlide* add(const std::optional<UINodePars>& par=std::nullopt);
+    CarrouselSlide* add();
+    CarrouselSlide* add(const UINodePars& pars);
     void postAdd(CarrouselSlide* sl);
 
     void rotate(float pos);
