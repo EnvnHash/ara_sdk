@@ -66,8 +66,7 @@ void UINodeGeom::calcContentTransMat() {
     m_nodePosMat[3][0] = m_pos.x;
     m_nodePosMat[3][1] = m_pos.y;
 
-    // apply the windows orthographic matrix, this matrix will be used for
-    // rendering
+    // apply the windows orthographic matrix, this matrix will be used for rendering
     if (m_orthoMat) {
         // this is expensive
         m_mvp   = *m_orthoMat * m_parentMatLocCpy * m_nodePosMat;

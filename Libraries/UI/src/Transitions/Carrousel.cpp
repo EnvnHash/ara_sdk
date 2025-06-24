@@ -19,7 +19,7 @@ Carrousel::Carrousel() {
 }
 
 void Carrousel::initFixedChildren() {
-    m_transTime = 0.5;
+    m_transTime = 0.3;
 
     m_content = addChild<Div>({
         .name = "CarouselContent",
