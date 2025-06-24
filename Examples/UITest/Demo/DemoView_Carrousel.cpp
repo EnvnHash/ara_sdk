@@ -50,7 +50,7 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
         lbl->setBackgroundColor(bgColor[i]);
     }
 
-    caru->rotate(2.f / static_cast<float>(numSlides -1));
+    caru->show(2, false);
 }
 
 void DemoView_Carrousel::init() {

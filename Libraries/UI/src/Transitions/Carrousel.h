@@ -26,28 +26,30 @@ public:
     Carrousel();
 
     void initFixedChildren();
-    void mouseUp(hidData& data) override;
-    void mouseDrag(hidData& data) override;
 
     CarrouselSlide* add();
     CarrouselSlide* add(const UINodePars& pars);
-    void postAdd(CarrouselSlide* sl);
-
-    void rotate(float pos);
-    void rotateAllOnScreen(float pos) const;
-    void rotateFitOneOnScreen(float pos);
 
     bool isRotating();
     bool isCurrent(CarrouselSlide* sl);
     glm::ivec2 getAbsSlideSize();
     Div* getSelector() const { return m_selector; }
 
-    void show(int32_t);
+    void show(int32_t, bool animate = true);
     void show(const std::string& name) override {};
     void showSelector(bool val) const;
     void setMode(CarrouselMode m) { m_carMode = m; }
 
 private:
+    void rotate(float pos);
+    void rotateAllOnScreen(float pos) const;
+    void rotateFitOneOnScreen(float pos);
+
+    void postAdd(CarrouselSlide* sl);
+
+    void mouseUp(hidData& data) override;
+    void mouseDrag(hidData& data) override;
+
     Div*                            m_content = nullptr;
     Div*                            m_selector = nullptr;
     AnimVal<float>                  m_blend;

@@ -111,6 +111,14 @@ private:
     Shaders*       m_glyphShader=nullptr;
 };
 
+class DemoView_ZoomView : public DemoView {
+public:
+    DemoView_ZoomView();
+    void                init() override;
+
+private:
+};
+
 class DemoView_Edit : public DemoView {
 public:
     DemoView_Edit();

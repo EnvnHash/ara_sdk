@@ -61,7 +61,7 @@ TEST(UITest, CarrouselFitOneRotateTest) {
     bool entryOne = false;
     appBody([&](UIApplication& app){
         auto caru = addCarrousel(app, CarrouselMode::fitOneSlideOnScreen);
-        caru->rotate(1.f / 4.f);
+        caru->show(1, false);
     }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "carrousel_test3_ref.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
@@ -92,7 +92,7 @@ TEST(UITest, CarrouselFitAllRotateTest) {
     bool entryOne = false;
     appBody([&](UIApplication& app){
         auto caru = addCarrousel(app, CarrouselMode::fitAllOnScreen);
-        caru->rotate(1.f / 4.f);
+        caru->show(1, false);
     }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "carrousel_test4_ref.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);

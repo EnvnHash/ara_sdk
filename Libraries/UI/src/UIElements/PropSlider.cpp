@@ -13,22 +13,25 @@ PropSlider::PropSlider() : Div() {
     setName(getTypeName<PropSlider>());
     setFocusAllowed(false);
     setScissorChildren(true);
-    PropSlider::addStyleClass("propertySlider");  // NOTE: there must be a valid entry of this in the res.txt !!!!
 
     m_label = addChild<Label>();
-    m_label->addStyleClass(getStyleClass() + ".label");
     m_label->setWidth(0.15f);
-    m_label->setTextAlignX(align::left);
-    m_label->setFontSize(21);
+    m_label->setTextAlign(align::center, valign::center);
+    m_label->setFontSize(20);
+    m_label->setBorderWidth(1);
+    m_label->setBorderColor(1.f, 1.f, 1.f, 0.5f);
 
     m_slider = addChild<Slider>();
-    m_slider->addStyleClass(getStyleClass() + ".slider");
     m_slider->setAlign(align::left, valign::center);
-    m_slider->setKnobProportion(.8f);
     m_slider->setValue(0.f);
+    m_slider->setX(0.16f);
+    m_slider->setWidth(0.68f);
 
     m_edit = addChild<UIEdit>(UIEdit::num_fp);
-    m_edit->addStyleClass(getStyleClass() + ".edit");
+    m_edit->setAlign(align::right, valign::center);
+    m_edit->setBorderWidth(1);
+    m_edit->setBorderColor(1.f, 1.f, 1.f, 0.5f);
+    m_edit->setWidth(0.15f);
     m_edit->setUseWheel(true);
     m_edit->setOnLostFocusCb([this] {
         if (m_onLostFocusCb) {

@@ -536,11 +536,7 @@ void ImageButton::setLod(float val) {
 }
 
 Image* ImageButton::getImg() const {
-    if (!m_tex.empty() && m_tex[0]) {
-        return m_tex[0];
-    } else {
-        return nullptr;
-    }
+    return (!m_tex.empty() && m_tex[0]) ? m_tex[0] : nullptr;
 }
 
 void ImageButton::setSectionSize(const glm::ivec2& sz) {

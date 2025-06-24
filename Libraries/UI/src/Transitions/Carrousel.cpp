@@ -78,25 +78,30 @@ void Carrousel::postAdd(CarrouselSlide* sl) {
     }
 }
 
-void Carrousel::show(int32_t toIdx) {
+void Carrousel::show(int32_t toIdx, bool animate) {
     m_moveToIdx = toIdx;
+    if (animate) {
+        m_blend.start(m_dragSlidePos,
+                      static_cast<float>(toIdx) / static_cast<float>(m_slides.size() -1),
+                      m_transTime,
+                      false,
+                      [this](float v) { rotate(v); });
 
-    m_blend.start(m_dragSlidePos,
-                  static_cast<float>(toIdx) / static_cast<float>(m_slides.size() -1),
-                  m_transTime,
-                  false,
-                  [this](float v) { rotate(v); });
+        m_blend.setEndFunc([this]{
+            m_currentIdx = m_moveToIdx;
+            m_dragSlidePos = static_cast<float>(m_currentIdx) / static_cast<float>(m_slides.size() -1);
+        });
 
-    m_blend.setEndFunc([this]{
+        addGlCb("carrousel_rot", [this]{
+            m_blend.update();
+            getSharedRes()->reqRedraw();
+            return m_blend.stopped();
+        });
+    } else {
         m_currentIdx = m_moveToIdx;
         m_dragSlidePos = static_cast<float>(m_currentIdx) / static_cast<float>(m_slides.size() -1);
-    });
-
-    addGlCb("carrousel_rot", [this]{
-        m_blend.update();
-        getSharedRes()->reqRedraw();
-        return m_blend.stopped();
-    });
+        rotate(m_dragSlidePos);
+    }
 }
 
 CarrouselSlide* Carrousel::add() {

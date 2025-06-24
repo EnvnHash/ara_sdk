@@ -20,7 +20,8 @@ Slider::Slider() : Div() {
 }
 
 void Slider::init() {
-    m_horLine->setSize(0.9f, 2);
+    setKnowWidth();
+    m_horLine->setSize(-m_knobWidth, 2);
     m_horLine->setAlign(align::center, valign::center);
     m_horLine->setBackgroundColor(m_sharedRes->colors->at(uiColors::blue));
     m_horLine->setBorderWidth(0);
@@ -31,7 +32,7 @@ void Slider::init() {
 }
 
 void Slider::adjustKnob() {
-    m_knobWidth = static_cast<int>(m_size.y * m_knobProportion);
+    setKnowWidth();
     m_knob->setSize(m_knobWidth, m_knobWidth);
     m_knob->setBorderRadius(m_knobWidth / 2);
 

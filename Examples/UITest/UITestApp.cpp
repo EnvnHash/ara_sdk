@@ -30,11 +30,12 @@ void UITestApp::init(std::function<void(UINode&)>) {
         tabView->addTab<DemoView_ComboBox>("ComboBoxes");
         tabView->addTab<DemoView_Carrousel>("Carrousel");
         tabView->addTab<DemoView_Resources>("Resources");
+        tabView->addTab<DemoView_ZoomView>("ZoomView");
 #ifndef __ANDROID__
         tabView->addTab<DemoView_FloatingMenu>("Floating Menu");
 #endif
         tabView->addTab<DemoView_Edit>("Edit");
 
-        tabView->setActivateTab(0);
+        tabView->setActivateTab(9);
     });
 }

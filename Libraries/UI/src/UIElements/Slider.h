@@ -64,6 +64,8 @@ public:
     }
 
 private:
+    void setKnowWidth() { m_knobWidth = static_cast<int>(getSize().y * m_knobProportion); }
+
     UINode*     m_numView   = nullptr;
     UIEdit*     m_numEdit   = nullptr;
     Div*        m_horLine   = nullptr;
