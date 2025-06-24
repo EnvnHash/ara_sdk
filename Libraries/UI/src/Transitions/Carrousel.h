@@ -29,8 +29,13 @@ public:
     void mouseUp(hidData& data) override;
     void mouseDrag(hidData& data) override;
 
-    CarrouselSlide* add();
-    CarrouselSlide* add(const UINodePars& pars);
+    template <typename ...Args>
+    CarrouselSlide* add(Args... args) {
+        m_slides.emplace_back(m_content->addChild<CarrouselSlide>(args...));
+        postAdd(m_slides.back());
+        return m_slides.back();
+    }
+
     void postAdd(CarrouselSlide* sl);
 
     void rotate(float pos);
@@ -40,6 +45,7 @@ public:
     bool isRotating();
     bool isCurrent(CarrouselSlide* sl);
     glm::ivec2 getAbsSlideSize();
+    Div* getSelector() const { return m_selector; }
 
     void show(int32_t);
     void show(const std::string& name) override {};

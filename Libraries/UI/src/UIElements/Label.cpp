@@ -18,7 +18,7 @@ Label::Label() {
     setFocusAllowed(false);
 }
 
-Label::Label(const LabelInitData &initData) {
+Label::Label(const LabelPars &initData) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
@@ -31,8 +31,8 @@ Label::Label(const LabelInitData &initData) {
     setText(initData.text);
     setTextAlign(initData.text_align_x, initData.text_align_y);
     setFontSize(initData.font_height);
-    setAlignX(initData.alignX);
-    setAlignY(initData.alignY);
+    setAlignX(initData.align);
+    setAlignY(initData.valign);
 }
 
 void Label::loadStyleDefaults() {

@@ -23,13 +23,13 @@ void Carrousel::initFixedChildren() {
 
     m_content = addChild<Div>({
         .name = "CarouselContent",
-        .alignX = align::center,
-        .alignY = valign::center,
+        .align = align::center,
+        .valign = valign::center,
     });
 
     m_selector = addChild<Div>({
-        .alignX = align::center,
-        .alignY = valign::center,
+        .align = align::center,
+        .valign = valign::center,
         .borderWidth = 1,
         .borderRadius = 6,
         .borderColor = vec4{0.f, 0.f, 0.f, 0.8f},
@@ -66,18 +66,6 @@ void Carrousel::mouseUp(hidData& data) {
                                         + (data.movedPix.x > 0.f ? 0 : 1) ));
         show(nextIdx);
     }
-}
-
-CarrouselSlide* Carrousel::add() {
-    m_slides.emplace_back(m_content->addChild<CarrouselSlide>());
-    postAdd(m_slides.back());
-    return m_slides.back();
-}
-
-CarrouselSlide* Carrousel::add(const UINodePars& pars) {
-    m_slides.emplace_back(m_content->addChild<CarrouselSlide>(pars));
-    postAdd(m_slides.back());
-    return m_slides.back();
 }
 
 void Carrousel::postAdd(CarrouselSlide* sl) {
@@ -121,8 +109,9 @@ void Carrousel::rotate(float pos) {
         { CarrouselMode::fitAllOnScreen, [&](float p){ rotateAllOnScreen(p); } },
         { CarrouselMode::fitOneSlideOnScreen, [&](float p){ rotateFitOneOnScreen(p); } }
     };
-    moveFuncMap[m_carMode](pos);
-    m_dragStartPos = pos;
+    auto limitPos = std::max(0.f, std::min(1.f, pos));
+    moveFuncMap[m_carMode](limitPos);
+    m_dragStartPos = limitPos;
 }
 
 void Carrousel::rotateAllOnScreen(float pos) const {
@@ -132,8 +121,8 @@ void Carrousel::rotateAllOnScreen(float pos) const {
 
     for (const auto& slid : m_slides) {
         slid->setSize(relSlideWidth, 1.f);
-        slid->setX(static_cast<float>(i) - static_cast<float>(m_slides.size() - 1) * pos * relSlideWidth);
-        i++;
+        slid->setX((static_cast<float>(i) - static_cast<float>(m_slides.size() - 1) * pos) * relSlideWidth);
+        ++i;
     }
 }
 

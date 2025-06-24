@@ -21,6 +21,7 @@ file(GLOB UI_UT_SRC
     AlignTest.cpp
     ButtonTests.cpp
     ComboBoxTest.cpp
+    CarrouselTest.cpp
     HidTest.cpp
     ImageTest.cpp
     ScrollViewTest.cpp

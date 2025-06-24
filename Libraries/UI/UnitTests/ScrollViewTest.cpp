@@ -71,8 +71,8 @@ ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
     auto scrollView = rootNode->addChild<ScrollView>(UINodePars{
         .size = vec2{0.7f, 0.7f},
         .bgColor = vec4{0.f, 0.f, 0.5f, 1.f},
-        .alignX = align::center,
-        .alignY = valign::center,
+        .align = align::center,
+        .valign = valign::center,
     });
 
     int chHeight = 40;

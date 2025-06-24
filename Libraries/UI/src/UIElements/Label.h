@@ -10,16 +10,16 @@ namespace ara {
 
 class Font;
 
-struct LabelInitData {
+struct LabelPars {
     glm::ivec2 pos{};
     glm::ivec2 size{};
-    align alignX{};
-    valign alignY{};
+    align align{};
+    valign valign{};
     glm::vec4 text_color{};
     glm::vec4 bg_color{};
     const std::string& text;
-    align text_align_x{};
-    valign text_align_y{};
+    ara::align text_align_x{};
+    ara::valign text_align_y{};
     const std::string& font_type;
     int font_height=0;
 };
@@ -37,7 +37,7 @@ public:
     };
 
     Label();
-    explicit Label(const LabelInitData& initData);
+    explicit Label(const LabelPars& initData);
     ~Label() override = default;
 
     [[nodiscard]] unsigned long getOpt() const { return m_tOpt; }

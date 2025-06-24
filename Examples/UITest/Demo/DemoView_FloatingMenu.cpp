@@ -19,8 +19,8 @@ void DemoView_FloatingMenu::init() {
     auto div = addChild<Div>({
         .size = vec2(0.8f, 0.8f),
         .bgColor = vec4{0.3f, 0.3f, 0.3f, 1.f},
-        .alignX = align::center,
-        .alignY = valign::center,
+        .align = align::center,
+        .valign = valign::center,
         .borderWidth = 10,
         .borderColor = vec4{0.7f, 0.7f, 0.7f, 1.f},
     });

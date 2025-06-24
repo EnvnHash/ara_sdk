@@ -13,12 +13,6 @@ using namespace std;
 using namespace glm;
 
 namespace ara::UiUnitTest::ComboBoxTest {
-
-    void drawAndSwap(UIApplication& app) {
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
-    }
-
     void addCombo(UIApplication& app, bool& flag) {
         auto rootNode = app.getMainWindow()->getRootNode();
         auto combo = rootNode->addChild<ComboBox>(UINodePars{

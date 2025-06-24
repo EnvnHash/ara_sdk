@@ -33,8 +33,8 @@ public:
     std::optional<glm::vec4> bgColor{};
     std::optional<std::string> name{};
     std::optional<std::string> style{};
-    std::optional<align> alignX{};
-    std::optional<valign> alignY{};
+    std::optional<align> align{};
+    std::optional<valign> valign{};
     std::optional<uint32_t> borderWidth{};
     std::optional<uint32_t> borderRadius{};
     std::optional<glm::vec4> borderColor{};
@@ -47,7 +47,7 @@ public:
     std::optional<bool> excludeFromOutOfBorderCheck{};
 
     auto getTiedOptionals() const {
-        return std::tie(fgColor, bgColor, name, style, alignX, alignY, borderWidth, borderRadius, borderColor, padding,
+        return std::tie(fgColor, bgColor, name, style, align, valign, borderWidth, borderRadius, borderColor, padding,
                         visible, excludeFromObjMap, excludeFromParentViewTrans, excludeFromScissoring, excludeFromPadding,
                         excludeFromOutOfBorderCheck);
     }
@@ -87,8 +87,8 @@ public:
             [&arg, &node] { node->setBackgroundColor(arg.bgColor.value()); },
             [&arg, &node] { node->setName(arg.name.value()); },
             [&arg, &node] { node->addStyleClass(arg.style.value()); },
-            [&arg, &node] { node->setAlignX(arg.alignX.value()); },
-            [&arg, &node] { node->setAlignY(arg.alignY.value()); },
+            [&arg, &node] { node->setAlignX(arg.align.value()); },
+            [&arg, &node] { node->setAlignY(arg.valign.value()); },
             [&arg, &node] { node->setBorderWidth(arg.borderWidth.value()); },
             [&arg, &node] { node->setBorderRadius(arg.borderRadius.value()); },
             [&arg, &node] { node->setBorderColor(arg.borderColor.value()); },

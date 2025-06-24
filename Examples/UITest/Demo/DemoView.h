@@ -9,6 +9,7 @@
 #include <Dialoges/FloatingMenuDialog.h>
 #include <Asset/AssetFont.h>
 #include <Asset/ResGlFont.h>
+#include "Transitions/Carrousel.h"
 
 namespace ara {
 
@@ -88,6 +89,13 @@ public:
     void                init() override;
 private:
     ComboBox*           m_combo = nullptr;
+};
+
+class DemoView_Carrousel : public DemoView {
+public:
+    DemoView_Carrousel();
+    void                init() override;
+    void                addCarrousel(CarrouselMode cm, int yOffs);
 };
 
 class DemoView_Resources : public DemoView {

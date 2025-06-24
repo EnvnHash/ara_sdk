@@ -22,7 +22,7 @@ void DemoView_ScrollView_3::init() {
             .size = ivec2{200, 200},
             .fgColor = vec4{.8f,.8f,.6f,1.f},
             .bgColor = vec4{ .2f,.2f,.5f,1.f},
-            .alignY = valign::center,
+            .valign = valign::center,
         });
         std::stringstream ss;
         ss << "Item "<< std::fixed << std::setprecision(2) << i+1;
@@ -34,10 +34,10 @@ void DemoView_ScrollView_3::init() {
 void DemoView_ScrollView_3::Unit::init() {
     setPadding(10);
 
-    addChild<Label>(LabelInitData{
+    addChild<Label>(LabelPars{
         .pos = {0, 0},
         .size = {180, 24},
-        .alignY = valign::top,
+        .valign = valign::top,
         .text_color = getColor(),
         .bg_color = {.1f, .1f, .2f, 1.f},
         .text = m_Title,
@@ -49,15 +49,15 @@ void DemoView_ScrollView_3::Unit::init() {
 
     addChild<Image>({
         .size = ivec2{110, 110},
-        .alignX = align::center,
-        .alignY = valign::center
+        .align = align::center,
+        .valign = valign::center
     })->setImg(std::rand() & 1 ? "trigrid.png" : "FullHD_Pattern.png",1);
 
-    addChild<Label>(LabelInitData{
+    addChild<Label>(LabelPars{
         .pos = {0, 0},
         .size = {180, 24},
-        .alignX = align::center,
-        .alignY = valign::bottom,
+        .align = align::center,
+        .valign = valign::bottom,
         .text_color = {.4f, .4f, .4f, 1.f},
         .bg_color = getBackgroundColor(),
         .text = "More text here",

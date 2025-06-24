@@ -28,6 +28,7 @@ void UITestApp::init(std::function<void(UINode&)>) {
         tabView->addTab<DemoView_ScrollView_2>("Scroll View 2");
         tabView->addTab<DemoView_ScrollView_3>("Scroll View 3");
         tabView->addTab<DemoView_ComboBox>("ComboBoxes");
+        tabView->addTab<DemoView_Carrousel>("Carrousel");
         tabView->addTab<DemoView_Resources>("Resources");
 #ifndef __ANDROID__
         tabView->addTab<DemoView_FloatingMenu>("Floating Menu");
