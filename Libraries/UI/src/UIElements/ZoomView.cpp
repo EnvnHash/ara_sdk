@@ -29,20 +29,7 @@ void ZoomView::init() {
         m_bottomMenu->setAlignY(valign::bottom);
     }
 
-    onChanged<float>(m_zoomProp, [this](const std::any& val) {
-        if (m_workingArea) {
-            if (m_zoomUseWheel) {
-                m_workingArea->setZoomWithCenter(std::any_cast<float>(val) * 0.01f, getWindow()->getActMousePos());
-            } else {
-                m_workingArea->setZoomNormMat(std::any_cast<float>(val) * 0.01f);
-            }
-        }
-
-        for (const auto& it : m_onChangedCb) {
-            it();
-        }
-    });
-
+    setZoomPropChangeCb();
     m_initZoomPropVal = m_zoomProp();
 
     if (m_showSlider) {
@@ -55,6 +42,20 @@ void ZoomView::init() {
     if (m_initContFunc) {
         m_initContFunc(m_workingArea);
     }
+}
+
+void ZoomView::setZoomPropChangeCb() {
+    onChanged<float>(m_zoomProp, [this](const std::any& val) {
+        if (m_workingArea && m_zoomUseWheel) {
+            m_workingArea->setZoomWithCenter(std::any_cast<float>(val) * 0.01f, getWindow()->getActMousePos());
+        } else if (m_workingArea) {
+            m_workingArea->setZoomNormMat(std::any_cast<float>(val) * 0.01f);
+        }
+
+        for (const auto& it : m_onChangedCb) {
+            it();
+        }
+    });
 }
 
 void ZoomView::addWorkingArea() {

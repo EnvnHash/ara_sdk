@@ -44,6 +44,7 @@ public:
     void keepContentWithinBoundaries(bool val);
 
 private:
+    void setZoomPropChangeCb();
     void checkForWorkingArea();
 
     void keyDown(hidData& data) override;
