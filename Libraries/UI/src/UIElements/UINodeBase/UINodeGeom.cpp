@@ -36,6 +36,7 @@ bool UINodeGeom::contains(UINodeGeom* outer, UINodeGeom* node) {
 void UINodeGeom::updateContentTransMat() {
     if (m_limitContentTrans) {
         auto overflow = getContentTransOverflow(m_contentTransMatTransl.x, m_contentTransMatTransl.y);
+        LOG << glm::to_string(overflow);
         m_contentTransMatTransl.x += overflow.x;
         m_contentTransMatTransl.y += overflow.y;
     }
@@ -227,11 +228,11 @@ vec2 UINodeGeom::getContentTransOverflow(float x, float y) {
         auto newCorn = mat * quadCorners[i];
         if (i == 0) {
             for (int j=0; j<2; ++j) {
-                overflow[j] = newCorn[j] > 0.f ? - newCorn[j] : overflow[j];
+                overflow[j] = std::min(-newCorn[j], overflow[j]);
             }
         } else {
             for (int j=0; j<2; ++j) {
-                overflow[j] = newCorn[j] < m_size[j] ? m_size[j] - newCorn[j] : overflow[j];
+                overflow[j] = std::max(m_size[j] - newCorn[j], overflow[j]);
             }
         }
     }
