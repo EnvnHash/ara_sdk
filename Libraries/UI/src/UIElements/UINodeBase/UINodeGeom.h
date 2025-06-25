@@ -269,7 +269,8 @@ public :
     UISharedRes*        getSharedRes() { return m_sharedRes; }
     virtual void        setSharedRes(UISharedRes* shared);
 
-    virtual void calcContentTransMat();
+    void                updateContentTransMat();
+    void                calcContentTransMat(glm::mat4& mat, const glm::vec3& trans);
 
     void                excludeFromPadding(bool val) { m_excludeFromPadding = val; }
     [[nodiscard]] bool  isExcludedFromPadding() const { return m_excludeFromPadding; }
@@ -278,7 +279,7 @@ public :
     void                excludeFromOutOfBorderCheck(bool val) { m_skipBoundCheck = val; }
     void                excludeFromScissoring(bool val) { m_excludeFromParentScissoring = val; }
     [[nodiscard]] bool  isExcludedFromScissoring() const { return m_excludeFromParentScissoring; }
-
+    void                limitContentTrans(bool val) { m_limitContentTrans = val; }
     [[nodiscard]] bool  changed() const { return m_geoChanged; }
 
     // Bounding Box
@@ -299,6 +300,8 @@ public :
     virtual bool isInBounds(glm::vec2& pos);
 
 protected:
+    glm::vec2 getContentTransOverflow(float x, float y);
+
     UISharedRes* m_sharedRes = nullptr;
     scissorStack m_scissorStack;
     std::function<bool(ObjPosIt&)> m_outOfTreeObjId;
@@ -316,6 +319,7 @@ protected:
     bool m_skipBoundCheck                = false;
     bool m_oob                           = false;
     bool m_updating                      = false;
+    bool m_limitContentTrans             = false;
 
     int32_t m_posXInt   = 0;
     int32_t m_posYInt   = 0;

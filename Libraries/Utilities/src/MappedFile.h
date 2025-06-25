@@ -45,7 +45,6 @@ public:
 
 	std::pair<uint8_t*, size_t> mapFileWin(const std::string& path);
 	std::pair<uint8_t*, size_t> mapFileMmap(const std::string& path);
-	std::pair<uint8_t*, size_t> mapFileDefault(const std::string& path);
 
 	/*! Releases memory allocated by map_file(). */
 	void unmap();

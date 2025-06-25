@@ -33,45 +33,50 @@ bool UINodeGeom::contains(UINodeGeom* outer, UINodeGeom* node) {
     return outer->isInBounds(contLT) && outer->isInBounds(contLT);
 }
 
-void UINodeGeom::calcContentTransMat() {
-    if (m_contTransMatCentered) {
-        // for scaling, center the content on the origin, scale and uncenter
-        // again
-        m_contentTransMatRel = m_contRot;
-
-        m_contentTransMatRel[3][0] += m_contentTransMatTransl.x + m_size.x * -0.5f;
-        m_contentTransMatRel[3][1] += m_contentTransMatTransl.y + m_size.y * -0.5f;
-        m_contentTransMatRel[3][2] += m_contentTransMatTransl.z;
-
-        m_contentTransMatRel = scale(m_contentTransScaleFixAspect) * m_contentTransMatRel;
-
-        m_contentTransMatRel[3][0] += m_size.x * 0.5f;
-        m_contentTransMatRel[3][1] += m_size.y * 0.5f;
-
-    } else {
-        // this is expensive
-        if (m_hasContRot) {
-            m_contentTransMatRel = translate(m_contentTransMatTransl) * m_contRot * scale(m_contentTransScale);
-        } else {
-            m_contentTransMatRel = translate(m_contentTransMatTransl) * scale(m_contentTransScale);
-        }
+void UINodeGeom::updateContentTransMat() {
+    if (m_limitContentTrans) {
+        auto overflow = getContentTransOverflow(m_contentTransMatTransl.x, m_contentTransMatTransl.y);
+        m_contentTransMatTransl.x += overflow.x;
+        m_contentTransMatTransl.y += overflow.y;
     }
 
-    // since we don't need the content relative offset anymore
-    // (m_contentTransMat is defined by the vec3 translation, scale, rotation)
-    // use it again
-    m_nodeTransMat    = m_nodeMat * m_contentTransMatRel;
+    calcContentTransMat(m_contentTransMatRel, m_contentTransMatTransl);
+
     m_contentTransMat = m_contentMat * m_contentTransMatRel;
+    m_nodeTransMat    = m_nodeMat * m_contentTransMatRel;
 
     m_nodePosMat[3][0] = m_pos.x;
     m_nodePosMat[3][1] = m_pos.y;
 
-    // apply the windows orthographic matrix, this matrix will be used for
-    // rendering
+    // apply the windows orthographic matrix, this matrix will be used for rendering
     if (m_orthoMat) {
         // this is expensive
         m_mvp   = *m_orthoMat * m_parentMatLocCpy * m_nodePosMat;
         m_mvpHw = m_mvp * scale(vec3{1.f / getPixRatio(), 1.f / getPixRatio(), 1.f});
+    }
+}
+
+void UINodeGeom::calcContentTransMat(mat4& mat, const vec3& trans) {
+    if (m_contTransMatCentered) {
+        // for scaling, center the content to the origin, scale and move back to the initial position
+        mat = m_contRot;
+
+        mat[3][0] += trans.x + m_size.x * -0.5f;
+        mat[3][1] += trans.y + m_size.y * -0.5f;
+        mat[3][2] += trans.z;
+
+        mat = scale(m_contentTransScaleFixAspect) * mat;
+
+        mat[3][0] += m_size.x * 0.5f;
+        mat[3][1] += m_size.y * 0.5f;
+
+    } else {
+        // this is expensive
+        if (m_hasContRot) {
+            mat = translate(trans) * m_contRot * scale(m_contentTransScale);
+        } else {
+            mat = translate(trans) * scale(m_contentTransScale);
+        }
     }
 }
 
@@ -199,13 +204,40 @@ void UINodeGeom::setContentTransScale(float x, float y) {
     m_contentTransScaleFixAspect.x = x;
     m_contentTransScaleFixAspect.y = y;
     m_contentTransScaleFixAspect.z = 1.f;
-    calcContentTransMat();
+    updateContentTransMat();
 }
 
 void UINodeGeom::setContentTransTransl(float x, float y) {
     m_contentTransMatTransl.x = x;
     m_contentTransMatTransl.y = y;
     setChanged(true);  // force children to update
+}
+
+vec2 UINodeGeom::getContentTransOverflow(float x, float y) {
+    vec2 overflow{};
+    std::array<vec4, 2> quadCorners {
+        vec4{ 0.f, 0.f, 0.f, 1.f },
+        vec4{ m_size.x, m_size.y, 0.f, 1.f },
+    };
+
+    mat4 mat(1.f);
+    calcContentTransMat(mat, vec3{x, y, m_contentTransMatTransl.z});
+
+    for (int i=0; i<quadCorners.size(); ++i) {
+        auto newCorn = mat * quadCorners[i];
+        if (i == 0) {
+            for (int j=0; j<2; ++j) {
+                overflow[j] = newCorn[j] > 0.f ? - newCorn[j] : overflow[j];
+            }
+        } else {
+            for (int j=0; j<2; ++j) {
+                overflow[j] = newCorn[j] < m_size[j] ? m_size[j] - newCorn[j] : overflow[j];
+            }
+        }
+    }
+
+    overflow /= vec2(m_contTransMatCentered ? m_contentTransScaleFixAspect : m_hasContRot ? m_contentTransScale : vec2{1.f, 1.f});
+    return overflow;
 }
 
 void UINodeGeom::setContentRotation(float angle, float ax, float ay, float az) {
@@ -239,7 +271,7 @@ void UINodeGeom::setZoomWithCenter(float val, vec2& actMousePos) {
     auto t_vec2 = vec2(inverse(m_contentTransMatRel) * vec4(actMousePos - getWinPos(), 0.f, 1.f));
 
     setContentTransScale(val, val);
-    calcContentTransMat();
+    updateContentTransMat();
 
     auto newAbsMousePos = vec2(m_contentTransMatRel * vec4(t_vec2, 0.f, 1.f)) + getWinPos();
     auto newMouseOffs   = newAbsMousePos - actMousePos;

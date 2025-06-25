@@ -99,23 +99,10 @@ void Image::setImgFlag(ResNode* node, state st) {
     unsigned iflags = 0;
 
     for (std::string& par : p) {
-        if (par == "fill") {
-            iflags |= 1;
-        }
-        if (par == "scale") {
-            iflags |= 2;
-        }
-        if (par == "hflip") {
-            iflags |= 4;
-        }
-        if (par == "vflip") {
-            iflags |= 8;
-        }
-        if (par == "int") {
-            iflags |= 16;
-        }
-        if (par == "no-aspect") {
-            iflags |= 32;
+        for (auto &[str, fl] : m_imgFlagStrMap) {
+            if (par == str) {
+                iflags |= toType(fl);
+            }
         }
     }
 
@@ -168,30 +155,21 @@ void Image::setImg(const std::string& file, int mipMapLevel) {
     }
 }
 
-unsigned Image::setImgFlags(unsigned flags) {
+uint32_t Image::setImgFlags(uint32_t flags) {
     m_imgFlags                                  = flags;
     m_setStyleFunc[m_state][styleInit::imgFlag] = [flags, this]() { m_imgFlags = flags; };
 
-    if (flags & 1) {
-        setStyleInitVal("img-flags", "fill");
-    }
-    if (flags & 2) {
-        setStyleInitVal("img-flags", "scale");
-    }
-    if (flags & 4) {
-        setStyleInitVal("img-flags", "hflip");
-    }
-    if (flags & 8) {
-        setStyleInitVal("img-flags", "vflip");
-    }
-    if (flags & 16) {
-        setStyleInitVal("img-flags", "int");
-    }
-    if (flags & 32) {
-        setStyleInitVal("img-flags", "no-aspect");
+    for (auto &[str, fl] : m_imgFlagStrMap) {
+        if (flags & toType(fl)) {
+            setStyleInitVal("img-flags", str);
+        }
     }
 
     return m_imgFlags;
+}
+
+uint32_t Image::setImgFlags(imgFlags flags) {
+    return setImgFlags(toType(flags));
 }
 
 void Image::setImgScale(float scale) {
@@ -441,15 +419,7 @@ bool Image::draw(uint32_t& objId) {
         return true;
     }
 
-#ifdef ARA_USE_GLES31
-    glBlendFunc(m_srcBlendFunc, m_dstBlendFunc);
-#else
-    if (!m_sepBlendFunc && (m_srcBlendFunc != GL_SRC_ALPHA || m_dstBlendFunc != GL_ONE_MINUS_SRC_ALPHA)) {
-        glBlendFunci(0, m_srcBlendFunc, m_dstBlendFunc);
-    } else if (m_sepBlendFunc) {
-        glBlendFuncSeparatei(0, m_srcBlendFunc, m_dstBlendFunc, m_srcBlendAlphaFunc, m_dstBlendAlphaFunc);
-    }
-#endif
+    setBlendFunc();
 
     m_texShdr->begin();
 
@@ -464,6 +434,35 @@ bool Image::draw(uint32_t& objId) {
     m_texShdr->setUniform1i("depth", 1);
     m_texShdr->setUniform1i("objIdTex", 2);
 
+    bindTexture(objId);
+
+    if (m_hasDepth || m_depthTexId) {
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    glBindVertexArray(*m_sharedRes->nullVao);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    if (m_hasDepth || m_depthTexId) {
+        glDisable(GL_DEPTH_TEST);
+    }
+
+    return true;  // count up objId
+}
+
+void Image::setBlendFunc() {
+#ifdef ARA_USE_GLES31
+    glBlendFunc(m_srcBlendFunc, m_dstBlendFunc);
+#else
+    if (!m_sepBlendFunc && (m_srcBlendFunc != GL_SRC_ALPHA || m_dstBlendFunc != GL_ONE_MINUS_SRC_ALPHA)) {
+        glBlendFunci(0, m_srcBlendFunc, m_dstBlendFunc);
+    } else if (m_sepBlendFunc) {
+        glBlendFuncSeparatei(0, m_srcBlendFunc, m_dstBlendFunc, m_srcBlendAlphaFunc, m_dstBlendAlphaFunc);
+    }
+#endif
+}
+
+void Image::bindTexture(uint32_t& objId) {
     if (m_useTexId) {
         // in some rare cases (FBO with depth buffers) it is needed to render depth values from an external depth buffer
         glActiveTexture(GL_TEXTURE0);
@@ -489,20 +488,6 @@ bool Image::draw(uint32_t& objId) {
             m_tex->bind(0);
         }
     }
-
-    if (m_hasDepth || m_depthTexId) {
-        glEnable(GL_DEPTH_TEST);
-    }
-
-    glBindVertexArray(*m_sharedRes->nullVao);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    // glBindVertexArray(0);
-
-    if (m_hasDepth || m_depthTexId) {
-        glDisable(GL_DEPTH_TEST);
-    }
-
-    return true;  // count up objId
 }
 
 bool Image::drawIndirect(uint32_t& objId) {

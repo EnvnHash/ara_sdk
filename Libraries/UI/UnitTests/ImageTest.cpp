@@ -63,10 +63,7 @@ TEST(UITest, ImageSingleLod) {
 TEST(UITest, ImageSingleFill) {
     appBody([&](UIApplication &app) {
         auto img = addImage(app, "test-tex.png");
-
-        unsigned iflags = 0;
-        iflags |= 1;
-        img->setImgFlags(iflags);
+        img->setImgFlags(imgFlags::fill);
 
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_fill.png",
@@ -77,10 +74,7 @@ TEST(UITest, ImageSingleFill) {
 TEST(UITest, ImageSingleScale) {
     appBody([&](UIApplication &app) {
         auto img = addImage(app, "test-tex.png");
-
-        unsigned iflags = 0;
-        iflags |= 2;
-        img->setImgFlags(iflags);
+        img->setImgFlags(imgFlags::scale);
         img->setImgScale(0.3f);
 
     }, [&](UIApplication &app) {
@@ -92,9 +86,7 @@ TEST(UITest, ImageSingleScale) {
 TEST(UITest, ImageSingleHFlip) {
     appBody([&](UIApplication &app) {
         auto img = addImage(app, "test-tex.png");
-        unsigned iflags = 0;
-        iflags |= 4;
-        img->setImgFlags(iflags);
+        img->setImgFlags(imgFlags::hflip);
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_hflip.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
@@ -104,9 +96,7 @@ TEST(UITest, ImageSingleHFlip) {
 TEST(UITest, ImageSingleVFlip) {
     appBody([&](UIApplication &app) {
         auto img = addImage(app, "test-tex.png");
-        unsigned iflags = 0;
-        iflags |= 8;
-        img->setImgFlags(iflags);
+        img->setImgFlags(imgFlags::vflip);
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_vflip.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
@@ -116,9 +106,7 @@ TEST(UITest, ImageSingleVFlip) {
 TEST(UITest, ImageSingleNoAspect) {
     appBody([&](UIApplication &app) {
         auto img = addImage(app, "test-tex.png");
-        unsigned iflags = 0;
-        iflags |= 32;
-        img->setImgFlags(iflags);
+        img->setImgFlags(imgFlags::noAspect);
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_no_aspect.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);

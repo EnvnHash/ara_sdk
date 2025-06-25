@@ -66,17 +66,20 @@ void ZoomView::addWorkingArea() {
     m_workingArea->setContentTransCentered(true);
     m_workingArea->setCanReceiveDrag(true);
     m_workingArea->addMouseDragCb([this](hidData& data) {
-        // translate the working area view
-        if (data.mousePressed && !data.altPressed && !data.shiftPressed) {
-            auto moved    = vec2(data.mousePos) - m_mouseDownPos;
-            auto resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(m_workingArea->getContentTransScale());
-            m_workingArea->setContentTransTransl(resTrans.x, resTrans.y);
-            setDrawFlag();
-        }
-    },
-    true);
+        dragContent(data);
+    }, true);
 
     m_content = m_workingArea->addChild<Div>({ .name = "ZoomViewContent" });
+}
+
+void ZoomView::dragContent(hidData& data) {
+    // translate the working area view
+    if (data.mousePressed && !data.altPressed && !data.shiftPressed) {
+        auto moved    = vec2(data.mousePos) - m_mouseDownPos;
+        auto resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(m_workingArea->getContentTransScale());
+        m_workingArea->setContentTransTransl(resTrans.x, resTrans.y);
+        setDrawFlag();
+    }
 }
 
 void ZoomView::addZoomSlider() {
@@ -136,22 +139,6 @@ void ZoomView::mouseDown(hidData& data) {
     m_mouseDownPos = static_cast<vec2>(data.mousePos);
 }
 
-void ZoomView::mouseUp(hidData& data) {
-    /*
-        if (!m_workingArea) return;
-        bool isInWorkingArea = data.mousePos.x >
-       m_workingArea->getNodeViewport().x
-                               && data.mousePos.y >
-       m_workingArea->getNodeViewport().y
-                               && data.mousePos.x <
-       (m_workingArea->getNodeViewport().x +
-       m_workingArea->getNodeViewport().z)
-                               && data.mousePos.y <
-       (m_workingArea->getNodeViewport().y +
-       m_workingArea->getNodeViewport().w);
-    */
-}
-
 void ZoomView::mouseWheel(hidData& data) {
     if (getWindow()->isMousePressed()) {
         return;
@@ -165,6 +152,11 @@ void ZoomView::mouseWheel(hidData& data) {
 
     data.consumed = true;
     getSharedRes()->reqRedraw();
+}
+
+void ZoomView::keepContentWithinBoundaries(bool val) {
+    checkForWorkingArea();
+    m_workingArea->limitContentTrans(val);
 }
 
 }  // namespace ara

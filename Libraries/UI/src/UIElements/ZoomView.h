@@ -35,20 +35,22 @@ public:
     [[nodiscard]] UINode* getWorkingArea() const { return m_workingArea; }
     [[nodiscard]] UINode* getContent() const { return m_content; }
     [[nodiscard]] float   getInitZoomPropVal() const { return m_initZoomPropVal; }
-    void hideContent() const ;
+    void hideContent() const;
     void initContent(std::function<void(UINode*)> f) { m_initContFunc = std::move(f); }
     void addChangeCb(const std::function<void()>& f) { m_onChangedCb.emplace_back(f); }
     void showSlider(bool val) { m_showSlider = val; }
     void showResetButton(bool val) { m_showResetButton = val; }
+    void setZoomRange(float mi, float ma) { m_zoomProp.setMinMax(mi, ma); }
+    void keepContentWithinBoundaries(bool val);
 
 private:
     void checkForWorkingArea();
 
     void keyDown(hidData& data) override;
     void mouseDown(hidData& data) override;
-    void mouseUp(hidData& data) override;
     void mouseWheel(hidData& data) override;
 
+    void dragContent(hidData& data);
     void addWorkingArea();
     void addZoomSlider();
     void addResetButton();

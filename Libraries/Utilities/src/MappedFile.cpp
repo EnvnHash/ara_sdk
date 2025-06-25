@@ -41,8 +41,6 @@ std::pair<uint8_t*, size_t> MappedFile::mapFile(const std::string& path) {
 	return mapFileWin(path);
 #elif HAVE_MMAP
 	return mapFileMmap(path);
-#else
-	return mapFileDefault(path);
 #endif
 }
 
@@ -112,52 +110,12 @@ std::pair<uint8_t*, size_t> MappedFile::mapFileMmap(const std::string& path) {
 #endif
 }
 
-// Note: this is just a fallback function which needs to allocate mem and thus doesn't do what this class
-// is supposed to do.
-std::pair<uint8_t*, size_t> MappedFile::mapFileDefault(const std::string& path) {
-#if !defined(_WIN32) && !defined(HAVE_MMAP)
-	FILE *fd=nullptr;
-    try {
-  		FILE *fd = fopen(path, "rb");
-		if (!fd) {
-			return nullptr;
-		}
-
-		fseek(fd, 0, SEEK_END);
-		size = ftell(fd); // returns the size of the file
-		if (size <= 0) {
-        	throw("MappedFile::mapFileWin Error: GetFileSize returned zero");
-		}
-
-		rewind(fd);
-		data = static_cast<uint8_t*>(malloc(size));
-		if (!data) {
-            throw("MappedFile::mapFileWin Error: GetFileSize returned zero");
-		}
-
-		// only return the data if the read was successful
-		if (fread(data, size, 1, fd) != 1) {
-			free(data);
-			data = nullptr;
-		}
-		return {data, size};
-	} catch (const std::runtime_error& e) {
-	   	fclose(fd);
-		return {};
-    }
-#else
-	return {};
-#endif
-}
-
 void MappedFile::unmap() {
 #ifdef _WIN32
 	UnmapViewOfFile(m_mappedFile.first);
 #elif HAVE_MMAP
 	munmap(m_mappedFile.first, m_mappedFile.second);
-#else /* !_WIN32 && !HAVE_MMAP */
-	free(m_mappedFile.first);
-#endif /* !_WIN32 && !HAVE_MMAP */
+#endif
 }
 
 void MappedFile::unmap(const uint8_t* data, size_t sz) {
@@ -165,9 +123,7 @@ void MappedFile::unmap(const uint8_t* data, size_t sz) {
 	UnmapViewOfFile(data);
 #elif HAVE_MMAP
 	munmap((void*)data, sz);
-#else /* !_WIN32 && !HAVE_MMAP */
-	free(data);
-#endif /* !_WIN32 && !HAVE_MMAP */
+#endif
 }
 
 }

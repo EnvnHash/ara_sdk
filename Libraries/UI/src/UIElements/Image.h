@@ -45,7 +45,8 @@ public:
     void            removeGLResources() override;
 
     virtual void    setImg(const std::string& file, int mipMapLevel = 1);
-    unsigned        setImgFlags(unsigned flags);
+    uint32_t        setImgFlags(uint32_t flags);
+    uint32_t        setImgFlags(imgFlags flags);
     void            setImgScale(float scale);
 
     virtual void    setSizeToAspect(bool val) { m_sizeToAspect = val; }
@@ -87,7 +88,19 @@ public:
     IndDrawBlock m_imgDB;
     float        m_texUnit = -1.f;
 
+    static inline std::unordered_map<std::string, imgFlags>  m_imgFlagStrMap {
+        {"fill", imgFlags::fill},
+        {"scale", imgFlags::scale},
+        {"hflip", imgFlags::hflip},
+        {"vflip", imgFlags::vflip},
+        {"int", imgFlags::integer},
+        {"no-aspect", imgFlags::noAspect}
+    };
+
 protected:
+    void bindTexture(uint32_t& objId);
+    void setBlendFunc();
+
     Texture                     *m_tex     = nullptr;
     Shaders                     *m_texShdr = nullptr;
     std::unique_ptr<PingPongFbo> m_uplFbo;

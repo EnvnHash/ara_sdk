@@ -214,7 +214,7 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
                 vec2 v = vec2(vin.aux0.zw);     \n  // texCoords top/left in virtual pixels
                 vec2 sp = vec2(vin.aux1.xy);    \n  // section pos in texture pixels
                 vec2 ss = vec2(vin.aux1.zw);    \n  // section size, (section = area of the frame that contains a corner)
-                vec2 sd = vec2(vin.aux2.xy);    \n    // section distance, (area between the corners that gets repeated)
+                vec2 sd = vec2(vin.aux2.xy);    \n  // section distance, (area between the corners that gets repeated)
                 vec2 pv = vec2(v.x < ss.x ? v.x : v.x >= ts.x - ss.x ? ss.x + sd.x + v.x - ts.x + ss.x : mod(v.x - ss.x, sd.x) + ss.x,\n
                     v.y < ss.y ? v.y : v.y >= ts.y - ss.y ? ss.y + sd.y + v.y - ts.y + ss.y : mod(v.y - ss.y, sd.y) + ss.y );\n
                 ivec2 pp = ivec2(pv + sp); \n

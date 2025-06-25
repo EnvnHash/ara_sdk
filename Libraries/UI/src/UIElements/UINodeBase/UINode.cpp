@@ -473,7 +473,7 @@ void UINode::updateMatrix() {
     m_contentMat[3][1] = m_nodeMat[3][1] + m_padding.y;
 
     // calculate the content transformation matrix
-    calcContentTransMat();
+    updateContentTransMat();
 
     m_geoChanged = false;
     m_updating   = false;

@@ -36,6 +36,6 @@ void UITestApp::init(std::function<void(UINode&)>) {
 #endif
         tabView->addTab<DemoView_Edit>("Edit");
 
-        tabView->setActivateTab(9);
+        tabView->setActivateTab(0);
     });
 }

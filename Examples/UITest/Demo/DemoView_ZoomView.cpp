@@ -4,6 +4,7 @@
 
 #include "DemoView.h"
 #include "UIElements/ZoomView.h"
+#include <UIElements/Image.h>
 
 using namespace ara;
 using namespace glm;
@@ -17,14 +18,12 @@ void DemoView_ZoomView::init() {
     auto zv = addChild<ZoomView>();
     zv->setSize(1.f, -40);
     zv->setAlignY(valign::bottom);
-    zv->setBorderColor(1.f, 1.f, 1.f, 1.f);
-    zv->setBackgroundColor(0.2f, 0.2f, 0.2f, 0.4f);
+    zv->setBorderColor(1.f, 1.f, 1.f, 0.2f);
+    zv->setBorderWidth(1);
+    zv->setZoomRange(100.f, 600.f);
+    zv->keepContentWithinBoundaries(true);
 
-    for (int i=0; i<30; i++) {
-        zv->addChild<Div>({
-            .pos = vec2{getRandF(0.f, 1.f), getRandF(0.f, 1.f)},
-            .size = ivec2{ static_cast<int>(getRandF(10.f, 80.f)), static_cast<int>(getRandF(10.f, 80.f)) },
-            .bgColor = vec4{ getRandF(0.f, 1.f), getRandF(0.f, 1.f), getRandF(0.f, 1.f), 1.f }
-        });
-    }
+    auto img = zv->addChild<Image>();
+    img->setImg("test/test_img.jpg", 1);
+    img->setImgFlags(imgFlags::fill);
 }
