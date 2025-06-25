@@ -36,7 +36,6 @@ bool UINodeGeom::contains(UINodeGeom* outer, UINodeGeom* node) {
 void UINodeGeom::updateContentTransMat() {
     if (m_limitContentTrans) {
         auto overflow = getContentTransOverflow(m_contentTransMatTransl.x, m_contentTransMatTransl.y);
-        LOG << glm::to_string(overflow);
         m_contentTransMatTransl.x += overflow.x;
         m_contentTransMatTransl.y += overflow.y;
     }
