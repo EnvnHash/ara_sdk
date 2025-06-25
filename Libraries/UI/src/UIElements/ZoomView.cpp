@@ -23,9 +23,11 @@ void ZoomView::init() {
     setScissorChildren(true);
     addWorkingArea();
 
-    m_bottomMenu = UINode::addChild<Div>();
-    m_bottomMenu->setHeight(m_bottMenHeight);
-    m_bottomMenu->setAlignY(valign::bottom);
+    if (m_showSlider || m_showResetButton) {
+        m_bottomMenu = UINode::addChild<Div>();
+        m_bottomMenu->setHeight(m_bottMenHeight);
+        m_bottomMenu->setAlignY(valign::bottom);
+    }
 
     onChanged<float>(m_zoomProp, [this](const std::any& val) {
         if (m_workingArea) {
@@ -61,7 +63,9 @@ void ZoomView::addWorkingArea() {
     }
 
     m_workingArea = UINode::addChild<Div>({ .name = "ZoomViewWorkingArea"});
-    m_workingArea->setHeight(-m_bottMenHeight);
+    if (m_showSlider || m_showResetButton) {
+        m_workingArea->setHeight(-m_bottMenHeight);
+    }
     m_workingArea->setZoomNormMat(m_zoomProp() * 0.01f);
     m_workingArea->setContentTransCentered(true);
     m_workingArea->setCanReceiveDrag(true);
