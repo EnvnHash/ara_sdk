@@ -81,8 +81,6 @@ void Image::updateStyleIt(ResNode* node, state st, const std::string& styleClass
         }
     }
 
-    // sh: changed to methods in order to be called also from Image()
-    // (temporarily)
     if (node->hasValue("img-flags")) {
         setImgFlag(node, st);
     }

@@ -300,6 +300,7 @@ public :
     virtual bool isInBounds(glm::vec2& pos);
 
 protected:
+    void checkUpdateMatrix();
     glm::vec2 getContentTransOverflow(float x, float y);
 
     UISharedRes* m_sharedRes = nullptr;

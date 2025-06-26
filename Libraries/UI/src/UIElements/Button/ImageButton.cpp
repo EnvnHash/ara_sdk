@@ -164,13 +164,12 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
         ParVec   p      = node->splitNodeValue("img-flags");
         unsigned iflags = 0;
 
-        for (std::string &par : p) {
-            if (par == "fill") iflags |= 1;
-            if (par == "scale") iflags |= 2;
-            if (par == "hflip") iflags |= 4;
-            if (par == "vflip") iflags |= 8;
-            if (par == "int") iflags |= 16;
-            if (par == "no-aspect") iflags |= 32;
+        for (std::string& par : p) {
+            for (auto &[str, fl] : Image::m_imgFlagStrMap) {
+                if (par == str) {
+                    iflags |= toType(fl);
+                }
+            }
         }
 
         m_setStyleFunc[st][styleInit::imgFlag] = [iflags, this]() {

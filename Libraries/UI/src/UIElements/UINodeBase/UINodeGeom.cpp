@@ -290,45 +290,39 @@ vec2 UINodeGeom::getOrigPos() {
             m_posYType == unitType::Pixels ? static_cast<float>(m_posYInt) : m_posYFloat};
 }
 
-vec2& UINodeGeom::getPos() {
+void UINodeGeom::checkUpdateMatrix() {
     if (m_geoChanged) {
         updateMatrix();
     }
+}
+
+vec2& UINodeGeom::getPos() {
+    checkUpdateMatrix();
     return m_pos;
 }
 
 vec2& UINodeGeom::getSize() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return m_size;
 }
 
 vec2& UINodeGeom::getNodeSize() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return m_size;
 }
 
 float UINodeGeom::getNodeWidth() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return m_size.x;
 }
 
 float UINodeGeom::getNodeHeight() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return m_size.y;
 }
 
 vec2 UINodeGeom::getNodeRelSize() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     m_relSize.x = m_size.x / m_parentContVp.z;
     m_relSize.y = m_size.y / m_parentContVp.w;
     return m_relSize;
@@ -352,60 +346,44 @@ vec4 UINodeGeom::getNodeViewport() {
 }
 
 float* UINodeGeom::getMVPMatPtr() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return &m_mvp[0][0];
 }
 
 mat4* UINodeGeom::getMvp() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return &m_mvp;
 }
 
 mat4* UINodeGeom::getHwMvp() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return &m_mvpHw;
 }
 
 float* UINodeGeom::getWinRelMatPtr() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return &m_winRelMat[0][0];
 }
 
 mat4* UINodeGeom::getWinRelMat() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return &m_winRelMat;
 }
 
 mat4* UINodeGeom::getNormMat() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     calcNormMat();
     return &m_normMat;
 }
 
 float* UINodeGeom::getNormMatPtr() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     calcNormMat();
     return &m_normMat[0][0];
 }
 
 vec2& UINodeGeom::getParentContentScale() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
+    checkUpdateMatrix();
     return m_parentContScale;
 }
 
@@ -427,10 +405,7 @@ mat4* UINodeGeom::getFlatContentMat(bool excludedFromParentContentTrans, bool ex
 }
 
 vec2& UINodeGeom::getParentNodeRelPos() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
-
+    checkUpdateMatrix();
     // calculate the node's position relative to the parent node's upper left corner in pixels
     if (getParent()) {
         auto parent           = dynamic_cast<UINodeGeom*>(getParent());
@@ -443,10 +418,7 @@ vec2& UINodeGeom::getParentNodeRelPos() {
 }
 
 vec2& UINodeGeom::getWinPos() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
-
+    checkUpdateMatrix();
     if (m_parentMat) {
         m_parentTransPos = vec2(*m_parentMat * vec4(m_pos, 0.f, 1.f));
         m_winRelPos      = m_parentTransPos;
@@ -458,10 +430,7 @@ vec2& UINodeGeom::getWinPos() {
 }
 
 vec2& UINodeGeom::getWinRelSize() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
-
+    checkUpdateMatrix();
     if (m_parentMat) {
         for (int i = 0; i < 2; i++) {
             m_winRelSize[i] = m_parentMatLocCpy[i][i] * m_size[i];
@@ -474,10 +443,7 @@ vec2& UINodeGeom::getWinRelSize() {
 }
 
 vec2& UINodeGeom::getContWinPos() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
-
+    checkUpdateMatrix();
     // this node's content's left/top corner in relation to the window's top/left corner
     m_contWinPos.x = m_parentContVp.x + m_pos.x + m_padding.x + static_cast<float>(m_borderWidth);
     m_contWinPos.y = m_parentContVp.y + m_pos.y + m_padding.y + static_cast<float>(m_borderWidth);
@@ -486,10 +452,7 @@ vec2& UINodeGeom::getContWinPos() {
 }
 
 vec2& UINodeGeom::getContentSize() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
-
+    checkUpdateMatrix();
     // calculate the size of the node's content area
     m_contentSize.x = m_size.x - (m_padding.x + m_padding.z + static_cast<float>(m_borderWidth) * 2.f);
     m_contentSize.y = m_size.y - (m_padding.y + m_padding.w + static_cast<float>(m_borderWidth) * 2.f);
@@ -498,10 +461,7 @@ vec2& UINodeGeom::getContentSize() {
 }
 
 vec2& UINodeGeom::getContentOffset() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
-
+    checkUpdateMatrix();
     // calculate the size of the node's content area
     m_contentOffset.x = m_padding.x + static_cast<float>(m_borderWidth);
     m_contentOffset.y = m_padding.y + static_cast<float>(m_borderWidth);
@@ -510,10 +470,7 @@ vec2& UINodeGeom::getContentOffset() {
 }
 
 vec2& UINodeGeom::getBorderWidthRel() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
-
+    checkUpdateMatrix();
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
             m_borderWidthRel[i] = static_cast<float>(m_borderWidth) / m_size[i] / m_parentContScale[i];
@@ -526,10 +483,7 @@ vec2& UINodeGeom::getBorderWidthRel() {
 }
 
 vec2& UINodeGeom::getBorderRadiusRel() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
-
+    checkUpdateMatrix();
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
             m_borderRadiusRel[i] = static_cast<float>(m_borderRadius) / m_size[i] / m_parentContScale[i];
@@ -542,10 +496,7 @@ vec2& UINodeGeom::getBorderRadiusRel() {
 }
 
 vec2& UINodeGeom::getBorderAliasRel() {
-    if (m_geoChanged) {
-        updateMatrix();
-    }
-
+    checkUpdateMatrix();
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
             m_borderAliasRel[i] = static_cast<float>(m_borderAlias) / m_size[i] / m_parentContScale[i];
