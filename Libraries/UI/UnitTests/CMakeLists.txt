@@ -27,6 +27,7 @@ file(GLOB UI_UT_SRC
     ScrollViewTest.cpp
     SetXSetY.cpp
     TabTest.cpp
+    ZoomViewTest.cpp
     UIMatTests/GetPixelPosition_Absolute.cpp
     UIMatTests/GetPixelPosition_ParentRelative.cpp
 )

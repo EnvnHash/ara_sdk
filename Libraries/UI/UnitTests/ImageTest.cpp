@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace ara::SceneGraphUnitTest::ImageTests {
+namespace ara::UiUnitTest::ImageTests {
 
 Image* addImage(UIApplication &app, const std::string& imageFile, const glm::ivec2& size={400,400},
     const glm::vec4& bgCol = {0.5f, 0.2f, 0.2f, 1.f}, int mipMap=1) {

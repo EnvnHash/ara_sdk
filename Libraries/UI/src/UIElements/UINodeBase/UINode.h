@@ -127,11 +127,9 @@ public:
         return nc;
     }
 
-    // utility function for connecting to properties. stores a local callback
-    // function add passes it as to the property which will store a reference to
-    // it as a weak pointer on dtor the referring pointer is freed and by
-    // weak_ptr.lock() checking its weak_ptr reference inside the Property is
-    // deleted implicitly
+    // utility function for connecting to properties. stores a local callback function add passes it as to the property
+    // which will store a reference to it as a weak pointer. on dtor() the referring pointer is freed and by
+    // weak_ptr.lock() checking its weak_ptr reference inside the Property is deleted implicitly
     template <typename T>
     void onChanged(Property<T>& prop, std::function<void(std::any)> f) {
         m_onValChangedCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);

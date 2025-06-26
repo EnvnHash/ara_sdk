@@ -330,7 +330,16 @@ vec2 UINodeGeom::getNodeRelSize() {
 
 vec4 UINodeGeom::getNodeViewportGL() {
     getWinPos();
-    return {m_winRelPos.x, m_viewPort.w - (m_winRelPos.y + m_size.y), m_size.x, m_size.y};
+
+    auto uiWin = reinterpret_cast<UIWindow*>(getSharedRes()->win);
+    std::array qc{glm::vec4{0.f, 0.f, 0.f, 1.f}, glm::vec4{m_size.x, m_size.y, 0.f, 1.f}};
+    for (auto i=0; i<qc.size(); ++i) {
+        qc[i] = m_mvp * qc[i];
+        for (auto j=0; j<2; ++j) {
+            qc[i][j] = (qc[i][j] * 0.5f + 0.5f) * uiWin->getSize()[j];
+        }
+    }
+    return {qc[0].x, qc[1].y, qc[1].x - qc[0].x, qc[0].y - qc[1].y};
 }
 
 vec4 UINodeGeom::getContentViewport() {

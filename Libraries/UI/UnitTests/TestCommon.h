@@ -14,7 +14,6 @@
 static inline BS::thread_pool g_thread_pool;
 static inline glm::vec2       contentScale{1.f, 1.f};
 
-
 static void drawAndSwap(ara::UIApplication& app) {
     app.getWinBase()->draw(0, 0, 0);
     app.getMainWindow()->swap();

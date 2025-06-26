@@ -37,11 +37,11 @@ TEST(UITest, NestedAlignment)
         glm::ivec2 elementSize = glm::ivec2( (app.getWinBase()->getWidth() - margin * (1 + nrElementsPerRow)) / nrElementsPerRow,
                                              (app.getWinBase()->getHeight() - margin * (1 + nrRows)) / nrRows);
 
-        vector< std::pair<pivotX, pivotY> > pivs = { { pivotX::center, pivotY::center },
-                                                     { pivotX::left, pivotY::top },
-                                                     { pivotX::right, pivotY::top },
-                                                     { pivotX::right, pivotY::bottom },
-                                                     { pivotX::left, pivotY::bottom } };
+        vector< std::pair<pivotX, pivotY> > pivs = { { pivotX::center,  pivotY::center },
+                                                     { pivotX::left,    pivotY::top },
+                                                     { pivotX::right,   pivotY::top },
+                                                     { pivotX::right,   pivotY::bottom },
+                                                     { pivotX::left,    pivotY::bottom } };
 
         vector< std::pair<align, valign> > align = {{ align::center,    valign::center },
                                                     { align::center,    valign::center },
@@ -49,15 +49,15 @@ TEST(UITest, NestedAlignment)
                                                     { align::center,    valign::center },
                                                     { align::center,    valign::center },
                                                     { align::center,    valign::center },
-                                                    { align::left,  valign::top },
-                                                    { align::right, valign::top },
-                                                    { align::right, valign::bottom },
-                                                    { align::left,  valign::bottom },
+                                                    { align::left,      valign::top },
+                                                    { align::right,     valign::top },
+                                                    { align::right,     valign::bottom },
+                                                    { align::left,      valign::bottom },
                                                     { align::center,    valign::center },
-                                                    { align::left, valign::top },
-                                                    { align::right, valign::top },
-                                                    { align::right, valign::bottom },
-                                                    { align::left, valign::bottom }};
+                                                    { align::left,      valign::top },
+                                                    { align::right,     valign::top },
+                                                    { align::right,     valign::bottom },
+                                                    { align::left,      valign::bottom }};
 
         // x=left, y=top, z=right, w=bottom
         vector<vec4> padding;
@@ -70,7 +70,6 @@ TEST(UITest, NestedAlignment)
         padding.emplace_back(vec4{0.f,10.f,10.f,0.f});
         padding.emplace_back(vec4{0.f,0.f,10.f,10.f});
         padding.emplace_back(vec4{10.f,0.f,0.f,10.f});
-
 
         for (int i=0; i<nrElements; i++) {
             int x = (i % nrElementsPerRow);

@@ -19,7 +19,7 @@ glWinPar gp;             // define Parameters for windows instanciating
 
 bool didFindMemLeak = false;
 
-TEST(SceneGraphUnitTest, Stage3DMemLeak) {
+TEST(UITest, Stage3DMemLeak) {
     UIApplication app;
     app.setWinSize({ 200, 100 });
     app.setEnableMenuBar(false);

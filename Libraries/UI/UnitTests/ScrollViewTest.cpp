@@ -12,7 +12,7 @@
 using namespace glm;
 using namespace std;
 
-namespace ara::SceneGraphUnitTest::ScrollViewTest{
+namespace ara::UiUnitTest::ScrollViewTest{
 
 UITable* addTable(UINode* rootNode) {
     auto taux = rootNode->addChild<UITable>(UITableParameters{

@@ -55,7 +55,10 @@ void ZoomView::setZoomPropChangeCb() {
         for (const auto& it : m_onChangedCb) {
             it();
         }
+
+        getSharedRes()->reqRedraw();
     });
+    m_zoomProp.callOnPreChange(m_zoomProp()); // make sure any value set before init() is applied
 }
 
 void ZoomView::addWorkingArea() {
