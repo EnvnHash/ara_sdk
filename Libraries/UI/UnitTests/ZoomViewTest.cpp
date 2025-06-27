@@ -63,14 +63,18 @@ static void checkZoomedQuad(UIApplication& app) {
     checkQuad(mainWin, quadPos[1]*2, {50,50}, quadCol[1], {});
 }
 
+static void checkTestQuads(UIApplication& app) {
+    auto mainWin = app.getWinBase()->getWinHandle();
+    for (int i=0; i<nrTestQuads; ++i) {
+        checkQuad(mainWin, quadPos[i], quadSize[i], quadCol[i], {});
+    }
+}
+
 TEST(UITest, ZoomViewAddContentTest) {
     appBody([&](UIApplication& app){
         addTestDivs(app);
     }, [&](UIApplication& app){
-        auto mainWin = app.getWinBase()->getWinHandle();
-        for (int i=0; i<nrTestQuads; ++i) {
-            checkQuad(mainWin, quadPos[i], quadSize[i], quadCol[i], {});
-        }
+        checkTestQuads(app);
     }, winSize.x, winSize.y);
 }
 
