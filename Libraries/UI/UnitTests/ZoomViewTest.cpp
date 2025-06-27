@@ -26,7 +26,8 @@ static ZoomView* addZoomView(UIApplication& app) {
     return zv;
 }
 
-static void addTestDivs(ZoomView* zv) {
+static ZoomView* addTestDivs(UIApplication& app) {
+    auto zv = addZoomView(app);
     for (int i=0; i<nrTestQuads; ++i) {
         zv->addChild<Div>({
             .pos = quadPos[i],
@@ -34,9 +35,11 @@ static void addTestDivs(ZoomView* zv) {
             .bgColor = quadCol[i]
         });
     }
+    return zv;
 }
 
-static void addImageButton(ZoomView* zv) {
+static void addImageButton(UIApplication& app) {
+    auto zv = addZoomView(app);
     auto imgBut = zv->addChild<ImageButton>(UINodePars{
             .pos = ivec2{50, 50},
             .size = ivec2{100, 100},
@@ -48,10 +51,21 @@ static void addImageButton(ZoomView* zv) {
     imgBut->setIsToggle(true);
 }
 
+static void zoomToCenter(UIApplication& app) {
+    app.getMainWindow()->onMouseMove(static_cast<float>(winSize.x/2), static_cast<float>(winSize.y/2), 0);
+    auto mainWin = app.getWinBase()->getWinHandle();
+    mainWin->onScroll(0, 2);
+}
+
+static void checkZoomedQuad(UIApplication& app) {
+    auto mainWin = app.getWinBase()->getWinHandle();
+    checkQuad(mainWin, quadPos[0]*2, quadSize[0]*2, quadCol[0], {});
+    checkQuad(mainWin, quadPos[1]*2, {50,50}, quadCol[1], {});
+}
+
 TEST(UITest, ZoomViewAddContentTest) {
     appBody([&](UIApplication& app){
-        auto zv = addZoomView(app);
-        addTestDivs(zv);
+        addTestDivs(app);
     }, [&](UIApplication& app){
         auto mainWin = app.getWinBase()->getWinHandle();
         for (int i=0; i<nrTestQuads; ++i) {
@@ -62,38 +76,29 @@ TEST(UITest, ZoomViewAddContentTest) {
 
 TEST(UITest, ZoomViewBasicTest) {
     appBody([&](UIApplication& app){
-        auto zv = addZoomView(app);
-        addTestDivs(zv);
+        auto zv = addTestDivs(app);
         drawAndSwap(app);
         zv->setZoom(200.f);
     }, [&](UIApplication& app){
-        auto mainWin = app.getWinBase()->getWinHandle();
-        checkQuad(mainWin, quadPos[0]*2, quadSize[0]*2, quadCol[0], {});
-        checkQuad(mainWin, quadPos[1]*2, {50,50}, quadCol[1], {});
+        checkZoomedQuad(app);
     }, winSize.x, winSize.y);
 }
 
 TEST(UITest, ZoomViewWheelTest) {
     appBody([&](UIApplication& app){
-        auto zv = addZoomView(app);
-        addTestDivs(zv);
+        addTestDivs(app);
     }, [&](UIApplication& app){
-        auto mainWin = app.getWinBase()->getWinHandle();
-        mainWin->onScroll(0, 10);
+        app.getWinBase()->getWinHandle()->onScroll(0, 10);
         drawAndSwap(app);
-        checkQuad(mainWin, quadPos[0]*2, quadSize[0]*2, quadCol[0], {});
-        checkQuad(mainWin, quadPos[1]*2, {50,50}, quadCol[1], {});
+        checkZoomedQuad(app);
     }, winSize.x, winSize.y);
 }
 
 TEST(UITest, ZoomViewWheelCenterTest) {
     ZoomView* zv;
     appBody([&](UIApplication& app){
-        zv = addZoomView(app);
-        addTestDivs(zv);
-        app.getMainWindow()->onMouseMove(static_cast<float>(winSize.x/2), static_cast<float>(winSize.y/2), 0);
-        auto mainWin = app.getWinBase()->getWinHandle();
-        mainWin->onScroll(0, 2);
+        zv = addTestDivs(app);
+        zoomToCenter(app);
     }, [&](UIApplication& app){
         auto mainWin = app.getWinBase()->getWinHandle();
         checkQuad(mainWin, {}, {60,60}, quadCol[0], {});
@@ -106,8 +111,7 @@ TEST(UITest, ZoomViewWheelCenterTest) {
 
 TEST(UITest, ZoomViewImageButtonTest) {
     appBody([&](UIApplication& app){
-        auto zv = addZoomView(app);
-        addImageButton(zv);
+        addImageButton(app);
     }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "zoomview_imagebutton_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 2);
@@ -116,11 +120,8 @@ TEST(UITest, ZoomViewImageButtonTest) {
 
 TEST(UITest, ZoomViewImageButtonZoomedTest) {
     appBody([&](UIApplication& app){
-        auto zv = addZoomView(app);
-        addImageButton(zv);
-        app.getMainWindow()->onMouseMove(static_cast<float>(winSize.x/2), static_cast<float>(winSize.y/2), 0);
-        auto mainWin = app.getWinBase()->getWinHandle();
-        mainWin->onScroll(0, 2);
+        addImageButton(app);
+        zoomToCenter(app);
     }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "zoomview_imagebutton_test2.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 2);
