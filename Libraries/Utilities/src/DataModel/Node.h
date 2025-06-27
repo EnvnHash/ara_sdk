@@ -136,6 +136,18 @@ public:
         return par;
     }
 
+    Node* findChildByUuid(const std::string& uuid) {
+        Node* out = nullptr;
+        iterateChildren(*root(), [&out, &uuid] (Node& node) {
+            if (node.uuid() == uuid) {
+                out = &node;
+                return false;
+            }
+            return true;
+        });
+        return out;
+    }
+
     std::deque<Node*> findChildrenByType(const std::string& typeStr) {
         std::deque<Node*> outList;
         {
@@ -174,7 +186,7 @@ public:
     void                                    serialize(nlohmann::json& json);
     nlohmann::json                          serializeValues();
     void                                    deserialize(const std::string&);
-    void                                    deserialize(const nlohmann::json& j);
+    void                                    deserialize(const nlohmann::json& j, std::optional<std::list<std::function<void()>*>*> cbs = std::nullopt);
     void                                    load(const std::filesystem::path& filePath);
     void                                    loadFromAssets(const std::filesystem::path& filePath);
     virtual void                            load();
@@ -187,7 +199,7 @@ public:
     void                                    redo();
     void                                    signalChange(cbType cbType);
     std::deque<std::function<void()>>       collectCallbacks(cbType cbType, bool withChildrenOnly);
-    static void                             iterateChildren(Node& node, const std::function<void(Node&)>& f);
+    static bool                             iterateChildren(Node& node, const std::function<void(Node&)>& f);
     Node*                                   root();
     void                                    changeVal(const std::function<void()>& f);
     void                                    setUndoBuffer(bool enabled, size_t size);
@@ -253,6 +265,9 @@ protected:
     std::deque<std::vector<std::uint8_t>>           m_undoBuf;
     std::deque<std::vector<std::uint8_t>>::iterator m_undoBufIt;
     size_t                                          m_maxUndoBufSize=0;
+    std::optional<std::function<void()>>            m_postLoadCb;
+    std::list<std::function<void()>*>               m_postCbList;
+
 
     static inline std::filesystem::file_time_type   m_initFt{};
 

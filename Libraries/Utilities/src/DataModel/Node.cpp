@@ -117,6 +117,7 @@ deque<Node*> Node::findChild(const string& name) {
         if (nd.name() == name) {
             list.emplace_back(&nd);
         }
+        return true;
     });
     return list;
 }
@@ -167,12 +168,17 @@ void Node::deserialize(const string& str) {
     deserialize(j);
 }
 
-void Node::deserialize(const json& j) {
+void Node::deserialize(const json& j, std::optional<std::list<std::function<void()>*>*> postLoadCbs) {
     if (serializeValues() != getValues(j)) {
         deserializeValues(j);
         for (const auto& [fst, func] : m_changeCb[cbType::postChange]) {
             func();
         }
+    }
+
+    auto postLoadCbsArg = postLoadCbs.value_or(&m_postCbList);
+    if (m_postLoadCb.has_value()) {
+        postLoadCbsArg->emplace_back(&m_postLoadCb.value());
     }
 
     unordered_map<string, Node*> existingChildren;
@@ -184,21 +190,21 @@ void Node::deserialize(const json& j) {
         for (auto jChild = j["children"].begin(); jChild != j["children"].end(); ++jChild) {
             auto it = existingChildren.find(jChild->at("uuid"));
             if (it != existingChildren.end()) {
-                it->second->deserialize(*jChild);
+                it->second->deserialize(*jChild, postLoadCbsArg);
                 // assure correct order
                 auto childIt = find_if(m_children.begin(), m_children.end(), [&](auto& el){ return el.get() == it->second; });
                 auto childIdx = distance(m_children.begin(), childIt);
-                    auto jChildIdx = distance(j["children"].begin(), jChild);
-                    if (childIdx != jChildIdx) {
+                auto jChildIdx = distance(j["children"].begin(), jChild);
+                if (childIdx != jChildIdx) {
                     m_children.splice(next(m_children.begin(), jChildIdx), m_children, childIt);
-                    }
+                }
                 existingChildren.erase(it);
             } else {
                 // Create a new child and add it to the node
                 auto fact_child = m_factory.create(jChild->at("typeName"));
                 if (fact_child) {
                     auto& newChild = push(std::move(fact_child));
-                    newChild.deserialize(*jChild);
+                    newChild.deserialize(*jChild, postLoadCbsArg);
                 }
             }
         }
@@ -207,6 +213,12 @@ void Node::deserialize(const json& j) {
     // Remove remaining existing children that were not found in the JSON input
     for (const auto& pair : existingChildren) {
         remove(pair.second);
+    }
+
+    if (!postLoadCbs.has_value()) {
+        for (auto it : m_postCbList) {
+            (*it)();
+        }
     }
 }
 
@@ -332,11 +344,14 @@ void Node::redo() {
     }
 }
 
-void Node::iterateChildren(Node& node, const function<void(Node&)>& f) {
+bool Node::iterateChildren(Node& node, const function<void(Node&)>& f) {
     f(node);
     for (const auto& it: node.children()) {
-        iterateChildren(*it, f);
+        if (!iterateChildren(*it, f)) {
+            return false;
+        }
     }
+    return true;
 }
 
 deque<function<void()>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
@@ -353,6 +368,7 @@ deque<function<void()>> Node::collectCallbacks(cbType cbType, bool withChildrenO
                 list.emplace_back(it.second);
             }
         }
+        return true;
     });
 
     return list;
@@ -393,6 +409,7 @@ void Node::setUndoBuffer(bool enabled, size_t size) {
     m_maxUndoBufSize = size;
     iterateChildren(*this, [this](Node& node){
         node.setUndoBufferRoot(this);
+        return true;
     });
 }
 
@@ -425,6 +442,7 @@ void Node::setWatch(bool val) {
             if (&nd != this) {
                 nd.setWatch(val);
             }
+            return true;
         });
 
         if (val) {

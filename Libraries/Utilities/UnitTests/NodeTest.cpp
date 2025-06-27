@@ -37,37 +37,61 @@ public:
     size_t m_changeCalled = 0;
 };
 
+class ChildTestClass : public TestClass {
+public:
+    ChildTestClass() {
+        m_postLoadCb = [this]{
+            m_postLoadCbCalled++;
+        };
+    }
+    size_t m_postLoadCbCalled = 0;
+};
+
+static Node& createNestedNode(Node& nd, int depth) {
+    nd.setName("Root");
+    Node* lowestChild = nullptr;
+    std::function<void(Node&, int&)> addFunc = [&](Node& parent, int& level) {
+        auto& child = parent.push<Node>();
+        child.setName("Child"+std::to_string(level+1));
+        lowestChild = &child;
+        if (++level < depth) {
+            addFunc(child, level);
+        }
+    };
+
+    int level = 0;
+    addFunc(nd, level);
+    return *lowestChild;
+}
+
 TEST(Functional_Node, Parent) {
     Node nd;
-    nd.setName("Root");
-    auto& child = nd.push<Node>();
-    child.setName("Child");
-    EXPECT_EQ(child.parent(), &nd);
+    auto& lowestChild = createNestedNode(nd, 1);
+    EXPECT_EQ(lowestChild.parent(), &nd);
 }
 
 TEST(Functional_Node, GetRoot) {
     Node nd;
-    nd.setName("Root");
-    auto& child = nd.push<Node>();
-    child.setName("Child");
-    auto& child2 = child.push<Node>();
-    child2.setName("Child2");
-    auto& child3 = child2.push<Node>();
-    child3.setName("Child3");
-    EXPECT_EQ(child3.root(), &nd);
+    auto& lowestChild = createNestedNode(nd, 3);
+    EXPECT_EQ(lowestChild.root(), &nd);
 }
 
 TEST(Functional_Node, FindChildrenByName) {
     Node nd;
-    nd.setName("Root");
-    auto& child = nd.push<Node>();
-    child.setName("Child");
-    auto& child2 = child.push<Node>();
-    child2.setName("Child2");
-
+    createNestedNode(nd, 2);
     auto list = nd.findChild("Child2");
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list[0]->name(), "Child2");
+}
+
+TEST(Functional_Node, FindChildrenByUuid) {
+    Node nd;
+    auto& lowest = createNestedNode(nd, 2);
+    std::string uuid = "6998A327-29B0-90E9-984A-366FEB38BFFE";
+    lowest.setUuid(uuid);
+    auto node = nd.findChildByUuid(uuid);
+    ASSERT_FALSE(node == nullptr);
+    EXPECT_EQ(node->uuid(), uuid);
 }
 
 TEST(Functional_Node, AddChild) {
@@ -137,6 +161,18 @@ TEST(Functional_Node, ChangedCb) {
     j["arg3"] = 4.0;
     tc.deserialize(j);
     EXPECT_EQ(tc.m_changeCalled, 1);
+}
+
+TEST(Functional_Node, PostLoadCb) {
+    TestClass tc;
+    tc.push<ChildTestClass>();
+
+    auto j = tc.asJson();
+    j["arg1"] = 2;
+    tc.deserialize(j);
+
+    auto child = dynamic_cast<ChildTestClass*>(tc.children().front().get());
+    EXPECT_EQ(child->m_postLoadCbCalled, 1);
 }
 
 TEST(Functional_Node, SignalAddChild) {
