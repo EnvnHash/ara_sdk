@@ -71,7 +71,7 @@ namespace ara::GLBaseUnitTest::TypoGlyphMapTest {
         ASSERT_TRUE(gwin.init(gp));    // now pass the arguments and create the window
         ASSERT_EQ(true, initGLEW());
 
-        pBitmap = m_texture.ImageLoader((filesystem::current_path() / "typoGlyphTest.png").string().c_str(), 0);
+        pBitmap = FreeImage::Load((filesystem::current_path() / "typoGlyphTest.png").string(), 0);
         ASSERT_TRUE(pBitmap);
 
         typo = make_unique<TypoGlyphMap>(gp.size.x, gp.size.y);

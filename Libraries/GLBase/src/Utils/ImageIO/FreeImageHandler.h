@@ -22,11 +22,22 @@
 #include <GlbCommon/GlbCommon.h>
 #include <FreeImage.h>
 
-namespace ara {
+namespace ara::FreeImage {
 
-class FreeImg_MemHandler {
+void                    Initialize();
+FIBITMAP*               Load(const std::string& path, int flag);
+FIBITMAP*               Load(std::vector<uint8_t>& vp);
+FIBITMAP*               Load(void* ptr, size_t size);
+std::array<uint32_t, 2> GetSize(const std::string& path);
+std::array<uint32_t, 2> GetSize(std::vector<uint8_t>& vp);
+std::array<uint32_t, 2> GetSizeFromBitmap(FIBITMAP* bitmap);
+
+static uint8_t*         GetBits(FIBITMAP* bitmap) { return FreeImage_GetBits(bitmap); }
+static void             Unload(FIBITMAP* bitmap) { FreeImage_Unload(bitmap); }
+
+class MemHandler {
 public:
-    FreeImg_MemHandler(void *ptr, size_t size);
+    MemHandler(void *ptr, size_t size);
 
     void                  *memPtr  = nullptr;
     size_t                 memSize = 0;

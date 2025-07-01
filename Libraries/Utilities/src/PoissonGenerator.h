@@ -152,7 +152,8 @@ static Point generateRandomPointAround(const Point& p, float minDist) {
 static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
                                         bool isCircle = true,
                                         uint32_t newPointsCount = 30,
-                                        float minDist = -1.0f) {
+                                        float minDist = -1.0f,
+                                        float aspectRatio = 1.f) {
    // if we want to generate a Poisson square shape, multiply the estimate number of points by PI/4 due to reduced shape area
    if (!isCircle) {
        constexpr double Pi_4 = 0.785398163397448309616; // PI/4
@@ -166,13 +167,14 @@ static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
    std::vector<Point> samplePoints;
    std::vector<Point> processList;
 
-   if (!numPoints)
+   if (!numPoints) {
        return samplePoints;
+   }
 
    // create the grid
-    const float cellSize = minDist / std::sqrt(2.0f);
-    const int gridW = static_cast<int>(std::ceil(1.0f / cellSize));
-    const int gridH = static_cast<int>(std::ceil(1.0f / cellSize));
+    const float cellSize = minDist / std::sqrt(2.f);
+    const int gridW = static_cast<int>(std::ceil(1.f / cellSize));
+    const int gridH = static_cast<int>(std::ceil(1.f / cellSize));
 
    Grid grid(gridW, gridH, cellSize);
 

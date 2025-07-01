@@ -18,6 +18,7 @@
 
 #include <Utils/TextureData.h>
 #include <Utils/ImageIO/FreeImageHandler.h>
+#include <Utils/ImageIO/FreeImageHandler.h>
 
 #ifndef __EMSCRIPTEN__
 #include <FreeImage.h>
@@ -33,13 +34,9 @@ class GLBase;
 
 class Texture {
 public:
-    Texture();
+    Texture() = default;
     explicit Texture(GLBase *glbase);
     ~Texture();
-
-#if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
-    static FIBITMAP *ImageLoader(const char *path, int flag);
-#endif
 
     GLuint loadTexture2D(const std::string &filename, int nrMipMaps = 8, bool flipH = false) {
         return loadFromFile(filename, GL_TEXTURE_2D, nrMipMaps, flipH);
@@ -50,7 +47,7 @@ public:
         return loadFromFile(m_filename, GL_TEXTURE_CUBE_MAP, nrMipMaps, flipH);
     }
 
-    GLuint loadTextureRect(std::string filename, bool flipH = false);
+    GLuint loadTextureRect(const std::string& filename, bool flipH = false);
     std::array<float, 2> getFileImageSize(const std::string &filename);
     GLuint loadFromFile(const std::string &filename, GLenum textTarget, int nrMipMaps, bool flipH = false);
     GLuint loadFromMemPtr(void *ptr, size_t size, GLenum textTarget, int nrMipMaps, bool flipH = false);
