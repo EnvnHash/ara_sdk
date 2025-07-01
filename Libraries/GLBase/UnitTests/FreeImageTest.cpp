@@ -4,7 +4,7 @@
 
 #include "GLBaseUnitTestCommon.h"
 
-#include <Utils/ImageIO/FreeImageHandler.h>
+#include <ImageIO/FreeImageHandler.h>
 #include "FreeImageTestBitmap.h"
 
 using namespace std;

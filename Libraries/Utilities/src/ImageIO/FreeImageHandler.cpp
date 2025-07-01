@@ -17,7 +17,7 @@
 
 #ifdef ARA_USE_FREEIMAGE
 
-#include <Utils/ImageIO/FreeImageHandler.h>
+#include <ImageIO/FreeImageHandler.h>
 
 using namespace std;
 
@@ -30,24 +30,28 @@ void Initialize() {
 #endif
 }
 
-FIBITMAP* Load(const std::string& path, int flag) {
+FIBITMAP* Load(const std::string& path, FREE_IMAGE_FORMAT* fif) {
     Initialize();
 
-    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+    FREE_IMAGE_FORMAT f = FIF_UNKNOWN;
 
     // check the file signature and deduce its format
     // (the second argument is currently not used by FreeImage)
-    fif = FreeImage_GetFileType(path.c_str(), flag);
+    f = FreeImage_GetFileType(path.c_str(), 0);
 
-    if (fif == FIF_UNKNOWN) {
+    if (f == FIF_UNKNOWN) {
         // no signature ? try to guess the file format from the file extension
-        fif = FreeImage_GetFIFFromFilename(path.c_str());
+        f = FreeImage_GetFIFFromFilename(path.c_str());
+    }
+
+    if (fif) {
+        *fif = f;
     }
 
     // check that the plugin has reading capabilities ...
-    if ((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
+    if ((f != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(f)) {
         // ok, let's load the file
-        return FreeImage_Load(fif, path.c_str(), flag);
+        return FreeImage_Load(f, path.c_str(), 0);
     } else {
         LOGE << "Texture::Error unknown format";
         return nullptr;
@@ -60,13 +64,8 @@ FIBITMAP* Load(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
 }
 
 void Load(std::vector<uint8_t>& vp, Handle& hnd) {
-    hnd.bitmap = FreeImage::Load(vp, &hnd.fif);
-    auto sz = GetSizeFromBitmap(hnd.bitmap);
-    hnd.width = static_cast<int32_t>(sz[0]);
-    hnd.height = static_cast<int32_t>(sz[1]);
-    hnd.pixels = reinterpret_cast<uint8_t *>(hnd.bitmap->data);
-    hnd.numChannels = FreeImage::GetNumChannels(hnd.bitmap);
-    hnd.bpp = static_cast<int32_t>(FreeImage_GetBPP(hnd.bitmap));
+    auto bitmap = FreeImage::Load(vp, &hnd.fif);
+    InitHandle(hnd, bitmap);
 }
 
 FIBITMAP* Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
@@ -85,6 +84,16 @@ FIBITMAP* Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
         return {};
     }
     return bitmap;
+}
+
+void InitHandle(Handle& hnd, FIBITMAP* bitmap) {
+    hnd.bitmap = bitmap;
+    auto sz = GetSizeFromBitmap(hnd.bitmap);
+    hnd.width = static_cast<int32_t>(sz[0]);
+    hnd.height = static_cast<int32_t>(sz[1]);
+    hnd.pixels = reinterpret_cast<uint8_t *>(hnd.bitmap->data);
+    hnd.numChannels = FreeImage::GetNumChannels(hnd.bitmap);
+    hnd.bpp = static_cast<int32_t>(FreeImage_GetBPP(hnd.bitmap));
 }
 
 std::array<uint32_t, 2> GetSize(const std::string& path) {
@@ -122,6 +131,26 @@ uint8_t GetNumChannels(FIBITMAP* bitmap) {
         return bpp / (8 * sizeof(float)); // For float color images
     }
     return 0;
+}
+
+void Save(const std::string& filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf) {
+    auto saveBufCont = FreeImage_Allocate(w, h, nrChan * 8);
+
+    if (saveBufCont) {
+        std::copy_n(buf, (w * h * nrChan), FreeImage_GetBits(saveBufCont));
+        if (!FreeImage_Save(filetype, saveBufCont, filename.c_str())) {
+            LOGE << "FreeImage::saveTexToFile2D Error: FreeImage_Save failed";
+        }
+    }
+}
+
+FIBITMAP* ConvertTo32Bits(FIBITMAP* bitmap) {
+    auto dib32 = FreeImage_ConvertTo32Bits(bitmap);
+    if (!dib32) {
+        LOGE << "Failed to convert image to 32-bit";
+        FreeImage::Unload(bitmap);
+    }
+    return dib32;
 }
 
 MemHandler::MemHandler(void *ptr, size_t size) {

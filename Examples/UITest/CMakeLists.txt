@@ -64,6 +64,7 @@ include(ResCompInclude)
 include(PugiXMLInclude)
 include(UtilitiesDepInclude)
 include(UtilitiesDependencies)
+include(UtilitiesCopyDependencies)
 
 # uncomment for generating android project
 include(Android/GenerateAndroidProject)

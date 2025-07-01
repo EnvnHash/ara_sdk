@@ -46,5 +46,6 @@ include(Gtk3Include)
 include(ResCompInclude)
 include(PugiXMLInclude)
 include(UtilitiesDependencies)
+include(UtilitiesCopyDependencies)
 
 #gen_android_proj(${PROJECT_NAME} 1)

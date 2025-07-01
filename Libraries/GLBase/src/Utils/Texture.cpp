@@ -1128,49 +1128,19 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
 }
 #endif
 
-#if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
-void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan,
-                              uint8_t *buf) {
-    if (m_saveBufCont && (FreeImage_GetWidth(m_saveBufCont) != w || FreeImage_GetHeight(m_saveBufCont) != h)) {
-        FreeImage_Unload(m_saveBufCont);
-        m_saveBufCont = nullptr;
-    }
-
-    if (!m_saveBufCont) m_saveBufCont = FreeImage_Allocate(w, h, nrChan * 8);
-
-    if (m_saveBufCont) {
-        std::copy_n(buf, (w * h * nrChan), FreeImage_GetBits(m_saveBufCont));
-        if (!FreeImage_Save(filetype, m_saveBufCont, filename)) {
-            LOGE << "Texture::saveTexToFile2D Error: FreeImage_Save failed";
-        }
-    }
-}
-#endif
-
 #ifdef ARA_USE_FREEIMAGE
 void Texture::saveFrontBuffer(const std::string &filename, int w, int h, int nrChan) {
-    FIBITMAP         *bitmap   = FreeImage_Allocate(w, h, nrChan * 8);
-    FREE_IMAGE_FORMAT filetype = FIF_PNG;
-
-    if (bitmap) {
-        auto bits = FreeImage_GetBits(bitmap);
-        glReadBuffer(GL_FRONT);
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bits);  // synchronous, blocking command, no swap() needed
-    }
-
-    if (!FreeImage_Save(filetype, bitmap, filename.c_str())) {
-        LOGE << "Texture::saveTexToFile2D Error: FreeImage_Save failed";
-    } else {
-        FreeImage_Unload(bitmap);
-    }
+    std::vector<uint8_t> bitmap(w * h * nrChan);
+    glReadBuffer(GL_FRONT);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bitmap.data());  // synchronous, blocking command, no swap() needed
+    FreeImage::Save(filename, FIF_PNG, w, h, nrChan, bitmap.data());
 }
 #endif
 
 Texture::~Texture() {
     glDeleteTextures(1, &m_texData.textureID);
-
 #ifdef ARA_USE_FREEIMAGE
     if (m_keepBitmap) {
         FreeImage_Unload(m_texData.pBitmap);

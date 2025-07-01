@@ -19,7 +19,7 @@
 
 #if defined(ARA_USE_FREEIMAGE) && !defined(__EMSCRIPTEN__)
 
-#include <GlbCommon/GlbCommon.h>
+#include <util_common.h>
 #include <FreeImage.h>
 
 namespace ara::FreeImage {
@@ -35,14 +35,17 @@ struct Handle {
 };
 
 void                    Initialize();
-FIBITMAP*               Load(const std::string& path, int flag);
+FIBITMAP*               Load(const std::string& path, FREE_IMAGE_FORMAT* fif = nullptr);
 FIBITMAP*               Load(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif = nullptr);
 void                    Load(std::vector<uint8_t>& vp, Handle& hnd);
 FIBITMAP*               Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif = nullptr);
+void                    InitHandle(Handle& hnd, FIBITMAP* bitmap);
 std::array<uint32_t, 2> GetSize(const std::string& path);
 std::array<uint32_t, 2> GetSize(std::vector<uint8_t>& vp);
 std::array<uint32_t, 2> GetSizeFromBitmap(FIBITMAP* bitmap);
 uint8_t                 GetNumChannels(FIBITMAP* bitmap);
+FIBITMAP*               ConvertTo32Bits(FIBITMAP* bitmap);
+void                    Save(const std::string& filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf);
 
 static uint8_t*         GetBits(FIBITMAP* bitmap) { return FreeImage_GetBits(bitmap); }
 static void             Unload(FIBITMAP* bitmap) { FreeImage_Unload(bitmap); }

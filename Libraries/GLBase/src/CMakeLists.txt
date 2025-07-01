@@ -8,7 +8,6 @@ if (NOT COMPILE_SCENEGRAPH_LIB)
     add_compile_definitions(WGLWINDOW)
 endif ()
 
-
 include_directories(
         ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src
         ${ARA_SDK_SOURCE_DIR}/Libraries/Utilities/src
@@ -24,3 +23,4 @@ add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 include(GLBaseDepInclude)
 include(GLBaseDependencies)
+include(UtilitiesDependencies)

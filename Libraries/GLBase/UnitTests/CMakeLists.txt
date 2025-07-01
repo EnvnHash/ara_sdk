@@ -66,6 +66,7 @@ include(GLBaseDependencies)
 include(GLBaseCopyDependencies)
 include(ResCompInclude)
 include(UtilitiesDependencies)
+include(UtilitiesCopyDependencies)
 include(UtilitiesDepInclude)
 include(Gtk3Include)
 

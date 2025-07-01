@@ -23,6 +23,7 @@ file(GLOB UTILITIES_UT_SRC
     ItemTest.cpp
     ListPropertyTest.cpp
     NodeTest.cpp
+    PoissonTest.cpp
     PropertyTest.cpp
     RwBinFileTest.cpp
     StringUtilsTest.cpp
