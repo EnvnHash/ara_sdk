@@ -1,6 +1,7 @@
 include_directories(
 	${ARA_SDK_SOURCE_DIR}/Libraries/Utilities/src
 	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/
+	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/glm/include
 	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/nameof
 	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/magic_enum
 	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/pugixml
@@ -21,9 +22,9 @@ endif()
 # Freeimage
 if (ARA_USE_FREEIMAGE)
 	if(WIN32)
-		include_directories(${GLSG_LIB_DIR}/FreeImage/include)
+		include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/FreeImage/include)
 	elseif(ANDROID)
-		include_directories(${GLSG_LIB_DIR}/FreeImage/Android/include)
+		include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/FreeImage/Android/include)
 	else()
 		if (FREEIMAGE_FOUND)
 			include_directories(${FREEIMAGE_INCLUDE_DIRS})

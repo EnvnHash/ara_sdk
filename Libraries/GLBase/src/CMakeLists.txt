@@ -17,10 +17,10 @@ include_directories(
 
 file(GLOB_RECURSE GLB_SRC *.cpp)
 
-add_library(${PROJECT_NAME} OBJECT ${GLB_SRC} ${GLB_HEADERS} GlbCommon/GlbKeyDefines.h GlbCommon/GlbTypeConversion.cpp GlbCommon/GlbConstants.h)
+add_library(${PROJECT_NAME} OBJECT ${GLB_SRC} ${GLB_HEADERS} GlbCommon/GlbKeyDefines.h GlbCommon/GlbTypeConversion.cpp)
 
 add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 include(GLBaseDepInclude)
 include(GLBaseDependencies)
-include(UtilitiesDependencies)
+include(UtilitiesDepInclude)

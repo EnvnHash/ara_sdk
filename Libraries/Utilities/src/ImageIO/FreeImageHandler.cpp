@@ -60,11 +60,11 @@ FIBITMAP* Load(const std::string& path, FREE_IMAGE_FORMAT* fif) {
 
 FIBITMAP* Load(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
     Initialize();
-    return FreeImage::Load(vp.data(), vp.size(), fif);
+    return Load(vp.data(), vp.size(), fif);
 }
 
 void Load(std::vector<uint8_t>& vp, Handle& hnd) {
-    auto bitmap = FreeImage::Load(vp, &hnd.fif);
+    const auto bitmap = Load(vp, &hnd.fif);
     InitHandle(hnd, bitmap);
 }
 
@@ -73,7 +73,7 @@ FIBITMAP* Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
         LOGE << "FreeImage::Load failed, size of memory to load to is zero";
         return {};
     }
-    FreeImage::MemHandler mh(ptr, size);
+    MemHandler mh(ptr, size);
     FREE_IMAGE_FORMAT f = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
     if(fif) {
         *fif = f;
@@ -88,24 +88,24 @@ FIBITMAP* Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
 
 void InitHandle(Handle& hnd, FIBITMAP* bitmap) {
     hnd.bitmap = bitmap;
-    auto sz = GetSizeFromBitmap(hnd.bitmap);
+    const auto sz = GetSizeFromBitmap(hnd.bitmap);
     hnd.width = static_cast<int32_t>(sz[0]);
     hnd.height = static_cast<int32_t>(sz[1]);
-    hnd.pixels = reinterpret_cast<uint8_t *>(hnd.bitmap->data);
+    hnd.pixels = static_cast<uint8_t *>(hnd.bitmap->data);
     hnd.numChannels = FreeImage::GetNumChannels(hnd.bitmap);
     hnd.bpp = static_cast<int32_t>(FreeImage_GetBPP(hnd.bitmap));
 }
 
 std::array<uint32_t, 2> GetSize(const std::string& path) {
-    auto bitmap = FreeImage::Load(path, 0);
-    auto sz = GetSizeFromBitmap(bitmap);
+    const auto bitmap = FreeImage::Load(path, nullptr);
+    const auto sz = GetSizeFromBitmap(bitmap);
     FreeImage_Unload(bitmap);
     return sz;
 }
 
 std::array<uint32_t, 2> GetSize(std::vector<uint8_t>& vp) {
-    auto bitmap = FreeImage::Load(vp);
-    auto sz = GetSizeFromBitmap(bitmap);
+    const auto bitmap = FreeImage::Load(vp);
+    const auto sz = GetSizeFromBitmap(bitmap);
     FreeImage_Unload(bitmap);
     return sz;
 }
@@ -115,9 +115,8 @@ std::array<uint32_t, 2> GetSizeFromBitmap(FIBITMAP* bitmap) {
 }
 
 uint8_t GetNumChannels(FIBITMAP* bitmap) {
-    auto bpp = FreeImage_GetBPP(bitmap);
-    auto imageType = FreeImage_GetImageType(bitmap);
-    if (imageType == FIT_BITMAP) {
+    const auto bpp = FreeImage_GetBPP(bitmap);
+    if (const auto imageType = FreeImage_GetImageType(bitmap); imageType == FIT_BITMAP) {
         if (bpp == 8) {
             return 1; // Grayscale
         } else if (bpp == 24) {
@@ -125,18 +124,14 @@ uint8_t GetNumChannels(FIBITMAP* bitmap) {
         } else if (bpp == 32) {
             return 4; // RGBA
         }
-    } else if (imageType == FIT_FLOAT || imageType == FIT_DOUBLE) {
-        return bpp / (8 * sizeof(float)); // For float images
-    } else if (imageType == FIT_RGBF || imageType == FIT_RGBAF) {
-        return bpp / (8 * sizeof(float)); // For float color images
+    } else if (imageType == FIT_FLOAT || imageType == FIT_DOUBLE || imageType == FIT_RGBF || imageType == FIT_RGBAF) {
+        return static_cast<uint8_t>(bpp / (8 * sizeof(float)));
     }
     return 0;
 }
 
 void Save(const std::string& filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf) {
-    auto saveBufCont = FreeImage_Allocate(w, h, nrChan * 8);
-
-    if (saveBufCont) {
+    if (const auto saveBufCont = FreeImage_Allocate(w, h, nrChan * 8)) {
         std::copy_n(buf, (w * h * nrChan), FreeImage_GetBits(saveBufCont));
         if (!FreeImage_Save(filetype, saveBufCont, filename.c_str())) {
             LOGE << "FreeImage::saveTexToFile2D Error: FreeImage_Save failed";
@@ -145,10 +140,10 @@ void Save(const std::string& filename, FREE_IMAGE_FORMAT filetype, int w, int h,
 }
 
 FIBITMAP* ConvertTo32Bits(FIBITMAP* bitmap) {
-    auto dib32 = FreeImage_ConvertTo32Bits(bitmap);
+    const auto dib32 = FreeImage_ConvertTo32Bits(bitmap);
     if (!dib32) {
         LOGE << "Failed to convert image to 32-bit";
-        FreeImage::Unload(bitmap);
+        Unload(bitmap);
     }
     return dib32;
 }
@@ -161,14 +156,14 @@ MemHandler::MemHandler(void *ptr, size_t size) {
 }
 
 void MemHandler::fillFreeImageIO(FreeImageIO &io) {
-    io.read_proc  = MemHandler::read;
-    io.write_proc = MemHandler::write;
-    io.seek_proc  = MemHandler::seek;
-    io.tell_proc  = MemHandler::tell;
+    io.read_proc  = read;
+    io.write_proc = write;
+    io.seek_proc  = seek;
+    io.tell_proc  = tell;
 }
 
 unsigned MemHandler::read(void *buffer, unsigned size, unsigned count, fi_handle handle) {
-    auto h = static_cast<MemHandler *>(handle);
+    const auto h = static_cast<MemHandler *>(handle);
     auto dest = static_cast<uint8_t *>(buffer);
     auto src  = h->getPos();
 
@@ -187,7 +182,7 @@ unsigned MemHandler::write(void *buffer, unsigned size, unsigned count, fi_handl
 }
 
 int MemHandler::seek(fi_handle handle, long offset, int origin) {
-    auto h = static_cast<MemHandler *>(handle);
+    const auto h = static_cast<MemHandler *>(handle);
 
     if (origin == SEEK_SET) {
         h->memPos = 0;
@@ -199,7 +194,7 @@ int MemHandler::seek(fi_handle handle, long offset, int origin) {
 }
 
 long MemHandler::tell(fi_handle handle) {
-    auto h = static_cast<MemHandler *>(handle);
+    const auto h = static_cast<MemHandler *>(handle);
     return static_cast<long>(h->memPos);
 }
 
