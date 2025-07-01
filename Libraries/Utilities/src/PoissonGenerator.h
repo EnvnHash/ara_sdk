@@ -173,7 +173,7 @@ static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
 
    // create the grid
     const float cellSize = minDist / std::sqrt(2.f);
-    const int gridW = static_cast<int>(std::ceil(1.f / cellSize));
+    const int gridW = static_cast<int>(std::ceil(1.f / cellSize)) * aspectRatio;
     const int gridH = static_cast<int>(std::ceil(1.f / cellSize));
 
    Grid grid(gridW, gridH, cellSize);

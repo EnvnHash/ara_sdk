@@ -54,20 +54,33 @@ FIBITMAP* Load(const std::string& path, int flag) {
     }
 }
 
-FIBITMAP* Load(std::vector<uint8_t>& vp) {
+FIBITMAP* Load(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
     Initialize();
-    return  FreeImage::Load(vp.data(), vp.size());
+    return FreeImage::Load(vp.data(), vp.size(), fif);
 }
 
-FIBITMAP* Load(void* ptr, size_t size) {
+void Load(std::vector<uint8_t>& vp, Handle& hnd) {
+    hnd.bitmap = FreeImage::Load(vp, &hnd.fif);
+    auto sz = GetSizeFromBitmap(hnd.bitmap);
+    hnd.width = static_cast<int32_t>(sz[0]);
+    hnd.height = static_cast<int32_t>(sz[1]);
+    hnd.pixels = reinterpret_cast<uint8_t *>(hnd.bitmap->data);
+    hnd.numChannels = FreeImage::GetNumChannels(hnd.bitmap);
+    hnd.bpp = static_cast<int32_t>(FreeImage_GetBPP(hnd.bitmap));
+}
+
+FIBITMAP* Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
     if (size == 0) {
         LOGE << "FreeImage::Load failed, size of memory to load to is zero";
         return {};
     }
     FreeImage::MemHandler mh(ptr, size);
-    FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
+    FREE_IMAGE_FORMAT f = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
+    if(fif) {
+        *fif = f;
+    }
     FIBITMAP* bitmap = nullptr;
-    if (mh.memPos < mh.memSize && ((bitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0)) == nullptr)) {
+    if (mh.memPos < mh.memSize && ((bitmap = FreeImage_LoadFromHandle(f, mh.io(), (fi_handle)&mh, 0)) == nullptr)) {
         LOGE << "FreeImage::Load failed";
         return {};
     }
@@ -90,6 +103,25 @@ std::array<uint32_t, 2> GetSize(std::vector<uint8_t>& vp) {
 
 std::array<uint32_t, 2> GetSizeFromBitmap(FIBITMAP* bitmap) {
     return { FreeImage_GetWidth(bitmap), FreeImage_GetHeight(bitmap) };
+}
+
+uint8_t GetNumChannels(FIBITMAP* bitmap) {
+    auto bpp = FreeImage_GetBPP(bitmap);
+    auto imageType = FreeImage_GetImageType(bitmap);
+    if (imageType == FIT_BITMAP) {
+        if (bpp == 8) {
+            return 1; // Grayscale
+        } else if (bpp == 24) {
+            return 3; // RGB
+        } else if (bpp == 32) {
+            return 4; // RGBA
+        }
+    } else if (imageType == FIT_FLOAT || imageType == FIT_DOUBLE) {
+        return bpp / (8 * sizeof(float)); // For float images
+    } else if (imageType == FIT_RGBF || imageType == FIT_RGBAF) {
+        return bpp / (8 * sizeof(float)); // For float color images
+    }
+    return 0;
 }
 
 MemHandler::MemHandler(void *ptr, size_t size) {

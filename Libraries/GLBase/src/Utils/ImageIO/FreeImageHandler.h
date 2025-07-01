@@ -24,13 +24,25 @@
 
 namespace ara::FreeImage {
 
+struct Handle {
+    FIBITMAP* bitmap = nullptr;
+    FREE_IMAGE_FORMAT fif{};
+    int32_t width = 0;
+    int32_t height = 0;
+    int32_t bpp = 0;
+    int32_t numChannels = 0;
+    uint8_t* pixels = nullptr;
+};
+
 void                    Initialize();
 FIBITMAP*               Load(const std::string& path, int flag);
-FIBITMAP*               Load(std::vector<uint8_t>& vp);
-FIBITMAP*               Load(void* ptr, size_t size);
+FIBITMAP*               Load(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif = nullptr);
+void                    Load(std::vector<uint8_t>& vp, Handle& hnd);
+FIBITMAP*               Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif = nullptr);
 std::array<uint32_t, 2> GetSize(const std::string& path);
 std::array<uint32_t, 2> GetSize(std::vector<uint8_t>& vp);
 std::array<uint32_t, 2> GetSizeFromBitmap(FIBITMAP* bitmap);
+uint8_t                 GetNumChannels(FIBITMAP* bitmap);
 
 static uint8_t*         GetBits(FIBITMAP* bitmap) { return FreeImage_GetBits(bitmap); }
 static void             Unload(FIBITMAP* bitmap) { FreeImage_Unload(bitmap); }
