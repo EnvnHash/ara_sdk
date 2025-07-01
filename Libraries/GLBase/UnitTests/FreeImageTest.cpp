@@ -41,8 +41,8 @@ TEST(GLBaseTest, LoadImgSuccess) {
 
 TEST(GLBaseTest, LoadImgFromMem) {
     std::vector<uint8_t> vp;
-    std::string file = "freeimage_test_img.png";
-    ara::AssetLoader::loadAssetToMem(vp, file);
+    AssetLoader::setAssetPath("resdata");
+    auto sample = AssetLoader::loadAssetToMem(vp, filesystem::path("test") / "freeimage_test_img.png");
     auto bitmap = ara::FreeImage::Load(vp);
     EXPECT_TRUE(bitmap);
     checkBitmap(bitmap);

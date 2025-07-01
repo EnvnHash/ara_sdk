@@ -60,11 +60,15 @@ FIBITMAP* Load(std::vector<uint8_t>& vp) {
 }
 
 FIBITMAP* Load(void* ptr, size_t size) {
+    if (size == 0) {
+        LOGE << "FreeImage::Load failed, size of memory to load to is zero";
+        return {};
+    }
     FreeImage::MemHandler mh(ptr, size);
     FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
     FIBITMAP* bitmap = nullptr;
     if (mh.memPos < mh.memSize && ((bitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0)) == nullptr)) {
-        LOGE << "Texture::loadFromMemPtr failed";
+        LOGE << "FreeImage::Load failed";
         return {};
     }
     return bitmap;
