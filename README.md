@@ -38,7 +38,7 @@ All dependencies are checked out and unzipped automatically.
 
 ## Example
 
-### Basic Application (will create an Window and an opengl/UI rendering context)
+### Basic Application (will create a window and an opengl/UI rendering context)
 ``` 
 #include <UIApplication.h>
 
