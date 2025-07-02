@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(Applications)
 
 add_subdirectory(UITest)
+add_subdirectory(VisualStudioExample)
 
 if(ANDROID)
     add_subdirectory(ARCore_Test)

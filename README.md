@@ -36,7 +36,37 @@ All dependencies are checked out and unzipped automatically.
 
 [Utilities](Libraries/Utilities/src/README.md) FileSystem, Network, String and other utilities
 
+## Example
 
+### Basic Application (will create an Window and an opengl/UI rendering context)
+``` 
+#include <UIApplication.h>
+
+using namespace ara;
+using namespace glm;
+
+int main(int, char**) {
+    // create an Application instance
+    UIApplication app;  
+
+    // init the application, passing a lambda function, creating a single UI Element
+    app.init([](UINode& rootNode) {
+        // Add a red, 400 by 400 pixels, centered "Div" element (similar to a html <div>)
+        rootNode.addChild<Div>({
+            .size = ivec2{400,400},
+            .bgColor = vec4{1.f, 0.f, 0.f, 1.f},
+            .align = align::center,
+            .valign = valign::center
+        });
+    });
+
+    // start the render loop. This will block until the loop is terminated 
+    app.startEventLoop(); 
+
+    return 0;
+}
+
+``` 
 ## Building on Android
 
 Add these two lines to your ara sdks application root folders CMakeLists.txt
