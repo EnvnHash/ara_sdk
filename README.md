@@ -51,6 +51,7 @@ int main(int, char**) {
 
     // init the application, passing a lambda function, creating a single UI Element
     app.init([](UINode& rootNode) {
+
         // Add a red, 400 by 400 pixels, centered "Div" element (similar to a html <div>)
         rootNode.addChild<Div>({
             .size = ivec2{400,400},
@@ -58,6 +59,7 @@ int main(int, char**) {
             .align = align::center,
             .valign = valign::center
         });
+
     });
 
     // start the render loop. This will block until the loop is terminated 
