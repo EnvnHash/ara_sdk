@@ -13,8 +13,8 @@ include(ResCompInclude)
 include(PugiXMLInclude)
 include(UtilitiesDepInclude)
 include(UtilitiesDependencies)
+include(UtilitiesCopyDependencies)
 include(OpenCV)
-
 
 macro(add_ara_doc_link_to_readme)
     set(README_PATH "${CMAKE_SOURCE_DIR}/README.md")

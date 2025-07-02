@@ -17,6 +17,7 @@ file(GLOB COMMON_SRC
         DataModel/Node.cpp
         DataModel/NodeColor.cpp
         DataModel/NodeImage.cpp
+        ImageIO/FreeImageHandler.cpp
         Network/RestClient.cpp
         Network/TCPCmdListener.cpp
         Network/TCPLineCmdRequest.cpp

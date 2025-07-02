@@ -1284,25 +1284,17 @@ void UIWindow::setAppIcon(std::string &path) {
     // set app icon
     std::vector<uint8_t> vp;
     m_glbase->getAssetManager()->loadResource(nullptr, vp, "app_icon_placeholder.png");
-
     if (vp.empty()) {
         return;
     }
 
-    FIBITMAP          *pBitmap;
-    FreeImg_MemHandler mh(&vp[0], vp.size());
-    FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), &mh, 0);
-    if (!((pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), &mh, 0)))) {
-        return;
-    }
-
-    FreeImage_FlipVertical(pBitmap);
+    auto bitmap = FreeImage::Load(vp);
+    FreeImage_FlipVertical(bitmap);
 
     GLFWimage logo;
     logo.width  = 48;
     logo.height = 48;
-    // logo.pixels = (uint8_t*)pBitmap->data;
-    logo.pixels = static_cast<uint8_t *>(pBitmap->data) + logo.width * 8;
+    logo.pixels = static_cast<uint8_t *>(bitmap->data) + logo.width * 8;
 
     // convert to bgra
     std::array<uint8_t, 4> t{};

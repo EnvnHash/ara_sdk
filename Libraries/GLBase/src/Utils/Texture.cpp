@@ -30,46 +30,11 @@ using namespace glm;
 
 namespace ara {
 
-Texture::Texture() {
-#if (defined(FREEIMAGE_LIB) || defined(__ANDROID__)) && defined(ARA_USE_FREEIMAGE)
-    FreeImage_Initialise();
-#endif
-}
-
 Texture::Texture(GLBase *glbase) : m_glbase(glbase) {
-    // glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTexSize);
-    // call this ONLY when linking with FreeImage as a static library
-#if (defined(FREEIMAGE_LIB) || defined(__ANDROID__)) && defined(ARA_USE_FREEIMAGE)
-    FreeImage_Initialise();
-#endif
 }
 
-#if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
-FIBITMAP *Texture::ImageLoader(const char *path, int flag) {
-    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
-
-    // check the file signature and deduce its format
-    // (the second argument is currently not used by FreeImage)
-    fif = FreeImage_GetFileType(path, flag);
-
-    if (fif == FIF_UNKNOWN) {
-        // no signature ?
-        // try to guess the file format from the file extension
-        fif = FreeImage_GetFIFFromFilename(path);
-    }
-    // check that the plugin has reading capabilities ...
-    if ((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
-        // ok, let's load the file
-        return FreeImage_Load(fif, path, flag);
-    } else {
-        LOGE << "Texture::Error unknown format";
-        return nullptr;
-    }
-}
-#endif
-
-GLuint Texture::loadTextureRect(std::string filename, bool flipH) {
-    m_filename = std::move(filename);
+GLuint Texture::loadTextureRect(const std::string& filename, bool flipH) {
+    m_filename = filename;
 #if !defined(__EMSCRIPTEN__) && !defined(ARA_USE_GLES31)
     return loadFromFile(m_filename, GL_TEXTURE_RECTANGLE, 1, flipH);
 #else
@@ -92,34 +57,14 @@ std::array<float, 2> Texture::getFileImageSize(const std::string &filename) {
         if (size > 0) {
             vector<uint8_t> vp(size);
             std::copy(file.begin(), file.end(), vp.begin());
-            FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(reinterpret_cast<FIMEMORY *>(vp.data()), static_cast<int>(vp.size()));
-            if (fif == FIF_UNKNOWN) {
-                LOGE << "Unknown image file format";
-            } else {
-                FIMEMORY* mem = FreeImage_OpenMemory(vp.data(), static_cast<DWORD>(vp.size()));
-                if (mem == nullptr) {
-                    LOGE << "Failed to open image memory";
-                } else {
-                    FIBITMAP* pBitmap = FreeImage_LoadFromMemory(fif, mem, 0);
-                    if (pBitmap == nullptr) {
-                        LOGE << "Failed to load image from memory";
-                        FreeImage_CloseMemory(mem);
-                    } else {
-                        sz[0] = static_cast<float>(FreeImage_GetWidth(pBitmap));
-                        sz[1] = static_cast<float>(FreeImage_GetHeight(pBitmap));
-                        FreeImage_Unload(pBitmap);
-                        FreeImage_CloseMemory(mem);
-                    }
-                }
-            }
+            auto imgSize = FreeImage::GetSize(vp);
+            sz = { static_cast<float>(imgSize[0]), static_cast<float>(imgSize[1]) };
         }
 #elif !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
     if (fs::exists(fs::path(filename))) {
         m_filename        = filename;
-        FIBITMAP *pBitmap = ImageLoader(filename.c_str(), 0);
-        sz[0] = static_cast<float>(FreeImage_GetWidth(pBitmap));
-        sz[1] = static_cast<float>(FreeImage_GetHeight(pBitmap));
-        FreeImage_Unload(pBitmap);
+        auto imgSize = FreeImage::GetSize(filename);
+        sz = { static_cast<float>(imgSize[0]), static_cast<float>(imgSize[1]) };
 #else
     // TODO: implement for EMSCRIPTEN
     //if (fs::exists(fs::path(filename))) {
@@ -132,31 +77,12 @@ std::array<float, 2> Texture::getFileImageSize(const std::string &filename) {
     return sz;
 }
 
-GLuint Texture::loadFromFile(const std::string &filename, GLenum _textTarget, int nrMipMaps, bool flipH) {
-/*#ifdef ARA_USE_CMRC
-    auto fs = cmrc::ara::get_filesystem();
-
-    if (fs.exists(filename)) {
-        auto file = fs.open(filename);
-        if (!file.size()) {
-            return 0;
-        }
-
-        LOG << "Texture::loadFromFile " << filename;
-
-        size_t size = file.size();
-        if (size > 0) {
-            vector<uint8_t> vp(size);
-            std::copy(file.begin(), file.end(), vp.begin());
-            return loadFromMemPtr(vp.data(), size, _textTarget, nrMipMaps, flipH);
-        }
-*/
+GLuint Texture::loadFromFile(const std::string &filename, GLenum textTarget, int nrMipMaps, bool flipH) {
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
     if (std::filesystem::exists(std::filesystem::path(filename))) {
         m_filename        = filename;
-        LOG << "Texture::loadFromFile " << filename;
-        FIBITMAP *pBitmap = ImageLoader(filename.c_str(), 0);
-        return loadFromFib(pBitmap, _textTarget, nrMipMaps, flipH);
+        auto pBitmap = FreeImage::Load(filename, 0);
+        return loadFromFib(pBitmap, textTarget, nrMipMaps, flipH);
 #else
     if (fs::exists(fs::path(filename))) {
         return loadFromSDL(_textTarget, nrMipMaps);
@@ -168,21 +94,13 @@ GLuint Texture::loadFromFile(const std::string &filename, GLenum _textTarget, in
     return 0;
 }
 
-GLuint Texture::loadFromMemPtr(void *ptr, size_t size, GLenum _textTarget, int nrMipMaps, bool flipH) {
+GLuint Texture::loadFromMemPtr(void *ptr, size_t size, GLenum textTarget, int nrMipMaps, bool flipH) {
 #ifdef ARA_USE_FREEIMAGE
     if (!ptr || !size) {
-        return 0;
+        return {};
     }
-    FreeImg_MemHandler mh(ptr, size);
-    FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
-
-    if ((mh.memPos < mh.memSize) &&
-        ((m_texData.pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0)) == nullptr)) {
-        LOGE << "Texture::loadFromMemPtr failed";
-        return 0;
-    }
-
-    return loadFromFib(m_texData.pBitmap, _textTarget, nrMipMaps, flipH);
+    m_texData.pBitmap = FreeImage::Load(ptr, size);
+    return loadFromFib(m_texData.pBitmap, textTarget, nrMipMaps, flipH);
 #else
     return 0;
 #endif
@@ -1118,20 +1036,22 @@ SDL_Surface *Texture::flip_surface(SDL_Surface *surface, int flags) {
 #endif
 
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
-void Texture::saveTexToFile2D(const char *_filename, FREE_IMAGE_FORMAT _filetype, int w, int h, GLenum _internalFormat,
-                              GLint _texNr) {
+void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, GLenum internalFormat,
+                              GLint texNr) {
     GLenum    format;
     GLenum    type;
     FIBITMAP *bitmap = nullptr;
 
-    glBindTexture(GL_TEXTURE_2D, _texNr);
-    getGlFormatAndType(_internalFormat, format, type);
+    glBindTexture(GL_TEXTURE_2D, texNr);
+    getGlFormatAndType(internalFormat, format, type);
 
     switch (type) {
         case GL_UNSIGNED_SHORT: {
-            switch (format) {
-                case GL_RED: bitmap = FreeImage_AllocateT(FIT_UINT16, w, h); break;
-                default: printf("Texture::saveTexToFile2D Error: unknown format \n"); break;
+            if (format == GL_RED) {
+                bitmap = FreeImage_AllocateT(FIT_UINT16, w, h); break;
+            } else {
+                LOGE << "Texture::saveTexToFile2D Error: unknown format";
+                break;
             }
 
             if (bitmap) {
@@ -1175,7 +1095,7 @@ void Texture::saveTexToFile2D(const char *_filename, FREE_IMAGE_FORMAT _filetype
             break;
         }
         case GL_FLOAT: {
-            switch (_internalFormat) {
+            switch (internalFormat) {
                 case GL_R32F: bitmap = FreeImage_AllocateT(FIT_FLOAT, w, h); break;
                 case GL_RGB16F: bitmap = FreeImage_AllocateT(FIT_RGB16, w, h); break;
                 case GL_RGBA16F: bitmap = FreeImage_AllocateT(FIT_RGBA16, w, h); break;
@@ -1200,57 +1120,27 @@ void Texture::saveTexToFile2D(const char *_filename, FREE_IMAGE_FORMAT _filetype
         default: LOGE << "Texture::saveTexToFile2D Error: Unknown pixel format"; break;
     }
 
-    if (!FreeImage_Save(_filetype, bitmap, _filename)) {
+    if (!FreeImage_Save(filetype, bitmap, filename)) {
         LOGE << "Texture::saveTexToFile2D Error: FreeImage_Save failed";
     } else {
         FreeImage_Unload(bitmap);
-    }
-}
-#endif
-
-#if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
-void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan,
-                              uint8_t *buf) {
-    if (m_saveBufCont && (FreeImage_GetWidth(m_saveBufCont) != w || FreeImage_GetHeight(m_saveBufCont) != h)) {
-        FreeImage_Unload(m_saveBufCont);
-        m_saveBufCont = nullptr;
-    }
-
-    if (!m_saveBufCont) m_saveBufCont = FreeImage_Allocate(w, h, nrChan * 8);
-
-    if (m_saveBufCont) {
-        std::copy_n(buf, (w * h * nrChan), FreeImage_GetBits(m_saveBufCont));
-        if (!FreeImage_Save(filetype, m_saveBufCont, filename)) {
-            LOGE << "Texture::saveTexToFile2D Error: FreeImage_Save failed";
-        }
     }
 }
 #endif
 
 #ifdef ARA_USE_FREEIMAGE
 void Texture::saveFrontBuffer(const std::string &filename, int w, int h, int nrChan) {
-    FIBITMAP         *bitmap   = FreeImage_Allocate(w, h, nrChan * 8);
-    FREE_IMAGE_FORMAT filetype = FIF_PNG;
-
-    if (bitmap) {
-        auto bits = FreeImage_GetBits(bitmap);
-        glReadBuffer(GL_FRONT);
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bits);  // synchronous, blocking command, no swap() needed
-    }
-
-    if (!FreeImage_Save(filetype, bitmap, filename.c_str())) {
-        LOGE << "Texture::saveTexToFile2D Error: FreeImage_Save failed";
-    } else {
-        FreeImage_Unload(bitmap);
-    }
+    std::vector<uint8_t> bitmap(w * h * nrChan);
+    glReadBuffer(GL_FRONT);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bitmap.data());  // synchronous, blocking command, no swap() needed
+    FreeImage::Save(filename, FIF_PNG, w, h, nrChan, bitmap.data());
 }
 #endif
 
 Texture::~Texture() {
     glDeleteTextures(1, &m_texData.textureID);
-
 #ifdef ARA_USE_FREEIMAGE
     if (m_keepBitmap) {
         FreeImage_Unload(m_texData.pBitmap);

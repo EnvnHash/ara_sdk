@@ -23,10 +23,11 @@ file(GLOB UTILITIES_UT_SRC
     ItemTest.cpp
     ListPropertyTest.cpp
     NodeTest.cpp
+    PoissonTest.cpp
     PropertyTest.cpp
     RwBinFileTest.cpp
     StringUtilsTest.cpp
-    #UdpSignalTest.cpp
+    ##UdpSignalTest.cpp
     TableTest.cpp
 )
 
@@ -45,6 +46,7 @@ endif ()
 
 target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
 
+message(STATUS "### UTilities UT")
 include(UtilitiesDependencies)
 
 INSTALL(TARGETS ${PROJECT_NAME}

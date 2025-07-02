@@ -49,8 +49,7 @@
 #pragma once
 
 #include <util_common.h>
-
-#include "GlbCommon/GlbConstants.h"
+#include <glm/glm.hpp>
 
 namespace PoissonGenerator {
 
@@ -58,10 +57,10 @@ static const char* Version = "1.6.1 (16/02/2024)";
 
 struct Point {
    Point() = default;
-   Point(float X, float Y) : x(X), y(Y), valid_(true) {}
+   Point(float X, float Y) : x(X), y(Y), m_valid(true) {}
    float x = 0.0f;
    float y = 0.0f;
-   bool valid_ = false;
+   bool  m_valid = false;
 
    [[nodiscard]] constexpr bool isInRectangle() const { return x >= 0 && y >= 0 && x <= 1 && y <= 1; }
    [[nodiscard]] constexpr bool isInCircle() const {
@@ -74,54 +73,66 @@ struct Point {
    Point& operator-(const Point& p) { x -= p.x; y -= p.y; return *this; }
 };
 
-struct GridPoint {
-   GridPoint() = delete;
-   GridPoint(int X, int Y) : x(X), y(Y) {}
-   int x;
-   int y;
-};
-
 inline float getDistance(const Point& P1, const Point& P2) {
    return std::sqrt((P1.x - P2.x) * (P1.x - P2.x) + (P1.y - P2.y) * (P1.y - P2.y));
 }
 
-static GridPoint imageToGrid(const Point& P, float cellSize) {
-   return {(int)(P.x / cellSize), (int)(P.y / cellSize)};
+static glm::ivec2 imageToGrid(const Point& P, glm::vec2 cellSize) {
+   return { static_cast<int>(P.x / cellSize.x), static_cast<int>(P.y / cellSize.y)};
 }
 
 struct Grid {
     Grid(int w, int h, float cellSize)
-            : w_(w), h_(h), cellSize_(cellSize), grid_(h, std::vector<Point>(w)) {}
+            : m_width(w), m_height(h), m_cellSize(cellSize), m_grid(h, std::vector<Point>(w)) {}
 
    void insert(const Point& p) {
-       const GridPoint g = imageToGrid(p, cellSize_);
-       if (g.x >= 0 && g.x < w_ && g.y >= 0 && g.y < h_) {
-           grid_[g.x][g.y] = p;
+       const auto g = imageToGrid(p, m_cellSize);
+       if (g.x >= 0 && g.x < m_width && g.y >= 0 && g.y < m_height) {
+           m_grid[g.y][g.x] = p;
        }
    }
 
-   [[nodiscard]] bool isInNeighbourhood(const Point& point, float minDist) const {
-       const GridPoint g = imageToGrid(point, cellSize_);
+   [[nodiscard]] bool isInNeighbourhood(const Point& point, glm::vec2 minDist) const {
+        if (minDist.x == minDist.y) {
+            return isInNeighbourhood(point, minDist.x);
+        } else {
+            const auto g = imageToGrid(point, m_cellSize);
+            constexpr int D = 5;
 
-       constexpr int D = 5;
-
-       for (int i = g.x - D; i <= g.x + D; ++i) {
-           for (int j = g.y - D; j <= g.y + D; ++j) {
-               if (i >= 0 && i < w_ && j >= 0 && j < h_) {
-                   const Point P = grid_[i][j];
-
-                   if (P.valid_ && getDistance(P, point) < minDist)
-                       return true;
-               }
-           }
-       }
-
-       return false;
+            for (int x = g.x - D; x <= g.x + D; ++x) {
+                for (int y = g.y - D; y <= g.y + D; ++y) {
+                    if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
+                        const Point P = m_grid[y][x];
+                        if (P.m_valid && std::abs(P.x - point.x) < minDist.x && std::abs(P.y - point.y) < minDist.y) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
    }
 
-   int w_, h_;
-   float cellSize_;
-   std::vector<std::vector<Point>> grid_;
+    [[nodiscard]] bool isInNeighbourhood(const Point& point, float minDist) const {
+        const auto g = imageToGrid(point, m_cellSize);
+        constexpr int D = 5;
+
+        for (int x = g.x - D; x <= g.x + D; ++x) {
+            for (int y = g.y - D; y <= g.y + D; ++y) {
+                if (x >= 0 && x < m_width && y >= 0 && y < m_height) {
+                    const Point P = m_grid[y][x];
+                    if (P.m_valid && getDistance(P, point) < minDist) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+   int                             m_width{}, m_height{};
+   glm::vec2                       m_cellSize{};
+   std::vector<std::vector<Point>> m_grid;
 };
 
 static Point popRandom(std::vector<Point>& points) {
@@ -132,13 +143,30 @@ static Point popRandom(std::vector<Point>& points) {
 }
 
 static Point generateRandomPointAround(const Point& p, float minDist) {
-   const float R1 = ara::getRandF(0.f, 1.f);
-   const float R2 = ara::getRandF(0.f, 1.f);
+    const float R1 = ara::getRandF(0.f, 1.f);
+    const float R2 = ara::getRandF(0.f, 1.f);
 
-   const float radius = minDist * (R1 + 1.0f);
-   const float angle = 2.f * static_cast<float>(M_PI) * R2;
+    const float radius = minDist * (R1 + 1.0f);
+    const float angle = 2.f * static_cast<float>(M_PI) * R2;
 
-   return {p.x + radius * std::cos(angle), p.y + radius * std::sin(angle)};
+    return {p.x + radius * std::cos(angle), p.y + radius * std::sin(angle)};
+}
+
+static Point generateRandomPointAround(const Point& p, const glm::vec2& minDist) {
+   if (minDist.x == minDist.y) {
+        return generateRandomPointAround(p, minDist.x);
+   } else {
+       const float R1 = ara::getRandF(0.f, 1.f);
+       const float R2 = ara::getRandF(0.f, 1.f);
+
+       const glm::vec2 radius = minDist * (R1 + 1.f);
+       const float angle = 2.f * static_cast<float>(M_PI) * R2;
+
+       const float y = std::sin(angle);
+       float ellipticRadius = glm::mix(radius.x, radius.y, std::abs(y));
+       return {p.x + ellipticRadius * std::cos(angle),
+               p.y + ellipticRadius * y};
+   }
 }
 
 
@@ -152,7 +180,8 @@ static Point generateRandomPointAround(const Point& p, float minDist) {
 static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
                                         bool isCircle = true,
                                         uint32_t newPointsCount = 30,
-                                        float minDist = -1.0f) {
+                                        float minDist = -1.0f,
+                                        float aspectRatio = 1.f) {
    // if we want to generate a Poisson square shape, multiply the estimate number of points by PI/4 due to reduced shape area
    if (!isCircle) {
        constexpr double Pi_4 = 0.785398163397448309616; // PI/4
@@ -166,15 +195,18 @@ static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
    std::vector<Point> samplePoints;
    std::vector<Point> processList;
 
-   if (!numPoints)
+   if (!numPoints) {
        return samplePoints;
+   }
 
    // create the grid
-    const float cellSize = minDist / std::sqrt(2.0f);
-    const int gridW = static_cast<int>(std::ceil(1.0f / cellSize));
-    const int gridH = static_cast<int>(std::ceil(1.0f / cellSize));
+    const float cellSize = minDist / std::sqrt(2.f);
+    const int gridW = static_cast<int>(std::ceil(1.f / cellSize));
+    const int gridH = static_cast<int>(std::ceil(1.f / cellSize));
 
    Grid grid(gridW, gridH, cellSize);
+
+   glm::vec2 minDistWithAspect { minDist, minDist * aspectRatio };
 
    Point firstPoint;
    do {
@@ -186,40 +218,20 @@ static std::vector<Point> generatePoissonPoints(uint32_t numPoints,
    samplePoints.emplace_back(firstPoint);
    grid.insert(firstPoint);
 
-#if POISSON_PROGRESS_INDICATOR
-   size_t progress = 0;
-#endif
-
    // generate new points for each point in the queue
    while (!processList.empty() && samplePoints.size() <= numPoints) {
-#if POISSON_PROGRESS_INDICATOR
-       // a progress indicator, kind of
-       if ((samplePoints.size()) % 1000 == 0) {
-           const size_t newProgress = 200 * (samplePoints.size() + processList.size()) / numPoints;
-           if (newProgress != progress) {
-               progress = newProgress;
-               std::cout << ".";
-           }
-       }
-#endif // POISSON_PROGRESS_INDICATOR
-
        const Point point = popRandom(processList);
-
        for (uint32_t i = 0; i < newPointsCount; ++i) {
-           const Point newPoint = generateRandomPointAround(point, minDist);
+           const Point newPoint = generateRandomPointAround(point, minDistWithAspect);
            const bool canFitPoint = isCircle ? newPoint.isInCircle() : newPoint.isInRectangle();
 
-           if (canFitPoint && !grid.isInNeighbourhood(newPoint, minDist)) {
+           if (canFitPoint && !grid.isInNeighbourhood(newPoint, minDistWithAspect)) {
                processList.emplace_back(newPoint);
                samplePoints.emplace_back(newPoint);
                grid.insert(newPoint);
            }
        }
    }
-
-#if POISSON_PROGRESS_INDICATOR
-   std::cout << std::endl << std::endl;
-#endif // POISSON_PROGRESS_INDICATOR
 
    return samplePoints;
 }
@@ -308,6 +320,23 @@ static std::vector<Point> generateHammersleyPoints(uint32_t numPoints) {
        samplePoints.push_back(p);
    }
    return samplePoints;
+}
+
+static std::vector<uint8_t> generateBitmap(int width, int height, std::vector<Point>& points) {
+    // prepare BGR image
+    std::vector<uint8_t> Img;
+    Img.resize(3 * width * height);
+
+    for (auto i = points.begin(); i != points.end(); i++) {
+        int x = int(i->x * width);
+        int y = int(i->y * height);
+        if (x < 0 || y < 0 || x >= width || y >= height) {
+            continue;
+        }
+        int Base = 3 * (x + y * width);
+        Img[Base + 0] = Img[Base + 1] = Img[Base + 2] = 255;
+    }
+    return Img;
 }
 
 } // namespace PoissonGenerator

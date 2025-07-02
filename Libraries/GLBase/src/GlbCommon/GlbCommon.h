@@ -32,7 +32,7 @@
 
 #include <util_common.h>
 #include <GlbCommon/GlbKeyDefines.h>
-#include <GlbCommon/GlbConstants.h>
+#include <Constants.h>
 
 #include <cstdint>
 #include <algorithm>

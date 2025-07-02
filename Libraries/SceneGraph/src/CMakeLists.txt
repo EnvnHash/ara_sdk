@@ -88,6 +88,8 @@ if (ANDROID)
 endif ()
 
 include(GLBaseDepInclude)
+include(UtilitiesDepInclude)
+
 if (COMPILE_SCENEGRAPH_LIB)
     include(GLBaseDependencies)
 

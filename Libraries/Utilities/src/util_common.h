@@ -38,6 +38,8 @@
 #include <typeindex>
 #include <unordered_map>
 
+#include <Constants.h>
+
 #ifdef __ANDROID__
 #include <jni.h>
 #endif

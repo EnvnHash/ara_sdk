@@ -20,4 +20,27 @@ if (APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework CoreGraphics")
 endif()
 
+#include 3rd party libraries
+if(NOT WIN32 AND NOT ANDROID)
+    if(ARA_USE_FREEIMAGE AND NOT FREEIMAGE_FOUND)
+        find_package (FreeImage REQUIRED)
+    endif()
+endif()
+
+# Freeimage
+if (ARA_USE_FREEIMAGE)
+    if(WIN32)
+        list(APPEND UTILITIES_LIBS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/Freeimage/lib/${LIB_ARCH_PATH}/FreeImage.lib)
+        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/Freeimage/bin/${LIB_ARCH_PATH}/FreeImage.dll ${CMAKE_CURRENT_BINARY_DIR})
+    elseif(ANDROID)
+        list(APPEND UTILITIES_LIBS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/FreeImage/Android/${CMAKE_ANDROID_ARCH_ABI}/libfreeimage.so
+                ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/FreeImage/Android/${CMAKE_ANDROID_ARCH_ABI}/libpng16.so
+        )
+    else()
+        if (FREEIMAGE_FOUND)
+            list(APPEND UTILITIES_LIBS ${FREEIMAGE_LIBRARIES})
+        endif()
+    endif()
+endif()
+
 target_link_libraries (${PROJECT_NAME} ${UTILITIES_LIBS})

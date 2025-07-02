@@ -103,7 +103,7 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
         LOGE << "compareBitmaps error, couldn't load " << p.string();
         return;
     }
-    FIBITMAP* pBitmap = ara::Texture::ImageLoader(p.string().c_str(), 0);
+    auto pBitmap = ara::FreeImage::Load(p.string(), 0);
     ASSERT_TRUE(pBitmap);
 
     std::list<std::future<void>> futures;

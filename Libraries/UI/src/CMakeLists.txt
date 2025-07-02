@@ -20,3 +20,4 @@ add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 include(GLBaseDepInclude)
 include(GLBaseDependencies)
+include(UtilitiesDepInclude)

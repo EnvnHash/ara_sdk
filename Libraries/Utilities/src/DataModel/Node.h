@@ -148,17 +148,37 @@ public:
         return out;
     }
 
-    std::deque<Node*> findChildrenByType(const std::string& typeStr) {
-        std::deque<Node*> outList;
+    template <class T>
+    std::deque<T*> findChildrenByType() {
+        std::deque<T*> outList;
+        auto typeStr = getTypeName<T>();
         {
             std::unique_lock l(m_mtx);
             iterateChildren(*this, [&outList, &typeStr] (Node& node) {
                 if (node.typeName() == typeStr) {
-                    outList.emplace_back(&node);
+                    outList.emplace_back(dynamic_cast<T*>(&node));
                 }
+                return true;
             });
         }
         return std::move(outList);
+    }
+
+    template <class T>
+    std::optional<T*> getFirstChildByType() {
+        std::optional<T*> out{};
+        auto typeStr = getTypeName<T>();
+        {
+            std::unique_lock l(m_mtx);
+            iterateChildren(*this, [&typeStr, &out] (Node& node) {
+                if (node.typeName() == typeStr) {
+                    out = dynamic_cast<T*>(&node);
+                    return false;
+                }
+                return true;
+            });
+        }
+        return out;
     }
 
     std::deque<Node*> findChildrenByTypes(const std::list<std::string>& typeStrList) {

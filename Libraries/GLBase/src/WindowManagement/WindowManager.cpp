@@ -543,26 +543,22 @@ GLFWcursor *WindowManager::createMouseCursor(const std::string &file, float xHot
 
 #ifdef ARA_USE_FREEIMAGE
     std::vector<uint8_t> vp;
-    auto& al = m_glbase->getAssetManager()->getAssetLoader();
-    al.loadAssetToMem(vp, file);
+    ara::AssetLoader::loadAssetToMem(vp, file);
     if (vp.empty()) {
         return nullptr;
     }
 
-    FreeImg_MemHandler mh(&vp[0], vp.size());
-    FREE_IMAGE_FORMAT  fif = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
-    FIBITMAP *pBitmap = nullptr;
-    if ((pBitmap = FreeImage_LoadFromHandle(fif, mh.io(), (fi_handle)&mh, 0)) == nullptr) {
-        return nullptr;
-    }
-
+    auto bitmap = FreeImage::Load(vp);
     GLFWimage image;
-    image.pixels    = FreeImage_GetBits(pBitmap);
-    image.width     = static_cast<int>(FreeImage_GetWidth(pBitmap));
-    image.height    = static_cast<int>(FreeImage_GetHeight(pBitmap));
+    image.pixels    = FreeImage::GetBits(bitmap);
+    auto sz = FreeImage::GetSizeFromBitmap(bitmap);
+    image.width     = static_cast<int>(sz[0]);
+    image.height    = static_cast<int>(sz[1]);
 
-    auto c = glfwCreateCursor(&image, static_cast<int>(static_cast<float>(image.width) * xHot), static_cast<int>(static_cast<float>(image.height) * yHot));
-    FreeImage_Unload(pBitmap);
+    auto c = glfwCreateCursor(&image,
+                              static_cast<int>(static_cast<float>(image.width) * xHot),
+                              static_cast<int>(static_cast<float>(image.height) * yHot));
+    FreeImage_Unload(bitmap);
     return c;
 #endif
 }
