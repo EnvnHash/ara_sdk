@@ -46,7 +46,6 @@ endif ()
 
 target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
 
-message(STATUS "### UTilities UT")
 include(UtilitiesDependencies)
 
 INSTALL(TARGETS ${PROJECT_NAME}
