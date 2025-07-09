@@ -49,7 +49,7 @@ public:
     void setAltText(const char* alt_text) { m_alt_text = std::string(alt_text); }
     void setToggleCb(std::function<void(bool)> cbFunc) { m_toggleCbFunc = std::move(cbFunc); }
     void setClickedCb(std::function<void()> cbFunc) { m_clickedFunc = std::move(cbFunc); }
-    void setOnStateImg(const std::string& file, int mipMapLevel) { setStateImg(file, imgType::On, mipMapLevel); }
+    virtual void setOnStateImg(const std::string& file, int mipMapLevel) { setStateImg(file, imgType::On, mipMapLevel); }
     void setOnStateBackImg(const std::string& file, int mipMapLevel = 8) const;
 
     [[nodiscard]] Image* getImg() const;
