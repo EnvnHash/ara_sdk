@@ -1057,7 +1057,7 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
             if (bitmap) {
                 auto bits = (GLubyte *)FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
-                glesGetTexImage(_texNr, GL_TEXTURE_2D, format, GL_UNSIGNED_SHORT, w, h, bits);
+                glesGetTexImage(texNr, GL_TEXTURE_2D, format, GL_UNSIGNED_SHORT, w, h, bits);
 #else
                 glGetTexImage(GL_TEXTURE_2D, 0, format, type, bits);
 #endif
@@ -1083,7 +1083,7 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
             if (bitmap) {
                 BYTE *bits = (BYTE *)FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
-                glesGetTexImage(_texNr, GL_TEXTURE_2D, format, GL_UNSIGNED_BYTE, w, h, bits);
+                glesGetTexImage(texNr, GL_TEXTURE_2D, format, GL_UNSIGNED_BYTE, w, h, bits);
 #else
                 glGetTexImage(GL_TEXTURE_2D, 0, format, type, bits);
 #endif
@@ -1107,7 +1107,7 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
             if (bitmap) {
                 BYTE *bits = (BYTE *)FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
-                glesGetTexImage(_texNr, GL_TEXTURE_2D, format, GL_FLOAT, w, h, bits);
+                glesGetTexImage(texNr, GL_TEXTURE_2D, format, GL_FLOAT, w, h, bits);
 #else
                 glGetTexImage(GL_TEXTURE_2D, 0, format, type, bits);
 #endif
