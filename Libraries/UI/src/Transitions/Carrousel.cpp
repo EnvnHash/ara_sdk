@@ -4,6 +4,7 @@
 
 #include <Transitions/Carrousel.h>
 #include <UISharedRes.h>
+#include <UIWindow.h>
 
 using namespace glm;
 
@@ -11,11 +12,13 @@ namespace ara {
 
 CarrouselSlide::CarrouselSlide() {
     setName(getTypeName<CarrouselSlide>());
+    setScissorChildren(true);
 }
 
 Carrousel::Carrousel() {
     setName(getTypeName<Carrousel>());
     initFixedChildren();
+    setScissorChildren(true);
 }
 
 void Carrousel::initFixedChildren() {
@@ -133,12 +136,14 @@ void Carrousel::rotate(float pos) {
 
 void Carrousel::rotateAllOnScreen(float pos) const {
     int i = 0;
-    float relSlideWidth = 1.f / static_cast<float>(m_slides.size());
+    LOG << "m_padding.x " << m_padding.x;
+    float relSlideWidth = 1.f / static_cast<float>(m_slides.size())
+                          + (m_padding.x / getWindow()->getSize().x);
     m_selector->setWidth(relSlideWidth);
 
     for (const auto& slid : m_slides) {
         slid->setSize(relSlideWidth, 1.f);
-        slid->setX((static_cast<float>(i) - static_cast<float>(m_slides.size() - 1) * pos) * relSlideWidth);
+        slid->setX((static_cast<float>(i) - static_cast<float>(m_slides.size() - 1) * pos) * relSlideWidth - m_zeroPos);
         ++i;
     }
 }

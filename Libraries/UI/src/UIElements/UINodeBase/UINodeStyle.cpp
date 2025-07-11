@@ -15,23 +15,25 @@ using namespace glm;
 namespace ara {
 
 void UINodeStyle::loadStyleDefaults() {
-    m_setStyleFunc[state::none][styleInit::x]         = [this]() { setX((int)0); };
-    m_setStyleFunc[state::none][styleInit::y]         = [this]() { setY((int)0); };
-    m_setStyleFunc[state::none][styleInit::width]     = [this]() { setWidth(1.f); };
-    m_setStyleFunc[state::none][styleInit::height]    = [this]() { setHeight(1.f); };
-    m_setStyleFunc[state::none][styleInit::align]     = [this]() { setAlignX(align::left); };
-    m_setStyleFunc[state::none][styleInit::valign]    = [this]() { setAlignY(valign::top); };
-    m_setStyleFunc[state::none][styleInit::color]     = [this]() { setColor(0.f, 0.f, 0.f, 0.f); };
-    m_setStyleFunc[state::none][styleInit::bkcolor]   = [this]() { setBackgroundColor(0.f, 0.f, 0.f, 0.f); };
-    m_setStyleFunc[state::none][styleInit::brdColor]  = [this]() { setBorderColor(0.f, 0.f, 0.f, 0.f); };
-    m_setStyleFunc[state::none][styleInit::brdWidth]  = [this]() { setBorderWidth(0); };
-    m_setStyleFunc[state::none][styleInit::brdRadius] = [this]() { setBorderRadius(0); };
-    m_setStyleFunc[state::none][styleInit::padding]   = [this]() { setPadding(0, 0, 0, 0); };
-    m_setStyleFunc[state::none][styleInit::visible]   = [this]() { setVisibility(true); };
+    m_setStyleFunc[state::none][styleInit::x]         = [this] { setX((int)0); };
+    m_setStyleFunc[state::none][styleInit::y]         = [this] { setY((int)0); };
+    m_setStyleFunc[state::none][styleInit::width]     = [this] { setWidth(1.f); };
+    m_setStyleFunc[state::none][styleInit::height]    = [this] { setHeight(1.f); };
+    m_setStyleFunc[state::none][styleInit::align]     = [this] { setAlignX(align::left); };
+    m_setStyleFunc[state::none][styleInit::valign]    = [this] { setAlignY(valign::top); };
+    m_setStyleFunc[state::none][styleInit::color]     = [this] { setColor(0.f, 0.f, 0.f, 0.f); };
+    m_setStyleFunc[state::none][styleInit::bkcolor]   = [this] { setBackgroundColor(0.f, 0.f, 0.f, 0.f); };
+    m_setStyleFunc[state::none][styleInit::brdColor]  = [this] { setBorderColor(0.f, 0.f, 0.f, 0.f); };
+    m_setStyleFunc[state::none][styleInit::brdWidth]  = [this] { setBorderWidth(0); };
+    m_setStyleFunc[state::none][styleInit::brdRadius] = [this] { setBorderRadius(0); };
+    m_setStyleFunc[state::none][styleInit::padding]   = [this] { setPadding(0, 0, 0, 0); };
+    m_setStyleFunc[state::none][styleInit::visible]   = [this] { setVisibility(true); };
 }
 
 void UINodeStyle::rebuildCustomStyle() {
-    if (m_styleCustDefs.empty()) return;
+    if (m_styleCustDefs.empty()) {
+        return;
+    }
 
     // rebuild the stylesheet
     m_custDefStyleSheet.clear();
@@ -99,52 +101,46 @@ void UINodeStyle::rebuildCustomStyle() {
     }
 }
 
+template <typename Callable>
+void UINodeStyle::updateStylePixAndPercent(ResNode* node, state st, const std::string& findNode, styleInit si, const Callable& f) {
+    auto numNode = node->findNumericNode(findNode);
+    if (get<ResNode*>(numNode)) {
+        if (get<unitType>(numNode) == unitType::Percent) {
+            float val = stof(get<string>(numNode)) * 0.01f;
+            m_setStyleFunc[st][si] = [val, f]() { f(val); };
+        } else {
+            int val = stoi(get<string>(numNode));
+            m_setStyleFunc[st][si] = [val, f]() { f(val); };
+        }
+    }
+}
+
+void UINodeStyle::updateStyleColor(ResNode* node, state st, const std::string& findNode, styleInit si, const std::function<void(glm::vec4)>& f) {
+    if (auto color = node->findNode<AssetColor>(findNode)) {
+        vec4 col = color->getColorvec4();
+        m_setStyleFunc[st][si] = [f, col] { f(col); };
+    }
+}
+void UINodeStyle::updateStylePixel(ResNode* node, state st, const std::string& findNode, styleInit si, const std::function<void(int)>& f) {
+    auto resNode = node->findNumericNode(findNode);
+    if (get<ResNode*>(resNode) && get<unitType>(resNode) == unitType::Pixels) {
+        auto val = stoi(get<string>(resNode));
+        m_setStyleFunc[st][si] = [val, f]() { f(val); };
+    }
+}
+
 void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
-    AssetColor* color;
+    updateStylePixAndPercent(node, st, "x", styleInit::x, [this, st]<typename T>(T val){ setX(val, st); });
+    updateStylePixAndPercent(node, st, "y", styleInit::y, [this, st]<typename T>(T val){ setY(val, st); });
+    updateStylePixAndPercent(node, st, "width", styleInit::width, [this, st]<typename T>(T val){ setWidth(val, st); });
+    updateStylePixAndPercent(node, st, "height", styleInit::height, [this, st]<typename T>(T val){ setHeight(val, st); });
 
-    auto x = node->findNumericNode("x");
-    if (get<ResNode*>(x)) {
-        if (get<unitType>(x) == unitType::Percent) {
-            float val                        = stof(get<string>(x)) * 0.01f;
-            m_setStyleFunc[st][styleInit::x] = [this, val, st]() { setX(val, st); };
-        } else {
-            int val                          = stoi(get<string>(x));
-            m_setStyleFunc[st][styleInit::x] = [this, val, st]() { setX(val, st); };
-        }
-    }
+    updateStyleColor(node, st, "color", styleInit::color, [this, st](const vec4& col) { setColor(col.r, col.g, col.b, col.a, st); });
+    updateStyleColor(node, st, "bkcolor", styleInit::bkcolor, [this, st](const vec4& col) { setBackgroundColor(col.r, col.g, col.b, col.a, st); });
+    updateStyleColor(node, st, "border-color", styleInit::brdColor, [this, st](const vec4& col) { setBorderColor(col.r, col.g, col.b, col.a, st); });
 
-    auto y = node->findNumericNode("y");
-    if (get<ResNode*>(y)) {
-        if (get<unitType>(y) == unitType::Percent) {
-            float val                        = stof(get<string>(y)) * 0.01f;
-            m_setStyleFunc[st][styleInit::y] = [this, val, st]() { setY(val, st); };
-        } else {
-            int val                          = stoi(get<string>(y));
-            m_setStyleFunc[st][styleInit::y] = [this, val, st]() { setY(val, st); };
-        }
-    }
-
-    auto width = node->findNumericNode("width");
-    if (get<ResNode*>(width)) {
-        if (get<unitType>(width) == unitType::Percent) {
-            float val                            = stof(get<string>(width)) * 0.01f;
-            m_setStyleFunc[st][styleInit::width] = [this, val, st]() { setWidth(val, st); };
-        } else {
-            int val                              = stoi(get<string>(width));
-            m_setStyleFunc[st][styleInit::width] = [this, val, st]() { setWidth(val, st); };
-        }
-    }
-
-    auto height = node->findNumericNode("height");
-    if (get<ResNode*>(height)) {
-        if (get<unitType>(height) == unitType::Percent) {
-            float val                             = stof(get<string>(height)) * 0.01f;
-            m_setStyleFunc[st][styleInit::height] = [this, val, st]() { setHeight(val, st); };
-        } else {
-            int val                               = stoi(get<string>(height));
-            m_setStyleFunc[st][styleInit::height] = [this, val, st]() { setHeight(val, st); };
-        }
-    }
+    updateStylePixel(node, st, "border-width", styleInit::brdWidth, [this, st](int32_t val){ setBorderWidth(val, st); });
+    updateStylePixel(node, st, "border-radius", styleInit::brdRadius, [this, st](int32_t val){ setBorderRadius(val, st); });
 
     if (auto align = node->findNode("align")) {
         if (align->m_value == "center") {
@@ -165,37 +161,8 @@ void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styl
             m_setStyleFunc[st][styleInit::valign] = [this, st]() { setAlignY(valign::bottom, st); };
     }
 
-    if ((color = node->findNode<AssetColor>("color")) != nullptr) {
-        vec4 col                             = color->getColorvec4();
-        m_setStyleFunc[st][styleInit::color] = [this, st, col]() { setColor(col.r, col.g, col.b, col.a, st); };
-    }
-
-    if ((color = node->findNode<AssetColor>("bkcolor")) != nullptr) {
-        vec4 col                               = color->getColorvec4();
-        m_setStyleFunc[st][styleInit::bkcolor] = [this, st, col]() {
-            setBackgroundColor(col.r, col.g, col.b, col.a, st);
-        };
-    }
-
-    if ((color = node->findNode<AssetColor>("border-color")) != nullptr) {
-        vec4 col                                = color->getColorvec4();
-        m_setStyleFunc[st][styleInit::brdColor] = [this, st, col]() { setBorderColor(col.r, col.g, col.b, col.a, st); };
-    }
-
-    auto borderWidth = node->findNumericNode("border-width");
-    if (get<ResNode*>(borderWidth) && get<unitType>(borderWidth) == unitType::Pixels) {
-        int val                                 = stoi(get<string>(borderWidth));
-        m_setStyleFunc[st][styleInit::brdWidth] = [this, val, st]() { setBorderWidth(val, st); };
-    }
-
-    auto borderRad = node->findNumericNode("border-radius");
-    if (get<ResNode*>(borderRad) && get<unitType>(borderRad) == unitType::Pixels) {
-        int val                                  = stoi(get<string>(borderRad));
-        m_setStyleFunc[st][styleInit::brdRadius] = [this, val, st]() { setBorderRadius(val, st); };
-    }
-
     if (node->has("padding")) {
-        ParVec pv = node->splitNodeValue("padding");
+        auto pv = node->splitNodeValue("padding");
 
         // in case this is a reference iterate again
         if (pv.size() == 1 && !is_number(pv[0])) {

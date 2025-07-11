@@ -60,6 +60,7 @@ private:
     float                           m_dragStartPos = 0.f;
     float                           m_dragSlidePos = 0.f;
     float                           m_mouseDragThresh = 60.f;
+    float                           m_zeroPos = 0.f;
     CarrouselMode                   m_carMode = CarrouselMode::fitAllOnScreen;
     glm::ivec2                      m_inset {100, 10};
 };

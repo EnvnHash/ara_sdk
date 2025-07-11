@@ -17,6 +17,13 @@ public:
 
     virtual void loadStyleDefaults();
     virtual void rebuildCustomStyle();
+
+    template <typename Callable>
+    void updateStylePixAndPercent(ResNode* node, state st, const std::string& findNode, styleInit si, const Callable& f);
+
+    void updateStyleColor(ResNode* node, state st, const std::string& findNode, styleInit si, const std::function<void(glm::vec4)>& f);
+    void updateStylePixel(ResNode* node, state st, const std::string& findNode, styleInit si, const std::function<void(int)>& f);
+
     virtual void updateStyleIt(ResNode* node, state st, const std::string& styleClass);
     virtual void updateStyle();
     virtual void addStyleClass(const std::string& styleClass);
