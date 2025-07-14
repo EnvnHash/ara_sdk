@@ -138,8 +138,6 @@ protected:
     GLenum      m_srcBlendAlphaFunc = GL_SRC_ALPHA;
     GLenum      m_dstBlendAlphaFunc = GL_ONE_MINUS_SRC_ALPHA;
 
-    glm::mat4   m_pvm               = glm::mat4(1.f);
-
     glm::ivec2  m_secPos{0};
     glm::ivec2  m_secSize{0};
     glm::ivec2  m_secSep{0};
