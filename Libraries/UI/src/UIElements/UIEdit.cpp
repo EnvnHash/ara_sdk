@@ -46,7 +46,7 @@ void UIEdit::init() {
         globalMouseDown(data);
     });
 
-    m_Offset = getContentOffset();
+    m_offset = getContentOffset();
     initSelBgShader();
 }
 
@@ -193,11 +193,11 @@ void UIEdit::drawCaret(bool forceCaretVaoUpdt) {
             updtTree = true;
         }
 
-        m_FontDGV.getCaretPos(m_tCaretPos, m_CaretIndex);
-        m_tCaretPos = glm::floor(m_tCaretPos + m_Offset + m_alignOffset);
+        m_fontDGV.getCaretPos(m_tCaretPos, m_CaretIndex);
+        m_tCaretPos = glm::floor(m_tCaretPos + m_offset + m_alignOffset);
 
         // if there is no text, set the caret corresponding to the text format
-        if (m_Text.empty() && (m_tAlign_X == align::right || m_tAlign_X == align::center)) {
+        if (m_text.empty() && (m_tAlign_X == align::right || m_tAlign_X == align::center)) {
             if (m_tAlign_X == align::right) {
                 m_tCaretPos.x = getContentSize().x;
             } else if (m_tAlign_X == align::center) {
@@ -244,51 +244,51 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
     }
 
     m_riFont     = font;
-    m_RenderText = hasOpt(pass) ? string(m_Text.size(), '*') : m_Text;
+    m_RenderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
 
-    vec4 mask{m_Offset.x, m_Offset.y, m_Offset.x + m_tContSize.x, m_Offset.y + m_tContSize.y};
+    vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
     int  lidx;
 
     if (!hasOpt(manual_space)) {
         m_tSize = m_tContSize;
     }
 
-    m_FontDGV.setPixRatio(getPixRatio());
-    m_FontDGV.setTabPixSize(m_TabSize);
+    m_fontDGV.setPixRatio(getPixRatio());
+    m_fontDGV.setTabPixSize(m_TabSize);
     // process input text, break up in lines
-    m_FontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X, m_RenderText, !hasOpt(single_line));
+    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X, m_RenderText, !hasOpt(single_line));
 
     // Calculate offset
-    if ((lidx = m_FontDGV.getLineIndexByCharIndex(m_CaretIndex)) >= 0) {
+    if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_CaretIndex)) >= 0) {
         vec2 cpos{};
-        m_FontDGV.getCaretPos(cpos, m_CaretIndex);
+        m_fontDGV.getCaretPos(cpos, m_CaretIndex);
 
         float pa = m_riFont->getPixAscent();
 
         // resulting x-position
-        m_x1 = cpos.x + m_Offset.x;
+        m_x1 = cpos.x + m_offset.x;
         m_x2 = m_x1 + 2;
-        m_y1 = m_FontDGV.vline[lidx].getYSelRange(0) + m_Offset.y + pa;
-        m_y2 = m_FontDGV.vline[lidx].getYSelRange(1) + m_Offset.y + pa;
+        m_y1 = m_fontDGV.vline[lidx].getYSelRange(0) + m_offset.y + pa;
+        m_y2 = m_fontDGV.vline[lidx].getYSelRange(1) + m_offset.y + pa;
 
         // the beginning of the rendered text will be outside the mask add an
         // offset to move it into the non-mask area
         if (m_x1 < mask.x) {
-            m_Offset.x = -(cpos[0] - mask.x);
+            m_offset.x = -(cpos[0] - mask.x);
         }
         if (m_x2 > mask.z) {
-            m_Offset.x = std::max(m_Offset.x, -(2 + cpos[0] - mask.z));
+            m_offset.x = std::max(m_offset.x, -(2 + cpos[0] - mask.z));
         }
         if (m_y1 < mask.y) {
-            m_Offset.y = -(pa + m_FontDGV.vline[lidx].getYSelRange(0) - mask.y);
+            m_offset.y = -(pa + m_fontDGV.vline[lidx].getYSelRange(0) - mask.y);
         }
         if (m_y2 > mask.w) {
-            m_Offset.y = std::max(m_Offset.y, -(pa + m_FontDGV.vline[lidx].getYSelRange(1) - mask.w));
+            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.vline[lidx].getYSelRange(1) - mask.w));
         }
     }
 
-    if (m_Text.empty()) {
-        m_Offset = getContentOffset();
+    if (m_text.empty()) {
+        m_offset = getContentOffset();
     }
     return m_riFont;
 }
@@ -301,19 +301,19 @@ void UIEdit::updateFontGeo() {
     memset(&m_alignOffset[0], 0, 8);
 
     if (m_tAlign_Y == valign::bottom) {
-        m_bs            = m_FontDGV.getPixSize();
+        m_bs            = m_fontDGV.getPixSize();
         m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
         m_alignOffset.y = m_tContSize.y - m_bs.y;
     } else if (m_tAlign_Y == valign::center) {
-        m_bs            = m_FontDGV.getPixSize();
+        m_bs            = m_fontDGV.getPixSize();
         m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
         m_alignOffset.y = m_tContSize.y * 0.5f - m_bs.y * 0.5f;
     }
 
     // take the matrix of the helper content Div, since this will use the
     // Label's content transformation
-    m_bo.x = m_Offset.x + m_alignOffset.x;
-    m_bo.y = m_Offset.y + m_riFont->getPixAscent() + m_alignOffset.y;
+    m_bo.x = m_offset.x + m_alignOffset.x;
+    m_bo.y = m_offset.y + m_riFont->getPixAscent() + m_alignOffset.y;
     m_mask = calculateMask();
     memcpy(&m_modMvp[0][0], &m_mvp[0][0], sizeof(float) * 16);
 
@@ -324,7 +324,7 @@ void UIEdit::updateFontGeo() {
 
 void UIEdit::prepareSelBgVao() {
     list<pair<vec2, vec2>> lines;  // Left/Top,  Right/Bottom
-    for (e_fontline &l : m_FontDGV.vline) {
+    for (e_fontline &l : m_fontDGV.vline) {
         if (l.ptr[0] && l.ptr[1]) {
             m_tCi[0] = l.ptr[0]->chidx;  // asign the character index of the
                                          // first character in the actual line
@@ -334,13 +334,13 @@ void UIEdit::prepareSelBgVao() {
             // check if this line is within the range of selected charaters
             if (!(m_tCi[0] > m_charSelection[1] || m_tCi[1] < m_charSelection[0])) {
                 cp.x = m_tCi[0] > m_charSelection[0] ? m_tPos.x / l.m_pixRatio
-                                                     : m_FontDGV.getCaretPos(aux, m_charSelection[0])[0];
+                                                     : m_fontDGV.getCaretPos(aux, m_charSelection[0])[0];
                 cp.y = m_tCi[1] < m_charSelection[1] ? (m_tPos.x + m_tSize.x)
-                                                     : m_FontDGV.getCaretPos(aux, m_charSelection[1])[0];
+                                                     : m_fontDGV.getCaretPos(aux, m_charSelection[1])[0];
 
-                m_posLT.x = cp.x + m_Offset.x + m_alignOffset.x;
-                m_posLT.y = l.y / l.m_pixRatio + m_Offset.y + m_alignOffset.y;
-                m_posRB.x = cp.y + m_Offset.x + m_alignOffset.x;
+                m_posLT.x = cp.x + m_offset.x + m_alignOffset.x;
+                m_posLT.y = l.y / l.m_pixRatio + m_offset.y + m_alignOffset.y;
+                m_posRB.x = cp.y + m_offset.x + m_alignOffset.x;
                 m_posRB.y = m_posLT.y + (l.yrange[1] - l.yrange[0]) / l.m_pixRatio;
 
                 // check if the selected part of this line is within the visible
@@ -440,7 +440,7 @@ void UIEdit::keyDown(hidData& data) {
         drawCaret();
 
         for (const auto& cb : m_onEnterCb | views::values) {
-            cb(m_Text);
+            cb(m_text);
         }
 
         onLostFocus();
@@ -491,7 +491,7 @@ void UIEdit::keyDown(hidData& data) {
             return;
         }
 
-        if (data.key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_Text.size())) {
+        if (data.key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_text.size())) {
             if (!getSelRange(m_charSelection)) {
                 m_CaretRange[0] = m_CaretIndex;
             }
@@ -523,7 +523,7 @@ void UIEdit::keyDown(hidData& data) {
             if (!getSelRange(m_charSelection)) {
                 m_CaretRange[0] = m_CaretIndex;
             }
-            m_CaretIndex = m_CaretIndex = static_cast<int>(m_Text.size());
+            m_CaretIndex = m_CaretIndex = static_cast<int>(m_text.size());
             m_CaretRange[1]             = m_CaretIndex;
             drawCaret();
             if (!m_drawImmediate) {
@@ -537,20 +537,20 @@ void UIEdit::keyDown(hidData& data) {
     }
 
     if (!getSelRange(m_charSelection)) {
-        if (data.key == GLSG_KEY_BACKSPACE && m_CaretIndex > 0 && !m_Text.empty()) {
-            m_Text.erase(std::min<int>(std::max<int>((m_CaretIndex--) - 1, 0), static_cast<int>(m_Text.size()) - 1), 1);
+        if (data.key == GLSG_KEY_BACKSPACE && m_CaretIndex > 0 && !m_text.empty()) {
+            m_text.erase(std::min<int>(std::max<int>((m_CaretIndex--) - 1, 0), static_cast<int>(m_text.size()) - 1), 1);
             reqUpdtGlyphs(true);
-        } else if (data.key == GLSG_KEY_DELETE && (m_CaretIndex < static_cast<int>(m_Text.size()))) {
-            m_Text.erase(m_CaretIndex, 1);
+        } else if (data.key == GLSG_KEY_DELETE && (m_CaretIndex < static_cast<int>(m_text.size()))) {
+            m_text.erase(m_CaretIndex, 1);
             reqUpdtGlyphs(true);
         } else if (data.key == GLSG_KEY_LEFT && m_CaretIndex > 0) {
             m_CaretIndex--;
-        } else if (data.key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_Text.size())) {
+        } else if (data.key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_text.size())) {
             m_CaretIndex++;
         } else if (data.key == GLSG_KEY_HOME) {
             m_CaretIndex = 0;
         } else if (data.key == GLSG_KEY_END) {
-            m_CaretIndex = static_cast<int>(m_Text.size());
+            m_CaretIndex = static_cast<int>(m_text.size());
         }
     } else {
         if (data.key == GLSG_KEY_BACKSPACE || data.key == GLSG_KEY_DELETE) {
@@ -567,7 +567,7 @@ void UIEdit::keyDown(hidData& data) {
         else if (data.key == GLSG_KEY_LEFT && m_CaretIndex > 0) {
             clearSelRange();
             m_CaretIndex--;
-        } else if (data.key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_Text.size())) {
+        } else if (data.key == GLSG_KEY_RIGHT && m_CaretIndex < static_cast<int>(m_text.size())) {
             clearSelRange();
             m_CaretIndex++;
         } else if (data.key == GLSG_KEY_HOME) {
@@ -575,14 +575,14 @@ void UIEdit::keyDown(hidData& data) {
             m_CaretIndex = 0;
         } else if (data.key == GLSG_KEY_END) {
             clearSelRange();
-            m_CaretIndex = static_cast<int>(m_Text.size());
+            m_CaretIndex = static_cast<int>(m_text.size());
         }
     }
 
     drawCaret();
 
     if (m_setTextCb) {
-        m_setTextCb(m_Text);
+        m_setTextCb(m_text);
     }
 }
 
@@ -598,7 +598,7 @@ void UIEdit::onLostFocus() {
     // in case a value was changed but neither tab nor enter pressed and the
     // focus was lost be sure the actual value gets treated as entered
     for (auto &[fst, snd] : m_onEnterCb) {
-        snd(m_Text);
+        snd(m_text);
     }
     UINode::onLostFocus();
 }
@@ -680,14 +680,14 @@ void UIEdit::incValue(float amt, cfState cf) {
         setValue(std::min(std::max(m_iValue + static_cast<int>(static_cast<float>(m_stepI) * mAmt), m_minInt), m_maxInt));
 
         for (auto &[fst, snd] : m_onEnterCb) {
-            snd(m_Text);
+            snd(m_text);
         }
 
     } else if (hasOpt(num_fp)) {
         setValue(std::min(std::max(m_fValue + m_stepF * mAmt, m_minF), m_maxF));
 
         for (auto &[fst, snd] : m_onEnterCb) {
-            snd(m_Text);
+            snd(m_text);
         }
     }
 }
@@ -715,10 +715,10 @@ void UIEdit::setTextDist(const std::filesystem::path& p) {
 }
 
 void UIEdit::setText(const std::string &str) {
-    bool updt = str.size() != m_Text.size();
-    m_Text.assign(str, 0, std::min(m_MaxCount, static_cast<int>(str.size())));
+    bool updt = str.size() != m_text.size();
+    m_text.assign(str, 0, std::min(m_MaxCount, static_cast<int>(str.size())));
     checkLimits();
-    m_CaretIndex = static_cast<int>(m_Text.size());
+    m_CaretIndex = static_cast<int>(m_text.size());
     clearSelRange();
     reqUpdtGlyphs(updt);
 }
@@ -730,8 +730,8 @@ void UIEdit::setValue(float val) {
 
         std::stringstream stream;
         stream << std::fixed << std::setprecision(m_precision) << m_fValue;
-        bool updt = m_Text.size() != stream.str().size();
-        m_Text    = stream.str();
+        bool updt = m_text.size() != stream.str().size();
+        m_text    = stream.str();
         reqUpdtGlyphs(updt);
     }
 }
@@ -743,8 +743,8 @@ void UIEdit::setValue(double val) {
 
         std::stringstream stream;
         stream << std::fixed << std::setprecision(m_precision) << m_dValue;
-        bool updt = m_Text.size() != stream.str().size();
-        m_Text    = stream.str();
+        bool updt = m_text.size() != stream.str().size();
+        m_text    = stream.str();
         reqUpdtGlyphs(updt);
     }
 }
@@ -754,45 +754,45 @@ void UIEdit::setValue(int val) {
     if (hasOpt(num_int)) {
         m_iValue            = std::max<int>(std::min<int>(val, m_maxInt), m_minInt);
         std::string newText = std::to_string(m_iValue);
-        bool        updt    = newText.size() != m_Text.size();
-        m_Text              = newText;
+        bool        updt    = newText.size() != m_text.size();
+        m_text              = newText;
         reqUpdtGlyphs(updt);
     }
 }
 
 void UIEdit::checkLimits() {
-    if (m_Text.empty()) return;
+    if (m_text.empty()) return;
 
     try {
         if (hasOpt(num_fp)) {
-            m_fValue = std::stof(m_Text);
+            m_fValue = std::stof(m_text);
 
             if (m_precision == -1) {
                 std::stringstream stream;
                 stream << std::fixed << std::setprecision(m_precision) << m_fValue;
-                m_Text = stream.str();
+                m_text = stream.str();
             }
         } else if (hasOpt(num_int)) {
-            m_iValue = std::stoi(m_Text);
+            m_iValue = std::stoi(m_text);
         }
     } catch (...) {
     }
 }
 
 void UIEdit::clampValue() {
-    if (m_Text.empty()) {
+    if (m_text.empty()) {
         return;
     }
     if (hasOpt(num_int)) {
-        setValue(std::stoi(m_Text));
+        setValue(std::stoi(m_text));
     }
     if (hasOpt(num_fp)) {
-        setValue(std::stof(m_Text));
+        setValue(std::stof(m_text));
     }
 }
 
 bool UIEdit::validateInputToString(int ch) const {
-    std::string str(m_Text);
+    std::string str(m_text);
     if (!str.empty()) {
         str.insert(std::max<size_t>(std::min<size_t>(m_CaretIndex, str.size()), 0), 1, static_cast<char>(ch));
     } else {
@@ -813,19 +813,19 @@ int UIEdit::getCaretByPixPos(float px, float py) {
         return 0;
     }
     int off_bound = 0;
-    int idx = m_FontDGV.getCharIndexByPixPos(px, py - m_riFont->getPixAscent(), m_tPos[0] + m_Offset.x,
-                                             m_tPos[1] + m_Offset.y, off_bound);
+    int idx = m_fontDGV.getCharIndexByPixPos(px, py - m_riFont->getPixAscent(), m_tPos[0] + m_offset.x,
+                                             m_tPos[1] + m_offset.y, off_bound);
     m_CaretIndex = idx;
     return idx;
 }
 
 bool UIEdit::setSelRangeAll() {
-    int len = static_cast<int>(m_Text.size());
+    int len = static_cast<int>(m_text.size());
     return setSelRange(0, len);
 }
 
 bool UIEdit::setSelRange(int lo_index, int hi_index) {
-    int len = static_cast<int>(m_Text.size());
+    int len = static_cast<int>(m_text.size());
 
     lo_index = std::clamp(lo_index, 0, len);
     hi_index = std::clamp(hi_index, 0, len);
@@ -851,8 +851,8 @@ bool UIEdit::getSelRange(glm::ivec2 &range) {
     if (range.x < 0) {
         range.x = 0;
     }
-    if (range.y > static_cast<int>(m_Text.size())) {
-        range.y = static_cast<int>(m_Text.size());
+    if (range.y > static_cast<int>(m_text.size())) {
+        range.y = static_cast<int>(m_text.size());
     }
     return true;
 }
@@ -863,7 +863,7 @@ void UIEdit::clearSelRange() {
 }
 
 bool UIEdit::eraseContent(int lo_index, int hi_index) {
-    const int len = static_cast<int>(m_Text.size());
+    const int len = static_cast<int>(m_text.size());
 
     if (len <= 0) {
         return false;
@@ -875,7 +875,7 @@ bool UIEdit::eraseContent(int lo_index, int hi_index) {
     lo_index = std::clamp(lo_index, 0, len);
     hi_index = std::clamp(hi_index, 0, len);
 
-    m_Text.erase(lo_index, hi_index - lo_index);
+    m_text.erase(lo_index, hi_index - lo_index);
     reqUpdtGlyphs(true);
     return true;
 }
@@ -884,8 +884,8 @@ int UIEdit::validateCaretPos(int cpos) const {
     if (cpos < 0) {
         cpos = 0;
     }
-    if (cpos > static_cast<int>(m_Text.size())) {
-        cpos = static_cast<int>(m_Text.size());
+    if (cpos > static_cast<int>(m_text.size())) {
+        cpos = static_cast<int>(m_text.size());
     }
     return cpos;
 }
@@ -894,9 +894,9 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
     bool validNewValue = true;
 
     // error check caretIndex == position
-    position = static_cast<int>(std::min<size_t>(std::max<size_t>(static_cast<size_t>(position), 0), m_Text.size()));
+    position = static_cast<int>(std::min<size_t>(std::max<size_t>(static_cast<size_t>(position), 0), m_text.size()));
 
-    if (position < 0 && position > static_cast<int>(m_Text.size()) && m_Text.size() < m_MaxCount) {
+    if (position < 0 && position > static_cast<int>(m_text.size()) && m_text.size() < m_MaxCount) {
         return position;
     }
     std::string tempStr(1, static_cast<char>(ch));
@@ -916,7 +916,7 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
     // in case of an integer check if in valid range, if not skip the input.
     // Allow the minus sign (char == 45)
     if ((hasOpt(num_int) || hasOpt(num_fp)) && ch != 45) {
-        std::string tempTxt(m_Text);
+        std::string tempTxt(m_text);
         tempTxt.insert(position, 1, static_cast<char>(ch));
 
         if (!tempTxt.empty()) {
@@ -948,10 +948,10 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
         }
     }
 
-    m_Text.insert(position, 1, static_cast<char>(ch));
+    m_text.insert(position, 1, static_cast<char>(ch));
 
     if (call_cb && m_setTextCb && validNewValue) {
-        m_setTextCb(m_Text);
+        m_setTextCb(m_text);
     }
 
     reqUpdtGlyphs(true);

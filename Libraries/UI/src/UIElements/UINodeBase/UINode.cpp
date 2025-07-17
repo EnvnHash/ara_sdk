@@ -205,11 +205,7 @@ UINode* UINode::getRoot() {
 }
 
 bool UINode::isInBounds(glm::vec2& pos) {
-    if (!m_visible || m_referenceDrawing) {
-        return false;
-    }
-
-    return UINodeGeom::isInBounds(pos);
+    return !(!m_visible || m_referenceDrawing) && UINodeGeom::isInBounds(pos);
 }
 
 // node argument refers to a child node
@@ -357,7 +353,7 @@ void UINode::updtMatrIt(scissorStack* ss) {
     }
 
     // if the node was pushing a viewport to the scissor-stack, remove it here again
-    if (ss && m_ScissorChildren && !ss->stack.empty()) {
+    if (ss && m_scissorChildren && !ss->stack.empty()) {
         ss->stack.pop_back();
     }
 }
@@ -432,14 +428,14 @@ void UINode::immediateScissoring(scissorStack* ss) {
 void UINode::checkScissoring(scissorStack* ss) {
     // push a viewport to the scissor stack if the Node has the scissorchildren flag set std::round() because straight
     // forward casting to int will produce wrong results...
-    if (ss && m_ScissorChildren && m_sc.z != 0.f && m_sc.w != 0.f) {
+    if (ss && m_scissorChildren && m_sc.z != 0.f && m_sc.w != 0.f) {
         // here we get the top left corner, but glScissor needs lower left corner scissor area can't exceed actual scissor bounds
-        auto t_nodeViewPortGL = getNodeViewportGL();
+        auto nodeViewPortGL = getNodeViewportGL();
 
-        m_scissVp.x = std::max(std::floor(std::round(t_nodeViewPortGL.x + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.x);
-        m_scissVp.y = std::max(std::floor(std::round(t_nodeViewPortGL.y + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.y);
-        m_scissVp.z = std::floor(std::round(t_nodeViewPortGL.z - getBorderWidth() * 2)) * getPixRatio();
-        m_scissVp.w = std::floor(std::round(t_nodeViewPortGL.w - getBorderWidth() * 2)) * getPixRatio();
+        m_scissVp.x = std::max(std::floor(std::round(nodeViewPortGL.x + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.x);
+        m_scissVp.y = std::max(std::floor(std::round(nodeViewPortGL.y + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.y);
+        m_scissVp.z = std::floor(std::round(nodeViewPortGL.z - getBorderWidth() * 2)) * getPixRatio();
+        m_scissVp.w = std::floor(std::round(nodeViewPortGL.w - getBorderWidth() * 2)) * getPixRatio();
 
         ss->stack.emplace_back(
                 m_scissVp.x, m_scissVp.y,
@@ -525,8 +521,7 @@ void UINode::setPositionAndSize() {
         m_init_size.y = m_parentContVp.w + static_cast<float>(m_heightInt);
     }
 
-    // if there are relative position or size coordinates, convert them to
-    // pixels
+    // if there are relative position or size coordinates, convert them to pixels
     if (m_posXType == unitType::Percent) {
         m_pos.x = m_posXFloat * m_parentContVp.z;
     }

@@ -25,7 +25,7 @@ void DemoView_Table::init() {
             label->setFont("regular", 22, align::left, valign::top, m_textColor);
             label->setBackgroundColor(.2f, .2f, .3f, 1.0f);
             label->setText("(" + std::to_string(i) + "," + std::to_string(j) + ")");
-            label->setPadding(12);
+            label->setPadding(12.f);
         }
     }
 }

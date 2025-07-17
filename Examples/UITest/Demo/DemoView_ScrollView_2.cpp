@@ -10,7 +10,7 @@ DemoView_ScrollView_2::DemoView_ScrollView_2() : DemoView("Scroll View demo",glm
 }
 
 void DemoView_ScrollView_2::init() {
-    setPadding(10);
+    setPadding(10.f);
 
     auto taux = addTable();
     auto ui_SV =  taux->setCell<ScrollView>(1, 1);

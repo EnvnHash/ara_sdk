@@ -120,29 +120,6 @@ void UINodeGeom::setAlign(align alignX, valign alignY, state st) {
     setAlignY(alignY, st);
 }
 
-void UINodeGeom::setPadding(float left, float top, float right, float bot, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_padding.x  = left;
-        m_padding.y  = top;
-        m_padding.z  = right;
-        m_padding.w  = bot;
-        m_geoChanged = true;
-    }
-    setStyleInitVal(
-            "padding",
-            std::to_string(left) + "," + std::to_string(top) + "," + std::to_string(right) + "," + std::to_string(bot), st);
-}
-
-void UINodeGeom::setPadding(vec4& val, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_padding    = val;
-        m_geoChanged = true;
-    }
-    setStyleInitVal("padding",
-                    std::to_string(val[0]) + "," + std::to_string(val[1]) + "," + std::to_string(val[2]) + "," +
-                    std::to_string(val[3]), st);
-}
-
 void UINodeGeom::setPivotX(pivotX pX) {
     m_pivX       = pX;
     m_geoChanged = true;
@@ -157,14 +134,6 @@ void UINodeGeom::setPivot(pivotX pX, pivotY pY) {
     m_pivX       = pX;
     m_pivY       = pY;
     m_geoChanged = true;
-}
-
-void UINodeGeom::setPadding(float val, state st) {
-    if (st == state::m_state || st == m_state) {
-        m_padding    = vec4(val, val, val, val);
-        m_geoChanged = true;
-    }
-    setStyleInitVal("padding", std::to_string(val), st);
 }
 
 void UINodeGeom::setBorderWidth(uint32_t val, state st) {
@@ -333,10 +302,10 @@ vec4 UINodeGeom::getNodeViewportGL() {
 
     auto uiWin = reinterpret_cast<UIWindow*>(getSharedRes()->win);
     std::array qc{glm::vec4{0.f, 0.f, 0.f, 1.f}, glm::vec4{m_size.x, m_size.y, 0.f, 1.f}};
-    for (auto i=0; i<qc.size(); ++i) {
-        qc[i] = m_mvp * qc[i];
+    for (auto & i : qc) {
+        i = m_mvp * i;
         for (auto j=0; j<2; ++j) {
-            qc[i][j] = (qc[i][j] * 0.5f + 0.5f) * uiWin->getSize()[j];
+            i[j] = (i[j] * 0.5f + 0.5f) * uiWin->getSize()[j];
         }
     }
     return {qc[0].x, qc[1].y, qc[1].x - qc[0].x, qc[0].y - qc[1].y};
@@ -405,11 +374,9 @@ mat4* UINodeGeom::getFlatContentMat(bool excludedFromParentContentTrans, bool ex
     auto mat = excludedFromPadding ? (!excludedFromParentContentTrans ? &m_nodeTransMat : &m_nodeMat)
                                    : (!excludedFromParentContentTrans ? &m_contentTransMat : &m_contentMat);
 
-    // don't use the dynamic m_parentMat ptr since here it doesn't contain the
-    // information of all other parentMats use instead the local copy, which is
-    // safe to do, since this is only called after this node's updateMatrix()
+    // don't use the dynamic m_parentMat ptr since here it doesn't contain the information of all other parentMats use
+    // instead the local copy, which is safe to do, since this is only called after this node's updateMatrix()
     m_flatContentTransMat = m_parentMatLocCpy * *mat;
-
     return &m_flatContentTransMat;
 }
 
@@ -526,12 +493,18 @@ bool UINodeGeom::isInBounds(vec2& pos) {
     getWinPos();
     getWinRelSize();
 
-    vec2 objItLT{};
-    vec2 objItRB{};
+    vec2 objItLT{}, objItRB{};
+    vec4 absChildBB = { m_childBoundBox.x + m_parentTransPos.x, m_childBoundBox.y + m_parentTransPos.y,
+                        m_childBoundBox.z + m_parentTransPos.x, m_childBoundBox.w + m_parentTransPos.y};
 
     for (int32_t i = 0; i < 2; i++) {
-        objItLT[i] = m_winRelPos[i] + std::min(0.f, m_childBoundBox[i]);
-        objItRB[i] = objItLT[i] + std::max(m_winRelSize[i], m_childBoundBox[i + 2] - m_childBoundBox[i]);
+        objItLT[i] = m_winRelPos[i] + std::min(0.f, absChildBB[i]);
+        objItRB[i] = objItLT[i] + std::max(m_winRelSize[i], absChildBB[i + 2] - absChildBB[i]);
+    }
+
+    if (!m_excludeFromParentScissoring && (m_scIndDraw.z != 0.f || m_scIndDraw.w != 0.f || m_scIndDraw.x != 0.f || m_scIndDraw.y != 0.f)) {
+        objItRB = glm::min(objItRB, vec2{m_scIndDraw.x + m_scIndDraw.z, m_scIndDraw.y + m_scIndDraw.w});
+        objItLT = glm::max(objItLT, vec2{m_scIndDraw.x, m_scIndDraw.y});
     }
 
     return all(greaterThanEqual(pos, objItLT)) && all(lessThanEqual(pos, objItRB));

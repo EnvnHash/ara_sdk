@@ -206,19 +206,4 @@ glm::vec2 ScrollView::getBBSize() {
     return m_bbSize;
 }
 
-void ScrollView::setPadding(float val) {
-    m_origPadding = glm::vec4(val, val, val, val);
-    UINode::setPadding(val, val, val, val);
-}
-
-void ScrollView::setPadding(float left, float top, float right, float bot) {
-    m_origPadding = glm::vec4(left, top, right, bot);
-    UINode::setPadding(left, top, right, bot);
-}
-
-void ScrollView::setPadding(glm::vec4& val) {
-    m_origPadding = val;
-    UINode::setPadding(val);
-}
-
 }  // namespace ara

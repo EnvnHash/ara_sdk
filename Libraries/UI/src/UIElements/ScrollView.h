@@ -27,9 +27,22 @@ public:
     /** get the bounding box around the children in parent relative coordinates
      * (without the parent's transformation matrix) plus padding  */
     glm::vec2 getBBSize();
-    void setPadding(float val);
-    void setPadding(float left, float top, float right, float bot);
-    void setPadding(glm::vec4& val);
+
+    template<typename T>
+    requires std::is_same_v<T, glm::vec4> || std::is_same_v<T, float>
+    void setPadding(const T& val, state st = state::m_state) {
+        if constexpr (std::is_same_v<T, float>) {
+            m_origPadding = glm::vec4(val, val, val, val);
+        } else {
+            m_origPadding = val;
+        }
+        UINode::setPadding(val);
+    }
+
+    void setPadding(float left, float top, float right, float bottom, state st = state::m_state) override {
+        setPadding(glm::vec4{left, top, right, bottom});
+    }
+
     void blockVertScroll(bool val) { m_blockVerScroll = val; }
     void blockHorScroll(bool val) { m_blockHorScroll = val; }
     void setAdaptContentTrans(bool val) { m_adaptContentTrans = val; }

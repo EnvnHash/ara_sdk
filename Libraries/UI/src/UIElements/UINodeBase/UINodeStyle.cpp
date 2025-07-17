@@ -26,7 +26,7 @@ void UINodeStyle::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::brdColor]  = [this] { setBorderColor(0.f, 0.f, 0.f, 0.f); };
     m_setStyleFunc[state::none][styleInit::brdWidth]  = [this] { setBorderWidth(0); };
     m_setStyleFunc[state::none][styleInit::brdRadius] = [this] { setBorderRadius(0); };
-    m_setStyleFunc[state::none][styleInit::padding]   = [this] { setPadding(0, 0, 0, 0); };
+    m_setStyleFunc[state::none][styleInit::padding]   = [this] { setPadding(0.f); };
     m_setStyleFunc[state::none][styleInit::visible]   = [this] { setVisibility(true); };
 }
 
@@ -37,32 +37,22 @@ void UINodeStyle::rebuildCustomStyle() {
 
     // rebuild the stylesheet
     m_custDefStyleSheet.clear();
-    for (const auto& stateDef : m_styleCustDefs) {
-        switch (stateDef.first) {
-            case state::selected:
-                m_custDefStyleSheet += "selected { \n";
-                m_styleChanged = true;
-                break;
-            case state::highlighted:
-                m_custDefStyleSheet += "highlighted { \n";
-                m_styleChanged = true;
-                break;
-            case state::disabled:
-                m_custDefStyleSheet += "disabled { \n";
-                m_styleChanged = true;
-                break;
-            case state::disabledSelected:
-                m_custDefStyleSheet += "disabledSelected { \n";
-                m_styleChanged = true;
-                break;
-            case state::disabledHighlighted:
-                m_custDefStyleSheet += "disabledHighlighted { \n";
-                m_styleChanged = true;
-                break;
-            default: break;
-        }
 
-        if (!stateDef.second.empty())
+    unordered_map<state, std::string> stateStringMap {
+        { state::selected, "selected" },
+        { state::highlighted, "highlighted" },
+        { state::disabled, "disabled" },
+        { state::disabledSelected, "disabledSelected" },
+        { state::disabledHighlighted, "disabledHighlighted" }
+    };
+
+    for (const auto& stateDef : m_styleCustDefs) {
+        if (stateStringMap.find(stateDef.first) != stateStringMap.end()) {
+            m_custDefStyleSheet += stateStringMap[stateDef.first]+" { \n";
+        }
+        m_styleChanged = true;
+
+        if (!stateDef.second.empty()) {
             for (const auto& it : stateDef.second) {
                 if (it.first == "text") {
                     m_custDefStyleSheet += "\t" + it.first + ":\"" + it.second + "\"\n";
@@ -70,6 +60,7 @@ void UINodeStyle::rebuildCustomStyle() {
                     m_custDefStyleSheet += "\t" + it.first + ":" + it.second + "\n";
                 }
             }
+        }
 
         if (stateDef.first == state::selected || stateDef.first == state::highlighted ||
             stateDef.first == state::disabled || stateDef.first == state::disabledHighlighted ||

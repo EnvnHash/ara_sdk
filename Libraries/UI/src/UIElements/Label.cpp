@@ -39,7 +39,7 @@ void Label::loadStyleDefaults() {
     UINode::loadStyleDefaults();
 
     m_setStyleFunc[state::none][styleInit::color]        = [this]() { setColor(1.f, 1.f, 1.f, 1.f); };
-    m_setStyleFunc[state::none][styleInit::text]         = [this]() { m_Text = ""; };
+    m_setStyleFunc[state::none][styleInit::text]         = [this]() { m_text = ""; };
     m_setStyleFunc[state::none][styleInit::textAlign]    = [this]() { m_tAlign_X = align::center; };
     m_setStyleFunc[state::none][styleInit::textValign]   = [this]() { m_tAlign_Y = valign::center; };
     m_setStyleFunc[state::none][styleInit::labelOptions] = [this]() { m_tOpt = 0; };
@@ -55,7 +55,7 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
 
     if (auto text = node->findNode("text")) {
         std::string tv                      = text->m_value;
-        m_setStyleFunc[st][styleInit::text] = [tv, this]() { m_Text = tv; };
+        m_setStyleFunc[st][styleInit::text] = [tv, this]() { m_text = tv; };
     }
 
     if (node->hasValue("text-opt")) {
@@ -143,7 +143,7 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
 }
 
 glm::vec4 Label::calculateMask() const {
-    return {m_Offset.x, m_Offset.y, m_Offset.x + m_tContSize.x, m_Offset.y + m_tContSize.y};
+    return {m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
 }
 
 Font* Label::UpdateDGV(bool* checkFontTex) {
@@ -163,15 +163,15 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
         m_tSize = m_tContSize;
     }
 
-    m_FontDGV.setPixRatio(getPixRatio());
-    m_FontDGV.setTabPixSize(m_TabSize);
-    m_FontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X, m_Text, !hasOpt(single_line) && !hasOpt(adaptive));
+    m_fontDGV.setPixRatio(getPixRatio());
+    m_fontDGV.setTabPixSize(m_tabSize);
+    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X, m_text, !hasOpt(single_line) && !hasOpt(adaptive));
 
-    if (!m_Text.empty()) {
-        m_textBounds = m_FontDGV.getPixSize();
+    if (!m_text.empty()) {
+        m_textBounds = m_fontDGV.getPixSize();
 
         if ((hasOpt(front_ellipsis) || hasOpt(end_ellipsis)) && hasOpt(single_line)) {
-            bs = m_FontDGV.getPixSize();
+            bs = m_fontDGV.getPixSize();
 
             if (bs.x > m_tContSize.x) { // if the bounds of the renderer font are bigger than the content size
                 // estimate the bounds of the rendered ellipsis in pixels at the actual font size
@@ -181,10 +181,10 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
 
                 const auto limit = m_tContSize.x - bas.x;  // get the available space (content size - ellipsis size)
                 int i      = 0;
-                rightLimit = m_FontDGV.getRightLimit();
+                auto rightLimit = m_fontDGV.getRightLimit();
 
                 // sum up char until the max bounds is reached
-                for (const auto& g : m_FontDGV.v)
+                for (const auto& g : m_fontDGV.v)
                     if (g.gptr) {
                         if (hasOpt(end_ellipsis)) {
                             if (g.getRightLimit() > limit) {
@@ -199,12 +199,12 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
                         }
                     }
 
-                m_FontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X,
-                                  hasOpt(end_ellipsis) ? m_Text.substr(0, i) + "..."
-                                                       : "..." + m_Text.substr(i, m_FontDGV.v.size() - 1),
+                m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X,
+                                  hasOpt(end_ellipsis) ? m_text.substr(0, i) + "..."
+                                                       : "..." + m_text.substr(i, m_fontDGV.v.size() - 1),
                                   false);
 
-                m_textBounds = m_FontDGV.getPixSize();
+                m_textBounds = m_fontDGV.getPixSize();
             }
         } else if (hasOpt(adaptive)) {
             m_adaptScaling = std::min(m_tContSize.x / m_textBounds.x, m_tContSize.y / m_textBounds.y);
@@ -274,8 +274,8 @@ bool Label::checkGlyphsPrepared(bool checkFontTex) {
         updateFontGeo();
 
         if (!m_drawImmediate) {
-            m_lblDB.vaoData.resize(m_FontDGV.v.size() * 4);
-            m_lblDB.indices.resize(m_FontDGV.v.size() * 6);
+            m_lblDB.vaoData.resize(m_fontDGV.v.size() * 4);
+            m_lblDB.indices.resize(m_fontDGV.v.size() * 6);
         }
 
         prepareVao(checkFontTex);
@@ -293,24 +293,24 @@ void Label::updateFontGeo() {
     memset(&m_alignOffset[0], 0, 8);
 
     if (m_tAlign_Y == valign::bottom) {
-        bs              = m_FontDGV.getPixSize();
+        bs              = m_fontDGV.getPixSize();
         bs.y            = std::max<float>(bs.y, m_riFont->getPixAscent());
         m_alignOffset.y = m_tContSize.y - bs.y;
     } else if (m_tAlign_Y == valign::center) {
-        bs              = m_FontDGV.getPixSize();
+        bs              = m_fontDGV.getPixSize();
         bs.y            = std::max<float>(bs.y, m_riFont->getPixAscent());
         m_alignOffset.y = m_tContSize.y * 0.5f - bs.y * 0.5f;
     }
 
     // take the matrix of the helper content Div, since this will use the Label's content transformation
-    m_bo.x      = m_Offset[0] + m_alignOffset.x;
-    m_bo.y      = m_Offset[1] + m_riFont->getPixAscent() + m_alignOffset.y;
+    m_bo.x      = m_offset[0] + m_alignOffset.x;
+    m_bo.y      = m_offset[1] + m_riFont->getPixAscent() + m_alignOffset.y;
     m_mask      = calculateMask();
     m_modMvp    = m_mvp;
 
     if (m_adaptScaling < 1.f) {
         // get in bounds offset
-        inBoundsOffs = m_textBounds * (1.f - m_adaptScaling);
+        auto inBoundsOffs = m_textBounds * (1.f - m_adaptScaling);
 
         m_bo.x = m_tAlign_X == align::center
                      ? m_bo.x + inBoundsOffs.x * 0.5f
@@ -356,7 +356,7 @@ void Label::updateMatrix() {
 
     m_updating       = true;  // prevent updateMatrix feedback
     m_tContSize      = getContentSize();
-    m_Offset         = getContentOffset();
+    m_offset         = getContentOffset();
     m_glyphsPrepared = false;
     checkGlyphsPrepared();
     m_updating = false;
@@ -365,7 +365,7 @@ void Label::updateMatrix() {
 // all input values are in virtual pixels and must be converted to hw pixels
 void Label::prepareVao(bool checkFontTex) {
     if (m_drawImmediate) {
-        dstSize = (size_t)(m_FontDGV.v.size() * 4);
+        dstSize = (size_t)(m_fontDGV.v.size() * 4);
 
         if (!m_vao.isInited()) {
             m_vao.init("position:4f,texCoord:2f");
@@ -375,12 +375,12 @@ void Label::prepareVao(bool checkFontTex) {
             m_vao.resize(static_cast<GLuint>(dstSize));
             m_positions.resize(dstSize);
             m_texCoord.resize(dstSize);
-            m_indices.resize(m_FontDGV.v.size() * 6);
+            m_indices.resize(m_fontDGV.v.size() * 6);
         }
 
         size_t ind    = 0;
         size_t elmInd = 0;
-        for (e_fontdglyph& g : m_FontDGV.v) {
+        for (e_fontdglyph& g : m_fontDGV.v) {
             if (g.gptr) {
                 for (const auto& v : m_vtxPos) {
                     tuv                = glm::floor(m_bo + g.opos + v * g.osize);
@@ -430,12 +430,13 @@ void Label::updateIndDrawData(bool checkFontTex) {
     auto ld = m_lblDB.vaoData.begin();
 
     getWinPos();
+    glm::vec4 scLabelIndDraw{0.f};
     for (int i = 0; i < 2; i++) {
-        m_scLabelIndDraw[i] = std::max(m_scIndDraw[i], m_winRelPos[i]);
-        m_scLabelIndDraw[i + 2] = m_size[i] - std::max((m_winRelPos[i] + m_size[i]) - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f);
+        scLabelIndDraw[i] = std::max(m_scIndDraw[i], m_winRelPos[i]);
+        scLabelIndDraw[i + 2] = m_size[i] - std::max((m_winRelPos[i] + m_size[i]) - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f);
     }
 
-    for (e_fontdglyph& g : m_FontDGV.v) {
+    for (e_fontdglyph& g : m_fontDGV.v) {
         if (!g.gptr) {
             continue;
         }
@@ -469,7 +470,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
 
         ld -= 4;  // reset iterator to quad beginning
         m_uvSize      = (ld + 3)->texCoord - ld->texCoord;
-        m_charSizePix = g.osize / getWindow()->getPixelRatio();
+        auto charSizePix = g.osize / getWindow()->getPixelRatio();
 
         int i = 0;
         for (const auto& v : stdQuadVertices) {
@@ -477,7 +478,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
                 break;
             }
 
-            limitDrawVaoToBounds(ld, m_charSizePix, m_uvDiff, m_scLabelIndDraw, m_viewPort);  // scissoring, calculates m_uvDiff
+            limitDrawVaoToBounds(ld, charSizePix, m_uvDiff, scLabelIndDraw, m_viewPort);  // scissoring, calculates m_uvDiff
 
             if (m_uvDiff.x != 0.f || m_uvDiff.y != 0.f) {
                 limitTexCoordsToBounds(&ld->texCoord[0], i, m_uvSize, m_uvDiff);
@@ -557,8 +558,8 @@ void Label::setTextAlignY(valign ay, state st) {
 }
 
 void Label::setText(const std::string &val, state st) {
-    bool updt = val.size() != m_Text.size();
-    m_Text    = val;
+    bool updt = val.size() != m_text.size();
+    m_text    = val;
     reqUpdtGlyphs(updt);
     setStyleInitVal("text", val, st);
 }

@@ -16,7 +16,7 @@ DemoView_Resources::DemoView_Resources() : DemoView("Resources Demo",glm::vec4(.
 }
 
 void DemoView_Resources::init() {
-    setPadding(10);
+    setPadding(10.f);
     fontList.setGlbase(m_glbase);
 
     addChild<Label>({ .style = "text_test" });

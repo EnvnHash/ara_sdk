@@ -71,6 +71,7 @@ public:
     void setFontType(std::string fontType, state st = state::m_state);
 
     glm::vec2 &getTextBoundSize();
+    const std::string& getText() { return m_text; }
 
     template<typename T>
     requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
@@ -95,7 +96,7 @@ protected:
     int         m_fontSize = 17;
     std::string m_fontType = "regular";
 
-    FontGlyphVector m_FontDGV;
+    FontGlyphVector m_fontDGV;
     Font           *m_riFont      = nullptr;
     Shaders        *m_glyphShader = nullptr;
     VAO             m_vao;
@@ -107,14 +108,14 @@ protected:
     glm::vec2 m_tSep{0.f};                // font pixel character separation (default=0,0)
     align     m_tAlign_X = align::center;
     valign    m_tAlign_Y = valign::center;
-    glm::vec2 m_Offset{0.f};
+    glm::vec2 m_offset{0.f};
     glm::vec2 m_alignOffset{0.f};
-    float     m_TabSize      = 50.f;  // Tab size in pixels
+    float     m_tabSize      = 50.f;  // Tab size in pixels
     float     m_adaptScaling = 1.f;   // matrix scaling when using adaptive flag
 
     bool      m_glyphsPrepared = false;
 
-    std::string m_Text;
+    std::string m_text;
 
     glm::mat4 m_adaptScaleMat = glm::mat4(1.f);
     glm::mat4 m_modMvp        = glm::mat4(1.f);
@@ -130,16 +131,11 @@ protected:
                                                     glm::vec2{1.f}};
     static inline std::array<GLuint, 6>    m_elmInd{0, 1, 3, 3, 2, 0};
 
-    // only locally used variables
     glm::vec2       m_tContSize{0.f};
     glm::vec2       bs{0.f};
     glm::vec2       bas{0.f};
-    glm::vec2       inBoundsOffs{0.f};
     glm::vec2       tuv{0.f};
-    glm::vec2       m_charSizePix{0.f};
-    glm::vec4       m_scLabelIndDraw{0.f};
     FontGlyphVector faux;
-    float           rightLimit    = 0.f;
     float           m_fontTexUnit = -1.f;
     size_t          dstSize       = 0;
 };

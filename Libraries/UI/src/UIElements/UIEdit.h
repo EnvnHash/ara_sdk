@@ -89,7 +89,7 @@ public:
         m_stringProp = &prop;
         onChanged<T>(prop, [this](const std::any &val) { setText(std::any_cast<T>(val)); });
         addEnterCb([&prop](const std::string &txt) { prop = txt; }, &prop);
-        setOnLostFocusCb([this, &prop] { prop = T(m_Text); });
+        setOnLostFocusCb([this, &prop] { prop = T(m_text); });
         setTextDist(prop());
     }
 
@@ -103,7 +103,7 @@ public:
             prop = std::is_floating_point_v<T> ? static_cast<float>(atof(txt.c_str())) : atoi(txt.c_str());
         }, &prop);
         setOnLostFocusCb([this, &prop] {
-            prop = std::is_floating_point_v<T> ? static_cast<float>(atof(m_Text.c_str())) : getIntValue();
+            prop = std::is_floating_point_v<T> ? static_cast<float>(atof(m_text.c_str())) : getIntValue();
         });
         setMinMax(prop.getMin(), prop.getMax());
         setStep(prop.getStep());
@@ -128,7 +128,7 @@ public:
 
         setOnLostFocusCb([this, &prop, idx, isFloat] {
             auto newVal = prop();
-            newVal[idx] = isFloat ? static_cast<float>(atof(m_Text.c_str())) : atoi(m_Text.c_str());
+            newVal[idx] = isFloat ? static_cast<float>(atof(m_text.c_str())) : atoi(m_text.c_str());
             prop        = newVal;
         });
 

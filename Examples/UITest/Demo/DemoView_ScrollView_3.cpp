@@ -32,7 +32,7 @@ void DemoView_ScrollView_3::init() {
 }
 
 void DemoView_ScrollView_3::Unit::init() {
-    setPadding(10);
+    setPadding(10.f);
 
     addChild<Label>(LabelPars{
         .pos = {0, 0},

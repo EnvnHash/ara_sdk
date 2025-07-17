@@ -24,7 +24,7 @@ InfoDialog::InfoDialog(const UIWindowParams& params) : UIWindow(params) {
 
     auto base = getRootNode()->addChild<Div>();
     base->addStyleClass("infoDiag");
-    base->setPadding(10);
+    base->setPadding(10.f);
     base->setBorderWidth(1);
     base->setBorderColor(110.f / 255.f, 110.f / 255.f, 110.f / 255.f, 1.f);
     base->setBackgroundColor(30.f / 255.f, 30.f / 255.f, 30.f / 255.f, 1.f);

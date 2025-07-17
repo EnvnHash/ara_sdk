@@ -161,10 +161,31 @@ public :
     void setPivot(pivotX pX, pivotY pY);
 
     /** padding is the in the parent, the children read it from the parent's value when calculating their matrices */
-    void setPadding(float val, state st = state::m_state);
+    template<typename T>
+    requires std::is_same_v<T, glm::vec4> || std::is_same_v<T, float>
+    void setPadding(const T& val, state st = state::m_state) {
+        if (st == state::m_state || st == m_state) {
+            if constexpr (std::is_same_v<T, float>) {
+                m_padding = glm::vec4{val, val, val, val};
+            } else {
+                m_padding = val;
+            }
+            m_geoChanged = true;
+        }
 
-    virtual void setPadding(float left, float top, float right, float bot, state st = state::m_state);
-    virtual void setPadding(glm::vec4& val, state st = state::m_state);
+        std::string styleInitStr;
+        if constexpr (std::is_same_v<T, float>) {
+            styleInitStr = std::to_string(val);
+        } else {
+            styleInitStr = std::to_string(val[0]) + "," + std::to_string(val[1]) + "," + std::to_string(val[2]) + "," + std::to_string(val[3]);
+        }
+
+        setStyleInitVal("padding", styleInitStr, st);
+    }
+
+    virtual void setPadding(float left, float top, float right, float bottom, state st = state::m_state) {
+        setPadding(glm::vec4{left, top, right, bottom});
+    }
 
     void setBorderWidth(uint32_t val, state st = state::m_state);
     void setBorderRadius(uint32_t val, state st = state::m_state);
@@ -225,7 +246,7 @@ public :
     void setFixAspect(float val);
 
     [[nodiscard]] float getAspect() const { return m_fixAspect > -1.f ? m_fixAspect : m_aspect; }
-    [[nodiscard]] bool  getScissorChildren() const { return m_ScissorChildren; }
+    [[nodiscard]] bool  getScissorChildren() const { return m_scissorChildren; }
 
     [[nodiscard]] align  getAlignX() const { return m_alignX; }
     [[nodiscard]] valign getAlignY() const { return m_alignY; }
@@ -283,7 +304,7 @@ public :
     [[nodiscard]] bool  changed() const { return m_geoChanged; }
 
     // Bounding Box
-    bool setScissorChildren(bool on_off) { return (m_ScissorChildren = on_off); }
+    bool setScissorChildren(bool on_off) { return (m_scissorChildren = on_off); }
 
     /** get the bounding box around the children in parent relative coordinates
      * (without the parent's transformation matrix) */
@@ -311,7 +332,7 @@ protected:
     * true relative to the center of the UINode **/
     bool m_contTransMatCentered = false;
     bool m_excludeFromPadding = false;
-    bool m_ScissorChildren = false;
+    bool m_scissorChildren = false;
     bool m_hasContRot = false;
     bool m_geoChanged                    = true;
     bool m_excludeFromParentScissoring   = false;
@@ -371,7 +392,7 @@ protected:
     /** the node's content offset in pixels (padding + border) */
     glm::vec2 m_contentOffset{0};
 
-    /** bounding box around all children in format left/top x,y and right/bottom x.y */
+    /** bounding box around all children in format left/top x,y and right/bottom x.y parentRelative */
     glm::vec4 m_childBoundBox{0};
 
     /** the position relative to the parent's (transformed) content's top left corner in pixels */
