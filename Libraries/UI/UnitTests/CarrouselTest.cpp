@@ -254,6 +254,6 @@ TEST(UITest, CarrouselLeftAlignSwipeTest) {
         compareFrameBufferToImage(filesystem::current_path() / "carrousel_leftAlign_swipe.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 600, 400);
-}*/
-
+}
+*/
 }

@@ -172,7 +172,7 @@ void Carrousel::rotateCentered(float pos) {
             slid->setSize(slideWidth, 1.f);
         }
         auto slidOffs = i++ * slidePlusSpace;
-        auto rotOffs = static_cast<int32_t>(pos * (m_slides.size() -1) * slidePlusSpace);
+        auto rotOffs = static_cast<int32_t>(pos * static_cast<float>(m_slides.size() -1) * static_cast<float>(slidePlusSpace) +0.5f);
         slid->setX(slidOffs + m_zeroPos - rotOffs);
     }
 }
@@ -182,7 +182,7 @@ void Carrousel::rotateNoFit(float pos) {
     for (const auto slid : m_slides) {
         slid->setAlignX(align::left);
         slid->setX(xPos - static_cast<int32_t>(pos * getMaxSlideWay()));
-        xPos += static_cast<int32_t>(slid->getNodeWidth()) + m_spacing;
+        xPos += static_cast<int32_t>(slid->getNodeWidth());
     }
 }
 
@@ -201,8 +201,8 @@ bool Carrousel::isCurrent(CarrouselSlide* sl) {
 float Carrousel::getSlideWidthSum(int32_t endIdx) {
     return static_cast<float>(std::accumulate(m_slides.begin(), std::next(m_slides.begin(), endIdx), 0,
                               [&](const auto& a, const auto& b) {
-                                    return a + m_spacing + static_cast<int32_t>(b->getNodeWidth());
-                              })) - static_cast<float>(m_spacing);
+                                    return a + static_cast<int32_t>(b->getNodeWidth());
+                              }));
 }
 
 float Carrousel::getMaxSlideWay() {
