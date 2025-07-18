@@ -626,7 +626,7 @@ bool UINode::objPosIt(ObjPosIt& opi) {
             --opi.treeLevel;
 
             // try to step towards front
-            if (opi.it == opi.list->begin()) {
+            if (opi.treeLevel <= opi.foundTreeLevel || opi.it == opi.list->begin()) {
                 return false;
             }
 

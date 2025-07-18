@@ -92,6 +92,10 @@ void Carrousel::mouseUp(hidData& data) {
 }
 
 void Carrousel::postAdd(CarrouselSlide* sl) {
+    // in case slides are formatted with styles, they need to be applied here, before layouting children
+    uint32_t objId = 0;
+    UINode::drawAsRoot(objId);
+
     rotate(0.f);
     if (m_currentIdx == -1) {
         m_currentIdx = 0;
@@ -198,7 +202,7 @@ float Carrousel::getSlideWidthSum(int32_t endIdx) {
     return static_cast<float>(std::accumulate(m_slides.begin(), std::next(m_slides.begin(), endIdx), 0,
                               [&](const auto& a, const auto& b) {
                                     return a + m_spacing + static_cast<int32_t>(b->getNodeWidth());
-                              })) - m_spacing;
+                              })) - static_cast<float>(m_spacing);
 }
 
 float Carrousel::getMaxSlideWay() {

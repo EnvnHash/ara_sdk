@@ -143,8 +143,6 @@ TEST(UITest, CarrouselFitAllTest) {
     appBody([&](UIApplication& app){
         addCarrousel(app, CarrouselMode::fitAllOnScreen, 0, 0);
     }, [&](UIApplication& app){
-        Texture::saveFrontBuffer(filesystem::current_path() / "carrousel_test2_ref.png",
-                                 app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 4);
         compareFrameBufferToImage(filesystem::current_path() / "carrousel_test2_ref.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 600, 400);
