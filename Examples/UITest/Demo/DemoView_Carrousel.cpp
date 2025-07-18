@@ -53,14 +53,11 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
                          vec4{121.f / 255.f, 101.f / 255.f, 193.f / 255.f, 1.f},
     };
 
-    int totWidth = 0;
     int numSlides = cm == CarrouselMode::leftAlign ? 20: 5;
     for (int i=0; i<numSlides; i++) {
         auto slide = caru->add();
         if (cm == CarrouselMode::leftAlign) {
-            auto newWidth = static_cast<int32_t>(getRandF(90.f, 300.f));
-            totWidth += newWidth;
-            slide->setWidth(newWidth);
+            slide->setWidth(static_cast<int32_t>(getRandF(90.f, 300.f)));
         }
 
         auto lbl = slide->addChild<Label>();

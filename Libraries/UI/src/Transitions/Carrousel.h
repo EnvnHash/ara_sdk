@@ -35,6 +35,8 @@ public:
     bool isRotating();
     bool isCurrent(CarrouselSlide* sl);
     Div* getSelector() const { return m_selector; }
+    ImageButton* getLeftArrow() const { return m_arrows[0]; }
+    ImageButton* getRightArrow() const { return m_arrows[1]; }
 
     void show(int32_t, bool animate = true);
     void show(const std::string& name) override {};
