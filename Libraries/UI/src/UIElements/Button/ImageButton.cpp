@@ -230,7 +230,6 @@ void ImageButton::mouseMove(hidData& data) {
     }
 
     m_mouseIsIn = true;
-    data.consumed = true;
 }
 
 void ImageButton::mouseIn(hidData& data) {

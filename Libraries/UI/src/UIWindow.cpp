@@ -1101,7 +1101,7 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
 
     if ((m_hidData.mousePressed || m_hidData.mouseRightPressed) && !m_draggingNodeTree.empty() &&
         (!m_hidData.dragStart || isValidDrag)) {
-        // since we are using a minimum distance for validating drag gestures, we have to correct the movedPix in order
+        // since a minimum distance is used for validating drag gestures, movedPix has to be corrected in order
         // to avoid jumps
         if (m_hidData.dragStart && isValidDrag) {
             m_mouseClickPos      = m_hidData.mousePos;

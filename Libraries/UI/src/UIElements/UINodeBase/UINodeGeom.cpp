@@ -519,6 +519,4 @@ bool UINodeGeom::isOutOfParentBounds() {
            glm::any(lessThan(m_parentNodeRelPos + m_size, {}));
 }
 
-
-
 }
