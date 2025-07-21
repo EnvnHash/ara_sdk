@@ -493,16 +493,18 @@ bool UINodeGeom::isInBounds(vec2& pos) {
     getWinPos();
     getWinRelSize();
 
-    vec2 objItLT{}, objItRB{};
-    vec4 absChildBB = { m_childBoundBox.x + m_parentTransPos.x, m_childBoundBox.y + m_parentTransPos.y,
-                        m_childBoundBox.z + m_parentTransPos.x, m_childBoundBox.w + m_parentTransPos.y};
+    auto contentTransform = m_parentMatLocCpy * m_nodePosMat;
+    auto absChildBbLT = contentTransform * vec4{ m_childBoundBox.x, m_childBoundBox.y, 0.f, 1.f };
+    auto absChildBbRB = contentTransform * vec4{ m_childBoundBox.z, m_childBoundBox.w, 0.f, 1.f };
 
+    vec2 objItLT{}, objItRB{};
     for (int32_t i = 0; i < 2; i++) {
-        objItLT[i] = m_winRelPos[i] + std::min(0.f, absChildBB[i]);
-        objItRB[i] = objItLT[i] + std::max(m_winRelSize[i], absChildBB[i + 2] - absChildBB[i]);
+        objItLT[i] = std::min(m_winRelPos[i], absChildBbLT[i]);
+        objItRB[i] = std::max(m_winRelPos[i] + m_winRelSize[i], absChildBbRB[i]);
     }
 
-    if (!m_excludeFromParentScissoring && (m_scIndDraw.z != 0.f || m_scIndDraw.w != 0.f || m_scIndDraw.x != 0.f || m_scIndDraw.y != 0.f)) {
+    if (!m_excludeFromParentScissoring
+        && (m_scIndDraw.z != 0.f || m_scIndDraw.w != 0.f || m_scIndDraw.x != 0.f || m_scIndDraw.y != 0.f)) {
         objItRB = glm::min(objItRB, vec2{m_scIndDraw.x + m_scIndDraw.z, m_scIndDraw.y + m_scIndDraw.w});
         objItLT = glm::max(objItLT, vec2{m_scIndDraw.x, m_scIndDraw.y});
     }

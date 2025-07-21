@@ -337,10 +337,10 @@ void UINode::updtMatrIt(scissorStack* ss) {
     if (m_children.empty()) {
         memset(&m_childBoundBox[0], 0, sizeof(float) * 4);
     } else {
-        m_childBoundBox.x = std::numeric_limits<float>::max();
-        m_childBoundBox.y = std::numeric_limits<float>::max();
-        m_childBoundBox.z = std::numeric_limits<float>::min();
-        m_childBoundBox.w = std::numeric_limits<float>::min();
+        m_childBoundBox.x = std::numeric_limits<float>::max(); // left-top x
+        m_childBoundBox.y = std::numeric_limits<float>::max(); // left-top y
+        m_childBoundBox.z = std::numeric_limits<float>::min(); // right-bottom x
+        m_childBoundBox.w = std::numeric_limits<float>::min(); // right-bottom y
     }
 
     // continue iterating through the children
@@ -777,7 +777,7 @@ std::filesystem::path UINode::dataPath() {
     return m_sharedRes ? m_sharedRes->dataPath : std::filesystem::current_path();
 }
 
-WindowManager*  UINode::getWinMan() {
+WindowManager* UINode::getWinMan() {
     return m_glbase->getWinMan();
 }
 
