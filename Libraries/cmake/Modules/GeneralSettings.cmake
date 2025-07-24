@@ -61,6 +61,9 @@ if (APPLE)
 	set(SUPPORTED_ARCHITECTURES "")
 	execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE MACHINE)
 
+	string(APPEND CMAKE_C_FLAGS " -Wno-deprecated-declarations")
+	string(APPEND CMAKE_CXX_FLAGS " -Wno-deprecated-declarations")
+
 	#try to build universal binary. on an intel mac x86_64 should be supported, on an m1 both should be supported
 	if(${MACHINE} MATCHES "arm64-*" OR ${MACHINE} MATCHES "aarch64-*")
 		list(APPEND SUPPORTED_ARCHITECTURES "arm64")
