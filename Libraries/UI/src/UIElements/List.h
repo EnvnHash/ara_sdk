@@ -23,6 +23,7 @@ public:
 };
 
 template <typename T>
+requires std::is_floating_point_v<T> || std::is_integral_v<T> || std::is_same_v<T, const char*> || std::is_same_v<T, std::string>
 class ListItem : public ListItemBase {
 public:
     ListItem() {
@@ -44,27 +45,7 @@ public:
 
         val   = data;
         m_idx = idx;
-
-        if (typeid(T) == typeid(std::string)) {
-            label->setText(*data);
-        } else if (typeid(T) == typeid(const char *)) {
-            //            label->setText(std::string(*reinterpret_cast<const
-            //            char**>(data)));
-        } else if (typeid(T) == typeid(int)) {
-            label->setText(std::to_string(*reinterpret_cast<int *>(data)));
-        } else if (typeid(T) == typeid(int32_t)) {
-            label->setText(std::to_string(*reinterpret_cast<int32_t *>(data)));
-        } else if (typeid(T) == typeid(unsigned int)) {
-            label->setText(std::to_string(*reinterpret_cast<unsigned int *>(data)));
-        } else if (typeid(T) == typeid(float)) {
-            label->setText(std::to_string(*reinterpret_cast<float *>(data)));
-        } else if (typeid(T) == typeid(double)) {
-            label->setText(std::to_string(*reinterpret_cast<double *>(data)));
-        } else if (typeid(T) == typeid(long long)) {
-            label->setText(std::to_string(*reinterpret_cast<long long *>(data)));
-        } else if (typeid(T) == typeid(unsigned long long)) {
-            label->setText(std::to_string(*reinterpret_cast<unsigned long long *>(data)));
-        }
+        label->setText(std::to_string(*reinterpret_cast<T*>(data)));
     }
 
     T     *val   = nullptr;
@@ -75,7 +56,6 @@ public:
 class ListBase : public ScrollView {
 public:
     ListBase();
-    explicit ListBase(const std::string& styleClass);
     ~ListBase() override = default;
 
     void init() override;
@@ -102,21 +82,17 @@ template <typename DataTyp, class LiTyp = ListItem<DataTyp>>
 class List : public ListBase {
 public:
     List() = default;
-    explicit List(const std::string& styleClass) : ListBase(std::move(styleClass)) {}
 
     void rebuild() override {
-        if (!m_table || (!m_items && !m_itemsVec && !m_listProp)) return;
+        if (!m_table || (!m_items && !m_itemsVec && !m_listProp)) {
+            return;
+        }
 
         m_table->clearCells();
         m_table->insertColumn(-1, 1, 1.f, false);
         m_table->insertRow(-1,
-                           static_cast<int>(m_items
-                                                ? m_items->size()
-                                                : m_itemsVec
-                                                      ? m_itemsVec->size()
-                                                      : m_listProp
-                                                            ? m_listProp->size()
-                                                            : 1),
+                           static_cast<int>(m_items ? m_items->size()
+                                                    : m_itemsVec ? m_itemsVec->size() : m_listProp->size()),
                            m_rowHeight);
         m_table->setSpacing(m_space.x, m_space.y);
 
@@ -151,7 +127,7 @@ public:
                 });
                 ++i;
             }
-        } else if (m_listProp) {
+        } else {
             for (auto li = m_listProp->begin(); li != m_listProp->end(); ++li) {
                 m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>()));
                 if (!m_uiItems.back()) {
@@ -213,7 +189,9 @@ public:
         });
     }
 
-    void setClickCb(std::function<void(DataTyp *, int, hidData& data)> cb) { m_clickCb = std::move(cb); }
+    void setClickCb(std::function<void(DataTyp *, int, hidData& data)> cb) {
+        m_clickCb = std::move(cb);
+    }
 
 protected:
     std::vector<DataTyp>                              *m_itemsVec = nullptr;

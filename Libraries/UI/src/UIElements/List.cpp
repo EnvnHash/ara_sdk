@@ -17,7 +17,7 @@ ListBase::ListBase() {
 void ListBase::init() {
     ScrollView::init();
 
-    // table must be always on top of ScrollViews children, in order to have the
+    // table must always be on top of ScrollViews children, in order to have the
     // children's bounding box being calculated correctly before ScrollBar
     // onChange callbacks are evaluated
     m_table = addChild<UITable>();
