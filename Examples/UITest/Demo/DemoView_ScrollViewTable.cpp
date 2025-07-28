@@ -4,31 +4,52 @@
 using namespace ara;
 using namespace glm;
 using namespace std;
+using listT = std::list<std::string>;
+using listT2 = std::vector<int32_t>;
 
 DemoView_ScrollViewList::DemoView_ScrollViewList() : DemoView("Scroll View with a table inside", glm::vec4(.15f,.15f,.15f,1.f)) {
     setName("DemoView_ScrollViewTable");
 }
 
 void DemoView_ScrollViewList::init() {
-	ui_SV = addChild<ScrollView>(UINodePars{
-        .bgColor = vec4{.1f, .1f, .3f, 1.f},
-        .padding = vec4{10.f, 10.f, 10.f, 10.f}
-    });
-
+    listT data;
     for (int i=0; i<20; i++) {
-        m_data.emplace_back("Row Nr "+std::to_string(i));
+        data.emplace_back("Row Nr "+std::to_string(i));
     }
 
-    m_list = ui_SV->addChild<List<std::string>>();
-    m_list->setRowHeight(45.f);
-    m_list->setSpacing(0, 5.f);
-
-    getWindow()->addGlCb(this, "rbd", [this]{
-        // test list rebuilding
-        for (int rep=0; rep<2; rep++) {
-            m_list->set(&m_data);
-        }
-
-        return true;
+    auto l1 = addChild<List<listT>>(UINodePars{
+        .size = vec2{ 0.3f, 1.f },
+        .style = "list_demo"
     });
+    l1->setRowHeight(45.f);
+    l1->setSpacing(0, 5.f);
+    l1->set(data);
+
+    listT2 data2;
+    for (int i=0; i<20; i++) {
+        data2.emplace_back(i);
+    }
+
+    auto l2 = addChild<List<listT2>>(UINodePars{
+        .pos = vec2{ 0.33f, 0.f },
+        .size = vec2{ 0.3f, 1.f },
+        .style = "list_demo"
+    });
+    l2->setRowHeight(45.f);
+    l2->setSpacing(0, 5.f);
+    l2->set(data2);
+
+
+    for (int i=0; i<20; i++) {
+        m_data3.push_back("Prop Nr "+std::to_string(i));
+    }
+
+    auto l3 = addChild<PList<std::string>>(UINodePars{
+        .pos = vec2{ 0.66f, 0.f },
+        .size = vec2{ 0.3f, 1.f },
+        .style = "list_demo"
+    });
+    l3->setRowHeight(45.f);
+    l3->setSpacing(0, 5.f);
+    l3->set(&m_data3);
 }

@@ -12,7 +12,9 @@ using namespace glm;
 
 namespace ara::UiUnitTest::ZoomViewTest {
 constexpr int nrTestQuads = 2;
+bool clicked = false;
 constexpr ivec2 winSize = { 600, 600 };
+constexpr ivec2 imgButtonStdPos = { 50, 50 };
 std::array quadSize { ivec2{100, 100}, ivec2{50, 50} };
 std::array quadPos { ivec2{0, 0}, winSize/2 - quadSize[1]/2 };
 std::array quadCol { vec4{1.f, 0.f, 0.f, 1.f}, vec4{0.f, 1.f, 0.f, 1.f} };
@@ -38,17 +40,20 @@ static ZoomView* addTestDivs(UIApplication& app) {
     return zv;
 }
 
-static void addImageButton(UIApplication& app) {
+static void addImageButton(UIApplication& app, const ivec2& pos, const ivec2& size) {
     auto zv = addZoomView(app);
     auto imgBut = zv->addChild<ImageButton>(UINodePars{
-            .pos = ivec2{50, 50},
-            .size = ivec2{100, 100},
-            .bgColor = vec4{0.36f, 0.36f, 0.36f, 1.f }
+        .pos = pos,
+        .size = size,
+        .bgColor = vec4{0.36f, 0.36f, 0.36f, 1.f }
     });
     imgBut->setImgAlign(align::center, valign::center);
     imgBut->setImg("Icons/invert_icon.png");
     imgBut->setOnStateImg("Icons/invert_icon_dark.png", 1);
     imgBut->setIsToggle(true);
+    imgBut->setClickedCb([&]{
+        clicked = true;
+    });
 }
 
 static void zoomToCenter(UIApplication& app) {
@@ -115,7 +120,7 @@ TEST(UITest, ZoomViewWheelCenterTest) {
 
 TEST(UITest, ZoomViewImageButtonTest) {
     appBody([&](UIApplication& app){
-        addImageButton(app);
+        addImageButton(app, imgButtonStdPos, quadSize[0]);
     }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "zoomview_imagebutton_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 2);
@@ -124,13 +129,42 @@ TEST(UITest, ZoomViewImageButtonTest) {
 
 TEST(UITest, ZoomViewImageButtonZoomedTest) {
     appBody([&](UIApplication& app){
-        addImageButton(app);
+        addImageButton(app, imgButtonStdPos, quadSize[0]);
         zoomToCenter(app);
     }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "zoomview_imagebutton_test2.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 2);
+    }, winSize.x, winSize.y);
+}
 
-//        Texture::saveFrontBuffer("zoomview_imagebutton_test2.png", app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 4);
+TEST(UITest, ZoomViewImageButtonZoomedClickTest) {
+    clicked = false;
+    appBody([&](UIApplication& app){
+        addImageButton(app, imgButtonStdPos, quadSize[0]);
+        zoomToCenter(app);
+        drawAndSwap(app);
+        app.getMainWindow()->onMouseDownLeft(75, 75, false, false, false);
+        app.getMainWindow()->onMouseUpLeft();
+    }, [&](UIApplication& app){
+        EXPECT_TRUE(clicked);
+    }, winSize.x, winSize.y);
+}
+
+TEST(UITest, ZoomViewImageButtonZoomedUncenteredClickTest) {
+    clicked = false;
+    appBody([&](UIApplication& app){
+        auto mainWin = app.getMainWindow();
+        addImageButton(app,
+                       { static_cast<int32_t>(winSize.x/2 - quadSize[0].x), static_cast<int32_t>(winSize.y/2 - quadSize[0].y) },
+                       ivec2{5, 5});
+        mainWin->onMouseMove(static_cast<float>(winSize.x - 20), 20, 0);
+
+        app.getWinBase()->getWinHandle()->onScroll(0, 3);
+        drawAndSwap(app);
+        mainWin->onMouseDownLeft(91, 260, false, false, false);
+        mainWin->onMouseUpLeft();
+    }, [&](UIApplication& app){
+        EXPECT_TRUE(clicked);
     }, winSize.x, winSize.y);
 }
 

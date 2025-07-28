@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <UIElements/Div.h>
 #include <ListProperty.h>
 #include <UIElements/Label.h>
 #include <UIElements/ScrollView.h>
@@ -12,7 +11,7 @@
 
 namespace ara {
 
-class ListItemBase : public Div {
+class ListItemBase : public Label {
 public:
     ListItemBase() {
 #ifdef __ANDROID__
@@ -22,8 +21,16 @@ public:
     }
 };
 
-template <typename T>
-requires std::is_floating_point_v<T> || std::is_integral_v<T> || std::is_same_v<T, const char*> || std::is_same_v<T, std::string>
+template<typename T>
+concept AllowedListTypes = std::is_floating_point_v<T> || std::is_integral_v<T> || std::is_same_v<T, std::string>;
+
+template<typename Container>
+concept AllowedContainer = requires(Container c) {
+    typename Container::value_type; // Ensure value_type exists
+    requires AllowedListTypes<typename Container::value_type>;
+};
+
+template <AllowedListTypes T>
 class ListItem : public ListItemBase {
 public:
     ListItem() {
@@ -31,37 +38,107 @@ public:
     }
 
     void init() override {
-        Div::init();
-        label = addChild<Label>();
-        if (val) {
-            setData(val, m_idx);
+        Label::init();
+        setData(val, m_idx);
+    }
+
+    virtual void setData(const T& data, int idx) {
+        val   = data;
+        m_idx = idx;
+        if constexpr (std::is_floating_point_v<T> || std::is_integral_v<T>) {
+            setText(std::to_string(data));
+        } else {
+            setText(data);
         }
     }
 
-    virtual void setData(T *data, int idx) {
-        if (!data || !label) {
+    T      val{};
+    int    m_idx = 0;
+};
+
+template <AllowedListTypes T>
+class ListBase : public ScrollView {
+public:
+    ListBase() {
+        setName(getTypeName<ListBase>());
+        setFocusAllowed(false);
+    }
+
+    ~ListBase() override = default;
+
+    void init() override {
+        ScrollView::init();
+
+        // table must always be on top of ScrollViews children, in order to have the children's bounding box being
+        // calculated correctly before ScrollBar onChange callbacks are evaluated
+        m_table = addChild<UITable>();
+        m_table->setDynamicHeight(true);
+
+        rebuild();
+    };
+
+    void loadStyleDefaults() override {
+        UINode::loadStyleDefaults();
+        m_setStyleFunc[state::none][styleInit::rowHeight] = [this] { m_rowHeight = 30.f; };
+    }
+
+    void updateStyleIt(ResNode* node, const state st, const std::string& styleClass) override {
+        UINode::updateStyleIt(node, st, styleClass);
+
+        if (const auto rh = node->findNumericNode("rowHeight"); get<ResNode*>(rh)) {
+            if (get<unitType>(rh) == unitType::Percent) {
+                float val                                = stof(get<std::string>(rh)) * 0.01f;
+                m_setStyleFunc[st][styleInit::rowHeight] = [this, val] {
+                    m_rowHeight = val;
+                    addGlCb("rbList", [this] {
+                        rebuild();
+                        return true;
+                    });
+                };
+            } else {
+                int val                                  = stoi(get<std::string>(rh));
+                m_setStyleFunc[st][styleInit::rowHeight] = [this, val] {
+                    m_rowHeight = static_cast<float>(val);
+                    addGlCb("rbList", [this] {
+                        rebuild();
+                        return true;
+                    });
+                };
+            }
+        }
+    }
+
+    virtual void rebuild() = 0;
+
+    template <AllowedContainer C>
+    void rebuild(const C& items, std::vector<ListItem<T>*>& uiItems) {
+        if (!m_table) {
             return;
         }
 
-        val   = data;
-        m_idx = idx;
-        label->setText(std::to_string(*reinterpret_cast<T*>(data)));
+        m_table->clearCells();
+        m_table->insertColumn(-1, 1, 1.f, false);
+        m_table->insertRow(-1, items.size(), m_rowHeight, false, true);
+        m_table->setSpacing(m_space.x, m_space.y);
+        m_table->updateMatrix();
+
+        uiItems.clear();
+        int i = 0;
+        for (auto li = items.begin(); li != items.end(); ++li) {
+            uiItems.emplace_back(m_table->setCell<ListItem<T>>(i, 0));
+            if (!uiItems.back()) {
+                continue;
+            }
+            uiItems.back()->addStyleClass(getStyleClass() + ".item");
+            uiItems.back()->setData(*li, i);
+            uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
+                if (m_clickCb){
+                    m_clickCb(*li, i, data);
+                }
+            });
+            ++i;
+        }
     }
-
-    T     *val   = nullptr;
-    int    m_idx = 0;
-    Label *label = nullptr;
-};
-
-class ListBase : public ScrollView {
-public:
-    ListBase();
-    ~ListBase() override = default;
-
-    void init() override;
-    virtual void rebuild() = 0;
-    void loadStyleDefaults() override;
-    void updateStyleIt(ResNode *node, state st, const std::string& styleClass) override;
 
     void setRowHeight(float val) {
         m_rowHeight = val;
@@ -72,133 +149,69 @@ public:
         m_space.y = spY;
     }
 
-protected:
-    UITable  *m_table     = nullptr;
-    float     m_rowHeight = 30.f;
-    glm::vec2 m_space     = glm::vec2{0.f};
-};
-
-template <typename DataTyp, class LiTyp = ListItem<DataTyp>>
-class List : public ListBase {
-public:
-    List() = default;
-
-    void rebuild() override {
-        if (!m_table || (!m_items && !m_itemsVec && !m_listProp)) {
-            return;
-        }
-
-        m_table->clearCells();
-        m_table->insertColumn(-1, 1, 1.f, false);
-        m_table->insertRow(-1,
-                           static_cast<int>(m_items ? m_items->size()
-                                                    : m_itemsVec ? m_itemsVec->size() : m_listProp->size()),
-                           m_rowHeight);
-        m_table->setSpacing(m_space.x, m_space.y);
-
-        m_uiItems.clear();
-
-        int i = 0;
-        if (m_items) {
-            for (auto li = m_items->begin(); li != m_items->end(); ++li) {
-                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>()));
-                if (!m_uiItems.back()) {
-                    continue;
-                }
-                m_uiItems.back()->addStyleClass(getStyleClass() + ".item");
-                m_uiItems.back()->setData(&*li, i);
-                m_uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
-                    if (!m_clickCb || !m_items) {
-                        return;
-                    }
-                    m_clickCb(&(*li), i, data);
-                });
-                ++i;
-            }
-        } else if (m_itemsVec) {
-            for (auto li = m_itemsVec->begin(); li != m_itemsVec->end(); ++li) {
-                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>()));
-                if (!m_uiItems.back()) continue;
-                m_uiItems.back()->addStyleClass(getStyleClass() + ".item");
-                m_uiItems.back()->setData(&(*li), i);
-                m_uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
-                    if (!m_clickCb || !m_itemsVec) return;
-                    m_clickCb(&(*li), i, data);
-                });
-                ++i;
-            }
-        } else {
-            for (auto li = m_listProp->begin(); li != m_listProp->end(); ++li) {
-                m_uiItems.emplace_back(m_table->setCell<LiTyp>(i, 0, std::make_unique<LiTyp>()));
-                if (!m_uiItems.back()) {
-                    continue;
-                }
-                m_uiItems.back()->addStyleClass(getStyleClass() + ".item");
-                m_uiItems.back()->setData(&*li, i);
-                m_uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
-                    if (!m_clickCb) {
-                        return;
-                    }
-                    m_clickCb(&*li, i, data);
-                });
-                ++i;
-            }
-        }
-
-        setDrawFlag();
-    }
-
-    void set(std::list<DataTyp> *data, bool doRebuild = true) {
-        if (!data) {
-            return;
-        }
-        m_items = data;
-
-        if (doRebuild)
-            addGlCb(std::to_string((int64_t)this), [this] {
-                rebuild();
-                return true;
-            });
-    }
-
-    void set(std::vector<DataTyp> *data, bool doRebuild = true) {
-        if (!data) {
-            return;
-        }
-        m_itemsVec = data;
-
-        if (doRebuild)
-            addGlCb(std::to_string((int64_t)this), [this] {
-                rebuild();
-                return true;
-            });
-    }
-
-    void set(ListProperty<DataTyp> *dataProp, bool doRebuild = true) {
-        if (!dataProp) {
-            return;
-        }
-        m_listProp = dataProp;
-        onChanged<DataTyp>(dataProp, [this, doRebuild](const std::any &v) {
-            auto sess = std::any_cast<std::list<DataTyp> *>(v);
-            if (sess && doRebuild)
-                addGlCb(std::to_string(static_cast<int64_t>(this)), [this] {
-                    rebuild();
-                    return true;
-                });
-        });
-    }
-
-    void setClickCb(std::function<void(DataTyp *, int, hidData& data)> cb) {
+    void setClickCb(std::function<void(const T&, int, hidData& data)> cb) {
         m_clickCb = std::move(cb);
     }
 
 protected:
-    std::vector<DataTyp>                              *m_itemsVec = nullptr;
-    std::list<DataTyp>                                *m_items    = nullptr;
-    ListProperty<DataTyp>                             *m_listProp = nullptr;
-    std::vector<LiTyp *>                               m_uiItems;
-    std::function<void(DataTyp *, int, hidData& data)> m_clickCb;
+    UITable*                                            m_table     = nullptr;
+    float                                               m_rowHeight = 30.f;
+    glm::vec2                                           m_space     = glm::vec2{0.f};
+    std::function<void(const T&, int, hidData& data)>   m_clickCb;
+};
+
+template <AllowedContainer C>
+class List : public ListBase<typename C::value_type> {
+public:
+    using T = typename C::value_type;
+
+    void rebuild() override {
+        ListBase<T>::rebuild(m_items, m_uiItems);
+        UINode::setDrawFlag();
+    }
+
+    void set(C& data, bool doRebuild = true) {
+        m_items = data;
+        if (doRebuild) {
+            rebuild();
+        }
+    }
+
+protected:
+    C                                                   m_items;
+    std::vector<ListItem<T>*>                           m_uiItems;
+};
+
+template <AllowedListTypes T>
+class PList : public ListBase<T> {
+public:
+    void rebuild() override {
+        if (!m_listProp) {
+            return;
+        }
+        ListBase<T>::rebuild(m_listProp->get(), m_uiItems);
+        UINode::setDrawFlag();
+    }
+
+    void set(ListProperty<T> *dataProp, bool doRebuild = true) {
+        if (!dataProp) {
+            return;
+        }
+        m_listProp = dataProp;
+        UINode::onChanged<T>(*dataProp, [this, doRebuild](const std::any &v) {
+            auto sess = std::any_cast<std::list<T>*>(v);
+            if (sess && doRebuild) {
+                UINode::addGlCb(std::to_string(reinterpret_cast<int64_t>(this)), [this] {
+                    rebuild();
+                    return true;
+                });
+            }
+        });
+    }
+
+protected:
+    ListProperty<T>*                                    m_listProp = nullptr;
+    std::vector<ListItem<T>*>                           m_uiItems;
 };
 
 }  // namespace ara

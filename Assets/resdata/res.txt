@@ -506,7 +506,6 @@ demos {
 }
 
 but_style_test {
-
 	width:100px
 	height:50px
 	
@@ -520,7 +519,6 @@ but_style_test {
 	font {font:"Fonts/verdana.ttf" size:18}
 	
 	text-opt:
-
 }
 
 test_corner {
@@ -546,4 +544,18 @@ selected_test {
 
 mainWndCtrl {
     padding:50
+}
+
+list_demo {
+    bkcolor: colors.black
+
+    item {
+        padding: 10
+        bkcolor: rgb(40,40,60)
+        color: rgb(255, 255, 255)
+        text-color: rgb(255, 255, 255)
+    	font {font:"Fonts/verdana.ttf" size:18}
+        text-align:left
+        text-valign:center
+    }
 }

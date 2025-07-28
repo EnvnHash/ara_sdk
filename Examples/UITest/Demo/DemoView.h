@@ -77,10 +77,10 @@ public:
 class DemoView_ScrollViewList : public DemoView {
 public:
     DemoView_ScrollViewList();
-    virtual void            init();
-    ScrollView*			    ui_SV=nullptr;
-    List<std::string>*      m_list=nullptr;
-    std::list<std::string>  m_data;
+    virtual void                    init();
+    ScrollView*			            ui_SV=nullptr;
+    List<std::list<std::string>>*   m_list=nullptr;
+    ListProperty<std::string>       m_data3;
 };
 
 class DemoView_ComboBox : public DemoView {

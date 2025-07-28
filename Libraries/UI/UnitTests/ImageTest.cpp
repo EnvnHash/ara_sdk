@@ -62,9 +62,7 @@ TEST(UITest, ImageSingleLod) {
 
 TEST(UITest, ImageSingleFill) {
     appBody([&](UIApplication &app) {
-        auto img = addImage(app, "test-tex.png");
-        img->setImgFlags(imgFlags::fill);
-
+        addImage(app, "test-tex.png")->setImgFlags(imgFlags::fill);
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_fill.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 2);
@@ -76,7 +74,6 @@ TEST(UITest, ImageSingleScale) {
         auto img = addImage(app, "test-tex.png");
         img->setImgFlags(imgFlags::scale);
         img->setImgScale(0.3f);
-
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_scale_0_3.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
@@ -85,8 +82,7 @@ TEST(UITest, ImageSingleScale) {
 
 TEST(UITest, ImageSingleHFlip) {
     appBody([&](UIApplication &app) {
-        auto img = addImage(app, "test-tex.png");
-        img->setImgFlags(imgFlags::hflip);
+        addImage(app, "test-tex.png")->setImgFlags(imgFlags::hflip);
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_hflip.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
@@ -95,8 +91,7 @@ TEST(UITest, ImageSingleHFlip) {
 
 TEST(UITest, ImageSingleVFlip) {
     appBody([&](UIApplication &app) {
-        auto img = addImage(app, "test-tex.png");
-        img->setImgFlags(imgFlags::vflip);
+        addImage(app, "test-tex.png")->setImgFlags(imgFlags::vflip);
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_vflip.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
@@ -105,8 +100,7 @@ TEST(UITest, ImageSingleVFlip) {
 
 TEST(UITest, ImageSingleNoAspect) {
     appBody([&](UIApplication &app) {
-        auto img = addImage(app, "test-tex.png");
-        img->setImgFlags(imgFlags::noAspect);
+        addImage(app, "test-tex.png")->setImgFlags(imgFlags::noAspect);
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_no_aspect.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
