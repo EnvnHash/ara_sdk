@@ -5,9 +5,17 @@ set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 
 include(GeneralSettings)
 include(VisualStudioSettings)
-include(UtilitiesDepInclude)
+include(Gtk3Include)
 include(UnitTestDependencies)
 include(ResCompInclude)
+include(GLBaseDepInclude)
+include(GLBaseDependencies)
+include(GLBaseCopyDependencies)
+include(ResCompInclude)
+include(UtilitiesDependencies)
+include(UtilitiesCopyDependencies)
+include(UtilitiesDepInclude)
+set(TARGET_LIBS ${ARA_SDK_TARGET_LINK_LIBS})
 
 include_directories(
         ${CMAKE_SOURCE_DIR}/Libraries/GLBase/src
@@ -48,7 +56,7 @@ gtest_add_tests(TARGET ${PROJECT_NAME}
         TEST_LIST noArgsTests
 )
 
-set(TARGET_LIBS gmock_main gtest_main GLBase Utilities)
+list(APPEND TARGET_LIBS gmock_main gtest_main GLBase Utilities)
 if (NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
     list(APPEND TARGET_LIBS resources)
 endif ()
@@ -61,14 +69,7 @@ else ()
     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} Dwmapi.lib)
 endif ()
 
-include(GLBaseDepInclude)
-include(GLBaseDependencies)
-include(GLBaseCopyDependencies)
-include(ResCompInclude)
-include(UtilitiesDependencies)
-include(UtilitiesCopyDependencies)
-include(UtilitiesDepInclude)
-include(Gtk3Include)
+
 
 #copy GLBase to executable dir
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

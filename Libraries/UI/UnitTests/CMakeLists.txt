@@ -6,8 +6,15 @@ set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 include(GeneralSettings)
 include(VisualStudioSettings)
 include(UnitTestDependencies)
-include(UtilitiesDepInclude)
+include(GLBaseDepInclude)
+include(GLBaseDependencies)
+include(GLBaseCopyDependencies)
 include(ResCompInclude)
+include(UtilitiesDependencies)
+include(UtilitiesCopyDependencies)
+include(UtilitiesDepInclude)
+
+set(TARGET_LIBS ${ARA_SDK_TARGET_LINK_LIBS})
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/Libraries/UI/src
@@ -40,7 +47,7 @@ gtest_add_tests(TARGET      ${PROJECT_NAME}
                 TEST_LIST   noArgsTests
 )
 
-set(TARGET_LIBS gmock_main gtest_main GLBase SceneGraph UI Utilities)
+list(APPEND TARGET_LIBS gmock_main gtest_main GLBase SceneGraph UI Utilities)
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
     list(APPEND TARGET_LIBS resources)
 endif()
@@ -52,14 +59,6 @@ elseif(APPLE)
 else()
     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} Dwmapi.lib)
 endif()
-
-include(GLBaseDepInclude)
-include(GLBaseDependencies)
-include(GLBaseCopyDependencies)
-include(ResCompInclude)
-include(UtilitiesDependencies)
-include(UtilitiesCopyDependencies)
-include(UtilitiesDepInclude)
 
 include(CreateSymLink)
 create_symlink(${ARA_SDK_SOURCE_DIR}/Assets/resdata ${CMAKE_CURRENT_BINARY_DIR}/resdata)
