@@ -1,3 +1,5 @@
+include(${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/CmakeUtils.cmake)
+
 # PugiXML
 if(NOT WIN32 AND NOT ANDROID)
     if(NOT PUGIXML_FOUND)
@@ -23,8 +25,7 @@ endif (NOT PUGIXML_HEADER_ONLY AND PUGIXML_FOUND)
 
 if (PUGIXML_HEADER_ONLY)
     include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/pugixml)
-
     add_definitions(-DPUGIXML_HEADER_ONLY)
 else()
-    target_link_libraries(${PROJECT_NAME} ${PUGIXML_LIBRARY})
+    append_unique(ARA_SDK_TARGET_LINK_LIBS ${PUGIXML_LIBRARY})
 endif()

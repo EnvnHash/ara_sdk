@@ -126,7 +126,7 @@ public:
 
 #ifdef ARA_USE_FREEIMAGE
     static void saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, GLenum internalFormat, GLint texNr);
-    //void saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf);
+    void saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf);
     static void saveFrontBuffer(const std::string &filename, int w, int h, int nrChan);
 #endif
 

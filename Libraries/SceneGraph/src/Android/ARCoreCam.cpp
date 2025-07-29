@@ -9,7 +9,7 @@
 
 using namespace glm;
 using namespace std;
-using namespace ara::cap;
+using namespace ara::av;
 
 namespace ara {
 

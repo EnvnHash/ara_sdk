@@ -1,3 +1,5 @@
+include(${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/CmakeUtils.cmake)
+
 if (UNIX AND NOT APPLE AND NOT ANDROID)
 	find_package(PkgConfig REQUIRED)
 	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
@@ -5,6 +7,6 @@ if (UNIX AND NOT APPLE AND NOT ANDROID)
 		include_directories(${GTK3_INCLUDE_DIRS})
 		link_directories(${GTK3_LIBRARY_DIRS})
 		add_definitions(${GTK3_CFLAGS_OTHER})
-		target_link_libraries (${PROJECT_NAME} ${GTK3_LIBRARIES})
+		append_unique(ARA_SDK_TARGET_LINK_LIBS ${GTK3_LIBRARIES})
 	endif (GTK3_FOUND)
 endif()

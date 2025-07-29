@@ -30,8 +30,7 @@ using namespace glm;
 
 namespace ara {
 
-Texture::Texture(GLBase *glbase) : m_glbase(glbase) {
-}
+Texture::Texture(GLBase *glbase) : m_glbase(glbase) {}
 
 GLuint Texture::loadTextureRect(const std::string& filename, bool flipH) {
     m_filename = filename;
@@ -1126,6 +1125,38 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
         FreeImage_Unload(bitmap);
     }
 }
+
+void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf) {
+    FREE_IMAGE_FORMAT fif = FreeImage_GetFIFFromFilename(filename);
+    if (fif == FIF_UNKNOWN) {
+        return;
+    }
+
+    // Determine image color type and pitch (row size in bytes)
+    int bpp = nrChan * 8; // bits per pixel
+    int pitch = w * nrChan; // bytes per row
+
+    // FreeImage expects BGR(A) format, not RGB(A), so we might need to swap channels manually if necessary
+    FIBITMAP* bitmap = FreeImage_ConvertFromRawBits(
+            const_cast<BYTE*>(buf),  // FreeImage uses BYTE*, which is uint8_t*
+            w,
+            h,
+            pitch,
+            bpp,
+            FI_RGBA_RED_MASK,   // These masks are correct for RGBA/BGRA formats
+            FI_RGBA_GREEN_MASK,
+            FI_RGBA_BLUE_MASK,
+            true                // top-down row order (true if buffer has top-down order)
+    );
+
+    if (!bitmap) {
+        return;
+    }
+
+    bool success = FreeImage_Save(fif, bitmap, filename);
+    FreeImage_Unload(bitmap);
+}
+
 #endif
 
 #ifdef ARA_USE_FREEIMAGE

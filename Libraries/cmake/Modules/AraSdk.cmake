@@ -2,6 +2,8 @@
 
 set(ARA_SDK_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../../../)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+set(ARA_SDK_TARGET_LINK_LIBS)
+set(ARA_SDK_TARGET_LINK_OPTS)
 
 include(AraConfigure)
 
@@ -37,4 +39,5 @@ macro(add_ara_doc_link_to_readme)
         message(WARNING "README.md does not exist in the root directory.")
     endif()
 endmacro()
+
 add_ara_doc_link_to_readme()

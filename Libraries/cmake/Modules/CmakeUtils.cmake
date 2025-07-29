@@ -1,0 +1,10 @@
+function(append_unique list_name)
+    foreach(item IN LISTS ARGN)
+        list(FIND ${list_name} "${item}" _index)
+        if(_index EQUAL -1)
+            list(APPEND ${list_name} "${item}")
+        endif()
+    endforeach()
+    # Update the caller's scope
+    set(${list_name} "${${list_name}}" PARENT_SCOPE)
+endfunction()

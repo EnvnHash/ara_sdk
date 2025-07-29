@@ -17,7 +17,7 @@ using namespace glm;
 using namespace std;
 
 #if defined(__ANDROID__) && defined(ARA_USE_ARCORE)
-using namespace ara::cap;
+using namespace ara::av;
 #endif
 
 namespace ara {
