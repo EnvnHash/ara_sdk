@@ -71,6 +71,6 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
 
 void DemoView_Carrousel::init() {
     addCarrousel(CarrouselMode::fitAllOnScreen, 40);
-    addCarrousel(CarrouselMode::fitOneSlideOnScreen, getContentSize().y / 3 + 30);
-    addCarrousel(CarrouselMode::leftAlign, getContentSize().y *2 / 3 + 30);
+    addCarrousel(CarrouselMode::fitOneSlideOnScreen, static_cast<int32_t>(getContentSize().y) / 3 + 30);
+    addCarrousel(CarrouselMode::leftAlign, static_cast<int32_t>(getContentSize().y) *2 / 3 + 30);
 }

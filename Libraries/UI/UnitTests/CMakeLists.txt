@@ -5,16 +5,6 @@ set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 
 include(GeneralSettings)
 include(VisualStudioSettings)
-include(UnitTestDependencies)
-include(GLBaseDepInclude)
-include(GLBaseDependencies)
-include(GLBaseCopyDependencies)
-include(ResCompInclude)
-include(UtilitiesDependencies)
-include(UtilitiesCopyDependencies)
-include(UtilitiesDepInclude)
-
-set(TARGET_LIBS ${ARA_SDK_TARGET_LINK_LIBS})
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/Libraries/UI/src
@@ -40,6 +30,17 @@ file(GLOB UI_UT_SRC
 )
 
 add_executable(${PROJECT_NAME} ${UI_UT_SRC})
+
+include(UnitTestDependencies)
+include(GLBaseDepInclude)
+include(GLBaseDependencies)
+include(GLBaseCopyDependencies)
+include(ResCompInclude)
+include(UtilitiesDependencies)
+include(UtilitiesCopyDependencies)
+include(UtilitiesDepInclude)
+
+set(TARGET_LIBS ${ARA_SDK_TARGET_LINK_LIBS})
 
 # automatically scan for gtest macros in target
 gtest_add_tests(TARGET      ${PROJECT_NAME}

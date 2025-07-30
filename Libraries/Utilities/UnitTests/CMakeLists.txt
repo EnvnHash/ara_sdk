@@ -5,12 +5,6 @@ set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 
 include(GeneralSettings)
 include(VisualStudioSettings)
-include(Gtk3Include)
-include(ResCompInclude)
-include(UtilitiesDepInclude)
-include(UtilitiesDependencies)
-include(UnitTestDependencies)
-set(TARGET_LIBS ${ARA_SDK_TARGET_LINK_LIBS})
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
@@ -35,6 +29,13 @@ file(GLOB UTILITIES_UT_SRC
 )
 
 add_executable(${PROJECT_NAME} ${UTILITIES_UT_SRC})
+
+include(Gtk3Include)
+include(ResCompInclude)
+include(UtilitiesDepInclude)
+include(UtilitiesDependencies)
+include(UnitTestDependencies)
+set(TARGET_LIBS ${ARA_SDK_TARGET_LINK_LIBS})
 
 # automatically scan for gtest macros in target
 gtest_add_tests(TARGET ${PROJECT_NAME}
