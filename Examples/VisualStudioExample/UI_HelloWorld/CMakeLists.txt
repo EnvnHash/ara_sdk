@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-CMAKE_POLICY(SET CMP0071 NEW)
-set(OpenGL_GL_PREFERENCE "LEGACY")
-set(CMAKE_CXX_STANDARD 20)
 
 include(GeneralSettings)
 include(VisualStudioSettings)
@@ -33,17 +30,27 @@ else()
 endif()
 
 include(GLBaseDependencies)
+include(GLBaseDepInclude)
+include(GLBaseCopyDependencies)
+include(Gtk3Include)
+include(ResCompInclude)
+include(PugiXMLInclude)
+include(UtilitiesDepInclude)
+include(UtilitiesDependencies)
+include(UtilitiesCopyDependencies)
+
+set(TARGET_LIBS ${ARA_SDK_TARGET_LINK_LIBS})
 
 if(${CMAKE_BUILD_TYPE} MATCHES Debug)
 	set(LIB_SUFFIX "d")
 endif ()
 
 if (COMPILE_SCENEGRAPH_LIB)
-	set(TARGET_LIBS ${CMAKE_BINARY_DIR}/Libraries/GLBase/src/libGLBase.so
+	list(APPEND TARGET_LIBS ${CMAKE_BINARY_DIR}/Libraries/GLBase/src/libGLBase.so
 		${CMAKE_BINARY_DIR}/Libraries/SceneGraph/src/libSceneGraph${LIB_SUFFIX}.so
 		${CMAKE_BINARY_DIR}/Libraries/Utilities/src/libUtilities.so)
 else()
-	set(TARGET_LIBS GLBase SceneGraph UI Utilities)
+	list(APPEND TARGET_LIBS GLBase SceneGraph UI Utilities)
 endif()
 
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
@@ -55,13 +62,6 @@ endif()
 
 target_link_libraries (${PROJECT_NAME} ${TARGET_LIBS})
 
-include(GLBaseDepInclude)
-include(GLBaseCopyDependencies)
-include(Gtk3Include)
-include(ResCompInclude)
-include(PugiXMLInclude)
-include(UtilitiesDepInclude)
-include(UtilitiesDependencies)
 
 # uncomment for generating android project
 #include(Android/GenerateAndroidProject)

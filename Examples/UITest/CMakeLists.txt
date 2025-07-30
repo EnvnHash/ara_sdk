@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-CMAKE_POLICY(SET CMP0071 NEW)
-set(OpenGL_GL_PREFERENCE "LEGACY")
-set(CMAKE_CXX_STANDARD 20)
 
 include(GeneralSettings)
 include(VisualStudioSettings)
