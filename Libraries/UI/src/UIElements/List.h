@@ -22,15 +22,12 @@ public:
 };
 
 template<typename T>
-concept AllowedListTypes = std::is_floating_point_v<T> || std::is_integral_v<T> || std::is_same_v<T, std::string>;
-
-template<typename Container>
-concept AllowedContainer = requires(Container c) {
-    typename Container::value_type; // Ensure value_type exists
-    requires AllowedListTypes<typename Container::value_type>;
+concept AllowedContainer = requires(T t) {
+    { t.begin() } -> std::same_as<decltype(t.end())>;
+    { t.size() } -> std::integral;
 };
 
-template <AllowedListTypes T>
+template <typename T>
 class ListItem : public ListItemBase {
 public:
     ListItem() {
@@ -56,7 +53,7 @@ public:
     int    m_idx = 0;
 };
 
-template <AllowedListTypes T>
+template <typename T>
 class ListBase : public ScrollView {
 public:
     ListBase() {
@@ -182,7 +179,7 @@ protected:
     std::vector<ListItem<T>*>                           m_uiItems;
 };
 
-template <AllowedListTypes T>
+template <typename T>
 class PList : public ListBase<T> {
 public:
     void rebuild() override {
