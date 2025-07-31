@@ -13,6 +13,11 @@ namespace ara {
 
 class UIAppAndroidNative : public UIApplicationBase {
 public:
+    struct TouchData {
+        float x1, y1, x2, y2;
+        float prevDistance;
+    };
+
     UIAppAndroidNative();
 
     void setAndroidApp(struct android_app* app) {
@@ -33,6 +38,12 @@ public:
 
     /// get the display density
     float get_density(float width_pixels, float height_pixels);
+
+    void processTouchEvent(AInputEvent* event, EGLWindow* win);
+
+    float calculateDistance(float x1, float y1, float x2, float y2) {
+        return sqrtf(powf(x2 - x1, 2) + powf(y2 - y1, 2));
+    }
 
     /// wrapper for the getExternalStorageDirectory()
     /// https://developer.android.com/reference/android/os/Environment#getExternalStorageDirectory()
@@ -95,6 +106,7 @@ public:
     ASensorEventQueue*  m_sensorEventQueue    = nullptr;
     void*               m_app_context         = nullptr;
     android_cmd_data    m_cmd_data;
+    TouchData           m_touchData           = {0.f, 0.f, 0.f, 0.f, 0.f};
 
     float m_xdpi          = 0.f;
     float m_ydpi          = 0.f;

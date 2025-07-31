@@ -148,10 +148,11 @@ void ZoomView::mouseDown(hidData& data) {
 }
 
 void ZoomView::mouseWheel(hidData& data) {
+#ifndef __ANDROID__
     if (getWindow()->isMousePressed()) {
         return;
     }
-
+#endif
     if (m_zoomProp) {
         float newVal   = m_zoomProp() * 0.01f * (1.f + data.degrees * (data.ctrlPressed ? 0.01f : 0.1f));
         m_zoomUseWheel = true;

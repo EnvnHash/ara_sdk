@@ -19,7 +19,7 @@ public:
     bool drawFunc(const uint32_t& objId);
     void setNumOfSeparations(float sepX, float sepY) { m_numOfSeparations = glm::vec2(sepX, sepY); }
 
-private:
+protected:
     Shaders *m_gridShdr  = nullptr;
     glm::vec2 m_numOfSeparations{4.f, 4.f};
 };

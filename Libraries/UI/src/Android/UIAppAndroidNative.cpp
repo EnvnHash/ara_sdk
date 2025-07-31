@@ -72,6 +72,7 @@ int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* e
             // convert to virtual coordinates
             x /= win->getContentScale().x;
             y /= win->getContentScale().y;
+            ctx->processTouchEvent(event, win);
 
             switch (AInputEvent_getSource(event)) {
                 case AINPUT_SOURCE_TOUCHSCREEN: {
@@ -348,6 +349,32 @@ std::filesystem::path UIAppAndroidNative::getExternalStorageDirectory() const {
     }
 
     return ret;
+}
+
+void UIAppAndroidNative::processTouchEvent(AInputEvent* event, EGLWindow* win) {
+    if (AMotionEvent_getPointerCount(event) == 2) {
+        // Get coordinates of both touch points
+        m_touchData.x1 = AMotionEvent_getX(event, 0);
+        m_touchData.y1 = AMotionEvent_getY(event, 0);
+        m_touchData.x2 = AMotionEvent_getX(event, 1);
+        m_touchData.y2 = AMotionEvent_getY(event, 1);
+
+        float currentDistance = calculateDistance(m_touchData.x1, m_touchData.y1, m_touchData.x2, m_touchData.y2);
+
+        if (m_touchData.prevDistance > 0) {
+            if (currentDistance > m_touchData.prevDistance) {
+                // Pinch out (zoom in)
+                LOGE << "Zoom In";
+                win->onScroll(0, 1.0);
+            } else if (currentDistance < m_touchData.prevDistance) {
+                // Pinch in (zoom out)
+                LOGE << "Zoom Out";
+                win->onScroll(0, -1.0);
+            }
+        }
+
+        m_touchData.prevDistance = currentDistance;
+    }
 }
 
 bool UIAppAndroidNative::AssetReadFile(std::string& assetName, std::vector<uint8_t>& buf) {
