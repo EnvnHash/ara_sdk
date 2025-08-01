@@ -59,7 +59,7 @@ void UINodeHID::hidIt(hidData& data, hidEvent evt, std::list<UINode*>::iterator 
         return;
     }
 
-    // go up one hierarchy, if we are at the end of the list, stop
+    // go up one hierarchy. if we are at the end of the list, stop
     ++it;
     if (it == tree.end()) {
         return;

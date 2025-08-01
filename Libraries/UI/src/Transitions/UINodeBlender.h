@@ -19,11 +19,11 @@ public:
     template <class T>
     UINode* set(type t) {
         if (m_root) {
-            m_nodes[t] = m_root->addChild<T>();
+            m_node[t] = m_root->addChild<T>();
             if (t == type::back) {
-                m_nodes[t]->setAlpha(0.f);
+                m_node[t]->setAlpha(0.f);
             }
-            return m_nodes[t];
+            return m_node[t];
         }
         return nullptr;
     }
@@ -42,7 +42,7 @@ public:
     transType   getTransType() const { return m_transType; }
 
 private:
-    std::unordered_map<type, ara::UINode*>  m_nodes;
+    std::unordered_map<type, ara::UINode*>  m_node;
     UINode*                                 m_root = nullptr;
     AnimVal<float>                          m_blendPos{};
     transType                               m_transType{};
