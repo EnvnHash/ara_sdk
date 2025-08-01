@@ -32,11 +32,12 @@ UITable::UITable(const UITableParameters& par) {
     }, par.size);
 
     bool updateCells = false;
-    std::array<std::function<void()>, 7> funcMap {
+    std::array<std::function<void()>, 8> funcMap {
             [&] { auto c = par.fgColor.value(); UITable::setColor(c.r, c.g, c.b, c.a); },
             [&] { UITable::setBackgroundColor(par.bgColor.value()); },
             [&] { setAlignX(par.alignX.value()); },
             [&] { setAlignY(par.alignY.value()); },
+            [&] { addStyleClass(par.style.value()); },
             [&] {
                 if (par.topology.value().y) {
                     m_Cells(0).add(par.topology.value().y);
@@ -106,6 +107,10 @@ int UITable::geo_Update() {
 
     m_geoUpdating = false;
     return m_Cells.getCellCount();
+}
+
+void UITable::setRowHeight(int32_t idx, int32_t heightInPix) {
+    m_Cells(0).setPix(idx, heightInPix);
 }
 
 /** to be used for moving UINodes from existing parents to the table */
@@ -285,6 +290,14 @@ void UITable::clearCells() {
 
     m_Cells.reset();
     geo_Update();
+}
+
+void UITable::setFixedCellSize(bool val) {
+    for (int i=0; i<2; ++i) {
+        for (auto& rc : m_Cells(1).V()) {
+            rc.fixed = val;
+        }
+    }
 }
 
 }

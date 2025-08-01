@@ -71,20 +71,20 @@ public:
         return t;
     }
 
-    bool       operator<<=(eTable_rc &rc) { return ins(-1, 1, rc); }
-    eTable_rc &operator()(int index) { return iVector[index]; }
-    bool       updateGeo(float pix_size, float pix_margin_lo, float pix_margin_hi, float pix_padding);
-    float      calculatePixGeo(float pix_margin_lo, float pix_margin_hi,
-                               float pix_padding);  // calculates de extent of the content, percentage
+    bool        operator<<=(eTable_rc &rc) { return ins(-1, 1, rc); }
+    eTable_rc   &operator()(int index) { return iVector[index]; }
+    bool        updateGeo(float pix_size, float pix_margin_lo, float pix_margin_hi, float pix_padding);
+    float       calculatePixGeo(float pix_margin_lo, float pix_margin_hi,
+                                float pix_padding);  // calculates de extent of the content, percentage
                                                     // items are used as pixels
-    RCV       &V() { return iVector; }
-    dTableType evalByPix(int  &index, float pix);  // returns Type (None,Cell,Separator) index has the item's index
-    bool  startSepInt(eTable_sepInt &si, float pix);
-    bool  updateSepInt(const eTable_sepInt &si, float pix);
+    RCV         &V() { return iVector; }
+    dTableType  evalByPix(int  &index, float pix);  // returns Type (None,Cell,Separator) index has the item's index
+    bool        startSepInt(eTable_sepInt &si, float pix);
+    bool        updateSepInt(const eTable_sepInt &si, float pix);
 
-    static bool  stopSepInt(eTable_sepInt &si, float pix);
-    float setSepPix(int index, float pix);  // returns the value in pixels that is accepted
-    bool  setDynamicSize(bool on_off) { return (opt_DynamicSize = on_off); }
+    static bool stopSepInt(eTable_sepInt &si, float pix);
+    float       setSepPix(int index, float pix);  // returns the value in pixels that is accepted
+    bool        setDynamicSize(bool on_off) { return (opt_DynamicSize = on_off); }
     [[nodiscard]] bool  getDynamicSize() const { return opt_DynamicSize; }
 
 private:

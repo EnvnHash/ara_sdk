@@ -13,11 +13,12 @@ public:
     std::optional<glm::vec4> bgColor{};
     std::optional<align> alignX{};
     std::optional<valign> alignY{};
+    std::optional<std::string> style{};
     std::optional<glm::ivec2> topology{};
     std::optional<glm::vec2> margin{};
     std::optional<glm::vec2> spacing{};
     auto getTiedOptionals() const {
-        return std::tie(fgColor, bgColor, alignX, alignY, topology, margin, spacing);
+        return std::tie(fgColor, bgColor, alignX, alignY, style, topology, margin, spacing);
     }
 };
 
@@ -56,6 +57,7 @@ public:
     }  // Table margins
 
     virtual UINode* setCell(int row, int column, const std::vector<std::unique_ptr<UINode>>::iterator& nodeIt);
+    virtual void setFixedCellSize(bool val);
 
     virtual bool clearCell(int row, int column, bool updateGeo = true);
     virtual void clearCells();
@@ -79,6 +81,7 @@ public:
             it.ui_node->setBackgroundColor(getColor());
         }
     }
+    virtual void setRowHeight(int32_t idx, int32_t heightInPix);
 
     void mouseDrag(hidData& data) override;
     void mouseMove(hidData& data) override;

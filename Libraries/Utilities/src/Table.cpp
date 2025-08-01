@@ -60,7 +60,9 @@ bool TableRC::setPercent(int index, float percent) {
 }
 
 bool TableRC::ins(int at, int count, const eTable_rc &rc) {
-    if (at == -1) at = getCount();
+    if (at == -1) {
+        at = getCount();
+    }
 
     if (at < 0 || at > getCount() || count <= 0) {
         return false;
