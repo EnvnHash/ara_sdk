@@ -26,12 +26,13 @@ public:
     class CIBufferArray {
     public:
         CIBufferArray() = default;
-        explicit CIBufferArray(size_t s) { m_data.resize(s); }
-        T2    *getData() { return &m_data[0]; }
+        explicit CIBufferArray(size_t s) { m_data.resize(s); std::ranges::fill(m_data, 0); }
+        T2    *getDataPtr() { return &m_data[0]; }
+        auto&  getData() { return m_data; }
         size_t size() { return m_data.size(); }
         void   clear() { m_data.clear(); }
 
-        std::vector<T2> m_data;
+        std::vector<T2> m_data{};
     };
 
     void allocateBuffers(size_t nrBuffs, size_t bufferSize) {
@@ -43,7 +44,7 @@ public:
 
     // ...for use with c legacy code, suppose an input c-array of the same type and size as CIBufferArray<T>
     size_t feed(T *buffer) {
-        std::copy(buffer, buffer + m_buffer[m_buffPos].size(), m_buffer[m_buffPos].getData());
+        std::copy(buffer, buffer + m_buffer[m_buffPos].size(), m_buffer[m_buffPos].getDataPtr());
         return countUp();
     }
 
@@ -77,6 +78,9 @@ public:
         --m_fillAmt;
         m_tcp        = m_consumePos;
         m_consumePos = ++m_consumePos % m_buffer.size();
+        if (m_consumedCb) {
+            m_consumedCb();
+        }
         return &m_buffer[m_tcp];
     }
 
@@ -91,14 +95,15 @@ public:
         m_lastUplBuf = nullptr;
     }
 
-    CIBufferArray<T> *getWriteBuff() { return &m_buffer[m_buffPos]; }
-    bool              isFilled() { return m_fillAmt >= m_buffer.size(); }
-    size_t            getLastBuffPos() const { return m_buffLastPos; }
-    size_t            size() { return m_buffer.size(); }
-    bool              empty() { return m_buffer.empty(); }
-    size_t            getWritePos() const { return m_buffPos; }
-    size_t            getFillAmt() { return m_fillAmt; }
-    size_t            getFreeSpace() { return m_buffer.size() - m_fillAmt; }
+    CIBufferArray<T>&   getWriteBuff() { return m_buffer[m_buffPos]; }
+    bool                isFilled() { return m_fillAmt >= m_buffer.size(); }
+    size_t              getLastBuffPos() const { return m_buffLastPos; }
+    size_t              size() { return m_buffer.size(); }
+    bool                empty() { return m_buffer.empty(); }
+    size_t              getWritePos() const { return m_buffPos; }
+    size_t              getFillAmt() { return m_fillAmt; }
+    size_t              getFreeSpace() { return m_buffer.size() - m_fillAmt; }
+    void                setConsumedCb(const std::function<void()>& f) { m_consumedCb = f; }
 
 protected:
     T                            *m_lastUplBuf = nullptr;
@@ -108,5 +113,7 @@ protected:
     std::atomic<size_t>           m_fillAmt     = 0;
     size_t                        m_consumePos  = 0;
     size_t                        m_tcp         = 0;
+    std::function<void()>         m_consumedCb;
 };
+
 }  // namespace ara
