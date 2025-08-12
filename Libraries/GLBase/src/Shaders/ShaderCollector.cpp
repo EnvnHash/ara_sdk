@@ -101,7 +101,7 @@ Shaders *ShaderCollector::get(const std::string &name) {
 }
 
 bool ShaderCollector::hasShader(const std::string &name) const {
-    return (!shaderCollection.empty() && (shaderCollection.contains(name)));
+    return !shaderCollection.empty() && (shaderCollection.contains(name));
 }
 
 Shaders *ShaderCollector::getStdClear(bool layered, int nrLayers) {
