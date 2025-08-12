@@ -28,7 +28,7 @@ protected:
         cb.clear();
     }
 
-    CycleBuffer<int> cb;
+    CycleBuffer<std::vector<int>> cb;
     int m_bufSize = 10;
 };
 
@@ -42,11 +42,11 @@ TEST_F(CycleBufferTest, AllocateBuffers) {
 TEST_F(CycleBufferTest, FeedData) {
     std::vector<int> data(10, 42);
     EXPECT_EQ(cb.feed(data.data()), 1);
-    EXPECT_EQ(cb.getLastBuff()->getData()[0], 42);
+    EXPECT_EQ(cb.getLastBuff()->at(0), 42);
 
     // Test feeding again
     EXPECT_EQ(cb.feed(data.data()), 2);
-    EXPECT_EQ(cb.getLastBuff()->getData()[0], 42);
+    EXPECT_EQ(cb.getLastBuff()->at(0), 42);
 }
 
 TEST_F(CycleBufferTest, ConsumeData) {
@@ -54,13 +54,13 @@ TEST_F(CycleBufferTest, ConsumeData) {
     cb.feed(data.data());
     auto buffer = cb.consume();
     ASSERT_NE(buffer, nullptr);
-    EXPECT_EQ(buffer->getData()[0], 42);
+    EXPECT_EQ(buffer->at(0), 42);
 
     // Test consuming again
     cb.feed(data.data());
     buffer = cb.consume();
     ASSERT_NE(buffer, nullptr);
-    EXPECT_EQ(buffer->getData()[0], 42);
+    EXPECT_EQ(buffer->at(0), 42);
 }
 
 TEST_F(CycleBufferTest, ConsumeEmptyBuffer) {
@@ -110,13 +110,13 @@ TEST_F(CycleBufferTest, BufferOverflow) {
     cb.feed(data.data());
     auto buffer = cb.getBuff(0);
     ASSERT_NE(buffer, nullptr);
-    EXPECT_EQ(buffer->getData()[0], 42);
+    EXPECT_EQ(buffer->at(0), 42);
 
     // Consume all buffers
     for (size_t i = 0; i < 3; ++i) {
         buffer = cb.consume();
         ASSERT_NE(buffer, nullptr);
-        EXPECT_EQ(buffer->getData()[0], 42);
+        EXPECT_EQ(buffer->at(0), 42);
     }
 }
 
