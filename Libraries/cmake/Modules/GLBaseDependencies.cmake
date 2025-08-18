@@ -90,3 +90,6 @@ if (NOT WIN32)
 	append_unique(ara_sdk_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 endif()
 
+if (WIN32)
+	append_unique(ara_sdk_LIBRARIES Dwmapi.lib)
+endif()
