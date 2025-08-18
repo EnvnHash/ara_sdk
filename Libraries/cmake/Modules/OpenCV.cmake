@@ -1,13 +1,10 @@
 if (ARA_USE_OPENCV)
     if (WIN32)
-        add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/Libraries/third_party/opencv/x64/vc16/bin/opencv_videoio_ffmpeg4100_64.dll ${CMAKE_CURRENT_BINARY_DIR})
+        append_unique(ara_sdk_BINARIES ${CMAKE_SOURCE_DIR}/Libraries/third_party/opencv/x64/vc16/bin/opencv_videoio_ffmpeg4100_64.dll)
         if (${CMAKE_BUILD_TYPE} MATCHES Debug)
-            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/Libraries/third_party/opencv/x64/vc16/bin/opencv_world4100d.dll ${CMAKE_CURRENT_BINARY_DIR})
+            append_unique(ara_sdk_BINARIES ${CMAKE_SOURCE_DIR}/Libraries/third_party/opencv/x64/vc16/bin/opencv_world4100d.dll)
         else ()
-            add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/Libraries/third_party/opencv/x64/vc16/bin/opencv_world4100.dll ${CMAKE_CURRENT_BINARY_DIR})
+            append_unique(ara_sdk_BINARIES ${CMAKE_SOURCE_DIR}/Libraries/third_party/opencv/x64/vc16/bin/opencv_world4100.dll)
         endif ()
     else ()
         find_package(OpenCV REQUIRED PATHS "..")

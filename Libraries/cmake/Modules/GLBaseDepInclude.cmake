@@ -1,6 +1,6 @@
 set(GLSG_LIB_DIR ${ARA_SDK_SOURCE_DIR}/Libraries/third_party)
 
-include_directories(
+append_unique(ara_sdk_INCLUDE_DIRS
 	${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src
 	${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src
 	${ARA_SDK_SOURCE_DIR}/Libraries/UI/src
@@ -51,24 +51,24 @@ include(Gtk3Include)
 if (ARA_USE_ASSIMP)
 	add_compile_definitions(ARA_USE_ASSIMP)
 	if(WIN32)
-		include_directories(${GLSG_LIB_DIR}/assimp/include)
+		append_unique(ara_sdk_INCLUDE_DIRS ${GLSG_LIB_DIR}/assimp/include)
 	elseif(ANDROID)
-		include_directories(${GLSG_LIB_DIR}/assimp/Android/include)
+		append_unique(ara_sdk_INCLUDE_DIRS ${GLSG_LIB_DIR}/assimp/Android/include)
 	else()
 		if (ASSIMP_FOUND)
-			include_directories(${ASSIMP_INCLUDE_DIRS})
+			append_unique(ara_sdk_INCLUDE_DIRS ${ASSIMP_INCLUDE_DIRS})
 		endif (ASSIMP_FOUND)
 	endif()
 endif()
 
 # GLEW
 if(WIN32)
-	include_directories(${GLSG_LIB_DIR}/GLEW/include/GL)
+	append_unique(ara_sdk_INCLUDE_DIRS ${GLSG_LIB_DIR}/GLEW/include/GL)
 elseif(ANDROID)
-	include_directories(${GLSG_LIB_DIR}/GLEW/include/GL)
+	append_unique(ara_sdk_INCLUDE_DIRS ${GLSG_LIB_DIR}/GLEW/include/GL)
 else()
 	if (GLEW_FOUND)
-  		include_directories(${GLEW_INCLUDE_DIRS})
+		append_unique(ara_sdk_INCLUDE_DIRS ${GLEW_INCLUDE_DIRS})
 	else()
 		message(ERROR "glew not found")
 	endif ()
@@ -77,15 +77,15 @@ endif(WIN32)
 
 #GLFW
 if (WIN32 AND ARA_USE_GLFW)
-	include_directories(${GLSG_LIB_DIR}/GLFW/include/)
+	append_unique(ara_sdk_INCLUDE_DIRS ${GLSG_LIB_DIR}/GLFW/include/)
 endif()
 
 #GLM (header only)
-include_directories(${GLSG_LIB_DIR}/glm/include)
+append_unique(ara_sdk_INCLUDE_DIRS ${GLSG_LIB_DIR}/glm/include)
 
 # OpenGL
 if (OpenGL_FOUND AND NOT ARA_USE_GLES31)
-  include_directories(${OPENGL_INCLUDE_DIRS})
+	append_unique(ara_sdk_INCLUDE_DIRS ${OPENGL_INCLUDE_DIRS})
 endif()
 
 #openmp
@@ -106,7 +106,7 @@ if(APPLE)
 		set(OpenMP_libgomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
 		set(OpenMP_libiomp5_LIBRARY ${OpenMP_CXX_LIB_NAMES})
 	endif()
-	include_directories(/opt/local/include/libomp)
+	append_unique(ara_sdk_INCLUDE_DIRS /opt/local/include/libomp)
 elseif(NOT WIN32)
 	#message(STATUS "--- looking for openmp")
 	#set(LIBS OpenMP::OpenMP_CXX)

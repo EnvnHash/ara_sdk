@@ -19,9 +19,7 @@ set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 # only include specific components into Cpack package generation
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
 
-include(CreateSymLink)
 project(ARASdk)
-include(AraConfigure)
 
 set(GEN_ITEMFACTORY 0)
 

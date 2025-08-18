@@ -1,16 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
-project(UI_UnitTests VERSION 0.1 LANGUAGES CXX)
+project(UI_UnitTests VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
-
-include(GeneralSettings)
-include(VisualStudioSettings)
-
-include_directories(
-    ${CMAKE_SOURCE_DIR}/Libraries/UI/src
-    ${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
-    ${CMAKE_SOURCE_DIR}/Libraries/third_party/nameof
-)
+include(AraSdk)
+include(UnitTestDependencies)
+include_directories(${ara_sdk_INCLUDE_DIRS})
 
 # add test source files
 file(GLOB UI_UT_SRC
@@ -31,24 +25,13 @@ file(GLOB UI_UT_SRC
 
 add_executable(${PROJECT_NAME} ${UI_UT_SRC})
 
-include(UnitTestDependencies)
-include(GLBaseDepInclude)
-include(GLBaseDependencies)
-include(GLBaseCopyDependencies)
-include(ResCompInclude)
-include(UtilitiesDependencies)
-include(UtilitiesCopyDependencies)
-include(UtilitiesDepInclude)
-
-set(TARGET_LIBS ${ARA_SDK_TARGET_LINK_LIBS})
-
 # automatically scan for gtest macros in target
 gtest_add_tests(TARGET      ${PROJECT_NAME}
                 TEST_SUFFIX .noArgs
                 TEST_LIST   noArgsTests
 )
 
-list(APPEND TARGET_LIBS gmock_main gtest_main GLBase SceneGraph UI Utilities)
+set(TARGET_LIBS ${ara_sdk_LIBRARIES} gmock_main gtest_main GLBase SceneGraph UI Utilities)
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
     list(APPEND TARGET_LIBS resources)
 endif()
@@ -61,7 +44,6 @@ else()
     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} Dwmapi.lib)
 endif()
 
-include(CreateSymLink)
 create_symlink(${ARA_SDK_SOURCE_DIR}/Assets/resdata ${CMAKE_CURRENT_BINARY_DIR}/resdata)
 
 # copy GLBase to executable dir

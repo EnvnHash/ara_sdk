@@ -1,4 +1,4 @@
-include(${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/CmakeUtils.cmake)
+include(${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/AraSdkMacros.cmake)
 
 if(WIN32)
     if (ARA_USE_CURL)
@@ -50,4 +50,4 @@ if (ARA_USE_FREEIMAGE)
     endif()
 endif()
 
-append_unique(ARA_SDK_TARGET_LINK_LIBS ${UTILITIES_LIBS})
+append_unique(ara_sdk_LIBRARIES ${UTILITIES_LIBS})

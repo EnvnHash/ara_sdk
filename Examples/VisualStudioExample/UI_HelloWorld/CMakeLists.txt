@@ -3,16 +3,10 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-include(GeneralSettings)
-include(VisualStudioSettings)
-
 project(UI_HelloWorld)
 
-include_directories(
-	${CMAKE_SOURCE_DIR}/Libraries/SceneGraph/src
-	${CMAKE_SOURCE_DIR}/Libraries/UI/src
-	${CMAKE_SOURCE_DIR}/Libraries/Utilities/src
-	)
+include(AraSdk)
+include_directories(${ara_sdk_INCLUDE_DIRS})
 
 set(SOURCES main.cpp)
 
@@ -29,17 +23,7 @@ else()
 	endif()
 endif()
 
-include(GLBaseDependencies)
-include(GLBaseDepInclude)
-include(GLBaseCopyDependencies)
-include(Gtk3Include)
-include(ResCompInclude)
-include(PugiXMLInclude)
-include(UtilitiesDepInclude)
-include(UtilitiesDependencies)
-include(UtilitiesCopyDependencies)
-
-set(TARGET_LIBS ${ARA_SDK_TARGET_LINK_LIBS})
+set(TARGET_LIBS ${ara_sdk_LIBRARIES})
 
 if(${CMAKE_BUILD_TYPE} MATCHES Debug)
 	set(LIB_SUFFIX "d")

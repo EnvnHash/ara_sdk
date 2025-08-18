@@ -1,4 +1,4 @@
-include_directories(
+append_unique(ara_sdk_INCLUDE_DIRS
 	${ARA_SDK_SOURCE_DIR}/Libraries/Utilities/src
 	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/
 	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/glm/include
@@ -10,24 +10,24 @@ include_directories(
 )
 
 if (ARA_USE_CURL)
-	include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/curl/include)
+	append_unique(ara_sdk_INCLUDE_DIRS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/curl/include)
 endif()
 
 if(NOT WIN32 AND NOT ANDROID)
 	if (ARA_USE_FREEIMAGE)
-		find_package (FreeImage REQUIRED)
+		find_package(FreeImage REQUIRED)
 	endif()
 endif()
 
 # Freeimage
 if (ARA_USE_FREEIMAGE)
 	if(WIN32)
-		include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/FreeImage/include)
+		append_unique(ara_sdk_INCLUDE_DIRS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/FreeImage/include)
 	elseif(ANDROID)
-		include_directories(${ARA_SDK_SOURCE_DIR}/Libraries/third_party/FreeImage/Android/include)
+		append_unique(ara_sdk_INCLUDE_DIRS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/FreeImage/Android/include)
 	else()
 		if (FREEIMAGE_FOUND)
-			include_directories(${FREEIMAGE_INCLUDE_DIRS})
+			append_unique(ara_sdk_INCLUDE_DIRS ${FREEIMAGE_INCLUDE_DIRS})
 		endif (FREEIMAGE_FOUND)
 	endif()
 endif()

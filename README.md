@@ -42,12 +42,12 @@ All dependencies are checked out and unzipped automatically.
 ``` 
 #include <UIApplication.h>
 
-using namespace ara;
-using namespace glm;
+using namespace ara
+using namespace glm
 
 int main(int, char**) {
     // create an Application instance
-    UIApplication app;  
+    UIApplication app  
 
     // init the application, passing a lambda function, creating a single UI Element
     app.init([](UINode& rootNode) {
@@ -58,14 +58,14 @@ int main(int, char**) {
             .bgColor = vec4{1.f, 0.f, 0.f, 1.f},
             .align = align::center,
             .valign = valign::center
-        });
+        })
 
-    });
+    })
 
     // start the render loop. This will block until the loop is terminated 
-    app.startEventLoop(); 
+    app.startEventLoop() 
 
-    return 0;
+    return 0
 }
 
 ``` 

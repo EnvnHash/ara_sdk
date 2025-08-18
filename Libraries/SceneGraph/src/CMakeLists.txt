@@ -2,25 +2,17 @@ cmake_minimum_required(VERSION 3.10)
 
 if (COMPILE_SCENEGRAPH_LIB)
     if (${CMAKE_BUILD_TYPE} MATCHES Debug)
-        project(SceneGraphd VERSION 0.1 LANGUAGES CXX)
+        project(SceneGraphd VERSION 1.0 LANGUAGES CXX)
     else ()
-        project(SceneGraph VERSION 0.1 LANGUAGES CXX)
+        project(SceneGraph VERSION 1.0 LANGUAGES CXX)
     endif ()
     add_compile_definitions(GLSG_EXPORT GLBASE_EXPORT)
 else ()
-    project(SceneGraph VERSION 0.1 LANGUAGES CXX)
+    project(SceneGraph VERSION 1.0 LANGUAGES CXX)
 endif ()
 
-include(GeneralSettings)
-include(AraConfigure)
-
-include_directories(
-        ${ARA_SDK_SOURCE_DIR}/Libraries/third_party
-        ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src
-        ${ARA_SDK_SOURCE_DIR}/Libraries/UI/src
-        ${ARA_SDK_SOURCE_DIR}/Libraries/Utilities/src
-        ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/nameof
-)
+include(AraSdk)
+include_directories(${ara_sdk_INCLUDE_DIRS})
 
 file(GLOB GLSG_SRC "*.cpp")
 file(GLOB_RECURSE GLSG_ASSIMP_SRC "Assimp/*.cpp")

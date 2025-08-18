@@ -129,7 +129,7 @@ set_target_properties(\${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION
     endif()
 
     list(APPEND ANDROID_CMAKELIST "
-target_link_libraries(\${PROJECT_NAME} \${ARA_SDK_TARGET_LINK_LIBS} android GLESv1_CM GLESv2 GLESv3 EGL resources log")
+target_link_libraries(\${PROJECT_NAME} \${ara_sdk_LIBRARIES} android GLESv1_CM GLESv2 GLESv3 EGL resources log")
 
     if (ARA_USE_MEDIACODEC)
         list(APPEND ANDROID_CMAKELIST "mediandk OpenMAXAL ")

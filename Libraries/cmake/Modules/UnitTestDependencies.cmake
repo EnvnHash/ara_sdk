@@ -7,9 +7,9 @@ include(FetchContent)
 include(GoogleTest)
 
 FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG        v1.16.0
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        v1.16.0
 )
 
 FetchContent_GetProperties(googletest)
@@ -18,7 +18,7 @@ if(NOT googletest_POPULATED)
 endif()
 
 include_directories(
-        ${GTEST_INCLUDE_DIRS}
+    ${GTEST_INCLUDE_DIRS}
 )
 
 enable_testing()

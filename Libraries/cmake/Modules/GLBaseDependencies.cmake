@@ -1,4 +1,4 @@
-include(${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/CmakeUtils.cmake)
+include(${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/AraSdkMacros.cmake)
 
 if(NOT WIN32 AND NOT ANDROID)
 	set(CMAKE_THREAD_LIBS_INIT "-lpthread")
@@ -30,41 +30,41 @@ endif()
 
 if (ARA_USE_ASSIMP)
 	if(WIN32)
-		append_unique(ARA_SDK_TARGET_LINK_LIBS
+		append_unique(ara_sdk_LIBRARIES
 			debug ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/assimp/lib/${LIB_ARCH_PATH}/assimp${ARCH_POSTFIX}d.lib
 			optimized ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/assimp/lib/${LIB_ARCH_PATH}/Assimp${ARCH_POSTFIX}.lib
 			)
 	elseif(ANDROID)
-		append_unique(ARA_SDK_TARGET_LINK_LIBS
+		append_unique(ara_sdk_LIBRARIES
 				${ARA_SDK_SOURCE_DIR}/Libraries/third_party/assimp/Android/${CMAKE_ANDROID_ARCH_ABI}/libassimp.so
 				)
 	else()
 		if (ASSIMP_FOUND)
-			append_unique(ARA_SDK_TARGET_LINK_LIBS ${ASSIMP_LIBRARIES})
+			append_unique(ara_sdk_LIBRARIES ${ASSIMP_LIBRARIES})
 		endif()
 	endif()
 endif()
 
 # GLEW
 if(WIN32)
-	append_unique(ARA_SDK_TARGET_LINK_LIBS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/GLEW/lib/${LIB_ARCH_PATH}/glew32.lib)
+	append_unique(ara_sdk_LIBRARIES ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/GLEW/lib/${LIB_ARCH_PATH}/glew32.lib)
 else()
 	if (GLEW_FOUND)
-		append_unique(ARA_SDK_TARGET_LINK_LIBS GLEW::GLEW)
+		append_unique(ara_sdk_LIBRARIES GLEW::GLEW)
 	endif()
 endif()
 
 #GLFW
 if (WIN32)
 	if(${CMAKE_BUILD_TYPE} MATCHES Debug)
-		append_unique(ARA_SDK_TARGET_LINK_LIBS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/GLFW/lib/${LIB_ARCH_PATH}/glfw3dll.lib)
+		append_unique(ara_sdk_LIBRARIES ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/GLFW/lib/${LIB_ARCH_PATH}/glfw3dll.lib)
 	else ()
-		append_unique(ARA_SDK_TARGET_LINK_LIBS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/GLFW/lib/${LIB_ARCH_PATH}/glfw3dll.lib)
+		append_unique(ara_sdk_LIBRARIES ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/GLFW/lib/${LIB_ARCH_PATH}/glfw3dll.lib)
 	endif ()
 elseif(APPLE)
-	append_unique(ARA_SDK_TARGET_LINK_LIBS ${GLFW_glfw_LIBRARY})
+	append_unique(ara_sdk_LIBRARIES ${GLFW_glfw_LIBRARY})
 elseif(NOT ANDROID)
-	append_unique(ARA_SDK_TARGET_LINK_LIBS ${GLFW_LIBRARIES})
+	append_unique(ara_sdk_LIBRARIES ${GLFW_LIBRARIES})
 endif()
 
 
@@ -74,19 +74,19 @@ if(WIN32)
 endif()
 
 if (OpenGL_FOUND)
-	append_unique(ARA_SDK_TARGET_LINK_LIBS OpenGL::GL)
+	append_unique(ara_sdk_LIBRARIES OpenGL::GL)
 endif ()
 
 if (ANDROID)
-	append_unique(ARA_SDK_TARGET_LINK_LIBS EGL GLESv1_CM GLESv2 GLESv3)
+	append_unique(ara_sdk_LIBRARIES EGL GLESv1_CM GLESv2 GLESv3)
 endif()
 
 if (NOT ANDROID AND ARA_USE_GLES31)
-	append_unique(ARA_SDK_TARGET_LINK_LIBS EGL GL)
+	append_unique(ara_sdk_LIBRARIES EGL GL)
 endif()
 
 #pthreads
 if (NOT WIN32)
-	append_unique(ARA_SDK_TARGET_LINK_LIBS ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
+	append_unique(ara_sdk_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 endif()
 

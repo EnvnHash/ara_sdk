@@ -1,26 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
-project(GLBase VERSION 0.1 LANGUAGES CXX)
+project(GLBase VERSION 1.0 LANGUAGES CXX)
 
-include(GeneralSettings)
-include(AraConfigure)
+include(${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/AraSdk.cmake)
 
 if (NOT COMPILE_SCENEGRAPH_LIB)
     add_compile_definitions(WGLWINDOW)
 endif ()
 
 include_directories(
-        ${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src
-        ${ARA_SDK_SOURCE_DIR}/Libraries/Utilities/src
-        ${ARA_SDK_SOURCE_DIR}/Libraries/third_party
-        ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/nameof
+    ${ara_sdk_INCLUDE_DIRS}
 )
 
 file(GLOB_RECURSE GLB_SRC *.cpp)
 
-add_library(${PROJECT_NAME} OBJECT ${GLB_SRC} ${GLB_HEADERS} GlbCommon/GlbKeyDefines.h GlbCommon/GlbTypeConversion.cpp)
-
+add_library(${PROJECT_NAME} OBJECT ${GLB_SRC} ${GLB_HEADERS})
 add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
-
-include(GLBaseDepInclude)
-include(GLBaseDependencies)
-include(UtilitiesDepInclude)
