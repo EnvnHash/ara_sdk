@@ -21,7 +21,7 @@ namespace ara {
 class CycleBufferTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        cb.allocateBuffers(3, m_bufSize);
+        cb.allocate(3, m_bufSize);
     }
 
     void TearDown() override {

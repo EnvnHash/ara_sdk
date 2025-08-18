@@ -43,7 +43,7 @@ inline constexpr bool is_vector_v = is_vector<T>::value || is_list<T>::value || 
 template <typename T>
 class CycleBuffer {
 public:
-    void allocateBuffers(size_t nrBuffs, size_t bufferSize=1) {
+    void allocate(size_t nrBuffs, size_t bufferSize=1) {
         m_buffer.clear();
         for (size_t i = 0; i < nrBuffs; i++) {
             if constexpr (is_vector_v<T>) {
