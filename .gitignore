@@ -13,6 +13,7 @@
 /Libraries/third_party/FreeImage/
 /Libraries/third_party/GLEW/
 /Libraries/third_party/portaudio/
+/Libraries/third_party/OpenAL/
 /cmake-build-relwithdebinfo/
 /Examples/UITest/UITest_Android/
 .DS_STORE
