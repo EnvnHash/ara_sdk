@@ -21,14 +21,6 @@ if (ARA_USE_FREEIMAGE)
     LIST(APPEND REQUIRED_THIRD_PARTY_DIRS "FreeImage")
 endif()
 
-if (ARA_USE_OPENAL)
-    LIST(APPEND REQUIRED_THIRD_PARTY_DIRS "OpenAL")
-endif()
-
-if (ARA_USE_PORTAUDIO AND NOT UNIX)
-    LIST(APPEND REQUIRED_THIRD_PARTY_DIRS "portaudio")
-endif()
-
 # Main script logic
 find_program(UNZIP_EXECUTABLE NAMES unzip)
 
