@@ -32,15 +32,12 @@ gtest_add_tests(TARGET      ${PROJECT_NAME}
 )
 
 set(TARGET_LIBS ${ara_sdk_LIBRARIES} gmock_main gtest_main GLBase SceneGraph UI Utilities)
+
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
     list(APPEND TARGET_LIBS resources)
 endif()
 
-if (UNIX AND NOT APPLE)
-    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} glfw assimp)
-elseif(APPLE)
-    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
-endif()
+target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
 
 create_symlink(${ARA_SDK_SOURCE_DIR}/Assets/resdata ${CMAKE_CURRENT_BINARY_DIR}/resdata)
 
@@ -48,5 +45,9 @@ create_symlink(${ARA_SDK_SOURCE_DIR}/Assets/resdata ${CMAKE_CURRENT_BINARY_DIR}/
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}
     )
+
+FOREACH(binary ${ara_sdk_BINARIES})
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${binary} ${CMAKE_CURRENT_BINARY_DIR})
+ENDFOREACH()
 
 INSTALL(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_CURRENT_BINARY_DIR} COMPONENT ${PROJECT_NAME} OPTIONAL)

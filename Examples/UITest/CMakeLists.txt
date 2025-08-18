@@ -48,6 +48,10 @@ endif()
 
 target_link_libraries (${PROJECT_NAME} ${TARGET_LIBS})
 
+FOREACH(binary ${ara_sdk_BINARIES})
+	add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${binary} ${CMAKE_CURRENT_BINARY_DIR})
+ENDFOREACH()
+
 # uncomment for generating android project
 include(Android/GenerateAndroidProject)
 gen_android_proj(${PROJECT_NAME} "'armeabi-v7a', 'arm64-v8a'" 0 icon ${CMAKE_SOURCE_DIR}/Assets)

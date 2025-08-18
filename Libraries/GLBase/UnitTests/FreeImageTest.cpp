@@ -14,8 +14,8 @@ using fs = std::filesystem::path;
 namespace ara::GLBaseUnitTest::FreeImage {
 
 void compareBitmap(uint8_t* pixels, std::array<uint32_t, 2> sz) {
-    for (int y=0; y<sz[1]; ++y) {
-        for (int x=0; x<sz[0]; ++x) {
+    for (int y=0; y<static_cast<int32_t>(sz[1]); ++y) {
+        for (int x=0; x<static_cast<int32_t>(sz[0]); ++x) {
             for (int c=0; c<4; ++c) {
                 EXPECT_EQ(static_cast<int32_t>(*pixels++), refBitmap[y][x][c]);
             }

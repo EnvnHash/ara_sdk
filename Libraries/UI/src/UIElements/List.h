@@ -115,7 +115,7 @@ public:
 
         m_table->clearCells();
         m_table->insertColumn(-1, 1, 1.f, false);
-        m_table->insertRow(-1, items.size(), m_rowHeight, false, true);
+        m_table->insertRow(-1, static_cast<int32_t>(items.size()), m_rowHeight, false, true);
         m_table->setSpacing(m_space.x, m_space.y);
         m_table->updateMatrix();
 
