@@ -40,8 +40,6 @@ if (UNIX AND NOT APPLE)
     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} glfw assimp)
 elseif(APPLE)
     target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
-else()
-    target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS} Dwmapi.lib)
 endif()
 
 create_symlink(${ARA_SDK_SOURCE_DIR}/Assets/resdata ${CMAKE_CURRENT_BINARY_DIR}/resdata)
