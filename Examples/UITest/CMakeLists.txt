@@ -11,7 +11,6 @@ include_directories(${ara_sdk_INCLUDE_DIRS})
 set(SOURCES UITestApp.cpp main.cpp)
 
 file(GLOB DEMO_SOURCES "Demo/*.h" "Demo/*.cpp")
-
 list(APPEND ALLSOURCES ${SOURCES} ${DEMO_SOURCES})
 
 if (ANDROID)
@@ -42,6 +41,7 @@ endif()
 if(NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
 	list(APPEND TARGET_LIBS resources)
 endif()
+
 if(WIN32)
 	list(APPEND TARGET_LIBS wsock32 ws2_32 user32 iphlpapi Strmiids.lib Dwmapi.lib)
 endif()

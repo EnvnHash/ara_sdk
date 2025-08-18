@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 #cmake_policy(SET CMP0146 NEW)
 
+project(ARASdk)
+
 set (ARA_IS_SUBPROJECT OFF)
 if (NOT ARA_SDK_SOURCE_DIR)
     set(ARA_SDK_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR})
@@ -15,12 +17,9 @@ endif()
 message(STATUS "ARA_SDK_SOURCE_DIR: ${ARA_SDK_SOURCE_DIR}")
 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
+include(AraSdkConfigure)
 
-# only include specific components into Cpack package generation
-set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-
-project(ARASdk)
-
+set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)# only include specific components into Cpack package generation
 set(GEN_ITEMFACTORY 0)
 
 # in release mode use Assets compilation as static library
