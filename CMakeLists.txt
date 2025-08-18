@@ -32,3 +32,4 @@ if (NOT ${ARA_IS_SUBPROJECT})
 endif ()
 
 add_subdirectory(Libraries)
+add_ara_doc_link_to_readme()

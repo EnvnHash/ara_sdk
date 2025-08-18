@@ -24,8 +24,6 @@ include(UtilitiesDependencies)
 include(UtilitiesCopyDependencies)
 include(OpenCV)
 
-add_ara_doc_link_to_readme()
-
 if (ARA_USE_CMRC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
     add_compile_definitions(ARA_USE_CMRC)
 endif()
