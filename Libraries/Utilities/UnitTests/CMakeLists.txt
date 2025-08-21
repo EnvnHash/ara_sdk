@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(Utilities_UnitTests VERSION 1.0 LANGUAGES CXX)
 
-
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 include(UnitTestDependencies)
 include_directories(${ara_sdk_INCLUDE_DIRS})
@@ -40,9 +39,8 @@ endif ()
 
 target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
 
+create_symlink(${ARA_SDK_SOURCE_DIR}/Assets/resdata ${CMAKE_CURRENT_BINARY_DIR}/resdata)
+
 FOREACH(binary ${ara_sdk_BINARIES})
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${binary} ${CMAKE_CURRENT_BINARY_DIR})
 ENDFOREACH()
-
-INSTALL(TARGETS ${PROJECT_NAME}
-        DESTINATION ${CMAKE_CURRENT_BINARY_DIR} COMPONENT ${PROJECT_NAME} OPTIONAL)
