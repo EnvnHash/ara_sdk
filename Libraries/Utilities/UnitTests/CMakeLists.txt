@@ -3,7 +3,6 @@ project(Utilities_UnitTests VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 include(UnitTestDependencies)
-include_directories(${ara_sdk_INCLUDE_DIRS})
 
 # add test source files
 file(GLOB UTILITIES_UT_SRC 
@@ -19,7 +18,7 @@ file(GLOB UTILITIES_UT_SRC
     PropertyTest.cpp
     RwBinFileTest.cpp
     StringUtilsTest.cpp
-    ##UdpSignalTest.cpp
+    #UdpSignalTest.cpp
     TableTest.cpp
 )
 
