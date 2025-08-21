@@ -14,12 +14,6 @@ set(ARA_SDK_SOURCE_DIR ${ARA_SDK_SOURCE_DIR})
 set(CMAKE_MODULE_PATH \${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 set(CROSSCOMPILE_FOR_ANDROID ON)
 
-#find_program(CCACHE_FOUND ccache)
-#if(CCACHE_FOUND)
-#    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
-#    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
-#endif(CCACHE_FOUND)
-
 #control number of parallel builds
 if (PARALLEL_COMPILE_JOBS)
   set(CMAKE_JOB_POOL_COMPILE compile_job_pool\${CMAKE_CURRENT_SOURCE_DIR})
@@ -48,7 +42,7 @@ endif ()
 # Export ANativeActivity_onCreate(),
 # Refer to: https://github.com/android-ndk/ndk/issues/381.
 set(CMAKE_SHARED_LINKER_FLAGS \"\${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate\")
-    ")
+")
     endif()
 
     if (${APP_TYPE} EQUAL 0)
@@ -82,12 +76,16 @@ set(CMAKE_SHARED_LINKER_FLAGS \"\${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity
             endif ()
         endif ()
     endforeach ()
-    
+
+    file(GLOB deps_sub_dir ${FETCHCONTENT_BASE_DIR}/ara_sdk*-src)
+    foreach(dir IN LISTS deps_sub_dir)
+        LIST(APPEND ANDROID_CMAKELIST "add_subdirectory(${dir} \${CMAKE_BINARY_DIR}/${dir})
+")
+    endforeach ()
+    message(STATUS "deps_sub_dir ${deps_sub_dir}")
+
     LIST(APPEND ANDROID_CMAKELIST "
-include(\${CMAKE_MODULE_PATH}/AraConfigure.cmake)
-include(\${CMAKE_MODULE_PATH}/GLBaseDepInclude.cmake)
-include(\${CMAKE_MODULE_PATH}/UtilitiesDepInclude.cmake)
-include(\${CMAKE_MODULE_PATH}/CreateSymLink.cmake)
+include(AraSdkMacros)
 
 # copy the sdk to the project as a symbolic link
 create_symlink(${ASSETS_FOLDER}/resdata \${CMAKE_SOURCE_DIR}/resdata)
@@ -115,9 +113,6 @@ add_library(\${PROJECT_NAME} SHARED \${ARA_SDK_SOURCES} ")
     endforeach()
 
     list(APPEND ANDROID_CMAKELIST ")
-
-include(GLBaseDependencies)
-include(UtilitiesDependencies)
 ")
 
     if (ARA_USE_ARCORE)

@@ -14,7 +14,6 @@ endif()
 if (ANDROID)
     set(ARA_IS_SUBPROJECT ON)
 endif()
-message(STATUS "ARA_SDK_SOURCE_DIR: ${ARA_SDK_SOURCE_DIR}")
 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
 
@@ -38,6 +37,7 @@ add_ara_doc_link_to_readme()
 # pass ara_sdk dependencies variables to parent project in case it exists
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(hasParent)
+    set(ARA_SDK_SOURCE_DIR ${ARA_SDK_SOURCE_DIR} PARENT_SCOPE)
     set(ara_sdk_COMPILE_DEFINITIONS "${ara_sdk_COMPILE_DEFINITIONS}" PARENT_SCOPE)
     set(ara_sdk_INCLUDE_DIRS "${ara_sdk_INCLUDE_DIRS}" PARENT_SCOPE)
     set(ara_sdk_LIBRARIES "${ara_sdk_LIBRARIES}" PARENT_SCOPE)
