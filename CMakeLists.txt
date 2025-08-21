@@ -38,6 +38,7 @@ add_ara_doc_link_to_readme()
 # pass ara_sdk dependencies variables to parent project in case it exists
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(hasParent)
+    set(ara_sdk_COMPILE_DEFINITIONS "${ara_sdk_COMPILE_DEFINITIONS}" PARENT_SCOPE)
     set(ara_sdk_INCLUDE_DIRS "${ara_sdk_INCLUDE_DIRS}" PARENT_SCOPE)
     set(ara_sdk_LIBRARIES "${ara_sdk_LIBRARIES}" PARENT_SCOPE)
     set(ara_sdk_BINARIES "${ara_sdk_BINARIES}" PARENT_SCOPE)
