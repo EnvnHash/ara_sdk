@@ -5,12 +5,9 @@ if (NOT COMPILE_SCENEGRAPH_LIB)
     add_compile_definitions(WGLWINDOW)
 endif ()
 
-include_directories(
-    ${ara_sdk_INCLUDE_DIRS}
-)
-
 file(GLOB_RECURSE GLB_SRC *.cpp)
 
 add_library(${PROJECT_NAME} OBJECT ${GLB_SRC} ${GLB_HEADERS})
 add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+target_include_directories(${PROJECT_NAME} PUBLIC  ${ara_sdk_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${ara_sdk_COMPILE_DEFINITIONS})

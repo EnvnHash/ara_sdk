@@ -11,8 +11,6 @@ else ()
     project(SceneGraph VERSION 1.0 LANGUAGES CXX)
 endif ()
 
-include_directories(${ara_sdk_INCLUDE_DIRS})
-
 file(GLOB GLSG_SRC "*.cpp")
 file(GLOB_RECURSE GLSG_ASSIMP_SRC "Assimp/*.cpp")
 file(GLOB_RECURSE GLSG_CAMERA_SRC "CameraSets/*.cpp")
@@ -74,6 +72,7 @@ endif ()
 
 add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${ara_sdk_COMPILE_DEFINITIONS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${ara_sdk_INCLUDE_DIRS})
 
 if (ANDROID)
     target_include_directories(${PROJECT_NAME} PRIVATE ${ANDROID_NDK}/sources/android/native_app_glue)

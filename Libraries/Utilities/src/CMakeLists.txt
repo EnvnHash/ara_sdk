@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(Utilities VERSION 1.0 LANGUAGES CXX)
 
-include_directories(${ara_sdk_INCLUDE_DIRS})
-
 file(GLOB COMMON_SRC
     DataModel/Project.cpp
     DataModel/Workspace.cpp
@@ -71,3 +69,4 @@ endif ()
 add_library(${PROJECT_NAME} OBJECT ${UTILITIES_SRC})
 add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${ara_sdk_COMPILE_DEFINITIONS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${ara_sdk_INCLUDE_DIRS})
