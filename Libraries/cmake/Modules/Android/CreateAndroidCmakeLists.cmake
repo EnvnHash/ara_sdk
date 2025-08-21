@@ -51,8 +51,6 @@ set(CMAKE_SHARED_LINKER_FLAGS \"\${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity
         LIST(APPEND ANDROID_CMAKE_SOURCES "jni_interface.cpp ")
     endif()
 
-    LIST(APPEND ANDROID_CMAKE_SOURCES ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/easywsclient/easywsclient.cpp)
-
 # add all sources from the additional source directories found
     FILE(GLOB_RECURSE sub_dir ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
     FOREACH(src_file ${sub_dir})
@@ -131,10 +129,10 @@ target_link_libraries(\${PROJECT_NAME} android GLESv1_CM GLESv2 GLESv3 EGL resou
         endforeach()
     endif()
 
-    # link all libs from ara_sdk*BINARIES variables included into the parent project
+    # link all libs from ara_sdk*LIBRARIES variables included into the parent project
     get_cmake_property(vars VARIABLES)
     foreach(var ${vars})
-        if("${var}" MATCHES "^ara_sdk(.*)BINARIES")
+        if("${var}" MATCHES "^ara_sdk(.*)LIBRARIES")
             list(APPEND ANDROID_CMAKELIST " \${${var}}")
         endif()
     endforeach()
