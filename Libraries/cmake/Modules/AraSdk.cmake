@@ -1,10 +1,6 @@
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 set(ARA_SDK_TARGET_LINK_OPTS)
 
-set(ara_sdk_LIBRARIES)
-set(ara_sdk_BINARIES)
-set(ara_sdk_INCLUDE_DIRS)
-
 include(AraSdkConfigure)
 include(AraSdkMacros)
 include(GeneralSettings)

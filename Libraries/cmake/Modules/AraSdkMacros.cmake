@@ -39,6 +39,5 @@ function(append_unique list_name)
             list(APPEND ${list_name} "${item}")
         endif()
     endforeach()
-    # Update the caller's scope
     set(${list_name} "${${list_name}}" PARENT_SCOPE)
 endfunction()
