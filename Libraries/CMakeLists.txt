@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Libraries)
 
-set(REQUIRED_THIRD_PARTY_DIRS )
+set(REQUIRED_THIRD_PARTY_DIRS)
 
 if (NOT UNIX)
     LIST(APPEND REQUIRED_THIRD_PARTY_DIRS "GLEW")

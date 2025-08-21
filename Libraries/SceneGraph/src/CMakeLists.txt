@@ -11,7 +11,6 @@ else ()
     project(SceneGraph VERSION 1.0 LANGUAGES CXX)
 endif ()
 
-include(AraSdk)
 include_directories(${ara_sdk_INCLUDE_DIRS})
 
 file(GLOB GLSG_SRC "*.cpp")

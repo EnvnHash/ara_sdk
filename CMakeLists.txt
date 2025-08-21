@@ -17,7 +17,7 @@ endif()
 message(STATUS "ARA_SDK_SOURCE_DIR: ${ARA_SDK_SOURCE_DIR}")
 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
-include(AraSdkConfigure)
+include(AraSdk)
 
 set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)# only include specific components into Cpack package generation
 set(GEN_ITEMFACTORY 0)

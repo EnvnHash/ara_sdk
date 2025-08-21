@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.10)
 
 project(UI)
 
-include(AraSdk)
 include_directories(${ara_sdk_INCLUDE_DIRS})
 
 file(GLOB_RECURSE UI_SRC "*.cpp")

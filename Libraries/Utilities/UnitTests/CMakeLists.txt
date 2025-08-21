@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(Utilities_UnitTests VERSION 1.0 LANGUAGES CXX)
 
+
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
-include(AraSdk)
 include(UnitTestDependencies)
 include_directories(${ara_sdk_INCLUDE_DIRS})
 

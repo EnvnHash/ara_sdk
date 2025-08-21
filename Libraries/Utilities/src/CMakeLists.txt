@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(Utilities VERSION 1.0 LANGUAGES CXX)
 
-include(${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules/AraSdk.cmake)
 include_directories(${ara_sdk_INCLUDE_DIRS})
 
 file(GLOB COMMON_SRC

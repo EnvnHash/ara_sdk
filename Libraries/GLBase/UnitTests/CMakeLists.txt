@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(GLBase_UnitTests VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH ${ARA_SDK_SOURCE_DIR}/Libraries/cmake/Modules)
-message(STATUS "glbase unit test")
 
-include(AraSdk)
 include_directories(${ara_sdk_INCLUDE_DIRS})
 include(UnitTestDependencies)
 

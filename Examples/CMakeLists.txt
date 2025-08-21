@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Applications)
 
+message(STATUS "enter examples")
 add_subdirectory(UITest)
 add_subdirectory(VisualStudioExample)
 
