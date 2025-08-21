@@ -13,3 +13,4 @@ file(GLOB_RECURSE GLB_SRC *.cpp)
 
 add_library(${PROJECT_NAME} OBJECT ${GLB_SRC} ${GLB_HEADERS})
 add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${ara_sdk_COMPILE_DEFINITIONS})

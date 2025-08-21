@@ -70,3 +70,4 @@ endif ()
 
 add_library(${PROJECT_NAME} OBJECT ${UTILITIES_SRC})
 add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${ara_sdk_COMPILE_DEFINITIONS})

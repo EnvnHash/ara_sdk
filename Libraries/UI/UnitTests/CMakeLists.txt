@@ -38,7 +38,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
 
-create_symlink(${ARA_SDK_SOURCE_DIR}/Assets/resdata ${CMAKE_CURRENT_BINARY_DIR}/resdata)
+include(ResCompInclude)
 
 # copy GLBase to executable dir
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

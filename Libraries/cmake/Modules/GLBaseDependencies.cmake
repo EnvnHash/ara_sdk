@@ -50,7 +50,7 @@ if(WIN32)
 	append_unique(ara_sdk_LIBRARIES ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/GLEW/lib/${LIB_ARCH_PATH}/glew32.lib)
 else()
 	if (GLEW_FOUND)
-		append_unique(ara_sdk_LIBRARIES GLEW)
+		append_unique(ara_sdk_LIBRARIES GLEW::GLEW)
 	endif()
 endif()
 
@@ -74,7 +74,7 @@ if(WIN32)
 endif()
 
 if (OpenGL_FOUND)
-	append_unique(ara_sdk_LIBRARIES GL)
+	append_unique(ara_sdk_LIBRARIES OpenGL::GL)
 endif ()
 
 if (ANDROID)

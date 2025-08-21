@@ -73,6 +73,7 @@ else ()
 endif ()
 
 add_library(ara::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+target_compile_definitions(${PROJECT_NAME} PUBLIC ${ara_sdk_COMPILE_DEFINITIONS})
 
 if (ANDROID)
     target_include_directories(${PROJECT_NAME} PRIVATE ${ANDROID_NDK}/sources/android/native_app_glue)
