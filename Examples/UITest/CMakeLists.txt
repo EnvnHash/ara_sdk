@@ -5,8 +5,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 project(UITest)
 
-include_directories(${ara_sdk_INCLUDE_DIRS})
-
 set(SOURCES UITestApp.cpp main.cpp)
 
 file(GLOB DEMO_SOURCES "Demo/*.h" "Demo/*.cpp")

@@ -5,8 +5,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 project(UI_HelloWorld)
 
-include_directories(${ara_sdk_INCLUDE_DIRS})
-
 set(SOURCES main.cpp)
 
 list(APPEND ALLSOURCES ${SOURCES})
