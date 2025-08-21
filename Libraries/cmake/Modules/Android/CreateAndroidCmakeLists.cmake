@@ -76,15 +76,10 @@ set(CMAKE_SHARED_LINKER_FLAGS \"\${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity
         endif ()
     endforeach ()
 
-    file(GLOB deps_sub_dir ${FETCHCONTENT_BASE_DIR}/ara_sdk*-src)
-    foreach(dir IN LISTS deps_sub_dir)
-        LIST(APPEND ANDROID_CMAKELIST "add_subdirectory(${dir} \${CMAKE_BINARY_DIR}/${dir})
-")
-    endforeach ()
-    message(STATUS "deps_sub_dir ${deps_sub_dir}")
-
     LIST(APPEND ANDROID_CMAKELIST "
-include(AraSdkMacros)
+")
+
+    LIST(APPEND ANDROID_CMAKELIST "include(AraSdkMacros)
 
 # copy the sdk to the project as a symbolic link
 create_symlink(${ASSETS_FOLDER}/resdata \${CMAKE_SOURCE_DIR}/resdata)
@@ -93,6 +88,15 @@ include(CMakeRC)
 file(GLOB_RECURSE RESOURCES \${CMAKE_SOURCE_DIR}/resdata/* )
 cmrc_add_resource_library(resources ALIAS ara::rc NAMESPACE ara \${RESOURCES})
 
+")
+
+    file(GLOB deps_sub_dir ${FETCHCONTENT_BASE_DIR}/ara_sdk*-src)
+    foreach(dir IN LISTS deps_sub_dir)
+        LIST(APPEND ANDROID_CMAKELIST "add_subdirectory(${dir} \${CMAKE_BINARY_DIR}/${dir})
+")
+    endforeach ()
+
+    LIST(APPEND ANDROID_CMAKELIST "
 # IMPORTANT NOTE: linking other libs via cmake add_library(.. OBJECT) causes the library to contain double defined method variables !!!!, so adding .cpp files directly here
 add_library(\${PROJECT_NAME} SHARED ")
 
@@ -117,6 +121,17 @@ set_target_properties(\${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION
     list(APPEND ANDROID_CMAKELIST "
 target_link_libraries(\${PROJECT_NAME} android GLESv1_CM GLESv2 GLESv3 EGL resources log")
 
+    # link all ara::* libraries linked to the parent project
+    get_target_property(linked_libs ${PROJECT_NAME} LINK_LIBRARIES)
+    if(linked_libs)
+        foreach(lib IN LISTS linked_libs)
+            if("${lib}" MATCHES "^ara::(.*)")
+                list(APPEND ANDROID_CMAKELIST " ${lib}")
+            endif ()
+        endforeach()
+    endif()
+
+    # link all libs from ara_sdk*BINARIES variables included into the parent project
     get_cmake_property(vars VARIABLES)
     foreach(var ${vars})
         if("${var}" MATCHES "^ara_sdk(.*)BINARIES")
