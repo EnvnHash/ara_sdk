@@ -31,7 +31,6 @@ endif ()
     endif()
 
     list(APPEND ANDROID_CMAKELIST "include_directories(
-    \${CMAKE_SOURCE_DIR}
     \${CMAKE_SOURCE_DIR}/src
     \${ANDROID_NDK}/sources/android/native_app_glue
 )
@@ -94,16 +93,8 @@ include(CMakeRC)
 file(GLOB_RECURSE RESOURCES \${CMAKE_SOURCE_DIR}/resdata/* )
 cmrc_add_resource_library(resources ALIAS ara::rc NAMESPACE ara \${RESOURCES})
 
-
-file(GLOB_RECURSE ARA_SDK_SOURCES
-    \${ARA_SDK_SOURCE_DIR}/Libraries/GLBase/src/*.cpp
-    \${ARA_SDK_SOURCE_DIR}/Libraries/SceneGraph/src/*.cpp
-    \${ARA_SDK_SOURCE_DIR}/Libraries/UI/src/*.cpp
-    \${ARA_SDK_SOURCE_DIR}/Libraries/Utilities/src/*.cpp
-    )
-
 # IMPORTANT NOTE: linking other libs via cmake add_library(.. OBJECT) causes the library to contain double defined method variables !!!!, so adding .cpp files directly here
-add_library(\${PROJECT_NAME} SHARED \${ARA_SDK_SOURCES} ")
+add_library(\${PROJECT_NAME} SHARED ")
 
     foreach(item ${ANDROID_CMAKE_SOURCES})
         if (NOT ${item} STREQUAL "main.cpp")
@@ -124,7 +115,14 @@ set_target_properties(\${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION
     endif()
 
     list(APPEND ANDROID_CMAKELIST "
-target_link_libraries(\${PROJECT_NAME} \${ara_sdk_LIBRARIES} android GLESv1_CM GLESv2 GLESv3 EGL resources log")
+target_link_libraries(\${PROJECT_NAME} android GLESv1_CM GLESv2 GLESv3 EGL resources log")
+
+    get_cmake_property(vars VARIABLES)
+    foreach(var ${vars})
+        if("${var}" MATCHES "^ara_sdk(.*)BINARIES")
+            list(APPEND ANDROID_CMAKELIST " \${${var}}")
+        endif()
+    endforeach()
 
     if (ARA_USE_MEDIACODEC)
         list(APPEND ANDROID_CMAKELIST "mediandk OpenMAXAL ")
