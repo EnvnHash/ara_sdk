@@ -18,7 +18,7 @@
 #include <util_common.h>
 
 #ifdef ARA_DEBUG
-#define SEMA_CHECK_TIMEOUT
+//#define SEMA_CHECK_TIMEOUT
 #endif
 
 /** Note: there can be multiple threads with a wait() which will be all release

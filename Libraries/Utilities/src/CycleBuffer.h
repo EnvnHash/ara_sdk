@@ -16,6 +16,7 @@
 #pragma once
 
 #include <util_common.h>
+#include "Conditional.h"
 
 namespace ara {
 
@@ -72,11 +73,17 @@ public:
         m_buffLastPos = m_writePos;
         ++m_writePos %= m_buffer.size();
         ++m_fillAmt;
+        if (m_fillAmt == m_buffer.size()) {
+            m_filledCond.reset();
+        }
         return m_writePos;
     }
 
     size_t consumeCountUp() {
         --m_fillAmt;
+        if (!m_filledCond.isNotified()) {
+            m_filledCond.notify();
+        }
         auto rp        = m_readPos;
         ++m_readPos %= m_buffer.size();
         return rp;
@@ -124,6 +131,10 @@ public:
         m_lastUplBuf = nullptr;
     }
 
+    void waitNotFilled() {
+        m_filledCond.wait(0);
+    }
+
     auto&   getBuffer() { return m_buffer; }
     T&      getWriteBuff() { return m_buffer[m_writePos]; }
     T&      getReadBuff() { return m_buffer[m_readPos]; }
@@ -146,6 +157,7 @@ protected:
     std::atomic<size_t>     m_fillAmt = 0;
     size_t                  m_readPos = 0;
     std::function<void()>   m_consumedCb;
+    Conditional             m_filledCond;
 };
 
 }  // namespace ara
