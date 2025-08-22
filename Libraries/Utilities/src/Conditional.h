@@ -63,7 +63,7 @@ public:
             --m_waitingThreads;
         }
 
-        if (m_waitingThreads == 0) {
+        if (m_flagResetOnWaitEnd && m_waitingThreads == 0) {
             m_flag = false;
         }
     }
@@ -71,6 +71,7 @@ public:
     bool isNotified() { return m_flag; }
     void reset() { m_flag = false; m_waitingThreads = 0; }
     bool hasWaitingThreads() { return !m_waitingThreads; }
+    void setFlagResetOnWaitEnd(bool val) { m_flagResetOnWaitEnd = val; }
 
     std::string name;
 private:
@@ -78,6 +79,7 @@ private:
     std::condition_variable m_cv;
     std::atomic<bool>       m_flag           = {false};
     std::atomic<int>        m_waitingThreads = {0};
+    bool                    m_flagResetOnWaitEnd = true;
 
 #ifdef SEMA_CHECK_TIMEOUT
     std::chrono::time_point<std::chrono::system_clock> start;

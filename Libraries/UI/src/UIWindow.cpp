@@ -65,8 +65,8 @@ void UIWindow::init(const UIWindowParams& par) {
         }
 #endif
         // first argument: should the request be processed?
-        m_procSteps[Callbacks] = ProcStep{true, [&] { iterateGlCallbacks(); }};
-        m_procSteps[Draw]      = ProcStep{true, [&] { drawNodeTree(); }};
+        m_procSteps[Callbacks] = ProcStep{true, [this] { iterateGlCallbacks(); }};
+        m_procSteps[Draw]      = ProcStep{true, [this] { drawNodeTree(); }};
 
         initColors();
 
@@ -142,7 +142,7 @@ void UIWindow::initUIWindow(const UIWindowParams& par) {
         return;
     }
 
-    m_winHandle->setDrawFunc([&](double time, double dt, int ctxNr) { return draw(time, dt, ctxNr); });
+    m_winHandle->setDrawFunc([this](double time, double dt, int ctxNr) { return draw(time, dt, ctxNr); });
     initHidCallbacks();
 
     // double check if the requested size was accepted

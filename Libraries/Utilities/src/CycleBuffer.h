@@ -53,14 +53,14 @@ public:
                 m_buffer.emplace_back();
             }
         }
+        m_filledCond.setFlagResetOnWaitEnd(false);
+        m_filledCond.notify();
     }
 
     template<typename C>
     // ...for use with c legacy code, suppose an input c-array of the same type and size as CIBufferArray<T>
     size_t feed(C *content) {
-//        if constexpr (is_vector_v<T>) {
-            std::copy(content, content + m_buffer[m_writePos].size(), m_buffer[m_writePos].data());
-  //      }
+        std::copy(content, content + m_buffer[m_writePos].size(), m_buffer[m_writePos].data());
         return feedCountUp();
     }
 
@@ -131,7 +131,7 @@ public:
         m_lastUplBuf = nullptr;
     }
 
-    void waitNotFilled() {
+    void waitUntilNotFilled() {
         m_filledCond.wait(0);
     }
 
