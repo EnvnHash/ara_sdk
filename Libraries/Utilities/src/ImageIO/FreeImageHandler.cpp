@@ -33,12 +33,9 @@ void Initialize() {
 FIBITMAP* Load(const std::string& path, FREE_IMAGE_FORMAT* fif) {
     Initialize();
 
-    FREE_IMAGE_FORMAT f = FIF_UNKNOWN;
-
     // check the file signature and deduce its format
     // (the second argument is currently not used by FreeImage)
-    f = FreeImage_GetFileType(path.c_str(), 0);
-
+    auto f = FreeImage_GetFileType(path.c_str(), 0);
     if (f == FIF_UNKNOWN) {
         // no signature ? try to guess the file format from the file extension
         f = FreeImage_GetFIFFromFilename(path.c_str());
@@ -64,34 +61,74 @@ FIBITMAP* Load(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
 }
 
 void Load(std::vector<uint8_t>& vp, Handle& hnd) {
-    const auto bitmap = Load(vp, &hnd.fif);
-    InitHandle(hnd, bitmap);
+    if (hnd.multiPage) {
+        const auto bitmap = LoadMulti(vp, &hnd.fif);
+        InitHandle(hnd, nullptr, bitmap);
+    } else {
+        const auto bitmap = Load(vp, &hnd.fif);
+        InitHandle(hnd, bitmap, nullptr);
+    }
 }
 
-FIBITMAP* Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
+FIMULTIBITMAP* LoadMulti(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
+    Initialize();
+    return LoadMulti(vp.data(), vp.size(), fif);
+}
+
+std::tuple<FREE_IMAGE_FORMAT, FIMEMORY*> LoadPrepare(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
     if (size == 0) {
         LOGE << "FreeImage::Load failed, size of memory to load to is zero";
         return {};
     }
-    MemHandler mh(ptr, size);
-    FREE_IMAGE_FORMAT f = FreeImage_GetFileTypeFromHandle(mh.io(), (fi_handle)&mh, 0);
-    if(fif) {
-        *fif = f;
-    }
-    FIBITMAP* bitmap = nullptr;
-    if (mh.memPos < mh.memSize && ((bitmap = FreeImage_LoadFromHandle(f, mh.io(), (fi_handle)&mh, 0)) == nullptr)) {
-        LOGE << "FreeImage::Load failed";
+
+    auto mem = FreeImage_OpenMemory(static_cast<BYTE*>(ptr), size);
+    if (mem == nullptr) {
+        LOGE << "Failed to create memory object";
         return {};
     }
+
+    auto f = FreeImage_GetFileTypeFromMemory(mem, 0);
+    if (fif) {
+        *fif = f;
+    }
+    return { fif ? *fif : f, mem };
+}
+
+FIBITMAP* Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
+    auto r = LoadPrepare(ptr, size, fif);
+    FIBITMAP* bitmap = nullptr;
+    if ((bitmap = FreeImage_LoadFromMemory(std::get<FREE_IMAGE_FORMAT>(r), std::get<FIMEMORY*>(r), 0)) == nullptr) {
+        LOGE << "Failed to load image from memory";
+    }
+    FreeImage_CloseMemory(std::get<FIMEMORY*>(r));
     return bitmap;
 }
 
-void InitHandle(Handle& hnd, FIBITMAP* bitmap) {
+FIMULTIBITMAP* LoadMulti(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
+    auto r = LoadPrepare(ptr, size, fif);
+
+    FIMULTIBITMAP* bitmap = nullptr;
+    if ((bitmap = FreeImage_LoadMultiBitmapFromMemory(std::get<FREE_IMAGE_FORMAT>(r), std::get<FIMEMORY*>(r), 0)) == nullptr) {
+        LOGE << "Failed to load image from memory";
+    }
+
+    //FreeImage_CloseMemory(std::get<FIMEMORY*>(r));
+    return bitmap;
+}
+
+void InitHandle(Handle& hnd, FIBITMAP* bitmap, FIMULTIBITMAP* multiBitmap) {
     hnd.bitmap = bitmap;
+    hnd.multiBitmap = multiBitmap;
+    hnd.multiPage = multiBitmap != nullptr;
+    if (hnd.multiPage) {
+        hnd.pixels = static_cast<uint8_t *>(hnd.multiBitmap->data);
+    } else {
+        hnd.pixels = static_cast<uint8_t *>(hnd.bitmap->data);
+    }
     const auto sz = GetSizeFromBitmap(hnd.bitmap);
     hnd.width = static_cast<int32_t>(sz[0]);
     hnd.height = static_cast<int32_t>(sz[1]);
-    hnd.pixels = static_cast<uint8_t *>(hnd.bitmap->data);
+
     hnd.numChannels = FreeImage::GetNumChannels(hnd.bitmap);
     hnd.bpp = static_cast<int32_t>(FreeImage_GetBPP(hnd.bitmap));
 }
@@ -146,56 +183,6 @@ FIBITMAP* ConvertTo32Bits(FIBITMAP* bitmap) {
         Unload(bitmap);
     }
     return dib32;
-}
-
-MemHandler::MemHandler(void *ptr, size_t size) {
-    memPtr  = ptr;
-    memSize = size;
-    memPos  = 0;
-    fillFreeImageIO(fIO);
-}
-
-void MemHandler::fillFreeImageIO(FreeImageIO &io) {
-    io.read_proc  = read;
-    io.write_proc = write;
-    io.seek_proc  = seek;
-    io.tell_proc  = tell;
-}
-
-unsigned MemHandler::read(void *buffer, unsigned size, unsigned count, fi_handle handle) {
-    const auto h = static_cast<MemHandler *>(handle);
-    auto dest = static_cast<uint8_t *>(buffer);
-    auto src  = h->getPos();
-
-    for (unsigned c = 0; c < count; c++) {
-        std::copy_n(src, size, dest);
-        src += size;
-        dest += size;
-        h->memPos += size;
-    }
-
-    return count;
-}
-
-unsigned MemHandler::write(void *buffer, unsigned size, unsigned count, fi_handle handle) {
-    return size;
-}
-
-int MemHandler::seek(fi_handle handle, long offset, int origin) {
-    const auto h = static_cast<MemHandler *>(handle);
-
-    if (origin == SEEK_SET) {
-        h->memPos = 0;
-    } else if (origin == SEEK_CUR) {
-        h->memPos = offset;
-    }
-
-    return 0;
-}
-
-long MemHandler::tell(fi_handle handle) {
-    const auto h = static_cast<MemHandler *>(handle);
-    return static_cast<long>(h->memPos);
 }
 
 }

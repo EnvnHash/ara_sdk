@@ -45,11 +45,12 @@ public:
     std::optional<bool> excludeFromScissoring{};
     std::optional<bool> excludeFromPadding{};
     std::optional<bool> excludeFromOutOfBorderCheck{};
+    std::optional<std::filesystem::path> filePath{};
 
     auto getTiedOptionals() const {
         return std::tie(fgColor, bgColor, name, style, align, valign, borderWidth, borderRadius, borderColor, padding,
                         visible, excludeFromObjMap, excludeFromParentViewTrans, excludeFromScissoring, excludeFromPadding,
-                        excludeFromOutOfBorderCheck);
+                        excludeFromOutOfBorderCheck, filePath);
     }
 };
 
@@ -82,7 +83,7 @@ public:
             }
         }, arg.size);
 
-        std::array<std::function<void()>, 16> funcMap {
+        std::array<std::function<void()>, 17> funcMap {
             [&arg, &node] { node->setColor(arg.fgColor.value()); },
             [&arg, &node] { node->setBackgroundColor(arg.bgColor.value()); },
             [&arg, &node] { node->setName(arg.name.value()); },
@@ -98,7 +99,8 @@ public:
             [&arg, &node] { node->excludeFromParentViewTrans(arg.excludeFromParentViewTrans.value()); },
             [&arg, &node] { node->excludeFromScissoring(arg.excludeFromScissoring.value()); },
             [&arg, &node] { node->excludeFromPadding(arg.excludeFromPadding.value()); },
-            [&arg, &node] { node->excludeFromOutOfBorderCheck(arg.excludeFromOutOfBorderCheck.value()); }
+            [&arg, &node] { node->excludeFromOutOfBorderCheck(arg.excludeFromOutOfBorderCheck.value()); },
+            [&arg, &node] { node->setPath(arg.filePath.value()); }
         };
         iterateOptionals(arg.getTiedOptionals(), arrayToTuple(funcMap), std::make_index_sequence<funcMap.size()>{});
 
@@ -215,7 +217,7 @@ public:
     void                setName(std::string name) { m_name = std::move(name); }
     virtual void        setValue(float val) {}
     virtual void        setAbsValue(float val) {}
-    virtual void        setPath(std::filesystem::path file) { m_filepath = std::move(file); }
+    virtual void        setPath(const std::filesystem::path& file) { m_filepath = file; }
     [[nodiscard]] bool  isVisible() const { return m_visible; }
     [[nodiscard]] bool  isInited() const { return m_inited; }
     void                setInited(bool val) { m_inited = val; }

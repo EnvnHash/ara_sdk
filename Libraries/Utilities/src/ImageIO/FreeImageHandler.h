@@ -26,20 +26,27 @@ namespace ara::FreeImage {
 
 struct Handle {
     FIBITMAP* bitmap = nullptr;
+    FIMULTIBITMAP* multiBitmap = nullptr;
     FREE_IMAGE_FORMAT fif{};
     int32_t width = 0;
     int32_t height = 0;
     int32_t bpp = 0;
     int32_t numChannels = 0;
     uint8_t* pixels = nullptr;
+    bool multiPage = false;
 };
 
 void                    Initialize();
 FIBITMAP*               Load(const std::string& path, FREE_IMAGE_FORMAT* fif = nullptr);
 FIBITMAP*               Load(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif = nullptr);
-void                    Load(std::vector<uint8_t>& vp, Handle& hnd);
 FIBITMAP*               Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif = nullptr);
-void                    InitHandle(Handle& hnd, FIBITMAP* bitmap);
+FIMULTIBITMAP*          LoadMulti(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif = nullptr);
+FIMULTIBITMAP*          LoadMulti(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif);
+void                    Load(std::vector<uint8_t>& vp, Handle& hnd);
+
+std::tuple<FREE_IMAGE_FORMAT, FIMEMORY*> LoadPrepare(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif);
+
+void                    InitHandle(Handle& hnd, FIBITMAP* bitmap, FIMULTIBITMAP* multiBitmap);
 std::array<uint32_t, 2> GetSize(const std::string& path);
 std::array<uint32_t, 2> GetSize(std::vector<uint8_t>& vp);
 std::array<uint32_t, 2> GetSizeFromBitmap(FIBITMAP* bitmap);
@@ -49,28 +56,6 @@ void                    Save(const std::string& filename, FREE_IMAGE_FORMAT file
 
 static uint8_t*         GetBits(FIBITMAP* bitmap) { return FreeImage_GetBits(bitmap); }
 static void             Unload(FIBITMAP* bitmap) { FreeImage_Unload(bitmap); }
-
-class MemHandler {
-public:
-    MemHandler(void *ptr, size_t size);
-
-    void                  *memPtr  = nullptr;
-    size_t                 memSize = 0;
-    size_t                 memPos  = 0;
-    FreeImageIO            fIO{};
-
-    [[nodiscard]] uint8_t *getPos() const {
-        return static_cast<uint8_t *>(memPtr) + memPos;
-    }
-
-    static void fillFreeImageIO(FreeImageIO &io);
-    FreeImageIO *io() { return &fIO; }
-
-    static unsigned read(void *buffer, unsigned size, unsigned count, fi_handle handle);
-    static unsigned write(void *buffer, unsigned size, unsigned count, fi_handle handle);
-    static int seek(fi_handle handle, long offset, int origin);
-    static long tell(fi_handle handle);
-};
 
 }
 
