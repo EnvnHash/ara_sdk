@@ -17,7 +17,7 @@ public:
     void update();
     void setLoopPoint(int32_t val) { m_imgSeq.setLoopPoint(val); }
     void setFps(int32_t val) { m_imgSeq.setFps(val); }
-    void setLoopSwitch(int32_t nrOfLoopsBeforeSwitch, int32_t newStartFrame) { m_imgSeq.setLoopSwitch(nrOfLoopsBeforeSwitch, newStartFrame); }
+    void setEndCb(const std::function<void(ImageSequence*, int32_t)>& f) { m_imgSeq.setEndCb(f); }
 
 protected:
     ImageSequence       m_imgSeq;

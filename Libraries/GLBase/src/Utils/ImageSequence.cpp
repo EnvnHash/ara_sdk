@@ -64,9 +64,8 @@ int32_t ImageSequence::update() {
         m_currFrame = m_startFrame;
         m_startTime = system_clock::now();
         ++m_loopsPassed;
-        if (m_nrOfLoopsBeforeSwitch > 0 && m_nrOfLoopsBeforeSwitch == m_loopsPassed) {
-            m_startFrame = m_newStartFrame;
-            m_loopPoint = static_cast<int32_t>(m_textures.size());
+        if (m_endCb) {
+            m_endCb(this, m_loopsPassed);
         }
     }
 
