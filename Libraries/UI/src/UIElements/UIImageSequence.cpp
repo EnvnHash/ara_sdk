@@ -13,8 +13,12 @@ UIImageSequence::UIImageSequence() : ara::Image() {
 }
 
 void UIImageSequence::init() {
-    m_imgSeq.loadFromAsset(m_filepath, m_glbase);
-    setTexId(m_imgSeq.getTexId(0), m_imgSeq.getWidth(), m_imgSeq.getHeight(), m_imgSeq.getBitCount());
+    if (!m_filepath.empty()) {
+        m_imgSeq.loadFromAsset(m_filepath, m_glbase);
+        setTexId(m_imgSeq.getTexId(0), m_imgSeq.getWidth(), m_imgSeq.getHeight(), m_imgSeq.getBitCount());
+    } else {
+        LOGE << "UIImageSequence::init failed m_filepath empty";
+    }
 }
 
 void UIImageSequence::update() {

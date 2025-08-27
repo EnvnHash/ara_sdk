@@ -73,7 +73,7 @@ int32_t ImageSequence::update() {
 }
 
 int32_t ImageSequence::getTexId(int32_t frameNr) {
-    return m_textures.size() >= frameNr ? static_cast<int32_t>(m_textures[frameNr].getId()) : 0;
+    return !m_textures.empty() && m_textures.size() >= frameNr ? static_cast<int32_t>(m_textures[frameNr].getId()) : 0;
 }
 
 int32_t ImageSequence::getWidth() {

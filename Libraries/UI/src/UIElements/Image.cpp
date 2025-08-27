@@ -551,6 +551,10 @@ bool Image::setTexId(GLuint inTexId, int width, int height, int bitCount) {
         return false;
     }
 
+    if (m_useTexId && m_texId != 0 && inTexId != m_texId && m_imgDB.drawSet) {
+        m_drawMan->replaceTexture(*m_imgDB.drawSet, static_cast<GLuint>(m_texUnit), m_texId);
+    }
+
     m_useTexId       = inTexId != 0;
     m_texId          = inTexId;
     m_extTexWidth    = width;
