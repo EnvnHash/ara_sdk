@@ -22,8 +22,7 @@ void UIImageSequence::init() {
 }
 
 void UIImageSequence::update() {
-    auto currFrame = m_imgSeq.update();
-    setTexId(m_imgSeq.getTexId(currFrame), m_imgSeq.getWidth(), m_imgSeq.getHeight(), m_imgSeq.getBitCount());
+    updateTexId(m_imgSeq.getTexId(m_imgSeq.update()));
 }
 
 }

@@ -38,6 +38,7 @@ public:
     virtual void    loadImg();
     virtual void    reload();
     virtual bool    setTexId(GLuint inTexId, int width, int height, int bitCount);
+    virtual void    updateTexId(GLuint inTexId);
     virtual void    setFillToNodeSize(bool val, state st = state::m_state);
     virtual void    setObjUsesTexAlpha(bool val);
     void            clearDs() override;

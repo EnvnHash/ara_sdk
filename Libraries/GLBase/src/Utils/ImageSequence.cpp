@@ -25,7 +25,6 @@ void ImageSequence::loadFromAsset(const filesystem::path& p, GLBase* glbase) {
     FreeImage::Load(gifData, hnd);
     if (hnd.multiBitmap) {
         auto frameCount = FreeImage_GetPageCount((FIMULTIBITMAP*)hnd.multiBitmap);
-        LOG << "frameCount " << frameCount;
         uploadToTexture(frameCount, hnd.multiBitmap, glbase);
     }
 }
@@ -39,10 +38,10 @@ void ImageSequence::uploadToTexture(int32_t numFrames, FIMULTIBITMAP* multiBitma
             LOGE << "Failed to lock page " << i;
             continue;
         }
-        FIBITMAP *rgbaImage = FreeImage_ConvertTo32Bits(frame);
+        auto rgbaImage = FreeImage_ConvertTo32Bits(frame);
         m_textures[i].setGlbase(glbase);
         m_textures[i].keepBitmap(true);
-        m_textures[i].loadFromFib(rgbaImage, GL_TEXTURE_2D, 1, true);
+        m_textures[i].loadFromFib(rgbaImage, GL_TEXTURE_2D, 1, false);
         FreeImage_Unload(rgbaImage);
         FreeImage_UnlockPage(multiBitmap, frame, FALSE);
     }

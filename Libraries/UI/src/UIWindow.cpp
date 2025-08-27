@@ -882,8 +882,7 @@ void UIWindow::onChar(unsigned int codepoint) {
 void UIWindow::fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
     if (evt == hidEvent::MouseDownLeft || evt == hidEvent::MouseDownRight) {
         m_hidData.dragStart = true;
-        m_mouseClickPos     = m_hidData.mousePos;
-
+        m_mouseDownPos      = m_hidData.mousePos;
         m_hidData.shiftPressed = shiftPressed;
         m_hidData.ctrlPressed  = ctrlPressed;
         m_hidData.altPressed   = altPressed;
@@ -933,7 +932,7 @@ void UIWindow::fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPress
 }
 
 void UIWindow::onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
-    fillHidData(hidEvent::MouseDownLeft, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
+   fillHidData(hidEvent::MouseDownLeft, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
 
     // check if double click
     auto   now  = chrono::system_clock::now();
@@ -1096,15 +1095,15 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
 
     m_lastHoverFound = foundNode;
 
-    m_hidData.movedPix = m_hidData.mousePos - m_mouseClickPos;
-    bool isValidDrag = glm::length(m_hidData.movedPix) > 4.f;
+    m_hidData.movedPix = m_hidData.mousePos - m_mouseDownPos;
+    bool isValidDrag = glm::length(m_hidData.movedPix) > (4.f * s_devicePixelRatio);
 
     if ((m_hidData.mousePressed || m_hidData.mouseRightPressed) && !m_draggingNodeTree.empty() &&
         (!m_hidData.dragStart || isValidDrag)) {
         // since a minimum distance is used for validating drag gestures, movedPix has to be corrected in order
         // to avoid jumps
         if (m_hidData.dragStart && isValidDrag) {
-            m_mouseClickPos      = m_hidData.mousePos;
+            m_mouseDownPos       = m_hidData.mousePos;
             m_hidData.movedPix.x = 0.f;
             m_hidData.movedPix.y = 0.f;
         }

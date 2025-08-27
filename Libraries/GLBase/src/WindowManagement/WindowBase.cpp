@@ -76,12 +76,14 @@ void WindowBase::procHid() {
         val.clear();
     }
 
-    for (auto &val: s_hidEvents | views::values) {
+    for (auto &val: s_hidEvents) {
         if (val) {
             val();
         }
         val = nullptr;
     }
+
+    s_hidEvents.clear();
 }
 
 void WindowBase::procChangeWin() {

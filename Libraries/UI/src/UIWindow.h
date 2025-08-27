@@ -328,7 +328,7 @@ protected:
 
     glm::ivec4 monitorMaxArea{};
     glm::ivec2 m_minWinSize = {300, 300};
-    glm::vec2  m_mouseClickPos{0.f};
+    glm::vec2  m_mouseDownPos{};
     glm::vec2  m_lastClickedPos = glm::vec2{};
     glm::ivec2 m_realSize{};
     glm::ivec2 m_virtSize{};
