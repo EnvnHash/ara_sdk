@@ -20,58 +20,59 @@
 
 namespace ara {
 
-PropoImage::PropoImage(GLBase* glbase) : imgTex(std::make_unique<Texture>(glbase)) {
+PropoImage::PropoImage(GLBase* glbase) : m_imgTex(std::make_unique<Texture>(glbase)) {
 }
 
-PropoImage::PropoImage(const std::string& fileName, int _screenW, int _screenH, float _logoWidth, propoImagePos _pos,
-                       float _border)
-    : pos(_pos), imgWidth(_logoWidth), border(_border) {
-    screenW = static_cast<float>(_screenW);
-    screenH = static_cast<float>(_screenH);
+PropoImage::PropoImage(GLBase* glbase, const std::string& fileName, int screenW, int screenH, float logoWidth, propoImagePos pos,
+                       float border)
+    : m_pos(pos), m_imgWidth(logoWidth), m_border(border) {
+    m_screenW = static_cast<float>(screenW);
+    m_screenH = static_cast<float>(screenH);
 
-    imgTex->loadTexture2D(fileName, 1);
+    m_imgTex = std::make_unique<Texture>(glbase);
+    m_imgTex->loadTexture2D(fileName, 1);
 
     setupQuad();
 }
 
 void PropoImage::setupQuad() {
-    imgAspectRatio    = static_cast<float>(imgTex->getHeight()) / static_cast<float>(imgTex->getWidth());
-    screenAspectRatio = static_cast<float>(screenH) / static_cast<float>(screenW);
+    m_imgAspectRatio    = static_cast<float>(m_imgTex->getHeight()) / static_cast<float>(m_imgTex->getWidth());
+    m_screenAspectRatio = m_screenH / m_screenW;
 
-    imgHeight = imgWidth * imgAspectRatio / screenAspectRatio;
+    m_imgHeight = m_imgWidth * m_imgAspectRatio / m_screenAspectRatio;
     glm::vec2 imgLowerLeftCorner;
 
-    switch (pos) {
+    switch (m_pos) {
         case CENTER:
-            imgLowerLeftCorner = glm::vec2(0.f - imgWidth * 0.5f - border, 0.f - imgHeight * 0.5f - border);
+            imgLowerLeftCorner = glm::vec2(0.f - m_imgWidth * 0.5f - m_border, 0.f - m_imgHeight * 0.5f - m_border);
             break;
-        case UPPER_LEFT: imgLowerLeftCorner = glm::vec2(1.f - border, 1.f - imgHeight - border); break;
-        case UPPER_RIGHT: imgLowerLeftCorner = glm::vec2(1.f - imgWidth - border, 1.f - imgHeight - border); break;
-        case LOWER_LEFT: imgLowerLeftCorner = glm::vec2(1.f - border, 1.f - border); break;
-        case LOWER_RIGHT: imgLowerLeftCorner = glm::vec2(1.f - imgWidth - border, 1.f - border); break;
-        default: imgLowerLeftCorner = glm::vec2(1.f - imgWidth - border, 1.f - imgHeight - border); break;
+        case UPPER_LEFT: imgLowerLeftCorner = glm::vec2(1.f - m_border, 1.f - m_imgHeight - m_border); break;
+        case UPPER_RIGHT: imgLowerLeftCorner = glm::vec2(1.f - m_imgWidth - m_border, 1.f - m_imgHeight - m_border); break;
+        case LOWER_LEFT: imgLowerLeftCorner = glm::vec2(1.f - m_border, 1.f - m_border); break;
+        case LOWER_RIGHT: imgLowerLeftCorner = glm::vec2(1.f - m_imgWidth - m_border, 1.f - m_border); break;
+        default: imgLowerLeftCorner = glm::vec2(1.f - m_imgWidth - m_border, 1.f - m_imgHeight - m_border); break;
     }
 
     // position to the right upper corner for fullscreen
-    if (imgQuad) {
-        imgQuad->scale({imgWidth / oldImgWidth, imgHeight / oldImgHeight, 1.f});
+    if (m_imgQuad) {
+        m_imgQuad->scale({m_imgWidth / m_oldImgWidth, m_imgHeight / m_oldImgHeight, 1.f});
     } else {
-        imgQuad = std::make_unique<Quad>(QuadInitParams{.pos = imgLowerLeftCorner,
-                                                        .size = {imgWidth, imgHeight},
+        m_imgQuad = std::make_unique<Quad>(QuadInitParams{.pos = imgLowerLeftCorner,
+                                                        .size = {m_imgWidth, m_imgHeight},
                                                         .color = {0.f, 0.f, 0.f, 0.f} });
     }
 }
 
 void PropoImage::draw() const {
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, imgTex->getId());
-    imgQuad->draw();
+    glBindTexture(GL_TEXTURE_2D, m_imgTex->getId());
+    m_imgQuad->draw();
 }
 
 void PropoImage::setWidth(float newWidth) {
-    oldImgWidth     = imgWidth;
-    oldImgHeight    = imgHeight;
-    imgWidth        = newWidth;
+    m_oldImgWidth     = m_imgWidth;
+    m_oldImgHeight    = m_imgHeight;
+    m_imgWidth        = newWidth;
     setupQuad();
 }
 
