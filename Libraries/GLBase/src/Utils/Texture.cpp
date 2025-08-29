@@ -1137,7 +1137,7 @@ void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
     int pitch = w * nrChan; // bytes per row
 
     // FreeImage expects BGR(A) format, not RGB(A), so we might need to swap channels manually if necessary
-    FIBITMAP* bitmap = FreeImage_ConvertFromRawBits(
+    auto bitmap = FreeImage_ConvertFromRawBits(
             const_cast<BYTE*>(buf),  // FreeImage uses BYTE*, which is uint8_t*
             w,
             h,
