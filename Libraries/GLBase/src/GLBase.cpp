@@ -107,6 +107,8 @@ void GLBase::checkCapabilities() {
         << std::to_string(g_caps.minor_vers > 10 ? g_caps.minor_vers / 10 : g_caps.minor_vers)
         << std::to_string(g_caps.minor_vers > 10 ? g_caps.minor_vers % 10 : 0)
         << " es\n#extension GL_EXT_shader_io_blocks : enable\nprecision highp float;\nprecision highp sampler3D;\n";
+#elif OSMESA_CONTEXT_MAJOR_VERSION
+    ss << "#version 450";
 #else
     ss << "#version "
         << std::to_string(g_caps.major_vers)
