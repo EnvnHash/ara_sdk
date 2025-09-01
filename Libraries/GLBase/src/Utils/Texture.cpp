@@ -80,7 +80,7 @@ GLuint Texture::loadFromFile(const std::string &filename, GLenum textTarget, int
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
     if (std::filesystem::exists(std::filesystem::path(filename))) {
         m_filename        = filename;
-        auto pBitmap = FreeImage::Load(filename, 0);
+        auto pBitmap = FreeImage::Load(filename, nullptr);
         return loadFromFib(pBitmap, textTarget, nrMipMaps, flipH);
 #else
     if (fs::exists(fs::path(filename))) {
@@ -106,7 +106,7 @@ GLuint Texture::loadFromMemPtr(void *ptr, size_t size, GLenum textTarget, int nr
 }
 
 #if defined(ARA_USE_FREEIMAGE) && !defined(__EMSCRIPTEN__)
-GLuint Texture::loadFromFib(FIBITMAP *pBitmap, GLenum _textTarget, int nrMipMaps, bool flipH) {
+GLuint Texture::loadFromFib(FIBITMAP *pBitmap, GLenum textTarget, int nrMipMaps, bool flipH) {
     GLboolean generateMips = std::min(nrMipMaps, m_glbase->maxTexMipMapLevels()) > 1;
     uint      width(0), height(0), BPP(0);
 
@@ -115,15 +115,15 @@ GLuint Texture::loadFromFib(FIBITMAP *pBitmap, GLenum _textTarget, int nrMipMaps
     }
 
 #if !defined(ARA_USE_GLES31)
-    if (_textTarget == GL_TEXTURE_RECTANGLE || _textTarget == GL_TEXTURE_CUBE_MAP) generateMips = false;
+    if (textTarget == GL_TEXTURE_RECTANGLE || textTarget == GL_TEXTURE_CUBE_MAP) generateMips = false;
 #else
-    if (_textTarget == GL_TEXTURE_CUBE_MAP) generateMips = false;
+    if (textTarget == GL_TEXTURE_CUBE_MAP) generateMips = false;
 #endif
 
     m_mipmapLevels = generateMips ? std::min(nrMipMaps, m_glbase->maxTexMipMapLevels()) : 1;
 
     // bits = FreeImage_GetBits(pBitmap);
-    m_texData.bits = (GLubyte *)FreeImage_GetBits(pBitmap);
+    m_texData.bits = reinterpret_cast<GLubyte*>(FreeImage_GetBits(pBitmap));
 
     width                           = FreeImage_GetWidth(pBitmap);
     height                          = FreeImage_GetHeight(pBitmap);
@@ -143,7 +143,7 @@ GLuint Texture::loadFromFib(FIBITMAP *pBitmap, GLenum _textTarget, int nrMipMaps
             m_texData.pixelType      = m_texData.internalFormat == GL_R8 ? GL_UNSIGNED_BYTE : GL_FLOAT;
             break;
         case FIC_PALETTE:
-            m_texData.nrChan         = 3;
+            m_texData.nrChan         = 4;
             m_texData.format         = GL_BGR;
             m_texData.internalFormat = GL_RGB8;
             m_texData.pixelType      = GL_UNSIGNED_BYTE;
@@ -185,7 +185,7 @@ GLuint Texture::loadFromFib(FIBITMAP *pBitmap, GLenum _textTarget, int nrMipMaps
     m_texData.height = height;
     m_texData.tex_t  = static_cast<float>(width) / static_cast<float>(m_texData.width);
     m_texData.tex_u  = static_cast<float>(height) / static_cast<float>(m_texData.height);
-    m_texData.target = _textTarget;  // assuming 2d pictures
+    m_texData.target = textTarget;  // assuming 2d pictures
     m_texData.textureID = 0;  // init id
     m_texData.bpp       = BPP;
 
@@ -1137,7 +1137,7 @@ void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
     int pitch = w * nrChan; // bytes per row
 
     // FreeImage expects BGR(A) format, not RGB(A), so we might need to swap channels manually if necessary
-    FIBITMAP* bitmap = FreeImage_ConvertFromRawBits(
+    auto bitmap = FreeImage_ConvertFromRawBits(
             const_cast<BYTE*>(buf),  // FreeImage uses BYTE*, which is uint8_t*
             w,
             h,

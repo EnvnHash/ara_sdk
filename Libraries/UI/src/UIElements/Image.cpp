@@ -547,7 +547,7 @@ void Image::setLod(float val) {
 }
 
 bool Image::setTexId(GLuint inTexId, int width, int height, int bitCount) {
-    if (inTexId == m_texId && m_extTexWidth == width && m_extTexHeight == height && bitCount == m_extTexBitCount){
+    if (m_extTexWidth == width && m_extTexHeight == height && bitCount == m_extTexBitCount){
         return false;
     }
 
@@ -578,6 +578,14 @@ bool Image::setTexId(GLuint inTexId, int width, int height, int bitCount) {
 
     m_drawParamChanged = true;
     return true;
+}
+
+void Image::updateTexId(GLuint inTexId) {
+    if (inTexId != m_texId && m_imgDB.drawSet) {
+        m_drawMan->replaceTexture(*m_imgDB.drawSet, static_cast<GLuint>(m_texUnit), m_texId);
+        m_texId          = inTexId;
+        m_drawParamChanged = true;
+    }
 }
 
 void Image::clearDs() {

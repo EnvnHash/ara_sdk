@@ -48,6 +48,7 @@ public:
     float                           pushTexture(GLuint texId);
     float                           pushTexture(DrawSet& ds, GLuint texId);
     static void                     popTexture(DrawSet& ds, GLuint texId);
+    static void                     replaceTexture(DrawSet &ds, GLuint texUnit, GLuint texId);
     void                            pushFunc(const std::function<void()>& f);
     void                            clear();
     void                            clearFonts();

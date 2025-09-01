@@ -368,6 +368,12 @@ void DrawManager::popTexture(DrawSet &ds, GLuint texId) {
     }
 }
 
+void DrawManager::replaceTexture(DrawSet &ds, GLuint texUnit, GLuint texId) {
+    std::erase_if(ds.textures, [&](auto& it) { return it.second == texUnit; });
+    ds.textures.erase(texId);
+    ds.textures[texId] = texUnit;  // associate a texUnit to this new texId
+}
+
 void DrawManager::pushFunc(const std::function<void()>& f) {
     m_drawSets.emplace_back();
     m_drawSets.back().func = f;

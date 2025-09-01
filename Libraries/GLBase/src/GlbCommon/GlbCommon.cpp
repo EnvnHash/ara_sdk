@@ -326,6 +326,17 @@ float distPointLine(vec2 _point, vec2 _lineP1, vec2 _lineP2, bool *projIsOutside
     return distance(_point, proj);
 }
 
+float minDistancePointToRectangle(const glm::vec2& point, const glm::vec2& topLeft, const glm::vec2& size) {
+    // Calculate the clamped point within the rectangle bounds
+    glm::vec2 clampedPoint = glm::clamp(point, topLeft, topLeft + size);
+
+    // Calculate the vector from the clamped point to the original point
+    glm::vec2 difference = point - clampedPoint;
+
+    // The length of this vector is the minimum distance to the rectangle
+    return glm::length(difference);
+}
+
 float sign(vec2 p1, vec2 p2, vec2 p3) {
     return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 }

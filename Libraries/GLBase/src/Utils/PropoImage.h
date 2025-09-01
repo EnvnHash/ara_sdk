@@ -27,31 +27,31 @@ public:
     enum propoImagePos { CENTER = 0, UPPER_LEFT = 1, UPPER_RIGHT = 2, LOWER_LEFT = 3, LOWER_RIGHT = 4 };
 
     explicit PropoImage(GLBase* glbase);
-    PropoImage(const std::string& fileName, int _screenW, int _screenH, float _logoWidth = 0.5f,
-               propoImagePos _pos = CENTER, float _border = 0.f);
+    PropoImage(GLBase* glbase, const std::string& fileName, int screenW, int screenH, float logoWidth = 0.5f,
+               propoImagePos pos = CENTER, float border = 0.f);
 
     void setupQuad();
     void draw() const;
     void setWidth(float _newWidth);
 
-    [[nodiscard]] float getImgHeight() const { return imgHeight; }
-    [[nodiscard]] float getImgAspectRatio() const { return imgAspectRatio; }
-    [[nodiscard]] GLint getTexId() const { return static_cast<GLint>(imgTex->getId()); }
+    [[nodiscard]] float getImgHeight() const { return m_imgHeight; }
+    [[nodiscard]] float getImgAspectRatio() const { return m_imgAspectRatio; }
+    [[nodiscard]] GLint getTexId() const { return static_cast<GLint>(m_imgTex->getId()); }
 
 private:
-    std::unique_ptr<Texture> imgTex;
-    std::unique_ptr<Quad>    imgQuad;
-    propoImagePos            pos{};
-    bool                     inited = false;
+    std::unique_ptr<Texture> m_imgTex;
+    std::unique_ptr<Quad>    m_imgQuad;
+    propoImagePos            m_pos{};
+    bool                     m_inited = false;
 
-    float imgWidth{};
-    float imgHeight{};
-    float oldImgWidth{};
-    float oldImgHeight{};
-    float screenW{};
-    float screenH{};
-    float border{};
-    float imgAspectRatio{};
-    float screenAspectRatio{};
+    float m_imgWidth{};
+    float m_imgHeight{};
+    float m_oldImgWidth{};
+    float m_oldImgHeight{};
+    float m_screenW{};
+    float m_screenH{};
+    float m_border{};
+    float m_imgAspectRatio{};
+    float m_screenAspectRatio{};
 };
 }  // namespace ara

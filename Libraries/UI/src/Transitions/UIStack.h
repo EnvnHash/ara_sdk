@@ -21,8 +21,9 @@ public:
 
     template <class T>
     T* add(const std::string& name, const std::function<void()>& f) {
+        auto newNode = add<T>(name);
         m_onShowFunctions[name] = f;
-        return add<T>(name);
+        return newNode;
     }
 
     virtual void show(const std::string& name) = 0;

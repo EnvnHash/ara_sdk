@@ -343,6 +343,7 @@ void catmullRom(std::vector<glm::vec2> &inPoints, std::vector<glm::vec2> &outPoi
 
 float distPointLine(glm::vec2 _point, glm::vec2 _lineP1, glm::vec2 _lineP2, bool *projIsOutside = nullptr,
                     float *projAngle = nullptr);
+float minDistancePointToRectangle(const glm::vec2& point, const glm::vec2& topLeft, const glm::vec2& size);
 
 float sign(glm::vec2 p1, glm::vec2 p2, glm::vec2 p3);
 bool  pointInTriangle(glm::vec2 pt, glm::vec2 v1, glm::vec2 v2, glm::vec2 v3);

@@ -16,6 +16,7 @@
 #pragma once
 
 #include <util_common.h>
+#include "Conditional.h"
 
 namespace ara {
 
@@ -52,14 +53,14 @@ public:
                 m_buffer.emplace_back();
             }
         }
+        m_filledCond.setFlagResetOnWaitEnd(false);
+        m_filledCond.notify();
     }
 
     template<typename C>
     // ...for use with c legacy code, suppose an input c-array of the same type and size as CIBufferArray<T>
     size_t feed(C *content) {
-//        if constexpr (is_vector_v<T>) {
-            std::copy(content, content + m_buffer[m_writePos].size(), m_buffer[m_writePos].data());
-  //      }
+        std::copy(content, content + m_buffer[m_writePos].size(), m_buffer[m_writePos].data());
         return feedCountUp();
     }
 
@@ -72,11 +73,17 @@ public:
         m_buffLastPos = m_writePos;
         ++m_writePos %= m_buffer.size();
         ++m_fillAmt;
+        if (m_fillAmt == m_buffer.size()) {
+            m_filledCond.reset();
+        }
         return m_writePos;
     }
 
     size_t consumeCountUp() {
         --m_fillAmt;
+        if (!m_filledCond.isNotified()) {
+            m_filledCond.notify();
+        }
         auto rp        = m_readPos;
         ++m_readPos %= m_buffer.size();
         return rp;
@@ -124,6 +131,10 @@ public:
         m_lastUplBuf = nullptr;
     }
 
+    void waitUntilNotFilled() {
+        m_filledCond.wait(0);
+    }
+
     auto&   getBuffer() { return m_buffer; }
     T&      getWriteBuff() { return m_buffer[m_writePos]; }
     T&      getReadBuff() { return m_buffer[m_readPos]; }
@@ -146,6 +157,7 @@ protected:
     std::atomic<size_t>     m_fillAmt = 0;
     size_t                  m_readPos = 0;
     std::function<void()>   m_consumedCb;
+    Conditional             m_filledCond;
 };
 
 }  // namespace ara
