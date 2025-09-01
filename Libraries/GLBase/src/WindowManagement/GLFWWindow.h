@@ -25,7 +25,9 @@
 #elif __linux__
 #define GLFW_EXPOSE_NATIVE_GLX
 #define GLFW_EXPOSE_NATIVE_X11
+#ifdef ARA_USE_OSMESA
 #define GLFW_EXPOSE_NATIVE_OSMESA
+#endif
 #endif
 
 #ifdef GLFW_EXPOSE_NATIVE_OSMESA
