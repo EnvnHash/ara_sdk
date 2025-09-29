@@ -100,6 +100,8 @@ macro (gen_android_proj APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NA
 
         set(PACKAGE_NAME ${APP_NAME})
         set(PACKAGE_URL ${APP_PACKAGE_URL})
+        message(STATUS "PACKAGE_NAME ${PACKAGE_NAME}")
+        message(STATUS "APP_PACKAGE_URL ${APP_PACKAGE_URL}")
         set(SIGN_KEY_PASS dshUIYy287)
 
         # read ndk version string from the NDKs source.properties
