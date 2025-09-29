@@ -2,7 +2,7 @@ macro (create_main_activity app_type)
     set(main_activity)
 
     if (${app_type} EQUAL 0)
-        list(APPEND main_activity "package eu.zeitkunst.${PACKAGE_NAME}\;\n
+        list(APPEND main_activity "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n
 import android.app.NativeActivity\;
 
 public class MainActivity extends NativeActivity {
@@ -11,7 +11,7 @@ public class MainActivity extends NativeActivity {
         FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/eu/zeitkunst/${PROJECT_NAME}/MainActivity.java ${main_activity}) # write it
     else ()
         # package
-        list(APPEND main_activity "package eu.zeitkunst.${PACKAGE_NAME}\;\n\n")
+        list(APPEND main_activity "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n\n")
 
         # imports
         if (ARA_USE_NDI)

@@ -3,7 +3,7 @@ macro(create_jni_interface)
     set(jni_interface)
 
     # package
-    list(APPEND jni_interface "package eu.zeitkunst.${PACKAGE_NAME}\;\n\n")
+    list(APPEND jni_interface "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n\n")
 
     # imports
     list(APPEND jni_interface "import android.app.Activity\;

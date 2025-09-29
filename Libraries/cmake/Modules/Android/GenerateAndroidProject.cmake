@@ -55,7 +55,7 @@ macro (extract_class_name deri)
 endmacro()
 
 # APP_TYPE 0 = Pure native app without JAVA, APPTYPE = 1 Java MainActivity and JNI
-macro (gen_android_proj APP_NAME DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER)
+macro (gen_android_proj APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER)
     set(oneValueArgs APP_ORIENTATION)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
@@ -99,6 +99,7 @@ macro (gen_android_proj APP_NAME DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER
         endif ()
 
         set(PACKAGE_NAME ${APP_NAME})
+        set(PACKAGE_URL ${APP_PACKAGE_URL})
         set(SIGN_KEY_PASS dshUIYy287)
 
         # read ndk version string from the NDKs source.properties

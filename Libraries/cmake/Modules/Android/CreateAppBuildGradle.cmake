@@ -20,10 +20,10 @@ configurations { natives }\n\n")
     list(APPEND app_build_gradle "android {
     compileSdkVersion ${ANDROID_SDK_VERSION}
     ndkVersion '${NDK_VERS}'
-    namespace 'eu.zeitkunst.${PACKAGE_NAME}'
+    namespace '${PACKAGE_URL}.${PACKAGE_NAME}'
 
     defaultConfig {
-        applicationId \"eu.zeitkunst.${PACKAGE_NAME}\"
+        applicationId \"${PACKAGE_URL}.${PACKAGE_NAME}\"
         minSdkVersion 24
         targetSdkVersion ${ANDROID_SDK_VERSION}
         versionCode 1

@@ -2,7 +2,7 @@ macro (create_splashscreen_activity)
     set(splashscreen_activity)
 
     # package
-    list(APPEND splashscreen_activity "package eu.zeitkunst.${PACKAGE_NAME}\;\n
+    list(APPEND splashscreen_activity "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n
 import android.app.Activity\;
 import android.content.Intent\;
 import android.os.Bundle\;
