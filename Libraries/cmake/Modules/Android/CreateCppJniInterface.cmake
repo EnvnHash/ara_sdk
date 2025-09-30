@@ -1,7 +1,9 @@
 macro (create_cpp_jni_interface)
+    replace_dot_with_char(${PACKAGE_URL} "/" java_class_prfx)
+    replace_dot_with_char(${PACKAGE_URL} "_" jni_class_prfx)
 
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/cpp/jni_interface.h "#pragma once
-
+MainActivity
 #include <jni.h>
 
 /**
@@ -22,6 +24,8 @@ jclass FindClass(const char *classname);
 
     # package name may contain a "_" char, which will translate to "_1" in a ndk method name
     string(REPLACE "_" "_1" PACKAGE_NAME_CLASS ${PACKAGE_NAME})
+    replace_dot_with_char(${PACKAGE_NAME_CLASS} "_" package_name_class_underscore)
+    replace_dot_with_char(${PACKAGE_NAME_CLASS} "/" package_name_slash)
 
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/cpp/jni_interface.cpp "#include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -29,19 +33,19 @@ jclass FindClass(const char *classname);
 #include \"${UIAPP_DERIVATE_CLASS_FILE_NAME_WE}.h\"
 
 #define JNI_METHOD(return_type, method_name) \
-  JNIEXPORT return_type JNICALL Java_eu_zeitkunst_${PACKAGE_NAME_CLASS}_JniInterface_##method_name
+  JNIEXPORT return_type JNICALL Java_${jni_class_prfx}_${package_name_class_underscore}_JniInterface_##method_name
 
 extern \"C\" {
 
 namespace {
 // maintain a reference to the JVM so we can use it later.
 static JavaVM *g_vm = nullptr;
-static ara::${UIAPP_DERIVATE_CLASS} *app = nullptr;
+static ${UIAPP_DERIVATE_CLASS} *app = nullptr;
 static float mpX = 0;
 static float mpY = 0;
 static jobject g_actObj=nullptr;
 
-inline jlong jptr(ara::${UIAPP_DERIVATE_CLASS} *native_uiapp) {
+inline jlong jptr(${UIAPP_DERIVATE_CLASS} *native_uiapp) {
   return reinterpret_cast<intptr_t>(native_uiapp);
 }
 
@@ -55,7 +59,7 @@ jint JNI_OnLoad(JavaVM *vm, void *) {
 
 JNI_METHOD(jlong, createNativeApplication)
 (JNIEnv* env, jobject obj, jobject j_asset_manager, jstring internalDataPath) {
-    app = new ara::${UIAPP_DERIVATE_CLASS}();
+    app = new ${UIAPP_DERIVATE_CLASS}();
     jboolean isCopy = true;
     const char *cstr = env->GetStringUTFChars(internalDataPath, &isCopy);
     app->m_internalPath = std::string(cstr);
@@ -70,7 +74,7 @@ JNI_METHOD(jlong, createNativeApplication)
         JNIEnv* env;
         if (g_vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) return; // JNI version not supported.
 
-        jclass clz = env->FindClass(\"eu/zeitkunst/${UIAPP_DERIVATE_CLASS_FILE_NAME_WE}/${UIAPP_DERIVATE_CLASS_FILE_NAME_WE}Activity\");
+        jclass clz = env->FindClass(\"${java_class_prfx}/${package_name_slash}/${PROJECT_NAME}Activity\");
         jmethodID jniFixOri = env->GetStaticMethodID(clz, \"fixOrientation\", \"(I)V\"\);
         env->CallStaticVoidMethod(clz, jniFixOri, 1);
     };
@@ -79,7 +83,7 @@ JNI_METHOD(jlong, createNativeApplication)
         JNIEnv* env;
         if (g_vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) return; // JNI version not supported.
 
-        jclass clz = env->FindClass(\"eu/zeitkunst/${UIAPP_DERIVATE_CLASS_FILE_NAME_WE}/${UIAPP_DERIVATE_CLASS_FILE_NAME_WE}Activity\");
+        jclass clz = env->FindClass(\"${java_class_prfx}/${package_name_slash}/${PROJECT_NAME}Activity\");
         jmethodID jniResOri = env->GetStaticMethodID(clz, \"resetOrientation\", \"()V\"\);
         env->CallStaticVoidMethod(clz, jniResOri);
     };

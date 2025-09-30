@@ -1,14 +1,15 @@
 macro (create_main_activity app_type)
     set(main_activity)
 
-    if (${app_type} EQUAL 0)
+    if (${app_type} EQUAL 1)
         list(APPEND main_activity "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n
 import android.app.NativeActivity\;
 
 public class MainActivity extends NativeActivity {
 }")
+        replace_dot_with_char(${PACKAGE_URL} "/" java_class_prfx)
 
-        FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/eu/zeitkunst/${PROJECT_NAME}/MainActivity.java ${main_activity}) # write it
+        FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/${java_class_prfx}/${PROJECT_NAME}/MainActivity.java ${main_activity}) # write it
     else ()
         # package
         list(APPEND main_activity "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n\n")

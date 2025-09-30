@@ -17,8 +17,6 @@ class UIAppAndroidJNI : public UIApplicationBase {
 public:
     UIAppAndroidJNI(/*AAssetManager* asset_manager*/);
 
-    virtual void init(std::function<void()> func) = 0;
-
     void setInternalDataPath(std::string path);
     void setExternalDataPath(const std::string& path);
     void setDisplayDensity(float density, float w, float h, float xdpi, float ydpi);

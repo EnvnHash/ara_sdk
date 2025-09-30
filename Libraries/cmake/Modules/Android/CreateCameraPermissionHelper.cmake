@@ -1,8 +1,9 @@
 macro(create_camera_permission_helper)
     set(cam_perm_help)
+    replace_dot_with_char(${PACKAGE_URL} "." package_prfx)
 
     # package
-    list(APPEND cam_perm_help "package eu.zeitkunst.${PACKAGE_NAME}\;\n\n")
+    list(APPEND cam_perm_help "package ${package_prfx}.${PACKAGE_NAME}\;\n\n")
 
     # imports
     list(APPEND cam_perm_help "import android.Manifest\;

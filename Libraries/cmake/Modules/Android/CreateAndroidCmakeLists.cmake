@@ -3,7 +3,7 @@ macro (create_android_cmakelists APP_TYPE ASSETS_FOLDER)
     # create the CMakeList.txt
     list(APPEND ANDROID_CMAKELIST "cmake_minimum_required(VERSION ${CMAKE_VERSION})
 
-project(arasdk_android)
+project(${PROJECT_NAME})
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -91,7 +91,7 @@ cmrc_add_resource_library(resources ALIAS ara::rc NAMESPACE ara \${RESOURCES})
 
     LIST(APPEND ANDROID_CMAKELIST "
 # IMPORTANT NOTE: linking other libs via cmake add_library(.. OBJECT) causes the library to contain double defined method variables !!!!, so adding .cpp files directly here
-add_library(arasdk_android SHARED ")
+add_library(${PROJECT_NAME} SHARED ")
 
     foreach(item ${ANDROID_CMAKE_SOURCES})
         if (NOT ${item} STREQUAL "main.cpp")
@@ -105,14 +105,14 @@ add_library(arasdk_android SHARED ")
 
     if (ARA_USE_ARCORE)
         list(APPEND ANDROID_CMAKELIST "
-set_target_properties(arasdk_android PROPERTIES IMPORTED_LOCATION
+set_target_properties(${PROJECT_NAME} PROPERTIES IMPORTED_LOCATION
     \${ARCORE_LIBPATH}/\${ANDROID_ABI}/libarcore_sdk_c.so
     INTERFACE_INCLUDE_DIRECTORIES \${ARCORE_INCLUDE}
 )\n")
     endif()
 
     list(APPEND ANDROID_CMAKELIST "
-target_link_libraries(arasdk_android android GLESv1_CM GLESv2 GLESv3 EGL resources log")
+target_link_libraries(${PROJECT_NAME} android GLESv1_CM GLESv2 GLESv3 EGL resources log")
 
     # link all ara::* libraries linked to the parent project
     get_target_property(linked_libs ${PROJECT_NAME} LINK_LIBRARIES)

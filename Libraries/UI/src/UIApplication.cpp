@@ -54,7 +54,7 @@ void UIApplication::init(std::function<void(UINode&)> initCb) {
         .osDecoration   = m_osWinDecoration,
         .transparentFB  = false,
         .multisample    = m_multisample,
-#ifdef __ANDROID__
+#if defined(__ANDROID__) && defined(ARA_ANDROID_PURE_NATIVE_APP)
         .extWinHandle   = static_cast<void*>(m_androidNativeWin),
 #endif
         .scaleToMonitor = m_scaleToMonitor,
