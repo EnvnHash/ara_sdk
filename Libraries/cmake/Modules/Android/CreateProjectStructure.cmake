@@ -1,6 +1,8 @@
 include(Android/CreateMainActivityLayout)
 
 macro(create_proj_structure APP_TYPE)
+    replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
+    replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
 
     # create the project folder
     set(ANDROID_STUDIO_PROJ ${CMAKE_CURRENT_SOURCE_DIR}/${PACKAGE_NAME}_Android)
@@ -18,9 +20,8 @@ macro(create_proj_structure APP_TYPE)
     file(MAKE_DIRECTORY ${ANDROID_STUDIO_PROJ}/gradle/wrapper)
 
     if (${APP_TYPE} EQUAL 1)
-        file(MAKE_DIRECTORY ${ANDROID_STUDIO_PROJ}/app/src/main/java/eu)
-        file(MAKE_DIRECTORY ${ANDROID_STUDIO_PROJ}/app/src/main/java/eu/zeitkunst)
-        file(MAKE_DIRECTORY ${ANDROID_STUDIO_PROJ}/app/src/main/java/eu/zeitkunst/${PROJECT_NAME})
+        file(MAKE_DIRECTORY ${ANDROID_STUDIO_PROJ}/app/src/main/java/${package_url_slashes})
+        file(MAKE_DIRECTORY ${ANDROID_STUDIO_PROJ}/app/src/main/java/${package_url_slashes}/${package_name_slashes})
     endif()
 
     FILE(GLOB sub_dir ABSOLUTE .. ${CMAKE_CURRENT_SOURCE_DIR}/*)
@@ -82,7 +83,9 @@ macro(create_proj_structure APP_TYPE)
     file(COPY ${CMAKE_SOURCE_DIR}/Assets/android/mipmap-xxhdpi DESTINATION ${ANDROID_STUDIO_PROJ}/app/src/main/res/)
     file(COPY ${CMAKE_SOURCE_DIR}/Assets/android/mipmap-xxxhdpi DESTINATION ${ANDROID_STUDIO_PROJ}/app/src/main/res/)
     #file(COPY ${ARA_SDK_SOURCE_DIR}/Assets/android/layout DESTINATION ${ANDROID_STUDIO_PROJ}/app/src/main/res/)
-    file(COPY ${CMAKE_SOURCE_DIR}/Assets/android/values DESTINATION ${ANDROID_STUDIO_PROJ}/app/src/main/res/)
+    if (${APP_TYPE} EQUAL 0)
+        file(COPY ${CMAKE_SOURCE_DIR}/Assets/android/values DESTINATION ${ANDROID_STUDIO_PROJ}/app/src/main/res/)
+    endif ()
     file(COPY ${CMAKE_SOURCE_DIR}/Assets/android/drawable DESTINATION ${ANDROID_STUDIO_PROJ}/app/src/main/res/)
 
     if (${APP_TYPE} EQUAL 1)

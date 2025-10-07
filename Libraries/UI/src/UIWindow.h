@@ -30,6 +30,7 @@ class WindowResizeAreas;
 struct UIWindowParams {
     GLBase* glbase = nullptr;
     glm::ivec2 size{};
+    glm::ivec2 sizeReal{}; // only for JNI
     glm::ivec2 shift{};
     bool osDecoration=  false;
     bool transparentFB = false;

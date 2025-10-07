@@ -1,15 +1,15 @@
 macro (create_main_activity app_type)
     set(main_activity)
+    replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
+    replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
 
-    if (${app_type} EQUAL 1)
+    if (${app_type} EQUAL 0)
         list(APPEND main_activity "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n
 import android.app.NativeActivity\;
 
 public class MainActivity extends NativeActivity {
 }")
-        replace_dot_with_char(${PACKAGE_URL} "/" java_class_prfx)
-
-        FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/${java_class_prfx}/${PROJECT_NAME}/MainActivity.java ${main_activity}) # write it
+        FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/${package_url_slashes}/${package_name_slashes}/MainActivity.java ${main_activity}) # write it
     else ()
         # package
         list(APPEND main_activity "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n\n")
@@ -21,36 +21,27 @@ public class MainActivity extends NativeActivity {
     ")
         endif()
 
-    list(APPEND main_activity "import android.content.res.Resources\;
-    import android.content.pm.ActivityInfo\;
+        list(APPEND main_activity "import android.content.pm.ActivityInfo\;
     import android.hardware.display.DisplayManager\;
-    import android.opengl.GLES20\;
-    import android.opengl.GLES30\;
-    import android.opengl.GLSurfaceView\;
     import android.os.Bundle\;
     import android.util.DisplayMetrics\;
     import android.util.Log\;
     import android.view.GestureDetector\;
     import android.view.MotionEvent\;
     import android.view.View\;
+    import android.view.ViewGroup\;
     import android.view.WindowManager\;
-    import android.widget.Toast\;
+    import android.widget.RelativeLayout\;
     import androidx.appcompat.app.AppCompatActivity\;
-    import javax.microedition.khronos.egl.EGLConfig\;
-    import javax.microedition.khronos.opengles.GL10\;\n\n")
+    ")
 
         # class begin
-        list(APPEND main_activity "public class ${PROJECT_NAME}Activity extends AppCompatActivity implements GLSurfaceView.Renderer, DisplayManager.DisplayListener {
+        list(APPEND main_activity "public class ${PROJECT_NAME}Activity extends AppCompatActivity implements DisplayManager.DisplayListener {
       private static final String TAG = ${PROJECT_NAME}Activity.class.getSimpleName()\;
 
-      private GLSurfaceView surfaceView\;
-
-      private boolean viewportChanged = false\;
-      private int viewportWidth\;
-      private int viewportHeight\;
+      private CustomGLSurfaceView surfaceView\;
 
       // Opaque native pointer to the native application instance.
-      private long nativeApplication\;
       private GestureDetector gestureDetector\;
       private static AppCompatActivity m_activity\;
 
@@ -69,8 +60,15 @@ public class MainActivity extends NativeActivity {
         super.onCreate(savedInstanceState)\;
         setContentView(R.layout.activity_main)\;
 
+        RelativeLayout relativeLayout = findViewById(R.id.relativeLayout)\;
+        surfaceView = new CustomGLSurfaceView(this)\;
+        RelativeLayout.LayoutParams glSurfaceViewLayoutParams =
+                  new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)\;
+        glSurfaceViewLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP)\;
+        relativeLayout.addView(surfaceView, glSurfaceViewLayoutParams)\;
+
         m_activity = this\;
-        surfaceView = (GLSurfaceView) findViewById(R.id.surfaceview)\;
+
     ")
         if (ARA_USE_NDI)
             list(APPEND main_activity "    m_nsdManager = (NsdManager)getSystemService(Context.NSD_SERVICE)\;
@@ -103,17 +101,11 @@ public class MainActivity extends NativeActivity {
 
         surfaceView.setOnTouchListener((View v, MotionEvent event) -> gestureDetector.onTouchEvent(event))\;
 
-        // Set up renderer.
-        surfaceView.setPreserveEGLContextOnPause(true)\;
-        surfaceView.setEGLContextClientVersion(3)\;
-        surfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0)\; // Alpha used for plane blending.
-        surfaceView.setRenderer(this)\;
-        surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY)\;
-        surfaceView.setWillNotDraw(false)\;
-
         JniInterface.assetManager = getAssets()\;
-        nativeApplication = JniInterface.createNativeApplication(getAssets(), getFilesDir().getAbsolutePath())\;
-    //    JniInterface.setExternalDataPath(Environment.getExternalStorageDirectory().getAbsolutePath() )\;
+
+        surfaceView.setNativeApp(JniInterface.createNativeApplication(getAssets(), getFilesDir().getAbsolutePath()))\;
+        surfaceView.setWindowManager(getWindowManager())\;
+
         DisplayMetrics m = new DisplayMetrics()\;
         getWindowManager().getDefaultDisplay().getRealMetrics(m)\;
         JniInterface.setDisplayDensity(m.density, m.widthPixels, m.heightPixels, m.xdpi, m.ydpi)\;
@@ -141,14 +133,19 @@ public class MainActivity extends NativeActivity {
         list(APPEND main_activity "  @Override
       protected void onResume() {
         super.onResume()\;
-        // ARCore requires camera permissions to operate. If we did not yet obtain runtime
+        ")
+
+        if (ARA_USE_ARCORE)
+            list(APPEND main_activity " // ARCore requires camera permissions to operate. If we did not yet obtain runtime
         // permission on Android M and above, now is a good time to ask the user for it.
         if (!CameraPermissionHelper.hasCameraPermission(this)) {
           CameraPermissionHelper.requestCameraPermission(this)\;
           return\;
         }
+        ")
+        endif ()
 
-        try {
+        list(APPEND main_activity "try {
           JniInterface.onResume(getApplicationContext(), this)\;
           surfaceView.onResume()\;
         } catch (Exception e) {
@@ -186,7 +183,7 @@ public class MainActivity extends NativeActivity {
         // Synchronized to avoid racing onDrawFrame.
         synchronized (this) {
           JniInterface.destroyNativeApplication()\;
-          nativeApplication = 0\;
+          surfaceView.setNativeApp(0)\;
         }
       }\n\n")
 
@@ -201,52 +198,21 @@ public class MainActivity extends NativeActivity {
         }
       }\n\n")
 
-        # class OnFocusCreated
-        list(APPEND main_activity "  @Override
-      public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f)\;
-        JniInterface.onGlSurfaceCreated()\;
-      }\n\n")
-
-        # class onSurfaceChanged
-        list(APPEND main_activity "  @Override
-      public void onSurfaceChanged(GL10 gl, int width, int height) {
-        viewportWidth = width\;
-        viewportHeight = height\;
-        int displayRotation = getWindowManager().getDefaultDisplay().getRotation()\;
-        JniInterface.onDisplayGeometryChanged(displayRotation, viewportWidth, viewportHeight)\;
-      }\n\n")
-
-        # class onSurfaceChanged
-        list(APPEND main_activity "  @Override
-      public void onDrawFrame(GL10 gl) {
-        // Synchronized to avoid racing onDestroy.
-        synchronized (this) {
-          if (nativeApplication == 0) {
-            return\;
-          }
-          if (viewportChanged) {
-            int displayRotation = getWindowManager().getDefaultDisplay().getRotation()\;
-            JniInterface.onDisplayGeometryChanged(displayRotation, viewportWidth, viewportHeight)\;
-            viewportChanged = false\;
-          }
-          JniInterface.onGlSurfaceDrawFrame()\;
-        }
-      }\n\n")
-
         # class onRequestPermissionsResult
-        list(APPEND main_activity "   @Override
-      public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
-        super.onRequestPermissionsResult(requestCode, permissions, results)\;
-        if (!CameraPermissionHelper.hasCameraPermission(this)) {
-          Toast.makeText(this, \"Camera permission is needed to run this application\", Toast.LENGTH_LONG).show()\;
-          if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
-            // Permission denied with checking \"Do not ask again\".
-            CameraPermissionHelper.launchPermissionSettings(this)\;
-          }
-          finish()\;
-        }
-      }\n\n")
+        if (ARA_USE_ARCORE)
+            list(APPEND main_activity "   @Override
+          public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
+            super.onRequestPermissionsResult(requestCode, permissions, results)\;
+            if (!CameraPermissionHelper.hasCameraPermission(this)) {
+              Toast.makeText(this, \"Camera permission is needed to run this application\", Toast.LENGTH_LONG).show()\;
+              if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
+                // Permission denied with checking \"Do not ask again\".
+                CameraPermissionHelper.launchPermissionSettings(this)\;
+              }
+              finish()\;
+            }
+          }\n\n")
+        endif()
 
         # class onRequestPermissionsResult
         list(APPEND main_activity "  private void setImmersiveSticky() {
@@ -279,11 +245,11 @@ public class MainActivity extends NativeActivity {
 
       @Override
       public void onDisplayChanged(int displayId) {
-        viewportChanged = true\;
+        surfaceView.setViewPortChanges(true)\;
       }\n\n")
 
         # class end
         list(APPEND main_activity "}\n\n")
-        FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/eu/zeitkunst/${PROJECT_NAME}/${PROJECT_NAME}Activity.java ${main_activity}) # write it
+        FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity.java ${main_activity}) # write it
     endif ()
 endmacro()

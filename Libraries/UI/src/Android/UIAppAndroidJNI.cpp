@@ -14,7 +14,7 @@ namespace ara {
 
 UIAppAndroidJNI::UIAppAndroidJNI(/*AAssetManager* asset_manager*/) : UIApplicationBase() {
     m_threadedWindowRendering = false;
-    // can't initialize the application here, since there is no gl context yet
+    m_glbase.useSelfManagedCtx(false);
 }
 
 void UIAppAndroidJNI::setInternalDataPath(std::string path) {
@@ -32,6 +32,10 @@ void UIAppAndroidJNI::setDisplayDensity(float density, float w, float h, float x
     m_cmd_data.width_meters   = (w / xdpi) * kMetersPerInch;
     m_cmd_data.height_meters  = (h / ydpi) * kMetersPerInch;
     m_glbase.g_androidDensity = density;
+    m_winSizeReal.x           = w;
+    m_winSizeReal.y           = h;
+    m_winSize.x               = static_cast<int>(w / density + 0.5f);
+    m_winSize.y               = static_cast<int>(h / density);
 }
 
 void UIAppAndroidJNI::OnStart() {
@@ -59,6 +63,7 @@ void UIAppAndroidJNI::OnResume(JNIEnv *env, void *context, void *activity) {
 
 void UIAppAndroidJNI::OnSurfaceCreated(JNIEnv *env) {
     m_cmd_data.env = env;
+    m_jniEglContext = static_cast<void *>(eglGetCurrentContext());
     init(nullptr);
     for (auto &it : m_appStateCbs[android_app_cmd::onSurfaceCreated]) {
         it(&m_cmd_data);
@@ -69,11 +74,10 @@ void UIAppAndroidJNI::OnDisplayGeometryChanged(int display_rotation, int width, 
     m_cmd_data.width            = width;
     m_cmd_data.height           = height;
     m_cmd_data.display_rotation = display_rotation;
-    m_cmd_data.vWidth           = static_cast<int>(static_cast<float>(width) / m_cmd_data.density + 0.5f);
-    m_cmd_data.vHeight          = static_cast<int>(static_cast<float>(height) / m_cmd_data.density);
-
+    m_winSize.x                 = static_cast<int>(static_cast<float>(width) / m_cmd_data.density + 0.5f);
+    m_winSize.y                 = static_cast<int>(static_cast<float>(height) / m_cmd_data.density);
     if (m_mainWindow) {
-        m_mainWindow->osSetViewport(0, 0, m_cmd_data.vWidth, m_cmd_data.vHeight);
+        m_mainWindow->osSetViewport(0, 0, m_winSize.x, m_winSize.y);
     }
 
     for (auto &it : m_appStateCbs[android_app_cmd::onDisplayGeometryChanged]) {

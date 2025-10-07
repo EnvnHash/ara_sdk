@@ -48,6 +48,9 @@ public class CameraPermissionHelper {
 
 \n")
 
-    FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/eu/zeitkunst/${PROJECT_NAME}/CameraPermissionHelper.java ${cam_perm_help}) # write it
+    replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
+    replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
+
+    FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/${package_url_slashes}/${package_name_slashes}/CameraPermissionHelper.java ${cam_perm_help}) # write it
 
 endmacro()

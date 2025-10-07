@@ -1,6 +1,8 @@
 macro(create_jni_interface)
 
     set(jni_interface)
+    replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
+    replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
 
     # package
     list(APPEND jni_interface "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n\n")
@@ -60,11 +62,15 @@ public class JniInterface {
 
   /** OnScroll event, called on the OpenGL thread. */
   public static native void onScroll(float x, float y)\;
+  ")
 
-  /** Get plane count in current session. Used to disable the \"searching for surfaces\" snackbar. */
-  public static native boolean hasDetectedPlanes(long nativeApplication)\;
+    if (ARA_USE_ARCORE)
+        list(APPEND jni_interface "/** Get plane count in current session. Used to disable the \"searching for surfaces\" snackbar. */
+    public static native boolean hasDetectedPlanes(long nativeApplication)\;
+    ")
+    endif ()
 
-  public static Bitmap loadImage(String imageName) {
+    list(APPEND jni_interface "public static Bitmap loadImage(String imageName) {
 
     try {
       return BitmapFactory.decodeStream(assetManager.open(imageName))\;
@@ -79,6 +85,6 @@ public class JniInterface {
   }
 }\n")
 
-    FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/eu/zeitkunst/${PROJECT_NAME}/JniInterface.java ${jni_interface}) # write it
+    FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/${package_url_slashes}/${package_name_slashes}/JniInterface.java ${jni_interface}) # write it
 
 endmacro()

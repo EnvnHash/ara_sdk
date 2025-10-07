@@ -47,6 +47,7 @@ public:
     void setWinWidth(int w) { m_winSize.x = w; }
     void setWinHeight(int g) { m_winSize.y = g; }
     void setWinSize(const glm::ivec2& s) { m_winSize = s; }
+    void setWinSizeReal(const glm::ivec2& s) { m_winSizeReal = s; }
     void setRunFlag(bool val) { m_run = val; }
 
 public:
@@ -68,6 +69,7 @@ protected:
     UIWindow*   m_mainWindow = nullptr;
     Conditional m_iterate;
     glm::ivec2  m_winSize = { 1280, 720 };
+    glm::ivec2  m_winSizeReal = { 1280, 720 };
 
 #ifdef ARA_USE_GLBASE
     GLBase m_glbase;

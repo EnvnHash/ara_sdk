@@ -4,13 +4,8 @@ macro(create_main_activity_layout)
     xmlns:tools=\"http://schemas.android.com/tools\"
     android:layout_width=\"match_parent\"
     android:layout_height=\"match_parent\"
-    tools:context=\"eu.zeitkunst.${PROJECT_NAME}Activity\">
-
-  <android.opengl.GLSurfaceView
-      android:id=\"@+id/surfaceview\"
-      android:layout_width=\"match_parent\"
-      android:layout_height=\"match_parent\"
-      android:layout_gravity=\"top\"/>
+    android:id=\"@+id/relativeLayout\"
+    tools:context=\"${PACKAGE_URL}.${PACKAGE_NAME}.${PROJECT_NAME}Activity\">
 
 </RelativeLayout>
 ")

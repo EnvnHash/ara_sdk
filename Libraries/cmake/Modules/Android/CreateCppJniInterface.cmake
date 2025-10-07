@@ -1,6 +1,7 @@
 macro (create_cpp_jni_interface)
-    replace_dot_with_char(${PACKAGE_URL} "/" java_class_prfx)
-    replace_dot_with_char(${PACKAGE_URL} "_" jni_class_prfx)
+    replace_dot_with_char(${PACKAGE_URL} "_" package_url_underscore)
+    replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
+    replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
 
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/cpp/jni_interface.h "#pragma once
 MainActivity
@@ -25,7 +26,6 @@ jclass FindClass(const char *classname);
     # package name may contain a "_" char, which will translate to "_1" in a ndk method name
     string(REPLACE "_" "_1" PACKAGE_NAME_CLASS ${PACKAGE_NAME})
     replace_dot_with_char(${PACKAGE_NAME_CLASS} "_" package_name_class_underscore)
-    replace_dot_with_char(${PACKAGE_NAME_CLASS} "/" package_name_slash)
 
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/cpp/jni_interface.cpp "#include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -33,7 +33,7 @@ jclass FindClass(const char *classname);
 #include \"${UIAPP_DERIVATE_CLASS_FILE_NAME_WE}.h\"
 
 #define JNI_METHOD(return_type, method_name) \
-  JNIEXPORT return_type JNICALL Java_${jni_class_prfx}_${package_name_class_underscore}_JniInterface_##method_name
+  JNIEXPORT return_type JNICALL Java_${package_url_underscore}_${package_name_class_underscore}_JniInterface_##method_name
 
 extern \"C\" {
 
@@ -72,18 +72,22 @@ JNI_METHOD(jlong, createNativeApplication)
 
     app->m_cmd_data.oriCb = [&](int ori){
         JNIEnv* env;
-        if (g_vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) return; // JNI version not supported.
+        if (g_vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
+            return; // JNI version not supported.
+        }
 
-        jclass clz = env->FindClass(\"${java_class_prfx}/${package_name_slash}/${PROJECT_NAME}Activity\");
+        jclass clz = env->FindClass(\"${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity\");
         jmethodID jniFixOri = env->GetStaticMethodID(clz, \"fixOrientation\", \"(I)V\"\);
         env->CallStaticVoidMethod(clz, jniFixOri, 1);
     };
 
     app->m_cmd_data.resetOri = [&]{
         JNIEnv* env;
-        if (g_vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) return; // JNI version not supported.
+        if (g_vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
+            return; // JNI version not supported.
+        }
 
-        jclass clz = env->FindClass(\"${java_class_prfx}/${package_name_slash}/${PROJECT_NAME}Activity\");
+        jclass clz = env->FindClass(\"${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity\");
         jmethodID jniResOri = env->GetStaticMethodID(clz, \"resetOrientation\", \"()V\"\);
         env->CallStaticVoidMethod(clz, jniResOri);
     };
@@ -95,49 +99,66 @@ JNI_METHOD(void, setExternalDataPath)
 (JNIEnv* env, jclass, jstring path) {
     const char *cstr = env->GetStringUTFChars(path, NULL);
     std::string str = std::string(cstr);
-    if (app) app->setExternalDataPath(str);
+    if (app) {
+        app->setExternalDataPath(str);
+    }
     env->ReleaseStringUTFChars(path, cstr);
 }
 
 JNI_METHOD(void, setDisplayDensity)
 (JNIEnv* env, jclass, float density, float w, float h, float xdpi, float ydpi) {
-    if (app) app->setDisplayDensity(density, w, h, xdpi, ydpi);
+    if (app) {
+        app->setDisplayDensity(density, w, h, xdpi, ydpi);
+    }
 }
 
 JNI_METHOD(void, destroyNativeApplication)
 (JNIEnv*, jclass) {
-  if (app) delete app;
+  if (app) {
+    delete app;
+  }
 }
 
 JNI_METHOD(void, onStart)
 (JNIEnv*, jclass) {
-  if (app) app->OnStart();
+  if (app) {
+    app->OnStart();
+  }
 }
 
 JNI_METHOD(void, onPause)
 (JNIEnv*, jclass) {
-  if (app) app->OnPause();
+  if (app) {
+    app->OnPause();
+  }
 }
 
 JNI_METHOD(void, onResume)
 (JNIEnv* env, jobject obj, jobject context, jobject activity) {
-  if (app) app->OnResume(env, context, activity);
-//  if (app) app->OnResume(env, obj, activity);
+  if (app) {
+    app->OnResume(env, context, activity);
+  }
 }
 
 JNI_METHOD(void, onGlSurfaceCreated)
 (JNIEnv* env, jclass) {
-  if (app) app->OnSurfaceCreated(env);
+  if (app) {
+    app->OnSurfaceCreated(env);
+  }
 }
 
 JNI_METHOD(void, onDisplayGeometryChanged)
 (JNIEnv*, jobject, int display_rotation, int width, int height) {
-  if (app) app->OnDisplayGeometryChanged(display_rotation, width, height);
+  if (app) {
+    app->OnDisplayGeometryChanged(display_rotation, width, height);
+  }
 }
 
 JNI_METHOD(void, onGlSurfaceDrawFrame)
 (JNIEnv*, jclass) {
-  if (app) app->OnDrawFrame();
+  if (app) {
+    app->OnDrawFrame();
+  }
 }
 
 JNI_METHOD(void, onTouched)

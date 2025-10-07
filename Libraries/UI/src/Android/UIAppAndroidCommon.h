@@ -39,8 +39,6 @@ public:
     int                      display_rotation = 0;
     int                      width            = 1;
     int                      height           = 1;
-    int                      vWidth           = 1;
-    int                      vHeight          = 1;
     int                      x                = 0;
     int                      y                = 0;
     float                    density          = 1.f;

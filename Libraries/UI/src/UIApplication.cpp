@@ -56,6 +56,8 @@ void UIApplication::init(std::function<void(UINode&)> initCb) {
         .multisample    = m_multisample,
 #if defined(__ANDROID__) && defined(ARA_ANDROID_PURE_NATIVE_APP)
         .extWinHandle   = static_cast<void*>(m_androidNativeWin),
+#elif defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
+        .extWinHandle   = m_jniEglContext,
 #endif
         .scaleToMonitor = m_scaleToMonitor,
         .initCb         = initCb,

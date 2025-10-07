@@ -19,7 +19,11 @@
 #ifdef ARA_USE_GLFW
 #include "WindowManagement/GLFWWindow.h"
 #elif ARA_USE_EGL
+#if defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
+#include "WindowManagement/EGLJniWindow.h"
+#else
 #include "WindowManagement/EGLWindow.h"
+#endif
 #endif
 
 namespace ara {
@@ -28,7 +32,11 @@ namespace ara {
 using GLWindow  = GLFWWindow;
 using GLContext = GLFWwindow *;
 #elif ARA_USE_EGL
+#if defined(ARA_ANDROID_PURE_NATIVE_APP)
 using GLWindow  = EGLWindow;
+#else
+using GLWindow  = EGLJniWindow;
+#endif
 using GLContext = EGLContext;
 #else
 using GLWindow  = void;

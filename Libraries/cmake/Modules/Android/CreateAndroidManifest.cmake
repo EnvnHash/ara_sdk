@@ -36,10 +36,11 @@ macro (create_android_manifest APP_TYPE APP_ICON_NAME)
             android:name=\"android.app.NativeActivity\"
             android:theme=\"@style/Theme.Splash\"")
     elseif(${APP_TYPE} EQUAL 1)
-        list(APPEND manifest "\t\t<activity android:name=\".${PROJECT_NAME}Activity\"
+        list(APPEND manifest "\t\t<activity
+            android:name=\".${PROJECT_NAME}Activity\"
             android:theme=\"@style/Theme.AppCompat.NoActionBar\"")
     endif()
-
+#            android:theme=\"@style/Theme.AppCompat.NoActionBar\"
     if (arg_APP_ORIENTATION)
         list(APPEND manifest "\n\t\t\tandroid:screenOrientation=\"${arg_APP_ORIENTATION}\"")
     endif ()
@@ -50,7 +51,7 @@ macro (create_android_manifest APP_TYPE APP_ICON_NAME)
             android:configChanges=\"screenSize\">\n\n")
 
     if (${APP_TYPE} EQUAL 0)
-        list(APPEND manifest "\t\t\t<meta-data android:name=\"android.app.lib_name\" android:value=\"${PACKAGE_NAME}\" />
+        list(APPEND manifest "\t\t\t<meta-data android:name=\"android.app.lib_name\" android:value=\"${PROJECT_NAME}\" />
             ")
     endif()
 

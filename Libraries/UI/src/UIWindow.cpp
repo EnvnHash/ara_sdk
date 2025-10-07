@@ -48,6 +48,8 @@ void UIWindow::init(const UIWindowParams& par) {
 #if defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
     m_glbase->init();  // makes no context current
     s_devicePixelRatio = m_glbase->g_androidDensity;
+    m_virtSize = par.size;
+    m_realSize = par.sizeReal;
 #endif
 
     m_dataFolder = m_glbase->g_resRootPath;

@@ -55,11 +55,12 @@ public:
     void set_requested_screen_orientation(ANativeActivity* activity, int an_orientation);
 
     float getDisplayDensity() { return m_glbase.g_androidDensity; }
+    void*   m_jniEglContext = nullptr;
 
 private:
-    int m_width            = 1;
-    int m_height           = 1;
-    int m_display_rotation = 0;
+    int     m_width            = 1;
+    int     m_height           = 1;
+    int     m_display_rotation = 0;
 
 public:
     std::unordered_map<android_app_cmd, std::list<std::function<void(android_cmd_data*)>>> m_appStateCbs;

@@ -171,7 +171,7 @@ macro (gen_android_proj APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NA
         create_settings_files()
 
         create_android_manifest(${APP_TYPE} ${APP_ICON_NAME} APP_ORIENTATION ${arg_APP_ORIENTATION}) # AndroidManifest.xml
-        create_app_build_gradle(${APP_NAME})
+        create_app_build_gradle(${APP_NAME} ${APP_TYPE})
         create_android_cmakelists(${APP_TYPE} ${ASSETS_FOLDER})
         create_app_key(${APP_NAME})
 

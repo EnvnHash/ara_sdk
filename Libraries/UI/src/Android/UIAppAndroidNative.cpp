@@ -1,11 +1,9 @@
 //
 // Created by sven on 05-07-22.
 //
-#ifdef __ANDROID__
+#if defined(__ANDROID__) && defined(ARA_ANDROID_PURE_NATIVE_APP)
 
 #include "Android/UIAppAndroidNative.h"
-
-
 #include <UIElements/UINodeBase/UINode.h>
 #include "UIApplication.h"
 

@@ -77,10 +77,7 @@ set(CMAKE_SHARED_LINKER_FLAGS \"\${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity
     LIST(APPEND ANDROID_CMAKELIST "
 ")
 
-    LIST(APPEND ANDROID_CMAKELIST "include(CMakeRC)
-file(GLOB_RECURSE RESOURCES \${CMAKE_SOURCE_DIR}/resdata/* )
-cmrc_add_resource_library(resources ALIAS ara::rc NAMESPACE ara \${RESOURCES})
-
+    LIST(APPEND ANDROID_CMAKELIST "add_subdirectory(\${CMAKE_SOURCE_DIR}/Assets)
 ")
 
     file(GLOB deps_sub_dir ${FETCHCONTENT_BASE_DIR}/ara_sdk*-src)
