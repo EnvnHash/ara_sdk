@@ -38,7 +38,7 @@ macro (create_android_manifest APP_TYPE APP_ICON_NAME)
     elseif(${APP_TYPE} EQUAL 1)
         list(APPEND manifest "\t\t<activity
             android:name=\".${PROJECT_NAME}Activity\"
-            android:theme=\"@style/Theme.AppCompat.NoActionBar\"")
+            android:theme=\"@style/Theme.Splash\"")
     endif()
 #            android:theme=\"@style/Theme.AppCompat.NoActionBar\"
     if (arg_APP_ORIENTATION)

@@ -58,6 +58,7 @@ public class MainActivity extends NativeActivity {
       @Override
       protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState)\;
+        setTheme(R.style.Theme_Main)\;
         setContentView(R.layout.activity_main)\;
 
         RelativeLayout relativeLayout = findViewById(R.id.relativeLayout)\;

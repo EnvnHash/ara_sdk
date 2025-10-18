@@ -77,14 +77,8 @@ configurations { natives }\n\n")
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.3.0'
-")
-
-    if (${APP_TYPE} EQUAL 0)
-        list(APPEND app_build_gradle "implementation 'androidx.core:core-splashscreen:1.0.0'
-    ")
-    endif()
-
-    list(APPEND app_build_gradle "    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.core:core-splashscreen:1.0.0
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 ")
 
     if(ARA_USE_ARCORE)
