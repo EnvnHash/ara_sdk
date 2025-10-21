@@ -77,7 +77,7 @@ configurations { natives }\n\n")
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.3.0'
-    implementation 'androidx.core:core-splashscreen:1.0.0
+    implementation 'androidx.core:core-splashscreen:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 ")
 

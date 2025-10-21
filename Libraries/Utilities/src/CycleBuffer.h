@@ -135,6 +135,10 @@ public:
         m_filledCond.wait(0);
     }
 
+    void forceSkipFillWait() {
+        m_filledCond.notify();
+    }
+
     auto&   getBuffer() { return m_buffer; }
     T&      getWriteBuff() { return m_buffer[m_writePos]; }
     T&      getReadBuff() { return m_buffer[m_readPos]; }

@@ -16,7 +16,6 @@ class UIApplicationBase {
 public:
     virtual ~UIApplicationBase() = default;
     virtual void init(std::function<void(UINode&)>) = 0;
-    virtual void resume() {}
 
     virtual void initGLBase();
     /// start the global opengl processing loop in a separate thread

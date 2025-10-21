@@ -137,8 +137,6 @@ void UIAppAndroidNative::handle_cmd(struct android_app* app, int32_t cmd) {
                 uiApp->setWinSize(winSize);
                 if (!uiApp->m_inited) {
                     static_cast<UIApplication*>(app->userData)->init(nullptr);
-                } else {
-                    static_cast<UIApplication*>(app->userData)->resume();
                 }
             }
             break;
