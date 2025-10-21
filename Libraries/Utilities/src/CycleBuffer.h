@@ -53,8 +53,8 @@ public:
                 m_buffer.emplace_back();
             }
         }
-        m_filledCond.setFlagResetOnWaitEnd(false);
-        m_filledCond.notify();
+        m_notFilledCond.setFlagResetOnWaitEnd(false);
+        m_notFilledCond.notify();
     }
 
     template<typename C>
@@ -73,16 +73,16 @@ public:
         m_buffLastPos = m_writePos;
         ++m_writePos %= m_buffer.size();
         ++m_fillAmt;
-        if (m_fillAmt == m_buffer.size()) {
-            m_filledCond.reset();
+        if (m_fillAmt >= m_buffer.size()) {
+            m_notFilledCond.reset();
         }
         return m_writePos;
     }
 
     size_t consumeCountUp() {
         --m_fillAmt;
-        if (!m_filledCond.isNotified()) {
-            m_filledCond.notify();
+        if (!m_notFilledCond.isNotified()) {
+            m_notFilledCond.notify();
         }
         auto rp        = m_readPos;
         ++m_readPos %= m_buffer.size();
@@ -132,11 +132,11 @@ public:
     }
 
     void waitUntilNotFilled() {
-        m_filledCond.wait(0);
+        m_notFilledCond.wait(0);
     }
 
     void forceSkipFillWait() {
-        m_filledCond.notify();
+        m_notFilledCond.notify();
     }
 
     auto&   getBuffer() { return m_buffer; }
@@ -161,7 +161,7 @@ protected:
     std::atomic<size_t>     m_fillAmt = 0;
     size_t                  m_readPos = 0;
     std::function<void()>   m_consumedCb;
-    Conditional             m_filledCond;
+    Conditional             m_notFilledCond;
 };
 
 }  // namespace ara
