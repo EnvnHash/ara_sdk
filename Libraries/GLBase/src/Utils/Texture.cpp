@@ -1126,19 +1126,14 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
     }
 }
 
-void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf) {
-    FREE_IMAGE_FORMAT fif = FreeImage_GetFIFFromFilename(filename);
-    if (fif == FIF_UNKNOWN) {
-        return;
-    }
-
+void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf, bool vFlip) {
     // Determine image color type and pitch (row size in bytes)
     int bpp = nrChan * 8; // bits per pixel
     int pitch = w * nrChan; // bytes per row
 
     // FreeImage expects BGR(A) format, not RGB(A), so we might need to swap channels manually if necessary
     auto bitmap = FreeImage_ConvertFromRawBits(
-            const_cast<BYTE*>(buf),  // FreeImage uses BYTE*, which is uint8_t*
+            buf,  // FreeImage uses BYTE*, which is uint8_t*
             w,
             h,
             pitch,
@@ -1149,11 +1144,15 @@ void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
             true                // top-down row order (true if buffer has top-down order)
     );
 
+    if (vFlip) {
+        FreeImage_FlipVertical(bitmap);
+    }
+
     if (!bitmap) {
         return;
     }
 
-    bool success = FreeImage_Save(fif, bitmap, filename);
+    bool success = FreeImage_Save(filetype, bitmap, filename);
     FreeImage_Unload(bitmap);
 }
 
