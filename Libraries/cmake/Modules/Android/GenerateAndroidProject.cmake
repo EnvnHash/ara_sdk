@@ -39,7 +39,7 @@ macro(replace_dot_with_char input replChar output)
     set(${output} "${result}")
 endmacro()
 
-set(ANDROID_SDK_VERSION 34)
+set(ANDROID_SDK_VERSION 35)
 
 include(Android/CreateAndroidCmakeLists)
 include(Android/CreateAndroidManifest)

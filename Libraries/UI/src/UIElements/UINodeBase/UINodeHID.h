@@ -48,6 +48,9 @@ public:
     virtual void mouseUp(hidData& data) {}
     virtual void mouseUpRight(hidData& data) {}
     virtual void mouseWheel(hidData& data) {}
+    virtual void scaleGest(hidData& data) {}
+    virtual void scaleBegin(hidData& data) {}
+    virtual void scaleEnd(hidData& data) {}
 
     // mouseIn and mouseOut are called directly without tree iteration
     virtual void mouseIn(hidData& data);
@@ -67,6 +70,9 @@ public:
     void addMouseDragCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void addMouseMoveCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void addMouseWheelCb(const std::function<void(hidData&)>& func, bool onHit = true);
+    void addScaleGestCb(const std::function<void(hidData&)>& func, bool onHit = true);
+    void addScaleBeginCb(const std::function<void(hidData&)>& func, bool onHit = true);
+    void addScaleEndCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void clearMouseCb(hidEvent evt);
     void addMouseInCb(std::function<void(hidData&)> func, state st = state::m_state);
     void addMouseOutCb(std::function<void(hidData&)> func, state st = state::none);
@@ -78,6 +84,9 @@ public:
     std::list<mouseCb>&             getMouseUpRightCb() { return m_mouseHidCb[hidEvent::MouseUpRight]; }
     std::list<mouseCb>&             getMouseDragCb() { return m_mouseHidCb[hidEvent::MouseDrag]; }
     std::list<mouseCb>&             getMouseWheelCb() { return m_mouseHidCb[hidEvent::MouseWheel]; }
+    std::list<mouseCb>&             getScaleGestCb() { return m_mouseHidCb[hidEvent::ScaleGest]; }
+    std::list<mouseCb>&             getScaleBeginCb() { return m_mouseHidCb[hidEvent::ScaleBegin]; }
+    std::list<mouseCb>&             getScaleEndCb() { return m_mouseHidCb[hidEvent::ScaleEnd]; }
     std::function<void(hidData&)>*  getKeyDownCb() { return m_keyDownCb ? &m_keyDownCb : nullptr; }
     std::function<void(hidData&)>*  getKeyUpCb() { return m_keyUpCb ? &m_keyUpCb : nullptr; }
 

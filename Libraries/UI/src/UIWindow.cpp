@@ -884,7 +884,8 @@ void UIWindow::onChar(unsigned int codepoint) {
 void UIWindow::fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
     if (evt == hidEvent::MouseDownLeft || evt == hidEvent::MouseDownRight) {
         m_hidData.dragStart = true;
-        m_mouseDownPos      = m_hidData.mousePos;
+        m_mouseDownPos.x = xPos;
+        m_mouseDownPos.y = yPos;
         m_hidData.shiftPressed = shiftPressed;
         m_hidData.ctrlPressed  = ctrlPressed;
         m_hidData.altPressed   = altPressed;
@@ -934,7 +935,7 @@ void UIWindow::fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPress
 }
 
 void UIWindow::onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
-   fillHidData(hidEvent::MouseDownLeft, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
+    fillHidData(hidEvent::MouseDownLeft, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
 
     // check if double click
     auto   now  = chrono::system_clock::now();
@@ -1098,7 +1099,7 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
     m_lastHoverFound = foundNode;
 
     m_hidData.movedPix = m_hidData.mousePos - m_mouseDownPos;
-    bool isValidDrag = glm::length(m_hidData.movedPix) > (4.f * s_devicePixelRatio);
+    bool isValidDrag = length(m_hidData.movedPix) > (4.f * s_devicePixelRatio);
 
     if ((m_hidData.mousePressed || m_hidData.mouseRightPressed) && !m_draggingNodeTree.empty() &&
         (!m_hidData.dragStart || isValidDrag)) {
@@ -1115,19 +1116,36 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
             m_hidData.objId = m_hidData.clickedObjId;
         }
 
-        UINode::hidIt(m_hidData, hidEvent::MouseDrag, m_draggingNodeTree.begin(), m_draggingNodeTree);
-        m_hidData.dragStart = false;
-        m_hidData.dragging  = true;
+        if (!s_userIsScaling) {
+            UINode::hidIt(m_hidData, hidEvent::MouseDrag, m_draggingNodeTree.begin(), m_draggingNodeTree);
+            m_hidData.dragging  = true;
+            m_hidData.dragStart = false;
+        } else {
+            m_hidData.dragging  = false;
+        }
     }
 }
 
 void UIWindow::onWheel(float deg) {
-    m_hidData.objId   = static_cast<int>(getObjAtPos(m_hidData.mousePos, hidEvent::MouseWheel));
+    m_hidData.objId   = getObjAtPos(m_hidData.mousePos, hidEvent::MouseWheel);
     m_hidData.degrees = deg;
 
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()) {
         UINode::hidIt(m_hidData, hidEvent::MouseWheel, m_opi.localTree.begin(), m_opi.localTree);
+    }
+
+    m_procSteps[Draw].active = true;
+}
+
+void UIWindow::onScale(float fact, float focusX, float focusY) {
+    m_hidData.mousePos.x = focusX;
+    m_hidData.mousePos.y = focusY;
+    m_hidData.objId = getObjAtPos(m_hidData.mousePos, hidEvent::MouseWheel);
+    m_hidData.scaleFact = fact;
+    m_hidData.reset();
+    if (m_opi.foundNode && !m_opi.localTree.empty()) {
+        UINode::hidIt(m_hidData, hidEvent::ScaleGest, m_opi.localTree.begin(), m_opi.localTree);
     }
 
     m_procSteps[Draw].active = true;

@@ -76,11 +76,11 @@ void WindowBase::procHid() {
         val.clear();
     }
 
-    for (auto &val: s_hidEvents) {
-        if (val) {
-            val();
+    for (auto &[key, evt] : s_hidEvents) {
+        if (evt) {
+            evt();
+            evt = nullptr;
         }
-        val = nullptr;
     }
 
     s_hidEvents.clear();

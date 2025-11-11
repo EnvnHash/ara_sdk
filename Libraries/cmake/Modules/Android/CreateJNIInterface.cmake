@@ -62,6 +62,14 @@ public class JniInterface {
 
   /** OnScroll event, called on the OpenGL thread. */
   public static native void onScroll(float x, float y)\;
+
+  /** Android JNI scale gesture. */
+  public static native void onScale(float fact, float focusX, float focusY)\;
+
+  public static native void onScaleBegin()\;
+
+  public static native void onScaleEnd()\;
+
   ")
 
     if (ARA_USE_ARCORE)

@@ -52,6 +52,7 @@ private:
     void keyDown(hidData& data) override;
     void mouseDown(hidData& data) override;
     void mouseWheel(hidData& data) override;
+    void scaleGest(hidData& data) override;
 
     void dragContent(hidData& data);
     void addWorkingArea();

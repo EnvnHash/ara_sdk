@@ -47,46 +47,67 @@ public:
 
     virtual void osChar(unsigned int codepoint) {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents.emplace_back([this, codepoint]() { onChar(codepoint); });
+        s_hidEvents[hidEvent::onChar] = [this, codepoint]() { onChar(codepoint); };
     }
 
     virtual void osMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents.emplace_back([this, xPos, yPos, shiftPressed, ctrlPressed, altPressed]() {
+        s_hidEvents[hidEvent::MouseDownLeft] = [this, xPos, yPos, shiftPressed, ctrlPressed, altPressed]() {
             onMouseDownLeft(xPos, yPos, shiftPressed, ctrlPressed, altPressed);
-        });
+        };
     }
 
     virtual void osMouseDownLeftNoDrag(float xPos, float yPos) {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents.emplace_back([this, xPos, yPos]() { onMouseDownLeftNoDrag(xPos, yPos); });
+        s_hidEvents[hidEvent::MouseDownLeftNoDrag] = [this, xPos, yPos]() { onMouseDownLeftNoDrag(xPos, yPos); };
     }
 
     virtual void osMouseUpLeft() {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents.emplace_back([this]() { onMouseUpLeft(); });
+        s_hidEvents[hidEvent::MouseUpLeft] = [this]() { onMouseUpLeft(); };
     }
 
     virtual void osMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents.emplace_back([this, xPos, yPos, shiftPressed, ctrlPressed, altPressed] {
+        s_hidEvents[hidEvent::MouseDownRight] = [this, xPos, yPos, shiftPressed, ctrlPressed, altPressed] {
             onMouseDownRight(xPos, yPos, shiftPressed, ctrlPressed, altPressed);
-        });
+        };
     }
 
     virtual void osMouseUpRight() {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents.emplace_back([this]() { onMouseUpRight(); });
+        s_hidEvents[hidEvent::MouseUpRight] = [this]() { onMouseUpRight(); };
     }
 
     virtual void osMouseMove(float xPos, float yPos, ushort mode) {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents.emplace_back([this, xPos, yPos, mode] { onMouseMove(xPos, yPos, mode); });
+        s_hidEvents[hidEvent::MouseMove] = [this, xPos, yPos, mode] { onMouseMove(xPos, yPos, mode); };
     }
 
     virtual void osWheel(float deg) {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents.emplace_back([this, deg]() { onWheel(deg); });
+        s_hidEvents[hidEvent::MouseWheel] = [this, deg]() { onWheel(deg); };
+    }
+
+    virtual void osScale(float fact, float focusX, float focusY) {
+        std::unique_lock lock(s_procHidMtx);
+        s_hidEvents[hidEvent::ScaleGest] = [this, fact, focusX, focusY]() {
+            onScale(fact, focusX, focusY);
+        };
+    }
+
+    virtual void osScaleEnd() {
+        std::unique_lock lock(s_procHidMtx);
+        s_hidEvents[hidEvent::ScaleEnd] = [this]() {
+            onScaleEnd();
+        };
+    }
+
+    virtual void osScaleBegin() {
+        std::unique_lock lock(s_procHidMtx);
+        s_hidEvents[hidEvent::ScaleBegin] = [this]() {
+            onScaleBegin();
+        };
     }
 
     virtual void osSetViewport(int x, int y, int width, int height) {
@@ -94,7 +115,7 @@ public:
             return;
         }
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents.emplace_back([this, x, y, width, height] { onSetViewport(x, y, width, height); });
+        s_hidEvents[hidEvent::SetViewport] = [this, x, y, width, height] { onSetViewport(x, y, width, height); };
     }
 
     virtual void osMinimize(std::function<void()> f) {
@@ -127,7 +148,10 @@ public:
     virtual void onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) = 0;
     virtual void onMouseUpRight() = 0;
     virtual void onMouseMove(float xPos, float yPos, ushort mode) = 0;
-    virtual void onWheel(float deg) {};
+    virtual void onWheel(float deg) {}
+    virtual void onScale(float fact, float focusX, float focusY) {}
+    virtual void onScaleBegin() { s_userIsScaling = true; }
+    virtual void onScaleEnd() { s_userIsScaling = false; }
     virtual void onResizeDone() = 0;
     virtual void onSetViewport(int x, int y, int width, int height) = 0;
     virtual void iterateGlCallbacks();
@@ -158,11 +182,12 @@ protected:
     glm::ivec2 s_mousePos{0};
     glm::ivec2 s_mouse_down_right_init_pos{0};
     bool       s_debug = false;
+    bool       s_userIsScaling = false;
 
     std::mutex                                                                         s_procHidMtx;
     std::mutex                                                                         s_drawMtx;
     std::mutex                                                                         s_changeWinMtx;
-    std::deque<std::function<void()>>                                                  s_hidEvents;
+    std::unordered_map<hidEvent, std::function<void()>>                                s_hidEvents;
     std::unordered_map<changeWinEvent, std::function<void()>>                          s_changeWinEvents;
     std::unordered_map<hidEvent, std::vector<std::function<void()>>>                   s_keyEvents;
     std::unordered_map<void *, std::unordered_map<std::string, std::function<bool()>>> s_openGlCbs;
