@@ -60,6 +60,8 @@ public class JniInterface {
   /** OnTouchDown event, called on the OpenGL thread. */
   public static native void onTouchDown(float x, float y)\;
 
+  public static native void onTouchUp()\;
+
   /** OnScroll event, called on the OpenGL thread. */
   public static native void onScroll(float x, float y)\;
 

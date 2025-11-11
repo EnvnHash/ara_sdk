@@ -130,12 +130,14 @@ public class MainActivity extends NativeActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 gestureDetector.onTouchEvent(event)\;
                 scaleGestureDetector.onTouchEvent(event)\;
+                boolean detectedUp = event.getAction() == MotionEvent.ACTION_UP\;
 
-                if ((event.getAction() == MotionEvent.ACTION_UP
-                    || event.getAction() == MotionEvent.ACTION_CANCEL)
+                if ((detectedUp || event.getAction() == MotionEvent.ACTION_CANCEL)
                     && event.getPointerCount() <= 1 && isScaling) {
                     isScaling = false\;
                     surfaceView.queueEvent(JniInterface::onScaleEnd)\;
+                } else if(detectedUp) {
+                    surfaceView.queueEvent(JniInterface::onTouchUp)\;
                 }
 
                 return true\;

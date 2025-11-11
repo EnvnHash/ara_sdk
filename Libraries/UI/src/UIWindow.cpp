@@ -1139,8 +1139,6 @@ void UIWindow::onWheel(float deg) {
 }
 
 void UIWindow::onScale(float fact, float focusX, float focusY) {
-    m_hidData.mousePos.x = focusX;
-    m_hidData.mousePos.y = focusY;
     m_hidData.objId = getObjAtPos(m_hidData.mousePos, hidEvent::MouseWheel);
     m_hidData.scaleFact = fact;
     m_hidData.reset();

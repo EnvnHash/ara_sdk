@@ -185,6 +185,13 @@ JNI_METHOD(void, onTouchDown)(JNIEnv*, jclass, jfloat x, jfloat y) {
     }
 }
 
+JNI_METHOD(void, onTouchUp)(JNIEnv*, jclass) {
+    if (app) {
+        auto win = app->getMainWindow();
+        win->osMouseUpLeft();
+    }
+}
+
 JNI_METHOD(void, onScroll)(JNIEnv*, jclass, jfloat x, jfloat y) {
     if (app) {
         auto win = app->getMainWindow();
