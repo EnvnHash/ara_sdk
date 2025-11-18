@@ -21,9 +21,9 @@
 #include <json/json.hpp>
 
 /// convenience Macro definition for generating a serialization function just by passing member variables as arguments
-#define ARA_NODE_ADD_SERIALIZE_FUNCTIONS(...)                           \
+#define ARA_NODE_ADD_SERIALIZE_FUNCTIONS(baseClassName, ...)            \
 void serializeValues(nlohmann::json& j) override {                      \
-    Node::serializeValues(j);                                           \
+    baseClassName::serializeValues(j);                                 \
     std::string in_arg_names = std::string(#__VA_ARGS__);               \
     std::vector<std::string> names = ara::split(in_arg_names, ", ");    \
     for (auto &it : names) {                                            \
@@ -36,7 +36,7 @@ void deserializeValues(const nlohmann::json& j) override {              \
     for (auto & it: m_changeCb[cbType::preChange]) {                    \
         it.second();                                                    \
     }                                                                   \
-    Node::deserializeValues(j);                                         \
+    baseClassName::deserializeValues(j);                                         \
     std::string in_arg_names = std::string(#__VA_ARGS__);               \
     std::vector<std::string> names = ara::split(in_arg_names, ", ");    \
     for (auto &it : names) {                                            \

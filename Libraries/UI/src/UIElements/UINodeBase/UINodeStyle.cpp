@@ -15,8 +15,8 @@ using namespace glm;
 namespace ara {
 
 void UINodeStyle::loadStyleDefaults() {
-    m_setStyleFunc[state::none][styleInit::x]         = [this] { setX((int)0); };
-    m_setStyleFunc[state::none][styleInit::y]         = [this] { setY((int)0); };
+    m_setStyleFunc[state::none][styleInit::x]         = [this] { setX(0); };
+    m_setStyleFunc[state::none][styleInit::y]         = [this] { setY(0); };
     m_setStyleFunc[state::none][styleInit::width]     = [this] { setWidth(1.f); };
     m_setStyleFunc[state::none][styleInit::height]    = [this] { setHeight(1.f); };
     m_setStyleFunc[state::none][styleInit::align]     = [this] { setAlignX(align::left); };

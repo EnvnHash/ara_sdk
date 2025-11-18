@@ -22,7 +22,7 @@ namespace ara::node {
 
 class Image : public Node, public DataPath {
 public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(m_imgPath, m_mipMaps)
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_imgPath, m_mipMaps)
 
     Image();
 

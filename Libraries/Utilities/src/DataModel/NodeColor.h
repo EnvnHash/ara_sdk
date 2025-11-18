@@ -24,7 +24,7 @@ namespace ara::node {
 
 class Color : public ara::Node {
 public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(m_color, m_format)
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_color, m_format)
 
     enum class format : int { rgb=0, rgbf, rgba, rgbaf, hsl, hsla };
     Color();

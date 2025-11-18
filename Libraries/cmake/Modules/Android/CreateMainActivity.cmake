@@ -43,6 +43,7 @@ public class MainActivity extends NativeActivity {
 
       // Opaque native pointer to the native application instance.
       private GestureDetector gestureDetector\;
+      private ScaleGestureDetector scaleGestureDetector\;
       private static AppCompatActivity m_activity\;
 
     ")
@@ -100,7 +101,26 @@ public class MainActivity extends NativeActivity {
                     }
                 })\;
 
-        surfaceView.setOnTouchListener((View v, MotionEvent event) -> gestureDetector.onTouchEvent(event))\;
+        // Set up scale gesture listener
+        scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScale(@NonNull ScaleGestureDetector detector) {
+                float val = detector.getScaleFactor()
+                surfaceView.queueEvent(() -> JniInterface.onScale(val))
+                return true\;
+            }
+        })\;
+
+        View.OnTouchListener touchListener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                gestureDetector.onTouchEvent(event)\;
+                scaleGestureDetector.onTouchEvent(event)\;
+                return true\;
+            }
+        }\;
+
+        surfaceView.setOnTouchListener(touchListener)\;
 
         JniInterface.assetManager = getAssets()\;
 
@@ -121,7 +141,7 @@ public class MainActivity extends NativeActivity {
 
         // Forces screen to max brightness.
         WindowManager.LayoutParams layout = getWindow().getAttributes()\;
-        layout.screenBrightness = 1.f\;
+        \\layout.screenBrightness = 1.f\;
         getWindow().setAttributes(layout)\;
 
         // Prevents screen from dimming/locking.

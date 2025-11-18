@@ -111,7 +111,7 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
     uint32_t ySlices = height / tc;
     
     for (uint32_t i=0; i<tc; i++) {
-        futures.emplace_back(g_thread_pool.submit([&data, pBitmap, width, ySlices, i, eps]() {
+        futures.emplace_back(g_thread_pool.submit_task([&data, pBitmap, width, ySlices, i, eps]() {
             auto texData = &data[0];
             auto refTex = FreeImage_GetBits(pBitmap);
 

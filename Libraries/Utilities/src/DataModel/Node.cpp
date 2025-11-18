@@ -211,12 +211,12 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
     }
 
     // Remove remaining existing children that were not found in the JSON input
-    for (const auto& pair : existingChildren) {
-        remove(pair.second);
+    for (const auto &val: existingChildren | views::values) {
+        remove(val);
     }
 
     if (!postLoadCbs.has_value()) {
-        for (auto it : m_postCbList) {
+        for (const auto it : m_postCbList) {
             (*it)();
         }
     }

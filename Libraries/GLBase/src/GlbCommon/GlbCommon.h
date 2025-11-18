@@ -34,6 +34,10 @@
 #include <GlbCommon/GlbKeyDefines.h>
 #include <Constants.h>
 
+#ifdef ARA_USE_NLOHMANN_JSON
+#include <json/json.hpp>
+#endif
+
 #include <cstdint>
 #include <algorithm>
 #include <unordered_map>
@@ -369,7 +373,7 @@ static inline std::vector<int>         m_coTypeFragSize{4, 3, 2, 4, 4, 4, 4, 4, 
 static inline std::vector<int>         m_recCoTypeFragSize{4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 16};
 static inline std::vector<std::string> m_stdMatrixNames{"m_model", "m_cam_model", "m_view", "m_proj", "m_normal"};
 static inline std::string m_stdPvmMult{"gl_Position = m_proj * m_view * m_cam_model * m_model * position; \n"};
-static const inline std::array          stdQuadVertices{glm::vec2{0.f}, glm::vec2{1.f, 0.f}, glm::vec2{0.f, 1.f},
+static const inline std::array         stdQuadVertices{glm::vec2{0.f}, glm::vec2{1.f, 0.f}, glm::vec2{0.f, 1.f},
                                                               glm::vec2{1.f, 1.f}};
 static inline constexpr std::array     stdQuadInd{0, 1, 3, 3, 2, 0};  // two triangles defining a m_quad
 
@@ -395,4 +399,88 @@ static void printGLVersion() {
     << "GLSL:     " << glGetString(GL_SHADING_LANGUAGE_VERSION);
 }
 
+#ifdef ARA_USE_NLOHMANN_JSON
+NLOHMANN_JSON_SERIALIZE_ENUM(unitType, {
+    {unitType::Pixels, "pixels"},
+    {unitType::Percent, "percent"}
+});
+
+NLOHMANN_JSON_SERIALIZE_ENUM(align, {
+    {align::center, "center"},
+    {align::justify, "justify"},
+    {align::justify_ex, "justify_ex"},
+    {align::left, "left"},
+    {align::right, "right"},
+});
+
+NLOHMANN_JSON_SERIALIZE_ENUM(valign, {
+    {valign::center, "center"},
+    {valign::bottom, "bottom"},
+    {valign::top, "top"}
+});
+
 }  // namespace ara
+
+namespace glm {
+    inline void to_json(nlohmann::json& j, const vec2& P) {
+        j = { P.x, P.y };
+    };
+
+    inline void from_json(const nlohmann::json& j, vec2& P) {
+        P.x = j.at(0).get<float>();
+        P.y = j.at(1).get<float>();
+    }
+
+    inline void to_json(nlohmann::json& j, const vec3& v) {
+        j = { v.x, v.y, v.z };
+    }
+
+    inline void from_json(const nlohmann::json& j, vec3& vec) {
+        vec.x = j.at(0).get<float>();
+        vec.y = j.at(1).get<float>();
+        vec.z = j.at(2).get<float>();
+    }
+
+    inline void to_json(nlohmann::json& j, const vec4& v) {
+        j = { v.x, v.y, v.z, v.w };
+    }
+
+    inline void from_json(const nlohmann::json& j, vec4& vec) {
+        vec.x = j.at(0).get<float>();
+        vec.y = j.at(1).get<float>();
+        vec.z = j.at(2).get<float>();
+        vec.w = j.at(3).get<float>();
+    }
+
+    inline void to_json(nlohmann::json& j, const mat3& m) {
+        std::array elements = { m[0][0], m[0][1], m[0][2],
+                                m[1][0], m[1][1], m[1][2],
+                                m[2][0], m[2][1], m[2][2] };
+        j = elements;
+    }
+
+    inline void from_json(const nlohmann::json& j, mat3& m) {
+        auto elements = j.get<std::array<float, 9>>();
+        m[0][0] = elements[0]; m[0][1] = elements[1]; m[0][2] = elements[2];
+        m[1][0] = elements[3]; m[1][1] = elements[4]; m[1][2] = elements[5];
+        m[2][0] = elements[6]; m[2][1] = elements[7]; m[2][2] = elements[8];
+    }
+
+    inline void to_json(nlohmann::json& j, const mat4& m) {
+        std::array elements = { m[0][0], m[0][1], m[0][2], m[0][3],
+                                m[1][0], m[1][1], m[1][2], m[1][3],
+                                m[2][0], m[2][1], m[2][2], m[2][3],
+                                m[3][0], m[3][1], m[3][2], m[3][3] };
+        j = elements;
+    }
+
+    inline void from_json(const nlohmann::json& j, mat4& m) {
+        auto elements = j.get<std::array<float, 16>>();
+        m[0][0] = elements[0]; m[0][1] = elements[1]; m[0][2] = elements[2]; m[0][3] = elements[3];
+        m[1][0] = elements[4]; m[1][1] = elements[5]; m[1][2] = elements[6]; m[1][3] = elements[7];
+        m[2][0] = elements[8]; m[2][1] = elements[9]; m[2][2] = elements[10]; m[2][3] = elements[11];
+        m[3][0] = elements[12]; m[3][1] = elements[13]; m[3][2] = elements[14]; m[3][3] = elements[15];
+    }
+}
+
+#endif

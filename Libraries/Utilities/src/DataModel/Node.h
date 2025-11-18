@@ -207,7 +207,7 @@ public:
     nlohmann::json                          serializeValues();
     void                                    deserialize(const std::string&);
     void                                    deserialize(const nlohmann::json& j, std::optional<std::list<std::function<void()>*>*> cbs = std::nullopt);
-    void                                    load(const std::filesystem::path& filePath);
+    virtual void                            load(const std::filesystem::path& filePath);
     void                                    loadFromAssets(const std::filesystem::path& filePath);
     virtual void                            load();
     virtual void                            load(bool fromAssets);

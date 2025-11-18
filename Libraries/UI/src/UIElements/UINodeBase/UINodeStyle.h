@@ -13,6 +13,8 @@ class GLBase;
 
 class UINodeStyle : public UINodeGeom {
 public:
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(UINodeGeom, m_excludeFromStyles, m_visible, m_alpha, m_color, m_bgColor, m_borderColor, m_fontType)
+
     void setStyleInitVal(const std::string& name, const std::string& val, state st = state::m_state) override;
 
     virtual void loadStyleDefaults();

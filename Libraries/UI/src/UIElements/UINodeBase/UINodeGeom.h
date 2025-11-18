@@ -5,16 +5,31 @@
 #pragma once
 
 #include <UICommon.h>
+#include <DataModel/Node.h>
 
 namespace ara {
+
+NLOHMANN_JSON_SERIALIZE_ENUM(pivotX, {
+    {pivotX::center, "center"},
+    {pivotX::left, "left"},
+    {pivotX::right, "right"}
+});
+
+NLOHMANN_JSON_SERIALIZE_ENUM(pivotY, {
+    {pivotY::center, "center"},
+    {pivotY::bottom, "bottom"},
+    {pivotY::top, "top"}
+});
 
 class UISharedRes;
 class UINode;
 
-class UINodeGeom {
-public :
+class UINodeGeom  : public Node {
+public:
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_excludeFromPadding, m_excludeFromParentContentTrans, m_skipBoundCheck, m_excludeFromParentScissoring, m_scissorChildren, m_limitContentTrans, m_posXInt, m_posYInt, m_posXFloat, m_posYFloat, m_widthInt, m_widthFloat, m_heightInt, m_heightFloat, m_widthType, m_heightType, m_zPos, m_alignX, m_alignY, m_pivX, m_pivY, m_fixAspect, m_borderRadius, m_borderWidth, m_padding, m_viewPort)
+
     UINodeGeom();
-    virtual ~UINodeGeom() = default;
+    ~UINodeGeom() override = default;
 
     virtual void setStyleInitVal(const std::string& name, const std::string& val, state st = state::m_state) = 0;
     virtual void updateMatrix() = 0;
@@ -102,7 +117,6 @@ public :
     void setY(T y, state st = state::m_state) {
         setCoord(y, coordComp::y, st);
     }
-
     /** set position in absolute pixels (int) or percentage (float). -y means towards the top Values can be negative
      * this means extreme right/top minus nr of pixels. **/
     template<typename T, typename U>
@@ -317,6 +331,11 @@ public :
                 m_childBoundBox.w - m_childBoundBox.y + getPadding().y + getPadding().w};
     }
 
+    void load(const std::filesystem::path& filePath) override {
+        Node::load(filePath);
+        setChanged(true);
+    }
+
     bool isOutOfParentBounds();
     virtual bool isInBounds(glm::vec2& pos);
 
@@ -330,18 +349,18 @@ protected:
 
     /** if false, offset and scaling is done relative to 0|0 top left origin, if
     * true relative to the center of the UINode **/
-    bool m_contTransMatCentered = false;
-    bool m_excludeFromPadding = false;
-    bool m_scissorChildren = false;
-    bool m_hasContRot = false;
-    bool m_geoChanged                    = true;
-    bool m_excludeFromParentScissoring   = false;
-    bool m_excludeFromParentContentTrans = false;
-    bool m_isOutOfParentBounds           = false;
-    bool m_skipBoundCheck                = false;
-    bool m_oob                           = false;
-    bool m_updating                      = false;
-    bool m_limitContentTrans             = false;
+    bool m_contTransMatCentered             = false;
+    bool m_excludeFromPadding               = false;
+    bool m_scissorChildren                  = false;
+    bool m_hasContRot                       = false;
+    bool m_geoChanged                       = true;
+    bool m_excludeFromParentScissoring      = false;
+    bool m_excludeFromParentContentTrans    = false;
+    bool m_isOutOfParentBounds              = false;
+    bool m_skipBoundCheck                   = false;
+    bool m_oob                              = false;
+    bool m_updating                         = false;
+    bool m_limitContentTrans                = false;
 
     int32_t m_posXInt   = 0;
     int32_t m_posYInt   = 0;
@@ -355,8 +374,8 @@ protected:
     unitType m_heightType = unitType::Percent;
 
     /** the node's position relative to the window in pixels */
-    glm::vec2              m_winRelPos{};
-    glm::vec2              m_winRelSize{};
+    glm::vec2 m_winRelPos{};
+    glm::vec2 m_winRelSize{};
 
     /** all parent's content * contentTransformation matrices -> the flattened
     * matrixStack at this position in the scene graph. */
@@ -451,7 +470,7 @@ protected:
     glm::vec4 m_scIndDraw{};
     glm::vec4 m_bb{};
 
-    glm::vec2  m_parentContScale = glm::vec2(1.f, 1.f);  // contentTransMat scaling part
+    glm::vec2  m_parentContScale = glm::vec2{1.f, 1.f};  // contentTransMat scaling part
     glm::mat4* m_orthoMat        = nullptr;
 
     glm::vec2 m_borderWidthRel{0.001f, 0.001f};
