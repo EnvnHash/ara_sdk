@@ -118,7 +118,7 @@ TEST(UITest, ScrollViewTestScrollBarMoved) {
 
         // simulate dragging
         mainWin->onMouseDownLeft(500, 150, false, false, false);
-        mainWin->onMouseMove(500, 152, 0);
+        mainWin->onMouseMove(500, 160, 0);
         mainWin->onMouseMove(500, 200, 0);
         mainWin->onMouseUpLeft();
 
