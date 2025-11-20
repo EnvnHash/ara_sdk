@@ -11,7 +11,7 @@ DemoView_Table::DemoView_Table() : DemoView("Table demo",glm::vec4(.1f,.1f,.1f,1
 void DemoView_Table::init() {
     auto a = UITableParameters();
 
-    ui_Table = push<UITable>(UITableParameters{
+    ui_Table = &push<UITable>(UITableParameters{
         .pos = ivec2{ 0.f, 100 },
         .size = ivec2{ getContentSize().x, getContentSize().y - 100 },
         .topology = ivec2{ 4, 3 },

@@ -53,9 +53,9 @@ class DemoView_ScrollView_2 : public DemoView {
 public:
     DemoView_ScrollView_2();
 
-    UITable*    addTable();
-    UITable*    addNestedTable(ScrollView* node);
-    void        addLabels(UITable* nt);
+    UITable&    addTable();
+    UITable&    addNestedTable(ScrollView* node);
+    void        addLabels(UITable& nt);
     void        init() override;
 };
 

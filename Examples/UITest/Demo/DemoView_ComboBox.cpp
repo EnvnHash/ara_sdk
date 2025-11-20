@@ -9,7 +9,7 @@ DemoView_ComboBox::DemoView_ComboBox() : DemoView("ComboBoxes",glm::vec4(.1f,.1f
 }
 
 void DemoView_ComboBox::init() {
-    m_combo = push<ComboBox>(UINodePars{
+    m_combo = &push<ComboBox>(UINodePars{
         .pos = ivec2{0,50},
         .size = ivec2 {200, 40},
         .fgColor = vec4{ 1.f, 1.f, 1.f, 1.f },

@@ -68,7 +68,7 @@ public:
 
         // table must always be on top of ScrollViews children, in order to have the children's bounding box being
         // calculated correctly before ScrollBar onChange callbacks are evaluated
-        m_table = addChild<UITable>();
+        m_table = &push<UITable>();
         m_table->setDynamicHeight(true);
 
         rebuild();

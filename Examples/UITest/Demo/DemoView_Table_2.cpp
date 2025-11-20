@@ -9,7 +9,7 @@ DemoView_Table_2::DemoView_Table_2() : DemoView("Table demo 2 / Table in table /
 }
 
 void DemoView_Table_2::init() {
-    ui_Table = push<UITable>(UITableParameters{
+    ui_Table = &push<UITable>(UITableParameters{
         .pos = ivec2{ 0.f, 100 },
         .size = ivec2{ getContentSize().x, getContentSize().y - 100 },
         .spacing = ivec2{ 8, 8 }

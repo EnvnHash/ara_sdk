@@ -10,7 +10,7 @@ DemoView_ScrollView_3::DemoView_ScrollView_3() : DemoView("Scroll View demo / Ho
 }
 
 void DemoView_ScrollView_3::init() {
-    ui_SV = push<ScrollView>(UINodePars{
+    ui_SV = &push<ScrollView>(UINodePars{
         .pos = ivec2{ 0, 80 },
         .fgColor = vec4{ .1f, .1f, .1f, 1.f },
         .padding = vec4{ 10.f, 10.f, 10.f, 10.f }
@@ -18,7 +18,7 @@ void DemoView_ScrollView_3::init() {
     ui_SV->setHeight(240);
 
     for (int i=0; i<8; i++) {
-        auto unit = ui_SV->push<Unit>(UINodePars{
+        auto& unit = ui_SV->push<Unit>(UINodePars{
             .size = ivec2{200, 200},
             .fgColor = vec4{.8f,.8f,.6f,1.f},
             .bgColor = vec4{ .2f,.2f,.5f,1.f},
@@ -26,8 +26,8 @@ void DemoView_ScrollView_3::init() {
         });
         std::stringstream ss;
         ss << "Item "<< std::fixed << std::setprecision(2) << i+1;
-        unit->m_Title = ss.str();
-        unit->setX(i * (200+10));
+        unit.m_Title = ss.str();
+        unit.setX(i * (200+10));
     }
 }
 
@@ -51,7 +51,7 @@ void DemoView_ScrollView_3::Unit::init() {
         .size = ivec2{110, 110},
         .align = align::center,
         .valign = valign::center
-    })->setImg(std::rand() & 1 ? "trigrid.png" : "FullHD_Pattern.png",1);
+    }).setImg(std::rand() & 1 ? "trigrid.png" : "FullHD_Pattern.png",1);
 
     push<Label>(LabelPars{
         .pos = {0, 0},

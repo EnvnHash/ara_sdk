@@ -26,12 +26,12 @@ public:
             return nullptr;
         }
 
-        auto newItem = m_base->push<T>();
+        auto& newItem = m_base->push<T>();
         if (!style.empty()) {
-            newItem->addStyleClass(style);
+            newItem.addStyleClass(style);
         }
 
-        static_cast<UINode*>(newItem)->addMouseUpCb([this, returnValue](hidData& data) {
+        dynamic_cast<UINode&>(newItem).addMouseUpCb([this, returnValue](hidData& data) {
             m_closing = true;
             // window creation and destruction must be done on the main thread
             m_glbase->runOnMainThread([this, returnValue]() {
@@ -43,7 +43,7 @@ public:
             }, true);
         });
 
-        return newItem;
+        return &newItem;
     }
 
 protected:

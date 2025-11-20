@@ -31,19 +31,19 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
         .font_height = 18
     });
 
-    auto caru = push<Carrousel>(UINodePars{
+    auto& caru = push<Carrousel>(UINodePars{
         .pos = ivec2{ 0, yOffs + 30 },
         .size = vec2{ 1.f, 0.25f },
         .bgColor = vec4{ 0.3f, 0.3f, 0.3f, 0.3f},
         .valign = valign::top,
         .padding = vec4{10.f, 10.f, 10.f, 10.f}
     });
-    caru->setMode(cm);
-    caru->setSpacing(10);
-    caru->getSelector()->setBorderColor(white);
+    caru.setMode(cm);
+    caru.setSpacing(10);
+    caru.getSelector()->setBorderColor(white);
     if (cm == CarrouselMode::leftAlign) {
-        caru->showSelector(false);
-        caru->showArrows(true);
+        caru.showSelector(false);
+        caru.showArrows(true);
     }
 
     std::array bgColor { vec4{21.f / 255.f, 39.f / 255.f, 91.f / 255.f, 1.f},
@@ -55,18 +55,18 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
 
     int numSlides = cm == CarrouselMode::leftAlign ? 20: 5;
     for (int i=0; i<numSlides; i++) {
-        auto slide = caru->add();
+        auto slide = caru.add();
         if (cm == CarrouselMode::leftAlign) {
             slide->setWidth(static_cast<int32_t>(getRandF(90.f, 300.f)));
         }
 
-        auto lbl = slide->push<Label>();
-        lbl->setFont("regular", 90, align::center, valign::center, black);
-        lbl->setText(std::to_string(i));
-        lbl->setBackgroundColor(bgColor[i % bgColor.size()]);
+        auto& lbl = slide->push<Label>();
+        lbl.setFont("regular", 90, align::center, valign::center, black);
+        lbl.setText(std::to_string(i));
+        lbl.setBackgroundColor(bgColor[i % bgColor.size()]);
     }
 
-    caru->show(2, false);
+    caru.show(2, false);
 }
 
 void DemoView_Carrousel::init() {

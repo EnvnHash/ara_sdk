@@ -21,11 +21,10 @@ void DemoView_Resources::init() {
 
     push<Label>({ .style = "text_test" });
 
-    auto dp = push<Div>({ .style = "styles.rdiv" });
+    auto& dp = push<Div>({ .style = "styles.rdiv" });
+    dp.push<Div>({ .style = "styles.irdiv" });
 
-    dp->push<Div>({ .style = "styles.irdiv" });
-
-    push<Image>({ .style = "chtest.sample-image" })->setLod(3);
+    push<Image>({ .style = "chtest.sample-image" }).setLod(3);
 
     push<Image>({
         .pos = ivec2{150,100},
@@ -33,25 +32,25 @@ void DemoView_Resources::init() {
         .style = "chtest.icon"
     });
 
-    auto image = push<Image>({
+    auto& image = push<Image>({
         .pos = ivec2{150,350},
         .size = ivec2{300,200},
         .style = "chtest.icon"
     });
-    image->setSelected(isSelected());
+    image.setSelected(isSelected());
 
-    image = push<Image>({
+    auto& image2 = push<Image>({
         .pos = ivec2{150,600},
         .size = ivec2{300,200},
         .style = "one.but1"
     });
-    image->selectSection(1);
+    image.selectSection(1);
 
-    auto imgBut = push<ImageButton>(UINodePars{
+    auto& imgBut = push<ImageButton>(UINodePars{
         .style = "chtest.sample-imageButton"
     });
-    imgBut->setIsToggle(true);
-    imgBut->setToggleCb([this](bool val){
+    imgBut.setIsToggle(true);
+    imgBut.setToggleCb([this](bool val){
         LOG << "val " << val;
     });
 }

@@ -16,7 +16,7 @@ DemoView_FloatingMenu::DemoView_FloatingMenu() : DemoView("FloatingMenu", glm::v
 }
 
 void DemoView_FloatingMenu::init() {
-    auto div = push<Div>({
+    auto& div = push<Div>({
         .size = vec2(0.8f, 0.8f),
         .bgColor = vec4{0.3f, 0.3f, 0.3f, 1.f},
         .align = align::center,
@@ -25,7 +25,7 @@ void DemoView_FloatingMenu::init() {
         .borderColor = vec4{0.7f, 0.7f, 0.7f, 1.f},
     });
 
-    div->addMouseClickRightCb([this](hidData& data) {
+    div.addMouseClickRightCb([this](hidData& data) {
         runOnMainThread([this, data] {
             auto rightClickMen = getApp()->addWindow<FloatingMenuDialog>(UIWindowParams{
                 .size = {200, 96},
@@ -62,11 +62,11 @@ void DemoView_FloatingMenu::init() {
         });
     });
 
-    auto lbl = div->push<Label>({
+    auto& lbl = div.push<Label>({
         .pos = ivec2{10, 10},
         .size = ivec2{280, 30},
     });
-    lbl->setText("Right click inside this area");
+    lbl.setText("Right click inside this area");
     //, align::left, valign::top, "regular", 20)));
 }
 
