@@ -154,15 +154,15 @@ struct checkPix {
 static void checkVals(const std::vector<GLubyte>& data, ara::GLWindow* mainWin, const std::vector<checkPix>& cv) {
     for (auto &it : cv) {
         auto ptr = (it.pos.x + it.pos.y * mainWin->getWidthReal()) * 4;
-        ASSERT_EQ(data[ptr], it.col.r * 255);
-        ASSERT_EQ(data[ptr +1], it.col.g * 255);
-        ASSERT_EQ(data[ptr +2], it.col.b * 255);
-        ASSERT_EQ(data[ptr +3], it.col.a * 255);
+        ASSERT_EQ(data[ptr], static_cast<GLubyte>(it.col.r * 255));
+        ASSERT_EQ(data[ptr +1], static_cast<GLubyte>(it.col.g * 255));
+        ASSERT_EQ(data[ptr +2], static_cast<GLubyte>(it.col.b * 255));
+        ASSERT_EQ(data[ptr +3], static_cast<GLubyte>(it.col.a * 255));
     }
 }
 
-static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::ivec2& virtSize, const glm::ivec4& col,
-                      const glm::ivec4& backCol) {
+static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::ivec2& virtSize, const glm::vec4& col,
+                      const glm::vec4& backCol) {
     auto data = getPixels(0, 0, win->getWidthReal(), win->getHeightReal());
 
     // convert from virtual to hardware pixels
@@ -176,11 +176,11 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
         pos + size                  // right-bottom
     };
 
-    std::array<std::array<glm::ivec2, 2>, 4> edgeOffsets {
-        std::array<glm::ivec2, 2>{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0, -1 } },   // left-top
-        std::array<glm::ivec2, 2>{ glm::ivec2{  1, 0 }, glm::ivec2{ 0, -1 } },   // right-top
-        std::array<glm::ivec2, 2>{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0,  1 } },   // left-bottom,
-        std::array<glm::ivec2, 2>{ glm::ivec2{  1, 0 }, glm::ivec2{ 0,  1 } }    // right-bottom
+    std::array edgeOffsets {
+        std::array{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0, -1 } },   // left-top
+        std::array{ glm::ivec2{  1, 0 }, glm::ivec2{ 0, -1 } },   // right-top
+        std::array{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0,  1 } },   // left-bottom,
+        std::array{ glm::ivec2{  1, 0 }, glm::ivec2{ 0,  1 } }    // right-bottom
     };
 
     // check edges for front color
