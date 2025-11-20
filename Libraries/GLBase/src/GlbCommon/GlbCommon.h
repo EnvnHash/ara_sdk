@@ -132,7 +132,7 @@ enum class extrapolM : int { Mirror = 0, Circle };
 enum class interpolM : int { Bilinear = 0, CatmullRomCentri, Bezier };
 enum class maskType : int { Vector = 0, Bitmap, Count };
 enum class cfState : int { fine = 0, normal, coarse };
-enum class hidEvent : int { KeyDown = 0, KeyUp, onChar, MouseDownLeft, MouseDownLeftNoDrag, MouseUpLeft, MouseDownRight, MouseUpRight, MouseMove, MouseDrag, MouseWheel, OnResize, SetViewport, Size };
+enum class hidEvent : int { KeyDown = 0, KeyUp, onChar, MouseDownLeft, MouseDownLeftNoDrag, MouseUpLeft, MouseDownRight, MouseUpRight, MouseMove, MouseDrag, MouseWheel, OnResize, SetViewport, ScaleGest, ScaleBegin, ScaleEnd, Size }; // order matters, events will be processed in this order
 
 enum class cpEditMode : int32_t {
     L2Move = 0,
@@ -260,12 +260,14 @@ public:
         { hidEvent::MouseDownRight, nullptr },
         { hidEvent::MouseUpRight, nullptr },
         { hidEvent::MouseDrag, nullptr },
-        { hidEvent::MouseWheel, nullptr }
+        { hidEvent::MouseWheel, nullptr },
+        { hidEvent::ScaleGest, nullptr }
     };
 
     int          key       = 0;  // key callback
     unsigned int codepoint = 0;  // char callback
     float        degrees   = 0;  // scroll wheel
+    float        scaleFact = 1.f;
 
     void reset() {
         consumed  = false;

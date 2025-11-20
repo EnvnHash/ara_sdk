@@ -161,8 +161,7 @@ JNI_METHOD(void, onGlSurfaceDrawFrame)
   }
 }
 
-JNI_METHOD(void, onTouched)
-(JNIEnv*, jclass, jfloat x, jfloat y) {
+JNI_METHOD(void, onTouched)(JNIEnv*, jclass, jfloat x, jfloat y) {
     if (app) {
         app->OnTouched(x, y);
 
@@ -175,8 +174,7 @@ JNI_METHOD(void, onTouched)
     }
 }
 
-JNI_METHOD(void, onTouchDown)
-(JNIEnv*, jclass, jfloat x, jfloat y) {
+JNI_METHOD(void, onTouchDown)(JNIEnv*, jclass, jfloat x, jfloat y) {
     if (app) {
         auto win = app->getMainWindow();
         // convert to virtual coordinates
@@ -187,14 +185,41 @@ JNI_METHOD(void, onTouchDown)
     }
 }
 
-JNI_METHOD(void, onScroll)
-(JNIEnv*, jclass, jfloat x, jfloat y) {
+JNI_METHOD(void, onTouchUp)(JNIEnv*, jclass) {
+    if (app) {
+        auto win = app->getMainWindow();
+        win->osMouseUpLeft();
+    }
+}
+
+JNI_METHOD(void, onScroll)(JNIEnv*, jclass, jfloat x, jfloat y) {
     if (app) {
         auto win = app->getMainWindow();
         // convert to virtual coordinates
         mpX = x / app->getDisplayDensity();
         mpY = y / app->getDisplayDensity();
         win->osMouseMove(mpX, mpY, 0);
+    }
+}
+
+JNI_METHOD(void, onScale)(JNIEnv*, jclass, jfloat fact, jfloat focusX, jfloat focusY) {
+    if (app) {
+        auto win = app->getMainWindow();
+        win->osScale(fact, focusX, focusY);
+    }
+}
+
+JNI_METHOD(void, onScaleBegin)(JNIEnv*, jclass) {
+    if (app) {
+        auto win = app->getMainWindow();
+        win->osScaleBegin();
+    }
+}
+
+JNI_METHOD(void, onScaleEnd)(JNIEnv*, jclass) {
+    if (app) {
+        auto win = app->getMainWindow();
+        win->osScaleEnd();
     }
 }
 

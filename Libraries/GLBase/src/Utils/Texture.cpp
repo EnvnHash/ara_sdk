@@ -1127,6 +1127,8 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
 }
 
 void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf, bool vFlip) {
+    FreeImage_SetOutputMessage(Texture::FreeImageErrorHandler);
+
     // Determine image color type and pitch (row size in bytes)
     int bpp = nrChan * 8; // bits per pixel
     int pitch = w * nrChan; // bytes per row
@@ -1152,13 +1154,31 @@ void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
         return;
     }
 
-    bool success = FreeImage_Save(filetype, bitmap, filename);
+    if (filetype == FIF_JPEG && nrChan == 4) {
+        auto bgrImage = FreeImage_ConvertTo24Bits(bitmap);
+        if (!bgrImage) {
+            return;
+        }
+        FreeImage_Unload(bitmap);
+        bitmap = bgrImage;
+    }
+
+    FreeImage_Save(filetype, bitmap, filename);
     FreeImage_Unload(bitmap);
 }
 
 #endif
 
 #ifdef ARA_USE_FREEIMAGE
+void Texture::FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message) {
+    // Handle the error message here (e.g., print to console, log to file, display to user)
+    LOGE << "*** FreeImage Error ***";
+    if (fif != FIF_UNKNOWN) {
+        LOGE << "Format: " << FreeImage_GetFormatFromFIF(fif);
+    }
+    LOGE <<  "Message:" << message;
+}
+
 void Texture::saveFrontBuffer(const std::string &filename, int w, int h, int nrChan) {
     std::vector<uint8_t> bitmap(w * h * nrChan);
     glReadBuffer(GL_FRONT);

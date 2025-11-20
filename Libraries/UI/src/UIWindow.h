@@ -124,6 +124,7 @@ public:
     void onMouseUpRight() override;
     void onMouseMove(float xPos, float yPos, ushort _mode) override;
     void onWheel(float deg) override;
+    void onScale(float fact, float focusX, float focusY) override;
     void onResizeDone() override {}
 
     virtual void procInputFocus();

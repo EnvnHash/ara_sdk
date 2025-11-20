@@ -27,11 +27,13 @@ public class MainActivity extends NativeActivity {
     import android.util.DisplayMetrics\;
     import android.util.Log\;
     import android.view.GestureDetector\;
+    import android.view.ScaleGestureDetector\;
     import android.view.MotionEvent\;
     import android.view.View\;
     import android.view.ViewGroup\;
     import android.view.WindowManager\;
     import android.widget.RelativeLayout\;
+    import androidx.annotation.NonNull\;
     import androidx.appcompat.app.AppCompatActivity\;
     ")
 
@@ -45,6 +47,7 @@ public class MainActivity extends NativeActivity {
       private GestureDetector gestureDetector\;
       private ScaleGestureDetector scaleGestureDetector\;
       private static AppCompatActivity m_activity\;
+      private boolean isScaling = false\;
 
     ")
 
@@ -83,20 +86,22 @@ public class MainActivity extends NativeActivity {
                 this,
                 new GestureDetector.SimpleOnGestureListener() {
                     @Override
-                    public boolean onSingleTapUp(final MotionEvent e) {
+                    public boolean onSingleTapUp(@NonNull final MotionEvent e) {
                         surfaceView.queueEvent(() -> JniInterface.onTouched(e.getX(), e.getY()))\;
                         return true\;
                     }
 
                     @Override
-                    public boolean onDown(MotionEvent e) {
+                    public boolean onDown(@NonNull MotionEvent e) {
                         surfaceView.queueEvent(() -> JniInterface.onTouchDown(e.getX(), e.getY()))\;
                         return true\;
                     }
 
                     @Override
-                    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                        surfaceView.queueEvent(() -> JniInterface.onScroll(e2.getX(), e2.getY()))\;
+                    public boolean onScroll(MotionEvent e1, @NonNull MotionEvent e2, float distanceX, float distanceY) {
+                        if (!isScaling) {
+                            surfaceView.queueEvent(() -> JniInterface.onScroll(e2.getX(), e2.getY()))\;
+                        }
                         return true\;
                     }
                 })\;
@@ -104,9 +109,18 @@ public class MainActivity extends NativeActivity {
         // Set up scale gesture listener
         scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
+            public boolean onScaleBegin(@NonNull ScaleGestureDetector detector) {
+                isScaling = true\;
+                surfaceView.queueEvent(JniInterface::onScaleBegin)\;
+                return true\; // Return true to indicate that this listener accepts the event.
+            }
+
+            @Override
             public boolean onScale(@NonNull ScaleGestureDetector detector) {
-                float val = detector.getScaleFactor()
-                surfaceView.queueEvent(() -> JniInterface.onScale(val))
+                float val = detector.getScaleFactor()\;
+                float fX = detector.getFocusX()\;
+                float fY = detector.getFocusY()\;
+                surfaceView.queueEvent(() -> JniInterface.onScale(val, fX, fY))\;
                 return true\;
             }
         })\;
@@ -116,6 +130,16 @@ public class MainActivity extends NativeActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 gestureDetector.onTouchEvent(event)\;
                 scaleGestureDetector.onTouchEvent(event)\;
+                boolean detectedUp = event.getAction() == MotionEvent.ACTION_UP\;
+
+                if ((detectedUp || event.getAction() == MotionEvent.ACTION_CANCEL)
+                    && event.getPointerCount() <= 1 && isScaling) {
+                    isScaling = false\;
+                    surfaceView.queueEvent(JniInterface::onScaleEnd)\;
+                } else if(detectedUp) {
+                    surfaceView.queueEvent(JniInterface::onTouchUp)\;
+                }
+
                 return true\;
             }
         }\;
@@ -141,7 +165,7 @@ public class MainActivity extends NativeActivity {
 
         // Forces screen to max brightness.
         WindowManager.LayoutParams layout = getWindow().getAttributes()\;
-        \\layout.screenBrightness = 1.f\;
+        layout.screenBrightness = 1.f\;
         getWindow().setAttributes(layout)\;
 
         // Prevents screen from dimming/locking.

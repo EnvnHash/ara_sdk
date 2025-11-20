@@ -134,9 +134,6 @@ void ZoomView::hideContent() const {
 }
 
 void ZoomView::keyDown(hidData& data) {
-    if (!data.key) {
-        return;
-    }
 }
 
 void ZoomView::mouseDown(hidData& data) {
@@ -144,7 +141,7 @@ void ZoomView::mouseDown(hidData& data) {
     if (m_workingArea) {
         m_mouseDownViewTrans = m_workingArea->getContentTransTransl();
     }
-    m_mouseDownPos = static_cast<vec2>(data.mousePos);
+    m_mouseDownPos = data.mousePos;
 }
 
 void ZoomView::mouseWheel(hidData& data) {
@@ -161,6 +158,15 @@ void ZoomView::mouseWheel(hidData& data) {
 
     data.consumed = true;
     getSharedRes()->reqRedraw();
+}
+
+void ZoomView::scaleGest(hidData& data) {
+    if (data.scaleFact != 0.f && m_zoomProp) {
+        float newVal   = m_zoomProp() * data.scaleFact;
+        m_zoomProp.setClamp(newVal);
+        data.consumed = true;
+        getSharedRes()->reqRedraw();
+    }
 }
 
 void ZoomView::keepContentWithinBoundaries(bool val) {

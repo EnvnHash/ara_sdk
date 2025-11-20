@@ -39,7 +39,10 @@ void UINodeHID::hidIt(hidData& data, hidEvent evt, std::list<UINode*>::iterator 
         { hidEvent::MouseUpRight, [](hidData& d, UINode* n) { n->mouseUpRight(d); } },
         { hidEvent::MouseMove, [](hidData& d, UINode* n) { n->mouseMove(d); } },
         { hidEvent::MouseDrag, [](hidData& d, UINode* n) { n->mouseDrag(d); } },
-        { hidEvent::MouseWheel, [](hidData& d, UINode* n) { n->mouseWheel(d); } }
+        { hidEvent::MouseWheel, [](hidData& d, UINode* n) { n->mouseWheel(d); } },
+        { hidEvent::ScaleGest, [](hidData& d, UINode* n) { n->scaleGest(d); } },
+        { hidEvent::ScaleBegin, [](hidData& d, UINode* n) { n->scaleBegin(d); } },
+        { hidEvent::ScaleEnd, [](hidData& d, UINode* n) { n->scaleEnd(d); } }
     };
     evtMap[evt](data, node);
 
@@ -168,6 +171,10 @@ void UINodeHID::addMouseMoveCb(const std::function<void(hidData&)>& func, bool o
 
 void UINodeHID::addMouseWheelCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseWheel].emplace_back(std::make_pair(func, onHit));
+}
+
+void UINodeHID::addScaleGestCb(const std::function<void(hidData &)> &func, bool onHit) {
+    m_mouseHidCb[hidEvent::ScaleGest].emplace_back(std::make_pair(func, onHit));
 }
 
 void UINodeHID::clearMouseCb(hidEvent evt) {
