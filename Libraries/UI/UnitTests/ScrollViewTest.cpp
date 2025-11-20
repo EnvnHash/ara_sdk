@@ -15,7 +15,7 @@ using namespace std;
 namespace ara::UiUnitTest::ScrollViewTest{
 
 UITable* addTable(UINode* rootNode) {
-    auto taux = rootNode->addChild<UITable>(UITableParameters{
+    auto& taux = rootNode->push<UITable>(UITableParameters{
         .fgColor = vec4{.2f, 0.2f, 0.2f, 1.f},
         .bgColor = vec4{.0f, .0f, .0f, 1.f},
         .alignY = valign::bottom,
@@ -23,19 +23,19 @@ UITable* addTable(UINode* rootNode) {
         .spacing = ivec2{8, 8},
     });
 
-    taux->insertRow(-1,1,40,false,true);						// fixed row
-    taux->insertRow(-1,1,0,false,false);
-    taux->insertRow(-1,1,40,false,false);
+    taux.insertRow(-1,1,40,false,true);						// fixed row
+    taux.insertRow(-1,1,0,false,false);
+    taux.insertRow(-1,1,40,false,false);
 
-    taux->insertColumn(-1,1,100,false,false,50,150);			// column with size limits [50..150]
-    taux->insertColumn(-1,1,0);
-    taux->insertColumn(-1,1,50);
+    taux.insertColumn(-1,1,100,false,false,50,150);			// column with size limits [50.150]
+    taux.insertColumn(-1,1,0);
+    taux.insertColumn(-1,1,50);
 
-    return taux;
+    return &taux;
 }
 
 UITable* addNestedTable(ScrollView* scrollView) {
-    auto nt = scrollView->addChild<UITable>(UITableParameters{
+    auto& nt = scrollView->push<UITable>(UITableParameters{
         .size = vec2{600.f, 200.f},
         .fgColor = vec4{.2f, .2f, .2f, 1.f},
         .bgColor = vec4{.1f, .1f, .2f, 1.0f},
@@ -43,11 +43,11 @@ UITable* addNestedTable(ScrollView* scrollView) {
         .spacing = ivec2{8,8},
     });
 
-    nt->insertColumn(-1,1,80,false,false,50,150);			// column with size limits [50..150]
-    nt->insertColumn(-1,1,300,false,false);
-    nt->insertColumn(-1,1,25);
+    nt.insertColumn(-1,1,80,false,false,50,150);			// column with size limits [50..150]
+    nt.insertColumn(-1,1,300,false,false);
+    nt.insertColumn(-1,1,25);
 
-    return nt;
+    return &nt;
 }
 
 void addLabels(UITable* nt) {
@@ -68,7 +68,7 @@ void addLabels(UITable* nt) {
 }
 
 ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
-    auto scrollView = rootNode->addChild<ScrollView>(UINodePars{
+    auto& scrollView = rootNode->push<ScrollView>(UINodePars{
         .size = vec2{0.7f, 0.7f},
         .bgColor = vec4{0.f, 0.f, 0.5f, 1.f},
         .align = align::center,
@@ -77,14 +77,14 @@ ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
 
     int chHeight = 40;
     for (int i = 0; i < nrSubElements; i++) {
-        scrollView->addChild<Div>({
+        scrollView.push<Div>({
             .pos = ivec2{10, (chHeight +10) * i },
             .size = ivec2{30, chHeight},
             .bgColor = vec4{0.7f, 0.7f, 0.7f, 1.f}
         });
     }
 
-    return scrollView;
+    return &scrollView;
 }
 
 TEST(UITest, ScrollViewTestNoScrollbar) {
@@ -111,7 +111,7 @@ TEST(UITest, ScrollViewTestScrollBarMoved) {
     appBody([&](UIApplication& app){
         auto mainWin = app.getMainWindow();
         auto rootNode = mainWin->getRootNode();
-        auto scrollView = addScrollView(rootNode, 10);
+        addScrollView(rootNode, 10);
 
         app.getWinBase()->draw(0, 0, 0);
         app.getMainWindow()->swap();

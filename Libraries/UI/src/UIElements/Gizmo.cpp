@@ -155,28 +155,28 @@ void Gizmo::init() {
     m_auxSharedRes.orthoMat = &m_auxOrtho;
     m_auxUIRoot.setSharedRes(&m_auxSharedRes);
 
-    m_axisLabelX = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelX = &m_auxUIRoot.push<GizmoAxisLabel>();
     m_axisLabelX->addStyleClass(getStyleClass() + ".labelX");
     m_axisLabelX->setName("x-pos");
     m_axisLabelX->setHasLabel(true);
 
-    m_axisLabelY = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelY = &m_auxUIRoot.push<GizmoAxisLabel>();
     m_axisLabelY->addStyleClass(getStyleClass() + ".labelY");
     m_axisLabelY->setName("y-pos");
     m_axisLabelY->setHasLabel(true);
 
-    m_axisLabelZ = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelZ = &m_auxUIRoot.push<GizmoAxisLabel>();
     m_axisLabelZ->addStyleClass(getStyleClass() + ".labelZ");
     m_axisLabelZ->setName("z-pos");
     m_axisLabelZ->setHasLabel(true);
 
-    m_axisLabelXNeg = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelXNeg = &m_auxUIRoot.push<GizmoAxisLabel>();
     m_axisLabelXNeg->addStyleClass(getStyleClass() + ".labelXN");
     m_axisLabelXNeg->setName("x-neg");
-    m_axisLabelYNeg = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelYNeg = &m_auxUIRoot.push<GizmoAxisLabel>();
     m_axisLabelYNeg->addStyleClass(getStyleClass() + ".labelYN");
     m_axisLabelYNeg->setName("y-neg");
-    m_axisLabelZNeg = m_auxUIRoot.addChild<GizmoAxisLabel>();
+    m_axisLabelZNeg = &m_auxUIRoot.push<GizmoAxisLabel>();
     m_axisLabelZNeg->addStyleClass(getStyleClass() + ".labelZN");
     m_axisLabelZNeg->setName("z-neg");
 
@@ -723,8 +723,8 @@ void Gizmo::mouseUpRight(hidData& data)
         getWindow()->setMouseCursorVisible(true);
     }
 
-    m_cam.mouseUpRight(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
-                    static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
+    m_cam.mouseUpRight(data.mousePosNodeRel.x / getSize().x,
+                    data.mousePosNodeRel.y / getSize().y);
     data.consumed = true;
     m_rightPressed = false;
 }
@@ -742,8 +742,8 @@ void Gizmo::mouseMove(hidData& data) {
 }
 
 void Gizmo::mouseDown(hidData& data) {
-    m_cam.mouseDownLeft(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
-                        static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
+    m_cam.mouseDownLeft(data.mousePosNodeRel.x / getSize().x,
+                        data.mousePosNodeRel.y / getSize().y);
     data.consumed = true;
     m_leftPressed  = true;
 }

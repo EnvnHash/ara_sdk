@@ -16,7 +16,7 @@ ScrollBar::ScrollBar() : Div() {
 }
 
 void ScrollBar::init() {
-    m_dragArea = addChild<UIScrollBarDragArea>();
+    m_dragArea = &push<UIScrollBarDragArea>();
     m_dragArea->setBackgroundColor(m_color);
     m_dragArea->setSize(1.f, 1.f);
     m_dragArea->setName(getTypeName<UIScrollBarDragArea>());

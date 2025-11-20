@@ -23,7 +23,7 @@ public:
     Slider();
     ~Slider() override = default;
 
-    UINode* addChild(std::unique_ptr<UINode> child);
+    UINode* addChild(std::shared_ptr<UINode> child);
 
     void init() override;
 

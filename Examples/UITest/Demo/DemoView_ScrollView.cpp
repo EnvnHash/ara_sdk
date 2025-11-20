@@ -10,7 +10,7 @@ DemoView_ScrollView::DemoView_ScrollView() : DemoView("Scroll View demo / Many e
 }
 
 void DemoView_ScrollView::init() {
-	ui_SV = addChild<ScrollView>(UINodePars{
+	ui_SV = push<ScrollView>(UINodePars{
         .bgColor = vec4{.1f, .1f, .1f, 1.f},
         .padding = vec4{10.f, 10.f, 10.f, 10.f}
     });

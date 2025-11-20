@@ -18,30 +18,30 @@ namespace ara::UiUnitTest::TabViewTest {
 TabView* addTabView(UIApplication& app, std::array<bool, 3>& checks) {
     auto rootNode = app.getMainWindow()->getRootNode();
 
-    auto tabView = rootNode->addChild<TabView>(UINodePars{
+    auto& tabView = rootNode->push<TabView>(UINodePars{
         .size = vec2{1.f, 1.f},
         .fgColor = vec4{.3f, .3f, .3f, 1.f},
         .bgColor = vec4{.1f, .1f, .1f, 1.f}
     });
 
-    tabView->setPadding(10.f);
+    tabView.setPadding(10.f);
 
     for (auto i=0; i<3; i++) {
-        auto div = tabView->addTab<Div>("Entry "+std::to_string(i));
+        auto div = tabView.addTab<Div>("Entry "+std::to_string(i));
         div->setName("TabContent"+std::to_string(i));
 
-        auto divChild = div->addChild<Div>();
-        divChild->setSize(0.8f, 0.8f);
-        divChild->setPos(0.1f, 0.1f);
-        divChild->setBackgroundColor(static_cast<float>(i%3), static_cast<float>((i+1)%2), static_cast<float>((i+2)%3), 1.f);
-        divChild->addMouseClickCb([&checks, i](hidData& data) {
+        auto& divChild = div->push<Div>();
+        divChild.setSize(0.8f, 0.8f);
+        divChild.setPos(0.1f, 0.1f);
+        divChild.setBackgroundColor(static_cast<float>(i%3), static_cast<float>((i+1)%2), static_cast<float>((i+2)%3), 1.f);
+        divChild.addMouseClickCb([&checks, i](hidData& data) {
             checks[i] = true;
         });
-        divChild->setName("TabContentElement"+std::to_string(i));
+        divChild.setName("TabContentElement"+std::to_string(i));
     }
 
-    tabView->setActivateTab(0);
-    return tabView;
+    tabView.setActivateTab(0);
+    return &tabView;
 }
 
 TEST(UITest, TabViewTest) {

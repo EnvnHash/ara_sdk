@@ -14,7 +14,7 @@ using namespace glm;
 
 void UITestApp::init(std::function<void(UINode&)>) {
     UIApplication::init([](UINode& rootNode){
-        auto tabView = rootNode.addChild<TabView>(UINodePars{
+        auto tabView = rootNode.push<TabView>(UINodePars{
             .size = vec2{1.f, 1.f},
             .fgColor = glm::vec4(.3f, .3f, .3f, 1.f),
             .bgColor = glm::vec4(.1f, .1f, .1f, 1.f)

@@ -29,7 +29,7 @@ void DemoView_ScrollView_2::init() {
 }
 
 UITable* DemoView_ScrollView_2::addTable() {
-    auto taux = addChild<UITable>(UITableParameters{
+    auto taux = push<UITable>(UITableParameters{
         .fgColor = vec4{.1f, .1f, .2f, 1.f},
         .bgColor = vec4{.0f, .0f, .0f, 1.f},
         .alignY = valign::bottom,

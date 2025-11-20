@@ -33,15 +33,15 @@ void ComboBox::init() {
     setHeight(getSharedRes()->gridSize.y);
     setBackgroundColor(getSharedRes()->colors->at(uiColors::sepLine));
 
-    const auto downIcon = addChild<Image>();
-    downIcon->excludeFromObjMap(true);
-    downIcon->setImg("Icons/icon-arrow-down.png", 1);
-    downIcon->setSize(12, 1.f);
-    downIcon->setX(-11);
-    downIcon->setAlign(align::right, valign::center);
+    auto& downIcon = push<Image>();
+    downIcon.excludeFromObjMap(true);
+    downIcon.setImg("Icons/icon-arrow-down.png", 1);
+    downIcon.setSize(12, 1.f);
+    downIcon.setX(-11);
+    downIcon.setAlign(align::right, valign::center);
 
     if (!getStyleClass().empty()) {
-        downIcon->addStyleClass(getStyleClass() + ".downIcon");
+        downIcon.addStyleClass(getStyleClass() + ".downIcon");
     }
 
     m_menuEntryButt->setFontSize(19);
@@ -57,7 +57,7 @@ void ComboBox::open() {
     }
 
     // create on top of all nodes
-    m_entryList = getRoot()->addChild<ScrollView>();
+    m_entryList = &getRoot()->push<ScrollView>();
     m_entryList->addStyleClass(getStyleClass() + ".list");
     m_entryList->setPos(static_cast<int>(getWinPos().x), static_cast<int>(getWinPos().y + getSharedRes()->gridSize.y));
     m_entryList->setWidth(static_cast<int>(getSize().x));

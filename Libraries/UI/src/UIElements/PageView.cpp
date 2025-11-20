@@ -5,16 +5,17 @@ using namespace std;
 
 namespace ara {
 
-PageView::PageView() : Div() {
+PageView::PageView() {
     setName(getTypeName<PageView>());
     setFocusAllowed(false);
 
-    m_content = addChild<Div>();
+    auto& n = push<Div>();
+    m_content = &n;
     m_content->setName("PageView_Content");
 }
 
-UINode* PageView::addPage(std::unique_ptr<UINode> child) {
-    auto newNode = m_content->addChild(std::move(child));
+UINode* PageView::addPage(std::shared_ptr<UINode> child) {
+    auto newNode = &m_content->push(std::move(child));
     m_pages.emplace_back(newNode);
     return newNode;
 }

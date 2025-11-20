@@ -12,7 +12,7 @@ public:
     void init() override;
     void updtMatrIt(scissorStack* ss) override;
     void clearContentChildren() const;
-    [[nodiscard]] std::vector<std::unique_ptr<UINode>>* getContChildren() const;
+    [[nodiscard]] std::list<std::shared_ptr<Node>>* getContChildren() const;
     void mouseWheel(hidData& data) override;
 #ifdef __ANDROID__
     void mouseDrag(hidData& data) override;
@@ -49,13 +49,13 @@ public:
 
     template <typename T, typename... Args>
     requires (sizeof...(Args) != 1 || (!std::is_same_v<Args, UINodePars> && ...))
-    T* addChild(Args&& ... args) {
-        return m_content->addChild<T>(args...);
+    T& push(Args&& ... args) {
+        return m_content->push<T>(args...);
     }
 
     template<typename T>
-    T* addChild(const UINodePars& arg) {
-        return m_content->addChild<T>(arg);
+    T& push(const UINodePars& arg) {
+        return m_content->push<T>(arg);
     }
 
     int m_scrollBarSize = 16;

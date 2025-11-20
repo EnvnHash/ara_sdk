@@ -102,7 +102,7 @@ int UITable::geo_Update() {
     }
 
     for (const auto& it : m_children) {
-        it->setChanged(true);  // recursively force matrix update
+        std::dynamic_pointer_cast<UINode>(it)->setChanged(true);  // recursively force matrix update
     }
 
     m_geoUpdating = false;
@@ -114,16 +114,16 @@ void UITable::setRowHeight(int32_t idx, int32_t heightInPix) {
 }
 
 /** to be used for moving UINodes from existing parents to the table */
-UINode* UITable::setCell(int row, int column, const vector<unique_ptr<UINode> >::iterator& nodeIt) {
+UINode* UITable::setCell(int row, int column, const vector<shared_ptr<UINode> >::iterator& nodeIt) {
     if (int idx; (idx = m_Cells.rowColumnToIndex(row, column, true)) >= 0) {
         // get the cell's ui_node
         auto cell = m_Cells[idx].ui_node;
 
         // move from another parent to the cell
-        cell->getChildren().insert(cell->getChildren().end(), std::make_move_iterator(nodeIt),
+        cell->children().insert(cell->children().end(), std::make_move_iterator(nodeIt),
                                    std::make_move_iterator(nodeIt + 1));
 
-        m_Cells[idx].content = dynamic_cast<UINode *>(cell->getChildren().back().get());
+        m_Cells[idx].content = dynamic_cast<UINode *>(cell->children().back().get());
     }
 
     geo_Update();
@@ -221,7 +221,7 @@ void UITable::initNewCellNode() {
 
     for (auto & m_Cell : m_Cells) {
         if (!m_Cell.ui_node) {
-            m_Cell.ui_node = addChild<Div>();
+            m_Cell.ui_node = &push<Div>();
             m_Cell.ui_node->setName("TableCell");
             m_Cell.ui_node->setBackgroundColor(getColor());
         }

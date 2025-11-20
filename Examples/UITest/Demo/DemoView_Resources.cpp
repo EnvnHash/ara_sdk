@@ -19,35 +19,35 @@ void DemoView_Resources::init() {
     setPadding(10.f);
     fontList.setGlbase(m_glbase);
 
-    addChild<Label>({ .style = "text_test" });
+    push<Label>({ .style = "text_test" });
 
-    auto dp = addChild<Div>({ .style = "styles.rdiv" });
+    auto dp = push<Div>({ .style = "styles.rdiv" });
 
-    dp->addChild<Div>({ .style = "styles.irdiv" });
+    dp->push<Div>({ .style = "styles.irdiv" });
 
-    addChild<Image>({ .style = "chtest.sample-image" })->setLod(3);
+    push<Image>({ .style = "chtest.sample-image" })->setLod(3);
 
-    addChild<Image>({
+    push<Image>({
         .pos = ivec2{150,100},
         .size = ivec2{300,200},
         .style = "chtest.icon"
     });
 
-    auto image = addChild<Image>({
+    auto image = push<Image>({
         .pos = ivec2{150,350},
         .size = ivec2{300,200},
         .style = "chtest.icon"
     });
     image->setSelected(isSelected());
 
-    image = addChild<Image>({
+    image = push<Image>({
         .pos = ivec2{150,600},
         .size = ivec2{300,200},
         .style = "one.but1"
     });
     image->selectSection(1);
 
-    auto imgBut = addChild<ImageButton>(UINodePars{
+    auto imgBut = push<ImageButton>(UINodePars{
         .style = "chtest.sample-imageButton"
     });
     imgBut->setIsToggle(true);

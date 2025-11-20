@@ -19,13 +19,13 @@ DropDownMenuBar::DropDownMenuBar() : Div() {
 DropDownMenu* DropDownMenuBar::addDropDownMenu(const std::string& name) {
     m_menuButtSize = m_sharedRes->gridSize.x * 2;
 
-    auto ddm = addChild<DropDownMenu>();
-    ddm->setMenuName(name);
-    ddm->setPos(m_menuButtSize * static_cast<int>(m_menuEntries.size()), 0);
-    ddm->setSize(m_menuButtSize, 1.f);
+    auto& ddm = push<DropDownMenu>();
+    ddm.setMenuName(name);
+    ddm.setPos(m_menuButtSize * static_cast<int>(m_menuEntries.size()), 0);
+    ddm.setSize(m_menuButtSize, 1.f);
 
-    m_menuEntries.emplace_back(ddm);
-    return ddm;
+    m_menuEntries.emplace_back(&ddm);
+    return &ddm;
 }
 
 void DropDownMenuBar::globalMouseDown(hidData& data) const {

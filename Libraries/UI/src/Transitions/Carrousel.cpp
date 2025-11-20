@@ -25,28 +25,28 @@ Carrousel::Carrousel() {
 void Carrousel::initFixedChildren() {
     m_transTime = 0.3;
 
-    m_content = addChild<Div>({
+    m_content = &push<Div>({
         .name = "CarouselContent",
         .align = align::center,
         .valign = valign::center,
     });
     m_content->setScissorChildren(true);
 
-    m_selector = addChild<Div>({
+    m_selector = &push<Div>({
         .align = align::center,
         .valign = valign::center,
         .borderWidth = 1,
         .borderColor = vec4{0.f, 0.f, 0.f, 0.8f},
     });
 
-    m_arrows[0] = addChild<ImageButton>({
+    m_arrows[0] = &push<ImageButton>({
         .name = "CarrouselArrowLeft",
         .align = align::left,
         .valign = valign::center
     });
     m_arrows[0]->setImg("Icons/icon-arrow-left.png");
 
-    m_arrows[1] = addChild<ImageButton>({
+    m_arrows[1] = &push<ImageButton>({
         .name = "CarrouselArrowRight",
         .align = align::right,
         .valign = valign::center
@@ -124,13 +124,13 @@ void Carrousel::show(int32_t toIdx, bool animate) {
 }
 
 CarrouselSlide* Carrousel::add() {
-    m_slides.emplace_back(m_content->addChild<CarrouselSlide>());
+    m_slides.emplace_back(&m_content->push<CarrouselSlide>());
     postAdd(m_slides.back());
     return m_slides.back();
 }
 
 CarrouselSlide* Carrousel::add(const UINodePars& pars) {
-    m_slides.emplace_back(m_content->addChild<CarrouselSlide>(pars));
+    m_slides.emplace_back(&m_content->push<CarrouselSlide>(pars));
     postAdd(m_slides.back());
     return m_slides.back();
 }

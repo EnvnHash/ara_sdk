@@ -14,7 +14,7 @@ public:
 
     template <class T>
     T* add(const std::string& name) {
-        m_nodes[name] = m_rootNode->addChild<T>();
+        m_nodes[name] = m_rootNode->push<T>();
         m_nodes[name]->setVisibility(false);
         return dynamic_cast<T*>(m_nodes[name]);
     }

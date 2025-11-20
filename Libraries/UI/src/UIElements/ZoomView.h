@@ -21,15 +21,15 @@ public:
 
     template <typename T, typename... Args>
     requires (sizeof...(Args) != 1 || (!std::is_same_v<Args, UINodePars> && ...))
-    T* addChild(Args&& ... args) {
+    T& push(Args&& ... args) {
         checkForWorkingArea();
-        return m_content->addChild<T>(args...);
+        return m_content->push<T>(args...);
     }
 
     template<typename T>
-    T* addChild(const UINodePars& arg) {
+    T& push(const UINodePars& arg) {
         checkForWorkingArea();
-        return m_content->addChild<T>(arg);
+        return m_content->push<T>(arg);
     }
 
     [[nodiscard]] UINode* getWorkingArea() const { return m_workingArea; }

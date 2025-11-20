@@ -12,10 +12,10 @@ Slider::Slider() : Div() {
     setName(getTypeName<Slider>());
     setFocusAllowed(false);
 
-    m_horLine = UINode::addChild<Div>();
+    m_horLine = &push<Div>();
     m_horLine->setFocusAllowed(false);
 
-    m_knob = UINode::addChild<SliderKnob>();
+    m_knob = &push<SliderKnob>();
     m_knob->setFocusAllowed(false);
 }
 
@@ -49,16 +49,16 @@ void Slider::updateMatrix() {
     }
 }
 
-UINode* Slider::addChild(std::unique_ptr<UINode> child) {
+UINode* Slider::addChild(std::shared_ptr<UINode> child) {
     m_children.emplace_back(std::move(child));
-    auto nd = dynamic_cast<UINode*>(getChildren().back().get());
+    auto nd = dynamic_cast<UINode*>(children().back().get());
 
     // if there is a numeric view as a child, use it to display the value
-    if (m_children.back()->getName() == "NumericView") {
+    if (m_children.back()->name() == "NumericView") {
         m_numView = nd;
     }
 
-    initChild(nd, this);
+    initChild(*nd, this);
 
     // if a value was set earlier, update now
     if (m_numView) {

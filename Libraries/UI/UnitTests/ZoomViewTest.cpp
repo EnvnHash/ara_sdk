@@ -19,19 +19,19 @@ std::array quadSize { ivec2{100, 100}, ivec2{50, 50} };
 std::array quadPos { ivec2{0, 0}, winSize/2 - quadSize[1]/2 };
 std::array quadCol { vec4{1.f, 0.f, 0.f, 1.f}, vec4{0.f, 1.f, 0.f, 1.f} };
 
-static ZoomView* addZoomView(UIApplication& app) {
-    auto zv = app.getRootNode()->addChild<ZoomView>();
-    zv->setZoomRange(50.f, 600.f);
-    zv->keepContentWithinBoundaries(true);
-    zv->showSlider(false);
-    zv->showResetButton(false);
+static ZoomView& addZoomView(UIApplication& app) {
+    auto& zv = app.getRootNode()->push<ZoomView>();
+    zv.setZoomRange(50.f, 600.f);
+    zv.keepContentWithinBoundaries(true);
+    zv.showSlider(false);
+    zv.showResetButton(false);
     return zv;
 }
 
-static ZoomView* addTestDivs(UIApplication& app) {
-    auto zv = addZoomView(app);
+static ZoomView& addTestDivs(UIApplication& app) {
+    auto& zv = addZoomView(app);
     for (int i=0; i<nrTestQuads; ++i) {
-        zv->addChild<Div>({
+        zv.push<Div>({
             .pos = quadPos[i],
             .size = quadSize[i],
             .bgColor = quadCol[i]
@@ -41,17 +41,17 @@ static ZoomView* addTestDivs(UIApplication& app) {
 }
 
 static void addImageButton(UIApplication& app, const ivec2& pos, const ivec2& size) {
-    auto zv = addZoomView(app);
-    auto imgBut = zv->addChild<ImageButton>(UINodePars{
+    auto& zv = addZoomView(app);
+    auto& imgBut = zv.push<ImageButton>(UINodePars{
         .pos = pos,
         .size = size,
         .bgColor = vec4{0.36f, 0.36f, 0.36f, 1.f }
     });
-    imgBut->setImgAlign(align::center, valign::center);
-    imgBut->setImg("Icons/invert_icon.png");
-    imgBut->setOnStateImg("Icons/invert_icon_dark.png", 1);
-    imgBut->setIsToggle(true);
-    imgBut->setClickedCb([&]{
+    imgBut.setImgAlign(align::center, valign::center);
+    imgBut.setImg("Icons/invert_icon.png");
+    imgBut.setOnStateImg("Icons/invert_icon_dark.png", 1);
+    imgBut.setIsToggle(true);
+    imgBut.setClickedCb([&]{
         clicked = true;
     });
 }
@@ -85,9 +85,9 @@ TEST(UITest, ZoomViewAddContentTest) {
 
 TEST(UITest, ZoomViewBasicTest) {
     appBody([&](UIApplication& app){
-        auto zv = addTestDivs(app);
+        auto& zv = addTestDivs(app);
         drawAndSwap(app);
-        zv->setZoom(200.f);
+        zv.setZoom(200.f);
     }, [&](UIApplication& app){
         checkZoomedQuad(app);
     }, winSize.x, winSize.y);
@@ -106,7 +106,7 @@ TEST(UITest, ZoomViewWheelTest) {
 TEST(UITest, ZoomViewWheelCenterTest) {
     ZoomView* zv;
     appBody([&](UIApplication& app){
-        zv = addTestDivs(app);
+        zv = &addTestDivs(app);
         zoomToCenter(app);
     }, [&](UIApplication& app){
         auto mainWin = app.getWinBase()->getWinHandle();

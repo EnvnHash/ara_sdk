@@ -30,7 +30,7 @@ DropDownMenu::~DropDownMenu() {
 
 void DropDownMenu::init() {
     // create the button in the MenuBar which by clicked will expand the EntryList
-    m_menuEntryButt = addChild<Button>();
+    m_menuEntryButt = &push<Button>();
     m_menuEntryButt->setText(m_menuEntryName);
     m_menuEntryButt->setTextAlignX(align::left);
     m_menuEntryButt->setBorderWidth(1);
@@ -104,7 +104,7 @@ void DropDownMenu::open() {
     m_menuEntryButt->setSelected(true);
 
     // create on top of all nodes
-    m_entryList = getRoot()->addChild<Div>();
+    m_entryList = &getRoot()->push<Div>();
     m_entryList->addStyleClass(getStyleClass() + ".list");
     m_entryList->setName("DDM_EntryList");
     m_entryList->setPos(static_cast<int>(m_menuEntryButt->getWinPos().x),
@@ -162,24 +162,24 @@ void DropDownMenu::rebuildEntryList() {
 
     int i = 0;
     for (const auto& entry : m_entries) {
-        auto butt = m_entryList->addChild<Button>();
-        m_entryButts.emplace_back(butt);  // maintain a separate list of entry button since m_entries
+        auto& butt = m_entryList->push<Button>();
+        m_entryButts.emplace_back(&butt);  // maintain a separate list of entry button since m_entries
                                        // may contain other elements
 
         // default
-        butt->setName("Button_" + entry.first);
-        butt->setText(entry.first);
-        butt->setTextAlignX(align::left);
-        butt->setColor(m_sharedRes->colors->at(uiColors::font));
-        butt->setSize(1.f, m_listEntryHeight);
-        butt->setPos(0, m_listEntryHeight * i);
-        butt->setBorderWidth(0);
-        butt->setBackgroundColor(0.f, 0.f, 0.f, 0.f);
-        butt->setFont("regular", 18, align::left, valign::center, butt->getSharedRes()->colors->at(uiColors::font));
-        butt->setPadding(m_sharedRes->padding);
-        butt->setAlign(align::left, valign::top);
+        butt.setName("Button_" + entry.first);
+        butt.setText(entry.first);
+        butt.setTextAlignX(align::left);
+        butt.setColor(m_sharedRes->colors->at(uiColors::font));
+        butt.setSize(1.f, m_listEntryHeight);
+        butt.setPos(0, m_listEntryHeight * i);
+        butt.setBorderWidth(0);
+        butt.setBackgroundColor(0.f, 0.f, 0.f, 0.f);
+        butt.setFont("regular", 18, align::left, valign::center, butt.getSharedRes()->colors->at(uiColors::font));
+        butt.setPadding(m_sharedRes->padding);
+        butt.setAlign(align::left, valign::top);
 
-        butt->setClickedCb([this, entry] {
+        butt.setClickedCb([this, entry] {
             entry.second();
             // push to window gl callbacks which are processed after next
             // iteration in order to have the mouseUp still find this node
@@ -193,10 +193,10 @@ void DropDownMenu::rebuildEntryList() {
         });
 
         // highlight
-        butt->setBorderWidth(1, state::highlighted);
-        butt->setBorderColor(m_sharedRes->colors->at(uiColors::sepLine), state::highlighted);
-        butt->setColor(m_sharedRes->colors->at(uiColors::black), state::highlighted);
-        butt->setBackgroundColor(m_sharedRes->colors->at(uiColors::highlight), state::highlighted);
+        butt.setBorderWidth(1, state::highlighted);
+        butt.setBorderColor(m_sharedRes->colors->at(uiColors::sepLine), state::highlighted);
+        butt.setColor(m_sharedRes->colors->at(uiColors::black), state::highlighted);
+        butt.setBackgroundColor(m_sharedRes->colors->at(uiColors::highlight), state::highlighted);
 
         ++i;
     }

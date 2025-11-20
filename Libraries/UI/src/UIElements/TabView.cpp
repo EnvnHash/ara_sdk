@@ -14,11 +14,11 @@ TabView::TabView() {
     setFocusAllowed(false);
 
     // add a container for the tabs
-    m_tabArea = addChild<Div>();
+    m_tabArea = &push<Div>();
     m_tabArea->setName("TabArea");
     m_tabArea->setHeight(m_TabHeight);
 
-    m_contentArea = addChild<Div>();
+    m_contentArea = &push<Div>();
     m_contentArea->setHeight(-m_TabHeight);
     m_contentArea->setAlignY(valign::bottom);
 
@@ -26,7 +26,7 @@ TabView::TabView() {
     m_tabButtBgColSel   = vec4{.2f, .2f, .2f, 1.0f};
 }
 
-UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode) {
+UINode* TabView::addTab(const std::string& title, std::shared_ptr<UINode> uinode) {
     // be sure there is one row in the table
     if (!m_Tab(0).getCount()) {
         m_Tab(0).add(1);
@@ -36,44 +36,44 @@ UINode* TabView::addTab(const std::string& title, std::unique_ptr<UINode> uinode
 
     if (uinode) {
         // add content
-        auto pushedNode = m_contentArea->addChild(std::move(uinode));  // implicitly sets shared res from parent (this)
-        pushedNode->setVisibility(m_Tab.empty());
+        auto& pushedNode = m_contentArea->push(std::move(uinode));  // implicitly sets shared res from parent (this)
+        pushedNode.setVisibility(m_Tab.empty());
 
         // add a Tab-Button
-        auto tab = m_tabArea->addChild<Button>();
-        tab->setBackgroundColor(m_tabButtBgColDeSel);
-        tab->setFont("regular", 17, align::left, valign::center, textcolor);
-        tab->setPadding(5.f, 0.f, 5.f, 0.f);
-        tab->setText(title);
-        tab->setTextAlignX(align::center);
-        tab->setTextAlignY(valign::center);
-        tab->addMouseClickCb([this](const hidData& data) {
-            auto ret = ranges::find_if(m_tabArea->getChildren(), [&data](auto& item){
-                return item->getId() == data.objId;
+        auto& tab = m_tabArea->push<Button>();
+        tab.setBackgroundColor(m_tabButtBgColDeSel);
+        tab.setFont("regular", 17, align::left, valign::center, textcolor);
+        tab.setPadding(5.f, 0.f, 5.f, 0.f);
+        tab.setText(title);
+        tab.setTextAlignX(align::center);
+        tab.setTextAlignY(valign::center);
+        tab.addMouseClickCb([this](const hidData& data) {
+            auto ret = ranges::find_if(m_tabArea->children(), [&data](auto& item){
+                return std::dynamic_pointer_cast<UINode>(item)->getId() == data.objId;
             });
-            if (ret != m_tabArea->getChildren().end()) {
-                setActivateTab(static_cast<int32_t>(std::distance( m_tabArea->getChildren().begin(), ret)));
+            if (ret != m_tabArea->children().end()) {
+                setActivateTab(static_cast<int32_t>(std::distance( m_tabArea->children().begin(), ret)));
                 setDrawFlag();
                 getSharedRes()->reqRedraw();
             }
         });
 
         // tab underline
-        auto underline = tab->addChild<Div>();
-        underline->setName("underline");
-        underline->setHeight(1);
-        underline->setAlign(align::center, valign::bottom);
-        underline->setBackgroundColor(m_sharedRes->colors->at(uiColors::blue));
-        underline->excludeFromPadding(true);
-        underline->excludeFromObjMap(true);
-        underline->setVisibility(false);
+        auto& underline = tab.push<Div>();
+        underline.setName("underline");
+        underline.setHeight(1);
+        underline.setAlign(align::center, valign::bottom);
+        underline.setBackgroundColor(m_sharedRes->colors->at(uiColors::blue));
+        underline.excludeFromPadding(true);
+        underline.excludeFromObjMap(true);
+        underline.setVisibility(false);
 
         // create a Tab Object, with the title, the content node and the Tab-Button
-        m_Tab.emplace_back(e_tab{title, pushedNode, tab, underline, m_Tab.empty()});
+        m_Tab.emplace_back(e_tab{title, &pushedNode, &tab, &underline, m_Tab.empty()});
 
         arrangeTabs();
         m_geoChanged = true;
-        return pushedNode;
+        return &pushedNode;
     }
 
     return nullptr;

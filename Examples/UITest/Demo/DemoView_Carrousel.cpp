@@ -19,7 +19,7 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
         { CarrouselMode::leftAlign, "leftAlign"},
     };
 
-    addChild<Label>(LabelPars{
+    push<Label>(LabelPars{
         .pos = ivec2{ 0, yOffs },
         .size = ivec2{ 200, 30 },
         .align = align::left,
@@ -31,7 +31,7 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
         .font_height = 18
     });
 
-    auto caru = addChild<Carrousel>(UINodePars{
+    auto caru = push<Carrousel>(UINodePars{
         .pos = ivec2{ 0, yOffs + 30 },
         .size = vec2{ 1.f, 0.25f },
         .bgColor = vec4{ 0.3f, 0.3f, 0.3f, 0.3f},
@@ -60,7 +60,7 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
             slide->setWidth(static_cast<int32_t>(getRandF(90.f, 300.f)));
         }
 
-        auto lbl = slide->addChild<Label>();
+        auto lbl = slide->push<Label>();
         lbl->setFont("regular", 90, align::center, valign::center, black);
         lbl->setText(std::to_string(i));
         lbl->setBackgroundColor(bgColor[i % bgColor.size()]);

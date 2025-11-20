@@ -15,7 +15,7 @@ using namespace glm;
 namespace ara::UiUnitTest::ComboBoxTest {
     void addCombo(UIApplication& app, bool& flag) {
         auto rootNode = app.getMainWindow()->getRootNode();
-        auto combo = rootNode->addChild<ComboBox>(UINodePars{
+        auto& combo = rootNode->push<ComboBox>(UINodePars{
             .pos = ivec2{0,50},
             .size = ivec2{200,40},
             .fgColor = vec4{1.f, 1.f, 1.f, 1.f},
@@ -26,13 +26,13 @@ namespace ara::UiUnitTest::ComboBoxTest {
             .padding = vec4{5.f, 5.f, 5.f, 5.f}
         });
 
-        combo->setMenuName("ComboBox");
-        combo->setFontType("regular");
+        combo.setMenuName("ComboBox");
+        combo.setFontType("regular");
 
-        combo->addEntry("Entry 1", [&]{ LOG << " entry one "; flag = true; });
-        combo->addEntry("Entry 2", [&]{ LOG << " entry two "; });
-        combo->addEntry("Entry 3", [&]{ LOG << " entry three "; });
-        combo->addEntry("Entry 4", [&]{ LOG << " entry four "; });
+        combo.addEntry("Entry 1", [&]{ LOG << " entry one "; flag = true; });
+        combo.addEntry("Entry 2", [&]{ LOG << " entry two "; });
+        combo.addEntry("Entry 3", [&]{ LOG << " entry three "; });
+        combo.addEntry("Entry 4", [&]{ LOG << " entry four "; });
     }
 
     void openMenu(UIApplication& app) {
@@ -69,7 +69,6 @@ namespace ara::UiUnitTest::ComboBoxTest {
     TEST(UITest, ComboBoxTestListHover) {
         bool entryOne = false;
         appBody([&](UIApplication& app){
-            auto mainWin = app.getMainWindow();
             addCombo(app, entryOne);
             openMenu(app);
             hoverOverFirstEntry(app);

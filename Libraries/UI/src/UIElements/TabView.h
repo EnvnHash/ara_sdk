@@ -22,10 +22,10 @@ public:
 
     template <class T>
     T* addTab(std::string title) {
-        return static_cast<T *>(addTab(title, std::make_unique<T>()));
+        return static_cast<T *>(addTab(title, std::make_shared<T>()));
     }
 
-    UINode* addTab(const std::string& title, std::unique_ptr<UINode> uinode);
+    UINode* addTab(const std::string& title, std::shared_ptr<UINode> uinode);
     void    clearTabs();
     bool    setActivateTab(int idx);
     void    setTabSelected(bool val, e_tab& tab) const;

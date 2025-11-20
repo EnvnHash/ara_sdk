@@ -15,7 +15,7 @@ ScrollView::ScrollView() : Div() {
 #ifdef __ANDROID__
     setCanReceiveDrag(true);
 #endif
-    m_content = UINode::addChild<Div>({ .name = "content" });
+    m_content = &UINode::push<Div>({ .name = "content" });
 }
 
 void ScrollView::init() {
@@ -36,7 +36,7 @@ void ScrollView::init() {
 
     // the scroll view size should always stay the same, independent of the scrollbars visibility to achieve this padding
     // is applied when the bars become visible
-    m_HSB = UINode::addChild<UIHScrollBar>(UINodePars{
+    m_HSB = &UINode::push<UIHScrollBar>(UINodePars{
         .size = ivec2(-m_scrollBarSize, m_scrollBarSize),
         .fgColor = m_sharedRes->colors->at(uiColors::sepLine),
         .bgColor = m_sharedRes->colors->at(uiColors::background),
@@ -49,7 +49,7 @@ void ScrollView::init() {
         .excludeFromOutOfBorderCheck = true
     });
 
-    m_VSB = UINode::addChild<UIVScrollBar>(UINodePars{
+    m_VSB = &UINode::push<UIVScrollBar>(UINodePars{
         .size = ivec2{m_scrollBarSize, -m_scrollBarSize},
         .fgColor = m_sharedRes->colors->at(uiColors::sepLine),
         .bgColor = m_sharedRes->colors->at(uiColors::background),
@@ -63,7 +63,7 @@ void ScrollView::init() {
     });
 
     // little div to cover the corner in case both scrollbars are showing
-    m_corner = UINode::addChild<Div>({
+    m_corner = &push<Div>({
         .size = ivec2{m_scrollBarSize, m_scrollBarSize},
         .bgColor = m_sharedRes->colors->at(uiColors::background),
         .name = "UIScrollBarCorner",
@@ -154,11 +154,11 @@ void ScrollView::clearContentChildren() const {
     }
 }
 
-std::vector<std::unique_ptr<UINode>>* ScrollView::getContChildren() const {
+std::list<std::shared_ptr<Node>>* ScrollView::getContChildren() const {
     if (!m_content) {
         return nullptr;
     }
-    return &m_content->getChildren();
+    return &m_content->children();
 }
 
 void ScrollView::mouseWheel(hidData& data) {

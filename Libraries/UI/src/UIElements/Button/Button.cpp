@@ -10,7 +10,7 @@ namespace ara {
 Button::Button() : Label() {
     setName(getTypeName<Button>());
     setFocusAllowed(false);
-    Label::setScissorChildren(true);
+    setScissorChildren(true);
 }
 
 Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::string& text,
@@ -28,7 +28,7 @@ Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::s
       }), m_typoColor({0.f, 0.f, 0.f, 1.f}) {
     setName(getTypeName<Button>());
     setFocusAllowed(false);
-    Label::setScissorChildren(true);
+    setScissorChildren(true);
 }
 
 bool Button::draw(uint32_t& objId) {

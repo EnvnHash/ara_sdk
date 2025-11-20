@@ -14,7 +14,7 @@ namespace ara::UiUnitTest::AlignTest {
 
 void saveAndReload(UIApplication& app, const UINodePars& p) {
     auto root = app.getMainWindow()->getRootNode();
-    auto div = root->addChild<Div>(p);
+    auto div = root->push<Div>(p);
     root->saveAs("test.json");
     root->dump();
     root->remove_child(div);

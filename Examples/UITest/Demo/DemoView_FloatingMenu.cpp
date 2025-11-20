@@ -16,7 +16,7 @@ DemoView_FloatingMenu::DemoView_FloatingMenu() : DemoView("FloatingMenu", glm::v
 }
 
 void DemoView_FloatingMenu::init() {
-    auto div = addChild<Div>({
+    auto div = push<Div>({
         .size = vec2(0.8f, 0.8f),
         .bgColor = vec4{0.3f, 0.3f, 0.3f, 1.f},
         .align = align::center,
@@ -62,7 +62,7 @@ void DemoView_FloatingMenu::init() {
         });
     });
 
-    auto lbl = div->addChild<Label>({
+    auto lbl = div->push<Label>({
         .pos = ivec2{10, 10},
         .size = ivec2{280, 30},
     });

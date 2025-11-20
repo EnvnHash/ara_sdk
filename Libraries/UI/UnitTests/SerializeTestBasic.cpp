@@ -13,7 +13,7 @@ using namespace glm;
 namespace ara::UiUnitTest::AlignTest {
 
 void saveAndReload(UIApplication& app, const UINodePars& p) {
-    auto div = app.getMainWindow()->getRootNode()->addChild<Div>(p);
+    auto div = app.getMainWindow()->getRootNode()->push<Div>(p);
     div->saveAs("test.json");
     app.getMainWindow()->getRootNode()->remove_child(div);
 

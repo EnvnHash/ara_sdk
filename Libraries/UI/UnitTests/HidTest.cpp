@@ -60,11 +60,11 @@ public:
 
 static HidNode* addDiv(UIApplication& app) {
     auto rootNode = app.getMainWindow()->getRootNode();
-    auto div = rootNode->addChild<HidNode>();
-    div->setPos(50,50);
-    div->setSize(200,100);
-    div->setBackgroundColor(1.f, 0.f, 0.f, 1.f);
-    return div;
+    auto& div = rootNode->push<HidNode>();
+    div.setPos(50,50);
+    div.setSize(200,100);
+    div.setBackgroundColor(1.f, 0.f, 0.f, 1.f);
+    return &div;
 }
 
 static void simulateClickLeftRight(UIWindow* mainWin, HidNode* div, const glm::vec2& pos, bool expVal) {
@@ -187,7 +187,7 @@ TEST(UITest, HidDivNestedClick) {
         div = addDiv(app);
         div->setName("div1");
 
-        childDiv = div->addChild<HidNode>();
+        childDiv = &div->push<HidNode>();
         childDiv->setName("div2");
         childDiv->setSize(50,50);
         childDiv->setPos(20,20);
@@ -236,12 +236,12 @@ TEST(UITest, HidDivDoubleNestedClick) {
     appBody([&](UIApplication& app){
         div = addDiv(app);
 
-        childDiv = div->addChild<HidNode>();
+        childDiv = &div->push<HidNode>();
         childDiv->setSize(150,50);
         childDiv->setPos(20,20);
         childDiv->setBackgroundColor(0.f, 0.f, 1.f, 1.f);
 
-        childChildDiv = childDiv->addChild<HidNode>();
+        childChildDiv = &childDiv->push<HidNode>();
         childChildDiv->setSize(30,30);
         childChildDiv->setPos(10,10);
         childChildDiv->setBackgroundColor(0.f, 1.f, 0.f, 1.f);
@@ -293,12 +293,12 @@ TEST(UITest, HidDivNestedClickConsume) {
     appBody([&](UIApplication& app){
         div = addDiv(app);
 
-        childDiv = div->addChild<HidNode>();
+        childDiv = &div->push<HidNode>();
         childDiv->setSize(150,50);
         childDiv->setPos(20,20);
         childDiv->setBackgroundColor(0.f, 0.f, 1.f, 1.f);
 
-        childChildDiv = childDiv->addChild<HidNode>();
+        childChildDiv = &childDiv->push<HidNode>();
         childChildDiv->setSize(30,30);
         childChildDiv->setPos(10,10);
         childChildDiv->setBackgroundColor(0.f, 1.f, 0.f, 1.f);
@@ -375,14 +375,14 @@ TEST(UITest, HidDivNestedClickExclude) {
         div = addDiv(app);
         div->setName("div1");
 
-        childDiv = div->addChild<HidNode>();
+        childDiv = &div->push<HidNode>();
         childDiv->setSize(150,50);
         childDiv->setPos(20,20);
         childDiv->setBackgroundColor(0.f, 0.f, 1.f, 1.f);
         childDiv->excludeFromObjMap(true);
         childDiv->setName("div2");
 
-        childChildDiv = childDiv->addChild<HidNode>();
+        childChildDiv = &childDiv->push<HidNode>();
         childChildDiv->setSize(30,30);
         childChildDiv->setPos(10,10);
         childChildDiv->setBackgroundColor(0.f, 1.f, 0.f, 1.f);
@@ -445,7 +445,7 @@ TEST(UITest, HidDivOverlap) {
     appBody([&](UIApplication& app) {
         div = addDiv(app);
 
-        div2 = app.getRootNode()->addChild<HidNode>();
+        div2 = &app.getRootNode()->push<HidNode>();
         div2->setName("Div2");
         div2->setPos(50,50);
         div2->setSize(200,100);
@@ -478,7 +478,7 @@ TEST(UITest, HidDivInvisibleOverlap) {
     appBody([&](UIApplication& app) {
         div = addDiv(app);
 
-        div2 = app.getRootNode()->addChild<HidNode>();
+        div2 = &app.getRootNode()->push<HidNode>();
         div2->setName("Div2");
         div2->setPos(50,50);
         div2->setSize(200,100);

@@ -22,10 +22,10 @@ namespace ara {
 
 class TestClass : public Node {
 public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(m_arg1, m_arg2, m_arg3)
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_arg1, m_arg2, m_arg3)
 
     TestClass() {
-        Node::setTypeName<TestClass>();
+        setTypeName<TestClass>();
         m_changeCb[cbType::postChange].emplace(this, [this]{
             m_changeCalled++;
         });

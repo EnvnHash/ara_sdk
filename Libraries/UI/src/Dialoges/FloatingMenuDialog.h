@@ -26,7 +26,7 @@ public:
             return nullptr;
         }
 
-        auto newItem = m_base->addChild<T>();
+        auto newItem = m_base->push<T>();
         if (!style.empty()) {
             newItem->addStyleClass(style);
         }

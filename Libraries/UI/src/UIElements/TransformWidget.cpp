@@ -26,12 +26,12 @@ TransformWidget::TransformWidget() : Div() {
 }
 
 void TransformWidget::init() {
-    m_buttCont = addChild<Div>();
+    m_buttCont = &push<Div>();
     m_buttCont->addStyleClass(getStyleClass() + ".buttCont");
     m_buttCont->addMouseClickCb([this](hidData& data) { getWindow()->setInputFocusNode(this); });
     m_buttCont->setScissorChildren(false);
 
-    m_centInd = m_buttCont->addChild<ImageButton>(getStyleClass() + ".centerIndicator");
+    m_centInd = &m_buttCont->push<ImageButton>(getStyleClass() + ".centerIndicator");
     m_centInd->setIsToggle(true);
     m_centInd->setDisabled(true);
 
@@ -39,7 +39,7 @@ void TransformWidget::init() {
 
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 4; j++) {
-            m_arrowButts[i][j] = m_buttCont->addChild<ImageButton>(
+            m_arrowButts[i][j] = &m_buttCont->push<ImageButton>(
                 getStyleClass() + ((i == 0 ? ".butt_trans_" : ".butt_rot_") + m_arrowName[j]));
             m_arrowButts[i][j]->setName(((i == 0 ? "TW_butt_trans_" : "TW_butt_rot_") + m_arrowName[j]));
             m_arrowButts[i][j]->init();
@@ -82,14 +82,14 @@ void TransformWidget::init() {
         }
 
         for (int j = 0; j < 4; j++) {
-            m_arrowLabels[i][j] = m_buttCont->addChild<Label>();
+            m_arrowLabels[i][j] = &m_buttCont->push<Label>();
             m_arrowLabels[i][j]->addStyleClass(getStyleClass() + ((i == 0 ? ".lbl_trans_" : ".lbl_rot_") + m_arrowName[j]));
             m_arrowLabels[i][j]->setName(((i == 0 ? "AR_lbl_trans_" : "AR_lbl_rot_") + m_arrowName[j]));
             m_arrowLabels[i][j]->excludeFromObjMap(true);
         }
 
         for (int j = 0; j < static_cast<int>(twPlane::count); j++) {
-            m_planeSwitcher[i][j] = m_buttCont->addChild<ImageButton>();
+            m_planeSwitcher[i][j] = &m_buttCont->push<ImageButton>();
             m_planeSwitcher[i][j]->addStyleClass(getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_" + string(enum_name(static_cast<twPlane>(j))));
             m_planeSwitcher[i][j]->setIsToggle(true);
             m_planeSwitcher[i][j]->setLod(0.f);
@@ -101,12 +101,12 @@ void TransformWidget::init() {
         }
 
         m_planeSwitcher[i][toType(twPlane::count)] =
-            m_buttCont->addChild<ImageButton>(getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_top");
+            &m_buttCont->push<ImageButton>(getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_top");
         m_planeSwitcher[i][toType(twPlane::count)]->setObjUsesTexAlpha(true);
         m_planeSwitcher[i][toType(twPlane::count)]->setLod(1.f);
 
         m_planeSwitcher[i][toType(twPlane::count) + 1] =
-            m_buttCont->addChild<ImageButton>(getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_bott");
+            &m_buttCont->push<ImageButton>(getStyleClass() + ".ps_" + (i == 0 ? "translate" : "rotate") + "_bott");
         m_planeSwitcher[i][toType(twPlane::count) + 1]->setObjUsesTexAlpha(true);
         m_planeSwitcher[i][toType(twPlane::count) + 1]->setLod(1.f);
     }
@@ -374,7 +374,7 @@ void TransformWidget::setDisabled(bool val, bool forceStyleUpdt) {
     UINode::setDisabled(val, forceStyleUpdt);
 
     for (const auto &it: m_children) {
-        it->setDisabled(val, forceStyleUpdt);
+        dynamic_pointer_cast<UINode>(it)->setDisabled(val, forceStyleUpdt);
     }
 
     for (int i = 0; i < 2; i++) {
@@ -452,7 +452,7 @@ void TransformWidget::setVisibility(bool val) {
 
 void TransformWidget::checkCamFlags() const {
     // in case the modelnode contains a cameraDef, force its projection matrix to be updated
-    if (m_modelNode->getName() == getTypeName<LICamera>() || m_modelNode->getName() == getTypeName<LIProjector>()) {
+    if (m_modelNode && (m_modelNode->getName() == getTypeName<LICamera>() || m_modelNode->getName() == getTypeName<LIProjector>())) {
         dynamic_cast<LICamera *>(m_modelNode)->getCamDef()->setForceUpdtProjMat(true);
         dynamic_cast<LICamera *>(m_modelNode)->getCamDef()->setForceUpdtCb(true);
     }

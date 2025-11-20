@@ -15,7 +15,7 @@ DemoView_ZoomView::DemoView_ZoomView() : DemoView("Zoom view", glm::vec4(.1f,.1f
 }
 
 void DemoView_ZoomView::init() {
-    auto zv = addChild<ZoomView>();
+    auto zv = push<ZoomView>();
     zv->setSize(1.f, -40);
     zv->setAlignY(valign::bottom);
     zv->setBorderColor(1.f, 1.f, 1.f, 0.2f);
@@ -23,7 +23,7 @@ void DemoView_ZoomView::init() {
     zv->setZoomRange(100.f, 600.f);
     zv->keepContentWithinBoundaries(true);
 
-    auto img = zv->addChild<Image>();
+    auto img = zv->push<Image>();
     img->setImg("test/test_img.jpg", 1);
     img->setImgFlags(imgFlags::fill);
 }

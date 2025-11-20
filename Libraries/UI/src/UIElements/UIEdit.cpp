@@ -38,7 +38,7 @@ void UIEdit::init() {
     m_canReceiveDrag = true;
     m_focusAllowed   = true;
 
-    m_caret = addChild<Div>();
+    m_caret = &push<Div>();
     m_caret->setVisibility(false);
     m_caret->excludeFromPadding(true);
 

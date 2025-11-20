@@ -24,67 +24,56 @@ UINode* UINode::getNode(const std::string& name) {
     return fn;
 }
 
-UINode* UINode::addChild(std::unique_ptr<UINode>&& child) {
-    if (!child) {
-        LOGE << "UINode::addChild failed, child empty!";
-        return nullptr;
-    }
-    m_children.emplace_back(std::move(child));
-    reqTreeChanged(true);
-    initChild(m_children.back().get(), this);
-    return m_children.back().get();
-}
-
-UINode* UINode::insertChild(int position, std::unique_ptr<UINode>&& child) {
+UINode* UINode::insertChild(int position, std::shared_ptr<UINode>&& child) {
     if (!child) {
         LOGE << "UINode::insertChild failed, child empty!";
-        return nullptr;
     }
-    auto it = m_children.insert(m_children.begin() + position, std::move(child));
+    auto it = m_children.insert(std::next(m_children.begin(), position), std::move(child));
     reqTreeChanged(true);
-    initChild(it->get(), this);
-    return it->get();
+    auto& newNode = dynamic_cast<UINode &>(*it->get());
+    initChild(newNode, this);
+    return dynamic_cast<UINode*>(it->get());
 }
 
-UINode* UINode::insertAfter(const std::string& name, std::unique_ptr<UINode>&& child) {
+UINode* UINode::insertAfter(const std::string& name, std::shared_ptr<UINode>&& child) {
     if (!child) {
         LOGE << "UINode::insertAfter failed, child empty!";
         return nullptr;
     }
 
     auto r = ranges::find_if(m_children, [&name](auto& it){
-        return name == it->getName();
+        return name == it->name();
     });
 
     if (r != m_children.end()
         && static_cast<int>(std::distance(m_children.begin(), r) +1) <= static_cast<int>(m_children.size())) {
         const auto it = m_children.insert(std::next(r, 1), std::move(child));
         m_reqTreeChanged = true;
-        initChild(it->get(), this);
-        return it->get();
-    } else {
-        return nullptr;
+        auto& newNode = dynamic_cast<UINode &>(*it->get());
+        initChild(newNode, this);
+        return dynamic_cast<UINode*>(it->get());
     }
+    return nullptr;
 }
 
-UINode* UINode::insertChild(const std::string& name, std::unique_ptr<UINode>&& child) {
+UINode* UINode::insertChild(const std::string& name, std::shared_ptr<UINode>&& child) {
     if (!child) {
         LOGE << "UINode::insertAfter failed, child empty!";
         return nullptr;
     }
 
     auto r = ranges::find_if(m_children, [&name](auto& it){
-        return name == it->getName();
+        return name == it->name();
     });
 
     if (r != m_children.end()) {
         const auto it = m_children.insert(r, std::move(child));
         m_reqTreeChanged = true;
-        initChild(it->get(), this);
-        return it->get();
-    } else {
-        return nullptr;
+        auto& newNode = dynamic_cast<UINode &>(*it->get());
+        initChild(newNode, this);
+        return dynamic_cast<UINode*>(it->get());
     }
+    return nullptr;
 }
 
 void UINode::moveChildTo(int position, UINode* node) {
@@ -92,16 +81,16 @@ void UINode::moveChildTo(int position, UINode* node) {
         return;
     }
 
-    auto nodeIt = ranges::find_if(node->getParent()->getChildren(),
+    auto nodeIt = ranges::find_if(node->parent()->children(),
                                   [node](const auto& it) { return node == it.get(); });
-    if (nodeIt == node->getParent()->getChildren().end()) {
+    if (nodeIt == node->parent()->children().end()) {
         return;
     }
 
-    m_children.insert(m_children.begin() + position, make_move_iterator(node->getParent()->getChildren().begin()),
-                      make_move_iterator(node->getParent()->getChildren().begin() + 1));
+    m_children.insert(std::next(m_children.begin(), position), make_move_iterator(node->parent()->children().begin()),
+                      make_move_iterator(std::next(node->parent()->children().begin(), 1)));
 
-    node->getParent()->getChildren().erase(nodeIt, nodeIt + 1);
+    node->parent()->children().erase(nodeIt, std::next(nodeIt, 1));
 
     m_reqTreeChanged = true;
     (*nodeIt)->setParent(this);
@@ -113,7 +102,7 @@ void UINode::remove_child(UINode* node) {
                               [node](const auto& n) { return n.get() == node; });
 
     if (it != m_children.end()) {
-        (*it)->removeFocus();
+        dynamic_cast<UINode*>(it->get())->removeFocus();
         m_children.erase(it);
     }
 
@@ -126,24 +115,25 @@ void UINode::clearChildren() {
     m_children.clear();
 }
 
-void UINode::initChild(UINode* child, UINode* parent) {
+void UINode::initChild(UINode& child, UINode* parent) {
     // check if viewport is initialised
     if (isViewportValid()) {
-        child->setViewport(getViewport());
+        child.setViewport(getViewport());
     }
 
-    child->setSharedRes(parent->getSharedRes());
-    child->setParent(parent);
+    child.setSharedRes(parent->getSharedRes());
+    child.setParent(parent);
 }
 
 uint32_t UINode::getMinChildId(uint32_t minId) {
     auto nextMinId = m_objIdMin ? std::min(m_objIdMin, minId) : minId;
 
     for (const auto& child : m_children) {
-        if (child->getMinId() < nextMinId) {
-            nextMinId = child->getMinId();
+        auto node = dynamic_cast<UINode*>(child.get());
+        if (node->getMinId() < nextMinId) {
+            nextMinId = node->getMinId();
         }
-        nextMinId = child->getMinChildId(nextMinId);
+        nextMinId = node->getMinChildId(nextMinId);
     }
 
     return nextMinId;
@@ -153,10 +143,11 @@ uint32_t UINode::getMaxChildId(uint32_t maxId) {
     auto nextMaxId = std::max(m_objIdMax, maxId);
 
     for (const auto& child : m_children) {
-        if (child->getMaxId() > nextMaxId) {
-            nextMaxId = child->getMaxId();
+        auto node = dynamic_cast<UINode*>(child.get());
+        if (node->getMaxId() > nextMaxId) {
+            nextMaxId = node->getMaxId();
         }
-        nextMaxId = child->getMaxChildId(nextMaxId);
+        nextMaxId = node->getMaxChildId(nextMaxId);
     }
 
     return nextMaxId;
@@ -164,10 +155,11 @@ uint32_t UINode::getMaxChildId(uint32_t maxId) {
 
 UINode* UINode::getNodeById(uint32_t searchID) {
     for (const auto& child : m_children) {
-        if (child->getId() == searchID) {
-            return child.get();
+        auto node = dynamic_cast<UINode*>(child.get());
+        if (node->getId() == searchID) {
+            return node;
         }
-        if (auto cN = child->getNodeById(searchID)) {
+        if (auto cN = node->getNodeById(searchID)) {
             return cN;
         }
     }
@@ -183,7 +175,7 @@ uint32_t UINode::getSubNodeCount() {
 void UINode::getSubNodeCountIt(UINode* node, uint32_t* count) {
     for (const auto& it : node->m_children) {
         ++(*count);
-        getSubNodeCountIt(it.get(), count);
+        getSubNodeCountIt(dynamic_cast<UINode*>(it.get()), count);
     }
 }
 
@@ -192,7 +184,7 @@ bool UINode::getNodeIt(UINode* node, UINode** fn, const std::string& name) {
         *fn = node;
         return true;
     } else {
-        return ranges::any_of(node->m_children, [&](auto& it){ return getNodeIt(it.get(), fn, name); });
+        return ranges::any_of(node->m_children, [&](auto& it){ return getNodeIt(dynamic_cast<UINode*>(it.get()), fn, name); });
     }
 }
 
@@ -308,7 +300,7 @@ void UINode::drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool& s
     }
 
     for (const auto& it : m_children) {
-        it->drawIt(ss, objId, treeChanged, skip);
+        dynamic_cast<UINode*>(it.get())->drawIt(ss, objId, treeChanged, skip);
     }
 
     // Note: although the recursive call to drawIt is not the last call, difference in performance is not relevant
@@ -345,10 +337,11 @@ void UINode::updtMatrIt(scissorStack* ss) {
 
     // continue iterating through the children
     for (const auto& it : m_children) {
-        it->updtMatrIt(ss);
+        auto node = dynamic_cast<UINode*>(it.get());
+        node->updtMatrIt(ss);
         // keep track of the children's boundingBox
-        if (it->isVisible()) {
-            it->recChildrenBoundBox(m_childBoundBox);
+        if (node->isVisible()) {
+            node->recChildrenBoundBox(m_childBoundBox);
         }
     }
 
@@ -583,32 +576,33 @@ void UINode::setAlignment() {
 }
 
 bool UINode::objPosIt(ObjPosIt& opi) {
-    bool inBounds = (*opi.it)->isInBounds(opi.pos);
+    auto opiIt = dynamic_cast<UINode*>(opi.it->get());
+    bool inBounds = opiIt->isInBounds(opi.pos);
 
     // optional callback for additional ui elements there are not part of the regular tree
-    if ((*opi.it)->m_outOfTreeObjId) {
+    if (opiIt->m_outOfTreeObjId) {
         bool foundOot = false;
-        foundOot = (*opi.it)->m_outOfTreeObjId(opi);
+        foundOot = opiIt->m_outOfTreeObjId(opi);
         if (foundOot) {
             return false;
         }
     }
 
-    if (inBounds && !(*opi.it)->isExcludedFromObjMap() && (*opi.it)->isVisible() && opi.foundTreeLevel < opi.treeLevel) {
-        opi.foundNode      = opi.it->get();
-        opi.foundId        = (*opi.it)->getId();
+    if (inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible() && opi.foundTreeLevel < opi.treeLevel) {
+        opi.foundNode      = opiIt;
+        opi.foundId        = opiIt->getId();
         opi.foundTreeLevel = opi.treeLevel;
         // call hid interaction method on node, can optionally stop iteration
     }
 
     // if within bounds, not excluded from objMap and no more children -> found it!!
-    if (inBounds && !(*opi.it)->isExcludedFromObjMap() && (*opi.it)->isVisible() && (*opi.it)->m_children.empty()) {
+    if (inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible() && opiIt->m_children.empty()) {
         return false;
-    } else if (inBounds && !(*opi.it)->isExcludedFromObjMap() && (*opi.it)->isVisible() && !(*opi.it)->m_children.empty()) {
+    } else if (inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible() && !opiIt->m_children.empty()) {
         // if within bounds and more children -> step down
         opi.parents.emplace_back(opi.it);
-        opi.list = &(*opi.it)->m_children;
-        opi.it   = (*opi.it)->m_children.end() - 1;
+        opi.list = &(*opi.it)->children();
+        opi.it   = std::next((*opi.it)->children().end(), -1);
         ++opi.treeLevel;
     } else {
         // try to step towards front
@@ -616,11 +610,11 @@ bool UINode::objPosIt(ObjPosIt& opi) {
             --opi.it;
         } else {
             // if this is the front element, try to go one level up
-            if (opi.parents.empty() || !(*opi.parents.back())->getParent()) {
+            if (opi.parents.empty() || !(*opi.parents.back())->parent()) {
                 return false;
             }
 
-            opi.list = &(*opi.parents.back())->getParent()->m_children;
+            opi.list = &(*opi.parents.back())->parent()->children();
             opi.it   = opi.parents.back();
             opi.parents.pop_back();
             --opi.treeLevel;
@@ -720,14 +714,14 @@ void UINode::setDrawFlag() const {
 void UINode::setChanged(bool val) {
     m_geoChanged = val;
     for (const auto& it : m_children) {
-        it->setChanged(val);
+        dynamic_cast<UINode*>(it.get())->setChanged(val);
     }
 }
 
 void UINode::setViewport(float x, float y, float width, float height) {
     UINodeGeom::setViewport(x, y, width, height);
     for (const auto& it : m_children) {
-        it->setViewport(x, y, width, height);
+        dynamic_cast<UINode*>(it.get())->setViewport(x, y, width, height);
     }
 }
 
@@ -796,7 +790,7 @@ void UINode::keyDownIt(hidData& data) {
     UINodeHID::keyDownIt(data);
 
     for (const auto& it : m_children) {
-        it->keyDownIt(data);
+        dynamic_cast<UINode*>(it.get())->keyDownIt(data);
     }
 }
 
@@ -804,14 +798,14 @@ void UINode::onCharIt(hidData& data) {
     UINodeHID::onCharIt(data);
 
     for (const auto& it : m_children) {
-        it->onCharIt(data);
+        dynamic_cast<UINode*>(it.get())->onCharIt(data);
     }
 }
 
 bool UINode::removeFocus() {
     UINodeHID::removeFocus();
     for (const auto& it : m_children) {
-        it->removeFocus();
+        dynamic_cast<UINode*>(it.get())->removeFocus();
     }
     return false;
 }
@@ -859,7 +853,7 @@ void UINode::dumpIt(UINode* node, int* depth, bool dumpLocalTree) {
 
     ++(*depth);
     for (const auto& it : node->m_children) {
-        dumpIt(it.get(), depth, dumpLocalTree);
+        dumpIt(dynamic_cast<UINode*>(it.get()), depth, dumpLocalTree);
     }
     --(*depth);
 }

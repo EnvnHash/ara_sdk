@@ -256,7 +256,7 @@ void UIWindow::initUI(const UIWindowParams& par) {
 
     if (!par.initToCurrentCtx) {
         if (!m_contentRoot) {
-            m_contentRoot = m_uiRoot.addChild<UINode>();
+            m_contentRoot = &m_uiRoot.push<UINode>();
             m_contentRoot->setName("ContentRoot");
             m_contentRoot->setSize(1.f, -(m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2));
             m_contentRoot->setAlignY(valign::bottom);
@@ -265,7 +265,7 @@ void UIWindow::initUI(const UIWindowParams& par) {
 #if defined(ARA_USE_GLFW)
         // create a MenuBar
         if (!m_menuBar) {
-            m_menuBar = m_uiRoot.addChild<MenuBar>();
+            m_menuBar = &m_uiRoot.push<MenuBar>();
             m_menuBar->setPadding(m_stdPadding * 3, m_stdPadding, m_stdPadding * 3, m_stdPadding);
             m_menuBar->setAlignY(valign::top);
             m_menuBar->setSize(1.f, m_sharedRes.gridSize.y + static_cast<int>(m_stdPadding) * 2);
@@ -292,7 +292,7 @@ void UIWindow::initUI(const UIWindowParams& par) {
         }
 
         if (!m_windowResizeAreas) {
-            m_windowResizeAreas = m_uiRoot.addChild<WindowResizeAreas>();
+            m_windowResizeAreas = &m_uiRoot.push<WindowResizeAreas>();
             m_windowResizeAreas->setSize(1.f, 1.f);
         }
 #endif
@@ -1224,8 +1224,8 @@ void UIWindow::onNodeRemove(UINode *node) {
 }
 
 int32_t UIWindow::getObjAtPos(vec2& pos, hidEvent evt) {
-    m_opi.it             = m_uiRoot.getChildren().end() - 1; // take the last element of the tree
-    m_opi.list           = &m_uiRoot.getChildren();
+    m_opi.it             = std::next(m_uiRoot.children().end(), -1); // take the last element of the tree
+    m_opi.list           = &m_uiRoot.children();
     m_opi.pos            = pos;
     m_opi.foundNode      = nullptr;
     m_opi.treeLevel      = 0;

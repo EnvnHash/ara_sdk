@@ -61,50 +61,68 @@ public:
 
     virtual void init() {}
 
+    template <class T>
+    T& push(std::shared_ptr<T>&& ptr) {
+        if (!ptr) {
+            LOGE << "UINode::addChild failed, child empty!";
+        }
+        prePush();
+        {
+            std::unique_lock l(m_mtx);
+            m_children.emplace_back(ptr);
+            setDefault(m_children.back());
+        }
+        signalChange(cbType::postAddChild);
+        reqTreeChanged(true);
+        auto& node = dynamic_cast<T&>(*m_children.back().get());
+        initChild(node, this);
+        return node;
+    }
+
     template <typename T, typename... Args>
     requires (sizeof...(Args) != 1 || (!std::is_same_v<Args, UINodePars> && ...))
-    T* addChild(Args&& ... args) {
-        return static_cast<T*>(UINode::addChild(std::make_unique<T>(args...)));
+    T& push(Args&& ... args) {
+        return static_cast<T&>(UINode::push(std::make_shared<T>(args...)));
     }
 
     template<typename T>
-    T* addChild(const UINodePars& arg) {
-        auto node = UINode::addChild(std::make_unique<T>());
+    T& push(const UINodePars& arg) {
+        auto& node = UINode::push(std::make_shared<T>());
 
-        std::visit([node](auto&& arg) {
+        std::visit([&node](auto&& arg) {
             if (arg.x != 0 || arg.y != 0) {
-                node->setPos(arg);
+                node.setPos(arg);
             }
         }, arg.pos);
 
-        std::visit([node](auto&& arg) {
+        std::visit([&node](auto&& arg) {
             if (arg.x != 0 || arg.y != 0) {
-                node->setSize(arg);
+                node.setSize(arg);
             }
         }, arg.size);
 
         std::array<std::function<void()>, 17> funcMap {
-            [&arg, &node] { node->setColor(arg.fgColor.value()); },
-            [&arg, &node] { node->setBackgroundColor(arg.bgColor.value()); },
-            [&arg, &node] { node->setName(arg.name.value()); },
-            [&arg, &node] { node->addStyleClass(arg.style.value()); },
-            [&arg, &node] { node->setAlignX(arg.align.value()); },
-            [&arg, &node] { node->setAlignY(arg.valign.value()); },
-            [&arg, &node] { node->setBorderWidth(arg.borderWidth.value()); },
-            [&arg, &node] { node->setBorderRadius(arg.borderRadius.value()); },
-            [&arg, &node] { node->setBorderColor(arg.borderColor.value()); },
-            [&arg, &node] { auto p = arg.padding.value(); node->setPadding(glm::vec4{p.x, p.y, p.z, p.w}); },
-            [&arg, &node] { node->setVisibility(arg.visible.value()); },
-            [&arg, &node] { node->excludeFromObjMap(arg.excludeFromObjMap.value()); },
-            [&arg, &node] { node->excludeFromParentViewTrans(arg.excludeFromParentViewTrans.value()); },
-            [&arg, &node] { node->excludeFromScissoring(arg.excludeFromScissoring.value()); },
-            [&arg, &node] { node->excludeFromPadding(arg.excludeFromPadding.value()); },
-            [&arg, &node] { node->excludeFromOutOfBorderCheck(arg.excludeFromOutOfBorderCheck.value()); },
-            [&arg, &node] { node->setPath(arg.filePath.value()); }
+            [&arg, &node] { node.setColor(arg.fgColor.value()); },
+            [&arg, &node] { node.setBackgroundColor(arg.bgColor.value()); },
+            [&arg, &node] { node.setName(arg.name.value()); },
+            [&arg, &node] { node.addStyleClass(arg.style.value()); },
+            [&arg, &node] { node.setAlignX(arg.align.value()); },
+            [&arg, &node] { node.setAlignY(arg.valign.value()); },
+            [&arg, &node] { node.setBorderWidth(arg.borderWidth.value()); },
+            [&arg, &node] { node.setBorderRadius(arg.borderRadius.value()); },
+            [&arg, &node] { node.setBorderColor(arg.borderColor.value()); },
+            [&arg, &node] { auto p = arg.padding.value(); node.setPadding(glm::vec4{p.x, p.y, p.z, p.w}); },
+            [&arg, &node] { node.setVisibility(arg.visible.value()); },
+            [&arg, &node] { node.excludeFromObjMap(arg.excludeFromObjMap.value()); },
+            [&arg, &node] { node.excludeFromParentViewTrans(arg.excludeFromParentViewTrans.value()); },
+            [&arg, &node] { node.excludeFromScissoring(arg.excludeFromScissoring.value()); },
+            [&arg, &node] { node.excludeFromPadding(arg.excludeFromPadding.value()); },
+            [&arg, &node] { node.excludeFromOutOfBorderCheck(arg.excludeFromOutOfBorderCheck.value()); },
+            [&arg, &node] { node.setPath(arg.filePath.value()); }
         };
         iterateOptionals(arg.getTiedOptionals(), arrayToTuple(funcMap), std::make_index_sequence<funcMap.size()>{});
 
-        return static_cast<T*>(node);
+        return static_cast<T&>(node);
     }
 
     template <typename T>
@@ -171,16 +189,16 @@ public:
         m_onValChangedCb[&prop] = nullptr;
     }
 
-    virtual UINode* addChild(std::unique_ptr<UINode>&& child);
-    virtual UINode* insertChild(int32_t position, std::unique_ptr<UINode>&& child);
-    virtual UINode* insertChild(const std::string& name, std::unique_ptr<UINode>&& child);
-    virtual UINode* insertAfter(const std::string& name, std::unique_ptr<UINode>&& child);
+    //virtual UINode& push(std::shared_ptr<UINode>&& child);
+    virtual UINode* insertChild(int32_t position, std::shared_ptr<UINode>&& child);
+    virtual UINode* insertChild(const std::string& name, std::shared_ptr<UINode>&& child);
+    virtual UINode* insertAfter(const std::string& name, std::shared_ptr<UINode>&& child);
     virtual void moveChildTo(int32_t position, UINode*);
     virtual void remove_child(UINode* node);
     virtual void clearChildren();
     virtual void removeGLResources() {}
 
-    void initChild(UINode* child, UINode* parent);
+    void initChild(UINode& child, UINode* parent);
 
     /** draw the scenegraph from this node onwards */
     virtual void drawAsRoot(uint32_t& objId);
@@ -241,7 +259,7 @@ public:
     auto&                   getIndDrawBlock() { return m_indDrawBlock; }
     uint32_t                getMinChildId(uint32_t minId = UINT32_MAX);
     uint32_t                getMaxChildId(uint32_t maxId = 0);
-    auto&                   getChildren() { return m_children; }
+    //auto&                   getChildren() { return m_children; }
     [[nodiscard]] auto      getId() const { return m_objIdMin; }
     [[nodiscard]] auto      getMinId() const { return m_objIdMin; }
     [[nodiscard]] auto      getMaxId() const { return m_objIdMax; }
@@ -283,25 +301,25 @@ public:
     static void limitTexCoordsToBounds(float* tc, int32_t stdQuadVertInd, const glm::vec2& tvSize, const glm::vec2& uvSize);
 
     // generic iteration function for calculations on parts of the node-tree
-    static void itrNodes(const std::unique_ptr<UINode>& node, void* result,
-                         const std::function<void*(const std::unique_ptr<UINode>&, void*)>& f) {
+    static void itrNodes(const std::shared_ptr<UINode>& node, void* result,
+                         const std::function<void*(const std::shared_ptr<UINode>&, void*)>& f) {
         result = f(node, result);
-        for (const auto& it : node->getChildren()) {
-            itrNodes(it, result, f);
+        for (const auto& it : node->children()) {
+            itrNodes(std::dynamic_pointer_cast<UINode>(it), result, f);
         }
     }
 
-    static void itrNodes(const std::unique_ptr<UINode>& node, const std::function<void(const std::unique_ptr<UINode>&)>& f) {
+    static void itrNodes(const std::shared_ptr<UINode>& node, const std::function<void(const std::shared_ptr<UINode>&)>& f) {
         f(node);
-        for (const auto& it : node->getChildren()) {
-            itrNodes(it, f);
+        for (const auto& it : node->children()) {
+            itrNodes(std::dynamic_pointer_cast<UINode>(it), f);
         }
     }
 
     static void itrNodes(UINode* node, const std::function<void(UINode*)>& f)  {
         f(node);
-        for (auto& it : node->getChildren()) {
-            itrNodes(it.get(), f);
+        for (auto& it : node->children()) {
+            itrNodes(dynamic_cast<UINode*>(it.get()), f);
         }
     }
 
@@ -314,7 +332,7 @@ protected:
 
     std::shared_ptr<DrawManager>            m_drawMan;
     ObjectMapInteraction*                   m_objSel = nullptr;
-    std::vector<std::unique_ptr<UINode>>    m_children;
+    //std::vector<std::unique_ptr<UINode>>    m_children;
 
     uint32_t m_objIdMin   = 0;
     uint32_t m_objIdMax   = 0;
@@ -329,7 +347,7 @@ protected:
     bool m_referenceDrawing     = false;
 
     std::function<void()>     m_changeCb;
-    std::string               m_name;
+    //std::string               m_name;
 
     std::unordered_map<void*, std::shared_ptr<std::function<void(std::any)>>> m_onValChangedCb;
 

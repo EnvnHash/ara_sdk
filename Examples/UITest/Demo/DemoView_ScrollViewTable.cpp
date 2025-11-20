@@ -17,7 +17,7 @@ void DemoView_ScrollViewList::init() {
         data.emplace_back("Row Nr "+std::to_string(i));
     }
 
-    auto l1 = addChild<List<listT>>(UINodePars{
+    auto l1 = push<List<listT>>(UINodePars{
         .size = vec2{ 0.3f, 1.f },
         .style = "list_demo"
     });
@@ -30,7 +30,7 @@ void DemoView_ScrollViewList::init() {
         data2.emplace_back(i);
     }
 
-    auto l2 = addChild<List<listT2>>(UINodePars{
+    auto l2 = push<List<listT2>>(UINodePars{
         .pos = vec2{ 0.33f, 0.f },
         .size = vec2{ 0.3f, 1.f },
         .style = "list_demo"
@@ -44,7 +44,7 @@ void DemoView_ScrollViewList::init() {
         m_data3.push_back("Prop Nr "+std::to_string(i));
     }
 
-    auto l3 = addChild<PList<std::string>>(UINodePars{
+    auto l3 = push<PList<std::string>>(UINodePars{
         .pos = vec2{ 0.66f, 0.f },
         .size = vec2{ 0.3f, 1.f },
         .style = "list_demo"

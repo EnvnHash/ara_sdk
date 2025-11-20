@@ -24,7 +24,7 @@ void ZoomView::init() {
     addWorkingArea();
 
     if (m_showSlider || m_showResetButton) {
-        m_bottomMenu = UINode::addChild<Div>();
+        m_bottomMenu = &UINode::push<Div>();
         m_bottomMenu->setHeight(m_bottMenHeight);
         m_bottomMenu->setAlignY(valign::bottom);
     }
@@ -66,7 +66,7 @@ void ZoomView::addWorkingArea() {
         return;
     }
 
-    m_workingArea = UINode::addChild<Div>({ .name = "ZoomViewWorkingArea"});
+    m_workingArea = &UINode::push<Div>({ .name = "ZoomViewWorkingArea"});
     if (m_showSlider || m_showResetButton) {
         m_workingArea->setHeight(-m_bottMenHeight);
     }
@@ -77,7 +77,7 @@ void ZoomView::addWorkingArea() {
         dragContent(data);
     }, true);
 
-    m_content = m_workingArea->addChild<Div>({ .name = "ZoomViewContent" });
+    m_content = &m_workingArea->push<Div>({ .name = "ZoomViewContent" });
 }
 
 void ZoomView::dragContent(hidData& data) {
@@ -91,7 +91,7 @@ void ZoomView::dragContent(hidData& data) {
 }
 
 void ZoomView::addZoomSlider() {
-    m_zoomSlider = m_bottomMenu->addChild<PropSlider>({
+    m_zoomSlider = &m_bottomMenu->push<PropSlider>({
         .bgColor = vec4{0.2f, 0.2f, 0.2f, 1.f},
         .name = "ZoomViewZoomSlider"
     });
@@ -104,7 +104,7 @@ void ZoomView::addZoomSlider() {
 }
 
 void ZoomView::addResetButton() {
-    m_resetZoom = m_bottomMenu->addChild<Button>({
+    m_resetZoom = &m_bottomMenu->push<Button>({
         .size = vec2{ m_resetButtWidth, 1.f },
         .bgColor = vec4{0.2f, 0.2f, 0.2f, 1.f},
         .align = align::right,

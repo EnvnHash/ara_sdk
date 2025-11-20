@@ -14,10 +14,10 @@ void drawQuadAndCheck(align ax, valign ay) {
     ivec2 size = { 200, 100 };
     vec4 col = { 1.f, 0.f, 0.f, 1.f };
     appBody([&](UIApplication& app){
-        auto div = app.getMainWindow()->getRootNode()->addChild<Div>();
-        div->setSize(size.x, size.y);
-        div->setBackgroundColor(col);
-        div->setAlign(ax, ay);
+        auto& div = app.getMainWindow()->getRootNode()->push<Div>();
+        div.setSize(size.x, size.y);
+        div.setBackgroundColor(col);
+        div.setAlign(ax, ay);
     },
     [&](UIApplication& app){
         auto mainWin = app.getWinBase()->getWinHandle();
@@ -55,14 +55,14 @@ TEST(UITest, BorderRadiusOutOfBoundsLimit) {
     vec4 col = { 1.f, 0.f, 0.f, 1.f };
     appBody([&](UIApplication& app){
         auto win = app.getMainWindow();
-        auto div = win->getRootNode()->addChild<Div>();
-        div->setPos(-100, 100);
-        div->setSize(size.x, size.y);
-        div->setBackgroundColor(col);
-        div->setAlign(align::left, valign::bottom);
-        div->setBorderRadius(40);
-        div->setBorderWidth(20);
-        div->setBorderColor(0.f, 0.5f, 1.f, 1.f);
+        auto& div = win->getRootNode()->push<Div>();
+        div.setPos(-100, 100);
+        div.setSize(size.x, size.y);
+        div.setBackgroundColor(col);
+        div.setAlign(align::left, valign::bottom);
+        div.setBorderRadius(40);
+        div.setBorderWidth(20);
+        div.setBorderColor(0.f, 0.5f, 1.f, 1.f);
     }, [&](UIApplication& app){
         auto mainWin = app.getWinBase();
         compareFrameBufferToImage(filesystem::current_path() / "border_radius_oob.png",

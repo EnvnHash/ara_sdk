@@ -16,7 +16,7 @@ FloatingMenuDialog::FloatingMenuDialog(const UIWindowParams& params) : UIWindow(
     setEnableWindowResizeHandles(false);
     setEnableMenuBar(false);
 
-    m_base = getRootNode()->addChild<Div>();
+    m_base = &getRootNode()->push<Div>();
     m_base->setBackgroundColor(0.2f, 0.2f, 0.2f, 1.f);
 
     // add a callback to listen for clicks on all windows

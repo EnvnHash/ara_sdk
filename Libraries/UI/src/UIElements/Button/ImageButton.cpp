@@ -14,18 +14,18 @@ ImageButton::ImageButton() : Div(), m_fontSize(22) {
     setName(getTypeName<ImageButton>());
     setFocusAllowed(false);
     setScissorChildren(true);
-    m_onstate_back_tex = addChild<Image>();
+    m_onstate_back_tex = &push<Image>();
     m_tex.resize(1);
-    m_tex[0] = addChild<Image>();
+    m_tex[0] = &push<Image>();
 }
 
 ImageButton::ImageButton(const std::string& file) : Div() {
     setName(getTypeName<ImageButton>());
     setFocusAllowed(false);
     setScissorChildren(true);
-    m_onstate_back_tex = addChild<Image>();
+    m_onstate_back_tex = &push<Image>();
     m_tex.resize(1);
-    m_tex[0] = addChild<Image>();
+    m_tex[0] = &push<Image>();
     m_tex[0]->setImg(file, 8);
 }
 
@@ -110,7 +110,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
         std::string name                            = inode->m_value;
         m_setStyleFunc[st][styleInit::imageOnState] = [name, this]() {
             if (m_tex.size() < 2) {
-                m_tex.emplace_back(addChild<Image>());
+                m_tex.emplace_back(&push<Image>());
                 m_tex.back()->excludeFromObjMap(true);
                 m_tex.back()->setVisibility(false);
             }
@@ -129,7 +129,7 @@ void ImageButton::updateStyleIt(ResNode *node, state st, const std::string &styl
                 m_procIbl = true;
             }
             while ((m_tex.size() - 1) < i) {
-                m_tex.emplace_back(addChild<Image>());
+                m_tex.emplace_back(&push<Image>());
                 m_tex.back()->excludeFromObjMap(true);
                 m_tex.back()->setVisibility(false);
                 m_tex.back()->setLod(m_lod);
@@ -440,7 +440,7 @@ void ImageButton::setColor(glm::vec4 col, state st, bool rebuildStyle) const {
 
 void ImageButton::setStateImg(const std::string& file, imgType tp, int mipMapLevel) {
     while (m_tex.size() <= static_cast<size_t>(tp)) {
-        m_tex.emplace_back(addChild<Image>());
+        m_tex.emplace_back(&push<Image>());
     }
 
     m_tex[static_cast<size_t>(tp)]->setImg(file, mipMapLevel);
@@ -480,7 +480,7 @@ void ImageButton::setObjUsesTexAlpha(bool val) {
 void ImageButton::setImg(const std::string& file, int mipMapLevel) {
     if (m_tex.empty()) {
         m_tex.resize(1);
-        m_tex[0] = addChild<Image>();
+        m_tex[0] = &push<Image>();
     }
 
     if (m_tex[0]) {
@@ -493,7 +493,7 @@ void ImageButton::setImg(const std::string& file, int mipMapLevel) {
 void ImageButton::setImgByStyle(const std::string& style) {
     if (m_tex.empty()) {
         m_tex.resize(1);
-        m_tex[0] = addChild<Image>();
+        m_tex[0] = &push<Image>();
     }
 
     if (m_tex[0]) {
@@ -504,7 +504,7 @@ void ImageButton::setImgByStyle(const std::string& style) {
 void ImageButton::setImgAlign(align ax, valign ay) {
     if (m_tex.empty()) {
         m_tex.resize(1);
-        m_tex[0] = addChild<Image>();
+        m_tex[0] = &push<Image>();
     }
 
     if (m_tex[0]) {
@@ -546,7 +546,7 @@ void ImageButton::setSectionSize(const glm::ivec2& sz) {
 
 void ImageButton::setSectionSep(const glm::ivec2& sp) {
     m_secSep = sp;
-    for (auto it : getValidTex()) {
+    for (const auto it : getValidTex()) {
         it->setSectionSep(sp);
     }
 }

@@ -27,7 +27,7 @@ void WindowResizeAreas::init() {
     // those by ourselves
     int dragAreaSize = 10;
     for (int i = 0; i < 8; i++) {
-        m_winResizeAreas.emplace_back(addChild<WindowResizeArea>());
+        m_winResizeAreas.emplace_back(&push<WindowResizeArea>());
     }
 
     // top
@@ -69,16 +69,16 @@ void WindowResizeAreas::init() {
     m_winResizeAreas[7]->setSize(dragAreaSize, dragAreaSize);
     m_winResizeAreas[7]->setAlign(align::right, valign::bottom);
 
-    for (auto &it : m_winResizeAreas)
+    for (auto &it : m_winResizeAreas) {
         it->addMouseOutCb([m_win](const hidData& data) {
-            // don't change the mouse cursor to 0 on mouse out if the new node
-            // is also a WindowResizeArea
+            // don't change the mouse cursor to 0 on mouse out if the new node is also a WindowResizeArea
             if (data.newNode && static_cast<UINode *>(data.newNode)->getName() == getTypeName<WindowResizeAreas>()) {
                 return;
             }
 
             m_win->setMouseCursor(WinMouseIcon::arrow);
         });
+    }
 
 #endif
 }

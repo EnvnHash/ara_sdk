@@ -56,7 +56,7 @@ public:
         setBRMargin(dx, dy);
     }  // Table margins
 
-    virtual UINode* setCell(int row, int column, const std::vector<std::unique_ptr<UINode>>::iterator& nodeIt);
+    virtual UINode* setCell(int row, int column, const std::vector<std::shared_ptr<UINode>>::iterator& nodeIt);
     virtual void setFixedCellSize(bool val);
 
     virtual bool clearCell(int row, int column, bool updateGeo = true);
@@ -109,13 +109,13 @@ public:
 
     /** add a new UINode to the Table */
     template <typename T>
-    T* setCell(int row, int column, std::unique_ptr<T> node = nullptr) {
+    T* setCell(int row, int column, std::shared_ptr<T> node = nullptr) {
         if (int idx; (idx = m_Cells.rowColumnToIndex(row, column, true)) >= 0) {
             T* newNode;
             if (node) {
-                newNode = static_cast<T *>(m_Cells[idx].ui_node->addChild(std::move(node)));
+                newNode = static_cast<T*>(&m_Cells[idx].ui_node->push(std::move(node)));
             } else {
-                newNode = m_Cells[idx].ui_node->addChild<T>();
+                newNode = &m_Cells[idx].ui_node->push<T>();
             }
 
             m_Cells[idx].content = newNode;

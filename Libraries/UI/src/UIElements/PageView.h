@@ -9,7 +9,7 @@ public:
     PageView();
     ~PageView() override = default;
 
-    virtual UINode* addPage(std::unique_ptr<UINode> child);
+    virtual UINode* addPage(std::shared_ptr<UINode> child);
     virtual void    showPage(int idx);
 
     [[nodiscard]] size_t getNrPages() const { return m_pages.size(); }
@@ -20,7 +20,7 @@ public:
             it->setVisibility(false);
         }
 
-        auto newNode = m_content->addChild(std::make_unique<T>());
+        auto newNode = m_content->push(std::make_unique<T>());
         newNode->addStyleClass(styleClass);
         m_pages.emplace_back(newNode);
         m_pages.back()->setVisibility(true);

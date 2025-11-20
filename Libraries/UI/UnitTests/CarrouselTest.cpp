@@ -16,14 +16,14 @@ namespace ara::UiUnitTest::CarrouselTest {
 
 Carrousel* addCarrousel(UIApplication& app, CarrouselMode cm, int32_t spacing, int32_t padding) {
     auto root = app.getRootNode();
-    auto caru = root->addChild<Carrousel>({
+    auto& caru = root->push<Carrousel>({
         .padding = vec4{padding, padding, padding, padding}
     });
-    caru->setMode(cm);
-    caru->showSelector(false);
-    caru->setSpacing(spacing);
+    caru.setMode(cm);
+    caru.showSelector(false);
+    caru.setSpacing(spacing);
     if (cm == CarrouselMode::leftAlign) {
-        caru->showArrows(true);
+        caru.showArrows(true);
     }
 
     std::array bkColor { vec4{1.f, 0.f, 0.f, 1.f}, vec4{0.1f, 0.9f, 0.f, 1.f}, vec4{0.1f, 0.2f, 0.8f, 1.f},
@@ -32,17 +32,17 @@ Carrousel* addCarrousel(UIApplication& app, CarrouselMode cm, int32_t spacing, i
     std::array<int32_t, 5> slideWidth { 100, 160, 80, 200, 120 };
 
     for (int i=0; i<5; i++) {
-        auto slide = caru->add();
+        auto slide = caru.add();
         if (cm == CarrouselMode::leftAlign) {
             slide->setWidth(slideWidth[i]);
         }
 
-        auto lbl = slide->addChild<Label>();
-        lbl->setFont("regular", 80, align::center, valign::center, col);
-        lbl->setText(std::to_string(i));
-        lbl->setBackgroundColor(bkColor[i]);
+        auto& lbl = slide->push<Label>();
+        lbl.setFont("regular", 80, align::center, valign::center, col);
+        lbl.setText(std::to_string(i));
+        lbl.setBackgroundColor(bkColor[i]);
     }
-    return caru;
+    return &caru;
 }
 
 static void simulateClickLeft(UIApplication& app, /*ImageButton* butt,*/ const glm::vec2& pos, bool expVal) {

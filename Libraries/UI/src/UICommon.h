@@ -60,12 +60,13 @@ enum class sliderScale : int32_t { slideLinear = 0, slidSqrt, slidSquared };
 enum class imgFlags : uint32_t { fill = 1, scale = 1 << 1, hflip = 1 << 2, vflip = 1 << 3, integer = 1 << 4, noAspect = 1 << 5};
 
 class UINode;
+class Node;
 
 class ObjPosIt {
 public:
-    std::vector<std::unique_ptr<UINode>>::iterator              it;
-    std::list<std::vector<std::unique_ptr<UINode>>::iterator>   parents;
-    std::vector<std::unique_ptr<UINode>>*                       list           = nullptr;
+    std::list<std::shared_ptr<Node>>::iterator            it;
+    std::list<std::list<std::shared_ptr<Node>>::iterator>   parents;
+    std::list<std::shared_ptr<Node>>*                       list = nullptr;
 
     UINode*             foundNode      = nullptr;
     uint32_t            foundId        = 0;

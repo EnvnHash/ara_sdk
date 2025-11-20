@@ -19,7 +19,7 @@ public:
     template <class T>
     UINode* set(type t) {
         if (m_root) {
-            m_node[t] = m_root->addChild<T>();
+            m_node[t] = m_root->push<T>();
             if (t == type::back) {
                 m_node[t]->setAlpha(0.f);
             }

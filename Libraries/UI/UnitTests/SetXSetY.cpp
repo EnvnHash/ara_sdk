@@ -25,16 +25,16 @@ TEST(UITest, SetXSetY)
         auto rootNode = app.getRootNode();
 
         // create a Div (simplest Element)
-        auto div = rootNode->addChild<Div>();
-        div->setName("test");
+        auto& div = rootNode->push<Div>();
+        div.setName("test");
 
         int width = 200, height = 100;
         int posX = 120, posY = 310;
-        div->setPos(posX, posY);
-        div->setSize(width, height);
+        div.setPos(posX, posY);
+        div.setSize(width, height);
 
         vec4 col = { 1.f, 0.f, 0.f, 1.f };
-        div->setBackgroundColor(col);
+        div.setBackgroundColor(col);
 
         EXPECT_EQ( postGLError(), GL_NO_ERROR); // be sure that there is no opengl error
 
