@@ -34,7 +34,6 @@ Button& setupTestButton(UIApplication& app, Property<bool>* prop=nullptr) {
         button.setProp(*prop);
     }
 
-    rootNode->dump();
     return button;
 }
 

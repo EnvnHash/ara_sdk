@@ -10,15 +10,15 @@
 using namespace std;
 using namespace glm;
 
-namespace ara::UiUnitTest::AlignTest {
+namespace ara::UiUnitTest::SerializeBasicTest {
 
 void saveAndReload(UIApplication& app, const UINodePars& p) {
-    auto div = app.getMainWindow()->getRootNode()->push<Div>(p);
-    div->saveAs("test.json");
-    app.getMainWindow()->getRootNode()->remove_child(div);
+    auto& div = app.getMainWindow()->getRootNode()->push<Div>(p);
+    div.saveAs("test.json");
+    app.getMainWindow()->getRootNode()->remove(div);
 
-    auto div2 = app.getMainWindow()->getRootNode()->addChild<Div>();
-    div2->load(filesystem::path("test.json"));
+    auto& div2 = app.getMainWindow()->getRootNode()->push<Div>();
+    div2.load(filesystem::path("test.json"));
 }
 
 void drawQuadAndCheck(const UINodePars& p) {
