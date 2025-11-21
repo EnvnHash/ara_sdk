@@ -16,64 +16,22 @@ namespace ara {
 
 UINode::UINode() {
     setName(getTypeName<UINode>());
+    setOnChangeCb(cbType::postAddChild, this, [this] {
+        reqTreeChanged(true);
+        auto& node = dynamic_cast<UINode&>(*m_children.back().get());
+        initChild(node, this);
+    });
+
+    setOnChangeCb(cbType::postRemoveChild, this, [this] {
+        removeFocus();
+        m_reqTreeChanged = true;
+    });
 }
 
 UINode* UINode::getNode(const std::string& name) {
     UINode* fn = nullptr;
     getNodeIt(this, &fn, name);
     return fn;
-}
-
-UINode* UINode::insertChild(int position, std::shared_ptr<UINode>&& child) {
-    if (!child) {
-        LOGE << "UINode::insertChild failed, child empty!";
-    }
-    auto it = m_children.insert(std::next(m_children.begin(), position), std::move(child));
-    reqTreeChanged(true);
-    auto& newNode = dynamic_cast<UINode &>(*it->get());
-    initChild(newNode, this);
-    return dynamic_cast<UINode*>(it->get());
-}
-
-UINode* UINode::insertAfter(const std::string& name, std::shared_ptr<UINode>&& child) {
-    if (!child) {
-        LOGE << "UINode::insertAfter failed, child empty!";
-        return nullptr;
-    }
-
-    auto r = ranges::find_if(m_children, [&name](auto& it){
-        return name == it->name();
-    });
-
-    if (r != m_children.end()
-        && static_cast<int>(std::distance(m_children.begin(), r) +1) <= static_cast<int>(m_children.size())) {
-        const auto it = m_children.insert(std::next(r, 1), std::move(child));
-        m_reqTreeChanged = true;
-        auto& newNode = dynamic_cast<UINode &>(*it->get());
-        initChild(newNode, this);
-        return dynamic_cast<UINode*>(it->get());
-    }
-    return nullptr;
-}
-
-UINode* UINode::insertChild(const std::string& name, std::shared_ptr<UINode>&& child) {
-    if (!child) {
-        LOGE << "UINode::insertAfter failed, child empty!";
-        return nullptr;
-    }
-
-    auto r = ranges::find_if(m_children, [&name](auto& it){
-        return name == it->name();
-    });
-
-    if (r != m_children.end()) {
-        const auto it = m_children.insert(r, std::move(child));
-        m_reqTreeChanged = true;
-        auto& newNode = dynamic_cast<UINode &>(*it->get());
-        initChild(newNode, this);
-        return dynamic_cast<UINode*>(it->get());
-    }
-    return nullptr;
 }
 
 void UINode::moveChildTo(int position, UINode* node) {
@@ -109,12 +67,6 @@ void UINode::remove_child(UINode* node) {
     m_reqTreeChanged = true;
 }
 
-void UINode::clearChildren() {
-    removeFocus();
-    m_reqTreeChanged = true;
-    m_children.clear();
-}
-
 void UINode::initChild(UINode& child, UINode* parent) {
     // check if viewport is initialised
     if (isViewportValid()) {
@@ -125,7 +77,7 @@ void UINode::initChild(UINode& child, UINode* parent) {
     child.setParent(parent);
 }
 
-uint32_t UINode::getMinChildId(uint32_t minId) {
+uint32_t UINode::getMinChildId(uint32_t minId) const {
     auto nextMinId = m_objIdMin ? std::min(m_objIdMin, minId) : minId;
 
     for (const auto& child : m_children) {

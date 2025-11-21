@@ -64,12 +64,24 @@ public:
     Node();
     virtual ~Node();
 
+    void prePush() {
+        if (!m_undoBuf.empty()) {
+            saveState();
+        }
+        signalChange(cbType::preAddChild);
+    }
+
     template <class T>
     T& push() {
+        return push(std::make_shared<T>());
+    }
+
+    template <class T>
+    T& push(const std::shared_ptr<T>& ptr) {
         prePush();
         {
             std::unique_lock l(m_mtx);
-            m_children.emplace_back(std::make_shared<T>());
+            m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
         signalChange(cbType::postAddChild);
@@ -89,22 +101,52 @@ public:
     }
 
     template <class T>
-    T& push(const std::shared_ptr<T>& ptr) {
-        prePush();
-        {
-            std::unique_lock l(m_mtx);
-            m_children.emplace_back(ptr);
-            setDefault(m_children.back());
+    T& insertChild(int position, std::shared_ptr<T>&& child) {
+        if (!child) {
+            LOGE << "Node::insertChild failed, child empty!";
+        } else {
+            auto it = m_children.insert(std::next(m_children.begin(), position), std::move(child));
+            signalChange(cbType::postAddChild);
+            return static_cast<T&>(*m_children.back().get());
         }
-        signalChange(cbType::postAddChild);
-        return static_cast<T&>(*m_children.back().get());
+        return push<T>(child);
     }
 
-    void prePush() {
-        if (!m_undoBuf.empty()) {
-            saveState();
+    template <class T>
+    T& insertAfter(const std::string& name, std::shared_ptr<T>&& child) {
+        if (!child) {
+            LOGE << "Node::insertAfter failed, child empty!";
+        } else {
+            auto r = std::ranges::find_if(m_children, [&name](auto& it){
+                return name == it->name();
+            });
+
+            if (r != m_children.end()
+                && static_cast<int>(std::distance(m_children.begin(), r) +1) <= static_cast<int>(m_children.size())) {
+                const auto it = m_children.insert(std::next(r, 1), std::move(child));
+                signalChange(cbType::postAddChild);
+                return dynamic_cast<T&>(*it->get());
+            }
         }
-        signalChange(cbType::preAddChild);
+        return push<T>(child);
+    }
+
+    template <class T>
+    T& insertChild(const std::string& name, std::shared_ptr<T>&& child) {
+        if (!child) {
+            LOGE << "UINode::insertAfter failed, child empty!";
+        } else {
+            auto r = std::ranges::find_if(m_children, [&name](auto& it){
+                return name == it->name();
+            });
+
+            if (r != m_children.end()) {
+                const auto it = m_children.insert(r, std::move(child));
+                signalChange(cbType::postAddChild);
+                return dynamic_cast<T&>(*it->get());
+            }
+        }
+        return push<T>(child);
     }
 
     void setDefault(std::shared_ptr<Node> &child) {
@@ -226,7 +268,7 @@ public:
     void                                    checkAndAddWatchPath(const std::string& fn);
     void                                    checkWatchThreadRunning();
     virtual void                            setWatch(bool val);
-    void                                    startWatchThread();
+    static void                             startWatchThread();
     static void                             watchThreadIterate();
     static void                             stopWatchThread();
 
@@ -245,7 +287,7 @@ public:
     void setTypeName(const std::string& name)   { m_typeName = name; }
     void setParent(Node* ptr)                   { m_parent = ptr; }
     void setUndoBufferRoot(Node* node)          { m_undoBufRoot = node; }
-    void setOnChangeCb(Node::cbType cbType, void *ptr, std::function<void()> func)  { m_changeCb[cbType][ptr] = std::move(func); }
+    void setOnChangeCb(cbType cbType, void *ptr, std::function<void()> func)  { m_changeCb[cbType][ptr] = std::move(func); }
 
     static nlohmann::json getValues(const nlohmann::json& j) {
         nlohmann::json valueJson;

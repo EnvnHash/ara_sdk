@@ -7,7 +7,7 @@ using namespace std;
 
 namespace ara {
 
-Button::Button() : Label() {
+Button::Button() {
     setName(getTypeName<Button>());
     setFocusAllowed(false);
     setScissorChildren(true);

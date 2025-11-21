@@ -79,7 +79,7 @@ void Node::remove(Node* node) {
                 it();
             }
             {
-                unique_lock<std::mutex> l(m_mtx);
+                unique_lock l(m_mtx);
                 m_children.erase(res);
             }
             for (auto &it : postRemoveCbs) {
@@ -123,15 +123,15 @@ deque<Node*> Node::findChild(const string& name) {
 }
 
 void Node::removeChangeCb(Node::cbType cbType, void *ptr) {
-        auto c = m_changeCb[cbType].find(ptr);
-        if (c != m_changeCb[cbType].end()) {
-            m_changeCb[cbType].erase(c);
-        }
+    auto c = m_changeCb[cbType].find(ptr);
+    if (c != m_changeCb[cbType].end()) {
+        m_changeCb[cbType].erase(c);
     }
+}
 
 void Node::signalChange(Node::cbType cbType) {
-    for (auto &it : m_changeCb[cbType]) {
-        it.second();
+    for (auto &val: m_changeCb[cbType] | views::values) {
+        val();
     }
 }
 
@@ -171,7 +171,7 @@ void Node::deserialize(const string& str) {
 void Node::deserialize(const json& j, std::optional<std::list<std::function<void()>*>*> postLoadCbs) {
     if (serializeValues() != getValues(j)) {
         deserializeValues(j);
-        for (const auto& [fst, func] : m_changeCb[cbType::postChange]) {
+        for (const auto &func: m_changeCb[cbType::postChange] | views::values) {
             func();
         }
     }
@@ -192,7 +192,7 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
             if (it != existingChildren.end()) {
                 it->second->deserialize(*jChild, postLoadCbsArg);
                 // assure correct order
-                auto childIt = find_if(m_children.begin(), m_children.end(), [&](auto& el){ return el.get() == it->second; });
+                auto childIt = ranges::find_if(m_children, [&](auto& el){ return el.get() == it->second; });
                 auto childIdx = distance(m_children.begin(), childIt);
                 auto jChildIdx = distance(j["children"].begin(), jChild);
                 if (childIdx != jChildIdx) {
@@ -201,8 +201,7 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
                 existingChildren.erase(it);
             } else {
                 // Create a new child and add it to the node
-                auto fact_child = m_factory.create(jChild->at("typeName"));
-                if (fact_child) {
+                if (auto fact_child = m_factory.create(jChild->at("typeName"))) {
                     auto& newChild = push(std::move(fact_child));
                     newChild.deserialize(*jChild, postLoadCbsArg);
                 }
@@ -357,15 +356,15 @@ bool Node::iterateChildren(Node& node, const function<void(Node&)>& f) {
 deque<function<void()>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
     deque<function<void()>> list;
     if  (!withChildrenOnly || !m_children.empty()) {
-        for (auto &it : m_changeCb[cbType]) {
-            list.emplace_back(it.second);
+        for (auto &val: m_changeCb[cbType] | views::values) {
+            list.emplace_back(val);
         }
     }
 
     iterateChildren(*this, [&withChildrenOnly, &list, &cbType](Node& node) {
         if  (!withChildrenOnly || !node.children().empty()) {
-            for (auto &it: node.changeCb()[cbType]) {
-                list.emplace_back(it.second);
+            for (auto &val: node.changeCb()[cbType] | views::values) {
+                list.emplace_back(val);
             }
         }
         return true;
@@ -454,7 +453,7 @@ void Node::setWatch(bool val) {
 
 void Node::startWatchThread() {
 #ifndef ARA_USE_CMRC
-    m_watchThrd = thread([this]{
+    m_watchThrd = thread([]{
         while (m_watchThreadRunning) {
             watchThreadIterate();
             this_thread::sleep_for(0.7s);

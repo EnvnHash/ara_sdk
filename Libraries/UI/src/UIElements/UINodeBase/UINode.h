@@ -47,7 +47,7 @@ public:
     std::optional<bool> excludeFromOutOfBorderCheck{};
     std::optional<std::filesystem::path> filePath{};
 
-    auto getTiedOptionals() const {
+    [[nodiscard]] auto getTiedOptionals() const {
         return std::tie(fgColor, bgColor, name, style, align, valign, borderWidth, borderRadius, borderColor, padding,
                         visible, excludeFromObjMap, excludeFromParentViewTrans, excludeFromScissoring, excludeFromPadding,
                         excludeFromOutOfBorderCheck, filePath);
@@ -61,6 +61,7 @@ public:
 
     virtual void init() {}
 
+    // convenience template overwrite
     template <class T>
     T& push(std::shared_ptr<T>&& ptr) {
         if (!ptr) {
@@ -73,21 +74,18 @@ public:
             setDefault(m_children.back());
         }
         signalChange(cbType::postAddChild);
-        reqTreeChanged(true);
-        auto& node = dynamic_cast<T&>(*m_children.back().get());
-        initChild(node, this);
-        return node;
+        return dynamic_cast<T&>(*m_children.back().get());
     }
 
     template <typename T, typename... Args>
     requires (sizeof...(Args) != 1 || (!std::is_same_v<Args, UINodePars> && ...))
     T& push(Args&& ... args) {
-        return static_cast<T&>(UINode::push(std::make_shared<T>(args...)));
+        return static_cast<T&>(Node::push(std::make_shared<T>(args...)));
     }
 
     template<typename T>
     T& push(const UINodePars& arg) {
-        auto& node = UINode::push(std::make_shared<T>());
+        auto& node = Node::push(std::make_shared<T>());
 
         std::visit([&node](auto&& arg) {
             if (arg.x != 0 || arg.y != 0) {
@@ -126,18 +124,18 @@ public:
     }
 
     template <typename T>
-    T* insertChild(int32_t position) {
-        return static_cast<T*>(UINode::insertChild(position, std::make_unique<T>()));
+    T& insertChild(int32_t position) {
+        return dynamic_cast<T&>(insertChild(position, std::make_unique<T>()));
     }
 
     template <typename T>
-    T* insertChild(const std::string& name) {
-        return static_cast<T*>(UINode::insertChild(name, std::make_unique<T>()));
+    T& insertChild(const std::string& name) {
+        return dynamic_cast<T&>(insertChild(name, std::make_unique<T>()));
     }
 
     template <typename T>
-    T* insertAfter(const std::string& name) {
-        return static_cast<T*>(UINode::insertAfter(name, std::make_unique<T>()));
+    T& insertAfter(const std::string& name) {
+        return dynamic_cast<T&>(insertAfter(name, std::make_unique<T>()));
     }
 
     template <typename T>
@@ -189,13 +187,8 @@ public:
         m_onValChangedCb[&prop] = nullptr;
     }
 
-    //virtual UINode& push(std::shared_ptr<UINode>&& child);
-    virtual UINode* insertChild(int32_t position, std::shared_ptr<UINode>&& child);
-    virtual UINode* insertChild(const std::string& name, std::shared_ptr<UINode>&& child);
-    virtual UINode* insertAfter(const std::string& name, std::shared_ptr<UINode>&& child);
     virtual void moveChildTo(int32_t position, UINode*);
     virtual void remove_child(UINode* node);
-    virtual void clearChildren();
     virtual void removeGLResources() {}
 
     void initChild(UINode& child, UINode* parent);
@@ -257,7 +250,7 @@ public:
     auto                    getVaoOffset() const { return m_indDrawBlock.vaoOffset; }
     auto&                   getDivData() { return m_indDrawBlock.vaoData; }
     auto&                   getIndDrawBlock() { return m_indDrawBlock; }
-    uint32_t                getMinChildId(uint32_t minId = UINT32_MAX);
+    uint32_t                getMinChildId(uint32_t minId = UINT32_MAX) const;
     uint32_t                getMaxChildId(uint32_t maxId = 0);
     //auto&                   getChildren() { return m_children; }
     [[nodiscard]] auto      getId() const { return m_objIdMin; }
