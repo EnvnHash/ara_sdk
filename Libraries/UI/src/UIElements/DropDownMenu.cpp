@@ -126,7 +126,7 @@ void DropDownMenu::close() {
     if (m_open && m_entryList) {
         m_open = false;
         m_entryButts.clear();
-        getRoot()->remove_child(m_entryList);
+        getRoot()->remove(m_entryList);
 
         m_entryList = nullptr;
     }

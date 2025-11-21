@@ -188,7 +188,6 @@ public:
     }
 
     virtual void moveChildTo(int32_t position, UINode*);
-    virtual void remove_child(UINode* node);
     virtual void removeGLResources() {}
 
     void initChild(UINode& child, UINode* parent);

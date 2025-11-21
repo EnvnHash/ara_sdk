@@ -261,7 +261,7 @@ bool UITable::removeRow(int row) {
 
             if (m_Cells[idx].ui_node) {
                 m_Cells[idx].ui_node->clearChildren();
-                remove_child(m_Cells[idx].ui_node);
+                remove(m_Cells[idx].ui_node);
             }
 
             cellsToDelete.emplace_back(m_Cells.begin() + idx);
@@ -284,7 +284,7 @@ void UITable::clearCells() {
         it.content = nullptr;
         if (it.ui_node) {
             it.ui_node->clearChildren();
-            remove_child(it.ui_node);
+            remove(it.ui_node);
         }
     }
 

@@ -54,19 +54,6 @@ void UINode::moveChildTo(int position, UINode* node) {
     (*nodeIt)->setParent(this);
 }
 
-void UINode::remove_child(UINode* node) {
-    // be sure the node to delete is really a child of this node
-    auto it = ranges::find_if(m_children,
-                              [node](const auto& n) { return n.get() == node; });
-
-    if (it != m_children.end()) {
-        dynamic_cast<UINode*>(it->get())->removeFocus();
-        m_children.erase(it);
-    }
-
-    m_reqTreeChanged = true;
-}
-
 void UINode::initChild(UINode& child, UINode* parent) {
     // check if viewport is initialised
     if (isViewportValid()) {
