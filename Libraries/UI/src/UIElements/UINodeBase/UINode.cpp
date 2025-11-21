@@ -22,7 +22,7 @@ UINode::UINode() {
         initChild(node, this);
     });
 
-    setOnChangeCb(cbType::postRemoveChild, this, [this] {
+    setOnChangeCb(cbType::preRemoveChild, this, [this] {
         removeFocus();
         m_reqTreeChanged = true;
     });

@@ -14,7 +14,7 @@ public:
 
     template <class T>
     T* add(const std::string& name) {
-        m_nodes[name] = m_rootNode->push<T>();
+        m_nodes[name] = &m_rootNode->push<T>();
         m_nodes[name]->setVisibility(false);
         return dynamic_cast<T*>(m_nodes[name]);
     }
@@ -30,7 +30,7 @@ public:
     virtual void setRootNode(UINode* node);
 
     UINode* get(const std::string& name);
-    void setTransitionTime(double val) { m_transTime = val; }
+    void setTransitionTime(const double val) { m_transTime = val; }
 
 protected:
     UINode*                                     m_rootNode = nullptr;
