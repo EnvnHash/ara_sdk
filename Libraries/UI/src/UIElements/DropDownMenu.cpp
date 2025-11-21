@@ -12,7 +12,8 @@ using namespace ara::mouse;
 
 namespace ara {
 
-DropDownMenu::DropDownMenu() : Div() {
+DropDownMenu::DropDownMenu() {
+    setTypeName<DropDownMenu>();
     setName(getTypeName<DropDownMenu>());
     setFocusAllowed(false);
     UINode::loadStyleDefaults();

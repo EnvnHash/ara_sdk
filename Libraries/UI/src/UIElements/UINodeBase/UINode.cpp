@@ -15,6 +15,7 @@ using namespace glm;
 namespace ara {
 
 UINode::UINode() {
+    setTypeName<UINode>();
     setName(getTypeName<UINode>());
     setOnChangeCb(cbType::postAddChild, this, [this] {
         reqTreeChanged(true);

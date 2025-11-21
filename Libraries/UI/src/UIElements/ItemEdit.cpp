@@ -13,6 +13,7 @@ using namespace std;
 namespace ara {
 
 ItemEdit::ItemEdit() : m_rowHeight(30.f) {
+    setTypeName<ItemEdit>();
     setName(getTypeName<ItemEdit>());
     setFocusAllowed(false);
 }

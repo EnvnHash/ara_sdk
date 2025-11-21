@@ -9,6 +9,7 @@ namespace ara {
 
 Slider::Slider() : Div() {
     m_canReceiveDrag = true;
+    setTypeName<Slider>();
     setName(getTypeName<Slider>());
     setFocusAllowed(false);
 

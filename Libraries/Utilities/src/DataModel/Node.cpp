@@ -64,6 +64,10 @@ void Node::pop() {
     }
 }
 
+void Node::remove(Node& node) {
+    remove(&node);
+}
+
 void Node::remove(Node* node) {
     if (m_undoBufRoot) {
         m_undoBufRoot->saveState();

@@ -9,7 +9,8 @@ using namespace std;
 
 namespace ara {
 
-ScrollBar::ScrollBar() : Div() {
+ScrollBar::ScrollBar() {
+    setTypeName<ScrollBar>();
     setName(getTypeName<ScrollBar>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;

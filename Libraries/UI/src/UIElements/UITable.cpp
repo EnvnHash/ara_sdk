@@ -9,12 +9,14 @@ using namespace std;
 
 namespace ara {
 UITable::UITable() {
+    setTypeName<UITable>();
     setName(getTypeName<UITable>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;
 }
 
 UITable::UITable(const UITableParameters& par) {
+    setTypeName<UITable>();
     setName(getTypeName<UITable>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;

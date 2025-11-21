@@ -13,6 +13,7 @@ using namespace glm;
 namespace ara {
 
 Grid::Grid() {
+    setTypeName<Grid>();
     setName(getTypeName<Grid>());
     excludeFromObjMap(true);
 #ifndef FORCE_INMEDIATEMODE_RENDERING

@@ -19,7 +19,7 @@
 namespace ara::node {
 
 Color::Color() {
-    ara::Node::setTypeName<node::Color>();
+    setTypeName<Color>();
     m_changeCb[Node::cbType::postChange][this] = [this]{
         m_rgba[3] = 1.f;
 

@@ -12,13 +12,15 @@ using namespace std;
 
 namespace ara {
 
-Spinner::Spinner() : Div() {
+Spinner::Spinner() {
+    setTypeName<Spinner>();
     setName(getTypeName<Spinner>());
     setFocusAllowed(false);
     UINode::setColor(1.f, 1.f, 1.f, 1.f);
 }
 
-Spinner::Spinner(SpinnerPars& pars) : Div() {
+Spinner::Spinner(SpinnerPars& pars) {
+    setTypeName<Spinner>();
     setName(getTypeName<Spinner>());
     setFocusAllowed(false);
     setPos(pars.pos);

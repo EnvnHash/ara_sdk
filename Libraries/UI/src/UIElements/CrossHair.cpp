@@ -13,6 +13,7 @@ using namespace glm;
 namespace ara {
 
 CrossHair::CrossHair() {
+    setTypeName<CrossHair>();
     setName(getTypeName<CrossHair>());
     excludeFromObjMap(true);
 #ifndef FORCE_INMEDIATEMODE_RENDERING

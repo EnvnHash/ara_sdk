@@ -8,7 +8,8 @@ using namespace std;
 
 namespace ara {
 
-ScrollView::ScrollView() : Div() {
+ScrollView::ScrollView() {
+    setTypeName<ScrollView>();
     setName(getTypeName<ScrollView>());
     setFocusAllowed(false);
     setScissorChildren(true);

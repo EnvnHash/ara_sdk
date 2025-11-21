@@ -6,7 +6,6 @@
 
 #include <OSFileDialog.h>
 #include <StopWatch.h>
-#include <UINodeFact.h>
 #include <UISharedRes.h>
 #include <UICommon.h>
 #include <WindowManagement/GLFWWindow.h>

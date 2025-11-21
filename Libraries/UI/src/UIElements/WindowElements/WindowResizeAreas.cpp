@@ -14,6 +14,7 @@ namespace ara {
 
 WindowResizeAreas::WindowResizeAreas() {
     excludeFromObjMap(true);
+    setTypeName<WindowResizeAreas>();
     setName(getTypeName<WindowResizeAreas>());
     setFocusAllowed(false);
 }

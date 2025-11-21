@@ -13,6 +13,7 @@ namespace ara {
 
 MenuBar::MenuBar() {
     m_canReceiveDrag = true;
+    setTypeName<MenuBar>();
     setName(getTypeName<MenuBar>());
     setFocusAllowed(false);
 }

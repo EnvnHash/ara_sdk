@@ -12,7 +12,7 @@ namespace ara {
 template <class T>
 class Scene3D : public Scene3DBase {
 public:
-    Scene3D() : Scene3DBase() {}
+    Scene3D() {}
     ~Scene3D() override = default;
 
     void initCamSet() override      { Scene3DBase::initCamSet<T>(); }

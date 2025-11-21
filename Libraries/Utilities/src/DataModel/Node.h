@@ -240,6 +240,7 @@ public:
     }
 
     void                                    pop();
+    void                                    remove(Node&);
     void                                    remove(Node*);
     void                                    removeChangeCb(cbType, void *ptr);
     std::deque<Node*>                       findChild(const std::string& name);

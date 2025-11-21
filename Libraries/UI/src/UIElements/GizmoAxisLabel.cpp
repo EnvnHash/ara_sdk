@@ -12,7 +12,8 @@ using namespace glm;
 
 namespace ara {
 
-GizmoAxisLabel::GizmoAxisLabel() : Image() {
+GizmoAxisLabel::GizmoAxisLabel() {
+    setTypeName<GizmoAxisLabel>();
     setName(getTypeName<GizmoAxisLabel>());
     m_drawImmediate = true;
 }

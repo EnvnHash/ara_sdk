@@ -20,6 +20,7 @@ namespace fs = std::filesystem;
 namespace ara {
 
 Scene3DTool::Scene3DTool() {
+    setTypeName<Scene3DTool>();
     setName(getTypeName<Scene3DTool>());
 }
 

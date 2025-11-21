@@ -8,6 +8,7 @@ using namespace std;
 namespace ara {
 
 Button::Button() {
+    setTypeName<Button>();
     setName(getTypeName<Button>());
     setFocusAllowed(false);
     setScissorChildren(true);

@@ -19,8 +19,9 @@ using namespace std;
 
 namespace ara {
 
-Scene3DBase::Scene3DBase() : Div(), m_shCol(nullptr) {
-    Div::setName(getTypeName<Scene3DBase>());
+Scene3DBase::Scene3DBase()  {
+    setTypeName<Scene3DBase>();
+    setName(getTypeName<Scene3DBase>());
     s_sd.netCameras = static_cast<void *>(&m_netCameras);
     setForceInit(true);
     UINode::setCanReceiveDrag(true);

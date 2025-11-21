@@ -12,7 +12,7 @@ class Image;
 
 class ComboBox : public DropDownMenu {
 public:
-    ComboBox() { setName(getTypeName<ComboBox>()); }
+    ComboBox() { setTypeName<ComboBox>(); setName(getTypeName<ComboBox>()); }
     ~ComboBox() override = default;
 
     void init() override;

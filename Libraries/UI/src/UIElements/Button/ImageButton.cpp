@@ -11,6 +11,7 @@ using namespace std;
 namespace ara {
 
 ImageButton::ImageButton() : Div(), m_fontSize(22) {
+    setTypeName<ImageButton>();
     setName(getTypeName<ImageButton>());
     setFocusAllowed(false);
     setScissorChildren(true);
@@ -20,6 +21,7 @@ ImageButton::ImageButton() : Div(), m_fontSize(22) {
 }
 
 ImageButton::ImageButton(const std::string& file) : Div() {
+    setTypeName<ImageButton>();
     setName(getTypeName<ImageButton>());
     setFocusAllowed(false);
     setScissorChildren(true);

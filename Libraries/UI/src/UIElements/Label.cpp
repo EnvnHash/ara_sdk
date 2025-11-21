@@ -14,6 +14,7 @@ Label::Label() {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
+    setTypeName<Label>();
     setName(getTypeName<Label>());
     setFocusAllowed(false);
 }
@@ -23,6 +24,7 @@ Label::Label(const LabelPars &initData) {
     m_drawImmediate = false;
 #endif
     setFocusAllowed(false);
+    setTypeName<Label>();
     setName(getTypeName<Label>());
     setPos(initData.pos.x, initData.pos.y);
     setSize(initData.size.x, initData.size.y);

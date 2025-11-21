@@ -9,7 +9,7 @@
 #include <Property.h>
 #include <UIElements/UIEdit.h>
 
-namespace ara::proj {
+namespace ara {
 
 template<typename T>
 concept PEditPropTypeSingle = std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path> || std::is_integral_v<T> || std::is_floating_point_v<T>;
@@ -19,7 +19,7 @@ concept PEditPropTypeVec = std::is_same_v<T, glm::vec2> || std::is_same_v<T, glm
 
 class PEdit : public UIEdit, ItemRef {
 public:
-    PEdit(ItemUi *item = nullptr) : UIEdit(), ItemRef(item) {}
+    PEdit(ItemUi *item = nullptr) :  ItemRef(item) {}
     virtual ~PEdit() {}
 
     template<PEditPropTypeSingle T>
@@ -31,7 +31,7 @@ public:
             }
             *prop = txt;
         }, prop);
-        setOnLostFocusCb([this, prop] { *prop = m_Text; });
+        setOnLostFocusCb([this, prop] { *prop = m_text; });
         setText((*prop)());
         if (typeid(T) != typeid(std::string) && typeid(T) != typeid(std::filesystem::path)) {
             setMinMax(prop->getMin(), prop->getMax());
@@ -55,7 +55,7 @@ public:
 
         setOnLostFocusCb([this, prop, idx] {
             T newVal = (*prop)();
-            newVal[idx]       = (int)atoi(m_Text.c_str());
+            newVal[idx]       = (int)atoi(m_text.c_str());
             (*prop)           = newVal;
         });
 

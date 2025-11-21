@@ -31,6 +31,7 @@ template <typename T>
 class ListItem : public ListItemBase {
 public:
     ListItem() {
+        setTypeName<ListItem>();
         setName(getTypeName<ListItem>());
     }
 
@@ -57,6 +58,7 @@ template <typename T>
 class ListBase : public ScrollView {
 public:
     ListBase() {
+        setTypeName<ListBase>();
         setName(getTypeName<ListBase>());
         setFocusAllowed(false);
     }

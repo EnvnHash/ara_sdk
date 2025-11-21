@@ -6,6 +6,7 @@
 
 #include "TestCommon.h"
 #include <UIElements/Div.h>
+#include <UINodeFactory.h>
 
 using namespace std;
 using namespace glm;
@@ -14,14 +15,11 @@ namespace ara::UiUnitTest::AlignTest {
 
 void saveAndReload(UIApplication& app, const UINodePars& p) {
     auto root = app.getMainWindow()->getRootNode();
-    auto div = root->push<Div>(p);
+    auto& div = root->push<Div>(p);
     root->saveAs("test.json");
-    root->dump();
-    root->remove_child(div);
-    root->dump();
+    root->remove(div);
 
     root->load(filesystem::path("test.json"));
-    root->dump();
 }
 
 void drawQuadAndCheck(const UINodePars& p) {
@@ -50,6 +48,8 @@ void drawQuadAndCompare(const UINodePars& p) {
 }
 
 TEST(UITest, SerializeDivCreate) {
+    registerDefaultUITypes();
+
     drawQuadAndCheck(UINodePars{
         .pos = ivec2{0,0},
         .size = ivec2{200, 100},

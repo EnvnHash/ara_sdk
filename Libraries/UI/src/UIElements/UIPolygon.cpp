@@ -11,6 +11,7 @@ using namespace std;
 
 namespace ara {
 UIPolygon::UIPolygon() : m_ctrlPointSizePix(17) {
+    setTypeName<UIPolygon>();
     setName(getTypeName<UIPolygon>());
     setFocusAllowed(false);
     m_canReceiveDrag = true;

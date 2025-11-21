@@ -8,7 +8,8 @@ using namespace std;
 
 namespace ara {
 
-UIImageSequence::UIImageSequence() : ara::Image() {
+UIImageSequence::UIImageSequence() {
+    setTypeName<UIImageSequence>();
     setName(ara::getTypeName<UIImageSequence>());
 }
 

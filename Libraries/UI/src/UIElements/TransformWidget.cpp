@@ -17,8 +17,9 @@ using namespace magic_enum;
 
 namespace ara {
 
-TransformWidget::TransformWidget() : Div() {
+TransformWidget::TransformWidget() {
     m_canReceiveDrag = true;
+    setTypeName<TransformWidget>();
     setName(getTypeName<TransformWidget>());
     setFocusAllowed(false);
     setScissorChildren(false);

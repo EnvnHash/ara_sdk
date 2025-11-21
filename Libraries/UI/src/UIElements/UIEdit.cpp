@@ -11,6 +11,7 @@ using namespace std;
 namespace ara {
 
 UIEdit::UIEdit(unsigned opt, int max_count)  {
+    setTypeName<UIEdit>();
     setName(getTypeName<UIEdit>());
 
     m_tOpt = 0;

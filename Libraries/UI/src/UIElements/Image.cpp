@@ -17,7 +17,8 @@ using namespace glm;
 
 namespace ara {
 
-Image::Image() : Div() {
+Image::Image() {
+    setTypeName<Image>();
     setName(getTypeName<Image>());
     setFocusAllowed(false);
     Image::initDefaults();

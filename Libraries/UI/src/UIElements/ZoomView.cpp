@@ -13,7 +13,8 @@ namespace fs = std::filesystem;
 
 namespace ara {
 
-ZoomView::ZoomView() : Div() {
+ZoomView::ZoomView() {
+    setTypeName<ZoomView>();
     setName(getTypeName<ZoomView>());
 }
 

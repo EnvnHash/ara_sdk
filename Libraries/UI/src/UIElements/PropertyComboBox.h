@@ -12,7 +12,7 @@
 #include "DataModel/ItemRef.h"
 //#include "ItemConnectable.h"
 
-namespace ara::proj {
+namespace ara {
 
 class PropertyComboBox : public ComboBox, public ItemRef {
 public:

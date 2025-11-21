@@ -10,8 +10,9 @@ using namespace glm;
 
 namespace ara {
 
-DropDownMenuBar::DropDownMenuBar() : Div() {
+DropDownMenuBar::DropDownMenuBar() {
     m_canReceiveDrag = true;
+    setTypeName<DropDownMenuBar>();
     setName(getTypeName<DropDownMenuBar>());
     setFocusAllowed(false);
 }

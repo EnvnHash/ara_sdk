@@ -12,6 +12,7 @@ using namespace glm;
 namespace ara {
 
 Div::Div() {
+    setTypeName<Div>();
     setName(getTypeName<Div>());
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_indDrawBlock.stdInit();

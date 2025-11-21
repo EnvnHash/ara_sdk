@@ -6,7 +6,7 @@ namespace ara {
 
 class SliderKnob : public Div {
 public:
-    SliderKnob() : Div() {
+    SliderKnob() {
         setName("SliderKnob");
         m_canReceiveDrag = true;
     }

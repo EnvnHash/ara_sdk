@@ -14,6 +14,7 @@ namespace ara {
 WindowResizeArea::WindowResizeArea() : m_type(AreaType::top) {
     m_canReceiveDrag = true;
     setFocusAllowed(false);
+    setTypeName<WindowResizeArea>();
     setName(getTypeName<WindowResizeArea>());
     memset(&m_bgColor[0], 0, 16);
 }

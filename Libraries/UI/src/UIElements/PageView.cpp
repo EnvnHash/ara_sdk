@@ -6,6 +6,7 @@ using namespace std;
 namespace ara {
 
 PageView::PageView() {
+    setTypeName<PageView>();
     setName(getTypeName<PageView>());
     setFocusAllowed(false);
 

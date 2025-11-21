@@ -9,6 +9,7 @@ using namespace std;
 namespace ara {
 
 TabView::TabView() {
+    setTypeName<TabView>();
     setName(getTypeName<TabView>());
     m_canReceiveDrag = true;
     setFocusAllowed(false);

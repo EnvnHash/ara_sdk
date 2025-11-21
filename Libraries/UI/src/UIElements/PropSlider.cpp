@@ -9,7 +9,8 @@ using namespace glm;
 
 namespace ara {
 
-PropSlider::PropSlider() : Div() {
+PropSlider::PropSlider() {
+    setTypeName<PropSlider>();
     setName(getTypeName<PropSlider>());
     setFocusAllowed(false);
     setScissorChildren(true);
