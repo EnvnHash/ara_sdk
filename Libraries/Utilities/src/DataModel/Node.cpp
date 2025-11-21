@@ -133,7 +133,7 @@ void Node::removeChangeCb(Node::cbType cbType, void *ptr) {
     }
 }
 
-void Node::signalChange(Node::cbType cbType) {
+void Node::signalChange(cbType cbType) {
     for (auto &val: m_changeCb[cbType] | views::values) {
         val();
     }

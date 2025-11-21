@@ -18,6 +18,11 @@ class Texture;
 
 class Image : public Div {
 public:
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Div, m_imgFlags, m_imgScale, m_imgAlign, m_texUnit, m_useTexId, m_sizeToAspect,
+        m_sepBlendFunc, m_objUsesTexAlpha, m_mipMapLevel, m_sectIndex, m_texAspect, m_offsZPos, m_lod, m_imageFile,
+        m_srcBlendFunc, m_dstBlendFunc, m_srcBlendAlphaFunc, m_dstBlendAlphaFunc, m_secPos,
+        m_secSize, m_secSep, m_texSize, m_nSize, m_nPos, m_tuvSize, m_uvSize, m_hidMp)
+
     Image();
     ~Image() override = default;
 
@@ -109,12 +114,13 @@ protected:
     UniformBlock                 m_texUniBlock;
     AssetImageBase              *m_imgBase = nullptr;
 
-    bool m_loaded          = false;
-    bool m_useTexId        = false;
-    bool m_sizeToAspect    = false;
-    bool m_sepBlendFunc    = false;
-    bool m_objUsesTexAlpha = false;
-    bool m_mpInBounds      = false;
+    bool m_loaded                   = false;
+    bool m_useTexId                 = false;
+    bool m_sizeToAspect             = false;
+    bool m_sepBlendFunc             = false;
+    bool m_objUsesTexAlpha          = false;
+    bool m_mpInBounds               = false;
+    bool m_skipLoadStyleDefaults    = false;
 
     int m_mipMapLevel        = 8;
     int m_sectIndex          = 0;
@@ -148,7 +154,7 @@ protected:
     glm::vec2   m_tuvSize{0.f};
     glm::vec2   m_uvSize{0.f};
     glm::vec2   m_hidMp{0.f};
-    int         m_ppos[2]{0};
+    int         m_ppos[2]{};
 
     std::function<void(int, int)> m_sizeChangeCb;
     std::vector<GLenum>           m_attachments = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};

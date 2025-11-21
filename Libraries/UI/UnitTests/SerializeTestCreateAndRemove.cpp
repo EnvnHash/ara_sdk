@@ -22,8 +22,7 @@ void saveAndReloadQuad(UIApplication& app, const UINodePars& p) {
     root->load(filesystem::path("test.json"));
 }
 
-void saveAndReloadQuadCasc(UIApplication& app) {
-    auto root = app.getMainWindow()->getRootNode();
+Div& addTwoCascadedQuads(UINode* root) {
     auto& div = root->push<Div>(UINodePars{
         .pos = ivec2{0,0},
         .size = ivec2{400, 400},
@@ -32,31 +31,30 @@ void saveAndReloadQuadCasc(UIApplication& app) {
         .valign = valign::center,
     });
 
-    auto& div2 = div.push<Div>(UINodePars{
+    return div.push<Div>(UINodePars{
         .pos = ivec2{80,80},
         .size = ivec2{200, 200},
         .bgColor = vec4{ 0.2f, 0.3f, 0.f, 1.f},
         .align = align::left,
         .valign = valign::top,
     });
-
-    div2.push<Div>(UINodePars{
-    .pos = ivec2{0,0},
-    .size = ivec2{60, 50},
-    .bgColor = vec4{ 0.2f, 0.3f, 1.f, 1.f},
-    .align = align::right,
-    .valign = valign::bottom,
-});
-/*
-    root->saveAs("test.json");
-    root->remove(div);
-
-    root->load(filesystem::path("test.json"));*/
 }
 
-void drawQuadAndCheck(const UINodePars& p) {
+void saveAndReloadQuadCasc(UIApplication& app) {
+    auto root = app.getMainWindow()->getRootNode();
+    auto& div2 = addTwoCascadedQuads(root);
+    div2.push<Div>(UINodePars{
+        .pos = ivec2{0,0},
+        .size = ivec2{60, 50},
+        .bgColor = vec4{ 0.2f, 0.3f, 1.f, 1.f},
+        .align = align::right,
+        .valign = valign::bottom,
+    });
+}
+
+void drawQuadAndCheck(const UINodePars& p, const std::function<void(UIApplication& app)>& func) {
     appBody([&](UIApplication& app){
-        saveAndReloadQuad(app, p);
+        func(app);
     },
     [&](UIApplication& app){
         auto mainWin = app.getWinBase()->getWinHandle();
@@ -69,30 +67,55 @@ void drawQuadAndCheck(const UINodePars& p) {
     }, 800, 600);
 }
 
-void drawQuadAndCompare() {
+void drawQuadAndCompare(const std::function<void(UIApplication& app)>& func, const std::string& compFile) {
     appBody([&](UIApplication& app){
-        saveAndReloadQuadCasc(app);
+        func(app);
     },
     [&](UIApplication& app){
-        compareFrameBufferToImage(filesystem::current_path() / "serialize_casc_div.png",
+        compareFrameBufferToImage(filesystem::current_path() / compFile,
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 800, 600);
 }
 
 TEST(UITest, SerializeDivCreate) {
     registerDefaultUITypes();
-    drawQuadAndCheck(UINodePars{
+
+    auto p = UINodePars{
         .pos = ivec2{0,0},
         .size = ivec2{200, 100},
         .bgColor = vec4{ 1.f, 0.f, 0.f, 1.f},
         .align = align::center,
         .valign = valign::center,
+    };
+
+    drawQuadAndCheck(p, [&](UIApplication& app){
+        saveAndReloadQuad(app, p);
     });
 }
 
 TEST(UITest, SerializeDivCascadeCreate) {
     registerDefaultUITypes();
-    drawQuadAndCompare();
+    drawQuadAndCompare([&](UIApplication& app) {
+        saveAndReloadQuadCasc(app);
+    }, "serialize_casc_div.png");
+}
+
+TEST(UITest, SerializeDivRemove) {
+    registerDefaultUITypes();
+
+    drawQuadAndCompare([&](UIApplication& app){
+        auto root = app.getMainWindow()->getRootNode();
+        auto& div = root->push<Div>(UINodePars{
+            .pos = ivec2{0,0},
+            .size = ivec2{200, 100},
+            .bgColor = vec4{ 1.f, 0.f, 0.f, 1.f},
+            .align = align::center,
+            .valign = valign::center,
+        });
+
+        addTwoCascadedQuads(&div);
+        root->load("SerializeDivRemove.json");
+    }, "serialize_remove.png");
 }
 
 }

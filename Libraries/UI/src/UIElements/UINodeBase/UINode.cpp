@@ -411,9 +411,7 @@ void UINode::updateMatrix() {
         m_drawParamChanged = true;
     }
 
-    if (m_changeCb) {
-        m_changeCb();
-    }
+    signalChange(cbType::postChange);
 }
 
 void UINode::getParentViewport() {
@@ -704,7 +702,8 @@ void UINode::setSharedRes(UISharedRes* shared) {
         m_glbase    = shared->glbase;
         m_drawMan   = shared->drawMan;
     }
-    setChangeCb([this] { onResize(); });
+
+    setOnChangeCb(cbType::postChange, this, [this] { onResize(); });
 }
 
 std::filesystem::path UINode::dataPath() {

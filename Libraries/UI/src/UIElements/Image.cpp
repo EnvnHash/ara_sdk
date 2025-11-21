@@ -26,6 +26,10 @@ Image::Image() {
     m_imgDB.stdInit();
     m_drawImmediate = false;
 #endif
+
+    m_postLoadCb = [&] {
+        m_skipLoadStyleDefaults = true;
+    };
 }
 
 void Image::initDefaults() {
@@ -38,6 +42,10 @@ void Image::initDefaults() {
 }
 
 void Image::loadStyleDefaults() {
+    if (m_skipLoadStyleDefaults) {
+        m_skipLoadStyleDefaults = false;
+        return;
+    }
     UINode::loadStyleDefaults();
 
     setStyleInitVal("img-align", "center,vcenter");
@@ -618,9 +626,8 @@ bool Image::isInBounds(glm::vec2& pos) {
                                   ((m_imgBase->getTexture()->getHeight() - static_cast<int>(m_hidMp.y)) * m_imgBase->getTexture()->getWidth() +
                                    static_cast<int>(m_hidMp.x)) * m_imgBase->getTexture()->getNrChans() +
                                   3)) > 0;
-    } else {
-        return true;
     }
+    return true;
 }
 
 void Image::reload() {

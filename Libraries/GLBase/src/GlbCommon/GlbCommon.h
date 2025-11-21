@@ -424,6 +424,25 @@ NLOHMANN_JSON_SERIALIZE_ENUM(valign, {
 }  // namespace ara
 
 namespace glm {
+
+    inline void to_json(nlohmann::json& j, const u8vec2& P) {
+        j = { P.x, P.y };
+    };
+
+    inline void from_json(const nlohmann::json& j, u8vec2& P) {
+        P.x = j.at(0).get<uint8_t>();
+        P.y = j.at(1).get<uint8_t>();
+    }
+
+    inline void to_json(nlohmann::json& j, const ivec2& P) {
+        j = { P.x, P.y };
+    };
+
+    inline void from_json(const nlohmann::json& j, ivec2& P) {
+        P.x = j.at(0).get<int32_t>();
+        P.y = j.at(1).get<int32_t>();
+    }
+
     inline void to_json(nlohmann::json& j, const vec2& P) {
         j = { P.x, P.y };
     };

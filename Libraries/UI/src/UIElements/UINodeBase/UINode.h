@@ -215,7 +215,6 @@ public:
     void                applyStyle() override;
 
     void                setChanged(bool val) override;
-    void                setChangeCb(std::function<void()> f) { m_changeCb = std::move(f); }
     void                setHIDBlocked(bool val) override;
     bool                removeFocus() override;
     void                setId(uint32_t val) { m_objIdMin = val; m_objIdMax = val; }
@@ -334,8 +333,6 @@ protected:
     bool m_treeChanged          = false;  /// a child was added or removed
     bool m_reqTreeChanged       = false;
     bool m_referenceDrawing     = false;
-
-    std::function<void()>     m_changeCb;
 
     std::unordered_map<void*, std::shared_ptr<std::function<void(std::any)>>> m_onValChangedCb;
 

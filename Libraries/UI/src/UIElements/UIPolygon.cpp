@@ -25,7 +25,7 @@ UIPolygon::UIPolygon() : m_ctrlPointSizePix(17) {
 
     m_ident = mat4(1.f);
 
-    setChangeCb([this] { onResize(); });
+    setOnChangeCb(cbType::postChange, this, [this] { onResize(); });
 }
 
 void UIPolygon::init() {

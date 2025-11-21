@@ -10,6 +10,8 @@ namespace ara {
 
 class Div : public UINode {
 public:
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(UINodeStyle, m_uvSize, m_divRefSize)
+
     Div();
     ~Div() override = default;
 

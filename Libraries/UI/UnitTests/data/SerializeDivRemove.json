@@ -1,0 +1,317 @@
+{
+    "alignX": "left",
+    "alignY": "top",
+    "alpha": 1.0,
+    "bgColor": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+    ],
+    "borderColor": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+    ],
+    "borderRadius": 0,
+    "borderWidth": 0,
+    "children": [
+        {
+            "alignX": "left",
+            "alignY": "bottom",
+            "alpha": 1.0,
+            "bgColor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "borderColor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "borderRadius": 0,
+            "borderWidth": 0,
+            "color": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "excludeFromPadding": false,
+            "excludeFromParentContentTrans": false,
+            "excludeFromParentScissoring": false,
+            "excludeFromStyles": false,
+            "fixAspect": -1.0,
+            "fontType": "",
+            "heightFloat": 1.0,
+            "heightInt": -40,
+            "heightType": "pixels",
+            "limitContentTrans": false,
+            "name": "ContentRoot",
+            "padding": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "pivX": "left",
+            "pivY": "bottom",
+            "posXFloat": 0.0,
+            "posXInt": 0,
+            "posYFloat": 0.0,
+            "posYInt": 0,
+            "scissorChildren": false,
+            "skipBoundCheck": false,
+            "typeName": "UINode",
+            "uuid": "8021BD9D-0D87-3C10-DB6D-39C0B5F08B58",
+            "viewPort": [
+                0.0,
+                0.0,
+                800.0,
+                600.0
+            ],
+            "visible": false,
+            "widthFloat": 1.0,
+            "widthInt": 0,
+            "widthType": "percent",
+            "zPos": 1.0
+        },
+        {
+            "alignX": "left",
+            "alignY": "top",
+            "alpha": 1.0,
+            "bgColor": [
+                0.20000000298023224,
+                0.20000000298023224,
+                0.20000000298023224,
+                1.0
+            ],
+            "borderColor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "borderRadius": 0,
+            "borderWidth": 0,
+            "color": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "excludeFromPadding": false,
+            "excludeFromParentContentTrans": false,
+            "excludeFromParentScissoring": false,
+            "excludeFromStyles": false,
+            "fixAspect": -1.0,
+            "fontType": "",
+            "heightFloat": 1.0,
+            "heightInt": 40,
+            "heightType": "pixels",
+            "limitContentTrans": false,
+            "name": "MenuBar",
+            "padding": [
+                15.0,
+                5.0,
+                15.0,
+                5.0
+            ],
+            "pivX": "left",
+            "pivY": "top",
+            "posXFloat": 0.0,
+            "posXInt": 0,
+            "posYFloat": 0.0,
+            "posYInt": 0,
+            "scissorChildren": false,
+            "skipBoundCheck": false,
+            "typeName": "MenuBar",
+            "uuid": "63C51D19-0618-06B6-15CA-7F035EC26418",
+            "viewPort": [
+                0.0,
+                0.0,
+                800.0,
+                600.0
+            ],
+            "visible": false,
+            "widthFloat": 1.0,
+            "widthInt": 0,
+            "widthType": "percent",
+            "zPos": 1.0
+        },
+        {
+            "alignX": "left",
+            "alignY": "top",
+            "alpha": 1.0,
+            "bgColor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "borderColor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "borderRadius": 0,
+            "borderWidth": 0,
+            "color": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "excludeFromPadding": false,
+            "excludeFromParentContentTrans": false,
+            "excludeFromParentScissoring": false,
+            "excludeFromStyles": false,
+            "fixAspect": -1.0,
+            "fontType": "",
+            "heightFloat": 1.0,
+            "heightInt": 1,
+            "heightType": "percent",
+            "limitContentTrans": false,
+            "name": "WindowResizeAreas",
+            "padding": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "pivX": "left",
+            "pivY": "top",
+            "posXFloat": 0.0,
+            "posXInt": 0,
+            "posYFloat": 0.0,
+            "posYInt": 0,
+            "scissorChildren": false,
+            "skipBoundCheck": false,
+            "typeName": "WindowResizeAreas",
+            "uuid": "99A8AA2E-9F38-AF7D-E9FA-944686E0AC5A",
+            "viewPort": [
+                0.0,
+                0.0,
+                800.0,
+                600.0
+            ],
+            "visible": false,
+            "widthFloat": 1.0,
+            "widthInt": 0,
+            "widthType": "percent",
+            "zPos": 1.0
+        },
+        {
+            "alignX": "center",
+            "alignY": "center",
+            "alpha": 1.0,
+            "bgColor": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "borderColor": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "borderRadius": 0,
+            "borderWidth": 0,
+            "color": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "excludeFromPadding": false,
+            "excludeFromParentContentTrans": false,
+            "excludeFromParentScissoring": false,
+            "excludeFromStyles": false,
+            "fixAspect": -1.0,
+            "fontType": "",
+            "heightFloat": 1.0,
+            "heightInt": 100,
+            "heightType": "pixels",
+            "limitContentTrans": false,
+            "name": "Div",
+            "padding": [
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "pivX": "center",
+            "pivY": "center",
+            "posXFloat": 0.0,
+            "posXInt": 0,
+            "posYFloat": 0.0,
+            "posYInt": 0,
+            "scissorChildren": false,
+            "skipBoundCheck": false,
+            "typeName": "Div",
+            "uuid": "5FFAFF2C-BA79-5548-074B-F0FEF34CEFDF",
+            "viewPort": [
+                0.0,
+                0.0,
+                800.0,
+                600.0
+            ],
+            "visible": true,
+            "widthFloat": 1.0,
+            "widthInt": 200,
+            "widthType": "pixels",
+            "zPos": 1.0
+        }
+    ],
+    "color": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+    ],
+    "excludeFromPadding": false,
+    "excludeFromParentContentTrans": false,
+    "excludeFromParentScissoring": false,
+    "excludeFromStyles": false,
+    "fixAspect": -1.0,
+    "fontType": "",
+    "heightFloat": 1.0,
+    "heightInt": 1,
+    "heightType": "percent",
+    "limitContentTrans": false,
+    "name": "root",
+    "padding": [
+        0.0,
+        0.0,
+        0.0,
+        0.0
+    ],
+    "pivX": "left",
+    "pivY": "top",
+    "posXFloat": 0.0,
+    "posXInt": 0,
+    "posYFloat": 0.0,
+    "posYInt": 0,
+    "scissorChildren": false,
+    "skipBoundCheck": false,
+    "typeName": "UINode",
+    "uuid": "",
+    "viewPort": [
+        0.0,
+        0.0,
+        800.0,
+        600.0
+    ],
+    "visible": true,
+    "widthFloat": 1.0,
+    "widthInt": 0,
+    "widthType": "percent",
+    "zPos": 1.0
+}
