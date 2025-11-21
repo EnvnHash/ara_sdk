@@ -251,7 +251,6 @@ public:
     auto&                   getIndDrawBlock() { return m_indDrawBlock; }
     uint32_t                getMinChildId(uint32_t minId = UINT32_MAX) const;
     uint32_t                getMaxChildId(uint32_t maxId = 0);
-    //auto&                   getChildren() { return m_children; }
     [[nodiscard]] auto      getId() const { return m_objIdMin; }
     [[nodiscard]] auto      getMinId() const { return m_objIdMin; }
     [[nodiscard]] auto      getMaxId() const { return m_objIdMax; }
@@ -260,7 +259,6 @@ public:
     UINode*                 getNode(const std::string& name);
     UINode*                 getNodeById(uint32_t searchID);
     virtual float           getValue() { return 0.f; }
-    virtual std::string&    getName() { return m_name; }
 
     [[nodiscard]] bool containsObjectId(uint32_t id) const { return (id >= m_objIdMin && id <= m_objIdMax); }
 
@@ -324,7 +322,6 @@ protected:
 
     std::shared_ptr<DrawManager>            m_drawMan;
     ObjectMapInteraction*                   m_objSel = nullptr;
-    //std::vector<std::unique_ptr<UINode>>    m_children;
 
     uint32_t m_objIdMin   = 0;
     uint32_t m_objIdMax   = 0;
@@ -339,7 +336,6 @@ protected:
     bool m_referenceDrawing     = false;
 
     std::function<void()>     m_changeCb;
-    //std::string               m_name;
 
     std::unordered_map<void*, std::shared_ptr<std::function<void(std::any)>>> m_onValChangedCb;
 
@@ -354,7 +350,6 @@ protected:
     ShaderCollector*    m_shCol  = nullptr;
 
     bool m_hasDepth = false;
-
 };
 
 }

@@ -12,7 +12,7 @@ using namespace glm;
 
 namespace ara {
 
-WindowResizeAreas::WindowResizeAreas() : UINode() {
+WindowResizeAreas::WindowResizeAreas() {
     excludeFromObjMap(true);
     setName(getTypeName<WindowResizeAreas>());
     setFocusAllowed(false);
@@ -72,7 +72,7 @@ void WindowResizeAreas::init() {
     for (auto &it : m_winResizeAreas) {
         it->addMouseOutCb([m_win](const hidData& data) {
             // don't change the mouse cursor to 0 on mouse out if the new node is also a WindowResizeArea
-            if (data.newNode && static_cast<UINode *>(data.newNode)->getName() == getTypeName<WindowResizeAreas>()) {
+            if (data.newNode && static_cast<UINode *>(data.newNode)->name() == getTypeName<WindowResizeAreas>()) {
                 return;
             }
 
