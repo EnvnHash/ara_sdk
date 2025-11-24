@@ -26,6 +26,8 @@ struct LabelPars {
 
 class Label : public Div {
 public:
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Div, m_fontType, m_fontSize, m_tOpt,  m_tPos, m_tSize, m_tSep, m_tAlign_X, m_tAlign_Y, m_offset, m_alignOffset, m_tabSize, m_adaptScaling, m_text)
+
     enum eopt {
         none         = 0x0000,
         single_line  = 0x0010,    // Single line, do not accept CR

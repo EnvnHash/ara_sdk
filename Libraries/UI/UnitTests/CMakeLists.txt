@@ -17,6 +17,7 @@ file(GLOB UI_UT_SRC
     ScrollViewTest.cpp
     SerializeBasicTest.cpp
     SerializeImageTest.cpp
+    SerializeLabelTest.cpp
     SerializeTestCreateAndRemove.cpp
     SetXSetY.cpp
     TabTest.cpp
