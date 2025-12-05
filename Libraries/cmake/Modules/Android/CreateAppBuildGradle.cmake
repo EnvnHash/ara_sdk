@@ -1,4 +1,4 @@
-macro (create_app_build_gradle APP_NAME APP_TYPE)
+macro (create_app_build_gradle APP_NAME APP_TYPE ADMOB_APP_ID)
 
     # app/build.gradle
     set(app_build_gradle)
@@ -80,6 +80,10 @@ dependencies {
     implementation 'androidx.core:core-splashscreen:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 ")
+    if(NOT "${ADMOB_APP_ID}" STREQUAL "")
+        list(APPEND app_build_gradle "\timplementation 'com.google.android.gms:play-services-ads:24.8.0'
+")
+    endif ()
 
     if(ARA_USE_ARCORE)
         list(APPEND app_build_gradle "

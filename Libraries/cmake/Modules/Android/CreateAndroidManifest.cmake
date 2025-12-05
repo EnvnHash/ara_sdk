@@ -1,4 +1,4 @@
-macro (create_android_manifest APP_TYPE APP_ICON_NAME)
+macro (create_android_manifest APP_TYPE APP_ICON_NAME APP_ORIENTATION ADMOB_APP_ID)
     set(oneValueArgs APP_ORIENTATION)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
     
@@ -29,6 +29,12 @@ macro (create_android_manifest APP_TYPE APP_ICON_NAME)
 
     if (ARA_USE_ARCORE)
         list(APPEND manifest "\t\t<meta-data android:name=\"com.google.ar.core\" android:value=\"required\" />\n\n")
+    endif()
+
+    if (NOT "${ADMOB_APP_ID}" STREQUAL "")
+        list(APPEND manifest "\t\t<meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" \n\t\t\tandroid:value=\"${ADMOB_APP_ID}\" />
+
+")
     endif()
 
     if (${APP_TYPE} EQUAL 0)

@@ -1,4 +1,4 @@
-macro (create_settings_files)
+macro (create_settings_files APP_NAME ADMOB_APP_ID)
 
     # /app/src/main/res/values/strings.xml
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/res/values/strings.xml "<resources>
@@ -15,7 +15,29 @@ zipStorePath=wrapper/dists
 zipStoreBase=GRADLE_USER_HOME")
 
     # settings.gradle
-    FILE(WRITE ${ANDROID_STUDIO_PROJ}/settings.gradle "include ':app'")
+    SET(settings_gradle)
+    if (NOT "${ADMOB_APP_ID}" STREQUAL "")
+        list(APPEND settings_gradle "pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = \"${APP_NAME}\"
+")
+    endif ()
+    list(APPEND settings_gradle "include ':app'" )
+    FILE(WRITE ${ANDROID_STUDIO_PROJ}/settings.gradle ${settings_gradle})
 
     # proguard-rules.pro
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/proguard-rules.pro "")
@@ -37,7 +59,8 @@ android.useAndroidX=true
 android.enableJetifier=true")
 
     # build.gradle
-    FILE(WRITE  ${ANDROID_STUDIO_PROJ}/build.gradle
+    SET(project_build_gradle)
+    list(APPEND project_build_gradle
             "buildscript {
     repositories {
        google()
@@ -49,8 +72,13 @@ android.enableJetifier=true")
 }
 
 allprojects {
-    repositories {
-        google()
+    repositories {")
+
+    if (${ADMOB_APP_ID} STREQUAL "")
+        list(APPEND project_build_gradle "\t\tgoogle()")
+    endif ()
+
+    list(APPEND project_build_gradle "
         mavenCentral()
         mavenLocal()
     }
@@ -58,6 +86,7 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
-} ") # write it
+} ")
 
+    FILE(WRITE ${ANDROID_STUDIO_PROJ}/build.gradle ${project_build_gradle})
 endmacro()

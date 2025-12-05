@@ -1,4 +1,4 @@
-macro (create_main_activity app_type)
+macro (create_main_activity app_type ADMOB_UNIT_ID)
     set(main_activity)
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
@@ -35,10 +35,20 @@ public class MainActivity extends NativeActivity {
     import android.widget.RelativeLayout\;
     import androidx.annotation.NonNull\;
     import androidx.appcompat.app.AppCompatActivity\;
+    
     ")
 
+        if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
+            list(APPEND main_activity "import com.google.android.gms.ads.MobileAds\;
+    import com.google.android.gms.ads.AdView\;
+    import com.google.android.gms.ads.AdSize\;
+    import com.google.android.gms.ads.AdRequest\;
+
+")
+        endif ()
+
         # class begin
-        list(APPEND main_activity "public class ${PROJECT_NAME}Activity extends AppCompatActivity implements DisplayManager.DisplayListener {
+        list(APPEND main_activity "\tpublic class ${PROJECT_NAME}Activity extends AppCompatActivity implements DisplayManager.DisplayListener {
       private static final String TAG = ${PROJECT_NAME}Activity.class.getSimpleName()\;
 
       private CustomGLSurfaceView surfaceView\;
@@ -170,7 +180,39 @@ public class MainActivity extends NativeActivity {
 
         // Prevents screen from dimming/locking.
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)\;
-      }\n\n")
+")
+
+      if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
+            list (APPEND main_activity "
+                    new Thread(() -> {
+                      MobileAds.initialize(this, initializationStatus -> {})\;
+                  }).start()\;
+
+        AdView adView = new AdView(this)\;
+        adView.setAdUnitId(\"${ADMOB_UNIT_ID}\")\;
+        adView.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, 360))\;
+
+        RelativeLayout adContainerView = new RelativeLayout(this)\;
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                  RelativeLayout.LayoutParams.MATCH_PARENT,
+                  RelativeLayout.LayoutParams.MATCH_PARENT
+        )\;
+        adContainerView.setLayoutParams(layoutParams)\;
+        adContainerView.removeAllViews()\;
+
+        RelativeLayout.LayoutParams adViewLayout =
+                  new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)\;
+        adViewLayout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)\;
+        adContainerView.addView(adView, adViewLayout)\;
+
+        relativeLayout.addView(adContainerView)\;
+
+        AdRequest adRequest = new AdRequest.Builder().build()\;
+        adView.loadAd(adRequest)\;
+")
+      endif ()
+
+      list (APPEND main_activity "}\n\n")
 
         # planeStatusCheckingHandler = new Handler()\;
 
