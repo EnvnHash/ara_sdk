@@ -624,8 +624,8 @@ bool SSAO::initMisc() {
     if (hbao_ubo) glDeleteBuffers(1, &hbao_ubo);
 
     glGenBuffers(1, &hbao_ubo);
-#ifndef ARA_USE_GLES31
-    glNamedBufferStorageEXT(hbao_ubo, sizeof(HBAOData), NULL, GL_DYNAMIC_STORAGE_BIT);
+#if !defined(ARA_USE_GLES31) && !defined(__APPLE__)
+    glNamedBufferStorageEXT(hbao_ubo, sizeof(HBAOData), nullptr, GL_DYNAMIC_STORAGE_BIT);
 #endif
 
     return true;
