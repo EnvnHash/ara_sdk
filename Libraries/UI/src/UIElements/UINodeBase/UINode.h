@@ -73,7 +73,7 @@ public:
             m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
-        signalChange(cbType::postAddChild);
+        signalChange(cbType::postAddChild, std::make_optional(m_children.back().get()));
         return dynamic_cast<T&>(*m_children.back().get());
     }
 
@@ -121,21 +121,6 @@ public:
         iterateOptionals(arg.getTiedOptionals(), arrayToTuple(funcMap), std::make_index_sequence<funcMap.size()>{});
 
         return static_cast<T&>(node);
-    }
-
-    template <typename T>
-    T& insertChild(int32_t position) {
-        return dynamic_cast<T&>(insertChild(position, std::make_unique<T>()));
-    }
-
-    template <typename T>
-    T& insertChild(const std::string& name) {
-        return dynamic_cast<T&>(insertChild(name, std::make_unique<T>()));
-    }
-
-    template <typename T>
-    T& insertAfter(const std::string& name) {
-        return dynamic_cast<T&>(insertAfter(name, std::make_unique<T>()));
     }
 
     template <typename T>

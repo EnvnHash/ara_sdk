@@ -17,13 +17,15 @@ namespace ara {
 UINode::UINode() {
     setTypeName<UINode>();
     setName(getTypeName<UINode>());
-    setOnChangeCb(cbType::postAddChild, this, [this] {
+    setOnChangeCb(cbType::postAddChild, this, [this](std::optional<Node*> node) {
         reqTreeChanged(true);
-        auto& node = dynamic_cast<UINode&>(*m_children.back().get());
-        initChild(node, this);
+        //auto& node = dynamic_cast<UINode&>(*m_children.back().get());
+        if (node.has_value()) {
+            initChild(dynamic_cast<UINode &>(*node.value()), this);
+        }
     });
 
-    setOnChangeCb(cbType::preRemoveChild, this, [this] {
+    setOnChangeCb(cbType::preRemoveChild, this, [this](std::optional<Node*> node) {
         removeFocus();
         m_reqTreeChanged = true;
     });
@@ -56,7 +58,7 @@ void UINode::moveChildTo(int position, UINode* node) {
 }
 
 void UINode::initChild(UINode& child, UINode* parent) {
-    // check if viewport is initialised
+    // check if viewport is initialized
     if (isViewportValid()) {
         child.setViewport(getViewport());
     }
@@ -411,7 +413,7 @@ void UINode::updateMatrix() {
         m_drawParamChanged = true;
     }
 
-    signalChange(cbType::postChange);
+    signalChange(cbType::postChange, std::nullopt);
 }
 
 void UINode::getParentViewport() {
@@ -703,7 +705,7 @@ void UINode::setSharedRes(UISharedRes* shared) {
         m_drawMan   = shared->drawMan;
     }
 
-    setOnChangeCb(cbType::postChange, this, [this] { onResize(); });
+    setOnChangeCb(cbType::postChange, this, [this](std::optional<Node*>) { onResize(); });
 }
 
 std::filesystem::path UINode::dataPath() {

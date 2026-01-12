@@ -52,14 +52,14 @@ void Node::pop() {
         auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
         auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
         for (auto &it : preRemoveCbs) {
-            it();
+            it(std::nullopt);
         }
         {
             unique_lock l(m_mtx);
             m_children.pop_back();
         }
         for (auto &it : postRemoveCbs) {
-            it();
+            it(std::nullopt);
         }
     }
 }
@@ -80,14 +80,14 @@ void Node::remove(Node* node) {
             auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
             auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
             for (auto &it : preRemoveCbs) {
-                it();
+                it(std::nullopt);
             }
             {
                 unique_lock l(m_mtx);
                 m_children.erase(res);
             }
             for (auto &it : postRemoveCbs) {
-                it();
+                it(std::nullopt);
             }
         }
     }
@@ -101,14 +101,14 @@ void Node::clearChildren() {
     auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
     auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
     for (auto &it : preRemoveCbs) {
-        it();
+        it(std::nullopt);
     }
     {
         unique_lock l(m_mtx);
         children().clear();
     }
     for (auto &it : postRemoveCbs) {
-        it();
+        it(std::nullopt);
     }
 }
 
@@ -126,16 +126,16 @@ deque<Node*> Node::findChild(const string& name) {
     return list;
 }
 
-void Node::removeChangeCb(Node::cbType cbType, void *ptr) {
+void Node::removeChangeCb(cbType cbType, void *ptr) {
     auto c = m_changeCb[cbType].find(ptr);
     if (c != m_changeCb[cbType].end()) {
         m_changeCb[cbType].erase(c);
     }
 }
 
-void Node::signalChange(cbType cbType) {
+void Node::signalChange(cbType cbType, std::optional<Node*> node) {
     for (auto &val: m_changeCb[cbType] | views::values) {
-        val();
+        val(node);
     }
 }
 
@@ -176,7 +176,7 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
     if (serializeValues() != getValues(j)) {
         deserializeValues(j);
         for (const auto &func: m_changeCb[cbType::postChange] | views::values) {
-            func();
+            func(std::nullopt);
         }
     }
 
@@ -357,8 +357,8 @@ bool Node::iterateChildren(Node& node, const function<void(Node&)>& f) {
     return true;
 }
 
-deque<function<void()>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
-    deque<function<void()>> list;
+deque<function<void(std::optional<Node*>)>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
+    deque<function<void(std::optional<Node*>)>> list;
     if  (!withChildrenOnly || !m_children.empty()) {
         for (auto &val: m_changeCb[cbType] | views::values) {
             list.emplace_back(val);
@@ -395,7 +395,7 @@ void Node::changeVal(const function<void()>& f) {
     }
 
     for (auto &val: m_changeCb[cbType::preChange] | views::values) {
-        val();
+        val(std::nullopt);
     }
 
     {
@@ -404,7 +404,7 @@ void Node::changeVal(const function<void()>& f) {
     }
 
     for (auto &val: m_changeCb[cbType::postChange] | views::values) {
-        val();
+        val(std::nullopt);
     }
 }
 

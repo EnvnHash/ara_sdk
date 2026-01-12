@@ -20,7 +20,7 @@ namespace ara::node {
 
 Color::Color() {
     setTypeName<Color>();
-    m_changeCb[cbType::postChange][this] = [this]{
+    m_changeCb[cbType::postChange][this] = [this] (std::optional<Node*>) {
         m_rgba[3] = 1.f;
 
         if (m_format == "rgb") {

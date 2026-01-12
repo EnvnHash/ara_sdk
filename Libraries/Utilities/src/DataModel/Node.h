@@ -68,7 +68,7 @@ public:
         if (!m_undoBuf.empty()) {
             saveState();
         }
-        signalChange(cbType::preAddChild);
+        signalChange(cbType::preAddChild, std::nullopt);
     }
 
     template <class T>
@@ -84,7 +84,7 @@ public:
             m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
-        signalChange(cbType::postAddChild);
+        signalChange(cbType::postAddChild, std::make_optional<Node*>(m_children.back().get()));
         return static_cast<T&>(*m_children.back().get());
     }
 
@@ -96,8 +96,18 @@ public:
             m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
-        signalChange(cbType::postAddChild);
+        signalChange(cbType::postAddChild, std::make_optional<Node*>(m_children.back().get()));
         return static_cast<T&>(*m_children.back().get());
+    }
+
+    template <class T>
+    T& insertChild(int32_t position) {
+        return insertChild(position, std::make_shared<T>());
+    }
+
+    template <typename T>
+    T& insertChild(const std::string& name) {
+        return dynamic_cast<T&>(insertChild(name, std::make_unique<T>()));
     }
 
     template <class T>
@@ -106,10 +116,15 @@ public:
             LOGE << "Node::insertChild failed, child empty!";
         } else {
             auto it = m_children.insert(std::next(m_children.begin(), position), std::move(child));
-            signalChange(cbType::postAddChild);
+            signalChange(cbType::postAddChild, std::make_optional(it->get()));
             return static_cast<T&>(*m_children.back().get());
         }
         return push<T>(child);
+    }
+
+    template <typename T>
+    T& insertAfter(const std::string& name) {
+        return dynamic_cast<T&>(insertAfter(name, std::make_unique<T>()));
     }
 
     template <class T>
@@ -124,7 +139,7 @@ public:
             if (r != m_children.end()
                 && static_cast<int>(std::distance(m_children.begin(), r) +1) <= static_cast<int>(m_children.size())) {
                 const auto it = m_children.insert(std::next(r, 1), std::move(child));
-                signalChange(cbType::postAddChild);
+                signalChange(cbType::postAddChild, std::make_optional(it->get()));
                 return dynamic_cast<T&>(*it->get());
             }
         }
@@ -142,7 +157,7 @@ public:
 
             if (r != m_children.end()) {
                 const auto it = m_children.insert(r, std::move(child));
-                signalChange(cbType::postAddChild);
+                signalChange(cbType::postAddChild, std::make_optional(it->get()));
                 return dynamic_cast<T&>(*it->get());
             }
         }
@@ -150,7 +165,7 @@ public:
     }
 
     void setDefault(std::shared_ptr<Node> &child) {
-        child->setUuid(ara::generateUUID());
+        child->setUuid(generateUUID());
         child->setParent(this);
         if (m_undoBufRoot) {
             child->setUndoBufferRoot(m_undoBufRoot);
@@ -159,12 +174,12 @@ public:
 
     template <class T>
     void setTypeName() {
-        signalChange(cbType::preChange);
+        signalChange(cbType::preChange, std::nullopt);
         {
             std::unique_lock l(m_mtx);
             setTypeName(ara::getTypeName<T>());
         }
-        signalChange(cbType::postChange);
+        signalChange(cbType::postChange, std::nullopt);
     }
 
     Node* findParentByType(const std::string& typeStr) {
@@ -260,8 +275,8 @@ public:
     void                                    saveState();
     void                                    undo();
     void                                    redo();
-    void                                    signalChange(cbType cbType);
-    std::deque<std::function<void()>>       collectCallbacks(cbType cbType, bool withChildrenOnly);
+    void                                    signalChange(cbType cbType, std::optional<Node*> node);
+    std::deque<std::function<void(std::optional<Node*>)>> collectCallbacks(cbType cbType, bool withChildrenOnly);
     static bool                             iterateChildren(Node& node, const std::function<void(Node&)>& f);
     Node*                                   root();
     void                                    changeVal(const std::function<void()>& f);
@@ -281,14 +296,14 @@ public:
     std::string&                            uuid() { return m_uuid; }
     std::deque<std::vector<std::uint8_t>>&  undoBufQueue() { return m_undoBuf; }
 
-    std::unordered_map<cbType, std::unordered_map<void*, std::function<void()>>>&   changeCb() { return m_changeCb; }
+    std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>>&   changeCb() { return m_changeCb; }
 
     void setName(const std::string& name)       { changeVal([&]{ m_name = name; }); }
     void setUuid(const std::string& uuid)       { m_uuid = uuid; }
     void setTypeName(const std::string& name)   { m_typeName = name; }
     void setParent(Node* ptr)                   { m_parent = ptr; }
     void setUndoBufferRoot(Node* node)          { m_undoBufRoot = node; }
-    void setOnChangeCb(cbType cbType, void *ptr, std::function<void()> func)  { m_changeCb[cbType][ptr] = std::move(func); }
+    void setOnChangeCb(cbType cbType, void *ptr, std::function<void(std::optional<Node*>)> func)  { m_changeCb[cbType][ptr] = std::move(func); }
 
     static nlohmann::json getValues(const nlohmann::json& j) {
         nlohmann::json valueJson;
@@ -334,7 +349,7 @@ protected:
 
     static inline std::filesystem::file_time_type   m_initFt{};
 
-    std::unordered_map<cbType, std::unordered_map<void *, std::function<void()>>> m_changeCb {
+    std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>> m_changeCb {
         { cbType::preChange, {}},
         { cbType::postChange, {}},
         { cbType::preAddChild, {}},
