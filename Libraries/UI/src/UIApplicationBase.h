@@ -40,6 +40,7 @@ public:
     /// get a reference to GLBase instance containing all opengl related shared resources
     auto getGLBase() { return &m_glbase; }
     auto getMainWindow() const { return m_mainWindow; }
+    const glm::ivec2& getWinSize() { return m_winSize; }
 
     virtual void update() { m_iterate.notify(); }
 
