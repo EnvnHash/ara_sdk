@@ -53,7 +53,7 @@ include(ResCompInclude)
 
 # uncomment for generating android project
 include(Android/GenerateAndroidProject)
-gen_android_proj(${PROJECT_NAME} "eu.zeitkunst" "'armeabi-v7a', 'arm64-v8a'" 0 icon ${CMAKE_SOURCE_DIR}/Assets)
+gen_android_proj(${PROJECT_NAME} "eu.zeitkunst" "'armeabi-v7a', 'arm64-v8a'" 0 icon ${CMAKE_SOURCE_DIR}/Assets "landscape" "0" "0")
 
 INSTALL(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR} COMPONENT ${PROJECT_NAME} OPTIONAL)

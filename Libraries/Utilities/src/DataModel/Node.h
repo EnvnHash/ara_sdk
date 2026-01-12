@@ -107,7 +107,7 @@ public:
 
     template <typename T>
     T& insertChild(const std::string& name) {
-        return dynamic_cast<T&>(insertChild(name, std::make_unique<T>()));
+        return dynamic_cast<T&>(insertChild(name, std::make_shared<T>()));
     }
 
     template <class T>
@@ -117,14 +117,14 @@ public:
         } else {
             auto it = m_children.insert(std::next(m_children.begin(), position), std::move(child));
             signalChange(cbType::postAddChild, std::make_optional(it->get()));
-            return static_cast<T&>(*m_children.back().get());
+            return static_cast<T&>(*it->get());
         }
         return push<T>(child);
     }
 
     template <typename T>
     T& insertAfter(const std::string& name) {
-        return dynamic_cast<T&>(insertAfter(name, std::make_unique<T>()));
+        return dynamic_cast<T&>(insertAfter(name, std::make_shared<T>()));
     }
 
     template <class T>

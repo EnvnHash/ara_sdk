@@ -106,6 +106,66 @@ TEST(Functional_Node, AddChild) {
     EXPECT_EQ(nd.children().size(), 3);
 }
 
+TEST(Functional_Node, InsertChildByPos) {
+    std::array names = { "Child1", "Child2", "Child3" };
+    Node nd;
+    auto& n1 = nd.push<Node>();
+    n1.setName(names[0]);
+
+    auto& n2 = nd.push<Node>();
+    n2.setName(names[1]);
+
+    auto& n3 = nd.insertChild<Node>(0);
+    n3.setName(names[2]);
+
+    int cntr=0;
+    std::array newOrder = { 2, 0, 1 };
+    for (auto& it : nd.children()) {
+        EXPECT_EQ(it->name(), names[newOrder[cntr]]);
+        ++cntr;
+    }
+}
+
+TEST(Functional_Node, InsertChildByName) {
+    std::array names = { "Child1", "Child2", "Child3" };
+    Node nd;
+    auto& n1 = nd.push<Node>();
+    n1.setName(names[0]);
+
+    auto& n2 = nd.push<Node>();
+    n2.setName(names[1]);
+
+    auto& n3 = nd.insertChild<Node>(names[1]);
+    n3.setName(names[2]);
+
+    int cntr=0;
+    std::array newOrder = { 0, 2, 1 };
+    for (auto& it : nd.children()) {
+        EXPECT_EQ(it->name(), names[newOrder[cntr]]);
+        ++cntr;
+    }
+}
+
+TEST(Functional_Node, InsertAfterByName) {
+    std::array<std::string, 3> names = { "Child1", "Child2", "Child3" };
+    Node nd;
+    auto& n1 = nd.push<Node>();
+    n1.setName(names[0]);
+
+    auto& n2 = nd.push<Node>();
+    n2.setName(names[1]);
+
+    auto& n3 = nd.insertAfter<Node>(names[0]);
+    n3.setName(names[2]);
+
+    int cntr=0;
+    std::array newOrder = { 0, 2, 1 };
+    for (auto& it : nd.children()) {
+        EXPECT_EQ(it->name(), names[newOrder[cntr]]);
+        ++cntr;
+    }
+}
+
 TEST(Functional_Node, AddChildByRef) {
     Node nd1;
     nd1.push<Node>();
