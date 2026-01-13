@@ -31,6 +31,7 @@ int GLFWWindow::init(const glWinPar &gp) {
 
     glfwSetErrorCallback(error_callback);
 #ifdef ARA_USE_OSMESA
+    LOG << "GLFWWindow::init() using OSMESA";
     glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_NULL);
 #endif
     // Initialize the library
