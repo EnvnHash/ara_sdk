@@ -31,7 +31,6 @@ int GLFWWindow::init(const glWinPar &gp) {
 
     glfwSetErrorCallback(error_callback);
 #ifdef ARA_USE_OSMESA
-    LOG << "GLFWWindow::init() using OSMESA";
     glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_NULL);
 #endif
     // Initialize the library
@@ -363,6 +362,10 @@ void GLFWWindow::initNonFullScreen(const glWinPar &gp) {
 }
 
 void GLFWWindow::initLibrary() {
+#ifdef ARA_USE_OSMESA
+    glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_NULL);
+#endif
+
     if (!glfwInit()) {
         printf("ERROR: Couldn't init glfw\n");
         exit(EXIT_FAILURE);
