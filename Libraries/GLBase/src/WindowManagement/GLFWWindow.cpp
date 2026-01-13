@@ -30,7 +30,9 @@ int GLFWWindow::init(const glWinPar &gp) {
     m_monHeight  = 0;
 
     glfwSetErrorCallback(error_callback);
-
+#ifdef ARA_USE_OSMESA
+    glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_NULL);
+#endif
     // Initialize the library
     if (gp.doInit && !glfwInit()) {
         LOGE << "GLFW init failed!!!!";
@@ -75,11 +77,24 @@ int GLFWWindow::init(const glWinPar &gp) {
         initNonFullScreen(gp);
     }
 
+#ifdef ARA_USE_OSMESA
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_OSMESA_CONTEXT_API);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+#endif
+
     m_window = glfwCreateWindow(m_virtSize.x, m_virtSize.y, "", gp.fullScreen ? m_mon : nullptr, static_cast<GLFWwindow *>(gp.shareCont));
     if (!m_window) {
         LOGE << "GLFWWindow ERROR creating window";
         return false;
     }
+
+#ifdef ARA_USE_OSMESA
+    // OSmesa initialization
+    LOG << "OSmesa version: " << OSMESA_MAJOR_VERSION << "." << OSMESA_MINOR_VERSION;
+    LOG << "OSmesa context version: " << OSMESA_CONTEXT_MAJOR_VERSION << "." << OSMESA_CONTEXT_MINOR_VERSION;
+#endif
 
     int fbWidth = 0, fbHeight = 0;
     glfwGetFramebufferSize(m_window, &fbWidth, &fbHeight);
@@ -136,9 +151,9 @@ int GLFWWindow::init(const glWinPar &gp) {
 
     glfwSetWindowPos(m_window, static_cast<int>(m_posReal.x), static_cast<int>(m_posReal.y));
 
-    if (gp.debug) {
+    //if (gp.debug) {
         printGLVersion();
-    }
+    //}
 
     if (gp.nrSamples > 2) {
         glEnable(GL_MULTISAMPLE_ARB);
@@ -304,6 +319,13 @@ void GLFWWindow::initNonFullScreen(const glWinPar &gp) {
     }
 
     monitorRefreshRate = 60;
+
+#ifdef ARA_USE_OSMESA
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_OSMESA_CONTEXT_API);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+#endif
 
     // for non-fullscreen to always stay on top
     glfwWindowHint(GLFW_DECORATED, gp.decorated ? GL_TRUE : GL_FALSE);
