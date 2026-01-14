@@ -128,7 +128,7 @@ public:
     static void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message);
     static void saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, GLenum internalFormat, GLint texNr);
     static void saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf, bool vFlip=false);
-    static void saveFrontBuffer(const std::string &filename, int w, int h, int nrChan);
+    static void saveFrontBuffer(const std::string &filename, FREE_IMAGE_FORMAT fif, int w, int h, int nrChan);
 #endif
 
 #endif

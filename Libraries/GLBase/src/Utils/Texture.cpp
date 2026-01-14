@@ -1179,13 +1179,13 @@ void Texture::FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message) 
     LOGE <<  "Message:" << message;
 }
 
-void Texture::saveFrontBuffer(const std::string &filename, int w, int h, int nrChan) {
+void Texture::saveFrontBuffer(const std::string &filename, FREE_IMAGE_FORMAT fif, int w, int h, int nrChan) {
     std::vector<uint8_t> bitmap(w * h * nrChan);
     glReadBuffer(GL_FRONT);
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, bitmap.data());  // synchronous, blocking command, no swap() needed
-    FreeImage::Save(filename, FIF_PNG, w, h, nrChan, bitmap.data());
+    FreeImage::Save(filename, fif, w, h, nrChan, bitmap.data());
 }
 #endif
 
