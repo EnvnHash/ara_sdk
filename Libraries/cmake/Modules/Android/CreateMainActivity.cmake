@@ -48,7 +48,7 @@ public class MainActivity extends NativeActivity {
         endif ()
 
         # class begin
-        list(APPEND main_activity "\tpublic class ${PROJECT_NAME}Activity extends AppCompatActivity implements DisplayManager.DisplayListener {
+        list(APPEND main_activity "public class ${PROJECT_NAME}Activity extends AppCompatActivity implements DisplayManager.DisplayListener {
       private static final String TAG = ${PROJECT_NAME}Activity.class.getSimpleName()\;
 
       private CustomGLSurfaceView surfaceView\;
@@ -58,18 +58,18 @@ public class MainActivity extends NativeActivity {
       private ScaleGestureDetector scaleGestureDetector\;
       private static AppCompatActivity m_activity\;
       private boolean isScaling = false\;
-    ")
+")
+
+        if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
+            list(APPEND main_activity "      private static AdView m_adView\;
+")
+        endif ()
 
         if (ARA_USE_NDI)
             list(APPEND main_activity "  private NsdManager m_nsdManager\;
-        ")
+")
         endif()
-
-        if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
-            list(APPEND main_activity "  public static AdView adView\;
-                ")
-        endif()
-
+        
     # class OnCreate
         list(APPEND main_activity "
       @Override
@@ -84,16 +84,16 @@ public class MainActivity extends NativeActivity {
                   new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)\;
         glSurfaceViewLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP)\;
         relativeLayout.addView(surfaceView, glSurfaceViewLayoutParams)\;
-
         m_activity = this\;
+")
 
-    ")
         if (ARA_USE_NDI)
             list(APPEND main_activity "    m_nsdManager = (NsdManager)getSystemService(Context.NSD_SERVICE)\;
-    ")
+")
         endif()
 
-        list(APPEND main_activity "   // Set up touch listener.
+        list(APPEND main_activity "
+        // Set up touch listener.
         gestureDetector =
             new GestureDetector(
                 this,
@@ -187,13 +187,13 @@ public class MainActivity extends NativeActivity {
 
       if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
             list (APPEND main_activity "
-                    new Thread(() -> {
-                      MobileAds.initialize(this, initializationStatus -> {})\;
-                  }).start()\;
+        new Thread(() -> {
+              MobileAds.initialize(this, initializationStatus -> {})\;
+        }).start()\;
 
-        AdView adView = new AdView(this)\;
-        adView.setAdUnitId(\"${ADMOB_UNIT_ID}\")\;
-        adView.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, 360))\;
+        m_adView = new AdView(this)\;
+        m_adView.setAdUnitId(\"${ADMOB_UNIT_ID}\")\;
+        m_adView.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, 360))\;
 
         RelativeLayout adContainerView = new RelativeLayout(this)\;
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
@@ -206,18 +206,19 @@ public class MainActivity extends NativeActivity {
         RelativeLayout.LayoutParams adViewLayout =
                   new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)\;
         adViewLayout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)\;
-        adContainerView.addView(adView, adViewLayout)\;
+        adContainerView.addView(m_adView, adViewLayout)\;
 
         relativeLayout.addView(adContainerView)\;
 ")
       endif ()
 
-      list (APPEND main_activity "}\n\n")
+      list (APPEND main_activity "
+      }\n\n")
 
         # planeStatusCheckingHandler = new Handler()\;
 
         # class OnResume
-        list(APPEND main_activity "  @Override
+        list(APPEND main_activity "      @Override
       protected void onResume() {
         super.onResume()\;
         ")
@@ -246,14 +247,14 @@ public class MainActivity extends NativeActivity {
       }\n\n")
 
         # class OnStart
-        list(APPEND main_activity "  @Override
+        list(APPEND main_activity "      @Override
       public void onStart() {
         super.onStart()\;
         JniInterface.onStart()\;
       }\n\n")
 
         # class OnPause
-        list(APPEND main_activity "  @Override
+        list(APPEND main_activity "      @Override
       public void onPause() {
         super.onPause()\;
         surfaceView.onPause()\;
@@ -263,7 +264,7 @@ public class MainActivity extends NativeActivity {
       }\n\n")
 
         # class OnDestroy
-        list(APPEND main_activity "  @Override
+        list(APPEND main_activity "      @Override
       public void onDestroy() {
         super.onDestroy()\;
 
@@ -275,7 +276,7 @@ public class MainActivity extends NativeActivity {
       }\n\n")
 
         # class OnFocusChanged
-        list(APPEND main_activity "  @Override
+        list(APPEND main_activity "      @Override
       public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus)\;
         if (hasFocus) {
@@ -303,17 +304,19 @@ public class MainActivity extends NativeActivity {
 
         # class loadAd
         if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
-            list(APPEND main_activity "     public static void loadAd() {
-        //AdRequest adRequest = new AdRequest.Builder().build()\;
-        //adView.loadAd(adRequest)\;
-        Log.i(TAG, \"[debug] loadAD\")\;
+            list(APPEND main_activity "      public static void loadAd() {
+        m_activity.runOnUiThread(() -> {
+            AdRequest adRequest = new AdRequest.Builder().build()\;
+            m_adView.loadAd(adRequest)\;
+            Log.i(TAG, \"[debug] loadAD\")\;
+        })\;
      }
         
 ")
         endif ()
 
         # class onRequestPermissionsResult
-        list(APPEND main_activity "     private void setImmersiveSticky() {
+        list(APPEND main_activity "      private void setImmersiveSticky() {
         getWindow()
         .getDecorView()
         .setSystemUiVisibility(

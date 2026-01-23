@@ -243,12 +243,10 @@ jclass FindClass(const char* classname) {
 }
 
 void triggerLoadAd() {
-    JNIEnv *env = GetJniEnv();
-    jclass clz = env->FindClass(\"${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity\");
-    auto loadAd = env->GetStaticMethodID(clz, \"loadAd\", \"()V\");
-    if (loadAd != nullptr) {
-        env->CallStaticVoidMethod(clz, loadAd);
-    }
+    auto env = GetJniEnv();
+    auto clz = env->FindClass(\"${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity\");
+    auto loadAd = env->GetStaticMethodID(clz, \"loadAd\", \"()V\"\);
+    env->CallStaticVoidMethod(clz, loadAd);
 }
 
 }  // extern \"C\"")

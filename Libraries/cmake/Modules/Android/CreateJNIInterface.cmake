@@ -28,6 +28,8 @@ public class JniInterface {
   private static final String TAG = \"JniInterface\"\;
   static AssetManager assetManager\;
 
+  public static native void setClassInst()\;
+
   public static native long createNativeApplication(AssetManager assetManager, String internalDataPath)\;
 
   public static native void setInternalDataPath(String path)\;
