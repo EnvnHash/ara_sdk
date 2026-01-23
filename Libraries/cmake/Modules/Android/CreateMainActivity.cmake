@@ -17,32 +17,29 @@ public class MainActivity extends NativeActivity {
         # imports
         if (ARA_USE_NDI)
             list(APPEND main_activity "import android.net.nsd.NsdManager\;
-    import android.content.Context\;
+import android.content.Context\;
     ")
         endif()
 
         list(APPEND main_activity "import android.content.pm.ActivityInfo\;
-    import android.hardware.display.DisplayManager\;
-    import android.os.Bundle\;
-    import android.util.DisplayMetrics\;
-    import android.util.Log\;
-    import android.view.GestureDetector\;
-    import android.view.ScaleGestureDetector\;
-    import android.view.MotionEvent\;
-    import android.view.View\;
-    import android.view.ViewGroup\;
-    import android.view.WindowManager\;
-    import android.widget.RelativeLayout\;
-    import androidx.annotation.NonNull\;
-    import androidx.appcompat.app.AppCompatActivity\;
+import android.hardware.display.DisplayManager\;
+import android.os.Bundle\;
+import android.util.DisplayMetrics\;
+import android.util.Log\;
+import android.view.GestureDetector\;
+import android.view.ScaleGestureDetector\;
+import android.view.MotionEvent\;
+import android.view.View\;
+import android.view.ViewGroup\;
+import android.view.WindowManager\;
+import android.widget.RelativeLayout\;
+import androidx.annotation.NonNull\;
+import androidx.appcompat.app.AppCompatActivity\;
     
-    ")
+")
 
         if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
-            list(APPEND main_activity "import com.google.android.gms.ads.MobileAds\;
-    import com.google.android.gms.ads.AdView\;
-    import com.google.android.gms.ads.AdSize\;
-    import com.google.android.gms.ads.AdRequest\;
+            list(APPEND main_activity "import ${PACKAGE_URL}.${PACKAGE_NAME}.AdHelper\;
 
 ")
         endif ()
@@ -61,7 +58,7 @@ public class MainActivity extends NativeActivity {
 ")
 
         if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
-            list(APPEND main_activity "      private static AdView m_adView\;
+            list(APPEND main_activity "      private static AdHelper m_adHelper\;
 ")
         endif ()
 
@@ -175,44 +172,13 @@ public class MainActivity extends NativeActivity {
             setImmersiveSticky()\;
           }
         })\;
-
-        // Forces screen to max brightness.
-        WindowManager.LayoutParams layout = getWindow().getAttributes()\;
-        layout.screenBrightness = 1.f\;
-        getWindow().setAttributes(layout)\;
-
-        // Prevents screen from dimming/locking.
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)\;
 ")
 
       if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
             list (APPEND main_activity "
-        new Thread(() -> {
-              MobileAds.initialize(this, initializationStatus -> {})\;
-        }).start()\;
+        m_adHelper = new AdHelper(this)\;
+        m_adHelper.loadStandardAd(\"${ADMOB_UNIT_ID}\", relativeLayout)\;
 
-        m_adView = new AdView(this)\;
-        m_adView.setAdUnitId(\"${ADMOB_UNIT_ID}\")\;
-        m_adView.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, 360))\;
-
-        RelativeLayout adContainerView = new RelativeLayout(this)\;
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                  RelativeLayout.LayoutParams.MATCH_PARENT,
-                  RelativeLayout.LayoutParams.MATCH_PARENT
-        )\;
-        adContainerView.setLayoutParams(layoutParams)\;
-        adContainerView.removeAllViews()\;
-
-        RelativeLayout.LayoutParams adViewLayout =
-                  new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)\;
-        adViewLayout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)\;
-        adContainerView.addView(m_adView, adViewLayout)\;
-
-        relativeLayout.addView(adContainerView)\;
-
-        AdRequest adRequest = new AdRequest.Builder().build()\;
-        m_adView.loadAd(adRequest)\;
-        m_adView.setVisibility(View.INVISIBLE)\;
 ")
       endif ()
 
@@ -310,7 +276,7 @@ public class MainActivity extends NativeActivity {
         if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
             list(APPEND main_activity "      public static void loadAd() {
         m_activity.runOnUiThread(() -> {
-            m_adView.setVisibility(View.VISIBLE)\;
+            m_adHelper.showStandardAd(true)\;
         })\;
      }
         
