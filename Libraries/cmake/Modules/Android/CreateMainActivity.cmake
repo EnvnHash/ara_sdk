@@ -58,7 +58,6 @@ public class MainActivity extends NativeActivity {
       private ScaleGestureDetector scaleGestureDetector\;
       private static AppCompatActivity m_activity\;
       private boolean isScaling = false\;
-
     ")
 
         if (ARA_USE_NDI)
@@ -66,6 +65,10 @@ public class MainActivity extends NativeActivity {
         ")
         endif()
 
+        if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
+            list(APPEND main_activity "  public static AdView adView\;
+                ")
+        endif()
 
     # class OnCreate
         list(APPEND main_activity "
@@ -206,9 +209,6 @@ public class MainActivity extends NativeActivity {
         adContainerView.addView(adView, adViewLayout)\;
 
         relativeLayout.addView(adContainerView)\;
-
-        AdRequest adRequest = new AdRequest.Builder().build()\;
-        adView.loadAd(adRequest)\;
 ")
       endif ()
 
@@ -301,8 +301,19 @@ public class MainActivity extends NativeActivity {
           }\n\n")
         endif()
 
+        # class loadAd
+        if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
+            list(APPEND main_activity "     public static void loadAd() {
+        //AdRequest adRequest = new AdRequest.Builder().build()\;
+        //adView.loadAd(adRequest)\;
+        Log.i(TAG, \"[debug] loadAD\")\;
+     }
+        
+")
+        endif ()
+
         # class onRequestPermissionsResult
-        list(APPEND main_activity "  private void setImmersiveSticky() {
+        list(APPEND main_activity "     private void setImmersiveSticky() {
         getWindow()
         .getDecorView()
         .setSystemUiVisibility(

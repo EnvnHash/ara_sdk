@@ -1,10 +1,10 @@
-macro (create_cpp_jni_interface)
+macro (create_cpp_jni_interface use_ad_mob)
     replace_dot_with_char(${PACKAGE_URL} "_" package_url_underscore)
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
 
-    FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/cpp/jni_interface.h "#pragma once
-MainActivity
+    set(jni_interface_h "")
+    list(APPEND jni_interface_h "#pragma once
 #include <jni.h>
 
 /**
@@ -16,12 +16,20 @@ extern \"C\" {
 // In this sample, no consideration is made for detaching the thread when the
 // thread exits. This can cause memory leaks, so production applications should
 // detach when the thread no longer needs access to the JVM.
-JNIEnv *GetJniEnv();
+JNIEnv *GetJniEnv()\;
 
-jclass FindClass(const char *classname);
+jclass FindClass(const char *classname)\;
+")
+    if (${use_ad_mob})
+        list(APPEND jni_interface_h "void triggerLoadAd()\;
+            ")
+    endif ()
 
+    list(APPEND jni_interface_h "
 }  // extern \"C\"
 \n\n")
+
+    FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/cpp/jni_interface.h ${jni_interface_h})
 
     # package name may contain a "_" char, which will translate to "_1" in a ndk method name
     string(REPLACE "_" "_1" PACKAGE_NAME_CLASS ${PACKAGE_NAME})
@@ -232,6 +240,15 @@ JNIEnv* GetJniEnv() {
 jclass FindClass(const char* classname) {
   JNIEnv *env = GetJniEnv();
   return env->FindClass(classname);
+}
+
+void triggerLoadAd() {
+    JNIEnv *env = GetJniEnv();
+    jclass clz = env->FindClass(\"${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity\");
+    auto loadAd = env->GetStaticMethodID(clz, \"loadAd\", \"()V\");
+    if (loadAd != nullptr) {
+        env->CallStaticVoidMethod(clz, loadAd);
+    }
 }
 
 }  // extern \"C\"")
