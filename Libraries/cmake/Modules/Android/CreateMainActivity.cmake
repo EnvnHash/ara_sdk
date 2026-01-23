@@ -209,6 +209,10 @@ public class MainActivity extends NativeActivity {
         adContainerView.addView(m_adView, adViewLayout)\;
 
         relativeLayout.addView(adContainerView)\;
+
+        AdRequest adRequest = new AdRequest.Builder().build()\;
+        m_adView.loadAd(adRequest)\;
+        m_adView.setVisibility(View.INVISIBLE)\;
 ")
       endif ()
 
@@ -306,9 +310,7 @@ public class MainActivity extends NativeActivity {
         if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
             list(APPEND main_activity "      public static void loadAd() {
         m_activity.runOnUiThread(() -> {
-            AdRequest adRequest = new AdRequest.Builder().build()\;
-            m_adView.loadAd(adRequest)\;
-            Log.i(TAG, \"[debug] loadAD\")\;
+            m_adView.setVisibility(View.VISIBLE)\;
         })\;
      }
         
