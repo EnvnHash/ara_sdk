@@ -106,13 +106,13 @@ import com.google.android.gms.ads.AdRequest\;
                 public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                     // The interstitial ad was loaded successfully
                     mInterstitialAd = interstitialAd\;
-                    Log.i(\"AdHelper\", \"Interstitial ad loaded\")\;
+                    Log.i(\"AdHelper\", \"[debug] Interstitial ad loaded\")\;
                 }
 
                 @Override
                 public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                     // Handle the error
-                    Log.d(\"AdHelper\", \"Interstitial ad failed to load: \" + loadAdError.getMessage())\;
+                    Log.d(\"AdHelper\", \"[debug] Interstitial ad failed to load: \" + loadAdError.getMessage())\;
                     mInterstitialAd = null\;
                 }
             })\;

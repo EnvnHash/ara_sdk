@@ -1,4 +1,4 @@
-macro (create_main_activity app_type ADMOB_UNIT_ID)
+macro (create_main_activity app_type ADMOB_UNIT_ID ADMOB_AD_TYPE)
     set(main_activity)
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
@@ -176,9 +176,16 @@ import androidx.appcompat.app.AppCompatActivity\;
 
       if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
             list (APPEND main_activity "
-        m_adHelper = new AdHelper(this)\;
+        m_adHelper = new AdHelper(this)\;")
+      endif ()
+        
+      if ("${ADMOB_AD_TYPE}" STREQUAL "")
+          list (APPEND main_activity "
         m_adHelper.loadStandardAd(\"${ADMOB_UNIT_ID}\", relativeLayout)\;
-
+")
+      elseif ("${ADMOB_AD_TYPE}" STREQUAL "interstitial")
+          list (APPEND main_activity "
+        m_adHelper.loadInterstitialAd(\"${ADMOB_UNIT_ID}\")\;
 ")
       endif ()
 
@@ -275,11 +282,20 @@ import androidx.appcompat.app.AppCompatActivity\;
         # class loadAd
         if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
             list(APPEND main_activity "      public static void loadAd() {
-        m_activity.runOnUiThread(() -> {
-            m_adHelper.showStandardAd(true)\;
+        m_activity.runOnUiThread(() -> {")
+
+            if ("${ADMOB_AD_TYPE}" STREQUAL "")
+                list(APPEND main_activity "
+            m_adHelper.showStandardAd(true)\;")
+            elseif ("${ADMOB_AD_TYPE}" STREQUAL "interstitial")
+                list(APPEND main_activity "
+            m_adHelper.showInterstitialAd()\;")
+            endif ()
+
+            list(APPEND main_activity "
         })\;
      }
-        
+
 ")
         endif ()
 
