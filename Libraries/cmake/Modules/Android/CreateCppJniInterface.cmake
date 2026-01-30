@@ -25,7 +25,7 @@ jclass FindClass(const char *classname)\;
             ")
     endif ()
     if (${use_billing})
-        list(APPEND jni_interface_h "void triggerLoadAd()\;
+        list(APPEND jni_interface_h "void callStartPayFlow(const std::string& name)\;
             ")
     endif ()
 
@@ -250,6 +250,13 @@ void triggerLoadAd() {
     auto env = GetJniEnv();
     auto clz = env->FindClass(\"${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity\");
     auto loadAd = env->GetStaticMethodID(clz, \"loadAd\", \"()V\"\);
+    env->CallStaticVoidMethod(clz, loadAd);
+}
+
+void callStartPayFlow(const std::string& name) {
+    auto env = GetJniEnv();
+    auto clz = env->FindClass(\"${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity\");
+    auto loadAd = env->GetStaticMethodID(clz, \"startPayFlow\", \"()V\"\);
     env->CallStaticVoidMethod(clz, loadAd);
 }
 

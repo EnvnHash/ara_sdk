@@ -70,7 +70,7 @@ macro (extract_class_name deri)
 endmacro()
 
 # APP_TYPE 0 = Pure native app without JAVA, APPTYPE = 1 Java MainActivity and JNI
-macro (gen_android_proj APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER APP_ORIENTATION ADMOB_APP_ID ADMOB_UNIT_ID ADMOB_AD_TYPE)
+macro (gen_android_proj APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER APP_ORIENTATION ADMOB_APP_ID ADMOB_UNIT_ID ADMOB_AD_TYPE BILLING_PRODUCT_ID)
     set(oneValueArgs APP_ORIENTATION)
     cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
@@ -178,13 +178,13 @@ macro (gen_android_proj APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NA
         create_app_key(${APP_NAME})
 
         if (${use_billing})
-            create_billing_client(${APP_TYPE})
+            create_billing_client(${APP_TYPE} ${BILLING_PRODUCT_ID})
         endif ()
 
         if (${APP_TYPE} EQUAL 0)
             create_pure_native_app_source()
         elseif(${APP_TYPE} EQUAL 1)
-            create_app_java_sources(${APP_TYPE} ${ADMOB_UNIT_ID} ${ADMOB_AD_TYPE})
+            create_app_java_sources(${APP_TYPE} ${ADMOB_UNIT_ID} ${ADMOB_AD_TYPE} ${use_billing})
             if("${ADMOB_UNIT_ID}" STREQUAL "")
                 set(use_ad_mob FALSE)
             else()

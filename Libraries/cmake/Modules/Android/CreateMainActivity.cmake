@@ -1,4 +1,4 @@
-macro (create_main_activity app_type ADMOB_UNIT_ID ADMOB_AD_TYPE)
+macro (create_main_activity app_type ADMOB_UNIT_ID ADMOB_AD_TYPE USE_ANDROID_BILLING)
     set(main_activity)
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
@@ -59,6 +59,11 @@ import androidx.appcompat.app.AppCompatActivity\;
 
         if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
             list(APPEND main_activity "      private static AdHelper m_adHelper\;
+")
+        endif ()
+
+        if (${USE_ANDROID_BILLING})
+            list(APPEND main_activity "      private static BillingManager m_billingMan;\;
 ")
         endif ()
 
@@ -189,6 +194,12 @@ import androidx.appcompat.app.AppCompatActivity\;
 ")
       endif ()
 
+      if (${USE_ANDROID_BILLING})
+           list (APPEND main_activity "
+        m_billingMan = new BillingManager(this)\;
+")
+      endif ()
+
       list (APPEND main_activity "
       }\n\n")
 
@@ -294,10 +305,20 @@ import androidx.appcompat.app.AppCompatActivity\;
 
             list(APPEND main_activity "
         })\;
-     }
+      }
 
 ")
         endif ()
+
+        if (${USE_ANDROID_BILLING})
+            list(APPEND main_activity "      public static void startPayFlow() {
+        m_activity.runOnUiThread(() -> {
+            m_billingMan.purchaseProduct(\"1\")\;
+        })\;
+      }
+
+")
+        endif()
 
         # class onRequestPermissionsResult
         list(APPEND main_activity "      private void setImmersiveSticky() {
