@@ -178,7 +178,7 @@ macro (gen_android_proj APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NA
         create_app_key(${APP_NAME})
 
         if (${use_billing})
-            create_billing_client(${APP_TYPE} ${BILLING_PRODUCT_ID})
+            create_billing_client(${APP_TYPE} "${BILLING_PRODUCT_ID}")
         endif ()
 
         if (${APP_TYPE} EQUAL 0)
