@@ -1,4 +1,4 @@
-macro (create_app_build_gradle APP_NAME APP_TYPE ADMOB_APP_ID)
+macro (create_app_build_gradle APP_NAME APP_TYPE ADMOB_APP_ID ANDROID_BILLING)
 
     # app/build.gradle
     set(app_build_gradle)
@@ -82,6 +82,11 @@ dependencies {
 ")
     if(NOT "${ADMOB_APP_ID}" STREQUAL "")
         list(APPEND app_build_gradle "\timplementation 'com.google.android.gms:play-services-ads:24.8.0'
+")
+    endif ()
+    if(NOT "${ANDROID_BILLING}" STREQUAL "")
+        list(APPEND app_build_gradle "\timplementation 'com.android.billingclient:billing:8.3.0'
+        implementation 'com.google.guava:guava:33.2.0-android' 
 ")
     endif ()
 

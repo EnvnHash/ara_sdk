@@ -1,4 +1,4 @@
-macro (create_cpp_jni_interface use_ad_mob)
+macro (create_cpp_jni_interface use_ad_mob use_billing)
     replace_dot_with_char(${PACKAGE_URL} "_" package_url_underscore)
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
@@ -21,6 +21,10 @@ JNIEnv *GetJniEnv()\;
 jclass FindClass(const char *classname)\;
 ")
     if (${use_ad_mob})
+        list(APPEND jni_interface_h "void triggerLoadAd()\;
+            ")
+    endif ()
+    if (${use_billing})
         list(APPEND jni_interface_h "void triggerLoadAd()\;
             ")
     endif ()

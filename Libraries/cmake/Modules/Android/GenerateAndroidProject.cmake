@@ -46,6 +46,7 @@ include(Android/CreateAndroidManifest)
 include(Android/CreateAppBuildGradle)
 include(Android/CreateAppJavaSources)
 include(Android/CreateAppCppSources)
+include(Android/CreateBillingClient)
 include(Android/CreateProjectStructure)
 include(Android/CreatePureNativeAppSources)
 include(Android/CreateSettingsFiles)
@@ -167,12 +168,18 @@ macro (gen_android_proj APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NA
             set(UIAPP_DERIVATE_CLASS "ara::UIApplication")
         endif ()
 
+        set(use_billing TRUE)
+
         create_proj_structure(${APP_TYPE}) # creates symlinks to all sdk subdirs, the main.cpp and the UIApp.cpp
         create_settings_files(${APP_NAME} ${ADMOB_APP_ID})
         create_android_manifest(${APP_TYPE} ${APP_ICON_NAME} ${APP_ORIENTATION} ${ADMOB_APP_ID})
-        create_app_build_gradle(${APP_NAME} ${APP_TYPE} ${ADMOB_APP_ID})
+        create_app_build_gradle(${APP_NAME} ${APP_TYPE} ${ADMOB_APP_ID} ${use_billing})
         create_android_cmakelists(${APP_TYPE} ${ASSETS_FOLDER})
         create_app_key(${APP_NAME})
+
+        if (${use_billing})
+            create_billing_client(${APP_TYPE})
+        endif ()
 
         if (${APP_TYPE} EQUAL 0)
             create_pure_native_app_source()
@@ -183,7 +190,7 @@ macro (gen_android_proj APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NA
             else()
                 set(use_ad_mob TRUE)
             endif()
-            create_app_cpp_sources(${use_ad_mob})
+            create_app_cpp_sources(${use_ad_mob} ${use_billing})
         endif()
     endif()
 endmacro()
