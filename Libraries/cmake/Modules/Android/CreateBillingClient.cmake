@@ -20,6 +20,7 @@ import android.content.Context\;
 import androidx.annotation.NonNull\;
 import com.android.billingclient.api.BillingClient\;
 import com.android.billingclient.api.BillingClientStateListener\;
+import com.android.billingclient.api.BillingFlowParams\;
 import com.android.billingclient.api.BillingResult\;
 import com.android.billingclient.api.PendingPurchasesParams\;
 import com.android.billingclient.api.ProductDetails\;
@@ -37,16 +38,31 @@ public class BillingManager {
 
         list(APPEND billing_client "
     private static final String TAG = \"BillingManager\"\;
-    private BillingClient billingClient\;
+    private final BillingClient billingClient\;
+    private static ProductDetails m_productDetails\;
+    private static Context m_context\;
+    private static List<ProductDetails> m_productDetailsList\;
     private PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
         @Override
         public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
-            // To be implemented in a later section.
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
+                && purchases != null) {
+                for (Purchase purchase : purchases) {
+                    // Process the purchase as described in the next section.
+                }
+            } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
+                // Handle an error caused by a user canceling the purchase flow.
+                Log.i(TAG, \"[debug] BillingResponseCode.USER_CANCELED\")\;
+            } else {
+                // Handle any other error codes.
+                Log.i(TAG, \"[debug] BillingResponse other error\")\;
+            }
         }
     }\;
     private PendingPurchasesParams purchasesParams\;
 
     public BillingManager(Context context) {
+        m_context = context\;
         billingClient = BillingClient.newBuilder(context)
             .setListener(purchasesUpdatedListener) // Set listener for purchase updates
             .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()) // Alternative approach for newer versions
@@ -59,7 +75,7 @@ public class BillingManager {
     private void startBillingFlow() {
         billingClient.startConnection(new BillingClientStateListener() {
             @Override
-            public void onBillingSetupFinished(BillingResult billingResult) {
+            public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     // The BillingClient is ready. You can query purchases here.
                     Log.d(TAG, \"[debug] Billing connected successfully\")\;
@@ -85,22 +101,23 @@ public class BillingManager {
                 ImmutableList.of(
                     QueryProductDetailsParams.Product.newBuilder()
                         .setProductId(\"${product_id}\")
-                        .setProductType(BillingClient.ProductType.SUBS)
+                        .setProductType(BillingClient.ProductType.INAPP)
                         .build()))
             .build()\;
 
         billingClient.queryProductDetailsAsync(
             queryProductDetailsParams,
             new ProductDetailsResponseListener() {
-                public void onProductDetailsResponse(BillingResult billingResult, @NonNull QueryProductDetailsResult queryProductDetailsResult) {
+                public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull QueryProductDetailsResult queryProductDetailsResult) {
                     if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                       for (ProductDetails productDetails : queryProductDetailsResult.getProductDetailsList()) {
-                         // Process success retrieved product details here.
-                       }
+                        m_productDetailsList = queryProductDetailsResult.getProductDetailsList()\;
+                        for (ProductDetails productDetails : m_productDetailsList) {
+                            m_productDetails = productDetails\;
+                        }
 
-                       for (UnfetchedProduct unfetchedProduct : queryProductDetailsResult.getUnfetchedProductList()) {
-                         // Handle any unfetched products as appropriate.
-                       }
+                        for (UnfetchedProduct unfetchedProduct : queryProductDetailsResult.getUnfetchedProductList()) {
+                            // Handle any unfetched products as appropriate.
+                        }
                     }
                 }
             }
@@ -108,67 +125,29 @@ public class BillingManager {
     }
 
     // Launch the Purchase Flow
-    public void purchaseProduct(String productId) {
+    public void purchaseProduct() {
         Log.i(TAG, \"[debug] purchaseProduct: \")\;
-    /*
-        if (billingClient.isReady()) {
-            FlowParams flowParams = FlowParams.newBuilder()
-                .setProductId(productId)
-                .build()\;
 
-            LaunchBillingFlowParams launchBillingFlowParams = LaunchBillingFlowParams.newBuilder()
-                .setSkuDetails(null) // You can pass SKU details here if you have them cached
-                .setFlowParams(flowParams)
-                .build()\;
+        List<ProductDetails.OneTimePurchaseOfferDetails> selectedOfferTokens = m_productDetails.getOneTimePurchaseOfferDetailsList()\;
 
-            billingClient.launchBillingFlow(launchBillingFlowParams, (BillingResult billingResult) -> {
-                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                    Log.d(TAG, \"[debug] Purchase flow launched successfully\")\;
-                } else {
-                    Log.e(TAG, \"[debug] Purchase flow launch failed: \" + billingResult.getResponseCode())\;
-                }
-            })\;
-        } else {
-            Log.w(TAG, \"[debug] Billing not ready.\");
-        }
-        */
-    }
-/*
-    // Handle Purchases (This is the most important part!)
-    public void handlePurchases(List<Purchase> purchases) {
-        for (Purchase purchase : purchases) {
-            if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
-                Log.d(TAG, \"[debug] Purchase successful: \" + purchase.getOrderId())\;
+        assert selectedOfferTokens != null\;
+        assert selectedOfferTokens.get(0).getOfferToken() != null\;
+        ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParamsList =
+            ImmutableList.of(
+                BillingFlowParams.ProductDetailsParams.newBuilder()
+                    .setProductDetails(m_productDetails)
+                    .setOfferToken(selectedOfferTokens.get(0).getOfferToken())
+                    .build()
+            )\;
 
-                // 1. Unlock the feature/content associated with this product
-                unlockContent(purchase.getSku())\;
+        BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+            .setProductDetailsParamsList(productDetailsParamsList)
+            .build()\;
 
-                // 2. Acknowledge the purchase (VERY IMPORTANT!)
-                acknowledgePurchase(purchase)\;
-            } else if (purchase.getPurchaseState() == Purchase.PurchaseState.PENDING) {
-                Log.i(TAG, \"[debug] Purchase pending: \" + purchase.getOrderId())\;
-            } else {
-                Log.w(TAG, \"[debug] Purchase failed or cancelled: \" + purchase.getOrderId())\;
-            }
-        }
+        // Launch the billing flow
+        BillingResult billingResult = billingClient.launchBillingFlow((Activity) m_context, billingFlowParams)\;
     }
 
-    private void unlockContent(String sku) {
-        // Implement your logic to unlock the purchased content here.
-        // This could involve enabling a feature, granting access to levels, etc.
-        Log.d(TAG, \"[debug] Unlocking content for SKU: \" + sku)\;
-    }
-
-    private void acknowledgePurchase(Purchase purchase) {
-        billingClient.acknowledgePurchaseAsync(purchase.getPurchaseToken(), (BillingResult billingResult) -> {
-            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                Log.d(TAG, \"[debug] Purchase acknowledged successfully.\")\;
-            } else {
-                Log.e(TAG, \"[debug] Failed to acknowledge purchase: \" + billingResult.getResponseCode())\;
-            }
-        })\;
-    }
-*/
     // Disconnect the billing client when your activity/app is closing
     public void disconnectBillingClient() {
         billingClient.endConnection()\;

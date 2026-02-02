@@ -257,10 +257,10 @@ import androidx.appcompat.app.AppCompatActivity\;
         super.onDestroy()\;
 
         // Synchronized to avoid racing onDrawFrame.
-        synchronized (this) {
+        /*synchronized (this) {
           JniInterface.destroyNativeApplication()\;
           surfaceView.setNativeApp(0)\;
-        }
+        }*/
       }\n\n")
 
         # class OnFocusChanged
@@ -313,7 +313,7 @@ import androidx.appcompat.app.AppCompatActivity\;
         if (${USE_ANDROID_BILLING})
             list(APPEND main_activity "      public static void startPayFlow() {
         m_activity.runOnUiThread(() -> {
-            m_billingMan.purchaseProduct(\"1\")\;
+            m_billingMan.purchaseProduct()\;
         })\;
       }
 
