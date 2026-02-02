@@ -1,4 +1,9 @@
-macro (create_cpp_jni_interface use_ad_mob use_billing)
+macro (create_cpp_jni_interface
+        #use_ad_mob use_billing
+)
+    get_property(PACKAGE_URL TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_URL)
+    get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
+
     replace_dot_with_char(${PACKAGE_URL} "_" package_url_underscore)
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
@@ -20,12 +25,25 @@ JNIEnv *GetJniEnv()\;
 
 jclass FindClass(const char *classname)\;
 ")
+    get_property(ADMOB_UNIT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_UNIT_ID)
+    if (NOT ADMOB_UNIT_ID STREQUAL "")
+        set(use_ad_mob TRUE)
+    else ()
+        set(use_ad_mob FALSE)
+    endif ()
     if (${use_ad_mob})
         list(APPEND jni_interface_h "void triggerLoadAd()\;
-            ")
+")
+    endif ()
+
+    get_property(BILLING_PRODUCT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_BILLING_PRODUCT_ID)
+    if (NOT BILLING_PRODUCT_ID STREQUAL "")
+        set(use_billing TRUE)
+    else ()
+        set(use_billing FALSE)
     endif ()
     if (${use_billing})
-        list(APPEND jni_interface_h "void callStartPayFlow(const std::string& name)\;
+        list(APPEND jni_interface_h "void callStartPayFlow(int i)\;
             ")
     endif ()
 
@@ -253,11 +271,11 @@ void triggerLoadAd() {
     env->CallStaticVoidMethod(clz, loadAd);
 }
 
-void callStartPayFlow(const std::string& name) {
+void callStartPayFlow(int i) {
     auto env = GetJniEnv();
     auto clz = env->FindClass(\"${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity\");
-    auto loadAd = env->GetStaticMethodID(clz, \"startPayFlow\", \"()V\"\);
-    env->CallStaticVoidMethod(clz, loadAd);
+    auto loadAd = env->GetStaticMethodID(clz, \"startPayFlow\", \"(I)V\"\);
+    env->CallStaticVoidMethod(clz, loadAd, i);
 }
 
 }  // extern \"C\"")

@@ -1,4 +1,7 @@
-macro (create_ad_helper app_type ADMOB_UNIT_ID)
+macro (create_ad_helper)
+    get_property(PACKAGE_URL TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_URL)
+    get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
+
     set(code)
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)

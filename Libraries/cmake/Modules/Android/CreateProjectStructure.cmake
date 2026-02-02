@@ -1,6 +1,13 @@
 include(Android/CreateMainActivityLayout)
 
-macro(create_proj_structure APP_TYPE)
+macro(create_proj_structure
+        #APP_TYPE
+)
+    get_property(PACKAGE_URL TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_URL)
+    get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
+    get_property(APP_TYPE TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE)
+
+    message(STATUS "PACKAGE_NAME ${PACKAGE_NAME}")
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
 

@@ -1,4 +1,6 @@
-macro (create_app_build_gradle APP_NAME APP_TYPE ADMOB_APP_ID ANDROID_BILLING)
+macro (create_app_build_gradle
+        #APP_NAME APP_TYPE ADMOB_APP_ID ANDROID_BILLING
+)
 
     # app/build.gradle
     set(app_build_gradle)
@@ -16,6 +18,9 @@ def arcore_libpath = \"\${buildDir}/arcore-native\"\n
 // Create a configuration to mark which aars to extract .so files from
 configurations { natives }\n\n")
     endif()
+
+    get_property(PACKAGE_URL TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_URL)
+    get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
 
     list(APPEND app_build_gradle "android {
     compileSdkVersion ${ANDROID_SDK_VERSION}
@@ -40,6 +45,7 @@ configurations { natives }\n\n")
                         \"-DPARALLEL_COMPILE_JOBS=8\"")
     endif()
 
+    get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
     list(APPEND app_build_gradle "
             }
         }
@@ -52,9 +58,9 @@ configurations { natives }\n\n")
         release {
             // You need to specify either an absolute path or include the
             // keystore file in the same directory as the build.gradle file.
-            storeFile file(\"${ANDROID_STUDIO_PROJ}/${APP_NAME}_key.jks\")
+            storeFile file(\"${ANDROID_STUDIO_PROJ}/${PACKAGE_NAME}_key.jks\")
             storePassword \"${SIGN_KEY_PASS}\"
-            keyAlias \"${APP_NAME}\"
+            keyAlias \"${PACKAGE_NAME}\"
             keyPassword \"${SIGN_KEY_PASS}\"
         }
     }
@@ -80,13 +86,17 @@ dependencies {
     implementation 'androidx.core:core-splashscreen:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
 ")
+
+    get_property(ADMOB_APP_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_APP_ID)
     if(NOT "${ADMOB_APP_ID}" STREQUAL "")
         list(APPEND app_build_gradle "\timplementation 'com.google.android.gms:play-services-ads:24.8.0'
 ")
     endif ()
+
+    get_property(ANDROID_BILLING TARGET ${PROJECT_NAME} PROPERTY ARASDK_BILLING_PRODUCT_ID)
     if(NOT "${ANDROID_BILLING}" STREQUAL "")
         list(APPEND app_build_gradle "\timplementation 'com.android.billingclient:billing:8.3.0'
-        implementation 'com.google.guava:guava:33.2.0-android' 
+    implementation 'com.google.guava:guava:33.2.0-android'
 ")
     endif ()
 

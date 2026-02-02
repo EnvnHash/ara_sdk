@@ -1,7 +1,17 @@
-macro (create_billing_client app_type product_id)
+macro (create_billing_client
+        #app_type product_id
+)
     set(billing_client)
+
+    get_property(PACKAGE_URL TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_URL)
+    get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
+    get_property(BILLING_PRODUCT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_BILLING_PRODUCT_ID)
+    list(JOIN BILLING_PRODUCT_ID "\", \"" billing_array)
+
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
+
+    get_property(app_type TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE)
 
     if (${app_type} EQUAL 0)
         list(APPEND billing_client "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n
@@ -30,18 +40,22 @@ import com.android.billingclient.api.PurchasesUpdatedListener\;
 import com.android.billingclient.api.QueryProductDetailsParams\;
 import com.android.billingclient.api.QueryProductDetailsResult\;
 import com.android.billingclient.api.UnfetchedProduct\;
+
+import java.util.ArrayList\;
 import java.util.List\;
 import com.google.common.collect.ImmutableList\;
 
 public class BillingManager {
-")
+    @FunctionalInterface
+    interface ProductDetailsLambda {
+        void setProductDetails(ProductDetails d)\;
+    }
 
-        list(APPEND billing_client "
     private static final String TAG = \"BillingManager\"\;
     private final BillingClient billingClient\;
-    private static ProductDetails m_productDetails\;
+    private static List<ProductDetails> m_productDetails\;
     private static Context m_context\;
-    private static List<ProductDetails> m_productDetailsList\;
+
     private PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
         @Override
         public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
@@ -63,6 +77,7 @@ public class BillingManager {
 
     public BillingManager(Context context) {
         m_context = context\;
+        m_productDetails = new ArrayList<>()\;
         billingClient = BillingClient.newBuilder(context)
             .setListener(purchasesUpdatedListener) // Set listener for purchase updates
             .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()) // Alternative approach for newer versions
@@ -79,7 +94,12 @@ public class BillingManager {
                 if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
                     // The BillingClient is ready. You can query purchases here.
                     Log.d(TAG, \"[debug] Billing connected successfully\")\;
-                    queryProductDetails()\; // Call this after connection is established
+                    List<String> productIds = List.of(\"${billing_array}\")\;
+                    for (String id : productIds) {
+                        queryProductDetails(id, (ProductDetails e) -> {
+                            m_productDetails.add(e)\;
+                        })\;
+                    }
                 } else {
                     Log.e(TAG, \"[debug] Billing connection failed: \")\;
                 }
@@ -94,30 +114,28 @@ public class BillingManager {
     }
 
     // Query Product Details
-    public void queryProductDetails() {
+    public void queryProductDetails(String product_id, ProductDetailsLambda lmbd) {
         QueryProductDetailsParams queryProductDetailsParams =
-        QueryProductDetailsParams.newBuilder()
-            .setProductList(
-                ImmutableList.of(
-                    QueryProductDetailsParams.Product.newBuilder()
-                        .setProductId(\"${product_id}\")
-                        .setProductType(BillingClient.ProductType.INAPP)
-                        .build()))
-            .build()\;
+            QueryProductDetailsParams.newBuilder()
+                .setProductList(
+                    ImmutableList.of(
+                        QueryProductDetailsParams.Product.newBuilder()
+                            .setProductId(product_id)
+                            .setProductType(BillingClient.ProductType.INAPP)
+                            .build()))
+                .build()\;
 
         billingClient.queryProductDetailsAsync(
             queryProductDetailsParams,
-            new ProductDetailsResponseListener() {
-                public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull QueryProductDetailsResult queryProductDetailsResult) {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        m_productDetailsList = queryProductDetailsResult.getProductDetailsList()\;
-                        for (ProductDetails productDetails : m_productDetailsList) {
-                            m_productDetails = productDetails\;
-                        }
+            (billingResult, queryProductDetailsResult) -> {
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    List<ProductDetails> productDetailsList = queryProductDetailsResult.getProductDetailsList()\;
+                    for (ProductDetails productDetails : productDetailsList) {
+                        lmbd.setProductDetails(productDetails)\;
+                    }
 
-                        for (UnfetchedProduct unfetchedProduct : queryProductDetailsResult.getUnfetchedProductList()) {
-                            // Handle any unfetched products as appropriate.
-                        }
+                    for (UnfetchedProduct unfetchedProduct : queryProductDetailsResult.getUnfetchedProductList()) {
+                        // Handle any unfetched products as appropriate.
                     }
                 }
             }
@@ -125,17 +143,17 @@ public class BillingManager {
     }
 
     // Launch the Purchase Flow
-    public void purchaseProduct() {
+    public void purchaseProduct(int i) {
         Log.i(TAG, \"[debug] purchaseProduct: \")\;
 
-        List<ProductDetails.OneTimePurchaseOfferDetails> selectedOfferTokens = m_productDetails.getOneTimePurchaseOfferDetailsList()\;
+        List<ProductDetails.OneTimePurchaseOfferDetails> selectedOfferTokens = m_productDetails.get(i).getOneTimePurchaseOfferDetailsList()\;
 
         assert selectedOfferTokens != null\;
         assert selectedOfferTokens.get(0).getOfferToken() != null\;
         ImmutableList<BillingFlowParams.ProductDetailsParams> productDetailsParamsList =
             ImmutableList.of(
                 BillingFlowParams.ProductDetailsParams.newBuilder()
-                    .setProductDetails(m_productDetails)
+                    .setProductDetails(m_productDetails.get(i))
                     .setOfferToken(selectedOfferTokens.get(0).getOfferToken())
                     .build()
             )\;

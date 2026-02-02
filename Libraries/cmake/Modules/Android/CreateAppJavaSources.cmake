@@ -5,13 +5,23 @@ include(Android/CreateCustomGLSurfaceView)
 include(Android/CreateJNIInterface)
 include(Android/CreateCameraPermissionHelper)
 
-macro(create_app_java_sources app_type ADMOB_UNIT_ID ADMOB_AD_TYPE USE_ANDROID_BILLING)
-    create_main_activity(${app_type} ${ADMOB_UNIT_ID} ${ADMOB_AD_TYPE} ${USE_ANDROID_BILLING})
+macro(create_app_java_sources
+        #app_type ADMOB_UNIT_ID ADMOB_AD_TYPE USE_ANDROID_BILLING
+)
+    create_main_activity(
+            #${app_type} ${ADMOB_UNIT_ID} ${ADMOB_AD_TYPE} ${USE_ANDROID_BILLING}
+    )
+
+    get_property(ADMOB_UNIT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_UNIT_ID)
     if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
         create_ad_helper(${app_type} ${ADMOB_UNIT_ID})
     endif ()
-    create_custom_glsurfaceview(${app_type})
-    create_splashscreen_activity(${app_type})
+    create_custom_glsurfaceview(
+            #${app_type}
+    )
+    create_splashscreen_activity(
+            #${app_type}
+    )
     create_jni_interface()
     if(ARA_USE_ARCORE)
         create_camera_permission_helper()

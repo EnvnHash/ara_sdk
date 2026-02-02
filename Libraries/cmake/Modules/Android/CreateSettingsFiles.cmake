@@ -1,8 +1,13 @@
-macro (create_settings_files APP_NAME ADMOB_APP_ID)
+macro (create_settings_files
+        #APP_NAME ADMOB_APP_ID
+)
+
+    get_property(APP_TYPE TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE)
+    get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
 
     # /app/src/main/res/values/strings.xml
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/res/values/strings.xml "<resources>
-    <string name=\"app_name\">${APP_NAME}</string>
+    <string name=\"app_name\">${PACKAGE_NAME}</string>
 </resources>")
 
 #    distributionUrl=https://services.gradle.org/distributions/gradle-7.3.3-bin.zip
@@ -13,6 +18,8 @@ distributionUrl=https://services.gradle.org/distributions/gradle-8.9-bin.zip
 distributionPath=wrapper/dists
 zipStorePath=wrapper/dists
 zipStoreBase=GRADLE_USER_HOME")
+
+    get_property(ADMOB_APP_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_APP_ID)
 
     # settings.gradle
     SET(settings_gradle)
@@ -33,7 +40,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = \"${APP_NAME}\"
+rootProject.name = \"${PACKAGE_NAME}\"
 ")
     endif ()
     list(APPEND settings_gradle "include ':app'" )

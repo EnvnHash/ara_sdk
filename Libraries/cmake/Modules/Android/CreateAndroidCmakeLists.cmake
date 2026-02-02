@@ -1,4 +1,6 @@
-macro (create_android_cmakelists APP_TYPE ASSETS_FOLDER)
+macro (create_android_cmakelists
+        #APP_TYPE ASSETS_FOLDER
+)
 
     # create the CMakeList.txt
     list(APPEND ANDROID_CMAKELIST "cmake_minimum_required(VERSION ${CMAKE_VERSION})
@@ -25,6 +27,8 @@ if (PARALLEL_COMPILE_JOBS)
 endif ()
 
 ")
+
+    get_property(APP_TYPE TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE)
     if (${APP_TYPE} EQUAL 0)
         list(APPEND ANDROID_CMAKELIST "add_compile_definitions(ARA_ANDROID_PURE_NATIVE_APP)
 ")

@@ -1,6 +1,8 @@
-macro (create_android_manifest APP_TYPE APP_ICON_NAME APP_ORIENTATION ADMOB_APP_ID)
+macro (create_android_manifest
+        #APP_TYPE APP_ICON_NAME APP_ORIENTATION ADMOB_APP_ID
+)
     set(oneValueArgs APP_ORIENTATION)
-    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+#    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
     
     set(manifest)
     list(APPEND manifest "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -31,12 +33,14 @@ macro (create_android_manifest APP_TYPE APP_ICON_NAME APP_ORIENTATION ADMOB_APP_
         list(APPEND manifest "\t\t<meta-data android:name=\"com.google.ar.core\" android:value=\"required\" />\n\n")
     endif()
 
+    get_property(ADMOB_APP_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_APP_ID)
     if (NOT "${ADMOB_APP_ID}" STREQUAL "")
         list(APPEND manifest "\t\t<meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" \n\t\t\tandroid:value=\"${ADMOB_APP_ID}\" />
 
 ")
     endif()
 
+    get_property(APP_TYPE TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE)
     if (${APP_TYPE} EQUAL 0)
         list(APPEND manifest "\t\t<activity
             android:name=\"android.app.NativeActivity\"
@@ -47,8 +51,10 @@ macro (create_android_manifest APP_TYPE APP_ICON_NAME APP_ORIENTATION ADMOB_APP_
             android:theme=\"@style/Theme.Splash\"")
     endif()
 #            android:theme=\"@style/Theme.AppCompat.NoActionBar\"
-    if (arg_APP_ORIENTATION)
-        list(APPEND manifest "\n\t\t\tandroid:screenOrientation=\"${arg_APP_ORIENTATION}\"")
+
+    get_property(APP_ORIENTATION TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_ORIENTATION)
+    if (APP_ORIENTATION)
+        list(APPEND manifest "\n\t\t\tandroid:screenOrientation=\"${APP_ORIENTATION}\"")
     endif ()
 
     list(APPEND manifest "

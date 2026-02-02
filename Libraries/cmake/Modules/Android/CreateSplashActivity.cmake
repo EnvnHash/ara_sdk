@@ -1,4 +1,8 @@
-macro (create_splashscreen_activity APP_TYPE)
+macro (create_splashscreen_activity
+        #APP_TYPE
+)
+    get_property(APP_TYPE TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE)
+
     set(splashscreen_activity)
 
     # package
@@ -24,6 +28,8 @@ public class SplashActivity extends Activity {
     }
 }")
 
+    get_property(PACKAGE_URL TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_URL)
+    get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/app/src/main/java/${package_url_slashes}/${package_name_slashes}/SplashActivity.java ${splashscreen_activity}) # write it

@@ -1,4 +1,10 @@
-macro (create_custom_glsurfaceview app_type)
+macro (create_custom_glsurfaceview
+        #app_type
+)
+    get_property(PACKAGE_URL TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_URL)
+    get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
+    get_property(app_type TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE)
+    
     if (${app_type} EQUAL 1)
         replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
         replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
