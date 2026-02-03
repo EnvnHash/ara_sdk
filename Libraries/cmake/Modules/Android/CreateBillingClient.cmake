@@ -7,6 +7,7 @@ macro (create_billing_client
     get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
     get_property(BILLING_PRODUCT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_BILLING_PRODUCT_ID)
     list(JOIN BILLING_PRODUCT_ID "\", \"" billing_array)
+    string(LENGTH "${BILLING_PRODUCT_ID}" num_products)
 
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
@@ -34,14 +35,12 @@ import com.android.billingclient.api.BillingFlowParams\;
 import com.android.billingclient.api.BillingResult\;
 import com.android.billingclient.api.PendingPurchasesParams\;
 import com.android.billingclient.api.ProductDetails\;
-import com.android.billingclient.api.ProductDetailsResponseListener\;
 import com.android.billingclient.api.Purchase\;
 import com.android.billingclient.api.PurchasesUpdatedListener\;
 import com.android.billingclient.api.QueryProductDetailsParams\;
-import com.android.billingclient.api.QueryProductDetailsResult\;
 import com.android.billingclient.api.UnfetchedProduct\;
 
-import java.util.ArrayList\;
+import java.util.Arrays\;
 import java.util.List\;
 import com.google.common.collect.ImmutableList\;
 
@@ -77,7 +76,7 @@ public class BillingManager {
 
     public BillingManager(Context context) {
         m_context = context\;
-        m_productDetails = new ArrayList<>()\;
+        m_productDetails = Arrays.asList(new ProductDetails[${num_products}])\;
         billingClient = BillingClient.newBuilder(context)
             .setListener(purchasesUpdatedListener) // Set listener for purchase updates
             .enablePendingPurchases(PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()) // Alternative approach for newer versions
@@ -95,10 +94,13 @@ public class BillingManager {
                     // The BillingClient is ready. You can query purchases here.
                     Log.d(TAG, \"[debug] Billing connected successfully\")\;
                     List<String> productIds = List.of(\"${billing_array}\")\;
+                    int i=0\;
                     for (String id : productIds) {
+                        int finalI = i\;
                         queryProductDetails(id, (ProductDetails e) -> {
-                            m_productDetails.add(e)\;
+                            m_productDetails.set(finalI, e)\;
                         })\;
+                        i++\;
                     }
                 } else {
                     Log.e(TAG, \"[debug] Billing connection failed: \")\;
@@ -144,8 +146,6 @@ public class BillingManager {
 
     // Launch the Purchase Flow
     public void purchaseProduct(int i) {
-        Log.i(TAG, \"[debug] purchaseProduct: \")\;
-
         List<ProductDetails.OneTimePurchaseOfferDetails> selectedOfferTokens = m_productDetails.get(i).getOneTimePurchaseOfferDetailsList()\;
 
         assert selectedOfferTokens != null\;
