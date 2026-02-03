@@ -81,7 +81,9 @@ android.enableJetifier=true")
 allprojects {
     repositories {")
 
-    if (${ADMOB_APP_ID} STREQUAL "")
+    get_property(ADMOB_APP_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_APP_ID)
+
+    if ("${ADMOB_APP_ID}" STREQUAL "")
         list(APPEND project_build_gradle "\t\tgoogle()")
     endif ()
 

@@ -53,7 +53,16 @@ include(ResCompInclude)
 
 # uncomment for generating android project
 include(Android/GenerateAndroidProject)
-gen_android_proj(${PROJECT_NAME} "eu.zeitkunst" "'armeabi-v7a', 'arm64-v8a'" 0 icon ${CMAKE_SOURCE_DIR}/Assets "landscape" "0" "0" "standard" "")
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME ${PROJECT_NAME})
+set_property(TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_URL "eu.zeitkunst")
+set_property(TARGET ${PROJECT_NAME} PROPERTY ARASDK_DEST_PLATF "'armeabi-v7a', 'arm64-v8a'")
+set_property(TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE 1)
+set_property(TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_ICON_NAME icon)
+set_property(TARGET ${PROJECT_NAME} PROPERTY ARASDK_ASSETS_FOLDER ${CMAKE_SOURCE_DIR}/Assets)
+set_property(TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_ORIENTATION "landscape")
+
+gen_android_proj()
 
 INSTALL(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_CURRENT_BINARY_DIR} COMPONENT ${PROJECT_NAME} OPTIONAL)

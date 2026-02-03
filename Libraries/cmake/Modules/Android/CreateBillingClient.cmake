@@ -7,7 +7,7 @@ macro (create_billing_client
     get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
     get_property(BILLING_PRODUCT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_BILLING_PRODUCT_ID)
     list(JOIN BILLING_PRODUCT_ID "\", \"" billing_array)
-    string(LENGTH "${BILLING_PRODUCT_ID}" num_products)
+    list(LENGTH "${BILLING_PRODUCT_ID}" num_products)
 
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
