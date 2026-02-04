@@ -100,6 +100,16 @@ void UIAppAndroidJNI::OnDrawFrame() {
     }
 }
 
+void UIAppAndroidJNI::OnDestroy() {
+    for (auto &it : m_appStateCbs[android_app_cmd::onDestroy]) {
+        it(&m_cmd_data);
+    }
+
+    m_cmd_data.activity = nullptr;
+    m_cmd_data.context = nullptr;
+    m_cmd_data.env     = nullptr;
+}
+
 void UIAppAndroidJNI::OnTouched(float x, float y) {
     m_cmd_data.x = x;
     m_cmd_data.y = y;

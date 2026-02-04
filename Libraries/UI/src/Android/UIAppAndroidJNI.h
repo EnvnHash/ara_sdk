@@ -30,6 +30,9 @@ public:
     /// OnResume is called on the UI thread from the Activity's onResume method.
     void OnResume(JNIEnv* env, void* context, void* activity);
 
+    /// OnDestroy is called on the UI thread from the Activity's onResume method.
+    void OnDestroy();
+
     /// OnSurfaceCreated is called on the OpenGL thread when GLSurfaceView is
     /// created.
     void OnSurfaceCreated(JNIEnv* env);

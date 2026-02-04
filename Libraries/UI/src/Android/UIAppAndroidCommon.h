@@ -26,6 +26,7 @@ enum class android_app_cmd : int {
     onStart,
     onStop,
     onResume,
+    onDestroy,
     onSurfaceCreated,
     onDisplayGeometryChanged,
     onTouched

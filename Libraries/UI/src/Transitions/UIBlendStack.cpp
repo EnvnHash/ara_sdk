@@ -11,6 +11,10 @@ void UIBlendStack::show(const std::string& name) {
         return;
     }
 
+    if (m_switchCb) {
+        m_switchCb(name);
+    }
+
     if (m_blender.stopped()) {
         m_blender.swap();
         m_blender.set(UINodeBlender::type::back, m_nodes[name]);
@@ -22,6 +26,7 @@ void UIBlendStack::show(const std::string& name) {
 void UIBlendStack::show(const std::string& name, float delay, double transTime) {
     setTransitionDelay(delay);
     setTransitionTime(transTime);
+    m_currStackItemName = name;
     show(name);
 }
 

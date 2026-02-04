@@ -32,20 +32,14 @@ public class JniInterface {
   static AssetManager assetManager\;
 
   public static native void setClassInst()\;
-
-  public static native long createNativeApplication(AssetManager assetManager, String internalDataPath)\;
-
+  public static native long createNativeApplication(AssetManager assetManager, String internalDataPath, String uiStackItem)\;
   public static native void setInternalDataPath(String path)\;
-
   public static native void setDisplayDensity(float density, float w, float h, float xdpi, float ydpi)\;
-
   public static native void destroyNativeApplication()\;
-
   public static native void onStart()\;
-
   public static native void onPause()\;
-
   public static native void onResume(Context context, Activity activity)\;
+  public static native void setUiStackItem(String item)\;
 
   /** Allocate OpenGL resources for rendering. */
   public static native void onGlSurfaceCreated()\;
@@ -64,7 +58,6 @@ public class JniInterface {
 
   /** OnTouchDown event, called on the OpenGL thread. */
   public static native void onTouchDown(float x, float y)\;
-
   public static native void onTouchUp()\;
 
   /** OnScroll event, called on the OpenGL thread. */
@@ -72,9 +65,7 @@ public class JniInterface {
 
   /** Android JNI scale gesture. */
   public static native void onScale(float fact, float focusX, float focusY)\;
-
   public static native void onScaleBegin()\;
-
   public static native void onScaleEnd()\;
 
   ")
