@@ -42,8 +42,8 @@ void Label::loadStyleDefaults() {
 
     m_setStyleFunc[state::none][styleInit::color]        = [this]() { setColor(1.f, 1.f, 1.f, 1.f); };
     m_setStyleFunc[state::none][styleInit::text]         = [this]() { m_text = ""; };
-    m_setStyleFunc[state::none][styleInit::textAlign]    = [this]() { m_tAlign_X = align::center; };
-    m_setStyleFunc[state::none][styleInit::textValign]   = [this]() { m_tAlign_Y = valign::center; };
+    m_setStyleFunc[state::none][styleInit::textAlign]    = [this]() { m_tAlignX = align::center; };
+    m_setStyleFunc[state::none][styleInit::textValign]   = [this]() { m_tAlignY = valign::center; };
     m_setStyleFunc[state::none][styleInit::labelOptions] = [this]() { m_tOpt = 0; };
 }
 
@@ -111,8 +111,8 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
             }
         }
 
-        m_tAlign_X = aux;
-        m_setStyleFunc[st][styleInit::textAlign] = [this, aux]() { m_tAlign_X = aux; };
+        m_tAlignX = aux;
+        m_setStyleFunc[st][styleInit::textAlign] = [this, aux]() { m_tAlignX = aux; };
     }
 
     if (node->hasValue("text-valign")) {
@@ -131,8 +131,8 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
             }
         }
 
-        m_tAlign_Y = aux;
-        m_setStyleFunc[st][styleInit::textValign] = [this, aux]() { m_tAlign_Y = aux; };
+        m_tAlignY = aux;
+        m_setStyleFunc[st][styleInit::textValign] = [this, aux]() { m_tAlignY = aux; };
     }
 
     if (auto f = node->findNode<AssetFont>("font")) {
@@ -167,7 +167,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
 
     m_fontDGV.setPixRatio(getPixRatio());
     m_fontDGV.setTabPixSize(m_tabSize);
-    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X, m_text, !hasOpt(single_line) && !hasOpt(adaptive));
+    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_text, !hasOpt(single_line) && !hasOpt(adaptive));
 
     if (!m_text.empty()) {
         m_textBounds = m_fontDGV.getPixSize();
@@ -177,7 +177,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
 
             if (bs.x > m_tContSize.x) { // if the bounds of the renderer font are bigger than the content size
                 // estimate the bounds of the rendered ellipsis in pixels at the actual font size
-                faux.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X, "...", false);
+                faux.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, "...", false);
 
                 bas = faux.getPixSize();
 
@@ -201,7 +201,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
                         }
                     }
 
-                m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X,
+                m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX,
                                   hasOpt(end_ellipsis) ? m_text.substr(0, i) + "..."
                                                        : "..." + m_text.substr(i, m_fontDGV.v.size() - 1),
                                   false);
@@ -294,11 +294,11 @@ void Label::updateFontGeo() {
 
     memset(&m_alignOffset[0], 0, 8);
 
-    if (m_tAlign_Y == valign::bottom) {
+    if (m_tAlignY == valign::bottom) {
         bs              = m_fontDGV.getPixSize();
         bs.y            = std::max<float>(bs.y, m_riFont->getPixAscent());
         m_alignOffset.y = m_tContSize.y - bs.y;
-    } else if (m_tAlign_Y == valign::center) {
+    } else if (m_tAlignY == valign::center) {
         bs              = m_fontDGV.getPixSize();
         bs.y            = std::max<float>(bs.y, m_riFont->getPixAscent());
         m_alignOffset.y = m_tContSize.y * 0.5f - bs.y * 0.5f;
@@ -314,9 +314,9 @@ void Label::updateFontGeo() {
         // get in bounds offset
         auto inBoundsOffs = m_textBounds * (1.f - m_adaptScaling);
 
-        m_bo.x = m_tAlign_X == align::center
+        m_bo.x = m_tAlignX == align::center
                      ? m_bo.x + inBoundsOffs.x * 0.5f
-                     : (m_tAlign_X == align::right ? m_bo.x + inBoundsOffs.x : m_bo.x / m_adaptScaling);
+                     : (m_tAlignX == align::right ? m_bo.x + inBoundsOffs.x : m_bo.x / m_adaptScaling);
         m_bo.y = m_bo.y / m_adaptScaling - inBoundsOffs.y * 0.5f;
 
         m_adaptScaleMat = *m_orthoMat * *m_parentMat * m_nodePosMat * scale(vec3(m_adaptScaling, m_adaptScaling, 1.f));
@@ -548,13 +548,13 @@ void Label::setTextAlign(align ax, valign ay, state st) {
 }
 
 void Label::setTextAlignX(align ax, state st) {
-    m_tAlign_X       = ax;
+    m_tAlignX       = ax;
     m_glyphsPrepared = false;
     setStyleInitVal("text-align", ax == align::center ? "center" : (ax == align::left ? "left" : "right"), st);
 }
 
 void Label::setTextAlignY(valign ay, state st) {
-    m_tAlign_Y       = ay;
+    m_tAlignY       = ay;
     m_glyphsPrepared = false;
     setStyleInitVal("text-valign", ay == valign::center ? "center" : (ay == valign::top ? "top" : "bottom"), st);
 }

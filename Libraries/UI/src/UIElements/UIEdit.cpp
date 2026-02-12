@@ -198,10 +198,10 @@ void UIEdit::drawCaret(bool forceCaretVaoUpdt) {
         m_tCaretPos = glm::floor(m_tCaretPos + m_offset + m_alignOffset);
 
         // if there is no text, set the caret corresponding to the text format
-        if (m_text.empty() && (m_tAlign_X == align::right || m_tAlign_X == align::center)) {
-            if (m_tAlign_X == align::right) {
+        if (m_text.empty() && (m_tAlignX == align::right || m_tAlignX == align::center)) {
+            if (m_tAlignX == align::right) {
                 m_tCaretPos.x = getContentSize().x;
-            } else if (m_tAlign_X == align::center) {
+            } else if (m_tAlignX == align::center) {
                 m_tCaretPos.x = getContentSize().x * 0.5f;
             }
         }
@@ -257,7 +257,7 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
     m_fontDGV.setPixRatio(getPixRatio());
     m_fontDGV.setTabPixSize(m_TabSize);
     // process input text, break up in lines
-    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlign_X, m_RenderText, !hasOpt(single_line));
+    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_RenderText, !hasOpt(single_line));
 
     // Calculate offset
     if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_CaretIndex)) >= 0) {
@@ -301,11 +301,11 @@ void UIEdit::updateFontGeo() {
 
     memset(&m_alignOffset[0], 0, 8);
 
-    if (m_tAlign_Y == valign::bottom) {
+    if (m_tAlignY == valign::bottom) {
         m_bs            = m_fontDGV.getPixSize();
         m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
         m_alignOffset.y = m_tContSize.y - m_bs.y;
-    } else if (m_tAlign_Y == valign::center) {
+    } else if (m_tAlignY == valign::center) {
         m_bs            = m_fontDGV.getPixSize();
         m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
         m_alignOffset.y = m_tContSize.y * 0.5f - m_bs.y * 0.5f;
@@ -983,11 +983,11 @@ void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClas
         ParVec p = node->splitNodeValue("edit-align");
 
         for (std::string &par : p) {
-            if (par == "left") m_tAlign_X = align::left;
-            if (par == "center") m_tAlign_X = align::center;
-            if (par == "right") m_tAlign_X = align::right;
-            if (par == "justify") m_tAlign_X = align::justify;
-            if (par == "justify-ex") m_tAlign_X = align::justify_ex;
+            if (par == "left") m_tAlignX = align::left;
+            if (par == "center") m_tAlignX = align::center;
+            if (par == "right") m_tAlignX = align::right;
+            if (par == "justify") m_tAlignX = align::justify;
+            if (par == "justify-ex") m_tAlignX = align::justify_ex;
         }
     }
 
@@ -1001,8 +1001,8 @@ void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClas
             if (par == "bottom") l_auxAlign = valign::bottom;
         }
 
-        m_tAlign_Y                                = l_auxAlign;
-        m_setStyleFunc[st][styleInit::textValign] = [this]() { m_tAlign_Y = l_auxAlign; };
+        m_tAlignY                                = l_auxAlign;
+        m_setStyleFunc[st][styleInit::textValign] = [this]() { m_tAlignY = l_auxAlign; };
     }
 
     if (auto f = node->findNode<AssetFont>("font")) {

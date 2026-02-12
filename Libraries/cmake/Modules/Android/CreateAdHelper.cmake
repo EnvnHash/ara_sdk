@@ -109,7 +109,6 @@ import com.google.android.gms.ads.AdRequest\;
                 public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                     // The interstitial ad was loaded successfully
                     mInterstitialAd = interstitialAd\;
-                    Log.i(\"AdHelper\", \"[debug] Interstitial ad loaded\")\;
                 }
 
                 @Override

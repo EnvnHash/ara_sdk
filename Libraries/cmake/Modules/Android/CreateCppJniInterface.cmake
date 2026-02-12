@@ -23,6 +23,7 @@ extern \"C\" {
 // detach when the thread no longer needs access to the JVM.
 JNIEnv *GetJniEnv()\;
 
+void notifyNewUiStackItem(const std::string&)\;
 jclass FindClass(const char *classname)\;
 ")
     get_property(ADMOB_UNIT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_UNIT_ID)
@@ -88,8 +89,14 @@ jint JNI_OnLoad(JavaVM *vm, void *) {
 }
 
 JNI_METHOD(jlong, createNativeApplication)
-(JNIEnv* env, jobject obj, jobject j_asset_manager, jstring internalDataPath) {
+(JNIEnv* env, jobject obj, jobject j_asset_manager, jstring internalDataPath, jstring uiStackItem) {
     app = new ${UIAPP_DERIVATE_CLASS}();
+
+    auto str = std::string(env->GetStringUTFChars(uiStackItem, nullptr));
+    if (!str.empty()) {
+        app->setStackItem(str);
+    }
+
     jboolean isCopy = true;
     const char *cstr = env->GetStringUTFChars(internalDataPath, &isCopy);
     app->m_internalPath = std::string(cstr);
@@ -127,7 +134,7 @@ JNI_METHOD(jlong, createNativeApplication)
 
 JNI_METHOD(void, setExternalDataPath)
 (JNIEnv* env, jclass, jstring path) {
-    const char *cstr = env->GetStringUTFChars(path, NULL);
+    const char *cstr = env->GetStringUTFChars(path, nullptr);
     std::string str = std::string(cstr);
     if (app) {
         app->setExternalDataPath(str);
@@ -142,11 +149,34 @@ JNI_METHOD(void, setDisplayDensity)
     }
 }
 
+JNI_METHOD(void, setUiStackItem)
+(JNIEnv* env, jclass, jstring item) {
+  if (app) {
+    auto stackItem = std::string(env->GetStringUTFChars(item, nullptr));
+    app->setStackItem(stackItem);
+  }
+}
+
+JNI_METHOD(jstring, getUiStackItem)
+(JNIEnv* env, jclass) {
+  if (app) {
+    auto str = app->getCurrBlendStackItem();
+    const char* chars = str.c_str();
+    return env->NewStringUTF(chars);
+  } else {
+    return jstring(\"\");
+  }
+}
+
 JNI_METHOD(void, destroyNativeApplication)
 (JNIEnv*, jclass) {
   if (app) {
-    delete app;
+    app->OnDestroy();
   }
+
+  /*if (app) {
+    delete app;
+  }*/
 }
 
 JNI_METHOD(void, onStart)
@@ -262,6 +292,17 @@ JNIEnv* GetJniEnv() {
 jclass FindClass(const char* classname) {
   JNIEnv *env = GetJniEnv();
   return env->FindClass(classname);
+}
+
+void notifyNewUiStackItem(const std::string& item) {
+    auto env = GetJniEnv();
+    auto clz = env->FindClass(\"${package_url_slashes}/${package_name_slashes}/${PROJECT_NAME}Activity\");
+
+    auto chars = item.c_str();
+    auto newUiItem = env->NewStringUTF(chars);
+
+    auto uiStackSwitched = env->GetStaticMethodID(clz, \"uiStackSwitched\", \"(Ljava/lang/String;)V\");
+    env->CallStaticVoidMethod(clz, uiStackSwitched, newUiItem);
 }
 
 void triggerLoadAd() {

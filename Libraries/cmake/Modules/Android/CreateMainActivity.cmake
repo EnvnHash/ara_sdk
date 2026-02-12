@@ -63,6 +63,8 @@ import androidx.appcompat.app.AppCompatActivity\;
       private ScaleGestureDetector scaleGestureDetector\;
       private static AppCompatActivity m_activity\;
       private boolean isScaling = false\;
+      private static String m_appStateStackItemKey = \"app_stack_item\"\;
+      private static String m_appStateStackItem = \"\"\;
 ")
 
         if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
@@ -99,6 +101,10 @@ import androidx.appcompat.app.AppCompatActivity\;
         glSurfaceViewLayoutParams.addRule(RelativeLayout.ALIGN_PARENT_TOP)\;
         relativeLayout.addView(surfaceView, glSurfaceViewLayoutParams)\;
         m_activity = this\;
+
+        if (savedInstanceState != null) {
+            m_appStateStackItem = savedInstanceState.getString(m_appStateStackItemKey)\;
+        }
 ")
 
         if (ARA_USE_NDI)
@@ -175,7 +181,7 @@ import androidx.appcompat.app.AppCompatActivity\;
 
         JniInterface.assetManager = getAssets()\;
 
-        surfaceView.setNativeApp(JniInterface.createNativeApplication(getAssets(), getFilesDir().getAbsolutePath()))\;
+        surfaceView.setNativeApp(JniInterface.createNativeApplication(getAssets(), getFilesDir().getAbsolutePath(), m_appStateStackItem))\;
         surfaceView.setWindowManager(getWindowManager())\;
 
         DisplayMetrics m = new DisplayMetrics()\;
@@ -216,6 +222,14 @@ import androidx.appcompat.app.AppCompatActivity\;
       }\n\n")
 
         # planeStatusCheckingHandler = new Handler()\;
+
+      list(APPEND main_activity "      @Override
+      protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState)\;
+        outState.putString(m_appStateStackItemKey, m_appStateStackItem)\;
+      }
+      
+")
 
         # class OnResume
         list(APPEND main_activity "      @Override
@@ -267,12 +281,9 @@ import androidx.appcompat.app.AppCompatActivity\;
         list(APPEND main_activity "      @Override
       public void onDestroy() {
         super.onDestroy()\;
-
-        // Synchronized to avoid racing onDrawFrame.
-        /*synchronized (this) {
+        synchronized (this) {
           JniInterface.destroyNativeApplication()\;
-          surfaceView.setNativeApp(0)\;
-        }*/
+        }
       }\n\n")
 
         # class OnFocusChanged
@@ -286,7 +297,12 @@ import androidx.appcompat.app.AppCompatActivity\;
         }
       }\n\n")
 
-        # class onRequestPermissionsResult
+        list(APPEND main_activity "
+      public static void uiStackSwitched(String newItem) {
+        m_appStateStackItem = newItem\;
+      }\n\n")
+
+# class onRequestPermissionsResult
         if (ARA_USE_ARCORE)
             list(APPEND main_activity "   @Override
           public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {

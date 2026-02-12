@@ -26,7 +26,7 @@ struct LabelPars {
 
 class Label : public Div {
 public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Div, m_fontType, m_fontSize, m_tOpt,  m_tPos, m_tSize, m_tSep, m_tAlign_X, m_tAlign_Y, m_offset, m_alignOffset, m_tabSize, m_adaptScaling, m_text)
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Div, m_fontType, m_fontSize, m_tOpt,  m_tPos, m_tSize, m_tSep, m_tAlignX, m_tAlignY, m_offset, m_alignOffset, m_tabSize, m_adaptScaling, m_text)
 
     enum eopt {
         none         = 0x0000,
@@ -108,8 +108,8 @@ protected:
     unsigned  m_tOpt = 0;                 // options
     glm::vec2 m_tPos{0.f}, m_tSize{0.f};  // pixel space, offset and size
     glm::vec2 m_tSep{0.f};                // font pixel character separation (default=0,0)
-    align     m_tAlign_X = align::center;
-    valign    m_tAlign_Y = valign::center;
+    align     m_tAlignX = align::center;
+    valign    m_tAlignY = valign::center;
     glm::vec2 m_offset{0.f};
     glm::vec2 m_alignOffset{0.f};
     float     m_tabSize      = 50.f;  // Tab size in pixels
