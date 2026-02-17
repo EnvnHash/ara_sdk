@@ -4,11 +4,13 @@ macro (create_main_activity
     set(main_activity)
     get_property(PACKAGE_URL TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_URL)
     get_property(PACKAGE_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_PACKAGE_NAME)
+    get_property(ADMOB_UNIT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_UNIT_ID)
+    get_property(ADMOB_AD_TYPE TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_AD_TYPE)
+    get_property(app_type TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE)
+    get_property(BILLING_PRODUCT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_BILLING_PRODUCT_ID)
 
     replace_dot_with_char(${PACKAGE_URL} "/" package_url_slashes)
     replace_dot_with_char(${PACKAGE_NAME} "/" package_name_slashes)
-
-    get_property(app_type TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_TYPE)
 
     if (${app_type} EQUAL 0)
         list(APPEND main_activity "package ${PACKAGE_URL}.${PACKAGE_NAME}\;\n
@@ -44,7 +46,6 @@ import androidx.annotation.NonNull\;
 import androidx.appcompat.app.AppCompatActivity\;
     
 ")
-        get_property(ADMOB_UNIT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_ADMOB_UNIT_ID)
 
         if (NOT "${ADMOB_UNIT_ID}" STREQUAL "")
             list(APPEND main_activity "import ${PACKAGE_URL}.${PACKAGE_NAME}.AdHelper\;
@@ -72,7 +73,6 @@ import androidx.appcompat.app.AppCompatActivity\;
 ")
         endif ()
 
-        get_property(BILLING_PRODUCT_ID TARGET ${PROJECT_NAME} PROPERTY ARASDK_BILLING_PRODUCT_ID)
         if (NOT "${BILLING_PRODUCT_ID}" STREQUAL "")
             set(USE_ANDROID_BILLING TRUE)
             list(APPEND main_activity "      private static BillingManager m_billingMan;\;
