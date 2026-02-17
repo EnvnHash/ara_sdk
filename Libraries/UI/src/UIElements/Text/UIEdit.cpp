@@ -5,6 +5,10 @@
 #include "UIElements/Text/UIEdit.h"
 #include "UIWindow.h"
 
+#ifdef ARA_USE_CLIP
+#include "clip.h"
+#endif
+
 using namespace glm;
 using namespace std;
 
@@ -18,7 +22,7 @@ UIEdit::UIEdit(unsigned opt, int max_count)  {
     m_tOpt |= single_line;
     m_tOpt |= opt;
 
-    m_MaxCount = max_count;
+    m_maxCount = max_count;
 
     m_minInt = numeric_limits<int>::min();
     m_maxInt = numeric_limits<int>::max();
@@ -246,7 +250,7 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
     }
 
     m_riFont     = font;
-    m_RenderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
+    m_renderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
 
     vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
     int  lidx;
@@ -256,9 +260,9 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
     }
 
     m_fontDGV.setPixRatio(getPixRatio());
-    m_fontDGV.setTabPixSize(m_TabSize);
+    m_fontDGV.setTabPixSize(m_tabSize);
     // process input text, break up in lines
-    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_RenderText, !hasOpt(single_line));
+    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
 
     // Calculate offset
     if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
@@ -431,7 +435,7 @@ void UIEdit::keyDown(hidData& data) {
     setDrawFlag();
 
     // enter or return
-    if (data.key == GLSG_KEY_ENTER || data.key == GLSG_KEY_KP_ENTER) {
+    if (data.key == ARA_KEY_ENTER || data.key == ARA_KEY_KP_ENTER) {
         if (hasOpt(single_line)) {
             checkLimits();
         } else {
@@ -450,15 +454,22 @@ void UIEdit::keyDown(hidData& data) {
         return;
     }
 
+    // ctrl +c -> copy selected text
+    if (data.key == ARA_KEY_C && data.ctrlPressed) {
+#ifdef ARA_USE_CLIP
+        clip::set_text(m_renderText.substr(m_charSelection.x, m_charSelection.y - m_charSelection.x));
+#endif
+    }
+
     // ctrl + z, shift+ctrl+z and ctrl+y will most likely be used for undo / redo
-    if ((data.key == GLSG_KEY_Z && data.ctrlPressed) ||
-        (data.key == GLSG_KEY_Z && data.ctrlPressed && data.shiftPressed) ||
-        (data.key == GLSG_KEY_Y && data.ctrlPressed)) {
+    if ((data.key == ARA_KEY_Z && data.ctrlPressed) ||
+        (data.key == ARA_KEY_Z && data.ctrlPressed && data.shiftPressed) ||
+        (data.key == ARA_KEY_Y && data.ctrlPressed)) {
         onLostFocus();
         return;
     }
 
-    if (data.key == GLSG_KEY_TAB) {
+    if (data.key == ARA_KEY_TAB) {
         if (hasOpt(accept_tabs)) {
             m_caretIndex = insertChar('\t', m_caretIndex, true);
         } else {
@@ -471,20 +482,20 @@ void UIEdit::keyDown(hidData& data) {
 
     // increment decrement for integers and floats
     if (hasOpt(num_int) || hasOpt(num_fp)) {
-        if (data.key == GLSG_KEY_UP) {
+        if (data.key == ARA_KEY_UP) {
             incValue(1.f, data.shiftPressed ? cfState::coarse : data.ctrlPressed ? cfState::fine : cfState::normal);
-        } else if (data.key == GLSG_KEY_DOWN) {
+        } else if (data.key == ARA_KEY_DOWN) {
             incValue(-1.f, data.shiftPressed ? cfState::coarse : data.ctrlPressed ? cfState::fine : cfState::normal);
         }
     }
 
     if (data.shiftPressed) {
-        if (data.key == GLSG_KEY_LEFT && m_caretIndex > 0) {
+        if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
             if (!getSelRange(m_charSelection)) {
-                m_CaretRange[0] = m_caretIndex;
+                m_caretRange[0] = m_caretIndex;
             }
             --m_caretIndex;
-            m_CaretRange[1] = m_caretIndex;
+            m_caretRange[1] = m_caretIndex;
             drawCaret();
             if (!m_drawImmediate) {
                 prepareSelBgVao();
@@ -494,12 +505,12 @@ void UIEdit::keyDown(hidData& data) {
             return;
         }
 
-        if (data.key == GLSG_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
+        if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
             if (!getSelRange(m_charSelection)) {
-                m_CaretRange[0] = m_caretIndex;
+                m_caretRange[0] = m_caretIndex;
             }
             ++m_caretIndex;
-            m_CaretRange[1] = m_caretIndex;
+            m_caretRange[1] = m_caretIndex;
             drawCaret();
             if (!m_drawImmediate) {
                 prepareSelBgVao();
@@ -508,12 +519,12 @@ void UIEdit::keyDown(hidData& data) {
             return;
         }
 
-        if (data.key == GLSG_KEY_HOME) {
+        if (data.key == ARA_KEY_HOME) {
             if (!getSelRange(m_charSelection)) {
-                m_CaretRange[0] = m_caretIndex;
+                m_caretRange[0] = m_caretIndex;
             }
             m_caretIndex    = 0;
-            m_CaretRange[1] = m_caretIndex;
+            m_caretRange[1] = m_caretIndex;
             drawCaret();
             if (!m_drawImmediate) {
                 prepareSelBgVao();
@@ -522,12 +533,12 @@ void UIEdit::keyDown(hidData& data) {
             return;
         }
 
-        if (data.key == GLSG_KEY_END) {
+        if (data.key == ARA_KEY_END) {
             if (!getSelRange(m_charSelection)) {
-                m_CaretRange[0] = m_caretIndex;
+                m_caretRange[0] = m_caretIndex;
             }
             m_caretIndex = m_caretIndex = static_cast<int>(m_text.size());
-            m_CaretRange[1]             = m_caretIndex;
+            m_caretRange[1]             = m_caretIndex;
             drawCaret();
             if (!m_drawImmediate) {
                 prepareSelBgVao();
@@ -540,23 +551,23 @@ void UIEdit::keyDown(hidData& data) {
     }
 
     if (!getSelRange(m_charSelection)) {
-        if (data.key == GLSG_KEY_BACKSPACE && m_caretIndex > 0 && !m_text.empty()) {
-            m_text.erase(std::min<int>(std::max<int>((m_caretIndex--) - 1, 0), static_cast<int>(m_text.size()) - 1), 1);
+        if (data.key == ARA_KEY_BACKSPACE && m_caretIndex > 0 && !m_text.empty()) {
+            m_text.erase(std::min<int>(std::max<int>(--m_caretIndex - 1, 0), static_cast<int>(m_text.size()) - 1), 1);
             reqUpdtGlyphs(true);
-        } else if (data.key == GLSG_KEY_DELETE && (m_caretIndex < static_cast<int>(m_text.size()))) {
+        } else if (data.key == ARA_KEY_DELETE && (m_caretIndex < static_cast<int>(m_text.size()))) {
             m_text.erase(m_caretIndex, 1);
             reqUpdtGlyphs(true);
-        } else if (data.key == GLSG_KEY_LEFT && m_caretIndex > 0) {
+        } else if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
             m_caretIndex--;
-        } else if (data.key == GLSG_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
+        } else if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
             m_caretIndex++;
-        } else if (data.key == GLSG_KEY_HOME) {
+        } else if (data.key == ARA_KEY_HOME) {
             m_caretIndex = 0;
-        } else if (data.key == GLSG_KEY_END) {
+        } else if (data.key == ARA_KEY_END) {
             m_caretIndex = static_cast<int>(m_text.size());
         }
     } else {
-        if (data.key == GLSG_KEY_BACKSPACE || data.key == GLSG_KEY_DELETE) {
+        if (data.key == ARA_KEY_BACKSPACE || data.key == ARA_KEY_DELETE) {
             eraseContent(m_charSelection[0], m_charSelection[1]);
             m_caretIndex = m_charSelection[0];
             clearSelRange();
@@ -564,19 +575,18 @@ void UIEdit::keyDown(hidData& data) {
 
         // marco.g: got to do it this way (clearSelRange() on each) since the
         // OnChar does pass through this callback first
-        //          if leaving it will then clear the sel range and onChar won't
-        //          be able to use it
+        //          if leaving it will then clear the sel range and onChar won't be able to use it
 
-        else if (data.key == GLSG_KEY_LEFT && m_caretIndex > 0) {
+        else if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
             clearSelRange();
             m_caretIndex--;
-        } else if (data.key == GLSG_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
+        } else if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
             clearSelRange();
             m_caretIndex++;
-        } else if (data.key == GLSG_KEY_HOME) {
+        } else if (data.key == ARA_KEY_HOME) {
             clearSelRange();
             m_caretIndex = 0;
-        } else if (data.key == GLSG_KEY_END) {
+        } else if (data.key == ARA_KEY_END) {
             clearSelRange();
             m_caretIndex = static_cast<int>(m_text.size());
         }
@@ -616,7 +626,7 @@ void UIEdit::mouseDrag(hidData& data) {
         auto cpos = getCaretByPixPos(m_mousePosCr.x, m_mousePosCr.y);
 
         m_caretIndex    = cpos;
-        m_CaretRange[1] = cpos;
+        m_caretRange[1] = cpos;
 
         if (!m_drawImmediate) {
             reqUpdtTree();
@@ -636,7 +646,7 @@ void UIEdit::mouseDown(hidData& data) {
 
     if (cpos >= 0) {
         m_caretIndex    = cpos;
-        m_CaretRange[0] = m_CaretRange[1] = m_caretIndex;
+        m_caretRange[0] = m_caretRange[1] = m_caretIndex;
         m_mouseEvent                      = 1;
 
         if (!m_drawImmediate) {
@@ -719,7 +729,7 @@ void UIEdit::setTextDist(const std::filesystem::path& p) {
 
 void UIEdit::setText(const std::string &str) {
     bool updt = str.size() != m_text.size();
-    m_text.assign(str, 0, std::min(m_MaxCount, static_cast<int>(str.size())));
+    m_text.assign(str, 0, std::min(m_maxCount, static_cast<int>(str.size())));
     checkLimits();
     m_caretIndex = static_cast<int>(m_text.size());
     clearSelRange();
@@ -842,20 +852,20 @@ bool UIEdit::setSelRange(int loIndex, int highIndex) {
         return false;
     }
 
-    m_CaretRange[0] = loIndex;
-    m_CaretRange[1] = highIndex;
+    m_caretRange[0] = loIndex;
+    m_caretRange[1] = highIndex;
 
     return true;
 }
 
 bool UIEdit::getSelRange(ivec2 &range) {
-    if (m_CaretRange[0] == m_CaretRange[1]) {
+    if (m_caretRange[0] == m_caretRange[1]) {
         memset(&range[0], 0, sizeof(int) * 2);
         return false;
     }
 
-    range.x = std::min(m_CaretRange.x, m_CaretRange.y);
-    range.y = std::max(m_CaretRange.x, m_CaretRange.y);
+    range.x = std::min(m_caretRange.x, m_caretRange.y);
+    range.y = std::max(m_caretRange.x, m_caretRange.y);
 
     if (range.x < 0) {
         range.x = 0;
@@ -867,7 +877,7 @@ bool UIEdit::getSelRange(ivec2 &range) {
 }
 
 void UIEdit::clearSelRange() {
-    m_CaretRange[0] = m_CaretRange[1] = 0;
+    m_caretRange[0] = m_caretRange[1] = 0;
     drawCaret();
 }
 
@@ -905,7 +915,7 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
     // error check caretIndex == position
     position = static_cast<int>(std::min<size_t>(std::max<size_t>(static_cast<size_t>(position), 0), m_text.size()));
 
-    if (position < 0 && position > static_cast<int>(m_text.size()) && m_text.size() < m_MaxCount) {
+    if (position < 0 && position > static_cast<int>(m_text.size()) && m_text.size() < m_maxCount) {
         return position;
     }
     std::string tempStr(1, static_cast<char>(ch));

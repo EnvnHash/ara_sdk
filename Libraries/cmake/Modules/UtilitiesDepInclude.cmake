@@ -9,6 +9,10 @@ append_unique(ara_sdk_INCLUDE_DIRS
 	${ARA_SDK_SOURCE_DIR}/Libraries/third_party/threadpool
 )
 
+if (ARA_USE_CLIP)
+	append_unique(ara_sdk_INCLUDE_DIRS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/clip)
+endif()
+
 if (ARA_USE_CURL)
 	append_unique(ara_sdk_INCLUDE_DIRS ${ARA_SDK_SOURCE_DIR}/Libraries/third_party/curl/include)
 endif()

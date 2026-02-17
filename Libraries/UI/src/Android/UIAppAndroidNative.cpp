@@ -79,14 +79,14 @@ int32_t UIAppAndroidNative::handle_input(struct android_app* app, AInputEvent* e
                         case AMOTION_EVENT_ACTION_DOWN:
                             win->addEventToQueue([win, x, y] {
                                 win->onMouseCursor(x, y);
-                                win->onMouseButton(GLSG_MOUSE_BUTTON_LEFT, GLSG_PRESS, 0);
+                                win->onMouseButton(ARA_MOUSE_BUTTON_LEFT, ARA_PRESS, 0);
                                 return true;
                             });
                             win->iterate();
                             break;
                         case AMOTION_EVENT_ACTION_UP:
                             win->addEventToQueue([win, x, y] {
-                                win->onMouseButton(GLSG_MOUSE_BUTTON_LEFT, GLSG_RELEASE, 0);
+                                win->onMouseButton(ARA_MOUSE_BUTTON_LEFT, ARA_RELEASE, 0);
                                 return true;
                             });
                             win->iterate();

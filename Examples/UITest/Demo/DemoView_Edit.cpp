@@ -19,7 +19,6 @@ DemoView_Edit::DemoView_Edit() : DemoView("Edit Demo",glm::vec4(.15f,.15f,.15f,1
 }
 
 void DemoView_Edit::init() {
-    /*
     auto& ed = push<UIEdit>(UINodePars{
         .pos = ivec2{10,50},
         .size = ivec2{200,28},
@@ -51,7 +50,7 @@ void DemoView_Edit::init() {
     ed3.setOpt(UIEdit::single_line | UIEdit::num_fp);
     ed3.setValue(1.f);
     ed3.setUseWheel(true);
-*/
+
     auto& ed4 = push<UIEdit>(UINodePars{
         .pos = ivec2{10,200},
         .name = "testItem",

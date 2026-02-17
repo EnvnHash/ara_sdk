@@ -439,7 +439,7 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
 
         case WM_CAPTURECHANGED: {
             if (lParam == 0 && thisWin->m_frameAction) {
-                if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) {
+                if (thisWin->m_cursorMode == ARA_CURSOR_DISABLED) {
                     thisWin->disableCursor();
                 }
                 thisWin->m_frameAction = false;
@@ -453,14 +453,14 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
             if (thisWin->m_frameAction) {
                 break;
             }
-            if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) {
+            if (thisWin->m_cursorMode == ARA_CURSOR_DISABLED) {
                 thisWin->disableCursor();
             }
             return 0;
         }
 
         case WM_KILLFOCUS: {
-            if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) {
+            if (thisWin->m_cursorMode == ARA_CURSOR_DISABLED) {
                 thisWin->enableCursor();
             }
             thisWin->inputWindowFocus(false);
@@ -491,7 +491,7 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
         }
 
         case WM_SYSKEYUP: {
-            const int action = (HIWORD(lParam) & KF_UP) ? GLSG_RELEASE : GLSG_PRESS;
+            const int action = (HIWORD(lParam) & KF_UP) ? ARA_RELEASE : ARA_PRESS;
             const int mods   = thisWin->getKeyMods();
 
             int scancode = (HIWORD(lParam) & (KF_EXTENDED | 0xff));
@@ -502,7 +502,7 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
             int key = thisWin->m_keycodes[scancode];
             if (wParam == VK_CONTROL) {
                 if (HIWORD(lParam) & KF_EXTENDED) {
-                    key = GLSG_KEY_RIGHT_CONTROL;
+                    key = ARA_KEY_RIGHT_CONTROL;
                 } else {
                     MSG         next;
                     const DWORD time = GetMessageTime();
@@ -519,18 +519,18 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
                     }
 
                     // This is a regular Left Ctrl message
-                    key = GLSG_KEY_LEFT_CONTROL;
+                    key = ARA_KEY_LEFT_CONTROL;
                 }
             } else if (wParam == VK_PROCESSKEY) {
                 break;
             }
 
-            if (action == GLSG_RELEASE && wParam == VK_SHIFT) {
-                thisWin->inputKey(GLSG_KEY_LEFT_SHIFT, scancode, action, mods);
-                thisWin->inputKey(GLSG_KEY_RIGHT_SHIFT, scancode, action, mods);
+            if (action == ARA_RELEASE && wParam == VK_SHIFT) {
+                thisWin->inputKey(ARA_KEY_LEFT_SHIFT, scancode, action, mods);
+                thisWin->inputKey(ARA_KEY_RIGHT_SHIFT, scancode, action, mods);
             } else if (wParam == VK_SNAPSHOT) {
-                thisWin->inputKey(key, scancode, GLSG_PRESS, mods);
-                thisWin->inputKey(key, scancode, GLSG_RELEASE, mods);
+                thisWin->inputKey(key, scancode, ARA_PRESS, mods);
+                thisWin->inputKey(key, scancode, ARA_RELEASE, mods);
             } else
                 thisWin->inputKey(key, scancode, action, mods);
 

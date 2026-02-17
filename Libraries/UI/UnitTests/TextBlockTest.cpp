@@ -6,6 +6,10 @@
 #include <UIElements/Text/TextBlock.h>
 #include <UINodeFactory.h>
 
+#ifdef ARA_USE_CLIP
+#include "clip.h"
+#endif
+
 using namespace std;
 using namespace glm;
 
@@ -96,7 +100,7 @@ TEST(UITest, SelectTextBlockTest) {
         tb.setText(testText);
         tb.setTextAlign(align::left, valign::center);
 
-        // simulate double click
+        // simulate selection
         auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(150, 80, false, false, false);
         mainWin->onMouseMove(20, 200, 0);
@@ -108,4 +112,30 @@ TEST(UITest, SelectTextBlockTest) {
     }, 300, 300);
 }
 
+#ifdef ARA_USE_CLIP
+TEST(UITest, TextBlockCopyTest) {
+    registerDefaultUITypes();
+
+    appBody([&](UIApplication &app) {
+        auto& tb = createStdTextBlock(app);
+        tb.setText(testText);
+        tb.setTextAlign(align::left, valign::center);
+
+        // simulate selection
+        auto mainWin = app.getMainWindow();
+        mainWin->onMouseDownLeft(150, 80, false, false, false);
+        mainWin->onMouseMove(20, 200, 0);
+        mainWin->onMouseUpLeft();
+    }, [&](UIApplication &app) {
+        // simulate ctrl +c
+        app.getMainWindow()->onKeyDown(ARA_KEY_C, false, true, false);
+
+        std::string value;
+        clip::get_text(value);
+        EXPECT_EQ(value, "sit amet, consectetur adipiscing elit. Sed neque ligula, tristique euismod scelerisque ut, finibus id libero. Praesent sagittis consectetur consequat. Integer et elit sed lorem finibus placerat in sit amet l");
+
+    }, 300, 300);
+}
+#endif
+    // scroll wheel test
 }

@@ -163,17 +163,17 @@ protected:
     Div*         m_caret = nullptr;
     IndDrawBlock m_selBgDB;
 
-    float m_TabSize = 50.f;  // Tab size in pixels
+    float m_tabSize = 50.f;  // Tab size in pixels
 
     glm::vec4 m_BkSelColor{0.f, 0.f, 1.f, 0.3f};  // Background selection color
     glm::vec4 m_caretColor{1.f};                  // Background selection color
     int       m_caretWidth = 2;
 
-    std::string m_RenderText;
+    std::string m_renderText;
 
     int        m_caretIndex = 0;
-    glm::ivec2 m_CaretRange{0};
-    int        m_MaxCount = 0;
+    glm::ivec2 m_caretRange{0};
+    int        m_maxCount = 0;
 
     glm::vec2 m_mousePosCr{0.f};
     glm::vec2 m_bs{0};

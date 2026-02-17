@@ -226,11 +226,11 @@ protected:
     std::thread m_drawThread;
 
     WindowCallbacks m_callbacks;
-    std::array<short int, GLSG_KEY_LAST + 1>            m_scancodes{};
+    std::array<short int, ARA_KEY_LAST + 1>            m_scancodes{};
     std::array<short int, 512>                          m_keycodes{};
-    std::array<char, GLSG_KEY_LAST + 1>                 m_keys{};
-    std::array<char, GLSG_MOUSE_BUTTON_LAST + 1>        m_mouseButtons{};
-    std::array<std::array<char, GLSG_KEY_LAST + 1>, 5>  m_keynames{};
+    std::array<char, ARA_KEY_LAST + 1>                 m_keys{};
+    std::array<char, ARA_MOUSE_BUTTON_LAST + 1>        m_mouseButtons{};
+    std::array<std::array<char, ARA_KEY_LAST + 1>, 5>  m_keynames{};
 
     std::vector<glVidMode>                   m_modes;
     std::vector<std::pair<int, int>>         m_monOffsets;

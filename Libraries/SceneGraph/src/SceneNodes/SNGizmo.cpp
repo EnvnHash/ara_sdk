@@ -40,7 +40,7 @@ SNGizmo::SNGizmo(transMode _mode, sceneData* sd)
     switch (m_tMode) {
         case transMode::translate:
             for (uint i = 0; i < 3; i++) m_gizmoAxes.push_back(dynamic_cast<SNGizmoAxis *>(SceneNode::addChild(make_unique<SNGizmoTransAxis>())));
-            m_nameFlag |= GLSG_TRANS_GIZMO;
+            m_nameFlag |= ARA_TRANS_GIZMO;
             break;
 
         case transMode::passive:
@@ -48,7 +48,7 @@ SNGizmo::SNGizmo(transMode _mode, sceneData* sd)
                 m_gizmoAxes.push_back(dynamic_cast<SNGizmoAxis *>(SceneNode::addChild(make_unique<SNGizmoTransAxis>())));
                 m_gizmoAxes[i]->m_selectable = false;
             }
-            m_nameFlag |= GLSG_PASSIVE_GIZMO;
+            m_nameFlag |= ARA_PASSIVE_GIZMO;
             m_staticNDCSize = 0.f;
             break;
 
@@ -56,21 +56,21 @@ SNGizmo::SNGizmo(transMode _mode, sceneData* sd)
             for (uint i = 0; i < 3; i++) {
                 m_gizmoAxes.push_back(dynamic_cast<SNGizmoAxis*>(SceneNode::addChild(make_unique<SNGizmoRotAxis>())));
             }
-            m_nameFlag |= GLSG_ROT_GIZMO;
+            m_nameFlag |= ARA_ROT_GIZMO;
             break;
 
         case transMode::rotate_axis:
             for (uint i = 0; i < 3; i++) {
                 m_gizmoAxes.push_back(dynamic_cast<SNGizmoAxis *>(SceneNode::addChild(make_unique<SNGizmoRotAxisLetter>())));
             }
-            m_nameFlag |= GLSG_ROT_AXIS_GIZMO;
+            m_nameFlag |= ARA_ROT_AXIS_GIZMO;
             break;
 
         case transMode::scale:
             for (uint i = 0; i < 3; i++) {
                 m_gizmoAxes.push_back(dynamic_cast<SNGizmoAxis *>(SceneNode::addChild(make_unique<SNGizmoScaleAxis>())));
             }
-            m_nameFlag |= GLSG_SCALE_GIZMO;
+            m_nameFlag |= ARA_SCALE_GIZMO;
             break;
         case transMode::none: break;
         default: break;

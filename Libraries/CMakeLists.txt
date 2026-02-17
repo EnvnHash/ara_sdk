@@ -59,5 +59,8 @@ if(ARA_USE_CMRC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug OR ANDROID)
 endif()
 
 add_subdirectory(SceneGraph)
+if (ARA_USE_CLIP)
+    add_subdirectory(third_party)
+endif ()
 add_subdirectory(UI)
 add_subdirectory(Utilities)

@@ -76,4 +76,4 @@
 #endif
 #endif
 
-#define GLSG_DONT_CARE (-1)
+#define ARA_DONT_CARE (-1)

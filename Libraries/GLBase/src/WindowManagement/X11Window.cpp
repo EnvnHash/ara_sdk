@@ -236,12 +236,12 @@ void X11Window::pollEvents() {
             case KeyPress: {
                 const int key   = translateKey(keycode);
                 const int mods  = translateState(event.xkey.state);
-                const int plain = !(mods & (GLSG_MOD_CONTROL | GLSG_MOD_ALT));
+                const int plain = !(mods & (ARA_MOD_CONTROL | ARA_MOD_ALT));
 
                 if (m_ic) {
                     Time diff = event.xkey.time - m_keyPressTimes[keycode];
                     if (diff == event.xkey.time || (diff > 0 && diff < (1 << 31))) {
-                        if (keycode) onKey(key, keycode, GLSG_PRESS, mods);
+                        if (keycode) onKey(key, keycode, ARA_PRESS, mods);
 
                         m_keyPressTimes[keycode] = event.xkey.time;
                     }
@@ -315,7 +315,7 @@ void X11Window::pollEvents() {
                     }
                 }
 
-                onKey(key, keycode, GLSG_RELEASE, mods);
+                onKey(key, keycode, ARA_RELEASE, mods);
                 return;
             }
 
@@ -323,11 +323,11 @@ void X11Window::pollEvents() {
                 const int mods = translateState(event.xbutton.state);
 
                 if (event.xbutton.button == Button1)
-                    onMouseButton(GLSG_MOUSE_BUTTON_LEFT, GLSG_PRESS, mods);
+                    onMouseButton(ARA_MOUSE_BUTTON_LEFT, ARA_PRESS, mods);
                 else if (event.xbutton.button == Button2)
-                    onMouseButton(GLSG_MOUSE_BUTTON_MIDDLE, GLSG_PRESS, mods);
+                    onMouseButton(ARA_MOUSE_BUTTON_MIDDLE, ARA_PRESS, mods);
                 else if (event.xbutton.button == Button3)
-                    onMouseButton(GLSG_MOUSE_BUTTON_RIGHT, GLSG_PRESS, mods);
+                    onMouseButton(ARA_MOUSE_BUTTON_RIGHT, ARA_PRESS, mods);
 
                 // Modern X provides scroll events as mouse button presses
                 else if (event.xbutton.button == Button4)
@@ -337,7 +337,7 @@ void X11Window::pollEvents() {
                 else {
                     // Additional buttons after 7 are treated as regular buttons
                     // We subtract 4 to fill the gap left by scroll input above
-                    onMouseButton(event.xbutton.button - Button1 - 4, GLSG_PRESS, mods);
+                    onMouseButton(event.xbutton.button - Button1 - 4, ARA_PRESS, mods);
                 }
 
                 return;
@@ -347,11 +347,11 @@ void X11Window::pollEvents() {
                 const int mods = translateState(event.xbutton.state);
 
                 if (event.xbutton.button == Button1) {
-                    onMouseButton(GLSG_MOUSE_BUTTON_LEFT, GLSG_RELEASE, mods);
+                    onMouseButton(ARA_MOUSE_BUTTON_LEFT, ARA_RELEASE, mods);
                 } else if (event.xbutton.button == Button2) {
-                    onMouseButton(GLSG_MOUSE_BUTTON_MIDDLE, GLSG_RELEASE, mods);
+                    onMouseButton(ARA_MOUSE_BUTTON_MIDDLE, ARA_RELEASE, mods);
                 } else if (event.xbutton.button == Button3) {
-                    onMouseButton(GLSG_MOUSE_BUTTON_RIGHT, GLSG_RELEASE, mods);
+                    onMouseButton(ARA_MOUSE_BUTTON_RIGHT, ARA_RELEASE, mods);
                 }
                 return;
             }
@@ -380,7 +380,7 @@ void X11Window::pollEvents() {
 
                 if (x != m_warpCursorPosX || y != m_warpCursorPosY) {
                     // The cursor was moved by something else than GLFW
-                    if (m_cursorMode == GLSG_CURSOR_DISABLED) {
+                    if (m_cursorMode == ARA_CURSOR_DISABLED) {
                         if (m_rawMouseMotion) {
                             return;
                         }
@@ -467,7 +467,7 @@ void X11Window::pollEvents() {
                     m_xdnd.version  = event.xclient.data.l[1] >> 24;
                     m_xdnd.m_format = None;
 
-                    if (m_xdnd.version > _GLSG_XDND_VERSION) return;
+                    if (m_xdnd.version > _ARA_XDND_VERSION) return;
 
                     if (list) {
                         count = getWindowProperty(m_xdnd.source, m_XdndTypeList, XA_ATOM, (unsigned char **)&formats);
@@ -488,7 +488,7 @@ void X11Window::pollEvents() {
                     // The drag operation has finished by dropping on the window
                     Time time = CurrentTime;
 
-                    if (m_xdnd.version > _GLSG_XDND_VERSION) return;
+                    if (m_xdnd.version > _ARA_XDND_VERSION) return;
 
                     if (m_xdnd.m_format) {
                         if (m_xdnd.version >= 1) time = event.xclient.data.l[2];
@@ -514,7 +514,7 @@ void X11Window::pollEvents() {
                     Window    dummy;
                     int       xpos, ypos;
 
-                    if (m_xdnd.version > _GLSG_XDND_VERSION) return;
+                    if (m_xdnd.version > _ARA_XDND_VERSION) return;
 
                     XTranslateCoordinates(m_display, m_root, m_win, xabs, yabs, &xpos, &ypos, &dummy);
 
@@ -584,7 +584,7 @@ void X11Window::pollEvents() {
                     return;
                 }
 
-                if (m_cursorMode == GLSG_CURSOR_DISABLED) {
+                if (m_cursorMode == ARA_CURSOR_DISABLED) {
                     disableCursor();
                 }
 
@@ -602,7 +602,7 @@ void X11Window::pollEvents() {
                     return;
                 }
 
-                if (m_cursorMode == GLSG_CURSOR_DISABLED) {
+                if (m_cursorMode == ARA_CURSOR_DISABLED) {
                     enableCursor();
                 }
 
@@ -761,7 +761,7 @@ Atom X11Window::writeTargetToProperty(const XSelectionRequestEvent *request) {
 // Translates an X11 key code to a GLFW key token
 int X11Window::translateKey(int scancode) {
     // Use the pre-filled LUT (see createKeyTables() in x11_init.c)
-    if (scancode < 0 || scancode > 255) return GLSG_KEY_UNKNOWN;
+    if (scancode < 0 || scancode > 255) return ARA_KEY_UNKNOWN;
 
     return m_keycodes[scancode];
 }
@@ -772,176 +772,176 @@ int X11Window::translateKey(int scancode) {
 int X11Window::translateKeySyms(const KeySym *keysyms, int width) {
     if (width > 1) {
         switch (keysyms[1]) {
-            case XK_KP_0: return GLSG_KEY_KP_0;
-            case XK_KP_1: return GLSG_KEY_KP_1;
-            case XK_KP_2: return GLSG_KEY_KP_2;
-            case XK_KP_3: return GLSG_KEY_KP_3;
-            case XK_KP_4: return GLSG_KEY_KP_4;
-            case XK_KP_5: return GLSG_KEY_KP_5;
-            case XK_KP_6: return GLSG_KEY_KP_6;
-            case XK_KP_7: return GLSG_KEY_KP_7;
-            case XK_KP_8: return GLSG_KEY_KP_8;
-            case XK_KP_9: return GLSG_KEY_KP_9;
+            case XK_KP_0: return ARA_KEY_KP_0;
+            case XK_KP_1: return ARA_KEY_KP_1;
+            case XK_KP_2: return ARA_KEY_KP_2;
+            case XK_KP_3: return ARA_KEY_KP_3;
+            case XK_KP_4: return ARA_KEY_KP_4;
+            case XK_KP_5: return ARA_KEY_KP_5;
+            case XK_KP_6: return ARA_KEY_KP_6;
+            case XK_KP_7: return ARA_KEY_KP_7;
+            case XK_KP_8: return ARA_KEY_KP_8;
+            case XK_KP_9: return ARA_KEY_KP_9;
             case XK_KP_Separator:
-            case XK_KP_Decimal: return GLSG_KEY_KP_DECIMAL;
-            case XK_KP_Equal: return GLSG_KEY_KP_EQUAL;
-            case XK_KP_Enter: return GLSG_KEY_KP_ENTER;
+            case XK_KP_Decimal: return ARA_KEY_KP_DECIMAL;
+            case XK_KP_Equal: return ARA_KEY_KP_EQUAL;
+            case XK_KP_Enter: return ARA_KEY_KP_ENTER;
             default: break;
         }
     }
 
     switch (keysyms[0]) {
-        case XK_Escape: return GLSG_KEY_ESCAPE;
-        case XK_Tab: return GLSG_KEY_TAB;
-        case XK_Shift_L: return GLSG_KEY_LEFT_SHIFT;
-        case XK_Shift_R: return GLSG_KEY_RIGHT_SHIFT;
-        case XK_Control_L: return GLSG_KEY_LEFT_CONTROL;
-        case XK_Control_R: return GLSG_KEY_RIGHT_CONTROL;
+        case XK_Escape: return ARA_KEY_ESCAPE;
+        case XK_Tab: return ARA_KEY_TAB;
+        case XK_Shift_L: return ARA_KEY_LEFT_SHIFT;
+        case XK_Shift_R: return ARA_KEY_RIGHT_SHIFT;
+        case XK_Control_L: return ARA_KEY_LEFT_CONTROL;
+        case XK_Control_R: return ARA_KEY_RIGHT_CONTROL;
         case XK_Meta_L:
-        case XK_Alt_L: return GLSG_KEY_LEFT_ALT;
+        case XK_Alt_L: return ARA_KEY_LEFT_ALT;
         case XK_Mode_switch:       // Mapped to Alt_R on many keyboards
         case XK_ISO_Level3_Shift:  // AltGr on at least some machines
         case XK_Meta_R:
-        case XK_Alt_R: return GLSG_KEY_RIGHT_ALT;
-        case XK_Super_L: return GLSG_KEY_LEFT_SUPER;
-        case XK_Super_R: return GLSG_KEY_RIGHT_SUPER;
-        case XK_Menu: return GLSG_KEY_MENU;
-        case XK_Num_Lock: return GLSG_KEY_NUM_LOCK;
-        case XK_Caps_Lock: return GLSG_KEY_CAPS_LOCK;
-        case XK_Print: return GLSG_KEY_PRINT_SCREEN;
-        case XK_Scroll_Lock: return GLSG_KEY_SCROLL_LOCK;
-        case XK_Pause: return GLSG_KEY_PAUSE;
-        case XK_Delete: return GLSG_KEY_DELETE;
-        case XK_BackSpace: return GLSG_KEY_BACKSPACE;
-        case XK_Return: return GLSG_KEY_ENTER;
-        case XK_Home: return GLSG_KEY_HOME;
-        case XK_End: return GLSG_KEY_END;
-        case XK_Page_Up: return GLSG_KEY_PAGE_UP;
-        case XK_Page_Down: return GLSG_KEY_PAGE_DOWN;
-        case XK_Insert: return GLSG_KEY_INSERT;
-        case XK_Left: return GLSG_KEY_LEFT;
-        case XK_Right: return GLSG_KEY_RIGHT;
-        case XK_Down: return GLSG_KEY_DOWN;
-        case XK_Up: return GLSG_KEY_UP;
-        case XK_F1: return GLSG_KEY_F1;
-        case XK_F2: return GLSG_KEY_F2;
-        case XK_F3: return GLSG_KEY_F3;
-        case XK_F4: return GLSG_KEY_F4;
-        case XK_F5: return GLSG_KEY_F5;
-        case XK_F6: return GLSG_KEY_F6;
-        case XK_F7: return GLSG_KEY_F7;
-        case XK_F8: return GLSG_KEY_F8;
-        case XK_F9: return GLSG_KEY_F9;
-        case XK_F10: return GLSG_KEY_F10;
-        case XK_F11: return GLSG_KEY_F11;
-        case XK_F12: return GLSG_KEY_F12;
-        case XK_F13: return GLSG_KEY_F13;
-        case XK_F14: return GLSG_KEY_F14;
-        case XK_F15: return GLSG_KEY_F15;
-        case XK_F16: return GLSG_KEY_F16;
-        case XK_F17: return GLSG_KEY_F17;
-        case XK_F18: return GLSG_KEY_F18;
-        case XK_F19: return GLSG_KEY_F19;
-        case XK_F20: return GLSG_KEY_F20;
-        case XK_F21: return GLSG_KEY_F21;
-        case XK_F22: return GLSG_KEY_F22;
-        case XK_F23: return GLSG_KEY_F23;
-        case XK_F24: return GLSG_KEY_F24;
+        case XK_Alt_R: return ARA_KEY_RIGHT_ALT;
+        case XK_Super_L: return ARA_KEY_LEFT_SUPER;
+        case XK_Super_R: return ARA_KEY_RIGHT_SUPER;
+        case XK_Menu: return ARA_KEY_MENU;
+        case XK_Num_Lock: return ARA_KEY_NUM_LOCK;
+        case XK_Caps_Lock: return ARA_KEY_CAPS_LOCK;
+        case XK_Print: return ARA_KEY_PRINT_SCREEN;
+        case XK_Scroll_Lock: return ARA_KEY_SCROLL_LOCK;
+        case XK_Pause: return ARA_KEY_PAUSE;
+        case XK_Delete: return ARA_KEY_DELETE;
+        case XK_BackSpace: return ARA_KEY_BACKSPACE;
+        case XK_Return: return ARA_KEY_ENTER;
+        case XK_Home: return ARA_KEY_HOME;
+        case XK_End: return ARA_KEY_END;
+        case XK_Page_Up: return ARA_KEY_PAGE_UP;
+        case XK_Page_Down: return ARA_KEY_PAGE_DOWN;
+        case XK_Insert: return ARA_KEY_INSERT;
+        case XK_Left: return ARA_KEY_LEFT;
+        case XK_Right: return ARA_KEY_RIGHT;
+        case XK_Down: return ARA_KEY_DOWN;
+        case XK_Up: return ARA_KEY_UP;
+        case XK_F1: return ARA_KEY_F1;
+        case XK_F2: return ARA_KEY_F2;
+        case XK_F3: return ARA_KEY_F3;
+        case XK_F4: return ARA_KEY_F4;
+        case XK_F5: return ARA_KEY_F5;
+        case XK_F6: return ARA_KEY_F6;
+        case XK_F7: return ARA_KEY_F7;
+        case XK_F8: return ARA_KEY_F8;
+        case XK_F9: return ARA_KEY_F9;
+        case XK_F10: return ARA_KEY_F10;
+        case XK_F11: return ARA_KEY_F11;
+        case XK_F12: return ARA_KEY_F12;
+        case XK_F13: return ARA_KEY_F13;
+        case XK_F14: return ARA_KEY_F14;
+        case XK_F15: return ARA_KEY_F15;
+        case XK_F16: return ARA_KEY_F16;
+        case XK_F17: return ARA_KEY_F17;
+        case XK_F18: return ARA_KEY_F18;
+        case XK_F19: return ARA_KEY_F19;
+        case XK_F20: return ARA_KEY_F20;
+        case XK_F21: return ARA_KEY_F21;
+        case XK_F22: return ARA_KEY_F22;
+        case XK_F23: return ARA_KEY_F23;
+        case XK_F24: return ARA_KEY_F24;
         case XK_F25:
-            return GLSG_KEY_F25;
+            return ARA_KEY_F25;
 
         // Numeric keypad
-        case XK_KP_Divide: return GLSG_KEY_KP_DIVIDE;
-        case XK_KP_Multiply: return GLSG_KEY_KP_MULTIPLY;
-        case XK_KP_Subtract: return GLSG_KEY_KP_SUBTRACT;
+        case XK_KP_Divide: return ARA_KEY_KP_DIVIDE;
+        case XK_KP_Multiply: return ARA_KEY_KP_MULTIPLY;
+        case XK_KP_Subtract: return ARA_KEY_KP_SUBTRACT;
         case XK_KP_Add:
-            return GLSG_KEY_KP_ADD;
+            return ARA_KEY_KP_ADD;
 
         // These should have been detected in secondary keysym test above!
-        case XK_KP_Insert: return GLSG_KEY_KP_0;
-        case XK_KP_End: return GLSG_KEY_KP_1;
-        case XK_KP_Down: return GLSG_KEY_KP_2;
-        case XK_KP_Page_Down: return GLSG_KEY_KP_3;
-        case XK_KP_Left: return GLSG_KEY_KP_4;
-        case XK_KP_Right: return GLSG_KEY_KP_6;
-        case XK_KP_Home: return GLSG_KEY_KP_7;
-        case XK_KP_Up: return GLSG_KEY_KP_8;
-        case XK_KP_Page_Up: return GLSG_KEY_KP_9;
-        case XK_KP_Delete: return GLSG_KEY_KP_DECIMAL;
-        case XK_KP_Equal: return GLSG_KEY_KP_EQUAL;
+        case XK_KP_Insert: return ARA_KEY_KP_0;
+        case XK_KP_End: return ARA_KEY_KP_1;
+        case XK_KP_Down: return ARA_KEY_KP_2;
+        case XK_KP_Page_Down: return ARA_KEY_KP_3;
+        case XK_KP_Left: return ARA_KEY_KP_4;
+        case XK_KP_Right: return ARA_KEY_KP_6;
+        case XK_KP_Home: return ARA_KEY_KP_7;
+        case XK_KP_Up: return ARA_KEY_KP_8;
+        case XK_KP_Page_Up: return ARA_KEY_KP_9;
+        case XK_KP_Delete: return ARA_KEY_KP_DECIMAL;
+        case XK_KP_Equal: return ARA_KEY_KP_EQUAL;
         case XK_KP_Enter:
-            return GLSG_KEY_KP_ENTER;
+            return ARA_KEY_KP_ENTER;
 
         // Last resort: Check for printable keys (should not happen if the
         // XKB extension is available). This will give a layout dependent
         // mapping (which is wrong, and we may miss some keys, especially on
         // non-US keyboards), but it's better than nothing...
-        case XK_a: return GLSG_KEY_A;
-        case XK_b: return GLSG_KEY_B;
-        case XK_c: return GLSG_KEY_C;
-        case XK_d: return GLSG_KEY_D;
-        case XK_e: return GLSG_KEY_E;
-        case XK_f: return GLSG_KEY_F;
-        case XK_g: return GLSG_KEY_G;
-        case XK_h: return GLSG_KEY_H;
-        case XK_i: return GLSG_KEY_I;
-        case XK_j: return GLSG_KEY_J;
-        case XK_k: return GLSG_KEY_K;
-        case XK_l: return GLSG_KEY_L;
-        case XK_m: return GLSG_KEY_M;
-        case XK_n: return GLSG_KEY_N;
-        case XK_o: return GLSG_KEY_O;
-        case XK_p: return GLSG_KEY_P;
-        case XK_q: return GLSG_KEY_Q;
-        case XK_r: return GLSG_KEY_R;
-        case XK_s: return GLSG_KEY_S;
-        case XK_t: return GLSG_KEY_T;
-        case XK_u: return GLSG_KEY_U;
-        case XK_v: return GLSG_KEY_V;
-        case XK_w: return GLSG_KEY_W;
-        case XK_x: return GLSG_KEY_X;
-        case XK_y: return GLSG_KEY_Y;
-        case XK_z: return GLSG_KEY_Z;
-        case XK_1: return GLSG_KEY_1;
-        case XK_2: return GLSG_KEY_2;
-        case XK_3: return GLSG_KEY_3;
-        case XK_4: return GLSG_KEY_4;
-        case XK_5: return GLSG_KEY_5;
-        case XK_6: return GLSG_KEY_6;
-        case XK_7: return GLSG_KEY_7;
-        case XK_8: return GLSG_KEY_8;
-        case XK_9: return GLSG_KEY_9;
-        case XK_0: return GLSG_KEY_0;
-        case XK_space: return GLSG_KEY_SPACE;
-        case XK_minus: return GLSG_KEY_MINUS;
-        case XK_equal: return GLSG_KEY_EQUAL;
-        case XK_bracketleft: return GLSG_KEY_LEFT_BRACKET;
-        case XK_bracketright: return GLSG_KEY_RIGHT_BRACKET;
-        case XK_backslash: return GLSG_KEY_BACKSLASH;
-        case XK_semicolon: return GLSG_KEY_SEMICOLON;
-        case XK_apostrophe: return GLSG_KEY_APOSTROPHE;
-        case XK_grave: return GLSG_KEY_GRAVE_ACCENT;
-        case XK_comma: return GLSG_KEY_COMMA;
-        case XK_period: return GLSG_KEY_PERIOD;
-        case XK_slash: return GLSG_KEY_SLASH;
-        case XK_less: return GLSG_KEY_WORLD_1;  // At least in some layouts...
+        case XK_a: return ARA_KEY_A;
+        case XK_b: return ARA_KEY_B;
+        case XK_c: return ARA_KEY_C;
+        case XK_d: return ARA_KEY_D;
+        case XK_e: return ARA_KEY_E;
+        case XK_f: return ARA_KEY_F;
+        case XK_g: return ARA_KEY_G;
+        case XK_h: return ARA_KEY_H;
+        case XK_i: return ARA_KEY_I;
+        case XK_j: return ARA_KEY_J;
+        case XK_k: return ARA_KEY_K;
+        case XK_l: return ARA_KEY_L;
+        case XK_m: return ARA_KEY_M;
+        case XK_n: return ARA_KEY_N;
+        case XK_o: return ARA_KEY_O;
+        case XK_p: return ARA_KEY_P;
+        case XK_q: return ARA_KEY_Q;
+        case XK_r: return ARA_KEY_R;
+        case XK_s: return ARA_KEY_S;
+        case XK_t: return ARA_KEY_T;
+        case XK_u: return ARA_KEY_U;
+        case XK_v: return ARA_KEY_V;
+        case XK_w: return ARA_KEY_W;
+        case XK_x: return ARA_KEY_X;
+        case XK_y: return ARA_KEY_Y;
+        case XK_z: return ARA_KEY_Z;
+        case XK_1: return ARA_KEY_1;
+        case XK_2: return ARA_KEY_2;
+        case XK_3: return ARA_KEY_3;
+        case XK_4: return ARA_KEY_4;
+        case XK_5: return ARA_KEY_5;
+        case XK_6: return ARA_KEY_6;
+        case XK_7: return ARA_KEY_7;
+        case XK_8: return ARA_KEY_8;
+        case XK_9: return ARA_KEY_9;
+        case XK_0: return ARA_KEY_0;
+        case XK_space: return ARA_KEY_SPACE;
+        case XK_minus: return ARA_KEY_MINUS;
+        case XK_equal: return ARA_KEY_EQUAL;
+        case XK_bracketleft: return ARA_KEY_LEFT_BRACKET;
+        case XK_bracketright: return ARA_KEY_RIGHT_BRACKET;
+        case XK_backslash: return ARA_KEY_BACKSLASH;
+        case XK_semicolon: return ARA_KEY_SEMICOLON;
+        case XK_apostrophe: return ARA_KEY_APOSTROPHE;
+        case XK_grave: return ARA_KEY_GRAVE_ACCENT;
+        case XK_comma: return ARA_KEY_COMMA;
+        case XK_period: return ARA_KEY_PERIOD;
+        case XK_slash: return ARA_KEY_SLASH;
+        case XK_less: return ARA_KEY_WORLD_1;  // At least in some layouts...
         default: break;
     }
 
     // No matching translation was found
-    return GLSG_KEY_UNKNOWN;
+    return ARA_KEY_UNKNOWN;
 }
 
 // Translates an X event modifier state mask
 int X11Window::translateState(int state) {
     int mods = 0;
 
-    if (state & ShiftMask) mods |= GLSG_MOD_SHIFT;
-    if (state & ControlMask) mods |= GLSG_MOD_CONTROL;
-    if (state & Mod1Mask) mods |= GLSG_MOD_ALT;
-    if (state & Mod4Mask) mods |= GLSG_MOD_SUPER;
-    if (state & LockMask) mods |= GLSG_MOD_CAPS_LOCK;
-    if (state & Mod2Mask) mods |= GLSG_MOD_NUM_LOCK;
+    if (state & ShiftMask) mods |= ARA_MOD_SHIFT;
+    if (state & ControlMask) mods |= ARA_MOD_CONTROL;
+    if (state & Mod1Mask) mods |= ARA_MOD_ALT;
+    if (state & Mod4Mask) mods |= ARA_MOD_SUPER;
+    if (state & LockMask) mods |= ARA_MOD_CAPS_LOCK;
+    if (state & Mod2Mask) mods |= ARA_MOD_NUM_LOCK;
 
     return mods;
 }
@@ -970,131 +970,131 @@ void X11Window::createKeyTables() {
         const struct {
             int   key;
             char *name;
-        } keymap[] = {{GLSG_KEY_GRAVE_ACCENT, (char *)"TLDE"},
-                      {GLSG_KEY_1, (char *)"AE01"},
-                      {GLSG_KEY_2, (char *)"AE02"},
-                      {GLSG_KEY_3, (char *)"AE03"},
-                      {GLSG_KEY_4, (char *)"AE04"},
-                      {GLSG_KEY_5, (char *)"AE05"},
-                      {GLSG_KEY_6, (char *)"AE06"},
-                      {GLSG_KEY_7, (char *)"AE07"},
-                      {GLSG_KEY_8, (char *)"AE08"},
-                      {GLSG_KEY_9, (char *)"AE09"},
-                      {GLSG_KEY_0, (char *)"AE10"},
-                      {GLSG_KEY_MINUS, (char *)"AE11"},
-                      {GLSG_KEY_EQUAL, (char *)"AE12"},
-                      {GLSG_KEY_Q, (char *)"AD01"},
-                      {GLSG_KEY_W, (char *)"AD02"},
-                      {GLSG_KEY_E, (char *)"AD03"},
-                      {GLSG_KEY_R, (char *)"AD04"},
-                      {GLSG_KEY_T, (char *)"AD05"},
-                      {GLSG_KEY_Y, (char *)"AD06"},
-                      {GLSG_KEY_U, (char *)"AD07"},
-                      {GLSG_KEY_I, (char *)"AD08"},
-                      {GLSG_KEY_O, (char *)"AD09"},
-                      {GLSG_KEY_P, (char *)"AD10"},
-                      {GLSG_KEY_LEFT_BRACKET, (char *)"AD11"},
-                      {GLSG_KEY_RIGHT_BRACKET, (char *)"AD12"},
-                      {GLSG_KEY_A, (char *)"AC01"},
-                      {GLSG_KEY_S, (char *)"AC02"},
-                      {GLSG_KEY_D, (char *)"AC03"},
-                      {GLSG_KEY_F, (char *)"AC04"},
-                      {GLSG_KEY_G, (char *)"AC05"},
-                      {GLSG_KEY_H, (char *)"AC06"},
-                      {GLSG_KEY_J, (char *)"AC07"},
-                      {GLSG_KEY_K, (char *)"AC08"},
-                      {GLSG_KEY_L, (char *)"AC09"},
-                      {GLSG_KEY_SEMICOLON, (char *)"AC10"},
-                      {GLSG_KEY_APOSTROPHE, (char *)"AC11"},
-                      {GLSG_KEY_Z, (char *)"AB01"},
-                      {GLSG_KEY_X, (char *)"AB02"},
-                      {GLSG_KEY_C, (char *)"AB03"},
-                      {GLSG_KEY_V, (char *)"AB04"},
-                      {GLSG_KEY_B, (char *)"AB05"},
-                      {GLSG_KEY_N, (char *)"AB06"},
-                      {GLSG_KEY_M, (char *)"AB07"},
-                      {GLSG_KEY_COMMA, (char *)"AB08"},
-                      {GLSG_KEY_PERIOD, (char *)"AB09"},
-                      {GLSG_KEY_SLASH, (char *)"AB10"},
-                      {GLSG_KEY_BACKSLASH, (char *)"BKSL"},
-                      {GLSG_KEY_WORLD_1, (char *)"LSGT"},
-                      {GLSG_KEY_SPACE, (char *)"SPCE"},
-                      {GLSG_KEY_ESCAPE, (char *)"ESC"},
-                      {GLSG_KEY_ENTER, (char *)"RTRN"},
-                      {GLSG_KEY_TAB, (char *)"TAB"},
-                      {GLSG_KEY_BACKSPACE, (char *)"BKSP"},
-                      {GLSG_KEY_INSERT, (char *)"INS"},
-                      {GLSG_KEY_DELETE, (char *)"DELE"},
-                      {GLSG_KEY_RIGHT, (char *)"RGHT"},
-                      {GLSG_KEY_LEFT, (char *)"LEFT"},
-                      {GLSG_KEY_DOWN, (char *)"DOWN"},
-                      {GLSG_KEY_UP, (char *)"UP"},
-                      {GLSG_KEY_PAGE_UP, (char *)"PGUP"},
-                      {GLSG_KEY_PAGE_DOWN, (char *)"PGDN"},
-                      {GLSG_KEY_HOME, (char *)"HOME"},
-                      {GLSG_KEY_END, (char *)"END"},
-                      {GLSG_KEY_CAPS_LOCK, (char *)"CAPS"},
-                      {GLSG_KEY_SCROLL_LOCK, (char *)"SCLK"},
-                      {GLSG_KEY_NUM_LOCK, (char *)"NMLK"},
-                      {GLSG_KEY_PRINT_SCREEN, (char *)"PRSC"},
-                      {GLSG_KEY_PAUSE, (char *)"PAUS"},
-                      {GLSG_KEY_F1, (char *)"FK01"},
-                      {GLSG_KEY_F2, (char *)"FK02"},
-                      {GLSG_KEY_F3, (char *)"FK03"},
-                      {GLSG_KEY_F4, (char *)"FK04"},
-                      {GLSG_KEY_F5, (char *)"FK05"},
-                      {GLSG_KEY_F6, (char *)"FK06"},
-                      {GLSG_KEY_F7, (char *)"FK07"},
-                      {GLSG_KEY_F8, (char *)"FK08"},
-                      {GLSG_KEY_F9, (char *)"FK09"},
-                      {GLSG_KEY_F10, (char *)"FK10"},
-                      {GLSG_KEY_F11, (char *)"FK11"},
-                      {GLSG_KEY_F12, (char *)"FK12"},
-                      {GLSG_KEY_F13, (char *)"FK13"},
-                      {GLSG_KEY_F14, (char *)"FK14"},
-                      {GLSG_KEY_F15, (char *)"FK15"},
-                      {GLSG_KEY_F16, (char *)"FK16"},
-                      {GLSG_KEY_F17, (char *)"FK17"},
-                      {GLSG_KEY_F18, (char *)"FK18"},
-                      {GLSG_KEY_F19, (char *)"FK19"},
-                      {GLSG_KEY_F20, (char *)"FK20"},
-                      {GLSG_KEY_F21, (char *)"FK21"},
-                      {GLSG_KEY_F22, (char *)"FK22"},
-                      {GLSG_KEY_F23, (char *)"FK23"},
-                      {GLSG_KEY_F24, (char *)"FK24"},
-                      {GLSG_KEY_F25, (char *)"FK25"},
-                      {GLSG_KEY_KP_0, (char *)"KP0"},
-                      {GLSG_KEY_KP_1, (char *)"KP1"},
-                      {GLSG_KEY_KP_2, (char *)"KP2"},
-                      {GLSG_KEY_KP_3, (char *)"KP3"},
-                      {GLSG_KEY_KP_4, (char *)"KP4"},
-                      {GLSG_KEY_KP_5, (char *)"KP5"},
-                      {GLSG_KEY_KP_6, (char *)"KP6"},
-                      {GLSG_KEY_KP_7, (char *)"KP7"},
-                      {GLSG_KEY_KP_8, (char *)"KP8"},
-                      {GLSG_KEY_KP_9, (char *)"KP9"},
-                      {GLSG_KEY_KP_DECIMAL, (char *)"KPDL"},
-                      {GLSG_KEY_KP_DIVIDE, (char *)"KPDV"},
-                      {GLSG_KEY_KP_MULTIPLY, (char *)"KPMU"},
-                      {GLSG_KEY_KP_SUBTRACT, (char *)"KPSU"},
-                      {GLSG_KEY_KP_ADD, (char *)"KPAD"},
-                      {GLSG_KEY_KP_ENTER, (char *)"KPEN"},
-                      {GLSG_KEY_KP_EQUAL, (char *)"KPEQ"},
-                      {GLSG_KEY_LEFT_SHIFT, (char *)"LFSH"},
-                      {GLSG_KEY_LEFT_CONTROL, (char *)"LCTL"},
-                      {GLSG_KEY_LEFT_ALT, (char *)"LALT"},
-                      {GLSG_KEY_LEFT_SUPER, (char *)"LWIN"},
-                      {GLSG_KEY_RIGHT_SHIFT, (char *)"RTSH"},
-                      {GLSG_KEY_RIGHT_CONTROL, (char *)"RCTL"},
-                      {GLSG_KEY_RIGHT_ALT, (char *)"RALT"},
-                      {GLSG_KEY_RIGHT_ALT, (char *)"LVL3"},
-                      {GLSG_KEY_RIGHT_ALT, (char *)"MDSW"},
-                      {GLSG_KEY_RIGHT_SUPER, (char *)"RWIN"},
-                      {GLSG_KEY_MENU, (char *)"MENU"}};
+        } keymap[] = {{ARA_KEY_GRAVE_ACCENT, (char *)"TLDE"},
+                      {ARA_KEY_1, (char *)"AE01"},
+                      {ARA_KEY_2, (char *)"AE02"},
+                      {ARA_KEY_3, (char *)"AE03"},
+                      {ARA_KEY_4, (char *)"AE04"},
+                      {ARA_KEY_5, (char *)"AE05"},
+                      {ARA_KEY_6, (char *)"AE06"},
+                      {ARA_KEY_7, (char *)"AE07"},
+                      {ARA_KEY_8, (char *)"AE08"},
+                      {ARA_KEY_9, (char *)"AE09"},
+                      {ARA_KEY_0, (char *)"AE10"},
+                      {ARA_KEY_MINUS, (char *)"AE11"},
+                      {ARA_KEY_EQUAL, (char *)"AE12"},
+                      {ARA_KEY_Q, (char *)"AD01"},
+                      {ARA_KEY_W, (char *)"AD02"},
+                      {ARA_KEY_E, (char *)"AD03"},
+                      {ARA_KEY_R, (char *)"AD04"},
+                      {ARA_KEY_T, (char *)"AD05"},
+                      {ARA_KEY_Y, (char *)"AD06"},
+                      {ARA_KEY_U, (char *)"AD07"},
+                      {ARA_KEY_I, (char *)"AD08"},
+                      {ARA_KEY_O, (char *)"AD09"},
+                      {ARA_KEY_P, (char *)"AD10"},
+                      {ARA_KEY_LEFT_BRACKET, (char *)"AD11"},
+                      {ARA_KEY_RIGHT_BRACKET, (char *)"AD12"},
+                      {ARA_KEY_A, (char *)"AC01"},
+                      {ARA_KEY_S, (char *)"AC02"},
+                      {ARA_KEY_D, (char *)"AC03"},
+                      {ARA_KEY_F, (char *)"AC04"},
+                      {ARA_KEY_G, (char *)"AC05"},
+                      {ARA_KEY_H, (char *)"AC06"},
+                      {ARA_KEY_J, (char *)"AC07"},
+                      {ARA_KEY_K, (char *)"AC08"},
+                      {ARA_KEY_L, (char *)"AC09"},
+                      {ARA_KEY_SEMICOLON, (char *)"AC10"},
+                      {ARA_KEY_APOSTROPHE, (char *)"AC11"},
+                      {ARA_KEY_Z, (char *)"AB01"},
+                      {ARA_KEY_X, (char *)"AB02"},
+                      {ARA_KEY_C, (char *)"AB03"},
+                      {ARA_KEY_V, (char *)"AB04"},
+                      {ARA_KEY_B, (char *)"AB05"},
+                      {ARA_KEY_N, (char *)"AB06"},
+                      {ARA_KEY_M, (char *)"AB07"},
+                      {ARA_KEY_COMMA, (char *)"AB08"},
+                      {ARA_KEY_PERIOD, (char *)"AB09"},
+                      {ARA_KEY_SLASH, (char *)"AB10"},
+                      {ARA_KEY_BACKSLASH, (char *)"BKSL"},
+                      {ARA_KEY_WORLD_1, (char *)"LSGT"},
+                      {ARA_KEY_SPACE, (char *)"SPCE"},
+                      {ARA_KEY_ESCAPE, (char *)"ESC"},
+                      {ARA_KEY_ENTER, (char *)"RTRN"},
+                      {ARA_KEY_TAB, (char *)"TAB"},
+                      {ARA_KEY_BACKSPACE, (char *)"BKSP"},
+                      {ARA_KEY_INSERT, (char *)"INS"},
+                      {ARA_KEY_DELETE, (char *)"DELE"},
+                      {ARA_KEY_RIGHT, (char *)"RGHT"},
+                      {ARA_KEY_LEFT, (char *)"LEFT"},
+                      {ARA_KEY_DOWN, (char *)"DOWN"},
+                      {ARA_KEY_UP, (char *)"UP"},
+                      {ARA_KEY_PAGE_UP, (char *)"PGUP"},
+                      {ARA_KEY_PAGE_DOWN, (char *)"PGDN"},
+                      {ARA_KEY_HOME, (char *)"HOME"},
+                      {ARA_KEY_END, (char *)"END"},
+                      {ARA_KEY_CAPS_LOCK, (char *)"CAPS"},
+                      {ARA_KEY_SCROLL_LOCK, (char *)"SCLK"},
+                      {ARA_KEY_NUM_LOCK, (char *)"NMLK"},
+                      {ARA_KEY_PRINT_SCREEN, (char *)"PRSC"},
+                      {ARA_KEY_PAUSE, (char *)"PAUS"},
+                      {ARA_KEY_F1, (char *)"FK01"},
+                      {ARA_KEY_F2, (char *)"FK02"},
+                      {ARA_KEY_F3, (char *)"FK03"},
+                      {ARA_KEY_F4, (char *)"FK04"},
+                      {ARA_KEY_F5, (char *)"FK05"},
+                      {ARA_KEY_F6, (char *)"FK06"},
+                      {ARA_KEY_F7, (char *)"FK07"},
+                      {ARA_KEY_F8, (char *)"FK08"},
+                      {ARA_KEY_F9, (char *)"FK09"},
+                      {ARA_KEY_F10, (char *)"FK10"},
+                      {ARA_KEY_F11, (char *)"FK11"},
+                      {ARA_KEY_F12, (char *)"FK12"},
+                      {ARA_KEY_F13, (char *)"FK13"},
+                      {ARA_KEY_F14, (char *)"FK14"},
+                      {ARA_KEY_F15, (char *)"FK15"},
+                      {ARA_KEY_F16, (char *)"FK16"},
+                      {ARA_KEY_F17, (char *)"FK17"},
+                      {ARA_KEY_F18, (char *)"FK18"},
+                      {ARA_KEY_F19, (char *)"FK19"},
+                      {ARA_KEY_F20, (char *)"FK20"},
+                      {ARA_KEY_F21, (char *)"FK21"},
+                      {ARA_KEY_F22, (char *)"FK22"},
+                      {ARA_KEY_F23, (char *)"FK23"},
+                      {ARA_KEY_F24, (char *)"FK24"},
+                      {ARA_KEY_F25, (char *)"FK25"},
+                      {ARA_KEY_KP_0, (char *)"KP0"},
+                      {ARA_KEY_KP_1, (char *)"KP1"},
+                      {ARA_KEY_KP_2, (char *)"KP2"},
+                      {ARA_KEY_KP_3, (char *)"KP3"},
+                      {ARA_KEY_KP_4, (char *)"KP4"},
+                      {ARA_KEY_KP_5, (char *)"KP5"},
+                      {ARA_KEY_KP_6, (char *)"KP6"},
+                      {ARA_KEY_KP_7, (char *)"KP7"},
+                      {ARA_KEY_KP_8, (char *)"KP8"},
+                      {ARA_KEY_KP_9, (char *)"KP9"},
+                      {ARA_KEY_KP_DECIMAL, (char *)"KPDL"},
+                      {ARA_KEY_KP_DIVIDE, (char *)"KPDV"},
+                      {ARA_KEY_KP_MULTIPLY, (char *)"KPMU"},
+                      {ARA_KEY_KP_SUBTRACT, (char *)"KPSU"},
+                      {ARA_KEY_KP_ADD, (char *)"KPAD"},
+                      {ARA_KEY_KP_ENTER, (char *)"KPEN"},
+                      {ARA_KEY_KP_EQUAL, (char *)"KPEQ"},
+                      {ARA_KEY_LEFT_SHIFT, (char *)"LFSH"},
+                      {ARA_KEY_LEFT_CONTROL, (char *)"LCTL"},
+                      {ARA_KEY_LEFT_ALT, (char *)"LALT"},
+                      {ARA_KEY_LEFT_SUPER, (char *)"LWIN"},
+                      {ARA_KEY_RIGHT_SHIFT, (char *)"RTSH"},
+                      {ARA_KEY_RIGHT_CONTROL, (char *)"RCTL"},
+                      {ARA_KEY_RIGHT_ALT, (char *)"RALT"},
+                      {ARA_KEY_RIGHT_ALT, (char *)"LVL3"},
+                      {ARA_KEY_RIGHT_ALT, (char *)"MDSW"},
+                      {ARA_KEY_RIGHT_SUPER, (char *)"RWIN"},
+                      {ARA_KEY_MENU, (char *)"MENU"}};
 
         // Find the X11 key code -> GLFW key code mapping
         for (scancode = scancodeMin; scancode <= scancodeMax; scancode++) {
-            int key = GLSG_KEY_UNKNOWN;
+            int key = ARA_KEY_UNKNOWN;
 
             // Map the key name to a GLFW key code. Note: We use the US
             // keyboard layout. Because function keys aren't mapped correctly
@@ -1109,7 +1109,7 @@ void X11Window::createKeyTables() {
 
             // Fall back to key aliases in case the key name did not match
             for (int i = 0; i < desc->names->num_key_aliases; i++) {
-                if (key != GLSG_KEY_UNKNOWN) break;
+                if (key != ARA_KEY_UNKNOWN) break;
 
                 if (strncmp(desc->names->key_aliases[i].real, desc->names->keys[scancode].name, XkbKeyNameLength) !=
                     0) {

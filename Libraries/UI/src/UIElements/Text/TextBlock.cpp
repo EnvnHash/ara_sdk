@@ -9,6 +9,10 @@
 #include "UIElements/Text/TextBlock.h"
 #include "UIWindow.h"
 
+#ifdef ARA_USE_CLIP
+#include "clip.h"
+#endif
+
 using namespace glm;
 using namespace std;
 
@@ -17,7 +21,7 @@ namespace ara {
 TextBlock::TextBlock(unsigned opt, int max_count)  {
     setTypeName<TextBlock>();
     setName(getTypeName<TextBlock>());
-
+    setFocusAllowed(true);
     m_maxCount = max_count;
 
     Label::setColor(1, 1, 1, 1);
@@ -31,7 +35,6 @@ TextBlock::~TextBlock() {
 
 void TextBlock::init() {
     m_canReceiveDrag = true;
-    m_focusAllowed   = true;
 
     m_caret = &push<Div>();
     m_caret->setVisibility(false);
@@ -113,7 +116,7 @@ void TextBlock::drawSelectionBg() {
             if (m_drawImmediate && m_selBgShader) {
                 if (!m_uniBlockBg.isInited()) {
                     m_uniBlockBg.addVarName("mvp", getHwMvp(), GL_FLOAT_MAT4);
-                    m_uniBlockBg.addVarName("color", &m_BkSelColor[0], GL_FLOAT_VEC4);
+                    m_uniBlockBg.addVarName("color", &m_bkSelColor[0], GL_FLOAT_VEC4);
                     m_uniBlockBg.init(m_selBgShader->getProgram(), "nodeData");
                 }
 
@@ -183,7 +186,7 @@ Font *TextBlock::UpdateDGV(bool *checkFontTexture) {
     }
 
     m_riFont     = font;
-    m_RenderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
+    m_renderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
 
     vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
     int  lidx;
@@ -195,7 +198,7 @@ Font *TextBlock::UpdateDGV(bool *checkFontTexture) {
     m_fontDGV.setPixRatio(getPixRatio());
     m_fontDGV.setTabPixSize(m_TabSize);
     // process input text, break up in lines
-    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_RenderText, !hasOpt(single_line));
+    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
 
     // Calculate offset
     if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
@@ -350,7 +353,7 @@ void TextBlock::prepareSelBgVao() {
 
         for (auto &it : m_backPos) {
             dIt->pos = m_mvpHw * it;
-            memcpy(&dIt->color[0], &m_BkSelColor[0], sizeof(float) * 4);
+            memcpy(&dIt->color[0], &m_bkSelColor[0], sizeof(float) * 4);
             dIt->aux2.w = m_zPos;
             dIt->aux3.x = 4.f;  // type indicator (4=GenQuad)
             dIt->aux3.w = 1.f;  // alpha
@@ -371,7 +374,7 @@ void TextBlock::mouseDrag(hidData& data) {
         auto cpos = getCaretByPixPos(m_mousePosCr.x, m_mousePosCr.y);
 
         m_caretIndex    = cpos;
-        m_CaretRange[1] = cpos;
+        m_caretRange[1] = cpos;
 
         if (!m_drawImmediate) {
             reqUpdtTree();
@@ -387,7 +390,7 @@ void TextBlock::mouseDown(hidData& data) {
 
     if (cpos >= 0) {
         m_caretIndex    = cpos;
-        m_CaretRange[0] = m_CaretRange[1] = m_caretIndex;
+        m_caretRange[0] = m_caretRange[1] = m_caretIndex;
         m_mouseEvent                      = 1;
 
         if (!m_drawImmediate) {
@@ -406,6 +409,15 @@ void TextBlock::mouseDown(hidData& data) {
 void TextBlock::mouseUp(hidData& data) {
     m_mouseEvent = 0;
     data.consumed = true;
+}
+
+void TextBlock::keyDown(hidData& data) {
+    if (data.key == ARA_KEY_C && data.ctrlPressed) {
+#ifdef ARA_USE_CLIP
+        LOG << "TextBlock::keyDown " << m_renderText.substr(m_charSelection.x, m_charSelection.y - m_charSelection.x);
+        clip::set_text(m_renderText.substr(m_charSelection.x, m_charSelection.y - m_charSelection.x));
+#endif
+    }
 }
 
 void TextBlock::globalMouseDown(hidData& data) {
@@ -462,19 +474,19 @@ bool TextBlock::setSelRange(int loIndex, int highIndex) {
         return false;
     }
 
-    m_CaretRange[0] = loIndex;
-    m_CaretRange[1] = highIndex;
+    m_caretRange[0] = loIndex;
+    m_caretRange[1] = highIndex;
     return true;
 }
 
 bool TextBlock::getSelRange(ivec2 &range) {
-    if (m_CaretRange[0] == m_CaretRange[1]) {
+    if (m_caretRange[0] == m_caretRange[1]) {
         memset(&range[0], 0, sizeof(int) * 2);
         return false;
     }
 
-    range.x = std::min(m_CaretRange.x, m_CaretRange.y);
-    range.y = std::max(m_CaretRange.x, m_CaretRange.y);
+    range.x = std::min(m_caretRange.x, m_caretRange.y);
+    range.y = std::max(m_caretRange.x, m_caretRange.y);
 
     if (range.x < 0) {
         range.x = 0;
@@ -486,7 +498,7 @@ bool TextBlock::getSelRange(ivec2 &range) {
 }
 
 void TextBlock::clearSelRange() {
-    m_CaretRange[0] = m_CaretRange[1] = 0;
+    m_caretRange[0] = m_caretRange[1] = 0;
 }
 
 bool TextBlock::eraseContent(int lo_index, int hi_index) {
@@ -572,7 +584,7 @@ void TextBlock::setPropItem(Item *item) {
 }
 
 void TextBlock::setBkSelColor(vec4 c) {
-    m_BkSelColor     = c;
+    m_bkSelColor     = c;
     m_glyphsPrepared = false;
 }
 

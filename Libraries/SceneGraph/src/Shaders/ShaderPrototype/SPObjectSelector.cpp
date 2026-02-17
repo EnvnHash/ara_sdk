@@ -311,33 +311,33 @@ void SPObjectSelector::mouseMove(float x, float y) {
     if (m_gizmoselected != 0 && m_selectedNode && gizmoNode && m_selectedObjectNode) {
         g_norm_center = vec4(0.f, 0.f, 0.f, 1.f);
 
-        if (gizmoNode->m_nameFlag & GLSG_TRANS_GIZMO) {
-            g_norm_end = vec4(static_cast<float>((m_gizmoselected & GLSG_TRANS_GIZMO_X) != 0),
-                              static_cast<float>((m_gizmoselected & GLSG_TRANS_GIZMO_Y) != 0),
-                              static_cast<float>((m_gizmoselected & GLSG_TRANS_GIZMO_Z) != 0), 1.f);
-        } else if (gizmoNode->m_nameFlag & GLSG_SCALE_GIZMO) {
-            g_norm_end = vec4(static_cast<float>((m_gizmoselected & GLSG_SCALE_GIZMO_X) != 0),
-                              static_cast<float>((m_gizmoselected & GLSG_SCALE_GIZMO_Y) != 0),
-                              static_cast<float>((m_gizmoselected & GLSG_SCALE_GIZMO_Z) != 0), 1.f);
-        } else if (gizmoNode->m_nameFlag & GLSG_ROT_GIZMO) {
-            g_norm_end = vec4(static_cast<float>((m_gizmoselected & GLSG_ROT_GIZMO_X) != 0),
-                        static_cast<float>((m_gizmoselected & GLSG_ROT_GIZMO_Y) != 0),
-                        static_cast<float>((m_gizmoselected & GLSG_ROT_GIZMO_Z) != 0), 1.f);
+        if (gizmoNode->m_nameFlag & ARA_TRANS_GIZMO) {
+            g_norm_end = vec4(static_cast<float>((m_gizmoselected & ARA_TRANS_GIZMO_X) != 0),
+                              static_cast<float>((m_gizmoselected & ARA_TRANS_GIZMO_Y) != 0),
+                              static_cast<float>((m_gizmoselected & ARA_TRANS_GIZMO_Z) != 0), 1.f);
+        } else if (gizmoNode->m_nameFlag & ARA_SCALE_GIZMO) {
+            g_norm_end = vec4(static_cast<float>((m_gizmoselected & ARA_SCALE_GIZMO_X) != 0),
+                              static_cast<float>((m_gizmoselected & ARA_SCALE_GIZMO_Y) != 0),
+                              static_cast<float>((m_gizmoselected & ARA_SCALE_GIZMO_Z) != 0), 1.f);
+        } else if (gizmoNode->m_nameFlag & ARA_ROT_GIZMO) {
+            g_norm_end = vec4(static_cast<float>((m_gizmoselected & ARA_ROT_GIZMO_X) != 0),
+                        static_cast<float>((m_gizmoselected & ARA_ROT_GIZMO_Y) != 0),
+                        static_cast<float>((m_gizmoselected & ARA_ROT_GIZMO_Z) != 0), 1.f);
         }
 
         //----------------------------------------------------------------
 
         calcGizmoAxisNDC();
         calcMouseMoveVec(mouseScaled.x, mouseScaled.y, mouseMovedSign);
-        calcIntersectPlane(mouseScaled.x, mouseScaled.y, (gizmoNode->m_nameFlag & GLSG_ROT_GIZMO) > 0);
+        calcIntersectPlane(mouseScaled.x, mouseScaled.y, (gizmoNode->m_nameFlag & ARA_ROT_GIZMO) > 0);
 
-        if ((gizmoNode->m_nameFlag & GLSG_TRANS_GIZMO) || (gizmoNode->m_nameFlag & GLSG_SCALE_GIZMO)) {
+        if ((gizmoNode->m_nameFlag & ARA_TRANS_GIZMO) || (gizmoNode->m_nameFlag & ARA_SCALE_GIZMO)) {
             calcOffsVecTransAndScale(offsetVec, mouseMovedSign);
         }
 
         //----------------------------------------------------------------
 
-        if (gizmoNode->m_nameFlag & GLSG_ROT_GIZMO) {
+        if (gizmoNode->m_nameFlag & ARA_ROT_GIZMO) {
             float offsAngle = 0.f;
 
 #ifndef SPOBJSEL_ROT_SIMPLE
@@ -415,7 +415,7 @@ void SPObjectSelector::mouseMove(float x, float y) {
 
             m_gizmoDragged = length(offsAngle) > m_mouseDragToleranceRot;
             m_state        = objSelState::rotating;
-        } else if (gizmoNode->m_nameFlag & GLSG_TRANS_GIZMO) {
+        } else if (gizmoNode->m_nameFlag & ARA_TRANS_GIZMO) {
             if (m_cfState == cfState::fine) offsetVec *= 0.1f;
 
             // offset the gizmo
@@ -428,7 +428,7 @@ void SPObjectSelector::mouseMove(float x, float y) {
 
             m_gizmoDragged = length(offsetVec) > m_mouseDragToleranceTrans;
             m_state        = objSelState::translating;
-        } else if (gizmoNode->m_nameFlag & GLSG_SCALE_GIZMO
+        } else if (gizmoNode->m_nameFlag & ARA_SCALE_GIZMO
                     && !(m_selectedObjectNode->m_transFlag & toType(transFlag::noScale))
                     && !m_skipMoveAnalogToMouse) {
             if (m_cfState == cfState::fine) {
@@ -438,9 +438,9 @@ void SPObjectSelector::mouseMove(float x, float y) {
             // the mouse movement is interpreted as the difference between the
             // limits of the scaled and unscaled bounding box of the object at
             // the selected axis
-            ivec3 scaleAxisIndex{m_gizmoselected & GLSG_SCALE_GIZMO_X ? 1 : 0,
-                                 m_gizmoselected & GLSG_SCALE_GIZMO_Y ? 1 : 0,
-                                 m_gizmoselected & GLSG_SCALE_GIZMO_Z ? 1 : 0};
+            ivec3 scaleAxisIndex{m_gizmoselected & ARA_SCALE_GIZMO_X ? 1 : 0,
+                                 m_gizmoselected & ARA_SCALE_GIZMO_Y ? 1 : 0,
+                                 m_gizmoselected & ARA_SCALE_GIZMO_Z ? 1 : 0};
 
             vec3 maxAxis{m_selectedObjectNode->getBoundingBoxMax().x - m_selectedObjectNode->getBoundingBoxMin().x,
                          m_selectedObjectNode->getBoundingBoxMax().y - m_selectedObjectNode->getBoundingBoxMin().y,
@@ -460,9 +460,9 @@ void SPObjectSelector::mouseMove(float x, float y) {
                     m_offsetSign = mouseMovedSign;
                 }
 
-                int scaleAxisIdx = m_gizmoselected & GLSG_SCALE_GIZMO_X   ? 0
-                                     : m_gizmoselected & GLSG_SCALE_GIZMO_Y ? 1
-                                     : m_gizmoselected & GLSG_SCALE_GIZMO_Z ? 2
+                int scaleAxisIdx = m_gizmoselected & ARA_SCALE_GIZMO_X   ? 0
+                                     : m_gizmoselected & ARA_SCALE_GIZMO_Y ? 1
+                                     : m_gizmoselected & ARA_SCALE_GIZMO_Z ? 2
                                                                             : 0;
 
                 float newDim                = maxAxis[scaleAxisIdx] + length(offsetVec) * m_offsetSign * 2.f;
@@ -482,7 +482,7 @@ void SPObjectSelector::mouseMove(float x, float y) {
                         }
                         // scaling in a plane, take one of the axes and set the scaling into the other axis accordingly
                     } else if (compAdd(g_norm_end) == 3.f) {
-                        uint64_t axes[3] = {GLSG_SCALE_GIZMO_X, GLSG_SCALE_GIZMO_Y, GLSG_SCALE_GIZMO_Z};
+                        uint64_t axes[3] = {ARA_SCALE_GIZMO_X, ARA_SCALE_GIZMO_Y, ARA_SCALE_GIZMO_Z};
 
                         for (auto i = 0; i < 3; i++) {
                             newScaleVec[i] = m_selectedObjectNode->getBoundingBoxMax()[i] - m_selectedObjectNode->getBoundingBoxMin()[i] > 0.f
@@ -504,18 +504,18 @@ void SPObjectSelector::mouseMove(float x, float y) {
 }
 
 void SPObjectSelector::keyDown(hidData& data) {
-    if (data.key == GLSG_KEY_LEFT_CONTROL || data.key == GLSG_KEY_RIGHT_CONTROL) {
+    if (data.key == ARA_KEY_LEFT_CONTROL || data.key == ARA_KEY_RIGHT_CONTROL) {
         m_cfState = cfState::fine;
     }
 
-    if (data.key == GLSG_KEY_LEFT_SHIFT) {
+    if (data.key == ARA_KEY_LEFT_SHIFT) {
         m_cfState = cfState::coarse;
     }
 
     // if there is a selected object (that is a gizmo placed ontop of it) switch
     // the selected axis first rotate through the simple axes, then in case of a
     // translation gizmo, through the planes
-    if (m_selectedObjectNode && m_cs && m_cs->s_activeGizmo && data.key == GLSG_KEY_TAB) {
+    if (m_selectedObjectNode && m_cs && m_cs->s_activeGizmo && data.key == ARA_KEY_TAB) {
         if (data.shiftPressed) {
             m_cs->s_activeGizmo->selectPrevAxis();
         } else {
@@ -525,7 +525,7 @@ void SPObjectSelector::keyDown(hidData& data) {
 }
 
 void SPObjectSelector::keyUp(hidData& data) {
-    if (data.key == GLSG_KEY_LEFT_CONTROL || data.key == GLSG_KEY_RIGHT_CONTROL || data.key == GLSG_KEY_LEFT_SHIFT) {
+    if (data.key == ARA_KEY_LEFT_CONTROL || data.key == ARA_KEY_RIGHT_CONTROL || data.key == ARA_KEY_LEFT_SHIFT) {
         m_cfState = cfState::normal;
     }
 }
@@ -575,8 +575,8 @@ void SPObjectSelector::selectObj(int inObjId, bool onMouseUp) {
 
             // if a SceneNode was selected, and it was not a Gizmo, save it
             if (!parentNode ||
-                (!(parentNode->m_nameFlag & GLSG_TRANS_GIZMO) && !(parentNode->m_nameFlag & GLSG_SCALE_GIZMO) &&
-                 !(parentNode->m_nameFlag & GLSG_ROT_GIZMO))) {
+                (!(parentNode->m_nameFlag & ARA_TRANS_GIZMO) && !(parentNode->m_nameFlag & ARA_SCALE_GIZMO) &&
+                 !(parentNode->m_nameFlag & ARA_ROT_GIZMO))) {
                 m_selectedObjectNode = m_selectedNode;
             }
 
@@ -611,8 +611,8 @@ void SPObjectSelector::selectObj(int inObjId, bool onMouseUp) {
 
                 // if the parentnode of the selectedNode is a gizmo, then an axis or plane of a gizmo was selected for dragging
                 if (parentNode &&
-                    ((parentNode->m_nameFlag & GLSG_TRANS_GIZMO) || (parentNode->m_nameFlag & GLSG_SCALE_GIZMO) ||
-                     (parentNode->m_nameFlag & GLSG_ROT_GIZMO))) {
+                    ((parentNode->m_nameFlag & ARA_TRANS_GIZMO) || (parentNode->m_nameFlag & ARA_SCALE_GIZMO) ||
+                     (parentNode->m_nameFlag & ARA_ROT_GIZMO))) {
                     // if there was an SceneNode selected, before the gizmo was clicked, reselect this SceneNode
                     if (m_selectedObjectNode && !m_selectedObjectNode->setSelected(true)) {
                         return;

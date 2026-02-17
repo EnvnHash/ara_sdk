@@ -213,13 +213,13 @@ void TransformWidget::rotate(int j) {
 
 void TransformWidget::keyDown(hidData& data) {
     int dir = -1;
-    if (data.key == GLSG_KEY_DOWN)
+    if (data.key == ARA_KEY_DOWN)
         dir = 3;
-    else if (data.key == GLSG_KEY_UP)
+    else if (data.key == ARA_KEY_UP)
         dir = 2;
-    else if (data.key == GLSG_KEY_LEFT)
+    else if (data.key == ARA_KEY_LEFT)
         dir = 0;
-    else if (data.key == GLSG_KEY_RIGHT)
+    else if (data.key == ARA_KEY_RIGHT)
         dir = 1;
 
     if (dir > -1) {
@@ -237,7 +237,7 @@ void TransformWidget::keyDown(hidData& data) {
     }
 
     // advance plane selection
-    if (data.key == GLSG_KEY_TAB) {
+    if (data.key == ARA_KEY_TAB) {
         m_psSwitchMapIdx = !data.shiftPressed ? (m_psSwitchMapIdx + 1) % 6 :  (m_psSwitchMapIdx + 5) % 6;
         setPlaneSwitcherState(m_psSwitchMap[m_psSwitchMapIdx].first, m_psSwitchMap[m_psSwitchMapIdx].second);
     }

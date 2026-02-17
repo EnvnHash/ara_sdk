@@ -9,26 +9,26 @@
 namespace ara {
 
 enum gizmoType : uint64_t {
-    GLSG_TRANS_GIZMO      = 1ULL << 1,
-    GLSG_TRANS_GIZMO_X    = 1ULL << 2,
-    GLSG_TRANS_GIZMO_Y    = 1ULL << 3,
-    GLSG_TRANS_GIZMO_Z    = 1ULL << 4,
-    GLSG_SCALE_GIZMO      = 1ULL << 5,
-    GLSG_SCALE_GIZMO_X    = 1ULL << 6,
-    GLSG_SCALE_GIZMO_Y    = 1ULL << 7,
-    GLSG_SCALE_GIZMO_Z    = 1ULL << 8,
-    GLSG_ROT_GIZMO        = 1ULL << 9,
-    GLSG_ROT_GIZMO_X      = 1ULL << 10,
-    GLSG_ROT_GIZMO_Y      = 1ULL << 11,
-    GLSG_ROT_GIZMO_Z      = 1ULL << 12,
-    GLSG_ROT_AXIS_GIZMO   = 1ULL << 13,
-    GLSG_ROT_AXIS_GIZMO_X = 1ULL << 14,
-    GLSG_ROT_AXIS_GIZMO_Y = 1ULL << 15,
-    GLSG_ROT_AXIS_GIZMO_Z = 1ULL << 16,
-    GLSG_PASSIVE_GIZMO    = 1ULL << 17,
-    GLSG_PASSIVE_GIZMO_X  = 1ULL << 18,
-    GLSG_PASSIVE_GIZMO_Y  = 1ULL << 19,
-    GLSG_PASSIVE_GIZMO_Z  = 1ULL << 20
+    ARA_TRANS_GIZMO      = 1ULL << 1,
+    ARA_TRANS_GIZMO_X    = 1ULL << 2,
+    ARA_TRANS_GIZMO_Y    = 1ULL << 3,
+    ARA_TRANS_GIZMO_Z    = 1ULL << 4,
+    ARA_SCALE_GIZMO      = 1ULL << 5,
+    ARA_SCALE_GIZMO_X    = 1ULL << 6,
+    ARA_SCALE_GIZMO_Y    = 1ULL << 7,
+    ARA_SCALE_GIZMO_Z    = 1ULL << 8,
+    ARA_ROT_GIZMO        = 1ULL << 9,
+    ARA_ROT_GIZMO_X      = 1ULL << 10,
+    ARA_ROT_GIZMO_Y      = 1ULL << 11,
+    ARA_ROT_GIZMO_Z      = 1ULL << 12,
+    ARA_ROT_AXIS_GIZMO   = 1ULL << 13,
+    ARA_ROT_AXIS_GIZMO_X = 1ULL << 14,
+    ARA_ROT_AXIS_GIZMO_Y = 1ULL << 15,
+    ARA_ROT_AXIS_GIZMO_Z = 1ULL << 16,
+    ARA_PASSIVE_GIZMO    = 1ULL << 17,
+    ARA_PASSIVE_GIZMO_X  = 1ULL << 18,
+    ARA_PASSIVE_GIZMO_Y  = 1ULL << 19,
+    ARA_PASSIVE_GIZMO_Z  = 1ULL << 20
 };
 
 enum class mouseEditMode : int32_t { emNormal = 0, emDist, emBright };

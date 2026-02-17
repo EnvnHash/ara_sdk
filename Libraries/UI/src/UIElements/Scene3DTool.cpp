@@ -116,16 +116,16 @@ void Scene3DTool::connectUINodes() {
         });
 
         getWindow()->addGlobalKeyDownCb(this, [this](const hidData& data) {
-            if (data.key == GLSG_KEY_LEFT_CONTROL ||
-                data.key == GLSG_KEY_RIGHT_CONTROL && m_toolBarIcons[ToolBarIcon::coarseFine] &&
+            if (data.key == ARA_KEY_LEFT_CONTROL ||
+                data.key == ARA_KEY_RIGHT_CONTROL && m_toolBarIcons[ToolBarIcon::coarseFine] &&
                     m_toolBarIcons[ToolBarIcon::coarseFine]->getToggleState() != 1) {
                 m_toolBarIcons[ToolBarIcon::coarseFine]->setToggleState(1);
                 setModifyCoarseFine();
                 setDrawFlag();
             }
 
-            if (data.key == GLSG_KEY_LEFT_SHIFT ||
-                data.key == GLSG_KEY_RIGHT_SHIFT && m_toolBarIcons[ToolBarIcon::coarseFine] &&
+            if (data.key == ARA_KEY_LEFT_SHIFT ||
+                data.key == ARA_KEY_RIGHT_SHIFT && m_toolBarIcons[ToolBarIcon::coarseFine] &&
                     m_toolBarIcons[ToolBarIcon::coarseFine]->getToggleState() != 2) {
                 m_toolBarIcons[ToolBarIcon::coarseFine]->setToggleState(2);
                 setModifyCoarseFine();
@@ -134,8 +134,8 @@ void Scene3DTool::connectUINodes() {
         });
 
         getWindow()->addGlobalKeyUpCb(this, [this](const hidData& data) {
-            if ((data.key == GLSG_KEY_LEFT_CONTROL || data.key == GLSG_KEY_RIGHT_CONTROL ||
-                 data.key == GLSG_KEY_LEFT_SHIFT || data.key == GLSG_KEY_RIGHT_SHIFT) &&
+            if ((data.key == ARA_KEY_LEFT_CONTROL || data.key == ARA_KEY_RIGHT_CONTROL ||
+                 data.key == ARA_KEY_LEFT_SHIFT || data.key == ARA_KEY_RIGHT_SHIFT) &&
                 m_toolBarIcons[ToolBarIcon::coarseFine] &&
                 m_toolBarIcons[ToolBarIcon::coarseFine]->getToggleState() != 0) {
                 m_toolBarIcons[ToolBarIcon::coarseFine]->setToggleState(0);

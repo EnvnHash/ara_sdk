@@ -590,33 +590,33 @@ void UIWindow::getActualMonitorMaxArea(int win_xpos, int win_ypos) {
 void UIWindow::key_callback(int key, int scancode, int action, int mods) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     int  outKey  = key;
-    bool isAlt   = (key == GLSG_KEY_LEFT_ALT) || (key == GLSG_KEY_RIGHT_ALT);
-    bool isCtrl  = (key == GLSG_KEY_LEFT_CONTROL) || (key == GLSG_KEY_RIGHT_CONTROL);
-    bool isShift = (key == GLSG_KEY_LEFT_SHIFT) || (key == GLSG_KEY_RIGHT_SHIFT);
+    bool isAlt   = (key == ARA_KEY_LEFT_ALT) || (key == ARA_KEY_RIGHT_ALT);
+    bool isCtrl  = (key == ARA_KEY_LEFT_CONTROL) || (key == ARA_KEY_RIGHT_CONTROL);
+    bool isShift = (key == ARA_KEY_LEFT_SHIFT) || (key == ARA_KEY_RIGHT_SHIFT);
 
     // convert special keys, ...QT and GLFW use different key codes
     static unordered_map<int, int> specialKeys = {
-        { GLSG_KEY_UP, 19 },
-        { GLSG_KEY_DOWN, 21 },
-        { GLSG_KEY_LEFT, 18 },
-        { GLSG_KEY_RIGHT, 20 },
+        { ARA_KEY_UP, 19 },
+        { ARA_KEY_DOWN, 21 },
+        { ARA_KEY_LEFT, 18 },
+        { ARA_KEY_RIGHT, 20 },
     };
 
     if (specialKeys.find(key) != specialKeys.end()) {
         outKey = specialKeys[key];
     }
 
-    if (action == GLSG_PRESS || action == GLSG_REPEAT) {
-        WindowBase::osKeyDown(outKey, (mods & GLSG_MOD_SHIFT) || isShift, (mods & GLSG_MOD_CONTROL) || isCtrl,
-                              (mods & GLSG_MOD_ALT) || isAlt);
+    if (action == ARA_PRESS || action == ARA_REPEAT) {
+        WindowBase::osKeyDown(outKey, (mods & ARA_MOD_SHIFT) || isShift, (mods & ARA_MOD_CONTROL) || isCtrl,
+                              (mods & ARA_MOD_ALT) || isAlt);
     }
 
-    if (action == GLSG_RELEASE) {
-        WindowBase::osKeyUp(outKey, (mods & GLSG_MOD_SHIFT) || isShift, (mods & GLSG_MOD_CONTROL) || isCtrl,
-                            (mods & GLSG_MOD_ALT) || isAlt);
+    if (action == ARA_RELEASE) {
+        WindowBase::osKeyUp(outKey, (mods & ARA_MOD_SHIFT) || isShift, (mods & ARA_MOD_CONTROL) || isCtrl,
+                            (mods & ARA_MOD_ALT) || isAlt);
     }
 
-    if ((key == GLSG_KEY_ESCAPE || (key == GLSG_KEY_F4 && (mods & GLSG_MOD_ALT))) && action == GLSG_PRESS) {
+    if ((key == ARA_KEY_ESCAPE || (key == ARA_KEY_F4 && (mods & ARA_MOD_ALT))) && action == ARA_PRESS) {
         // must be done indirect since we are still iterating over GLFWWindow
         // member variables, but GLFWWindow will be destroyed by this command
         if (m_appHandle && m_appHandle->getMainWindow() == this) {
@@ -687,21 +687,21 @@ void UIWindow::mouseBut_callback(int button, int action, int mods) {
     }
 #endif
 
-    if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_PRESS) {
-        WindowBase::osMouseDownLeft(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & GLSG_MOD_SHIFT,
-                                    mods & GLSG_MOD_CONTROL, mods & GLSG_MOD_ALT);
+    if (button == ARA_MOUSE_BUTTON_LEFT && action == ARA_PRESS) {
+        WindowBase::osMouseDownLeft(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & ARA_MOD_SHIFT,
+                                    mods & ARA_MOD_CONTROL, mods & ARA_MOD_ALT);
     }
 
-    if (button == GLSG_MOUSE_BUTTON_LEFT && action == GLSG_RELEASE) {
+    if (button == ARA_MOUSE_BUTTON_LEFT && action == ARA_RELEASE) {
         WindowBase::osMouseUpLeft();
     }
 
-    if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_PRESS) {
-        WindowBase::osMouseDownRight(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & GLSG_MOD_SHIFT,
-                                     mods & GLSG_MOD_CONTROL, mods & GLSG_MOD_ALT);
+    if (button == ARA_MOUSE_BUTTON_RIGHT && action == ARA_PRESS) {
+        WindowBase::osMouseDownRight(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & ARA_MOD_SHIFT,
+                                     mods & ARA_MOD_CONTROL, mods & ARA_MOD_ALT);
     }
 
-    if (button == GLSG_MOUSE_BUTTON_RIGHT && action == GLSG_RELEASE) {
+    if (button == ARA_MOUSE_BUTTON_RIGHT && action == ARA_RELEASE) {
         WindowBase::osMouseUpRight();
     }
 
@@ -820,10 +820,10 @@ void UIWindow::window_refresh_callback() {
 /** HID callbacks, called from the gl draw loop */
 
 void UIWindow::onKeyDown(int key, bool shiftPressed, bool ctrlPressed, bool altPressed) {
-    if (key == GLSG_KEY_O && shiftPressed) {
+    if (key == ARA_KEY_O && shiftPressed) {
         m_showObjMap = !m_showObjMap;
         m_sharedRes.setDrawFlag();
-    } else if (key == GLSG_KEY_D && shiftPressed && !ctrlPressed) {
+    } else if (key == ARA_KEY_D && shiftPressed && !ctrlPressed) {
         m_uiRoot.dump();
     }
 

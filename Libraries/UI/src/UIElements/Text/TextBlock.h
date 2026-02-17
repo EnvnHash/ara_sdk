@@ -60,10 +60,11 @@ public:
     }
 
 protected:
-    void         mouseDrag(hidData& data) override;
-    void         mouseDown(hidData& data) override;
-    void         mouseUp(hidData& data) override;
-    virtual void globalMouseDown(hidData& data);
+    void            mouseDrag(hidData& data) override;
+    void            mouseDown(hidData& data) override;
+    void            mouseUp(hidData& data) override;
+    void            keyDown(hidData& data) override;
+    virtual void    globalMouseDown(hidData& data);
 
     bool validateInputToString(int ch) const;
     int getCaretByPixPos(float px, float py);
@@ -77,14 +78,14 @@ protected:
 
     float m_TabSize = 50.f;  // Tab size in pixels
 
-    glm::vec4 m_BkSelColor{0.f, 0.f, 1.f, 0.3f};  // Background selection color
+    glm::vec4 m_bkSelColor{0.f, 0.f, 1.f, 0.3f};  // Background selection color
     glm::vec4 m_caretColor{1.f};                  // Background selection color
     int       m_caretWidth = 2;
 
-    std::string m_RenderText;
+    std::string m_renderText;
 
     int        m_caretIndex = 0;
-    glm::ivec2 m_CaretRange{0};
+    glm::ivec2 m_caretRange{0};
     int        m_maxCount = 0;
 
     glm::vec2 m_mousePosCr{0.f};

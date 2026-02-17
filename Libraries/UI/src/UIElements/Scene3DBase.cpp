@@ -479,30 +479,30 @@ void Scene3DBase::keyDown(hidData& data) {
     if (m_sceneRenderCam->getInteractCam())
         m_sceneRenderCam->getInteractCam()->keyDown(data.key, data.shiftPressed, data.altPressed, data.ctrlPressed);
 
-    if (data.key == GLSG_KEY_W && objSel) {
+    if (data.key == ARA_KEY_W && objSel) {
         objSel->setTransMode(transMode::translate);
         return;
     }
 
     ///> scale mode
-    if (data.key == GLSG_KEY_E && objSel) {
+    if (data.key == ARA_KEY_E && objSel) {
         objSel->setTransMode(transMode::scale);
         return;
     }
 
     ///> rotate mode
-    if (data.key == GLSG_KEY_R && objSel) {
+    if (data.key == ARA_KEY_R && objSel) {
         objSel->setTransMode(transMode::rotate);
         return;
     }
 
     // dump the sceneTree
-    if (data.key == GLSG_KEY_D) {
+    if (data.key == ARA_KEY_D) {
         m_rootNode->dump();
         return;
     }
 
-    if (data.key == GLSG_KEY_F) {
+    if (data.key == ARA_KEY_F) {
         m_drawFps = !m_drawFps;
         return;
     }
@@ -538,8 +538,8 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData& data) {
     }
 
     ///> move a selected object via the keyboard, in case a single gizmo axis is selected
-    if ((data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_UP || data.key == GLSG_KEY_LEFT ||
-         data.key == GLSG_KEY_RIGHT) &&
+    if ((data.key == ARA_KEY_DOWN || data.key == ARA_KEY_UP || data.key == ARA_KEY_LEFT ||
+         data.key == ARA_KEY_RIGHT) &&
         objSel && objSel->getSelectedNode() && objSel->getSelectedObjectNode() && !m_gizmos.empty()) {
         // check if any of the gizmo axes is selected
         for (auto g : *m_gizmos[static_cast<int>(transMode::translate)]->getChildren()) {
@@ -550,20 +550,20 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData& data) {
                 vec4 moveVec{0.f};
 
                 if (g->getName() == getTypeName<SNGizmo>() + "_Y_Z") {
-                    moveVec.y = data.key == GLSG_KEY_LEFT ? -1.f : data.key == GLSG_KEY_RIGHT ? 1.f : 0.f;
-                    moveVec.z = data.key == GLSG_KEY_DOWN ? -1.f : data.key == GLSG_KEY_UP ? 1.f : 0.f;
+                    moveVec.y = data.key == ARA_KEY_LEFT ? -1.f : data.key == ARA_KEY_RIGHT ? 1.f : 0.f;
+                    moveVec.z = data.key == ARA_KEY_DOWN ? -1.f : data.key == ARA_KEY_UP ? 1.f : 0.f;
                 } else if (g->getName() == getTypeName<SNGizmo>() + "_X_Z") {
-                    moveVec.x = data.key == GLSG_KEY_LEFT ? -1.f : data.key == GLSG_KEY_RIGHT ? 1.f : 0.f;
-                    moveVec.z = data.key == GLSG_KEY_DOWN ? -1.f : data.key == GLSG_KEY_UP ? 1.f : 0.f;
+                    moveVec.x = data.key == ARA_KEY_LEFT ? -1.f : data.key == ARA_KEY_RIGHT ? 1.f : 0.f;
+                    moveVec.z = data.key == ARA_KEY_DOWN ? -1.f : data.key == ARA_KEY_UP ? 1.f : 0.f;
                 } else if (g->getName() == getTypeName<SNGizmo>() + "_X_Y") {
-                    moveVec.x = data.key == GLSG_KEY_LEFT ? -1.f : data.key == GLSG_KEY_RIGHT ? 1.f : 0.f;
-                    moveVec.y = data.key == GLSG_KEY_DOWN ? -1.f : data.key == GLSG_KEY_UP ? 1.f : 0.f;
-                } else if (g->m_nameFlag & GLSG_TRANS_GIZMO_X)
-                    moveVec.x = (data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_LEFT) ? -1.f : 1.f;
-                else if (g->m_nameFlag & GLSG_TRANS_GIZMO_Y)
-                    moveVec.y = (data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_LEFT) ? -1.f : 1.f;
-                else if (g->m_nameFlag & GLSG_TRANS_GIZMO_Z)
-                    moveVec.z = (data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_LEFT) ? -1.f : 1.f;
+                    moveVec.x = data.key == ARA_KEY_LEFT ? -1.f : data.key == ARA_KEY_RIGHT ? 1.f : 0.f;
+                    moveVec.y = data.key == ARA_KEY_DOWN ? -1.f : data.key == ARA_KEY_UP ? 1.f : 0.f;
+                } else if (g->m_nameFlag & ARA_TRANS_GIZMO_X)
+                    moveVec.x = (data.key == ARA_KEY_DOWN || data.key == ARA_KEY_LEFT) ? -1.f : 1.f;
+                else if (g->m_nameFlag & ARA_TRANS_GIZMO_Y)
+                    moveVec.y = (data.key == ARA_KEY_DOWN || data.key == ARA_KEY_LEFT) ? -1.f : 1.f;
+                else if (g->m_nameFlag & ARA_TRANS_GIZMO_Z)
+                    moveVec.z = (data.key == ARA_KEY_DOWN || data.key == ARA_KEY_LEFT) ? -1.f : 1.f;
 
                 // rotate selected axis into object space and multiply by gizmoAxis parent (the gizmo container) scaleFact
                 moveVec = object->getRotMat() * vec4(vec3(moveVec) * m_keyTransStep[static_cast<int>(m_cfState)], 0.f);
@@ -580,11 +580,11 @@ void Scene3DBase::moveObjectByArrowKeys(const hidData& data) {
         for (const auto& g : *m_gizmos[static_cast<int>(transMode::rotate)]->getChildren()) {
             if (g->isSelected()) {
                 auto      object = objSel->getSelectedObjectNode();
-                glm::vec3 rotAxis{static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_X), static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_Y),
-                                  static_cast<float>(g->m_nameFlag & GLSG_ROT_GIZMO_Z)};
+                glm::vec3 rotAxis{static_cast<float>(g->m_nameFlag & ARA_ROT_GIZMO_X), static_cast<float>(g->m_nameFlag & ARA_ROT_GIZMO_Y),
+                                  static_cast<float>(g->m_nameFlag & ARA_ROT_GIZMO_Z)};
 
                 float     offs = m_keyRotStep[static_cast<int>(m_cfState)];
-                glm::mat4 newRot = object->getRotMat() * glm::rotate((data.key == GLSG_KEY_DOWN || data.key == GLSG_KEY_LEFT) ? -offs : offs, rotAxis);
+                glm::mat4 newRot = object->getRotMat() * glm::rotate((data.key == ARA_KEY_DOWN || data.key == ARA_KEY_LEFT) ? -offs : offs, rotAxis);
 
                 // offset
                 object->rotate(newRot);
@@ -645,12 +645,12 @@ void Scene3DBase::mouseUp(hidData& data) {
                 offsetVec = vec4{planeScale, 0.f, planeScale, 1.f} * planeScale;
             } else if (selNode->getName() == getTypeName<SNGizmo>() + "_X_Y") {
                 offsetVec = vec4{planeScale, planeScale, 0.f, 1.f} * planeScale;
-            } else if (gizNode->m_nameFlag & GLSG_TRANS_GIZMO) {
+            } else if (gizNode->m_nameFlag & ARA_TRANS_GIZMO) {
                 float scaleToArrowCenter = 0.85f;
                 offsetVec =
-                    vec4(static_cast<float>((m_objSel->getGizmoselected() & GLSG_TRANS_GIZMO_X) != 0) * scaleToArrowCenter,
-                         static_cast<float>((m_objSel->getGizmoselected() & GLSG_TRANS_GIZMO_Y) != 0) * scaleToArrowCenter,
-                         static_cast<float>((m_objSel->getGizmoselected() & GLSG_TRANS_GIZMO_Z) != 0) * scaleToArrowCenter, 1.f);
+                    vec4(static_cast<float>((m_objSel->getGizmoselected() & ARA_TRANS_GIZMO_X) != 0) * scaleToArrowCenter,
+                         static_cast<float>((m_objSel->getGizmoselected() & ARA_TRANS_GIZMO_Y) != 0) * scaleToArrowCenter,
+                         static_cast<float>((m_objSel->getGizmoselected() & ARA_TRANS_GIZMO_Z) != 0) * scaleToArrowCenter, 1.f);
             }
 
             vec4 objPos = m_sceneRenderCam->getProjectionMatr() * m_sceneRenderCam->getModelMatr() *

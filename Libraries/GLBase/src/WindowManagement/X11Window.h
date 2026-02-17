@@ -36,7 +36,7 @@
 #include <X11/extensions/XKBstr.h>
 #include <GlbCommon/GlbCommon.h>
 
-#define _GLSG_XDND_VERSION 5
+#define _ARA_XDND_VERSION 5
 #define CARD32 int32_t
 
 namespace ara {

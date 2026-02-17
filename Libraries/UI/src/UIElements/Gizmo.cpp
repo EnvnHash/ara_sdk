@@ -432,9 +432,9 @@ bool Gizmo::drawToFbo(const uint32_t& objId) {
 
                 for (int i = 0; i < 2; i++) {
                     // update labels
-                    axIndx   = (gixAx->m_nameFlag & GLSG_ROT_AXIS_GIZMO_X)
+                    axIndx   = (gixAx->m_nameFlag & ARA_ROT_AXIS_GIZMO_X)
                                    ? 0
-                                   : ((gixAx->m_nameFlag & GLSG_ROT_AXIS_GIZMO_Y) ? 1 : 2);
+                                   : ((gixAx->m_nameFlag & ARA_ROT_AXIS_GIZMO_Y) ? 1 : 2);
                     m_axlPos = getAxisEnd(m_pvm, i == 0 ? 1.f : -1.f);
                     axIndx   = i == 0 ? axIndx : axIndx + 3;
 

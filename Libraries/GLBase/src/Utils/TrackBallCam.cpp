@@ -39,7 +39,7 @@ void TrackBallCam::keyUp(int keyCode, bool shiftPressed, bool altPressed, bool c
     m_altPressed   = altPressed;
     m_ctrlPressed  = ctrlPressed;
 
-    if (m_isMouseTranslating && (keyCode == GLSG_KEY_LEFT_SHIFT || keyCode == GLSG_KEY_RIGHT_SHIFT)) {
+    if (m_isMouseTranslating && (keyCode == ARA_KEY_LEFT_SHIFT || keyCode == ARA_KEY_RIGHT_SHIFT)) {
         m_forceNewDragStart  = true;
         m_isMouseTranslating = false;
         setInteractionStart();
