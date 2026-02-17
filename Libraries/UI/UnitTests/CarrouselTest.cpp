@@ -6,7 +6,7 @@
 #include "TestCommon.h"
 
 #include "UIApplication.h"
-#include <UIElements/Label.h>
+#include <UIElements/Text/Label.h>
 #include <Transitions/Carrousel.h>
 
 using namespace std;

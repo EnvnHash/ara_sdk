@@ -7,7 +7,7 @@
 #include "UIElements/UITable.h"
 #include <UIElements/ScrollView.h>
 #include <UIElements/Div.h>
-#include <UIElements/Label.h>
+#include <UIElements/Text/Label.h>
 
 using namespace glm;
 using namespace std;

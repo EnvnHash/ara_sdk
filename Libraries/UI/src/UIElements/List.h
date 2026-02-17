@@ -5,7 +5,7 @@
 #pragma once
 
 #include <ListProperty.h>
-#include <UIElements/Label.h>
+#include <UIElements/Text/Label.h>
 #include <UIElements/ScrollView.h>
 #include <UIElements/UITable.h>
 

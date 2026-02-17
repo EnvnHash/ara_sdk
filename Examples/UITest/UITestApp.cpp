@@ -3,7 +3,7 @@
 //
 
 #include "UITestApp.h"
-#include <UIElements/Label.h>
+#include <UIElements/Text/Label.h>
 #include <UIElements/TabView.h>
 
 #include "Demo/DemoView.h"

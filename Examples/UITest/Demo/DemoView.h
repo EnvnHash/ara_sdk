@@ -1,7 +1,7 @@
 #pragma once
 
 #include <UIElements/Button/ImageButton.h>
-#include <UIElements/Label.h>
+#include <UIElements/Text/Label.h>
 #include <UIElements/UITable.h>
 #include <UIElements/ScrollView.h>
 #include <UIElements/List.h>

@@ -1,4 +1,4 @@
-#include <UIElements/Label.h>
+#include <UIElements/Text/Label.h>
 #include <Asset/AssetColor.h>
 #include <Asset/AssetFont.h>
 #include <Asset/AssetManager.h>
@@ -550,7 +550,7 @@ void Label::setTextAlign(align ax, valign ay, state st) {
 void Label::setTextAlignX(align ax, state st) {
     m_tAlignX       = ax;
     m_glyphsPrepared = false;
-    setStyleInitVal("text-align", ax == align::center ? "center" : (ax == align::left ? "left" : "right"), st);
+    setStyleInitVal("text-align", ax == align::justify_ex ? "justify-ex" : ax == align::justify ? "justify" : ax == align::center ? "center" : ax == align::left ? "left" : "right", st);
 }
 
 void Label::setTextAlignY(valign ay, state st) {

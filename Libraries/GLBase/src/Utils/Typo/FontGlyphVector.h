@@ -80,7 +80,7 @@ public:
     int             getLineIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y);      // returns -1 : before, -2 : beyond
     int             getLineIndexByCharIndex(int ch_index);  // returns -1 if not found
     int             getCharIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y, int &off_bound);  // off_bound==-1 : before, off_bound=1 beyond
-    glm::vec2      &getCaretPos(glm::vec2 &pos, int caret_index);
+    glm::vec2       getCaretPos(int caret_index);
 
     int jumpToLine(int caret_index, int line_delta);// returns new caret position, on error returns caret_index
     int jumpToBeginOfLine(int caret_index);         // returns new caret position, on error returns caret_index

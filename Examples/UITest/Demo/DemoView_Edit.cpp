@@ -5,8 +5,8 @@
 #include <Asset/AssetManager.h>
 #include <Asset/ResNode.h>
 #include <Asset/ResSrcFile.h>
-#include <UIElements/UIEdit.h>
-#include <UIElements/Label.h>
+#include <UIElements/Text/UIEdit.h>
+#include <UIElements/Text/Label.h>
 
 using namespace ara;
 using namespace glm;

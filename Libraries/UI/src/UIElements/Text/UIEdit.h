@@ -1,8 +1,7 @@
 #pragma once
 
 #include "DataModel/Item.h"
-#include "UIElements/Label.h"
-#include <regex>
+#include "Label.h"
 
 namespace ara {
 
@@ -172,7 +171,7 @@ protected:
 
     std::string m_RenderText;
 
-    int        m_CaretIndex = 0;
+    int        m_caretIndex = 0;
     glm::ivec2 m_CaretRange{0};
     int        m_MaxCount = 0;
 

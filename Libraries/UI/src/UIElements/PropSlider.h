@@ -5,7 +5,7 @@
 #pragma once
 
 #include <Property.h>
-#include <UIElements/Label.h>
+#include <UIElements/Text/Label.h>
 #include <UIElements/Slider.h>
 
 namespace ara {

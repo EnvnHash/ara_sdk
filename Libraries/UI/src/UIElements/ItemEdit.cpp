@@ -3,7 +3,7 @@
 //
 
 #include <DataModel/PropertyItemUi.h>
-#include <UIElements/UIEdit.h>
+#include <UIElements/Text/UIEdit.h>
 #include <UIElements/ItemEdit.h>
 #include <UIElements/PropSlider.h>
 #include <UIElements/Button/Button.h>

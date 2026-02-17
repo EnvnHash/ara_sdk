@@ -184,7 +184,8 @@ int FontGlyphVector::getCharIndexByPixPos(float pix_x, float pix_y, float off_x,
     return vline[lidx].ptr[1]->chidx;
 }
 
-glm::vec2 &FontGlyphVector::getCaretPos(glm::vec2 &pos, int caret_index) {
+vec2 FontGlyphVector::getCaretPos(int caret_index) {
+    vec2 pos{};
     auto nchars = static_cast<int>(size());
     memset(&pos[0], 0, sizeof(float) * 2);
 
@@ -193,12 +194,12 @@ glm::vec2 &FontGlyphVector::getCaretPos(glm::vec2 &pos, int caret_index) {
     }
 
     if (nchars > 0) {
-        e_fontdglyph pr = findByCharIndex(caret_index);
+        auto pr = findByCharIndex(caret_index);
 
         if (caret_index < nchars) {
             if (pr.cp > 0) {
                 pos.x = pr.opos.x;
-                pos.y = (pr.opos.y + pr.osize.y);
+                pos.y = pr.opos.y + pr.osize.y;
             }
         } else {
             pos = v[nchars - 1].opos + v[nchars - 1].osize;
@@ -230,7 +231,7 @@ int FontGlyphVector::jumpToLine(int caret_index, int line_delta) {
         return ci;
     }
 
-    getCaretPos(m_tCaretPos, ci);
+    m_tCaretPos = getCaretPos(ci);
     auto ve = vline[lidx].ptr[0];
 
     if (ve == nullptr || !vline[lidx].ptr[1]) {

@@ -7,7 +7,7 @@
 #include <SceneNodes/SceneNode.h>
 #include <UIElements/Button/ImageButton.h>
 #include <UIElements/Div.h>
-#include <UIElements/Label.h>
+#include <UIElements/Text/Label.h>
 #include <Utils/TrackBallCam.h>
 
 namespace ara {

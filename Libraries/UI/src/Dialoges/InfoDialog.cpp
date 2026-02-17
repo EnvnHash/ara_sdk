@@ -4,7 +4,7 @@
 
 #include "Dialoges/InfoDialog.h"
 #include "UIElements/Button/Button.h"
-#include "UIElements/Label.h"
+#include "UIElements/Text/Label.h"
 #include <UIApplication.h>
 
 

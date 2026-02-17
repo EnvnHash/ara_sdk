@@ -7,7 +7,7 @@
 #include <DataModel/ItemRef.h>
 #include <DataModel/PropertyItemUi.h>
 #include <Property.h>
-#include <UIElements/UIEdit.h>
+#include <UIElements/Text/UIEdit.h>
 
 namespace ara {
 
@@ -49,13 +49,13 @@ public:
                 m_item->saveState();
             }
             T newVal = (*prop)();
-            newVal[idx]       = (int)atoi(txt.c_str());
+            newVal[idx]       = atoi(txt.c_str());
             (*prop)           = newVal;
         }, prop);
 
         setOnLostFocusCb([this, prop, idx] {
             T newVal = (*prop)();
-            newVal[idx]       = (int)atoi(m_text.c_str());
+            newVal[idx]       = atoi(m_text.c_str());
             (*prop)           = newVal;
         });
 

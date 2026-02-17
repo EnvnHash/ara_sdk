@@ -1,6 +1,6 @@
 #pragma once
 
-#include "UIElements/Label.h"
+#include "../Text/Label.h"
 
 namespace ara {
 
