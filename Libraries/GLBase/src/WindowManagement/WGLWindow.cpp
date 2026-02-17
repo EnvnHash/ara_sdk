@@ -541,40 +541,40 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
             int i, button, action;
 
             if (uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP)
-                button = GLSG_MOUSE_BUTTON_LEFT;
+                button = ARA_MOUSE_BUTTON_LEFT;
             else if (uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP)
-                button = GLSG_MOUSE_BUTTON_RIGHT;
+                button = ARA_MOUSE_BUTTON_RIGHT;
             else if (uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP)
-                button = GLSG_MOUSE_BUTTON_MIDDLE;
+                button = ARA_MOUSE_BUTTON_MIDDLE;
             else if (GET_XBUTTON_WPARAM(wParam) == XBUTTON1)
-                button = GLSG_MOUSE_BUTTON_4;
+                button = ARA_MOUSE_BUTTON_4;
             else
-                button = GLSG_MOUSE_BUTTON_5;
+                button = ARA_MOUSE_BUTTON_5;
 
             if (uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN || uMsg == WM_MBUTTONDOWN || uMsg == WM_XBUTTONDOWN) {
-                action = GLSG_PRESS;
+                action = ARA_PRESS;
             } else
-                action = GLSG_RELEASE;
+                action = ARA_RELEASE;
 
-            for (i = 0; i <= GLSG_MOUSE_BUTTON_LAST; i++) {
-                if (thisWin->m_mouseButtons[i] == GLSG_PRESS) {
+            for (i = 0; i <= ARA_MOUSE_BUTTON_LAST; i++) {
+                if (thisWin->m_mouseButtons[i] == ARA_PRESS) {
                     break;
                 }
             }
 
-            if (i > GLSG_MOUSE_BUTTON_LAST) {
+            if (i > ARA_MOUSE_BUTTON_LAST) {
                 SetCapture(hWnd);
             }
 
             thisWin->inputMouseClick(button, action, thisWin->getKeyMods());
 
-            for (i = 0; i <= GLSG_MOUSE_BUTTON_LAST; i++) {
-                if (thisWin->m_mouseButtons[i] == GLSG_PRESS) {
+            for (i = 0; i <= ARA_MOUSE_BUTTON_LAST; i++) {
+                if (thisWin->m_mouseButtons[i] == ARA_PRESS) {
                     break;
                 }
             }
 
-            if (i > GLSG_MOUSE_BUTTON_LAST) {
+            if (i > ARA_MOUSE_BUTTON_LAST) {
                 ReleaseCapture();
             }
 
@@ -601,7 +601,7 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
                 thisWin->inputCursorEnter(true);
             }
 
-            if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) {
+            if (thisWin->m_cursorMode == ARA_CURSOR_DISABLED) {
                 const int m_dx = x - thisWin->m_lastCursorPosX;
                 const int dy   = y - thisWin->m_lastCursorPosY;
 
@@ -681,7 +681,7 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
 
             // HACK: Enable the cursor while the user is moving or
             //       resizing the window or using the window menu
-            if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) thisWin->enableCursor();
+            if (thisWin->m_cursorMode == ARA_CURSOR_DISABLED) thisWin->enableCursor();
 
             break;
         }
@@ -692,7 +692,7 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
 
             // HACK: Disable the cursor once the user is done moving or resizing
             // the window or using the menu
-            if (thisWin->m_cursorMode == GLSG_CURSOR_DISABLED) thisWin->disableCursor();
+            if (thisWin->m_cursorMode == ARA_CURSOR_DISABLED) thisWin->disableCursor();
 
             break;
         }
@@ -742,7 +742,7 @@ LRESULT CALLBACK WGLWindow::WndProc(HWND   hWnd,    // Handle For This Window
         }
 
         case WM_SIZING: {
-            if (thisWin->m_numer == GLSG_DONT_CARE || thisWin->m_denom == GLSG_DONT_CARE) break;
+            if (thisWin->m_numer == ARA_DONT_CARE || thisWin->m_denom == ARA_DONT_CARE) break;
 
             thisWin->applyAspectRatio(static_cast<int>(wParam), reinterpret_cast<RECT *>(lParam));
             return TRUE;
@@ -957,7 +957,7 @@ bool WGLWindow::cursorInContentArea() const {
 
 // Updates the cursor image according to its cursor mode
 void WGLWindow::updateCursorImage() const {
-    if (m_cursorMode == GLSG_CURSOR_NORMAL) {
+    if (m_cursorMode == ARA_CURSOR_NORMAL) {
         if (m_cursorHandle) {
             SetCursor(m_cursorHandle);
         } else {
@@ -984,9 +984,9 @@ void WGLWindow::updateClipRect() const {
 // Updates key names according to the current keyboard layout
 void WGLWindow::updateKeyNamesWin32() {
     std::array<BYTE, 256> state = {};
-    std::ranges::fill(m_keynames, std::array<char, GLSG_KEY_LAST + 1>{});
+    std::ranges::fill(m_keynames, std::array<char, ARA_KEY_LAST + 1>{});
 
-    for (int key = GLSG_KEY_SPACE; key <= GLSG_KEY_LAST; key++) {
+    for (int key = ARA_KEY_SPACE; key <= ARA_KEY_LAST; key++) {
         UINT  vk;
         std::array<WCHAR, 16> chars{};
 
@@ -995,12 +995,12 @@ void WGLWindow::updateKeyNamesWin32() {
             continue;
         }
 
-        if (key >= GLSG_KEY_KP_0 && key <= GLSG_KEY_KP_ADD) {
+        if (key >= ARA_KEY_KP_0 && key <= ARA_KEY_KP_ADD) {
             const UINT vks[] = {VK_NUMPAD0, VK_NUMPAD1, VK_NUMPAD2,  VK_NUMPAD3,  VK_NUMPAD4,
                                 VK_NUMPAD5, VK_NUMPAD6, VK_NUMPAD7,  VK_NUMPAD8,  VK_NUMPAD9,
                                 VK_DECIMAL, VK_DIVIDE,  VK_MULTIPLY, VK_SUBTRACT, VK_ADD};
 
-            vk = vks[key - GLSG_KEY_KP_0];
+            vk = vks[key - ARA_KEY_KP_0];
         } else {
             vk = MapVirtualKey(scancode, MAPVK_VSC_TO_VK);
         }
@@ -1076,30 +1076,30 @@ void WGLWindow::inputWindowFocus(bool focused) {
     if (m_callbacks.focus) m_callbacks.focus(focused);
 
     if (!focused) {
-        for (int key = 0; key <= GLSG_KEY_LAST; key++) {
-            if (m_keys[key] == GLSG_PRESS) {
+        for (int key = 0; key <= ARA_KEY_LAST; key++) {
+            if (m_keys[key] == ARA_PRESS) {
                 const int scancode = getKeyScancode(key);
-                inputKey(key, scancode, GLSG_RELEASE, 0);
+                inputKey(key, scancode, ARA_RELEASE, 0);
             }
         }
 
-        for (int button = 0; button <= GLSG_MOUSE_BUTTON_LAST; button++) {
-            if (m_mouseButtons[button] == GLSG_PRESS) inputMouseClick(button, GLSG_RELEASE, 0);
+        for (int button = 0; button <= ARA_MOUSE_BUTTON_LAST; button++) {
+            if (m_mouseButtons[button] == ARA_PRESS) inputMouseClick(button, ARA_RELEASE, 0);
         }
     }
 }
 
 // Notifies shared code of a mouse button click event
 void WGLWindow::inputMouseClick(int button, int action, int mods) {
-    if (button < 0 || button > GLSG_MOUSE_BUTTON_LAST) {
+    if (button < 0 || button > ARA_MOUSE_BUTTON_LAST) {
         return;
     }
 
     if (!m_lockKeyMods) {
-        mods &= ~(GLSG_MOD_CAPS_LOCK | GLSG_MOD_NUM_LOCK);
+        mods &= ~(ARA_MOD_CAPS_LOCK | ARA_MOD_NUM_LOCK);
     }
 
-    m_mouseButtons[button] = action == GLSG_RELEASE && m_stickyMouseButtons ? _GLSG_STICK : static_cast<char>(action);
+    m_mouseButtons[button] = action == ARA_RELEASE && m_stickyMouseButtons ? _ARA_STICK : static_cast<char>(action);
 
     if (m_callbacks.mouseButton) {
         m_callbacks.mouseButton(button, action, mods);
@@ -1114,7 +1114,7 @@ void WGLWindow::inputChar(unsigned int codepoint, int mods, bool plain) const {
     }
 
     if (!m_lockKeyMods) {
-        mods &= ~(GLSG_MOD_CAPS_LOCK | GLSG_MOD_NUM_LOCK);
+        mods &= ~(ARA_MOD_CAPS_LOCK | ARA_MOD_NUM_LOCK);
     }
 
     if (m_callbacks.charmods) {
@@ -1127,26 +1127,26 @@ void WGLWindow::inputChar(unsigned int codepoint, int mods, bool plain) const {
 }
 
 void WGLWindow::inputKey(int key, int scancode, int action, int mods) {
-    if (key >= 0 && key <= GLSG_KEY_LAST) {
+    if (key >= 0 && key <= ARA_KEY_LAST) {
         bool repeated = false;
 
-        if (action == GLSG_RELEASE && m_keys[key] == GLSG_RELEASE) {
+        if (action == ARA_RELEASE && m_keys[key] == ARA_RELEASE) {
             return;
         }
 
-        if (action == GLSG_PRESS && m_keys[key] == GLSG_PRESS) {
+        if (action == ARA_PRESS && m_keys[key] == ARA_PRESS) {
             repeated = true;
         }
 
-        m_keys[key] = action == GLSG_RELEASE && m_stickyKeys ?  _GLSG_STICK : static_cast<char>(action);
+        m_keys[key] = action == ARA_RELEASE && m_stickyKeys ?  _ARA_STICK : static_cast<char>(action);
 
         if (repeated) {
-            action = GLSG_REPEAT;
+            action = ARA_REPEAT;
         }
     }
 
     if (!m_lockKeyMods) {
-        mods &= ~(GLSG_MOD_CAPS_LOCK | GLSG_MOD_NUM_LOCK);
+        mods &= ~(ARA_MOD_CAPS_LOCK | ARA_MOD_NUM_LOCK);
     }
 
     if (m_callbacks.key) {
@@ -1157,8 +1157,8 @@ void WGLWindow::inputKey(int key, int scancode, int action, int mods) {
 void WGLWindow::setInputMode(int mode, int value) {
     assert(m_hWnd != nullptr);
 
-    if (mode == GLSG_CURSOR) {
-        if (value != GLSG_CURSOR_NORMAL && value != GLSG_CURSOR_HIDDEN && value != GLSG_CURSOR_DISABLED) {
+    if (mode == ARA_CURSOR) {
+        if (value != ARA_CURSOR_NORMAL && value != ARA_CURSOR_HIDDEN && value != ARA_CURSOR_DISABLED) {
             std::cerr << "Invalid cursor mode 0x%08X " << value << std::endl;
             return;
         }
@@ -1171,7 +1171,7 @@ void WGLWindow::setInputMode(int mode, int value) {
 
         getCursorPos(&m_virtualCursorPosX, &m_virtualCursorPosY);
         setCursorMode(value);
-    } else if (mode == GLSG_STICKY_KEYS) {
+    } else if (mode == ARA_STICKY_KEYS) {
         value = value ? true : false;
         if (m_stickyKeys == static_cast<bool>(value)) {
             return;
@@ -1179,13 +1179,13 @@ void WGLWindow::setInputMode(int mode, int value) {
 
         if (!value) {
             // Release all sticky keys
-            for (int i = 0; i <= GLSG_KEY_LAST; i++) {
-                if (m_keys[i] == _GLSG_STICK) m_keys[i] = GLSG_RELEASE;
+            for (int i = 0; i <= ARA_KEY_LAST; i++) {
+                if (m_keys[i] == _ARA_STICK) m_keys[i] = ARA_RELEASE;
             }
         }
 
         m_stickyKeys = value;
-    } else if (mode == GLSG_STICKY_MOUSE_BUTTONS) {
+    } else if (mode == ARA_STICKY_MOUSE_BUTTONS) {
         value = value ? true : false;
         if (m_stickyMouseButtons == static_cast<bool>(value)) {
             return;
@@ -1193,17 +1193,17 @@ void WGLWindow::setInputMode(int mode, int value) {
 
         if (!value) {
             // Release all sticky mouse buttons
-            for (int i = 0; i <= GLSG_MOUSE_BUTTON_LAST; i++) {
-                if (m_mouseButtons[i] == _GLSG_STICK) {
-                    m_mouseButtons[i] = GLSG_RELEASE;
+            for (int i = 0; i <= ARA_MOUSE_BUTTON_LAST; i++) {
+                if (m_mouseButtons[i] == _ARA_STICK) {
+                    m_mouseButtons[i] = ARA_RELEASE;
                 }
             }
         }
 
         m_stickyMouseButtons = value;
-    } else if (mode == GLSG_LOCK_KEY_MODS) {
+    } else if (mode == ARA_LOCK_KEY_MODS) {
         m_lockKeyMods = value ? true : false;
-    } else if (mode == GLSG_RAW_MOUSE_MOTION) {
+    } else if (mode == ARA_RAW_MOUSE_MOTION) {
         if (!rawMouseMotionSupported()) {
             std::cerr << "Raw mouse motion is not supported on this system" << std::endl;
             return;
@@ -1221,7 +1221,7 @@ void WGLWindow::setInputMode(int mode, int value) {
 }
 
 void WGLWindow::setCursorMode(int mode) {
-    if (mode == GLSG_CURSOR_DISABLED) {
+    if (mode == ARA_CURSOR_DISABLED) {
         if (windowFocused()) {
             disableCursor();
         } else if (cursorInContentArea()) {
@@ -1305,12 +1305,12 @@ void WGLWindow::getFullWindowSize(DWORD style, DWORD exStyle, int contentWidth, 
 int WGLWindow::getKeyMods() {
     int mods = 0;
 
-    if (GetKeyState(VK_SHIFT) & 0x8000) mods |= GLSG_MOD_SHIFT;
-    if (GetKeyState(VK_CONTROL) & 0x8000) mods |= GLSG_MOD_CONTROL;
-    if (GetKeyState(VK_MENU) & 0x8000) mods |= GLSG_MOD_ALT;
-    if ((GetKeyState(VK_LWIN) | GetKeyState(VK_RWIN)) & 0x8000) mods |= GLSG_MOD_SUPER;
-    if (GetKeyState(VK_CAPITAL) & 1) mods |= GLSG_MOD_CAPS_LOCK;
-    if (GetKeyState(VK_NUMLOCK) & 1) mods |= GLSG_MOD_NUM_LOCK;
+    if (GetKeyState(VK_SHIFT) & 0x8000) mods |= ARA_MOD_SHIFT;
+    if (GetKeyState(VK_CONTROL) & 0x8000) mods |= ARA_MOD_CONTROL;
+    if (GetKeyState(VK_MENU) & 0x8000) mods |= ARA_MOD_ALT;
+    if ((GetKeyState(VK_LWIN) | GetKeyState(VK_RWIN)) & 0x8000) mods |= ARA_MOD_SUPER;
+    if (GetKeyState(VK_CAPITAL) & 1) mods |= ARA_MOD_CAPS_LOCK;
+    if (GetKeyState(VK_NUMLOCK) & 1) mods |= ARA_MOD_NUM_LOCK;
 
     return mods;
 }
@@ -1333,15 +1333,15 @@ void WGLWindow::windowFocus(bool focused) {
     if (m_callbacks.focus) m_callbacks.focus(focused);
 
     if (!focused) {
-        for (int key = 0; key <= GLSG_KEY_LAST; key++) {
-            if (m_keys[key] == GLSG_PRESS) {
+        for (int key = 0; key <= ARA_KEY_LAST; key++) {
+            if (m_keys[key] == ARA_PRESS) {
                 const int scancode = getKeyScancode(key);
-                inputKey(key, scancode, GLSG_RELEASE, 0);
+                inputKey(key, scancode, ARA_RELEASE, 0);
             }
         }
 
-        for (int button = 0; button <= GLSG_MOUSE_BUTTON_LAST; button++) {
-            if (m_mouseButtons[button] == GLSG_PRESS) inputMouseClick(button, GLSG_RELEASE, 0);
+        for (int button = 0; button <= ARA_MOUSE_BUTTON_LAST; button++) {
+            if (m_mouseButtons[button] == ARA_PRESS) inputMouseClick(button, ARA_RELEASE, 0);
         }
     }
 }
@@ -1368,128 +1368,128 @@ void WGLWindow::createKeyTables() {
     std::ranges::fill(m_scancodes, -1);
 
 
-    m_keycodes[0x00B] = GLSG_KEY_0;
-    m_keycodes[0x002] = GLSG_KEY_1;
-    m_keycodes[0x003] = GLSG_KEY_2;
-    m_keycodes[0x004] = GLSG_KEY_3;
-    m_keycodes[0x005] = GLSG_KEY_4;
-    m_keycodes[0x006] = GLSG_KEY_5;
-    m_keycodes[0x007] = GLSG_KEY_6;
-    m_keycodes[0x008] = GLSG_KEY_7;
-    m_keycodes[0x009] = GLSG_KEY_8;
-    m_keycodes[0x00A] = GLSG_KEY_9;
-    m_keycodes[0x01E] = GLSG_KEY_A;
-    m_keycodes[0x030] = GLSG_KEY_B;
-    m_keycodes[0x02E] = GLSG_KEY_C;
-    m_keycodes[0x020] = GLSG_KEY_D;
-    m_keycodes[0x012] = GLSG_KEY_E;
-    m_keycodes[0x021] = GLSG_KEY_F;
-    m_keycodes[0x022] = GLSG_KEY_G;
-    m_keycodes[0x023] = GLSG_KEY_H;
-    m_keycodes[0x017] = GLSG_KEY_I;
-    m_keycodes[0x024] = GLSG_KEY_J;
-    m_keycodes[0x025] = GLSG_KEY_K;
-    m_keycodes[0x026] = GLSG_KEY_L;
-    m_keycodes[0x032] = GLSG_KEY_M;
-    m_keycodes[0x031] = GLSG_KEY_N;
-    m_keycodes[0x018] = GLSG_KEY_O;
-    m_keycodes[0x019] = GLSG_KEY_P;
-    m_keycodes[0x010] = GLSG_KEY_Q;
-    m_keycodes[0x013] = GLSG_KEY_R;
-    m_keycodes[0x01F] = GLSG_KEY_S;
-    m_keycodes[0x014] = GLSG_KEY_T;
-    m_keycodes[0x016] = GLSG_KEY_U;
-    m_keycodes[0x02F] = GLSG_KEY_V;
-    m_keycodes[0x011] = GLSG_KEY_W;
-    m_keycodes[0x02D] = GLSG_KEY_X;
-    m_keycodes[0x015] = GLSG_KEY_Y;
-    m_keycodes[0x02C] = GLSG_KEY_Z;
+    m_keycodes[0x00B] = ARA_KEY_0;
+    m_keycodes[0x002] = ARA_KEY_1;
+    m_keycodes[0x003] = ARA_KEY_2;
+    m_keycodes[0x004] = ARA_KEY_3;
+    m_keycodes[0x005] = ARA_KEY_4;
+    m_keycodes[0x006] = ARA_KEY_5;
+    m_keycodes[0x007] = ARA_KEY_6;
+    m_keycodes[0x008] = ARA_KEY_7;
+    m_keycodes[0x009] = ARA_KEY_8;
+    m_keycodes[0x00A] = ARA_KEY_9;
+    m_keycodes[0x01E] = ARA_KEY_A;
+    m_keycodes[0x030] = ARA_KEY_B;
+    m_keycodes[0x02E] = ARA_KEY_C;
+    m_keycodes[0x020] = ARA_KEY_D;
+    m_keycodes[0x012] = ARA_KEY_E;
+    m_keycodes[0x021] = ARA_KEY_F;
+    m_keycodes[0x022] = ARA_KEY_G;
+    m_keycodes[0x023] = ARA_KEY_H;
+    m_keycodes[0x017] = ARA_KEY_I;
+    m_keycodes[0x024] = ARA_KEY_J;
+    m_keycodes[0x025] = ARA_KEY_K;
+    m_keycodes[0x026] = ARA_KEY_L;
+    m_keycodes[0x032] = ARA_KEY_M;
+    m_keycodes[0x031] = ARA_KEY_N;
+    m_keycodes[0x018] = ARA_KEY_O;
+    m_keycodes[0x019] = ARA_KEY_P;
+    m_keycodes[0x010] = ARA_KEY_Q;
+    m_keycodes[0x013] = ARA_KEY_R;
+    m_keycodes[0x01F] = ARA_KEY_S;
+    m_keycodes[0x014] = ARA_KEY_T;
+    m_keycodes[0x016] = ARA_KEY_U;
+    m_keycodes[0x02F] = ARA_KEY_V;
+    m_keycodes[0x011] = ARA_KEY_W;
+    m_keycodes[0x02D] = ARA_KEY_X;
+    m_keycodes[0x015] = ARA_KEY_Y;
+    m_keycodes[0x02C] = ARA_KEY_Z;
 
-    m_keycodes[0x028] = GLSG_KEY_APOSTROPHE;
-    m_keycodes[0x02B] = GLSG_KEY_BACKSLASH;
-    m_keycodes[0x033] = GLSG_KEY_COMMA;
-    m_keycodes[0x00D] = GLSG_KEY_EQUAL;
-    m_keycodes[0x029] = GLSG_KEY_GRAVE_ACCENT;
-    m_keycodes[0x01A] = GLSG_KEY_LEFT_BRACKET;
-    m_keycodes[0x00C] = GLSG_KEY_MINUS;
-    m_keycodes[0x034] = GLSG_KEY_PERIOD;
-    m_keycodes[0x01B] = GLSG_KEY_RIGHT_BRACKET;
-    m_keycodes[0x027] = GLSG_KEY_SEMICOLON;
-    m_keycodes[0x035] = GLSG_KEY_SLASH;
-    m_keycodes[0x056] = GLSG_KEY_WORLD_2;
+    m_keycodes[0x028] = ARA_KEY_APOSTROPHE;
+    m_keycodes[0x02B] = ARA_KEY_BACKSLASH;
+    m_keycodes[0x033] = ARA_KEY_COMMA;
+    m_keycodes[0x00D] = ARA_KEY_EQUAL;
+    m_keycodes[0x029] = ARA_KEY_GRAVE_ACCENT;
+    m_keycodes[0x01A] = ARA_KEY_LEFT_BRACKET;
+    m_keycodes[0x00C] = ARA_KEY_MINUS;
+    m_keycodes[0x034] = ARA_KEY_PERIOD;
+    m_keycodes[0x01B] = ARA_KEY_RIGHT_BRACKET;
+    m_keycodes[0x027] = ARA_KEY_SEMICOLON;
+    m_keycodes[0x035] = ARA_KEY_SLASH;
+    m_keycodes[0x056] = ARA_KEY_WORLD_2;
 
-    m_keycodes[0x00E] = GLSG_KEY_BACKSPACE;
-    m_keycodes[0x153] = GLSG_KEY_DELETE;
-    m_keycodes[0x14F] = GLSG_KEY_END;
-    m_keycodes[0x01C] = GLSG_KEY_ENTER;
-    m_keycodes[0x001] = GLSG_KEY_ESCAPE;
-    m_keycodes[0x147] = GLSG_KEY_HOME;
-    m_keycodes[0x152] = GLSG_KEY_INSERT;
-    m_keycodes[0x15D] = GLSG_KEY_MENU;
-    m_keycodes[0x151] = GLSG_KEY_PAGE_DOWN;
-    m_keycodes[0x149] = GLSG_KEY_PAGE_UP;
-    m_keycodes[0x045] = GLSG_KEY_PAUSE;
-    m_keycodes[0x146] = GLSG_KEY_PAUSE;
-    m_keycodes[0x039] = GLSG_KEY_SPACE;
-    m_keycodes[0x00F] = GLSG_KEY_TAB;
-    m_keycodes[0x03A] = GLSG_KEY_CAPS_LOCK;
-    m_keycodes[0x145] = GLSG_KEY_NUM_LOCK;
-    m_keycodes[0x046] = GLSG_KEY_SCROLL_LOCK;
-    m_keycodes[0x03B] = GLSG_KEY_F1;
-    m_keycodes[0x03C] = GLSG_KEY_F2;
-    m_keycodes[0x03D] = GLSG_KEY_F3;
-    m_keycodes[0x03E] = GLSG_KEY_F4;
-    m_keycodes[0x03F] = GLSG_KEY_F5;
-    m_keycodes[0x040] = GLSG_KEY_F6;
-    m_keycodes[0x041] = GLSG_KEY_F7;
-    m_keycodes[0x042] = GLSG_KEY_F8;
-    m_keycodes[0x043] = GLSG_KEY_F9;
-    m_keycodes[0x044] = GLSG_KEY_F10;
-    m_keycodes[0x057] = GLSG_KEY_F11;
-    m_keycodes[0x058] = GLSG_KEY_F12;
-    m_keycodes[0x064] = GLSG_KEY_F13;
-    m_keycodes[0x065] = GLSG_KEY_F14;
-    m_keycodes[0x066] = GLSG_KEY_F15;
-    m_keycodes[0x067] = GLSG_KEY_F16;
-    m_keycodes[0x068] = GLSG_KEY_F17;
-    m_keycodes[0x069] = GLSG_KEY_F18;
-    m_keycodes[0x06A] = GLSG_KEY_F19;
-    m_keycodes[0x06B] = GLSG_KEY_F20;
-    m_keycodes[0x06C] = GLSG_KEY_F21;
-    m_keycodes[0x06D] = GLSG_KEY_F22;
-    m_keycodes[0x06E] = GLSG_KEY_F23;
-    m_keycodes[0x076] = GLSG_KEY_F24;
-    m_keycodes[0x038] = GLSG_KEY_LEFT_ALT;
-    m_keycodes[0x01D] = GLSG_KEY_LEFT_CONTROL;
-    m_keycodes[0x02A] = GLSG_KEY_LEFT_SHIFT;
-    m_keycodes[0x15B] = GLSG_KEY_LEFT_SUPER;
-    m_keycodes[0x137] = GLSG_KEY_PRINT_SCREEN;
-    m_keycodes[0x138] = GLSG_KEY_RIGHT_ALT;
-    m_keycodes[0x11D] = GLSG_KEY_RIGHT_CONTROL;
-    m_keycodes[0x036] = GLSG_KEY_RIGHT_SHIFT;
-    m_keycodes[0x15C] = GLSG_KEY_RIGHT_SUPER;
-    m_keycodes[0x150] = GLSG_KEY_DOWN;
-    m_keycodes[0x14B] = GLSG_KEY_LEFT;
-    m_keycodes[0x14D] = GLSG_KEY_RIGHT;
-    m_keycodes[0x148] = GLSG_KEY_UP;
+    m_keycodes[0x00E] = ARA_KEY_BACKSPACE;
+    m_keycodes[0x153] = ARA_KEY_DELETE;
+    m_keycodes[0x14F] = ARA_KEY_END;
+    m_keycodes[0x01C] = ARA_KEY_ENTER;
+    m_keycodes[0x001] = ARA_KEY_ESCAPE;
+    m_keycodes[0x147] = ARA_KEY_HOME;
+    m_keycodes[0x152] = ARA_KEY_INSERT;
+    m_keycodes[0x15D] = ARA_KEY_MENU;
+    m_keycodes[0x151] = ARA_KEY_PAGE_DOWN;
+    m_keycodes[0x149] = ARA_KEY_PAGE_UP;
+    m_keycodes[0x045] = ARA_KEY_PAUSE;
+    m_keycodes[0x146] = ARA_KEY_PAUSE;
+    m_keycodes[0x039] = ARA_KEY_SPACE;
+    m_keycodes[0x00F] = ARA_KEY_TAB;
+    m_keycodes[0x03A] = ARA_KEY_CAPS_LOCK;
+    m_keycodes[0x145] = ARA_KEY_NUM_LOCK;
+    m_keycodes[0x046] = ARA_KEY_SCROLL_LOCK;
+    m_keycodes[0x03B] = ARA_KEY_F1;
+    m_keycodes[0x03C] = ARA_KEY_F2;
+    m_keycodes[0x03D] = ARA_KEY_F3;
+    m_keycodes[0x03E] = ARA_KEY_F4;
+    m_keycodes[0x03F] = ARA_KEY_F5;
+    m_keycodes[0x040] = ARA_KEY_F6;
+    m_keycodes[0x041] = ARA_KEY_F7;
+    m_keycodes[0x042] = ARA_KEY_F8;
+    m_keycodes[0x043] = ARA_KEY_F9;
+    m_keycodes[0x044] = ARA_KEY_F10;
+    m_keycodes[0x057] = ARA_KEY_F11;
+    m_keycodes[0x058] = ARA_KEY_F12;
+    m_keycodes[0x064] = ARA_KEY_F13;
+    m_keycodes[0x065] = ARA_KEY_F14;
+    m_keycodes[0x066] = ARA_KEY_F15;
+    m_keycodes[0x067] = ARA_KEY_F16;
+    m_keycodes[0x068] = ARA_KEY_F17;
+    m_keycodes[0x069] = ARA_KEY_F18;
+    m_keycodes[0x06A] = ARA_KEY_F19;
+    m_keycodes[0x06B] = ARA_KEY_F20;
+    m_keycodes[0x06C] = ARA_KEY_F21;
+    m_keycodes[0x06D] = ARA_KEY_F22;
+    m_keycodes[0x06E] = ARA_KEY_F23;
+    m_keycodes[0x076] = ARA_KEY_F24;
+    m_keycodes[0x038] = ARA_KEY_LEFT_ALT;
+    m_keycodes[0x01D] = ARA_KEY_LEFT_CONTROL;
+    m_keycodes[0x02A] = ARA_KEY_LEFT_SHIFT;
+    m_keycodes[0x15B] = ARA_KEY_LEFT_SUPER;
+    m_keycodes[0x137] = ARA_KEY_PRINT_SCREEN;
+    m_keycodes[0x138] = ARA_KEY_RIGHT_ALT;
+    m_keycodes[0x11D] = ARA_KEY_RIGHT_CONTROL;
+    m_keycodes[0x036] = ARA_KEY_RIGHT_SHIFT;
+    m_keycodes[0x15C] = ARA_KEY_RIGHT_SUPER;
+    m_keycodes[0x150] = ARA_KEY_DOWN;
+    m_keycodes[0x14B] = ARA_KEY_LEFT;
+    m_keycodes[0x14D] = ARA_KEY_RIGHT;
+    m_keycodes[0x148] = ARA_KEY_UP;
 
-    m_keycodes[0x052] = GLSG_KEY_KP_0;
-    m_keycodes[0x04F] = GLSG_KEY_KP_1;
-    m_keycodes[0x050] = GLSG_KEY_KP_2;
-    m_keycodes[0x051] = GLSG_KEY_KP_3;
-    m_keycodes[0x04B] = GLSG_KEY_KP_4;
-    m_keycodes[0x04C] = GLSG_KEY_KP_5;
-    m_keycodes[0x04D] = GLSG_KEY_KP_6;
-    m_keycodes[0x047] = GLSG_KEY_KP_7;
-    m_keycodes[0x048] = GLSG_KEY_KP_8;
-    m_keycodes[0x049] = GLSG_KEY_KP_9;
-    m_keycodes[0x04E] = GLSG_KEY_KP_ADD;
-    m_keycodes[0x053] = GLSG_KEY_KP_DECIMAL;
-    m_keycodes[0x135] = GLSG_KEY_KP_DIVIDE;
-    m_keycodes[0x11C] = GLSG_KEY_KP_ENTER;
-    m_keycodes[0x059] = GLSG_KEY_KP_EQUAL;
-    m_keycodes[0x037] = GLSG_KEY_KP_MULTIPLY;
-    m_keycodes[0x04A] = GLSG_KEY_KP_SUBTRACT;
+    m_keycodes[0x052] = ARA_KEY_KP_0;
+    m_keycodes[0x04F] = ARA_KEY_KP_1;
+    m_keycodes[0x050] = ARA_KEY_KP_2;
+    m_keycodes[0x051] = ARA_KEY_KP_3;
+    m_keycodes[0x04B] = ARA_KEY_KP_4;
+    m_keycodes[0x04C] = ARA_KEY_KP_5;
+    m_keycodes[0x04D] = ARA_KEY_KP_6;
+    m_keycodes[0x047] = ARA_KEY_KP_7;
+    m_keycodes[0x048] = ARA_KEY_KP_8;
+    m_keycodes[0x049] = ARA_KEY_KP_9;
+    m_keycodes[0x04E] = ARA_KEY_KP_ADD;
+    m_keycodes[0x053] = ARA_KEY_KP_DECIMAL;
+    m_keycodes[0x135] = ARA_KEY_KP_DIVIDE;
+    m_keycodes[0x11C] = ARA_KEY_KP_ENTER;
+    m_keycodes[0x059] = ARA_KEY_KP_EQUAL;
+    m_keycodes[0x037] = ARA_KEY_KP_MULTIPLY;
+    m_keycodes[0x04A] = ARA_KEY_KP_SUBTRACT;
 
     for (int scancode = 0; scancode < 512; scancode++) {
         if (m_keycodes[scancode] > 0) m_scancodes[m_keycodes[scancode]] = scancode;
