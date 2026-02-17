@@ -5,7 +5,7 @@
 #pragma once
 
 #include "DataModel/Item.h"
-#include "Label.h"
+#include "UIElements/Text/Label.h"
 
 namespace ara {
 
@@ -41,14 +41,13 @@ public:
     void updateFontGeo() override;
     void clearDs() override;
 
-    void            setText(const std::string &str);
+    virtual void    setText(const std::string &str);
     bool            setSelRangeAll();
     bool            setSelRange(int loIndex, int highIndex);
     bool            getSelRange(glm::ivec2& range);  // range should receive 2 values
     void            clearSelRange();
     bool            eraseContent(int loIndex, int highIndex);
     void            setBkSelColor(glm::vec4 c);
-    void            setUseWheel(bool val) { m_useWheel = val; }
     virtual void    setPropItem(Item* item);
     virtual void    clearProp();
 
@@ -66,9 +65,9 @@ protected:
     void            keyDown(hidData& data) override;
     virtual void    globalMouseDown(hidData& data);
 
-    bool validateInputToString(int ch) const;
-    int getCaretByPixPos(float px, float py);
-    int validateCaretPos(int cpos) const;
+    std::string     validateInputToString(int ch);
+    int             getCaretByPixPos(float px, float py);
+    int             validateCaretPos(int cpos) const;
 
     Shaders*     m_selBgShader = nullptr;
     UniformBlock m_uniBlockBg;

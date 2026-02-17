@@ -1,24 +1,12 @@
 #pragma once
 
 #include "DataModel/Item.h"
-#include "Label.h"
+#include "UIElements/Text/TextBlock.h"
 
 namespace ara {
 
-class UIEdit : public Label {
+class UIEdit : public TextBlock {
 public:
-    enum eopt {
-        none               = 0x0000,
-        num_int            = 0x0001,
-        num_fp             = 0x0002,
-        pass               = 0x0004,
-        selectall_on_focus = 0x0008,  // when entering focus all content will be selected
-        single_line        = 0x0010,  // Single line, do not accept CR
-        accept_tabs        = 0x0020,  // Accepting TABs
-        manual_space       = 0x0040,  // the edit pixel space is defined by the user,
-                                      // otherwise it will adapt to content size
-    };
-
     explicit UIEdit(unsigned opt = 0, int max_count = std::numeric_limits<int>::max());
     ~UIEdit() override;
 
@@ -29,32 +17,22 @@ public:
 
     void loadStyleDefaults() override;
     void init() override;
-    void initSelBgShader();
     bool draw(uint32_t& objId) override;
     bool drawIndirect(uint32_t& objId) override;
-    void drawSelectionBg();
-    void drawGlyphs(uint32_t& objId);
     void drawCaret(bool forceCaretVaoUpdt = true);
-    void prepareSelBgVao();
 
     void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
     void updateFontGeo() override;
-    void clearDs() override;
 
     void setTextDist(const std::string& str);
     void setTextDist(const std::filesystem::path& p);
-    void setText(const std::string &str);
     void setValue(float val) override;
     void setValue(double val);
     void setValue(int val);
 
     [[nodiscard]] int getIntValue() const { return m_iValue; }
 
-    bool                setSelRangeAll();
-    bool                setSelRange(int loIndex, int highIndex);
-    bool                getSelRange(glm::ivec2& range);  // range should receive 2 values
-    void                clearSelRange();
-    bool                eraseContent(int lo_index, int hi_index);
+    void                setText(const std::string &str) override;
     void                setTextCb(std::function<void(std::string)> func) { m_setTextCb = std::move(func); }
     void                addEnterCb(std::function<void(std::string)> func, void* ptr) { m_onEnterCb[ptr] = std::move(func); }
     void                removeEnterCb(void* ptr);
@@ -74,13 +52,11 @@ public:
     void                setPrecision(int prec) { m_precision = prec; }
     void                incValue(float amt, cfState cf);
     void                clampValue();
-    void                setBkSelColor(glm::vec4 c);
     void                setUseWheel(bool val) { m_useWheel = val; }
     void                setCaretColor(glm::vec4 c, state st = state::m_state) ;
     void                setCaretColor(float r, float g, float b, float a, state st = state::m_state) ;
     void                setCaretWidth(int w) { m_caretWidth = w; }
-    virtual void        setPropItem(Item* item);
-    virtual void        clearProp();
+    void                setPropItem(Item* item) override;
 
     template<typename T>
     requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
@@ -143,50 +119,21 @@ protected:
     void onChar(hidData& data) override;
     void onLostFocus() override;
 
-    void         mouseDrag(hidData& data) override;
-    void         mouseDown(hidData& data) override;
-    void         mouseUp(hidData& data) override;
-    void         mouseWheel(hidData& data) override;
-    virtual void globalMouseDown(hidData& data);
-
-    bool validateInputToString(int ch) const;
+    void mouseDrag(hidData& data) override;
+    void mouseDown(hidData& data) override;
+    void mouseUp(hidData& data) override;
+    void mouseWheel(hidData& data) override;
+    void globalMouseDown(hidData& data) override;
+    bool validateInputToString(int ch);
     void checkLimits();
-    int getCaretByPixPos(float px, float py);
-    int validateCaretPos(int cpos) const;
 
-    int insertChar(int ch, int position,
-                   bool call_cb = true);  // returns new caret position
-
-    Shaders*     m_selBgShader = nullptr;
-    UniformBlock m_uniBlockBg;
-    VAO          m_backVao;
-    Div*         m_caret = nullptr;
-    IndDrawBlock m_selBgDB;
-
-    float m_tabSize = 50.f;  // Tab size in pixels
-
-    glm::vec4 m_BkSelColor{0.f, 0.f, 1.f, 0.3f};  // Background selection color
-    glm::vec4 m_caretColor{1.f};                  // Background selection color
-    int       m_caretWidth = 2;
-
-    std::string m_renderText;
-
-    int        m_caretIndex = 0;
-    glm::ivec2 m_caretRange{0};
-    int        m_maxCount = 0;
-
-    glm::vec2 m_mousePosCr{0.f};
-    glm::vec2 m_bs{0};
-    int       m_mouseEvent = 0;
+    int insertChar(int ch, int position, bool call_cb = true);  // returns new caret position
 
     std::function<void(std::string)>                            m_setTextCb;
     std::unordered_map<void*, std::function<void(std::string)>> m_onEnterCb;
 
     int m_minInt = 0;
     int m_maxInt = 1000;
-
-    glm::ivec2 m_charSelection{0};
-    glm::ivec2 m_lastSelRange{0};
 
     float m_minF = 0.f;
     float m_maxF = 1.f;
@@ -204,23 +151,7 @@ protected:
 
     int m_precision = 3;
 
-    bool m_useWheel     = false;
     bool m_blockEdit    = false;
-    bool m_updtUniBlock = false;
-
-    std::vector<glm::vec4> m_backPos;
-    std::vector<GLuint>    m_backIndices;
-
-    Property<std::string>* m_stringProp = nullptr;
-
-    // temporary local variables
-    glm::vec2 m_tCaretPos{};
-    int       m_tCi[2]{};  /// first and last character index
-    glm::vec2 cp{}, aux{};
-    glm::vec2 posLimit{};
-    glm::vec2 m_lSize{};
-
-    valign l_auxAlign{};
 };
 
 }  // namespace ara

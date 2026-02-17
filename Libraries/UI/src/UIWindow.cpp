@@ -607,16 +607,16 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
     }
 
     if (action == ARA_PRESS || action == ARA_REPEAT) {
-        WindowBase::osKeyDown(outKey, (mods & ARA_MOD_SHIFT) || isShift, (mods & ARA_MOD_CONTROL) || isCtrl,
-                              (mods & ARA_MOD_ALT) || isAlt);
+        WindowBase::osKeyDown(outKey, mods & ARA_MOD_SHIFT || isShift, mods & ARA_MOD_CONTROL || isCtrl,
+                              mods & ARA_MOD_ALT || isAlt);
     }
 
     if (action == ARA_RELEASE) {
-        WindowBase::osKeyUp(outKey, (mods & ARA_MOD_SHIFT) || isShift, (mods & ARA_MOD_CONTROL) || isCtrl,
+        WindowBase::osKeyUp(outKey, mods & ARA_MOD_SHIFT || isShift, mods & ARA_MOD_CONTROL || isCtrl,
                             (mods & ARA_MOD_ALT) || isAlt);
     }
 
-    if ((key == ARA_KEY_ESCAPE || (key == ARA_KEY_F4 && (mods & ARA_MOD_ALT))) && action == ARA_PRESS) {
+    if ((key == ARA_KEY_ESCAPE || (key == ARA_KEY_F4 && mods & ARA_MOD_ALT)) && action == ARA_PRESS) {
         // must be done indirect since we are still iterating over GLFWWindow
         // member variables, but GLFWWindow will be destroyed by this command
         if (m_appHandle && m_appHandle->getMainWindow() == this) {

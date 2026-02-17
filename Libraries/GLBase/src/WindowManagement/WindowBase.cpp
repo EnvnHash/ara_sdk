@@ -59,7 +59,7 @@ void WindowBase::iterateGlCallbacks() {
 // this function passes down HID events to the UINodes and by this assure that all UINode HID functions are called
 // within the GL-context of their parent window
 void WindowBase::procHid() {
-    if (s_hidEvents.empty()) {
+    if (s_hidEvents.empty() && s_keyEvents.empty()) {
         return;
     }
 

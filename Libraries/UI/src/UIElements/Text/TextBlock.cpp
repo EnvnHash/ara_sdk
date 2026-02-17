@@ -414,7 +414,6 @@ void TextBlock::mouseUp(hidData& data) {
 void TextBlock::keyDown(hidData& data) {
     if (data.key == ARA_KEY_C && data.ctrlPressed) {
 #ifdef ARA_USE_CLIP
-        LOG << "TextBlock::keyDown " << m_renderText.substr(m_charSelection.x, m_charSelection.y - m_charSelection.x);
         clip::set_text(m_renderText.substr(m_charSelection.x, m_charSelection.y - m_charSelection.x));
 #endif
     }
@@ -437,15 +436,14 @@ void TextBlock::setText(const std::string &str) {
     reqUpdtGlyphs(updt);
 }
 
-bool TextBlock::validateInputToString(int ch) const {
-    std::string str(m_text);
-    if (!str.empty()) {
-        str.insert(std::max<size_t>(std::min<size_t>(m_caretIndex, str.size()), 0), 1, static_cast<char>(ch));
+std::string TextBlock::validateInputToString(int ch) {
+    auto tempStr = std::string(m_text);
+    if (!tempStr.empty()) {
+        tempStr.insert(std::max<size_t>(std::min<size_t>(m_caretIndex, tempStr.size()), 0), 1, static_cast<char>(ch));
     } else {
-        str.insert(str.begin(), static_cast<char>(ch));
+        tempStr.insert(0, std::to_string(ch));
     }
-
-    return true;
+    return tempStr;
 }
 
 int TextBlock::getCaretByPixPos(float px, float py) {
@@ -460,8 +458,7 @@ int TextBlock::getCaretByPixPos(float px, float py) {
 }
 
 bool TextBlock::setSelRangeAll() {
-    int len = static_cast<int>(m_text.size());
-    return setSelRange(0, len);
+    return setSelRange(0, static_cast<int>(m_text.size()));
 }
 
 bool TextBlock::setSelRange(int loIndex, int highIndex) {
