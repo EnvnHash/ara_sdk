@@ -268,8 +268,8 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
         // resulting x-position
         auto x1 = cpos.x + m_offset.x;
         auto x2 = x1 + 2;
-        auto y1 = m_fontDGV.vline[lidx].getYSelRange(0) + m_offset.y + pa;
-        auto y2 = m_fontDGV.vline[lidx].getYSelRange(1) + m_offset.y + pa;
+        auto y1 = m_fontDGV.m_vline[lidx].getYSelRange(0) + m_offset.y + pa;
+        auto y2 = m_fontDGV.m_vline[lidx].getYSelRange(1) + m_offset.y + pa;
 
         // the beginning of the rendered text will be outside the mask add an
         // offset to move it into the non-mask area
@@ -280,10 +280,10 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
             m_offset.x = std::max(m_offset.x, -(2 + cpos[0] - mask.z));
         }
         if (y1 < mask.y) {
-            m_offset.y = -(pa + m_fontDGV.vline[lidx].getYSelRange(0) - mask.y);
+            m_offset.y = -(pa + m_fontDGV.m_vline[lidx].getYSelRange(0) - mask.y);
         }
         if (y2 > mask.w) {
-            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.vline[lidx].getYSelRange(1) - mask.w));
+            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.m_vline[lidx].getYSelRange(1) - mask.w));
         }
     }
 
@@ -324,7 +324,7 @@ void UIEdit::updateFontGeo() {
 
 void UIEdit::prepareSelBgVao() {
     list<pair<vec2, vec2>> lines;  // Left/Top,  Right/Bottom
-    for (auto &l : m_fontDGV.vline) {
+    for (auto &l : m_fontDGV.m_vline) {
         if (l.ptr[0] && l.ptr[1]) {
             m_tCi[0] = l.ptr[0]->chidx;  // assign the character index of the first character in the actual line
             m_tCi[1] = l.ptr[1]->chidx;  // assign the character index of the last character in the actual line
@@ -613,10 +613,10 @@ void UIEdit::mouseDrag(hidData& data) {
     m_mousePosCr = data.mousePosNodeRel / getParentContentScale() - m_alignOffset;
 
     if (m_mouseEvent & 1) {
-        l_cpos = getCaretByPixPos(m_mousePosCr.x, m_mousePosCr.y);
+        auto cpos = getCaretByPixPos(m_mousePosCr.x, m_mousePosCr.y);
 
-        m_caretIndex    = l_cpos;
-        m_CaretRange[1] = l_cpos;
+        m_caretIndex    = cpos;
+        m_CaretRange[1] = cpos;
 
         if (!m_drawImmediate) {
             reqUpdtTree();
@@ -815,9 +815,15 @@ int UIEdit::getCaretByPixPos(float px, float py) {
     if (!m_riFont) {
         return 0;
     }
+
     int off_bound = 0;
-    int idx = m_fontDGV.getCharIndexByPixPos(px, py - m_riFont->getPixAscent(), m_tPos[0] + m_offset.x,
-                                             m_tPos[1] + m_offset.y, off_bound);
+    auto idx = m_fontDGV.getCharIndexByPixPos(
+        px,
+        py - m_riFont->getPixAscent(),
+        m_tPos[0] + m_offset.x,
+        m_tPos[1] + m_offset.y,
+        off_bound);
+
     m_caretIndex = idx;
     return idx;
 }
@@ -842,7 +848,7 @@ bool UIEdit::setSelRange(int loIndex, int highIndex) {
     return true;
 }
 
-bool UIEdit::getSelRange(glm::ivec2 &range) {
+bool UIEdit::getSelRange(ivec2 &range) {
     if (m_CaretRange[0] == m_CaretRange[1]) {
         memset(&range[0], 0, sizeof(int) * 2);
         return false;
@@ -1079,12 +1085,12 @@ void UIEdit::setMinMax(double min, double max) {
     m_maxD = max;
 }
 
-void UIEdit::setBkSelColor(glm::vec4 c) {
+void UIEdit::setBkSelColor(vec4 c) {
     m_BkSelColor     = c;
     m_glyphsPrepared = false;
 }
 
-void UIEdit::setCaretColor(glm::vec4 c, state st) {
+void UIEdit::setCaretColor(vec4 c, state st) {
     m_caretColor     = c;
     m_glyphsPrepared = false;
     setStyleInitVal("caret-color",

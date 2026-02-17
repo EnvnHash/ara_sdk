@@ -219,7 +219,6 @@ protected:
     glm::vec2 cp{}, aux{};
     glm::vec2 posLimit{};
     glm::vec2 m_lSize{};
-    int       l_cpos = 0;
 
     valign l_auxAlign{};
 };

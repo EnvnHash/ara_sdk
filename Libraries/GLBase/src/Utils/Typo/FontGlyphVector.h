@@ -86,25 +86,25 @@ public:
     int jumpToBeginOfLine(int caret_index);         // returns new caret position, on error returns caret_index
     int jumpToEndOfLine(int caret_index);           // returns new caret position, on error returns caret_index
 
-    [[nodiscard]] size_t size() const { return v.size(); }
-    e_fontdglyph &operator[](size_t index) { return v[index]; }
+    [[nodiscard]] size_t size() const { return m_v.size(); }
+    e_fontdglyph &operator[](size_t index) { return m_v[index]; }
 
-    std::vector<e_fontdglyph> v;
-    std::vector<e_fontline>   vline;
+    std::vector<e_fontdglyph> m_v;
+    std::vector<e_fontline>   m_vline;
 
-    void  setTabPixSize(float ts) { m_TabSize = ts * m_pixRatio; }
+    void  setTabPixSize(float ts) { m_tabSize = ts * m_pixRatio; }
     void  setPixRatio(float pixRatio) { m_pixRatio = pixRatio; }
-    float getRightLimit() { return (v.back().opos[0] + v.back().osize[0]) / m_pixRatio; }
+    float getRightLimit() { return (m_v.back().opos[0] + m_v.back().osize[0]) / m_pixRatio; }
 
     static int codepoint(const std::string& u);
 
 private:
-    float     m_PixVMetrics[3] = {0, 0, 0};  // [0]:ascent,[1]:descent,[2]:lineGap
-    float     m_PixLineHeight  = 0;
-    float     m_TabSize        = 100.f;
+    float     m_pixVMetrics[3] = {0, 0, 0};  // [0]:ascent,[1]:descent,[2]:lineGap
+    float     m_pixLineHeight  = 0;
+    float     m_tabSize        = 100.f;
     float     m_pixRatio       = 1.f;
-    glm::vec4 m_BB{0.f};
-    glm::vec2 m_Sep{0.f};
+    glm::vec4 m_bb{0.f};
+    glm::vec2 m_sep{0.f};
     glm::vec2 m_sc{1.f, 1.f};
     glm::vec2 m_tCaretPos{0.f};
 

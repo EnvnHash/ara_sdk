@@ -186,7 +186,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
                 auto rightLimit = m_fontDGV.getRightLimit();
 
                 // sum up char until the max bounds is reached
-                for (const auto& g : m_fontDGV.v)
+                for (const auto& g : m_fontDGV.m_v)
                     if (g.gptr) {
                         if (hasOpt(end_ellipsis)) {
                             if (g.getRightLimit() > limit) {
@@ -203,7 +203,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
 
                 m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX,
                                   hasOpt(end_ellipsis) ? m_text.substr(0, i) + "..."
-                                                       : "..." + m_text.substr(i, m_fontDGV.v.size() - 1),
+                                                       : "..." + m_text.substr(i, m_fontDGV.m_v.size() - 1),
                                   false);
 
                 m_textBounds = m_fontDGV.getPixSize();
@@ -276,8 +276,8 @@ bool Label::checkGlyphsPrepared(bool checkFontTex) {
         updateFontGeo();
 
         if (!m_drawImmediate) {
-            m_lblDB.vaoData.resize(m_fontDGV.v.size() * 4);
-            m_lblDB.indices.resize(m_fontDGV.v.size() * 6);
+            m_lblDB.vaoData.resize(m_fontDGV.m_v.size() * 4);
+            m_lblDB.indices.resize(m_fontDGV.m_v.size() * 6);
         }
 
         prepareVao(checkFontTex);
@@ -367,7 +367,7 @@ void Label::updateMatrix() {
 // all input values are in virtual pixels and must be converted to hw pixels
 void Label::prepareVao(bool checkFontTex) {
     if (m_drawImmediate) {
-        dstSize = (size_t)(m_fontDGV.v.size() * 4);
+        dstSize = (size_t)(m_fontDGV.m_v.size() * 4);
 
         if (!m_vao.isInited()) {
             m_vao.init("position:4f,texCoord:2f");
@@ -377,12 +377,12 @@ void Label::prepareVao(bool checkFontTex) {
             m_vao.resize(static_cast<GLuint>(dstSize));
             m_positions.resize(dstSize);
             m_texCoord.resize(dstSize);
-            m_indices.resize(m_fontDGV.v.size() * 6);
+            m_indices.resize(m_fontDGV.m_v.size() * 6);
         }
 
         size_t ind    = 0;
         size_t elmInd = 0;
-        for (e_fontdglyph& g : m_fontDGV.v) {
+        for (e_fontdglyph& g : m_fontDGV.m_v) {
             if (g.gptr) {
                 for (const auto& v : m_vtxPos) {
                     tuv                = glm::floor(m_bo + g.opos + v * g.osize);
@@ -438,7 +438,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
         scLabelIndDraw[i + 2] = m_size[i] - std::max((m_winRelPos[i] + m_size[i]) - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f);
     }
 
-    for (e_fontdglyph& g : m_fontDGV.v) {
+    for (e_fontdglyph& g : m_fontDGV.m_v) {
         if (!g.gptr) {
             continue;
         }

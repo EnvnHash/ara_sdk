@@ -67,7 +67,7 @@ TEST(UITest, DrawTextBlockValign) {
     }
 }
 
-TEST(UITest, SelectTextBlockTest) {
+TEST(UITest, SelectAllTextBlockTest) {
     registerDefaultUITypes();
 
     appBody([&](UIApplication &app) {
@@ -80,6 +80,26 @@ TEST(UITest, SelectTextBlockTest) {
         mainWin->onMouseDownLeft(100, 100, false, false, false);
         mainWin->onMouseUpLeft();
         mainWin->onMouseDownLeft(100, 100, false, false, false);
+        mainWin->onMouseUpLeft();
+
+    }, [&](UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "textblock_select_all_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 300);
+}
+
+TEST(UITest, SelectTextBlockTest) {
+    registerDefaultUITypes();
+
+    appBody([&](UIApplication &app) {
+        auto& tb = createStdTextBlock(app);
+        tb.setText(testText);
+        tb.setTextAlign(align::left, valign::center);
+
+        // simulate double click
+        auto mainWin = app.getMainWindow();
+        mainWin->onMouseDownLeft(150, 80, false, false, false);
+        mainWin->onMouseMove(20, 200, 0);
         mainWin->onMouseUpLeft();
 
     }, [&](UIApplication &app) {

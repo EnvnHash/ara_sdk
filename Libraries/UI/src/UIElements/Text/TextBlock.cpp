@@ -205,8 +205,8 @@ Font *TextBlock::UpdateDGV(bool *checkFontTexture) {
         // resulting x-position
         auto x1 = cpos.x + m_offset.x;
         auto x2 = x1 + 2;
-        auto y1 = m_fontDGV.vline[lidx].getYSelRange(0) + m_offset.y + pa;
-        auto y2 = m_fontDGV.vline[lidx].getYSelRange(1) + m_offset.y + pa;
+        auto y1 = m_fontDGV.m_vline[lidx].getYSelRange(0) + m_offset.y + pa;
+        auto y2 = m_fontDGV.m_vline[lidx].getYSelRange(1) + m_offset.y + pa;
 
         // the beginning of the rendered text will be outside the mask add an
         // offset to move it into the non-mask area
@@ -217,10 +217,10 @@ Font *TextBlock::UpdateDGV(bool *checkFontTexture) {
             m_offset.x = std::max(m_offset.x, -(2 + cpos[0] - mask.z));
         }
         if (y1 < mask.y) {
-            m_offset.y = -(pa + m_fontDGV.vline[lidx].getYSelRange(0) - mask.y);
+            m_offset.y = -(pa + m_fontDGV.m_vline[lidx].getYSelRange(0) - mask.y);
         }
         if (y2 > mask.w) {
-            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.vline[lidx].getYSelRange(1) - mask.w));
+            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.m_vline[lidx].getYSelRange(1) - mask.w));
         }
     }
 
@@ -262,7 +262,7 @@ void TextBlock::updateFontGeo() {
 
 void TextBlock::prepareSelBgVao() {
     list<pair<vec2, vec2>> lines;  // Left/Top,  Right/Bottom
-    for (e_fontline &l : m_fontDGV.vline) {
+    for (e_fontline &l : m_fontDGV.m_vline) {
         if (l.ptr[0] && l.ptr[1]) {
             std::array<int32_t, 2> ci{};  /// first and last character index
 

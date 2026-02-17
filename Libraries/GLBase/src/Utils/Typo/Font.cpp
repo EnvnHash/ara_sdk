@@ -154,7 +154,7 @@ int Font::drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuin
         shdr->setUniform2f("mask_size", maskSize.x * m_pixRatio, maskSize.y * m_pixRatio);
         shdr->setUniform1f("pixRatio", m_pixRatio);
 
-        for (e_fontdglyph &g : dgv.v) {
+        for (e_fontdglyph &g : dgv.m_v) {
             if (g.gptr) {
                 shdr->setUniform2fv("opos", &g.opos[0]);
                 shdr->setUniform2fv("osize", &g.osize[0]);
