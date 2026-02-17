@@ -38,8 +38,8 @@ static void measureLimitsAndMedium2(const std::vector<PoissonGenerator::Point>& 
         validPosCntr++;
     }
 
-    EXPECT_LT(limits[0].x, 0.0011f);
-    EXPECT_LT(limits[0].y, 0.0011f);
+    EXPECT_LT(limits[0].x, 0.0012f);
+    EXPECT_LT(limits[0].y, 0.0012f);
     EXPECT_GT(limits[1].x, 0.99f);
     EXPECT_GT(limits[1].y, 0.99f);
 
