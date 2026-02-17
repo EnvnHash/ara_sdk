@@ -46,4 +46,46 @@ TEST(UITest, DrawTextBlock) {
     }
 }
 
+TEST(UITest, DrawTextBlockValign) {
+    registerDefaultUITypes();
+
+    auto compareList = {
+        pair{valign::top, std::string("textblock_top_test.png")},
+        pair{valign::center, std::string("textblock_vcenter_test.png")},
+        pair{valign::bottom, std::string("textblock_bottom_test.png")},
+    };
+
+    for (auto& [al, fl] : compareList) {
+        appBody([&](UIApplication &app) {
+            auto& tb = createStdTextBlock(app);
+            tb.setText(testText);
+            tb.setTextAlign(align::left, al);
+        }, [&](UIApplication &app) {
+            compareFrameBufferToImage(filesystem::current_path() / fl,
+                                      app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        }, 300, 300);
+    }
+}
+
+TEST(UITest, SelectTextBlockTest) {
+    registerDefaultUITypes();
+
+    appBody([&](UIApplication &app) {
+        auto& tb = createStdTextBlock(app);
+        tb.setText(testText);
+        tb.setTextAlign(align::left, valign::center);
+
+        // simulate double click
+        auto mainWin = app.getMainWindow();
+        mainWin->onMouseDownLeft(100, 100, false, false, false);
+        mainWin->onMouseUpLeft();
+        mainWin->onMouseDownLeft(100, 100, false, false, false);
+        mainWin->onMouseUpLeft();
+
+    }, [&](UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "textblock_select_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 300);
+}
+
 }

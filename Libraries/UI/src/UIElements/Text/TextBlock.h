@@ -43,10 +43,10 @@ public:
 
     void            setText(const std::string &str);
     bool            setSelRangeAll();
-    bool            setSelRange(int lo_index, int hi_index);
+    bool            setSelRange(int loIndex, int highIndex);
     bool            getSelRange(glm::ivec2& range);  // range should receive 2 values
     void            clearSelRange();
-    bool            eraseContent(int lo_index, int hi_index);
+    bool            eraseContent(int loIndex, int highIndex);
     void            setBkSelColor(glm::vec4 c);
     void            setUseWheel(bool val) { m_useWheel = val; }
     virtual void    setPropItem(Item* item);

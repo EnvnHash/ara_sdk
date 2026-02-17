@@ -99,7 +99,7 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
         layout(location = 3) in vec4 color;     \n
         layout(location = 6) in vec4 aux0;      \n   // Div: border color
         layout(location = 7) in vec4 aux1;      \n   // Div: border width, border height, border radiusX, border radiusY
-        layout(location = 8) in vec4 aux2;      \n   // borderAliasX, borderAliasY, objId, zPos
+        layout(location = 8) in vec4 aux2;      \n   // x:borderAliasX, y:borderAliasY, z:objId, w:zPos
         layout(location = 9) in vec4 aux3;      \n   // x:UINode Type (0=Div, 1=Label, 2=Image), w:alpha
         out VS_FS {                             \n
         \t   vec2 tex_coord;                    \n

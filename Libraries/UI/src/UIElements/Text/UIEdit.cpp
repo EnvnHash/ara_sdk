@@ -114,8 +114,9 @@ bool UIEdit::drawIndirect(uint32_t& objId) {
 }
 
 void UIEdit::drawSelectionBg() {
-    if (getSelRange(m_charSelection) && m_state == state::selected) {
-        if (!glm::all(glm::equal(m_charSelection, m_lastSelRange))) {
+    if (getSelRange(m_charSelection)
+        && m_state == state::selected) {
+        if (!all(glm::equal(m_charSelection, m_lastSelRange))) {
             m_lastSelRange = m_charSelection;
 
             // rebuild background VAO
@@ -262,27 +263,26 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
     // Calculate offset
     if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
         auto cpos = m_fontDGV.getCaretPos(m_caretIndex);
-
         float pa = m_riFont->getPixAscent();
 
         // resulting x-position
-        m_x1 = cpos.x + m_offset.x;
-        m_x2 = m_x1 + 2;
-        m_y1 = m_fontDGV.vline[lidx].getYSelRange(0) + m_offset.y + pa;
-        m_y2 = m_fontDGV.vline[lidx].getYSelRange(1) + m_offset.y + pa;
+        auto x1 = cpos.x + m_offset.x;
+        auto x2 = x1 + 2;
+        auto y1 = m_fontDGV.vline[lidx].getYSelRange(0) + m_offset.y + pa;
+        auto y2 = m_fontDGV.vline[lidx].getYSelRange(1) + m_offset.y + pa;
 
         // the beginning of the rendered text will be outside the mask add an
         // offset to move it into the non-mask area
-        if (m_x1 < mask.x) {
+        if (x1 < mask.x) {
             m_offset.x = -(cpos[0] - mask.x);
         }
-        if (m_x2 > mask.z) {
+        if (x2 > mask.z) {
             m_offset.x = std::max(m_offset.x, -(2 + cpos[0] - mask.z));
         }
-        if (m_y1 < mask.y) {
+        if (y1 < mask.y) {
             m_offset.y = -(pa + m_fontDGV.vline[lidx].getYSelRange(0) - mask.y);
         }
-        if (m_y2 > mask.w) {
+        if (y2 > mask.w) {
             m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.vline[lidx].getYSelRange(1) - mask.w));
         }
     }
@@ -326,33 +326,33 @@ void UIEdit::prepareSelBgVao() {
     list<pair<vec2, vec2>> lines;  // Left/Top,  Right/Bottom
     for (auto &l : m_fontDGV.vline) {
         if (l.ptr[0] && l.ptr[1]) {
-            m_tCi[0] = l.ptr[0]->chidx;  // asign the character index of the
-                                         // first character in the actual line
-            m_tCi[1] = l.ptr[1]->chidx;  // asign the character index of the
-                                         // last character in the actual line
+            m_tCi[0] = l.ptr[0]->chidx;  // assign the character index of the first character in the actual line
+            m_tCi[1] = l.ptr[1]->chidx;  // assign the character index of the last character in the actual line
 
-            // check if this line is within the range of selected charaters
+            // check if this line is within the range of selected charters
             if (!(m_tCi[0] > m_charSelection[1] || m_tCi[1] < m_charSelection[0])) {
                 cp.x = m_tCi[0] > m_charSelection[0] ? m_tPos.x / l.m_pixRatio
                                                      : m_fontDGV.getCaretPos(m_charSelection[0])[0];
                 cp.y = m_tCi[1] < m_charSelection[1] ? (m_tPos.x + m_tSize.x)
                                                      : m_fontDGV.getCaretPos(m_charSelection[1])[0];
 
-                m_posLT.x = cp.x + m_offset.x + m_alignOffset.x;
-                m_posLT.y = l.y / l.m_pixRatio + m_offset.y + m_alignOffset.y;
-                m_posRB.x = cp.y + m_offset.x + m_alignOffset.x;
-                m_posRB.y = m_posLT.y + (l.yrange[1] - l.yrange[0]) / l.m_pixRatio;
+                vec2 posLT{};
+                vec2 posRB{};
 
-                // check if the selected part of this line is within the visible
-                // range
-                if (m_posLT.x < m_mask.z && m_posRB.x > m_mask.x && m_posLT.y < m_mask.w && m_posRB.y > m_mask.y) {
-                    m_posLT.x = std::max<float>(m_posLT.x, m_mask.x);
-                    m_posLT.y = std::max<float>(m_posLT.y, m_mask.y);
-                    m_posRB.x = std::min<float>(m_posRB.x, m_mask.z);
-                    m_posRB.y = std::min<float>(m_posRB.y, m_mask.w);
+                posLT.x = cp.x + m_offset.x + m_alignOffset.x;
+                posLT.y = l.y / l.m_pixRatio + m_offset.y + m_alignOffset.y;
+                posRB.x = cp.y + m_offset.x + m_alignOffset.x;
+                posRB.y = posLT.y + (l.yrange[1] - l.yrange[0]) / l.m_pixRatio;
 
-                    m_lSize = m_posRB - m_posLT;
-                    lines.emplace_back(m_posLT, m_lSize);
+                // check if the selected part of this line is within the visible range
+                if (posLT.x < m_mask.z && posRB.x > m_mask.x && posLT.y < m_mask.w && posRB.y > m_mask.y) {
+                    posLT.x = std::max<float>(posLT.x, m_mask.x);
+                    posLT.y = std::max<float>(posLT.y, m_mask.y);
+                    posRB.x = std::min<float>(posRB.x, m_mask.z);
+                    posRB.y = std::min<float>(posRB.y, m_mask.w);
+
+                    m_lSize = posRB - posLT;
+                    lines.emplace_back(posLT, m_lSize);
                 }
             }
         }
@@ -366,11 +366,12 @@ void UIEdit::prepareSelBgVao() {
     }
 
     int i = 0;
-    for (auto &[start, end] : lines)
+    for (auto &[start, end] : lines) {
         for (auto &v : m_vtxPos) {
             m_backPos[i] = vec4{glm::min(m_size, start + v * end) * getPixRatio(), 0.f, 1.f};
             ++i;
         }
+    }
 
     i = 0;
     for (auto &it : m_backIndices) {
@@ -395,9 +396,11 @@ void UIEdit::prepareSelBgVao() {
         if (!m_sharedRes || !m_sharedRes->objSel) {
             return;
         }
+
         if (m_selBgDB.vaoData.size() != m_backPos.size()) {
             m_selBgDB.vaoData.resize(m_backPos.size());
         }
+
         if (m_selBgDB.indices.size() != m_backIndices.size()) {
             m_selBgDB.indices.resize(m_backIndices.size());
         }
@@ -406,10 +409,10 @@ void UIEdit::prepareSelBgVao() {
 
         for (auto &it : m_backPos) {
             dIt->pos = m_mvpHw * it;
-
             memcpy(&dIt->color[0], &m_BkSelColor[0], sizeof(float) * 4);
             dIt->aux2.w = m_zPos;
             dIt->aux3.x = 4.f;  // type indicator (4=GenQuad)
+            dIt->aux3.w = 1.f;  // alpha
             ++dIt;
         }
     }
@@ -628,7 +631,7 @@ void UIEdit::mouseDown(hidData& data) {
         return;
     }
 
-    vec2 p = data.mousePosNodeRel / getParentContentScale();
+    auto p = data.mousePosNodeRel / getParentContentScale();
     int cpos = getCaretByPixPos(p.x - m_alignOffset.x, p.y - m_alignOffset.y);
 
     if (cpos >= 0) {
@@ -820,22 +823,22 @@ int UIEdit::getCaretByPixPos(float px, float py) {
 }
 
 bool UIEdit::setSelRangeAll() {
-    int len = static_cast<int>(m_text.size());
-    return setSelRange(0, len);
+    return setSelRange(0, static_cast<int>(m_text.size()));
 }
 
-bool UIEdit::setSelRange(int lo_index, int hi_index) {
+bool UIEdit::setSelRange(int loIndex, int highIndex) {
     int len = static_cast<int>(m_text.size());
 
-    lo_index = std::clamp(lo_index, 0, len);
-    hi_index = std::clamp(hi_index, 0, len);
+    loIndex = std::clamp(loIndex, 0, len);
+    highIndex = std::clamp(highIndex, 0, len);
 
-    if (lo_index > hi_index) {
+    if (loIndex > highIndex) {
         return false;
     }
 
-    m_CaretRange[0] = lo_index;
-    m_CaretRange[1] = hi_index;
+    m_CaretRange[0] = loIndex;
+    m_CaretRange[1] = highIndex;
+
     return true;
 }
 
@@ -1070,6 +1073,7 @@ void UIEdit::setMinMax(float min, float max) {
     m_minF = min;
     m_maxF = max;
 }
+
 void UIEdit::setMinMax(double min, double max) {
     m_minD = min;
     m_maxD = max;

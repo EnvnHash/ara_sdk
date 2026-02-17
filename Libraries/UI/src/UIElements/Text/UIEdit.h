@@ -51,7 +51,7 @@ public:
     [[nodiscard]] int getIntValue() const { return m_iValue; }
 
     bool                setSelRangeAll();
-    bool                setSelRange(int lo_index, int hi_index);
+    bool                setSelRange(int loIndex, int highIndex);
     bool                getSelRange(glm::ivec2& range);  // range should receive 2 values
     void                clearSelRange();
     bool                eraseContent(int lo_index, int hi_index);
@@ -218,13 +218,7 @@ protected:
     int       m_tCi[2]{};  /// first and last character index
     glm::vec2 cp{}, aux{};
     glm::vec2 posLimit{};
-    glm::vec2 m_posLT{};
-    glm::vec2 m_posRB{};
     glm::vec2 m_lSize{};
-    float     m_x1   = 0.f;
-    float     m_x2   = 0.f;
-    float     m_y1   = 0.f;
-    float     m_y2   = 0.f;
     int       l_cpos = 0;
 
     valign l_auxAlign{};

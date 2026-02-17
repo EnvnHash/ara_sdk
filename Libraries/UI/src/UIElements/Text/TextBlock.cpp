@@ -104,8 +104,9 @@ bool TextBlock::drawIndirect(uint32_t& objId) {
 }
 
 void TextBlock::drawSelectionBg() {
-    if (getSelRange(m_charSelection) && m_state == state::selected) {
-        if (!glm::all(glm::equal(m_charSelection, m_lastSelRange))) {
+    if (getSelRange(m_charSelection)
+        && m_state == state::selected) {
+        if (!all(glm::equal(m_charSelection, m_lastSelRange))) {
             m_lastSelRange = m_charSelection;
 
             // rebuild background VAO
@@ -308,11 +309,12 @@ void TextBlock::prepareSelBgVao() {
     }
 
     int i = 0;
-    for (auto &[start, end] : lines)
+    for (auto &[start, end] : lines) {
         for (auto &v : m_vtxPos) {
             m_backPos[i] = vec4{glm::min(m_size, start + v * end) * getPixRatio(), 0.f, 1.f};
             ++i;
         }
+    }
 
     i = 0;
     for (auto &it : m_backIndices) {
@@ -348,10 +350,10 @@ void TextBlock::prepareSelBgVao() {
 
         for (auto &it : m_backPos) {
             dIt->pos = m_mvpHw * it;
-
             memcpy(&dIt->color[0], &m_BkSelColor[0], sizeof(float) * 4);
             dIt->aux2.w = m_zPos;
             dIt->aux3.x = 4.f;  // type indicator (4=GenQuad)
+            dIt->aux3.w = 1.f;  // alpha
             ++dIt;
         }
     }
@@ -407,9 +409,9 @@ void TextBlock::mouseUp(hidData& data) {
 }
 
 void TextBlock::globalMouseDown(hidData& data) {
-    // close the menu if it is open and the user clicked somewhere outside the menu
-    if (isInited() && m_state == state::selected &&
-        !(static_cast<uint32_t>(data.objId) >= getId() && static_cast<uint32_t>(data.objId) <= getMaxChildId())) {
+    if (isInited()
+        && m_state == state::selected
+        && !(static_cast<uint32_t>(data.objId) >= getId() && static_cast<uint32_t>(data.objId) <= getMaxChildId())) {
         setSelected(false, true);
         m_sharedRes->setDrawFlag();
     }
@@ -450,18 +452,18 @@ bool TextBlock::setSelRangeAll() {
     return setSelRange(0, len);
 }
 
-bool TextBlock::setSelRange(int lo_index, int hi_index) {
+bool TextBlock::setSelRange(int loIndex, int highIndex) {
     int len = static_cast<int>(m_text.size());
 
-    lo_index = std::clamp(lo_index, 0, len);
-    hi_index = std::clamp(hi_index, 0, len);
+    loIndex = std::clamp(loIndex, 0, len);
+    highIndex = std::clamp(highIndex, 0, len);
 
-    if (lo_index > hi_index) {
+    if (loIndex > highIndex) {
         return false;
     }
 
-    m_CaretRange[0] = lo_index;
-    m_CaretRange[1] = hi_index;
+    m_CaretRange[0] = loIndex;
+    m_CaretRange[1] = highIndex;
     return true;
 }
 
