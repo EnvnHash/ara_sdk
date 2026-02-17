@@ -70,9 +70,7 @@ macro (extract_class_name deri)
 endmacro()
 
 # APP_TYPE 0 = Pure native app without JAVA, APPTYPE = 1 Java MainActivity and JNI
-macro (gen_android_proj
-        #APP_NAME APP_PACKAGE_URL DEST_PLATF APP_TYPE APP_ICON_NAME ASSETS_FOLDER ARASDK_APP_ORIENTATION ADMOB_APP_ID ADMOB_UNIT_ID ADMOB_AD_TYPE BILLING_PRODUCT_ID
-)
+macro (gen_android_proj)
     #get_property(APP_ORIENTATION TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_ORIENTATION)
     #set(oneValueArgs APP_ORIENTATION)
 
@@ -178,45 +176,27 @@ macro (gen_android_proj
             set(use_billing FALSE)
         endif ()
 
-        create_proj_structure(
-        #        ${APP_TYPE}
-        ) # creates symlinks to all sdk subdirs, the main.cpp and the UIApp.cpp
-        create_settings_files(
-                #${APP_NAME} ${ADMOB_APP_ID}
-        )
-        create_android_manifest(
-                #${APP_TYPE} ${APP_ICON_NAME} ${ARASDK_APP_ORIENTATION} ${ADMOB_APP_ID}
-        )
-        create_app_build_gradle(
-                #${APP_NAME} ${APP_TYPE} ${ADMOB_APP_ID} ${use_billing}
-        )
-        create_android_cmakelists(
-                #${APP_TYPE} ${ASSETS_FOLDER}
-        )
-        create_app_key(
-                #${APP_NAME}
-        )
+        create_proj_structure() # creates symlinks to all sdk subdirs, the main.cpp and the UIApp.cpp
+        create_settings_files()
+        create_android_manifest()
+        create_app_build_gradle()
+        create_android_cmakelists()
+        create_app_key()
 
         if (${use_billing})
-            create_billing_client(
-                    #${APP_TYPE} "${BILLING_PRODUCT_ID}"
-            )
+            create_billing_client()
         endif ()
 
         if (${APP_TYPE} EQUAL 0)
             create_pure_native_app_source()
         elseif(${APP_TYPE} EQUAL 1)
-            create_app_java_sources(
-                    #${APP_TYPE} ${ADMOB_UNIT_ID} ${ADMOB_AD_TYPE} ${use_billing}
-            )
+            create_app_java_sources()
             if("${ADMOB_UNIT_ID}" STREQUAL "")
                 set(use_ad_mob FALSE)
             else()
                 set(use_ad_mob TRUE)
             endif()
-            create_app_cpp_sources(
-                    #${use_ad_mob} ${use_billing}
-            )
+            create_app_cpp_sources()
         endif()
     endif()
 endmacro()

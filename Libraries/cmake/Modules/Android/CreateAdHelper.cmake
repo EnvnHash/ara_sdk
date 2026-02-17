@@ -23,8 +23,9 @@ import android.view.View\;
 import android.view.ViewGroup\;
 import android.widget.RelativeLayout\;
 import androidx.annotation.NonNull\;
+import com.google.android.gms.ads.AdError\;
 import com.google.android.gms.ads.AdRequest\;
-//import com.google.android.gms.ads.FullScreenContentAdsManager\;
+import com.google.android.gms.ads.FullScreenContentCallback\;
 import com.google.android.gms.ads.LoadAdError\;
 import com.google.android.gms.ads.interstitial.InterstitialAd\;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback\;
@@ -99,22 +100,50 @@ import com.google.android.gms.ads.AdRequest\;
         # class interstitial ad
         list(APPEND code "
     public void loadInterstitialAd(String adUnitId) {
-        // Create an ad request
-        AdRequest adRequest = new AdRequest.Builder().build()\;
-
-        // Load the interstitial ad
-        InterstitialAd.load(activity, adUnitId, adRequest,
+        InterstitialAd.load(
+            activity,
+            adUnitId,
+            new AdRequest.Builder().build(),
             new InterstitialAdLoadCallback() {
                 @Override
                 public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                    // The interstitial ad was loaded successfully
+                    Log.d(TAG, \"[debug] Interstitial loaded successfully\")\;
                     mInterstitialAd = interstitialAd\;
+
+                    interstitialAd.setFullScreenContentCallback(
+                        new FullScreenContentCallback() {
+                          @Override
+                          public void onAdDismissedFullScreenContent() {
+                            Log.d(TAG, \"[debug] The ad was dismissed.\")\;
+                            mInterstitialAd = null\;
+                          }
+
+                          @Override
+                          public void onAdFailedToShowFullScreenContent(AdError adError) {
+                            Log.d(TAG, \"[debug] The ad failed to show.\")\;
+                            mInterstitialAd = null\;
+                          }
+
+                          @Override
+                          public void onAdShowedFullScreenContent() {
+                            Log.d(TAG, \"[debug] The ad was shown.\")\;
+                          }
+
+                          @Override
+                          public void onAdImpression() {
+                            Log.d(TAG, \"[debug] The ad recorded an impression.\")\;
+                          }
+
+                          @Override
+                          public void onAdClicked() {
+                            Log.d(TAG, \"[debug] The ad was clicked.\")\;
+                          }
+                        })\;
                 }
 
                 @Override
                 public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                    // Handle the error
-                    Log.d(\"AdHelper\", \"[debug] Interstitial ad failed to load: \" + loadAdError.getMessage())\;
+                    Log.d(TAG, \"[debug] Interstitial ad failed to load: \" + loadAdError.getMessage())\;
                     mInterstitialAd = null\;
                 }
             })\;

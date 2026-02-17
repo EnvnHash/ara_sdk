@@ -58,7 +58,7 @@ cmake.dir=/usr")
     endif()
 
     # gradle.properties
-    FILE(WRITE ${ANDROID_STUDIO_PROJ}/gradle.properties "org.gradle.jvmargs=-Xmx1536m
+    FILE(WRITE ${ANDROID_STUDIO_PROJ}/gradle.properties "org.gradle.jvmargs=-Xmx4096m
 org.gradle.caching=true
 org.gradle.parallel=true
 org.gradle.workers.max=6
