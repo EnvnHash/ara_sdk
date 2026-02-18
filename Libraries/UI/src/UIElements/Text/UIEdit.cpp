@@ -38,6 +38,7 @@ void UIEdit::init() {
     m_caret = &push<Div>();
     m_caret->setVisibility(false);
     m_caret->excludeFromPadding(true);
+    m_caret->excludeFromObjMap(true);
 
     static_cast<UIWindow *>(m_sharedRes->win)->addGlobalMouseDownLeftCb(this, [this](hidData& data) {
         globalMouseDown(data);
@@ -578,7 +579,7 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
         }
 
         try {
-            updateValFromText(tempTxt);
+            updateValFromText(tempTxt, false);
         } catch (std::runtime_error &e) {
             LOGE << "UIEdit::insertChar Error: " << e.what();
             return position;
@@ -595,21 +596,15 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
     return position + 1;
 }
 
-void UIEdit::updateValFromText(std::string& txt) {
-    if (hasOpt(num_int)) {
-        int newVal = std::stoi(txt);
-        if (newVal > std::get<int32_t>(m_minVal) && newVal < std::get<int32_t>(m_maxVal)) {
-            setValue<int32_t>(newVal);
-        } else {
-            throw std::runtime_error("new int value out of allowed range");
+void UIEdit::updateValFromText(std::string& txt, bool updateText) {
+    try {
+        if (hasOpt(num_int)) {
+            setValue<int32_t>(txt.empty() ? 0 : std::stoi(txt), updateText);
+        } else if (hasOpt(num_fp)) {
+            setValue<float>(txt.empty() ? 0.f : std::stof(txt), updateText);
         }
-    } else if (hasOpt(num_fp)) {
-        float newVal = std::stof(txt);
-        if (newVal > std::get<float>(m_minVal) && newVal < std::get<float>(m_maxVal)) {
-            setValue<float>(newVal);
-        } else {
-            throw std::runtime_error("new float value out of allowed range");
-        }
+    } catch (std::runtime_error &e) {
+        LOGE << "UIEdit::updateValFromText Error: " << e.what();
     }
 }
 

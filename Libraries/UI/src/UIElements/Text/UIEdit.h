@@ -21,7 +21,7 @@ public:
     bool drawIndirect(uint32_t& objId) override;
     void drawCaret(bool forceCaretVaoUpdt = true);
 
-    void updateValFromText(std::string& txt);
+    void updateValFromText(std::string& txt, bool updateText=true);
     void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
     void updateFontGeo() override;
 
@@ -56,14 +56,16 @@ public:
 
     template <typename T>
     requires std::integral<T> || std::floating_point<T>
-    void setValue(T val) {
+    void setValue(T val, bool updtText=true) {
         std::get<T>(m_value) = std::max(std::min(val, std::get<T>(m_maxVal)), std::get<T>(m_minVal));
 
-        std::stringstream stream;
-        stream << std::fixed << std::setprecision(m_precision) << std::get<T>(m_value);
-        bool updt = m_text.size() != stream.str().size();
-        m_text    = stream.str();
-        reqUpdtGlyphs(updt);
+        if (updtText) {
+            std::stringstream stream;
+            stream << std::fixed << std::setprecision(m_precision) << std::get<T>(m_value);
+            bool updt = m_text.size() != stream.str().size();
+            m_text    = stream.str();
+            reqUpdtGlyphs(updt);
+        }
     }
 
     template <typename T>

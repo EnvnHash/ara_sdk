@@ -99,7 +99,7 @@ TEST(UITest, UIEditFloatDelTest) {
         mainWin->swap();
 
         mainWin->onKeyDown(ARA_KEY_DELETE, false, false, false);
-        mainWin->onKeyUp(ARA_KEY_DELETE, false, true, false);
+        mainWin->onKeyUp(ARA_KEY_DELETE, false, false, false);
     }, [&](UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_del_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
@@ -107,6 +107,48 @@ TEST(UITest, UIEditFloatDelTest) {
         auto str = getSelAllCopyOutput(app, ed);
         EXPECT_EQ(str, "1.240");
         EXPECT_EQ(ed->getValue(), 1.24f);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditFloatInsertTest) {
+    registerDefaultUITypes();
+
+    UIEdit* ed = nullptr;
+    appBody([&](UIApplication &app) {
+        ed = &addFloatEdit(app);
+
+        auto mainWin = app.getMainWindow();
+        mainWin->onMouseDownLeft(114, 22, false, false, false);
+        mainWin->onMouseUpLeft();
+        mainWin->onChar(ARA_KEY_7);
+    }, [&](UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_insert_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+
+        auto str = getSelAllCopyOutput(app, ed);
+        EXPECT_EQ(str, "1.2734");
+        EXPECT_EQ(ed->getValue(), 1.2734f);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditFloatWheelTest) {
+    registerDefaultUITypes();
+
+    UIEdit* ed = nullptr;
+    appBody([&](UIApplication &app) {
+        ed = &addFloatEdit(app);
+        ed->setUseWheel(true);
+
+        auto mainWin = app.getMainWindow();
+        mainWin->onMouseDownLeft(122, 22, false, false, false);
+        mainWin->onMouseUpLeft();
+        mainWin->onWheel(1.f);
+    }, [&](UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_wheel_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        auto str = getSelAllCopyOutput(app, ed);
+        EXPECT_EQ(str, "1.334");
+        EXPECT_EQ(ed->getValue(), 1.334f);
     }, 300, 100);
 }
 
