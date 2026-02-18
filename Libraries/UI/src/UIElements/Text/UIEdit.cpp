@@ -13,8 +13,7 @@ using namespace glm;
 using namespace std;
 
 namespace ara {
-
-UIEdit::UIEdit(unsigned opt, int max_count)  {
+UIEdit::UIEdit(unsigned opt, int max_count) {
     setTypeName<UIEdit>();
     setName(getTypeName<UIEdit>());
     setFocusAllowed(true);
@@ -24,13 +23,6 @@ UIEdit::UIEdit(unsigned opt, int max_count)  {
     m_tOpt |= opt;
 
     m_maxCount = max_count;
-
-    m_minInt = numeric_limits<int>::min();
-    m_maxInt = numeric_limits<int>::max();
-
-    m_minF = numeric_limits<float>::min();
-    m_maxF = numeric_limits<float>::max();
-
     Label::setColor(1, 1, 1, 1);
 }
 
@@ -344,13 +336,16 @@ void UIEdit::keyDown(hidData& data) {
         return;
     }
 
+    bool updateValue = false;
     if (!getSelRange(m_charSelection)) {
         if (data.key == ARA_KEY_BACKSPACE && m_caretIndex > 0 && !m_text.empty()) {
             m_text.erase(std::min<int>(std::max<int>(--m_caretIndex - 1, 0), static_cast<int>(m_text.size()) - 1), 1);
             reqUpdtGlyphs(true);
+            updateValue = true;
         } else if (data.key == ARA_KEY_DELETE && (m_caretIndex < static_cast<int>(m_text.size()))) {
             m_text.erase(m_caretIndex, 1);
             reqUpdtGlyphs(true);
+            updateValue = true;
         } else if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
             --m_caretIndex;
         } else if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
@@ -365,6 +360,7 @@ void UIEdit::keyDown(hidData& data) {
             eraseContent(m_charSelection[0], m_charSelection[1]);
             m_caretIndex = m_charSelection[0];
             clearSelRange();
+            updateValue = true;
         }
 
         // marco.g: got to do it this way (clearSelRange() on each) since the
@@ -383,6 +379,14 @@ void UIEdit::keyDown(hidData& data) {
         } else if (data.key == ARA_KEY_END) {
             clearSelRange();
             m_caretIndex = static_cast<int>(m_text.size());
+        }
+    }
+
+    if (updateValue) {
+        try {
+            updateValFromText(m_text);
+        } catch (std::runtime_error &e) {
+            LOGE << "UIEdit::insertChar Error: " << e.what();
         }
     }
 
@@ -406,7 +410,7 @@ void UIEdit::onChar(hidData& data) {
 void UIEdit::onLostFocus() {
     // in case a value was changed but neither tab nor enter pressed and the
     // focus was lost be sure the actual value gets treated as entered
-    for (auto &[fst, snd] : m_onEnterCb) {
+    for (auto &snd: m_onEnterCb | views::values) {
         snd(m_text);
     }
     UINode::onLostFocus();
@@ -453,16 +457,14 @@ void UIEdit::incValue(float amt, cfState cf) {
     float mAmt = amt * (cf == cfState::coarse ? 10.f : cf == cfState::normal ? 1.f : 0.1f);
 
     if (hasOpt(num_int)) {
-        setValue(std::min(std::max(m_iValue + static_cast<int>(static_cast<float>(m_stepI) * mAmt), m_minInt), m_maxInt));
-
-        for (auto &[fst, snd] : m_onEnterCb) {
+        incValue<int32_t>(mAmt);
+        for (auto &snd: m_onEnterCb | views::values) {
             snd(m_text);
         }
 
     } else if (hasOpt(num_fp)) {
-        setValue(std::min(std::max(m_fValue + m_stepF * mAmt, m_minF), m_maxF));
-
-        for (auto &[fst, snd] : m_onEnterCb) {
+        incValue<float>(mAmt);
+        for (auto &snd: m_onEnterCb | views::values) {
             snd(m_text);
         }
     }
@@ -499,57 +501,19 @@ void UIEdit::setText(const std::string &str) {
     reqUpdtGlyphs(updt);
 }
 
-void UIEdit::setValue(float val) {
-    m_fValue = val;
-    if (hasOpt(num_fp)) {
-        m_fValue = std::max<float>(std::min<float>(val, m_maxF), m_minF);
-
-        std::stringstream stream;
-        stream << std::fixed << std::setprecision(m_precision) << m_fValue;
-        bool updt = m_text.size() != stream.str().size();
-        m_text    = stream.str();
-        reqUpdtGlyphs(updt);
-    }
-}
-
-void UIEdit::setValue(double val) {
-    m_dValue = val;
-    if (hasOpt(num_fp)) {
-        m_dValue = std::max<double>(std::min<double>(val, m_maxD), m_minD);
-
-        std::stringstream stream;
-        stream << std::fixed << std::setprecision(m_precision) << m_dValue;
-        bool updt = m_text.size() != stream.str().size();
-        m_text    = stream.str();
-        reqUpdtGlyphs(updt);
-    }
-}
-
-void UIEdit::setValue(int val) {
-    m_iValue = val;
-    if (hasOpt(num_int)) {
-        m_iValue            = std::max<int>(std::min<int>(val, m_maxInt), m_minInt);
-        std::string newText = std::to_string(m_iValue);
-        bool        updt    = newText.size() != m_text.size();
-        m_text              = newText;
-        reqUpdtGlyphs(updt);
-    }
-}
-
 void UIEdit::checkLimits() {
     if (m_text.empty()) return;
 
     try {
         if (hasOpt(num_fp)) {
-            m_fValue = std::stof(m_text);
-
+            setValue<float>(std::stof(m_text));
             if (m_precision == -1) {
                 std::stringstream stream;
-                stream << std::fixed << std::setprecision(m_precision) << m_fValue;
+                stream << std::fixed << std::setprecision(m_precision) << std::get<float>(m_value);
                 m_text = stream.str();
             }
         } else if (hasOpt(num_int)) {
-            m_iValue = std::stoi(m_text);
+            setValue<int32_t>(std::stoi(m_text));
         }
     } catch (...) {
     }
@@ -560,10 +524,10 @@ void UIEdit::clampValue() {
         return;
     }
     if (hasOpt(num_int)) {
-        setValue(std::stoi(m_text));
+        setValue<int32_t>(std::stoi(m_text));
     }
     if (hasOpt(num_fp)) {
-        setValue(std::stof(m_text));
+        setValue<float>(std::stof(m_text));
     }
 }
 
@@ -591,8 +555,10 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
     auto tempStr = std::to_string(ch);
 
     ivec2 cpi;
-    if (getSelRange(cpi) &&
-        !((hasOpt(num_int) && !isValidIntInput(tempStr)) || (hasOpt(num_fp) && !isValidFloatInput(tempStr)))) {
+    if (getSelRange(cpi)
+        && !((hasOpt(num_int) && !isValidIntInput(tempStr))
+            || (hasOpt(num_fp) && !isValidFloatInput(tempStr)))
+    ) {
         eraseContent(cpi[0], cpi[1]);
         position = cpi[0];
         clearSelRange();
@@ -607,32 +573,14 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
     if ((hasOpt(num_int) || hasOpt(num_fp)) && ch != 45) {
         std::string tempTxt(m_text);
         tempTxt.insert(position, 1, static_cast<char>(ch));
+        if (tempTxt.empty()) {
+            return position;
+        }
 
-        if (!tempTxt.empty()) {
-            if (hasOpt(num_int)) {
-                try {
-                    int newVal = std::stoi(tempTxt);
-                    if (newVal > m_maxInt && newVal < m_minInt) {
-                        m_iValue = newVal;
-                    } else {
-                        validNewValue = false;
-                    }
-                } catch (std::exception &) {
-                    return position;
-                }
-            } else if (hasOpt(num_fp)) {
-                try {
-                    float newVal = std::stof(tempTxt);
-                    if (newVal > m_maxF && newVal < m_minF) {
-                        m_fValue = newVal;
-                    } else {
-                        validNewValue = false;
-                    }
-                } catch (std::exception &) {
-                    return position;
-                }
-            }
-        } else {
+        try {
+            updateValFromText(tempTxt);
+        } catch (std::runtime_error &e) {
+            LOGE << "UIEdit::insertChar Error: " << e.what();
             return position;
         }
     }
@@ -645,6 +593,24 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
 
     reqUpdtGlyphs(true);
     return position + 1;
+}
+
+void UIEdit::updateValFromText(std::string& txt) {
+    if (hasOpt(num_int)) {
+        int newVal = std::stoi(txt);
+        if (newVal > std::get<int32_t>(m_minVal) && newVal < std::get<int32_t>(m_maxVal)) {
+            setValue<int32_t>(newVal);
+        } else {
+            throw std::runtime_error("new int value out of allowed range");
+        }
+    } else if (hasOpt(num_fp)) {
+        float newVal = std::stof(txt);
+        if (newVal > std::get<float>(m_minVal) && newVal < std::get<float>(m_maxVal)) {
+            setValue<float>(newVal);
+        } else {
+            throw std::runtime_error("new float value out of allowed range");
+        }
+    }
 }
 
 void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClass) {
@@ -706,21 +672,6 @@ void UIEdit::removeEnterCb(void* ptr) {
     if (auto it = m_onEnterCb.find(ptr); it != m_onEnterCb.end()) {
         m_onEnterCb.erase(it);
     }
-}
-
-void UIEdit::setMinMax(int min, int max) {
-    m_minInt = min;
-    m_maxInt = max;
-}
-
-void UIEdit::setMinMax(float min, float max) {
-    m_minF = min;
-    m_maxF = max;
-}
-
-void UIEdit::setMinMax(double min, double max) {
-    m_minD = min;
-    m_maxD = max;
 }
 
 void UIEdit::setCaretColor(vec4 c, state st) {
