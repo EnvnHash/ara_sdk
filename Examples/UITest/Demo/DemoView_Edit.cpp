@@ -60,4 +60,14 @@ void DemoView_Edit::init() {
     ed4.setUseWheel(true);
 
     push<Label>({ .style = getStyleClass()+".label" });
+
+
+    auto& tb = push<TextBlock>(UINodePars{
+        .pos = ivec2{650,200},
+        .name = "colorTextBlock",
+        .style = getStyleClass()+".tb-color"
+    });
+    tb.setText("HEADLINE:\n\nLorem ipsum dolor sit ##[120,0,255,255]amet, consectetur adipiscing elit. ##[0,0,255,255]Sed neque ligula, tristique euismod scelerisque ut, finibus id libero. ##[255,0,0,255]Praesent sagittis consectetur consequat. Integer et elit sed lorem finibus placerat in sit amet libero. Praesent sed nibh nec magna auctor aliquam quis ultrices sapien. ");
+
+    push<Label>({ .style = getStyleClass()+".label" });
 }

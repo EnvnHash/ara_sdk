@@ -474,7 +474,21 @@ demos {
 			edit-align:right
 			edit-opt:accept-tabs
 		}
-		
+
+
+		tb-color {
+			width:500px
+			height:300px
+
+			bkcolor:hsla(220,10,20,1)
+			padding:5
+
+			font {font:"Fonts/verdana.ttf" size:18}
+
+			text-valign:top
+			edit-align:center
+		}
+
 		font-test {	
 			font {font:"Fonts/NeoSans/NeoSansRegular.TTF" size:20}		
 		}
