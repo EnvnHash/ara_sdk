@@ -17,6 +17,8 @@ namespace ara::UiUnitTest::TextBlockTest {
 
 std::string testText = "HEADLINE:\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed neque ligula, tristique euismod scelerisque ut, finibus id libero. Praesent sagittis consectetur consequat. Integer et elit sed lorem finibus placerat in sit amet libero. Praesent sed nibh nec magna auctor aliquam quis ultrices sapien. ";
 
+std::string colorText = "HEADLINE:\n\nLorem ipsum dolor sit ##[120,0,255,255]amet, consectetur adipiscing elit. ##[0,0,255,255]Sed neque ligula, tristique euismod scelerisque ut, finibus id libero. ##[255,0,0,255]Praesent sagittis consectetur consequat. Integer et elit sed lorem finibus placerat in sit amet libero. Praesent sed nibh nec magna auctor aliquam quis ultrices sapien. ";
+
 auto& createStdTextBlock(UIApplication &app) {
     auto root = app.getMainWindow()->getRootNode();
     return root->push<TextBlock>(UINodePars{
@@ -44,6 +46,8 @@ TEST(UITest, DrawTextBlock) {
             tb.setText(testText);
             tb.setTextAlignX(al);
         }, [&](UIApplication &app) {
+            Texture::saveFrontBuffer(filesystem::current_path() / "check.png", FIF_PNG,
+                                      app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 4);
             compareFrameBufferToImage(filesystem::current_path() / fl,
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
         }, 300, 300);
@@ -137,5 +141,17 @@ TEST(UITest, TextBlockCopyTest) {
     }, 300, 300);
 }
 #endif
+
+TEST(UITest, TextBlockColoredTest) {
+    appBody([&](UIApplication &app) {
+        auto& tb = createStdTextBlock(app);
+        tb.setText(colorText);
+    }, [&](UIApplication &app) {
+        Texture::saveFrontBuffer(filesystem::current_path() / "textblock_colored_test.png", FIF_PNG,
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 4);
+        compareFrameBufferToImage(filesystem::current_path() / "textblock_colored_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 300);
+}
 
 }

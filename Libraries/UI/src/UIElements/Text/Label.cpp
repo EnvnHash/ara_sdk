@@ -385,7 +385,7 @@ void Label::prepareVao(bool checkFontTex) {
         for (e_fontdglyph& g : m_fontDGV.m_v) {
             if (g.gptr) {
                 for (const auto& v : m_vtxPos) {
-                    tuv                = glm::floor(m_bo + g.opos + v * g.osize);
+                    tuv                = glm::floor(m_bo + g.pos + v * g.size);
                     m_positions[ind].x = tuv.x;
                     m_positions[ind].y = tuv.y;
                     m_positions[ind].z = 0.f;
@@ -438,7 +438,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
         scLabelIndDraw[i + 2] = m_size[i] - std::max((m_winRelPos[i] + m_size[i]) - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f);
     }
 
-    for (e_fontdglyph& g : m_fontDGV.m_v) {
+    for (auto& g : m_fontDGV.m_v) {
         if (!g.gptr) {
             continue;
         }
@@ -448,7 +448,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
                 break;
             }
 
-            tuv = glm::floor(m_bo + g.opos + v * g.osize);
+            tuv = glm::floor(m_bo + g.pos + v * g.size);
 
             ld->aux1.x = tuv.x;
             ld->aux1.y = tuv.y;
@@ -458,6 +458,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
             ld->pos = m_modMvp * ld->aux1;
 
             ld->texCoord = g.gptr->srcpixpos + v * g.gptr->srcpixsize;
+            //ld->color    = g.color ? *g.color : m_color;
             ld->color    = m_color;
 
             ld->aux2.x = m_fontTexUnit;                          // layerTex Id
@@ -472,7 +473,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
 
         ld -= 4;  // reset iterator to quad beginning
         m_uvSize      = (ld + 3)->texCoord - ld->texCoord;
-        auto charSizePix = g.osize / getWindow()->getPixelRatio();
+        auto charSizePix = g.size / getWindow()->getPixelRatio();
 
         int i = 0;
         for (const auto& v : stdQuadVertices) {

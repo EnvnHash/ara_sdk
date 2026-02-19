@@ -156,8 +156,8 @@ int Font::drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuin
 
         for (e_fontdglyph &g : dgv.m_v) {
             if (g.gptr) {
-                shdr->setUniform2fv("opos", &g.opos[0]);
-                shdr->setUniform2fv("osize", &g.osize[0]);
+                shdr->setUniform2fv("opos", &g.pos[0]);
+                shdr->setUniform2fv("osize", &g.size[0]);
                 shdr->setUniform2fv("tpos", &g.gptr->srcpixpos[0]);
                 shdr->setUniform2fv("tsize", &g.gptr->srcpixsize[0]);
 

@@ -42,6 +42,7 @@ public:
     void clearDs() override;
 
     virtual void    setText(const std::string &str);
+    std::string     parseTextForColors(const std::string& str);
     bool            setSelRangeAll();
     bool            setSelRange(int loIndex, int highIndex);
     bool            getSelRange(glm::ivec2& range);  // range should receive 2 values
@@ -76,6 +77,8 @@ protected:
     IndDrawBlock m_selBgDB;
 
     float m_TabSize = 50.f;  // Tab size in pixels
+
+    std::vector<std::pair<glm::ivec2, glm::vec4>> m_textColors{};
 
     glm::vec4 m_bkSelColor{0.f, 0.f, 1.f, 0.3f};  // Background selection color
     glm::vec4 m_caretColor{1.f};                  // Background selection color

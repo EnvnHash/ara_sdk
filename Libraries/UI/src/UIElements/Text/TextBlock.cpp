@@ -269,25 +269,23 @@ void TextBlock::prepareSelBgVao() {
         if (l.ptr[0] && l.ptr[1]) {
             std::array<int32_t, 2> ci{};  /// first and last character index
 
-            ci[0] = l.ptr[0]->chidx;  // asign the character index of the
-                                         // first character in the actual line
-            ci[1] = l.ptr[1]->chidx;  // asign the character index of the
-                                         // last character in the actual line
+            ci[0] = l.ptr[0]->characterIdx;  // assign the character index of the first character in the actual line
+            ci[1] = l.ptr[1]->characterIdx;  // assign the character index of the last character in the actual line
 
-            // check if this line is within the range of selected charaters
+            // check if this line is within the range of selected charters
             if (!(ci[0] > m_charSelection[1] || ci[1] < m_charSelection[0])) {
-                cp.x = ci[0] > m_charSelection[0] ? m_tPos.x / l.m_pixRatio
+                cp.x = ci[0] > m_charSelection[0] ? m_tPos.x / l.pixRatio
                                                   : m_fontDGV.getCaretPos(m_charSelection[0])[0];
                 cp.y = ci[1] < m_charSelection[1] ? (m_tPos.x + m_tSize.x)
                                                   : m_fontDGV.getCaretPos(m_charSelection[1])[0];
 
                 vec2 posLT{};
                 posLT.x = cp.x + m_offset.x + m_alignOffset.x;
-                posLT.y = l.y / l.m_pixRatio + m_offset.y + m_alignOffset.y;
+                posLT.y = l.y / l.pixRatio + m_offset.y + m_alignOffset.y;
 
                 vec2 posRB{};
                 posRB.x = cp.y + m_offset.x + m_alignOffset.x;
-                posRB.y = posLT.y + (l.yrange[1] - l.yrange[0]) / l.m_pixRatio;
+                posRB.y = posLT.y + (l.yrange[1] - l.yrange[0]) / l.pixRatio;
 
                 // check if the selected part of this line is within the visible
                 // range
@@ -430,10 +428,30 @@ void TextBlock::globalMouseDown(hidData& data) {
 
 void TextBlock::setText(const std::string &str) {
     bool updt = str.size() != m_text.size();
+    //auto pureText = parseTextForColors(str);
+    //m_text.assign(pureText, 0, std::min(m_maxCount, static_cast<int>(pureText.size())));
     m_text.assign(str, 0, std::min(m_maxCount, static_cast<int>(str.size())));
     m_caretIndex = static_cast<int>(m_text.size());
     clearSelRange();
     reqUpdtGlyphs(updt);
+}
+
+std::string TextBlock::parseTextForColors(const std::string& str) {
+    m_textColors.clear();
+
+    auto splitted = split(str, "##[");
+    if (splitted.size() > 1) {
+        std::string out;
+        size_t cntr = 0;
+        for (auto& it : splitted) {
+            out += it;
+            cntr += it.size();
+        }
+        return out;
+    }
+
+    m_textColors.emplace_back(make_pair( ivec2{0, str.size()}, m_color ));
+    return str;
 }
 
 std::string TextBlock::validateInputToString(int ch) {

@@ -32,14 +32,15 @@ struct e_fontglyph {
 
 class e_fontdglyph {
 public:
-    unsigned     cp = 0;
-    glm::vec2    opos{0.f};
-    glm::vec2    osize{0.f};
+    unsigned     codepoint = 0;
+    glm::vec2    pos{0.f};
+    glm::vec2    size{0.f};
     e_fontglyph *gptr       = nullptr;
-    int          chidx      = 0;  // character position in source string
-    float        m_pixRatio = 0.f;
+    glm::vec4   *color      = nullptr;
+    int          characterIdx      = 0;  // character position in source string
+    float        pixRatio = 0.f;
 
-    [[nodiscard]] float getRightLimit() const { return (opos.x + osize.y) / m_pixRatio; }  ///>  return in hw pixels
+    [[nodiscard]] float getRightLimit() const { return (pos.x + size.y) / pixRatio; }  ///>  return in hw pixels
 };
 
 class e_fontline {
@@ -50,15 +51,32 @@ public:
     int           chidx[2]{0};
     float         yrange[2]{0.f};
     float         yselrange[2]{0.f};
-    float         m_pixRatio = 1.f;
+    float         pixRatio = 1.f;
 
-    [[nodiscard]] float getYSelRange(int idx) const { return yselrange[idx] / m_pixRatio; }  ///>  return in hw pixels
+    [[nodiscard]] float getYSelRange(int idx) const { return yselrange[idx] / pixRatio; }  ///>  return in hw pixels
 };
 
 struct e_fontword {
     e_fontdglyph *ptr[2]{nullptr};
     float         width = 0.f;
     int           chidx[2]{0};
+};
+
+struct procPar {
+    glm::vec2                       pos{};
+    e_fontdglyph*                   ws = nullptr;
+    e_fontdglyph                    *ve = nullptr;
+    std::array<e_fontdglyph*, 2>    linep{nullptr, nullptr};
+    uint8_t                         ch = 0;
+    uint8_t                         lch = 0;
+    float                           spheight = 0;
+    std::string                     eorg;
+    std::string::iterator           e;
+    std::vector<e_fontword>         fword;
+    float                           lineheight = 0;
+    align                           text_align_x{};
+    glm::vec2                       l_sep{};
+    glm::vec2                       l_size{};
 };
 
 class Font;
@@ -69,6 +87,11 @@ public:
 
     bool Process(Font *font, const glm::vec2 &size, const glm::vec2 &sep, align text_align_x, const std::string &str,
                  bool word_wrap);  // text_align : see e_fontalign
+
+    void            procTab(procPar& p);
+    void            procCrAndNl(procPar& par);
+    void            procSpace(procPar& par, Font* font);
+    void            procChar(procPar& par, Font* font, bool word_wrap);
 
     unsigned        calculateBoundingBoxHwp(glm::vec4 &bb);  // bb vec4 / [x1,y1,x2,y2]
     unsigned        calculateBoundingBox(glm::vec4 &bb);     // bb vec4 / [x1,y1,x2,y2]
@@ -94,7 +117,7 @@ public:
 
     void  setTabPixSize(float ts) { m_tabSize = ts * m_pixRatio; }
     void  setPixRatio(float pixRatio) { m_pixRatio = pixRatio; }
-    float getRightLimit() { return (m_v.back().opos[0] + m_v.back().osize[0]) / m_pixRatio; }
+    float getRightLimit() { return (m_v.back().pos[0] + m_v.back().size[0]) / m_pixRatio; }
 
     static int codepoint(const std::string& u);
 
@@ -109,7 +132,8 @@ private:
     glm::vec2 m_tCaretPos{0.f};
 
     e_fontline *AddLine(e_fontdglyph *p_begin, e_fontdglyph *p_end, float y, std::vector<e_fontword> &fword,
-                        align text_align_x, float width, bool eol);
+                       align text_align_x, float width, bool eol);
+    //e_fontline *addLine(procPar& par, bool eol);
 };
 
 }
