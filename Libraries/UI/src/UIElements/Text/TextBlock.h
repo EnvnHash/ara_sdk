@@ -78,8 +78,6 @@ protected:
 
     float m_TabSize = 50.f;  // Tab size in pixels
 
-    std::vector<std::pair<glm::ivec2, glm::vec4>> m_textColors{};
-
     glm::vec4 m_bkSelColor{0.f, 0.f, 1.f, 0.3f};  // Background selection color
     glm::vec4 m_caretColor{1.f};                  // Background selection color
     int       m_caretWidth = 2;

@@ -208,8 +208,8 @@ Font *TextBlock::UpdateDGV(bool *checkFontTexture) {
         // resulting x-position
         auto x1 = cpos.x + m_offset.x;
         auto x2 = x1 + 2;
-        auto y1 = m_fontDGV.m_vline[lidx].getYSelRange(0) + m_offset.y + pa;
-        auto y2 = m_fontDGV.m_vline[lidx].getYSelRange(1) + m_offset.y + pa;
+        auto y1 = m_fontDGV.getFontLines(lidx).getYSelRange(0) + m_offset.y + pa;
+        auto y2 = m_fontDGV.getFontLines(lidx).getYSelRange(1) + m_offset.y + pa;
 
         // the beginning of the rendered text will be outside the mask add an
         // offset to move it into the non-mask area
@@ -220,10 +220,10 @@ Font *TextBlock::UpdateDGV(bool *checkFontTexture) {
             m_offset.x = std::max(m_offset.x, -(2 + cpos[0] - mask.z));
         }
         if (y1 < mask.y) {
-            m_offset.y = -(pa + m_fontDGV.m_vline[lidx].getYSelRange(0) - mask.y);
+            m_offset.y = -(pa + m_fontDGV.getFontLines(lidx).getYSelRange(0) - mask.y);
         }
         if (y2 > mask.w) {
-            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.m_vline[lidx].getYSelRange(1) - mask.w));
+            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.getFontLines(lidx).getYSelRange(1) - mask.w));
         }
     }
 
@@ -265,7 +265,7 @@ void TextBlock::updateFontGeo() {
 
 void TextBlock::prepareSelBgVao() {
     list<pair<vec2, vec2>> lines;  // Left/Top,  Right/Bottom
-    for (e_fontline &l : m_fontDGV.m_vline) {
+    for (e_fontline &l : m_fontDGV.getFontLines()) {
         if (l.ptr[0] && l.ptr[1]) {
             std::array<int32_t, 2> ci{};  /// first and last character index
 
@@ -428,30 +428,66 @@ void TextBlock::globalMouseDown(hidData& data) {
 
 void TextBlock::setText(const std::string &str) {
     bool updt = str.size() != m_text.size();
-    //auto pureText = parseTextForColors(str);
-    //m_text.assign(pureText, 0, std::min(m_maxCount, static_cast<int>(pureText.size())));
-    m_text.assign(str, 0, std::min(m_maxCount, static_cast<int>(str.size())));
+    auto pureText = parseTextForColors(str);
+    m_text.assign(pureText, 0, std::min(m_maxCount, static_cast<int>(pureText.size())));
     m_caretIndex = static_cast<int>(m_text.size());
     clearSelRange();
     reqUpdtGlyphs(updt);
 }
 
 std::string TextBlock::parseTextForColors(const std::string& str) {
-    m_textColors.clear();
+    m_fontDGV.clearTextColors();
+    std::string out;
 
-    auto splitted = split(str, "##[");
-    if (splitted.size() > 1) {
-        std::string out;
+    try {
+        auto splitted = split(str, "##[");
         size_t cntr = 0;
-        for (auto& it : splitted) {
+        size_t charCntr = 0;
+        m_fontDGV.addTextColor(ivec2{0, str.size() -1}, m_color);
+
+        for (auto &it : splitted) {
+            if (cntr > 0) {
+                auto colValList = split(it, ',');
+                if (colValList.size() < 4) {
+                    throw runtime_error("invalid color list size: "+std::to_string(colValList.size())+" must be at least rgba");
+                }
+
+                if (!m_fontDGV.getTextColors().empty()) {
+                    m_fontDGV.getLastTextColor().first.y = charCntr -1;
+                }
+
+                m_fontDGV.addTextColor(ivec2{charCntr, 0}, vec4{1.f, 1.f, 1.f, 0.f});
+                for (int i=0;i<4;++i) {
+                    m_fontDGV.getLastTextColor().second[i] = stoi(colValList[i]) / 255.0;
+                }
+
+                auto firstAfterColIt = colValList.begin() + 3;
+                auto closeBrIt = firstAfterColIt->find(']');
+
+                it = firstAfterColIt->substr(closeBrIt+1, firstAfterColIt->size() - closeBrIt -1);
+
+                for (auto cs = colValList.begin() + 4; cs!=colValList.end(); ++cs) {
+                    it += *cs;
+                    if (cs != colValList.end() -1) {
+                        it += ",";
+                    }
+                }
+            }
+
             out += it;
-            cntr += it.size();
+            charCntr += it.size();
+            ++cntr;
+
+            if (cntr == splitted.size() && splitted.size() > 1) {
+                m_fontDGV.getLastTextColor().first.y = charCntr;
+            }
         }
-        return out;
+    } catch (std::exception& e) {
+        LOGE << "TextBlock::parseTextForColors Error: " << e.what();
+        return str;
     }
 
-    m_textColors.emplace_back(make_pair( ivec2{0, str.size()}, m_color ));
-    return str;
+    return out;
 }
 
 std::string TextBlock::validateInputToString(int ch) {

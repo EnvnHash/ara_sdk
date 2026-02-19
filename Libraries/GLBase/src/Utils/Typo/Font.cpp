@@ -154,12 +154,12 @@ int Font::drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuin
         shdr->setUniform2f("mask_size", maskSize.x * m_pixRatio, maskSize.y * m_pixRatio);
         shdr->setUniform1f("pixRatio", m_pixRatio);
 
-        for (e_fontdglyph &g : dgv.m_v) {
-            if (g.gptr) {
+        for (e_fontdglyph &g : dgv.getGlyphs()) {
+            if (g.glyphPtr) {
                 shdr->setUniform2fv("opos", &g.pos[0]);
                 shdr->setUniform2fv("osize", &g.size[0]);
-                shdr->setUniform2fv("tpos", &g.gptr->srcpixpos[0]);
-                shdr->setUniform2fv("tsize", &g.gptr->srcpixsize[0]);
+                shdr->setUniform2fv("tpos", &g.glyphPtr->srcpixpos[0]);
+                shdr->setUniform2fv("tsize", &g.glyphPtr->srcpixsize[0]);
 
                 glBindVertexArray(vao);
                 glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -177,8 +177,8 @@ int Font::write(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float 
     }
 
     FontGlyphVector dgv;
-    glm::vec2       size{1e10, 1e10};
-    glm::vec2       pos{0, 0};
+    vec2 size{1e10, 1e10};
+    vec2 pos{0, 0};
     dgv.Process(this, size, pos, align::left, str, true);
     drawDGlyphs(dgv, mvp, shdr, vao, tcolor, {x, y + getPixAscent()}, {0.f, 0.f}, {1e10, 1e10});
 

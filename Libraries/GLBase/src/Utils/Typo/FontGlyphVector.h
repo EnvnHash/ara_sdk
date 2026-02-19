@@ -21,7 +21,7 @@ namespace ara {
 
 struct e_fontglyph {
     int            codepoint = 0;
-    unsigned short ppos[2][2]{0};
+    unsigned short ppos[2][2]{};
     glm::vec2      off{0.f};
     float          yoff2 = 0.f;
     float          xadv  = 0.f;
@@ -32,12 +32,12 @@ struct e_fontglyph {
 
 class e_fontdglyph {
 public:
-    unsigned     codepoint = 0;
+    unsigned     character = 0;
     glm::vec2    pos{0.f};
     glm::vec2    size{0.f};
-    e_fontglyph *gptr       = nullptr;
+    e_fontglyph *glyphPtr   = nullptr;
     glm::vec4   *color      = nullptr;
-    int          characterIdx      = 0;  // character position in source string
+    int32_t      characterIdx      = 0;  // character position in source string
     float        pixRatio = 0.f;
 
     [[nodiscard]] float getRightLimit() const { return (pos.x + size.y) / pixRatio; }  ///>  return in hw pixels
@@ -45,38 +45,41 @@ public:
 
 class e_fontline {
 public:
-    e_fontdglyph *ptr[2]{nullptr};  /// pointer to the first and last glyph in the line
-    float         y     = 0.f;
-    float         width = 0.f;
-    int           chidx[2]{0};
-    float         yrange[2]{0.f};
-    float         yselrange[2]{0.f};
-    float         pixRatio = 1.f;
+    std::array<e_fontdglyph*, 2>    ptr{nullptr};  /// pointer to the first and last glyph in the line
+    float                           y     = 0.f;
+    float                           width = 0.f;
+    std::array<int32_t, 2>          characterIdx{};
+    std::array<float, 2>            yrange{};
+    std::array<float, 2>            yselrange{};
+    float                           pixRatio = 1.f;
 
     [[nodiscard]] float getYSelRange(int idx) const { return yselrange[idx] / pixRatio; }  ///>  return in hw pixels
 };
 
 struct e_fontword {
-    e_fontdglyph *ptr[2]{nullptr};
-    float         width = 0.f;
-    int           chidx[2]{0};
+    std::array<e_fontdglyph*, 2>    ptr{nullptr};
+    float                           width = 0.f;
+    std::array<int32_t, 2>          characterIdx{};
 };
 
 struct procPar {
     glm::vec2                       pos{};
-    e_fontdglyph*                   ws = nullptr;
+    e_fontdglyph                    *ws = nullptr;
     e_fontdglyph                    *ve = nullptr;
     std::array<e_fontdglyph*, 2>    linep{nullptr, nullptr};
-    uint8_t                         ch = 0;
+    uint8_t                         character = 0;
     uint8_t                         lch = 0;
     float                           spheight = 0;
-    std::string                     eorg;
-    std::string::iterator           e;
+    std::string                     text;
+    std::string::iterator           textIt;
     std::vector<e_fontword>         fword;
     float                           lineheight = 0;
     align                           text_align_x{};
+    glm::vec2                       sep{};
     glm::vec2                       l_sep{};
     glm::vec2                       l_size{};
+
+    std::vector<std::pair<glm::ivec2, glm::vec4>>::iterator textColIt{};
 };
 
 class Font;
@@ -88,7 +91,10 @@ public:
     bool Process(Font *font, const glm::vec2 &size, const glm::vec2 &sep, align text_align_x, const std::string &str,
                  bool word_wrap);  // text_align : see e_fontalign
 
-    void            procTab(procPar& p);
+    static void     glyphPtrCheck(procPar& par);
+    e_fontdglyph    addDGlyph(procPar &par, const glm::vec2& offs, const glm::vec2& size, e_fontglyph* g=nullptr) const;
+    glm::vec4*      getCharColor(procPar& par) const;
+    void            procTab(procPar& p) const;
     void            procCrAndNl(procPar& par);
     void            procSpace(procPar& par, Font* font);
     void            procChar(procPar& par, Font* font, bool word_wrap);
@@ -109,31 +115,36 @@ public:
     int jumpToBeginOfLine(int caret_index);         // returns new caret position, on error returns caret_index
     int jumpToEndOfLine(int caret_index);           // returns new caret position, on error returns caret_index
 
-    [[nodiscard]] size_t size() const { return m_v.size(); }
-    e_fontdglyph &operator[](size_t index) { return m_v[index]; }
+    auto& getGlyphs() { return m_glyphs; }
+    [[nodiscard]] size_t size() const { return m_glyphs.size(); }
+    e_fontdglyph &operator[](size_t index) { return m_glyphs[index]; }
 
-    std::vector<e_fontdglyph> m_v;
-    std::vector<e_fontline>   m_vline;
-
+    auto& getFontLines() { return m_vline; }
+    auto& getFontLines(size_t idx) { return m_vline[idx]; }
+    float getRightLimit() { return (m_glyphs.back().pos[0] + m_glyphs.back().size[0]) / m_pixRatio; }
+    auto& getTextColors() { return m_textColors; }
+    auto& getLastTextColor() { return m_textColors.back(); }
     void  setTabPixSize(float ts) { m_tabSize = ts * m_pixRatio; }
     void  setPixRatio(float pixRatio) { m_pixRatio = pixRatio; }
-    float getRightLimit() { return (m_v.back().pos[0] + m_v.back().size[0]) / m_pixRatio; }
+    void clearTextColors() { m_textColors.clear(); }
+    void addTextColor(const glm::ivec2& range, const glm::vec4& color) { m_textColors.emplace_back(std::make_pair(range, color)); }
 
     static int codepoint(const std::string& u);
 
 private:
+    e_fontline *addLine(procPar& par, bool eol, int lineEndOffs=0);
+
+    std::vector<e_fontdglyph> m_glyphs;
+    std::vector<e_fontline>   m_vline;
+
     float     m_pixVMetrics[3] = {0, 0, 0};  // [0]:ascent,[1]:descent,[2]:lineGap
     float     m_pixLineHeight  = 0;
     float     m_tabSize        = 100.f;
     float     m_pixRatio       = 1.f;
     glm::vec4 m_bb{0.f};
-    glm::vec2 m_sep{0.f};
-    glm::vec2 m_sc{1.f, 1.f};
     glm::vec2 m_tCaretPos{0.f};
 
-    e_fontline *AddLine(e_fontdglyph *p_begin, e_fontdglyph *p_end, float y, std::vector<e_fontword> &fword,
-                       align text_align_x, float width, bool eol);
-    //e_fontline *addLine(procPar& par, bool eol);
+    std::vector<std::pair<glm::ivec2, glm::vec4>> m_textColors{};
 };
 
 }

@@ -167,8 +167,8 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
         // resulting x-position
         auto x1 = cpos.x + m_offset.x;
         auto x2 = x1 + 2;
-        auto y1 = m_fontDGV.m_vline[lidx].getYSelRange(0) + m_offset.y + pa;
-        auto y2 = m_fontDGV.m_vline[lidx].getYSelRange(1) + m_offset.y + pa;
+        auto y1 = m_fontDGV.getFontLines(lidx).getYSelRange(0) + m_offset.y + pa;
+        auto y2 = m_fontDGV.getFontLines(lidx).getYSelRange(1) + m_offset.y + pa;
 
         // the beginning of the rendered text will be outside the mask add an
         // offset to move it into the non-mask area
@@ -179,10 +179,10 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
             m_offset.x = std::max(m_offset.x, -(2 + cpos[0] - mask.z));
         }
         if (y1 < mask.y) {
-            m_offset.y = -(pa + m_fontDGV.m_vline[lidx].getYSelRange(0) - mask.y);
+            m_offset.y = -(pa + m_fontDGV.getFontLines(lidx).getYSelRange(0) - mask.y);
         }
         if (y2 > mask.w) {
-            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.m_vline[lidx].getYSelRange(1) - mask.w));
+            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.getFontLines(lidx).getYSelRange(1) - mask.w));
         }
     }
 

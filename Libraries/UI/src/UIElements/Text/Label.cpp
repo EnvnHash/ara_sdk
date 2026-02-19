@@ -186,8 +186,8 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
                 auto rightLimit = m_fontDGV.getRightLimit();
 
                 // sum up char until the max bounds is reached
-                for (const auto& g : m_fontDGV.m_v)
-                    if (g.gptr) {
+                for (const auto& g : m_fontDGV.getGlyphs())
+                    if (g.glyphPtr) {
                         if (hasOpt(end_ellipsis)) {
                             if (g.getRightLimit() > limit) {
                                 break;
@@ -203,7 +203,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
 
                 m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX,
                                   hasOpt(end_ellipsis) ? m_text.substr(0, i) + "..."
-                                                       : "..." + m_text.substr(i, m_fontDGV.m_v.size() - 1),
+                                                       : "..." + m_text.substr(i, m_fontDGV.getGlyphs().size() - 1),
                                   false);
 
                 m_textBounds = m_fontDGV.getPixSize();
@@ -276,8 +276,8 @@ bool Label::checkGlyphsPrepared(bool checkFontTex) {
         updateFontGeo();
 
         if (!m_drawImmediate) {
-            m_lblDB.vaoData.resize(m_fontDGV.m_v.size() * 4);
-            m_lblDB.indices.resize(m_fontDGV.m_v.size() * 6);
+            m_lblDB.vaoData.resize(m_fontDGV.getGlyphs().size() * 4);
+            m_lblDB.indices.resize(m_fontDGV.getGlyphs().size() * 6);
         }
 
         prepareVao(checkFontTex);
@@ -367,7 +367,7 @@ void Label::updateMatrix() {
 // all input values are in virtual pixels and must be converted to hw pixels
 void Label::prepareVao(bool checkFontTex) {
     if (m_drawImmediate) {
-        dstSize = (size_t)(m_fontDGV.m_v.size() * 4);
+        dstSize = (size_t)(m_fontDGV.getGlyphs().size() * 4);
 
         if (!m_vao.isInited()) {
             m_vao.init("position:4f,texCoord:2f");
@@ -377,20 +377,20 @@ void Label::prepareVao(bool checkFontTex) {
             m_vao.resize(static_cast<GLuint>(dstSize));
             m_positions.resize(dstSize);
             m_texCoord.resize(dstSize);
-            m_indices.resize(m_fontDGV.m_v.size() * 6);
+            m_indices.resize(m_fontDGV.getGlyphs().size() * 6);
         }
 
         size_t ind    = 0;
         size_t elmInd = 0;
-        for (e_fontdglyph& g : m_fontDGV.m_v) {
-            if (g.gptr) {
+        for (e_fontdglyph& g : m_fontDGV.getGlyphs()) {
+            if (g.glyphPtr) {
                 for (const auto& v : m_vtxPos) {
                     tuv                = glm::floor(m_bo + g.pos + v * g.size);
                     m_positions[ind].x = tuv.x;
                     m_positions[ind].y = tuv.y;
                     m_positions[ind].z = 0.f;
                     m_positions[ind].w = 1.f;
-                    m_texCoord[ind]    = (g.gptr->srcpixpos + v * g.gptr->srcpixsize);
+                    m_texCoord[ind]    = (g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize);
                     ind++;
                 }
 
@@ -420,8 +420,9 @@ void Label::prepareVao(bool checkFontTex) {
 
 void Label::updateIndDrawData(bool checkFontTex) {
     if (!m_riFont || !m_riFont->isOK() || !m_sharedRes || !m_sharedRes->objSel || m_lblDB.vaoData.empty() ||
-        !getWindow())
+        !getWindow()) {
         return;
+    }
 
     // check if the layerTexture containing this font was already collected, if not append it (must happen before Glyph
     // updating in order to have the correct texUnit value set to the vao data)
@@ -432,14 +433,14 @@ void Label::updateIndDrawData(bool checkFontTex) {
     auto ld = m_lblDB.vaoData.begin();
 
     getWinPos();
-    glm::vec4 scLabelIndDraw{0.f};
+    vec4 scLabelIndDraw{0.f};
     for (int i = 0; i < 2; i++) {
         scLabelIndDraw[i] = std::max(m_scIndDraw[i], m_winRelPos[i]);
         scLabelIndDraw[i + 2] = m_size[i] - std::max((m_winRelPos[i] + m_size[i]) - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f);
     }
 
-    for (auto& g : m_fontDGV.m_v) {
-        if (!g.gptr) {
+    for (auto& g : m_fontDGV.getGlyphs()) {
+        if (!g.glyphPtr) {
             continue;
         }
 
@@ -448,7 +449,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
                 break;
             }
 
-            tuv = glm::floor(m_bo + g.pos + v * g.size);
+            tuv = floor(m_bo + g.pos + v * g.size);
 
             ld->aux1.x = tuv.x;
             ld->aux1.y = tuv.y;
@@ -456,11 +457,8 @@ void Label::updateIndDrawData(bool checkFontTex) {
             ld->aux1.w = 1.f;
 
             ld->pos = m_modMvp * ld->aux1;
-
-            ld->texCoord = g.gptr->srcpixpos + v * g.gptr->srcpixsize;
-            //ld->color    = g.color ? *g.color : m_color;
-            ld->color    = m_color;
-
+            ld->texCoord = g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize;
+            ld->color    = g.color ? *g.color : m_color;
             ld->aux2.x = m_fontTexUnit;                          // layerTex Id
             ld->aux2.y = static_cast<float>(m_riFont->getLayerTexLayerId());  // layer Id
             ld->aux2.z = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
