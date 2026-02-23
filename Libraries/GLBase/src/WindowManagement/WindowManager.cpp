@@ -381,7 +381,7 @@ void WindowManager::destroyAll() {
 }
 
 void WindowManager::addEvtLoopCb(const std::function<bool()> &f) {
-    std::unique_lock<std::mutex> l(m_evtLoopCbMtx);
+    std::unique_lock l(m_evtLoopCbMtx);
     m_custEventQueue.emplace_back(f);
 }
 

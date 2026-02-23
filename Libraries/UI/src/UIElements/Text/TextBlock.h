@@ -26,7 +26,7 @@ public:
     explicit TextBlock(unsigned opt = 0, int max_count = std::numeric_limits<int>::max());
     ~TextBlock() override;
 
-    Font* UpdateDGV(bool* checkFontTexture) override;
+    Font* updateDGV(bool* checkFontTexture) override;
 
     void loadStyleDefaults() override;
     void init() override;

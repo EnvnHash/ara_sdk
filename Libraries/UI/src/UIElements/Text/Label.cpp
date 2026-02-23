@@ -40,116 +40,41 @@ Label::Label(const LabelPars &initData) {
 void Label::loadStyleDefaults() {
     UINode::loadStyleDefaults();
 
-    m_setStyleFunc[state::none][styleInit::color]        = [this]() { setColor(1.f, 1.f, 1.f, 1.f); };
-    m_setStyleFunc[state::none][styleInit::text]         = [this]() { m_text = ""; };
-    m_setStyleFunc[state::none][styleInit::textAlign]    = [this]() { m_tAlignX = align::center; };
-    m_setStyleFunc[state::none][styleInit::textValign]   = [this]() { m_tAlignY = valign::center; };
-    m_setStyleFunc[state::none][styleInit::labelOptions] = [this]() { m_tOpt = 0; };
+    m_setStyleFunc[state::none][styleInit::color]        = [this] { setColor(1.f, 1.f, 1.f, 1.f); };
+    m_setStyleFunc[state::none][styleInit::text]         = [this] { m_text = ""; };
+    m_setStyleFunc[state::none][styleInit::textAlign]    = [this] { m_tAlignX = align::center; };
+    m_setStyleFunc[state::none][styleInit::textValign]   = [this] { m_tAlignY = valign::center; };
+    m_setStyleFunc[state::none][styleInit::labelOptions] = [this] { m_tOpt = 0; };
 }
 
 void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
+    updtStyleSingleValue<std::string>(node, styleInit::text, st, "", m_text);
+    updtStyleSingleValue<uint32_t>(node, styleInit::labelOptions, st, 0, m_tOpt);
+    updtStyleSingleValue<align>(node, styleInit::textAlign, st, align::center, m_tAlignX);
+    updtStyleSingleValue<valign>(node, styleInit::textValign, st, valign::center, m_tAlignY);
+
     if (auto color = node->findNode<AssetColor>("text-color")) {
-        vec4 col                                 = color->getColorvec4();
-        m_setStyleFunc[st][styleInit::textColor] = [col, this, st]() { setColor(col.r, col.g, col.b, col.a, st); };
-    }
-
-    if (auto text = node->findNode("text")) {
-        std::string tv                      = text->m_value;
-        m_setStyleFunc[st][styleInit::text] = [tv, this]() { m_text = tv; };
-    }
-
-    if (node->hasValue("text-opt")) {
-        ParVec p = node->splitNodeValue("text-opt");
-        unsigned opt = 0;
-
-        for (std::string& par : p) {
-            if (par == "single-line") {
-                opt |= single_line;
-            }
-            if (par == "accept-tabs") {
-                opt |= accept_tabs;
-            }
-            if (par == "manual-space") {
-                opt |= manual_space;
-            }
-            if (par == "end-ellipsis") {
-                opt |= end_ellipsis;
-            }
-            if (par == "front-ellipsis") {
-                opt |= front_ellipsis;
-            }
-            if (par == "adaptive") {
-                opt |= adaptive;
-            }
-        }
-
-        m_tOpt                                      = opt;
-        m_setStyleFunc[st][styleInit::labelOptions] = [this, opt]() { m_tOpt = opt; };
-    }
-
-    if (node->hasValue("text-align")) {
-        ParVec p = node->splitNodeValue("text-align");
-        align  aux = align::center;
-
-        for (std::string& par : p) {
-            if (par == "left") {
-                aux = align::left;
-            }
-            if (par == "center") {
-                aux = align::center;
-            }
-            if (par == "right") {
-                aux = align::right;
-            }
-            if (par == "justify") {
-                aux = align::justify;
-            }
-            if (par == "justify-ex") {
-                aux = align::justify_ex;
-            }
-        }
-
-        m_tAlignX = aux;
-        m_setStyleFunc[st][styleInit::textAlign] = [this, aux]() { m_tAlignX = aux; };
-    }
-
-    if (node->hasValue("text-valign")) {
-        ParVec p = node->splitNodeValue("text-valign");
-        valign aux = valign::center;
-
-        for (std::string& par : p) {
-            if (par == "top") {
-                aux = valign::top;
-            }
-            if (par == "vcenter" || par == "center") {
-                aux = valign::center;
-            }
-            if (par == "bottom") {
-                aux = valign::bottom;
-            }
-        }
-
-        m_tAlignY = aux;
-        m_setStyleFunc[st][styleInit::textValign] = [this, aux]() { m_tAlignY = aux; };
+        auto col                                 = color->getColorvec4();
+        m_setStyleFunc[st][styleInit::textColor] = [col, this, st] { setColor(col.r, col.g, col.b, col.a, st); };
     }
 
     if (auto f = node->findNode<AssetFont>("font")) {
-        int         size = f->value<int32_t>("size", 0);
+        auto        size = f->value<int32_t>("size", 0);
         std::string font = f->getValue("font");
 
-        m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size]() { setFontSize(size); };
-        m_setStyleFunc[st][styleInit::fontFontFamily] = [this, font]() { setFontType(font); };
+        m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size] { setFontSize(size); };
+        m_setStyleFunc[st][styleInit::fontFontFamily] = [this, font] { setFontType(font); };
     }
 }
 
-glm::vec4 Label::calculateMask() const {
+vec4 Label::calculateMask() const {
     return {m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
 }
 
-Font* Label::UpdateDGV(bool* checkFontTex) {
-    if (!m_sharedRes || !m_sharedRes->res) {
+Font* Label::updateDGV(bool* checkFontTex) {
+    if (!getSharedRes() || !getSharedRes()->res) {
         return nullptr;
     }
 
@@ -167,7 +92,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
 
     m_fontDGV.setPixRatio(getPixRatio());
     m_fontDGV.setTabPixSize(m_tabSize);
-    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_text, !hasOpt(single_line) && !hasOpt(adaptive));
+    m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_text, !hasOpt(single_line) && !hasOpt(adaptive));
 
     if (!m_text.empty()) {
         m_textBounds = m_fontDGV.getPixSize();
@@ -177,7 +102,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
 
             if (bs.x > m_tContSize.x) { // if the bounds of the renderer font are bigger than the content size
                 // estimate the bounds of the rendered ellipsis in pixels at the actual font size
-                faux.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, "...", false);
+                faux.process(m_riFont, m_tSize, m_tSep, m_tAlignX, "...", false);
 
                 bas = faux.getPixSize();
 
@@ -201,7 +126,7 @@ Font* Label::UpdateDGV(bool* checkFontTex) {
                         }
                     }
 
-                m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX,
+                m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX,
                                   hasOpt(end_ellipsis) ? m_text.substr(0, i) + "..."
                                                        : "..." + m_text.substr(i, m_fontDGV.getGlyphs().size() - 1),
                                   false);
@@ -272,7 +197,7 @@ bool Label::checkGlyphsPrepared(bool checkFontTex) {
             return false;
         }
 
-        UpdateDGV(&checkFontTex);
+        updateDGV(&checkFontTex);
         updateFontGeo();
 
         if (!m_drawImmediate) {
@@ -284,13 +209,14 @@ bool Label::checkGlyphsPrepared(bool checkFontTex) {
 
         m_glyphsPrepared = true;
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
 void Label::updateFontGeo() {
-    if (!m_riFont) return;
+    if (!m_riFont) {
+        return;
+    }
 
     memset(&m_alignOffset[0], 0, 8);
 
@@ -367,7 +293,7 @@ void Label::updateMatrix() {
 // all input values are in virtual pixels and must be converted to hw pixels
 void Label::prepareVao(bool checkFontTex) {
     if (m_drawImmediate) {
-        dstSize = (size_t)(m_fontDGV.getGlyphs().size() * 4);
+        dstSize = m_fontDGV.getGlyphs().size() * 4;
 
         if (!m_vao.isInited()) {
             m_vao.init("position:4f,texCoord:2f");
@@ -390,7 +316,7 @@ void Label::prepareVao(bool checkFontTex) {
                     m_positions[ind].y = tuv.y;
                     m_positions[ind].z = 0.f;
                     m_positions[ind].w = 1.f;
-                    m_texCoord[ind]    = (g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize);
+                    m_texCoord[ind]    = g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize;
                     ind++;
                 }
 
@@ -436,7 +362,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
     vec4 scLabelIndDraw{0.f};
     for (int i = 0; i < 2; i++) {
         scLabelIndDraw[i] = std::max(m_scIndDraw[i], m_winRelPos[i]);
-        scLabelIndDraw[i + 2] = m_size[i] - std::max((m_winRelPos[i] + m_size[i]) - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f);
+        scLabelIndDraw[i + 2] = m_size[i] - std::max(m_winRelPos[i] + m_size[i] - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f);
     }
 
     for (auto& g : m_fontDGV.getGlyphs()) {
@@ -456,15 +382,15 @@ void Label::updateIndDrawData(bool checkFontTex) {
             ld->aux1.z = 0.f;
             ld->aux1.w = 1.f;
 
-            ld->pos = m_modMvp * ld->aux1;
-            ld->texCoord = g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize;
-            ld->color    = g.color ? *g.color : m_color;
-            ld->aux2.x = m_fontTexUnit;                          // layerTex Id
-            ld->aux2.y = static_cast<float>(m_riFont->getLayerTexLayerId());  // layer Id
-            ld->aux2.z = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
-            ld->aux2.w = m_zPos;
-            ld->aux3.x = 1.f;  // type indicator (1=Label)
-            ld->aux3.w = m_absoluteAlpha;
+            ld->pos         = m_modMvp * ld->aux1;
+            ld->texCoord    = g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize;
+            ld->color       = g.color ? *g.color : m_color;
+            ld->aux2.x      = m_fontTexUnit;                          // layerTex Id
+            ld->aux2.y      = static_cast<float>(m_riFont->getLayerTexLayerId());  // layer Id
+            ld->aux2.z      = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
+            ld->aux2.w      = m_zPos;
+            ld->aux3.x      = 1.f;  // type indicator (1=Label)
+            ld->aux3.w      = m_absoluteAlpha;
 
             ++ld;
         }
@@ -526,7 +452,7 @@ unsigned long Label::removeOpt(unsigned long f) {
     return m_tOpt;
 }
 
-void Label::setFont(const std::string& fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st) {
+void Label::setFont(const std::string& fontType, uint32_t fontSize, align ax, valign ay, vec4 fontColor, state st) {
     setFontType(fontType, st);
     setFontSize(static_cast<int>(fontSize), st);
     setTextAlign(ax, ay, st);
@@ -581,7 +507,7 @@ void Label::setFontType(std::string fontType, state st) {
 
 vec2& Label::getTextBoundSize() {
     if (m_textBounds.x == 0.f || m_textBounds.y == 0.f) {
-        UpdateDGV(nullptr);
+        updateDGV(nullptr);
     }
     return m_textBounds;
 }

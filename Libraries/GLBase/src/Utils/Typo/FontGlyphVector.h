@@ -20,7 +20,7 @@
 namespace ara {
 
 struct e_fontglyph {
-    int            codepoint = 0;
+    int            charAsCodepoint = 0;
     unsigned short ppos[2][2]{};
     glm::vec2      off{0.f};
     float          yoff2 = 0.f;
@@ -32,7 +32,7 @@ struct e_fontglyph {
 
 class e_fontdglyph {
 public:
-    unsigned     character = 0;
+    unsigned     charAsCodepoint = 0;
     glm::vec2    pos{0.f};
     glm::vec2    size{0.f};
     e_fontglyph *glyphPtr   = nullptr;
@@ -67,7 +67,7 @@ struct procPar {
     e_fontdglyph                    *ws = nullptr;
     e_fontdglyph                    *ve = nullptr;
     std::array<e_fontdglyph*, 2>    linep{nullptr, nullptr};
-    uint8_t                         character = 0;
+    uint8_t                         charAsCodepoint = 0;
     uint8_t                         lch = 0;
     float                           spheight = 0;
     std::string                     text;
@@ -88,7 +88,7 @@ class FontGlyphVector {
 public:
     virtual ~FontGlyphVector() = default;
 
-    bool Process(Font *font, const glm::vec2 &size, const glm::vec2 &sep, align text_align_x, const std::string &str,
+    bool process(Font *font, const glm::vec2 &size, const glm::vec2 &sep, align text_align_x, const std::string &str,
                  bool word_wrap);  // text_align : see e_fontalign
 
     static void     glyphPtrCheck(procPar& par);
@@ -96,7 +96,7 @@ public:
     glm::vec4*      getCharColor(procPar& par) const;
     void            procTab(procPar& p) const;
     void            procCrAndNl(procPar& par);
-    void            procSpace(procPar& par, Font* font);
+    void            procSpace(procPar& par, Font* font) const;
     void            procChar(procPar& par, Font* font, bool word_wrap);
 
     unsigned        calculateBoundingBoxHwp(glm::vec4 &bb);  // bb vec4 / [x1,y1,x2,y2]

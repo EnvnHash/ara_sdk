@@ -718,7 +718,7 @@ void FBO::resize(uint width, uint height, uint depth, bool checkStates) {
     m_f_tex_height = static_cast<float>(m_tex_height);
     m_f_tex_depth  = static_cast<float>(m_tex_depth);
 
-    if ((m_tex_width != 0 || m_tex_height != 0) && !m_inited) {
+    if (m_tex_height != 0 && !m_inited) {
         init();
     } else if (!m_isShared) {
         if (checkStates) {
@@ -1130,7 +1130,7 @@ void FBO::deleteFbo() const {
 }
 
 GLuint FBO::getColorImg() const {
-    return (!m_textures.empty() && m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8) ? m_textures[0] : 0;
+    return !m_textures.empty() && m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8 ? m_textures[0] : 0;
 }
 
 GLuint FBO::getColorImg(int index) const {

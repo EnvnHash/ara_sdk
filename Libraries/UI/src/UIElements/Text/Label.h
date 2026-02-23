@@ -13,8 +13,8 @@ class Font;
 struct LabelPars {
     glm::ivec2 pos{};
     glm::ivec2 size{};
-    ara::align align{};
-    ara::valign valign{};
+    ara::align align = align::left;
+    ara::valign valign = valign::top;
     glm::vec4 text_color{};
     glm::vec4 bg_color{};
     const std::string& text;
@@ -43,24 +43,25 @@ public:
     ~Label() override = default;
 
     [[nodiscard]] unsigned long getOpt() const { return m_tOpt; }
-    unsigned long setOpt(unsigned long f);
-    unsigned long removeOpt(unsigned long f);
     [[nodiscard]] bool          hasOpt(unsigned long f) const { return m_tOpt & f; }
-    void          setSingleLine() { setOpt(single_line); }
-    virtual Font *UpdateDGV(bool *checkFontTexture);
-    bool          draw(uint32_t& objId) override;
-    bool          drawIndirect(uint32_t& objId) override;
-    virtual bool  checkGlyphsPrepared(bool checkFontTex = false);
-    void          updateMatrix() override;
-    virtual void  updateFontGeo();
-    void          updateDrawData() override;
-    void          updateIndDrawData(bool checkFontTex = false);
-    void          pushVaoUpdtOffsets() override;
-    virtual void  prepareVao(bool checkFontTex = false);
-    virtual void  reqUpdtGlyphs(bool updateTree);
-    void          clearDs() override;
-    void          loadStyleDefaults() override;
-    void          updateStyleIt(ResNode *node, state st, const std::string& styleClass) override;
+
+    unsigned long   setOpt(unsigned long f);
+    unsigned long   removeOpt(unsigned long f);
+    void            setSingleLine() { setOpt(single_line); }
+    virtual Font*   updateDGV(bool *checkFontTexture);
+    bool            draw(uint32_t& objId) override;
+    bool            drawIndirect(uint32_t& objId) override;
+    virtual bool    checkGlyphsPrepared(bool checkFontTex = false);
+    void            updateMatrix() override;
+    virtual void    updateFontGeo();
+    void            updateDrawData() override;
+    void            updateIndDrawData(bool checkFontTex = false);
+    void            pushVaoUpdtOffsets() override;
+    virtual void    prepareVao(bool checkFontTex = false);
+    virtual void    reqUpdtGlyphs(bool updateTree);
+    void            clearDs() override;
+    void            loadStyleDefaults() override;
+    void            updateStyleIt(ResNode *node, state st, const std::string& styleClass) override;
 
     void setFont(const std::string& fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st = state::m_state);
     void setColor(float r, float g, float b, float a, state st = state::m_state) override;
@@ -89,6 +90,31 @@ public:
         });
         setText(typeid(T) == typeid(std::string) ? prop() : prop().string());
     }
+
+    template <typename T>
+    void updtStyleSingleValue(ResNode* node, const styleInit& si, state st, const T& defVal, T& dest) {
+        auto& key = m_styleInitToString[si];
+        if (node->hasValue(key)) {
+            T val = defVal;
+
+            if constexpr (std::is_same_v<T, std::string>) {
+                val = node->findNode(key)->m_value;
+            } else {
+                auto p = node->splitNodeValue(key);
+                if constexpr (std::is_same_v<T, uint32_t>) {
+                    for (auto& par : p) val |= m_textOptMap[par];
+                } else if constexpr (std::is_same_v<T, align>) {
+                    for (auto& par : p) val = m_textAlignMap[par];
+                } else if constexpr (std::is_same_v<T, valign>) {
+                    for (auto& par : p) val = m_textVAlignMap[par];
+                }
+            }
+
+            dest                    = val;
+            m_setStyleFunc[st][si]  = [this, &dest, val] { dest = val; };
+        }
+    }
+
 
 protected:
     void setEditPixSpace(float width, float height, bool set_flag = true);
@@ -140,6 +166,37 @@ protected:
     FontGlyphVector faux;
     float           m_fontTexUnit = -1.f;
     size_t          dstSize       = 0;
+
+    static inline std::unordered_map<std::string, unsigned> m_textOptMap {
+        { "single-line", single_line },
+        { "accept-tabs", accept_tabs },
+        { "manual-space", manual_space },
+        { "end-ellipsis", end_ellipsis },
+        { "front-ellipsis", front_ellipsis },
+        { "adaptive", adaptive}
+    };
+
+    static inline std::unordered_map<std::string, align> m_textAlignMap {
+        { "left", align::left },
+        { "center", align::center },
+        { "right", align::right },
+        { "justify", align::justify },
+        { "justify-ex", align::justify_ex }
+    };
+
+    static inline std::unordered_map<std::string, valign> m_textVAlignMap {
+        { "top", valign::top },
+        { "center", valign::center },
+        { "vcenter", valign::center },
+        { "bottom", valign::bottom },
+    };
+
+    static inline std::unordered_map<styleInit, std::string> m_styleInitToString {
+        {styleInit::text, "text"},
+        {styleInit::labelOptions, "text-opt"},
+        {styleInit::textAlign, "text-align"},
+        {styleInit::textValign, "text-valign"}
+    };
 };
 
 }  // namespace ara

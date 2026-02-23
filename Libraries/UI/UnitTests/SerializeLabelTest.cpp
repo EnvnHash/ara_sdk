@@ -21,6 +21,8 @@ TEST(UITest, SerializeLabelSaveAndReload) {
         auto& lbl = root->push<Label>(LabelPars{
           .pos = ivec2{ 10, 10},
           .size = ivec2{ 200, 100 },
+          .align = align::center,
+          .valign = valign::center,
           .text_color = vec4{ 0.8f, 0.6f, 1.f, 1.f },
           .bg_color = vec4{ 0.2f, 0.2f, 0.2f, 1.f },
           .text = "SerializeLabel",

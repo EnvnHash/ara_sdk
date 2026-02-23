@@ -1,0 +1,72 @@
+#include "DemoView.h"
+#include "UIElements/Menu/TreeCollapsible.h"
+
+using namespace ara;
+using namespace glm;
+using namespace std;
+using namespace nlohmann;
+
+DemoView_Collapsibles::DemoView_Collapsibles() : DemoView("Collapsibles", vec4(.1f,.1f,.1f,1.f)) {
+    setName(getTypeName<DemoView_Collapsibles>());
+}
+
+void DemoView_Collapsibles::init() {
+    push<Label>(LabelPars {
+        .pos = ivec2{0,50},
+        .size = ivec2 {200, 40},
+        .text_color = vec4{ 1.f, 1.f, 1.f, 1.f },
+        .text = "ComboBoxes",
+        .text_align_x = align::left,
+        .text_align_y = valign::top,
+        .font_type = "regular",
+        .font_height = 20,
+    });
+
+    m_combo = &push<ComboBox>(UINodePars{
+        .pos = ivec2{0,80},
+        .size = ivec2 {200, 40},
+        .fgColor = vec4{ 1.f, 1.f, 1.f, 1.f },
+        .bgColor = vec4{ .1f, .1f, .1f, 1.f },
+        .borderWidth = 2,
+        .borderRadius = 5,
+        .borderColor = m_sharedRes->colors->at(uiColors::blue),
+        .padding = vec4{ 5, 5, 5,5 },
+    });
+    m_combo->setMenuName("ComboBox");
+    m_combo->setFontType("regular");
+
+    m_combo->addEntry("Entry 1", []{ LOG << " entry one "; });
+    m_combo->addEntry("Entry 2", []{ LOG << " entry two "; });
+    m_combo->addEntry("Entry 3", []{ LOG << " entry three "; });
+    m_combo->addEntry("Entry 4", []{ LOG << " entry four "; });
+
+
+    push<Label>(LabelPars {
+        .pos = ivec2{250,50},
+        .size = ivec2 {200, 40},
+        .text_color = vec4{ 1.f, 1.f, 1.f, 1.f },
+        .text = "Collapsibles Trees",
+        .text_align_x = align::left,
+        .text_align_y = valign::top,
+        .font_type = "regular",
+        .font_height = 20,
+    });
+
+    // Tree View, must use the ara sdk Node class or a derivative
+    std::string str = R"({"children":[{"children":[{"name":"sub1_1_1","uuid":"1"}],"name":"sub1_1","uuid":"0"},{"children":[{"name":"sub1_2_1","uuid":"3"},{"name":"sub1_2_2","uuid":"4"}],"name":"sub1_2","uuid":"2"}],"name":"root","uuid":"10"})";
+    m_node.loadFromString(str);
+
+    auto& tree = push<TreeCollapsible>(UINodePars{
+        .pos = ivec2{250,80},
+        .size = ivec2 {200, 160},
+        .fgColor = vec4{ 1.f, 1.f, 1.f, 1.f },
+        .bgColor = vec4{ .1f, .1f, .1f, 1.f },
+        .borderWidth = 2,
+        .borderRadius = 5,
+        .borderColor = m_sharedRes->colors->at(uiColors::blue),
+        .padding = vec4{ 5, 5, 5,5 },
+    });
+
+    tree.setNode(&m_node);
+
+}

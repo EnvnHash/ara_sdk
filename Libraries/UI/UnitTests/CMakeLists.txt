@@ -11,8 +11,9 @@ file(GLOB UI_UT_SRC
     UIMatTests/GetPixelPosition_ParentRelative.cpp
     AlignTest.cpp
     ButtonTests.cpp
-    ComboBoxTest.cpp
     CarrouselTest.cpp
+    ComboBoxTest.cpp
+    CollapsibleTreeTest.cpp
     LabelTest.cpp
     ReloadGLContextTest.cpp
     HidTest.cpp

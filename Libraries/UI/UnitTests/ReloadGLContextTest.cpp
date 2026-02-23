@@ -3,7 +3,7 @@
 //
 
 #include "TestCommon.h"
-#include <../src/UIElements/Text/Label.h>
+#include <UIElements/Text/Label.h>
 
 using namespace std;
 using namespace glm;

@@ -13,7 +13,7 @@ public:
     void changeValType(unsigned long t);
     void blockEdit(bool val);
 
-    Font* UpdateDGV(bool* checkFontTexture) override;
+    Font* updateDGV(bool* checkFontTexture) override;
 
     void loadStyleDefaults() override;
     void init() override;

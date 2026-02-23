@@ -195,7 +195,7 @@ vec2 FontGlyphVector::getCaretPos(int caret_index) {
         auto pr = findByCharIndex(caret_index);
 
         if (caret_index < nchars) {
-            if (pr.character > 0) {
+            if (pr.charAsCodepoint > 0) {
                 pos.x = pr.pos.x;
                 pos.y = pr.pos.y + pr.size.y;
             }
@@ -289,7 +289,7 @@ int FontGlyphVector::jumpToEndOfLine(int caret_index) {
     return m_vline[lidx].ptr[1]->characterIdx;
 }
 
-bool FontGlyphVector::Process(Font *font, const vec2 &size, const vec2 &sep, align text_align_x, const std::string &str, bool word_wrap) {
+bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, align text_align_x, const std::string &str, bool word_wrap) {
     if (!font || size.x == 0.f || size.y == 0.f || str.empty()) {
         return false;
     }
@@ -317,19 +317,19 @@ bool FontGlyphVector::Process(Font *font, const vec2 &size, const vec2 &sep, ali
 
     for (par.textIt = par.text.begin(); par.textIt != par.text.end(); ++par.textIt) {
         UtfIterator iter(par.textIt);
-        par.character = codepoint(*iter);
+        par.charAsCodepoint = codepoint(*iter);
 
-        if (par.character == 9) {
+        if (par.charAsCodepoint == 9) {
             procTab(par);
-        } else if (par.character == 13 || par.character == 10) {
+        } else if (par.charAsCodepoint == 13 || par.charAsCodepoint == 10) {
             procCrAndNl(par);
-        } else if (par.character == 32) {
+        } else if (par.charAsCodepoint == 32) {
             procSpace(par, font);
-        } else if (par.character > 32 && par.character < 255) {
+        } else if (par.charAsCodepoint > 32 && par.charAsCodepoint < 255) {
             procChar(par, font, word_wrap);
         }
 
-        par.lch = par.character;
+        par.lch = par.charAsCodepoint;
     }
 
     if (par.linep[0]) {
@@ -358,7 +358,7 @@ void FontGlyphVector::glyphPtrCheck(procPar &par) {
 
 e_fontdglyph FontGlyphVector::addDGlyph(procPar &par, const vec2& offs, const vec2& size, e_fontglyph* g) const {
     return {
-        .character = par.character,
+        .charAsCodepoint = par.charAsCodepoint,
         .pos = floor(par.pos + offs + 0.5f),
         .size = size,
         .glyphPtr = g,
@@ -411,10 +411,10 @@ void FontGlyphVector::procCrAndNl(procPar& par) {
     par.pos.y += par.lineheight + par.l_sep.x;
 }
 
-void FontGlyphVector::procSpace(procPar& par, Font* font) {
+void FontGlyphVector::procSpace(procPar& par, Font* font) const {
     glyphPtrCheck(par);
 
-    auto g = font->getGlyph(par.character);
+    auto g = font->getGlyph(par.charAsCodepoint);
     if (g) {
         par.ve[0] = addDGlyph(par, {g->off[0], -par.spheight}, {g->xadv,  par.spheight}, g);
         ++par.ve;
@@ -434,7 +434,7 @@ void FontGlyphVector::procChar(procPar& par, Font* font, bool word_wrap) {
         par.ws = par.ve;
     }
 
-    auto g  = font->getGlyph(par.character);
+    auto g  = font->getGlyph(par.charAsCodepoint);
     if (g) {
         par.ve[0]  = addDGlyph(par, g->off, g->outpixsize, g);
         if (par.pos.x + par.ve[0].size.x >= par.l_size.x && word_wrap) {
@@ -510,19 +510,15 @@ e_fontline *FontGlyphVector::addLine(procPar& par, bool eol, int lineEndOffs) {
 
     if (text_align_x != align::left) {
         e_fontdglyph *dg;
-        if (text_align_x == align::center)  // CENTER
-        {
+        if (text_align_x == align::center)  { // CENTER
             float xo = width * 0.5f - lw * 0.5f;
-
             for (e_fontword &w : inFword) {
                 for (dg = w.ptr[0]; dg < w.ptr[1]; dg++) {
                     dg->pos.x += xo;
                 }
             }
         } else if (text_align_x == align::right) {  // RIGHT
-
             float xo = width - lw;
-
             for (e_fontword &w : inFword) {
                 for (dg = w.ptr[0]; dg < w.ptr[1]; dg++) {
                     dg->pos.x += xo;
@@ -530,7 +526,6 @@ e_fontline *FontGlyphVector::addLine(procPar& par, bool eol, int lineEndOffs) {
             }
         } else if (text_align_x == align::justify ||
                    text_align_x == align::justify_ex) {  // JUSTIFIED (4 is whole, even EOL)
-
             bool doit = true;
             if (text_align_x == align::justify && eol) {
                 doit = false;
@@ -540,33 +535,33 @@ e_fontline *FontGlyphVector::addLine(procPar& par, bool eol, int lineEndOffs) {
                 float xo = 0;
                 dg       = p_begin;
 
-                while (dg->character <= 32 && dg < p_end) {
+                while (dg->charAsCodepoint <= 32 && dg < p_end) {
                     dg->size.x = 0;
                     dg->pos.x  = xo;
-                    dg++;
+                    ++dg;
                 }
 
-                if (dg < p_end && dg->character > 32) {
+                if (dg < p_end && dg->charAsCodepoint > 32) {
                     rr[0] = dg;
                     dg    = p_end;
 
-                    while (dg->character <= 32 && dg > p_begin) {
+                    while (dg->charAsCodepoint <= 32 && dg > p_begin) {
                         dg->size.x = 0;
                         dg->pos.x  = width;
                         --dg;
                     }
 
-                    if (dg > p_begin && dg->character > 32) {
+                    if (dg > p_begin && dg->charAsCodepoint > 32) {
                         rr[1] = dg;
 
                         float tx = 0;
                         int   nc = 0;
 
-                        for (dg = rr[0]; dg <= rr[1]; dg++) {
-                            if (dg->character <= 32) {
+                        for (dg = rr[0]; dg <= rr[1]; ++dg) {
+                            if (dg->charAsCodepoint <= 32) {
                                 ++nc;
                             }
-                            if (dg->character > 32) {
+                            if (dg->charAsCodepoint > 32) {
                                 tx += dg->size.x;
                             }
                         }
@@ -575,9 +570,9 @@ e_fontline *FontGlyphVector::addLine(procPar& par, bool eol, int lineEndOffs) {
                             auto dx = (width - tx) / static_cast<float>(nc);
                             auto x  = xo;
 
-                            for (dg = rr[0]; dg <= rr[1]; dg++) {
+                            for (dg = rr[0]; dg <= rr[1]; ++dg) {
                                 dg->pos.x = x;
-                                if (dg->character <= 32) {
+                                if (dg->charAsCodepoint <= 32) {
                                     dg->size.x = dx;
                                 }
                                 x += dg->size.x;

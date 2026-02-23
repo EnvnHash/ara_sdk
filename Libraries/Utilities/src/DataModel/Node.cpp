@@ -205,7 +205,7 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
                 existingChildren.erase(it);
             } else {
                 // Create a new child and add it to the node
-                if (auto fact_child = m_factory.create(jChild->at("typeName"))) {
+                if (auto fact_child = m_factory.create(jChild->contains("typeName") ? jChild->at("typeName") : "Node")) {
                     auto& newChild = push(std::move(fact_child));
                     newChild.deserialize(*jChild, postLoadCbsArg);
                 }

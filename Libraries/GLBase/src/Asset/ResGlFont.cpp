@@ -88,7 +88,7 @@ void FontList::update3DLayers() {
 
     // check how many glyph texture maps are there for each size
     for (auto &fnt : m_FontList) {
-        m_layerCount[fnt->getGlyphTexSize()].emplace_back(fnt.get());
+        m_layerCount[fnt->getGlyphTexSize().x].emplace_back(fnt.get());
     }
 
     // check which of the layers changed and update those
@@ -100,7 +100,7 @@ void FontList::update3DLayers() {
         entrExists = m_fontTexLayers.contains(sz);
 
         // 3d texture doesn't exist, or quantity changed
-        if (!entrExists || (entrExists && m_fontTexLayers[sz]->getDepth() != static_cast<uint>(lc.second.size()))) {
+        if (!entrExists || m_fontTexLayers[sz]->getDepth() != static_cast<uint>(lc.second.size())) {
             // unfortunately textures can't be resized, conserving the existing content, so we have to delete them
             if (entrExists) {
                 m_fontTexLayers[sz]->releaseTexture();
@@ -130,25 +130,23 @@ void FontList::update3DLayers() {
 #endif
                 m_fbo.setGlbase(m_glbase);
                 m_fbo.getActStates();  // save last state
+                std::array<int32_t, 4> currScissor;
+                glGetIntegerv(GL_SCISSOR_BOX, currScissor.data());
                 m_fbo.genFbo();
 
                 std::array<GLenum, 2> bufModes = {GL_NONE, GL_COLOR_ATTACHMENT1};
                 glDrawBuffers(2, &bufModes[0]);
+                glScissor(0, 0, sz, sz);
 
-                // copy the glyph textures into them, do this by fbo blitting if
-                // possible
+                // copy the glyph textures into them, do this by fbo blitting if possible
                 for (auto &fnt : lc.second) {
-                    // attach the source texture to color attachment0
                     glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fnt->getTexId(),
                                            0);
 
-                    // attach the destination texture layer to color attachment1
                     glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, m_fontTexLayers[sz]->getId(),
                                               0, layerCnt);
 
-                    FBO::checkFbo();
-
-                    glBlitFramebuffer(0, 0, sz, sz, 0, 0, sz, sz, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+                    glBlitFramebuffer(0, 0, sz, sz, 0, 0, sz, sz, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
                     fnt->setTexLayer(m_fontTexLayers[sz]->getId(), layerCnt, static_cast<uint32_t>(m_layerCount[sz].size()));
                     ++layerCnt;
@@ -156,6 +154,8 @@ void FontList::update3DLayers() {
 
                 m_fbo.deleteFbo();
                 m_fbo.restoreStates();  // restore states
+                glScissor(currScissor[0], currScissor[1], currScissor[2], currScissor[3]);
+
 #ifdef __APPLE__
             } else {
                 // special treatment for macOS with intel gpu which don't supported mixed TEXTURE_2D and TEXTURE_3D

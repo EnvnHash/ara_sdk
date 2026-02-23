@@ -46,8 +46,6 @@ TEST(UITest, DrawTextBlock) {
             tb.setText(testText);
             tb.setTextAlignX(al);
         }, [&](UIApplication &app) {
-            Texture::saveFrontBuffer(filesystem::current_path() / "check.png", FIF_PNG,
-                                      app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 4);
             compareFrameBufferToImage(filesystem::current_path() / fl,
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
         }, 300, 300);

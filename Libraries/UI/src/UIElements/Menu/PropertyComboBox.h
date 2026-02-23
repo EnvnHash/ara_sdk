@@ -4,13 +4,9 @@
 
 #pragma once
 
-#include <UIElements/ComboBox.h>
-
+#include <UIElements/Menu/ComboBox.h>
 #include <magic_enum.hpp>
-
-//#include "CameraCalibration.h"
 #include "DataModel/ItemRef.h"
-//#include "ItemConnectable.h"
 
 namespace ara {
 

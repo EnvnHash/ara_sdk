@@ -5,7 +5,7 @@
 #include <UIElements/UITable.h>
 #include <UIElements/ScrollView.h>
 #include <UIElements/List.h>
-#include <UIElements/ComboBox.h>
+#include <UIElements/Menu/ComboBox.h>
 #include <Dialoges/FloatingMenuDialog.h>
 #include <Asset/AssetFont.h>
 #include <Asset/ResGlFont.h>
@@ -83,12 +83,13 @@ public:
     ListProperty<std::string>       m_data3;
 };
 
-class DemoView_ComboBox : public DemoView {
+class DemoView_Collapsibles : public DemoView {
 public:
-    DemoView_ComboBox();
+    DemoView_Collapsibles();
     void                init() override;
 private:
     ComboBox*           m_combo = nullptr;
+    Node                m_node;
 };
 
 class DemoView_Carrousel : public DemoView {

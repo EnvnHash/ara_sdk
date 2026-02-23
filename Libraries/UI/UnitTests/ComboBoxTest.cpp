@@ -6,7 +6,7 @@
 #include "TestCommon.h"
 
 #include "UIApplication.h"
-#include <UIElements/ComboBox.h>
+#include <UIElements/Menu/ComboBox.h>
 #include <UIElements/Div.h>
 
 using namespace std;
@@ -74,7 +74,7 @@ namespace ara::UiUnitTest::ComboBoxTest {
             hoverOverFirstEntry(app);
             drawAndSwap(app);
         }, [&](UIApplication& app){
-            compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref3.png",
+              compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref3.png",
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
         }, 600, 400);
     }

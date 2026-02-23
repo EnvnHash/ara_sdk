@@ -122,7 +122,7 @@ Font *AssetManager::font(const string& path, const float pixRatio) {
 
 Font *AssetManager::getGLFont(string font_type_path, const int size, const float pixRatio) {
     if (m_fontLUT.contains(font_type_path)) {
-        auto [path, size]   = m_fontLUT[font_type_path];
+        auto [path, sz]   = m_fontLUT[font_type_path];
         font_type_path = path;
     }
 

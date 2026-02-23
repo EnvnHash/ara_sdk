@@ -18,7 +18,7 @@
 #include <UISharedRes.h>
 #include <UIElements/Image.h>
 
-#include "ComboBox.h"
+#include "UIElements/Menu/ComboBox.h"
 
 using namespace glm;
 using namespace std;

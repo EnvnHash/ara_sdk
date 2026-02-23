@@ -111,7 +111,7 @@ public:
 
     virtual std::filesystem::path dataPath();
 
-    UINode*     getRootNode(const uint winIdx = 0) const { return (m_uiWindows.size() > winIdx) ? m_uiWindows[winIdx]->getRootNode() : nullptr; }
+    UINode*     getRootNode(const uint winIdx = 0) const { return m_uiWindows.size() > winIdx ? m_uiWindows[winIdx]->getRootNode() : nullptr; }
     UIWindow*   getWinBase(const uint winIdx = 0) const { return m_uiWindows.size() > winIdx ? m_uiWindows[winIdx].get() : nullptr; }
     auto        getUIWindows() { return &m_uiWindows; }
     auto        getDataModel() const { return m_dataModel; }

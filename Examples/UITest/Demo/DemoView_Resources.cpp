@@ -84,7 +84,7 @@ bool DemoView_Resources::draw(uint32_t& objId) {
             int valign=0;
             vec2 tp;
 
-            dgv.Process(f, size, sep, align::left, teststring, true);
+            dgv.process(f, size, sep, align::left, teststring, true);
             dgv.calculateBoundingBox(bb);
 
             switch (valign) {

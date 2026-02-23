@@ -133,7 +133,7 @@ void UIEdit::drawCaret(bool forceCaretVaoUpdt) {
     }
 }
 
-Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
+Font *UIEdit::updateDGV(bool *checkFontTexture) {
     if (!m_sharedRes || !m_sharedRes->res) {
         return nullptr;
     }
@@ -157,7 +157,7 @@ Font *UIEdit::UpdateDGV(bool *checkFontTexture) {
     m_fontDGV.setPixRatio(getPixRatio());
     m_fontDGV.setTabPixSize(m_tabSize);
     // process input text, break up in lines
-    m_fontDGV.Process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
+    m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
 
     // Calculate offset
     if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
