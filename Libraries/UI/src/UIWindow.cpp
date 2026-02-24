@@ -292,8 +292,7 @@ void UIWindow::initUI(const UIWindowParams& par) {
         }
 
         if (!m_windowResizeAreas) {
-            m_windowResizeAreas = &m_uiRoot.push<WindowResizeAreas>();
-            m_windowResizeAreas->setSize(1.f, 1.f);
+            WindowResizeAreas::addResizeAreas(m_uiRoot, m_winHandle);
         }
 #endif
     } else {
@@ -1464,8 +1463,9 @@ void UIWindow::setEnableMenuBar(bool val) {
 
 void UIWindow::setEnableWindowResizeHandles(bool val) {
     m_windowResizeHandlesEnabled = val;
-    if (m_windowResizeAreas) {
-        m_windowResizeAreas->setVisibility(val);
+    auto children = m_uiRoot.findChildrenByType<WindowResizeArea>();
+    for (auto it  : children) {
+        it->setVisibility(val);
     }
 }
 

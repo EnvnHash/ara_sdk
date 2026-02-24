@@ -56,7 +56,7 @@ void WindowResizeArea::mouseUp(hidData& data) {
 #ifdef ARA_USE_GLFW
     m_sharedRes->winHandle->setBlockMouseIconSwitch(false);
 #endif
-    data.consumed = true;
+    data.consumed = false;
 }
 
 void WindowResizeArea::mouseIn(hidData& data) {
@@ -154,7 +154,7 @@ void WindowResizeArea::mouseDrag(hidData& data) {
     }
 
 #endif
-    data.consumed = true;
+    data.consumed = false;
 }
 
 }  // namespace ara

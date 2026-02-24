@@ -39,6 +39,7 @@ set(EXCLUDE_CLASSES
     UINodeStyle
     UINodePars
     UITableParameters
+    WindowResizeAreas
 )
 
 foreach(headerFile ${HEADER_FILES})

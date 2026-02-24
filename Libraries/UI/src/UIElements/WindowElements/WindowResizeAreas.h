@@ -8,16 +8,9 @@
 
 namespace ara {
 
-class WindowResizeAreas : public UINode {
+class WindowResizeAreas {
 public:
-    WindowResizeAreas();
-    ~WindowResizeAreas() override = default;
-
-    void init() override;
-    bool draw(uint32_t& objId) override { return false; }
-
-private:
-    std::vector<WindowResizeArea*> m_winResizeAreas;
+    static void addResizeAreas(UINode& root, GLFWWindow* win);
 };
 
 }  // namespace ara

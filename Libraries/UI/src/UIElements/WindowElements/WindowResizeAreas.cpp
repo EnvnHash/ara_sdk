@@ -12,74 +12,68 @@ using namespace glm;
 
 namespace ara {
 
-WindowResizeAreas::WindowResizeAreas() {
-    setTypeName<WindowResizeAreas>();
-    setName(getTypeName<WindowResizeAreas>());
-    setFocusAllowed(false);
-}
-
-void WindowResizeAreas::init() {
+void WindowResizeAreas::addResizeAreas(UINode& root, GLWindow* win) {
 #ifdef ARA_USE_GLFW
-    auto m_win = m_sharedRes->winHandle;
+    //auto m_win = m_sharedRes->winHandle;
 
     // since we are using undecorated windows in order to have our own MenuBars
     // there are no grabbers to resize the window ... so we also have to build
     // those by ourselves
     int dragAreaSize = 10;
+    std::vector<WindowResizeArea*> wra;
     for (int i = 0; i < 8; i++) {
-        m_winResizeAreas.emplace_back(&push<WindowResizeArea>());
+        wra.emplace_back(&root.push<WindowResizeArea>());
     }
 
     // top
-    m_winResizeAreas[0]->setAreaType(WindowResizeArea::AreaType::top);  // top
-    m_winResizeAreas[0]->setSize(1.f, dragAreaSize);                    // top
-    m_winResizeAreas[0]->setAlign(align::center, valign::top);
+    wra[0]->setAreaType(WindowResizeArea::AreaType::top);  // top
+    wra[0]->setSize(1.f, dragAreaSize);                    // top
+    wra[0]->setAlign(align::center, valign::top);
 
     // right
-    m_winResizeAreas[1]->setAreaType(WindowResizeArea::AreaType::right);
-    m_winResizeAreas[1]->setSize(dragAreaSize, 1.f);  // right
-    m_winResizeAreas[1]->setAlign(align::right, valign::center);
+    wra[1]->setAreaType(WindowResizeArea::AreaType::right);
+    wra[1]->setSize(dragAreaSize, 1.f);  // right
+    wra[1]->setAlign(align::right, valign::center);
     // bottom
-    m_winResizeAreas[2]->setAreaType(WindowResizeArea::AreaType::bottom);
-    m_winResizeAreas[2]->setSize(1.f, dragAreaSize);  // bottom
-    m_winResizeAreas[2]->setAlign(align::center, valign::bottom);
+    wra[2]->setAreaType(WindowResizeArea::AreaType::bottom);
+    wra[2]->setSize(1.f, dragAreaSize);  // bottom
+    wra[2]->setAlign(align::center, valign::bottom);
 
     // left
-    m_winResizeAreas[3]->setAreaType(WindowResizeArea::AreaType::left);
-    m_winResizeAreas[3]->setSize(dragAreaSize, 1.f);
-    m_winResizeAreas[3]->setAlign(align::left, valign::center);
+    wra[3]->setAreaType(WindowResizeArea::AreaType::left);
+    wra[3]->setSize(dragAreaSize, 1.f);
+    wra[3]->setAlign(align::left, valign::center);
 
     // top-left
-    m_winResizeAreas[4]->setAreaType(WindowResizeArea::AreaType::topLeft);
-    m_winResizeAreas[4]->setSize(dragAreaSize, dragAreaSize);
-    m_winResizeAreas[4]->setAlign(align::left, valign::top);
+    wra[4]->setAreaType(WindowResizeArea::AreaType::topLeft);
+    wra[4]->setSize(dragAreaSize, dragAreaSize);
+    wra[4]->setAlign(align::left, valign::top);
 
     // top-right
-    m_winResizeAreas[5]->setAreaType(WindowResizeArea::AreaType::topRight);
-    m_winResizeAreas[5]->setSize(dragAreaSize, dragAreaSize);
-    m_winResizeAreas[5]->setAlign(align::right, valign::top);
+    wra[5]->setAreaType(WindowResizeArea::AreaType::topRight);
+    wra[5]->setSize(dragAreaSize, dragAreaSize);
+    wra[5]->setAlign(align::right, valign::top);
 
     // bottom-left
-    m_winResizeAreas[6]->setAreaType(WindowResizeArea::AreaType::bottomLeft);
-    m_winResizeAreas[6]->setSize(dragAreaSize, dragAreaSize);
-    m_winResizeAreas[6]->setAlign(align::left, valign::bottom);
+    wra[6]->setAreaType(WindowResizeArea::AreaType::bottomLeft);
+    wra[6]->setSize(dragAreaSize, dragAreaSize);
+    wra[6]->setAlign(align::left, valign::bottom);
 
     // bottom-right
-    m_winResizeAreas[7]->setAreaType(WindowResizeArea::AreaType::bottomRight);
-    m_winResizeAreas[7]->setSize(dragAreaSize, dragAreaSize);
-    m_winResizeAreas[7]->setAlign(align::right, valign::bottom);
+    wra[7]->setAreaType(WindowResizeArea::AreaType::bottomRight);
+    wra[7]->setSize(dragAreaSize, dragAreaSize);
+    wra[7]->setAlign(align::right, valign::bottom);
 
-    for (auto &it : m_winResizeAreas) {
-        it->addMouseOutCb([m_win](const hidData& data) {
+    for (auto &it : wra) {
+        it->addMouseOutCb([win](const hidData& data) {
             // don't change the mouse cursor to 0 on mouse out if the new node is also a WindowResizeArea
             if (data.newNode && static_cast<UINode *>(data.newNode)->name() == getTypeName<WindowResizeAreas>()) {
                 return;
             }
 
-            m_win->setMouseCursor(WinMouseIcon::arrow);
+            win->setMouseCursor(WinMouseIcon::arrow);
         });
     }
-
 #endif
 }
 
