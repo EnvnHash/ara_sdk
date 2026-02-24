@@ -39,7 +39,7 @@ TEST(Utilities_UnitTests, ConditionalTest) {
     for (int j = 0; j < nrLoops; j++) {
         for (int i = 0; i < nrThreads; i++)
             threads.emplace_back(std::thread([&sema, &mock, &readyThreads] {
-                readyThreads++;
+                ++readyThreads;
                 sema.wait(0);
                 mock.doThing();
             }));

@@ -43,18 +43,18 @@ static Window  *root_windows;
 static int getAbsMousePos(int &root_x, int &root_y) {
 #ifndef __ANDROID__
     int    i;
-    Bool   result;
+    bool   result=false;
     Window window_returned;
 
     int          win_x, win_y;
     unsigned int mask_return;
 
     if (!display) {
-        display = XOpenDisplay(NULL);
+        display = XOpenDisplay(nullptr);
         assert(display);
         XSetErrorHandler(_XlibErrorHandler);
         numOfScreens = XScreenCount(display);
-        root_windows = (Window *)malloc(sizeof(Window) * numOfScreens);
+        root_windows = static_cast<Window *>(malloc(sizeof(Window) * numOfScreens));
         for (i = 0; i < numOfScreens; i++) {
             root_windows[i] = XRootWindow(display, i);
         }
@@ -63,11 +63,11 @@ static int getAbsMousePos(int &root_x, int &root_y) {
     for (i = 0; i < numOfScreens; i++) {
         result = XQueryPointer(display, root_windows[i], &window_returned, &window_returned, &root_x, &root_y, &win_x,
                                &win_y, &mask_return);
-        if (result == True) {
+        if (result) {
             break;
         }
     }
-    if (result != True) {
+    if (!result) {
         fprintf(stderr, "No mouse found.\n");
         return -1;
     }

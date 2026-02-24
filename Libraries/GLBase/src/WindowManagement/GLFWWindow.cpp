@@ -582,13 +582,13 @@ glm::ivec2 GLFWWindow::getLastMousePos() {
 #endif
 }
 
-glm::ivec2 GLFWWindow::getAbsMousePos() const {
-    glm::ivec2 mp{};
+ivec2 GLFWWindow::getAbsMousePos() const {
+    ivec2 mp{};
     mouse::getAbsMousePos(mp.x, mp.y);
 #ifdef __APPLE__
     return mp;
 #else
-    return glm::ivec2{static_cast<int>(static_cast<float>(mp.x) / m_contentScale.x), static_cast<int>(static_cast<float>(mp.y) / m_contentScale.y)};
+    return ivec2{static_cast<int>(static_cast<float>(mp.x) / m_contentScale.x), static_cast<int>(static_cast<float>(mp.y) / m_contentScale.y)};
 #endif
 }
 

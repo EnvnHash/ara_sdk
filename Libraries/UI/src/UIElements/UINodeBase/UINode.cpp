@@ -527,17 +527,22 @@ bool UINode::objPosIt(ObjPosIt& opi) {
         }
     }
 
-    if (inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible() && opi.foundTreeLevel < opi.treeLevel) {
-        opi.foundNode      = opiIt;
-        opi.foundId        = opiIt->getId();
-        opi.foundTreeLevel = opi.treeLevel;
-        // call hid interaction method on node, can optionally stop iteration
+    bool inAndVisible = inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible();
+    if (inAndVisible) {
+        if (opi.foundTreeLevel < opi.treeLevel) {
+            opi.foundNode      = opiIt;
+            opi.foundId        = opiIt->getId();
+            opi.foundTreeLevel = opi.treeLevel;
+            // call hid interaction method on node, can optionally stop iteration
+        }
+
+        // if within bounds, not excluded from objMap and no more children -> found it!!
+        if (opiIt->m_children.empty()) {
+            return false;
+        }
     }
 
-    // if within bounds, not excluded from objMap and no more children -> found it!!
-    if (inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible() && opiIt->m_children.empty()) {
-        return false;
-    } else if (inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible() && !opiIt->m_children.empty()) {
+    if (inAndVisible && !opiIt->m_children.empty()) {
         // if within bounds and more children -> step down
         opi.parents.emplace_back(opi.it);
         opi.list = &(*opi.it)->children();

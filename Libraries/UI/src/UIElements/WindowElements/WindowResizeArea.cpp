@@ -11,7 +11,7 @@ using namespace glm;
 
 namespace ara {
 
-WindowResizeArea::WindowResizeArea() : m_type(AreaType::top) {
+WindowResizeArea::WindowResizeArea() {
     m_canReceiveDrag = true;
     setFocusAllowed(false);
     setTypeName<WindowResizeArea>();
@@ -93,13 +93,11 @@ void WindowResizeArea::mouseDrag(hidData& data) {
     ivec2 newSize{0, 0};
 
     auto absMousePos = m_sharedRes->winHandle->getAbsMousePos();
-
     if (data.dragStart) {
         m_dragStartWinPos  = m_sharedRes->winHandle->getPosition();
         m_dragStartWinSize = m_sharedRes->winHandle->getSize();
         m_sharedRes->winHandle->setBlockMouseIconSwitch(true);
         m_mouseDownPixelPos = absMousePos;
-
     } else {
         auto pixOffs = absMousePos - m_mouseDownPixelPos;
         switch (m_type) {
@@ -143,7 +141,7 @@ void WindowResizeArea::mouseDrag(hidData& data) {
             newSize.y = std::max<int>(newSize.y, m_sharedRes->minWinSize->y);
         }
 
-        static_cast<UIWindow *>(m_sharedRes->win)->addWinCb([this, newPos, newSize]() {
+        static_cast<UIWindow *>(m_sharedRes->win)->addWinCb([this, newPos, newSize] {
             // the effect of winHandle->setSize is immediate, so there will be a visual artefact, since the draw buffer
             // will not be updated immediately ... most applications ignore this artefact...
 

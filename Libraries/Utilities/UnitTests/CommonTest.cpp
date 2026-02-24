@@ -53,7 +53,7 @@ namespace ara {
 
     TEST_F(UtilityTest, InterpolVal) {
         float array[] = {0.0f, 1.0f, 2.0f, 3.0f};
-        int arraySize = sizeof(array) / sizeof(array[0]);
+        int arraySize = std::size(array);
 
         EXPECT_NEAR(interpolVal(0.5f, arraySize, array), 0.5f, 0.001);
         EXPECT_NEAR(interpolVal(1.5f, arraySize, array), 1.5f, 0.001);
@@ -62,7 +62,7 @@ namespace ara {
 
     TEST_F(UtilityTest, InterpolVal2) {
         float array[] = {0.0f, 1.0f, 2.0f, 3.0f};
-        int arraySize = sizeof(array) / sizeof(array[0]);
+        int arraySize = std::size(array);
 
         EXPECT_NEAR(interpolVal(0.5f, arraySize, array), 0.5f, 0.001);
         EXPECT_NEAR(interpolVal(1.5f, arraySize, array), 1.5f, 0.001);

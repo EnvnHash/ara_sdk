@@ -19,20 +19,21 @@ static void drawAndSwap(ara::UIApplication& app) {
     app.getMainWindow()->swap();
 }
 
-static void stdAppSetup(ara::UIApplication& app, int width, int height) {
+static void stdAppSetup(ara::UIApplication& app, int width, int height, bool enableMenuAndResizeHandles=false) {
     app.setWinWidth(width);
     app.setWinHeight(height);
-    app.setEnableMenuBar(false);
+    app.setEnableMenuBar(enableMenuAndResizeHandles);
+    app.setEnableWindowResizeHandles(enableMenuAndResizeHandles);
     app.setScaleToMonitor(false);
-    app.setEnableWindowResizeHandles(false);
 }
 
 static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
                     const std::function<void(ara::UIApplication&)>& verifyFunc,
                     int width=1280, int height=720,
-                    const std::function<void(ara::UIApplication&)>& postInitFunc=nullptr) { // width and height are in hardware pixels (non-scaled)
+                    const std::function<void(ara::UIApplication&)>& postInitFunc=nullptr,
+                    bool enableMenuAndResizeHandles=false) { // width and height are in hardware pixels (non-scaled)
     ara::UIApplication app;
-    stdAppSetup(app, width, height);
+    stdAppSetup(app, width, height, enableMenuAndResizeHandles);
 
     app.initSingleThreaded([&]{
         drawFunc(app);

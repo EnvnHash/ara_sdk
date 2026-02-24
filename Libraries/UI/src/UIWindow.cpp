@@ -1099,7 +1099,7 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
     m_lastHoverFound = foundNode;
 
     m_hidData.movedPix = m_hidData.mousePos - m_mouseDownPos;
-    bool isValidDrag = length(m_hidData.movedPix) > (4.f * s_devicePixelRatio);
+    bool isValidDrag = length(m_hidData.movedPix) > 4.f * s_devicePixelRatio;
 
     if ((m_hidData.mousePressed || m_hidData.mouseRightPressed) && !m_draggingNodeTree.empty() &&
         (!m_hidData.dragStart || isValidDrag)) {
