@@ -108,7 +108,7 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
 
     std::list<std::future<void>> futures;
     const auto tc = g_thread_pool.get_thread_count();
-    uint32_t ySlices = height / tc;
+    auto ySlices = height / static_cast<uint32_t>(tc);
     
     for (uint32_t i=0; i<tc; i++) {
         futures.emplace_back(g_thread_pool.submit_task([&data, pBitmap, width, ySlices, i, eps]() {

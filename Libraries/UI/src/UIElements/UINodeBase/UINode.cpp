@@ -81,7 +81,7 @@ uint32_t UINode::getMinChildId(uint32_t minId) const {
     return nextMinId;
 }
 
-uint32_t UINode::getMaxChildId(uint32_t maxId) {
+uint32_t UINode::getMaxChildId(uint32_t maxId) const {
     auto nextMaxId = std::max(m_objIdMax, maxId);
 
     for (const auto& child : m_children) {
@@ -95,7 +95,7 @@ uint32_t UINode::getMaxChildId(uint32_t maxId) {
     return nextMaxId;
 }
 
-UINode* UINode::getNodeById(uint32_t searchID) {
+UINode* UINode::getNodeById(uint32_t searchID) const {
     for (const auto& child : m_children) {
         auto node = dynamic_cast<UINode*>(child.get());
         if (node->getId() == searchID) {
@@ -125,9 +125,8 @@ bool UINode::getNodeIt(UINode* node, UINode** fn, const std::string& name) {
     if (node->m_name == name) {
         *fn = node;
         return true;
-    } else {
-        return ranges::any_of(node->m_children, [&](auto& it){ return getNodeIt(dynamic_cast<UINode*>(it.get()), fn, name); });
     }
+    return ranges::any_of(node->m_children, [&](auto& it){ return getNodeIt(dynamic_cast<UINode*>(it.get()), fn, name); });
 }
 
 UINode* UINode::getRoot() {
@@ -138,12 +137,12 @@ UINode* UINode::getRoot() {
     return out;
 }
 
-bool UINode::isInBounds(glm::vec2& pos) {
+bool UINode::isInBounds(vec2& pos) {
     return !(!m_visible || m_referenceDrawing) && UINodeGeom::isInBounds(pos);
 }
 
 // node argument refers to a child node
-bool UINode::recChildrenBoundBox(glm::vec4& ref) {
+bool UINode::recChildrenBoundBox(vec4& ref) {
     if (!m_visible || m_excludeFromParentContentTrans) {
         return false;
     }
@@ -582,7 +581,7 @@ void UINode::reqUpdtTree() const {
 void UINode::limitDrawVaoToBounds(const vector<DivVaoData>::iterator& dIt, vec2& size, vec2& uvDiff, vec4& scIndDraw, vec4& vp) {
     dIt->pos.y *= -1.f;
 
-    bool limit = glm::compAdd(scIndDraw) > 0.f;
+    bool limit = compAdd(scIndDraw) > 0.f;
     for (int i = 0; i < 2; i++) {
         // convert to pixels and limit to NDC bounds
         dIt->pos[i] = (dIt->pos[i] * 0.5f + 0.5f) * vp[2 + i];

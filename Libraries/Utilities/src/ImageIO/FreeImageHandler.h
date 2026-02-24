@@ -53,6 +53,7 @@ std::array<uint32_t, 2> GetSizeFromBitmap(FIBITMAP* bitmap);
 uint8_t                 GetNumChannels(FIBITMAP* bitmap);
 FIBITMAP*               ConvertTo32Bits(FIBITMAP* bitmap);
 void                    Save(const std::string& filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf);
+void                    vFlip(std::vector<uint8_t>& vp, uint32_t width, uint32_t height, uint32_t bpp);
 
 static uint8_t*         GetBits(FIBITMAP* bitmap) { return FreeImage_GetBits(bitmap); }
 static void             Unload(FIBITMAP* bitmap) { FreeImage_Unload(bitmap); }

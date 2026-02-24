@@ -133,7 +133,7 @@ protected:
 
     unsigned  m_tOpt = 0;                 // options
     glm::vec2 m_tPos{0.f}, m_tSize{0.f};  // pixel space, offset and size
-    glm::vec2 m_tSep{0.f};                // font pixel character separation (default=0,0)
+    glm::vec2 m_tSep{0.f};                // additional font pixel character separation (default=0,0)
     align     m_tAlignX = align::center;
     valign    m_tAlignY = valign::center;
     glm::vec2 m_offset{0.f};

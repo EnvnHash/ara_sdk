@@ -38,6 +38,8 @@ TEST(UITest, CollapsibleTreeTest) {
     appBody([&](UIApplication& app){
         addCollapsibleTree(app);
     }, [&](UIApplication& app){
+        Texture::saveFrontBuffer(filesystem::current_path() / "collapse_list_test.png", FIF_PNG,
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 4);
         compareFrameBufferToImage(filesystem::current_path() / "collapse_list_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 250, 200);
@@ -54,7 +56,6 @@ TEST(UITest, CollapsibleTreeExp1Test) {
 
         app.getWinBase()->draw(0, 0, 0);
         mainWin->swap();
-
         Texture::saveFrontBuffer(filesystem::current_path() / "collapse_list_exp1_test.png", FIF_PNG,
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 4);
 

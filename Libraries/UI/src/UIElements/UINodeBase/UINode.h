@@ -234,14 +234,14 @@ public:
     auto&                   getDivData() { return m_indDrawBlock.vaoData; }
     auto&                   getIndDrawBlock() { return m_indDrawBlock; }
     uint32_t                getMinChildId(uint32_t minId = UINT32_MAX) const;
-    uint32_t                getMaxChildId(uint32_t maxId = 0);
+    uint32_t                getMaxChildId(uint32_t maxId = 0) const;
     [[nodiscard]] auto      getId() const { return m_objIdMin; }
     [[nodiscard]] auto      getMinId() const { return m_objIdMin; }
     [[nodiscard]] auto      getMaxId() const { return m_objIdMax; }
     UINode*                 getRoot();
     UINode*                 getParent() override { return m_parent; }
     UINode*                 getNode(const std::string& name);
-    UINode*                 getNodeById(uint32_t searchID);
+    UINode*                 getNodeById(uint32_t searchID) const;
     virtual float           getValue() { return 0.f; }
 
     [[nodiscard]] bool containsObjectId(uint32_t id) const { return (id >= m_objIdMin && id <= m_objIdMax); }
@@ -302,7 +302,7 @@ public:
     void util_FillRect(glm::ivec4& r, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
 
 protected:
-    bool getNodeIt(UINode* node, UINode** fn, const std::string& name);
+    static bool getNodeIt(UINode* node, UINode** fn, const std::string& name);
 
     std::shared_ptr<DrawManager>            m_drawMan;
     ObjectMapInteraction*                   m_objSel = nullptr;

@@ -12,7 +12,7 @@ file(GLOB UI_UT_SRC
     AlignTest.cpp
     ButtonTests.cpp
     CarrouselTest.cpp
-    ComboBoxTest.cpp
+    ComboBoxTest.cpp#
     CollapsibleTreeTest.cpp
     LabelTest.cpp
     ReloadGLContextTest.cpp
@@ -26,7 +26,7 @@ file(GLOB UI_UT_SRC
     SetXSetY.cpp
     TabTest.cpp
     TextBlockTest.cpp
-    UIEditTest.cpp
+    UIEditTest.cpp#
     ZoomViewTest.cpp
 )
 

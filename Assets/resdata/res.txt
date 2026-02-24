@@ -495,15 +495,14 @@ demos {
 		
 		label {	
 			x:10px
-			y:760px
-			width:380px
+			y:540px
+			width:500px
 			height:80px
 			
 			color:hsla(220,10,90,1)
 			bkcolor:hsla(220,10,20,1)
 		
-			border-width:1
-			border-radius:0
+			border-width:2
 			border-color:hsla(20,80,50,1)
 			
 			padding:1

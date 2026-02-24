@@ -340,8 +340,8 @@ void UIEdit::keyDown(hidData& data) {
     bool updateValue = false;
     if (!getSelRange(m_charSelection)) {
         if (data.key == ARA_KEY_BACKSPACE && m_caretIndex > 0 && !m_text.empty()) {
-            m_text.erase(std::min<int>(std::max<int>(--m_caretIndex - 1, 0), static_cast<int>(m_text.size()) - 1), 1);
-            reqUpdtGlyphs(true);
+            eraseContent(m_caretIndex -1, m_caretIndex);
+            --m_caretIndex;
             updateValue = true;
         } else if (data.key == ARA_KEY_DELETE && (m_caretIndex < static_cast<int>(m_text.size()))) {
             m_text.erase(m_caretIndex, 1);

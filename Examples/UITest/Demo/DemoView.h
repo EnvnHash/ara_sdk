@@ -15,7 +15,7 @@ namespace ara {
 
 class DemoView : public Div {
 public:
-    DemoView(std::string title, glm::vec4 bk_color);
+    DemoView(const std::string &title, glm::vec4 bk_color);
 private:
     Label*                      m_label=nullptr;
     glm::vec4                   m_textcolor=glm::vec4{1.f};

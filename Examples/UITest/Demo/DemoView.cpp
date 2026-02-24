@@ -5,9 +5,9 @@ using namespace glm;
 using namespace std;
 using namespace ara;
 
-DemoView::DemoView(std::string title, vec4 bk_color) {
+DemoView::DemoView(const std::string &title, const vec4 bk_color) {
     setName(getTypeName<DemoView>());
-    setBackgroundColor(bk_color);
+    UINodeStyle::setBackgroundColor(bk_color);
     setPadding(20.f);
 
     m_label = &push<Label>({ .size = ivec2{400,60} });

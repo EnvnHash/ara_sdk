@@ -5,7 +5,7 @@ using namespace ara;
 using namespace glm;
 using namespace std;
 
-DemoView_ScrollView_3::DemoView_ScrollView_3() : DemoView("Scroll View demo / Horizontal arrange",glm::vec4(.15f,.15f,.15f,1.f)) {
+DemoView_ScrollView_3::DemoView_ScrollView_3() : DemoView("Scroll View demo / Horizontal arrange",vec4(.15f,.15f,.15f,1.f)) {
     setName(getTypeName<DemoView_ScrollView_3>());
 }
 

@@ -185,6 +185,22 @@ FIBITMAP* ConvertTo32Bits(FIBITMAP* bitmap) {
     return dib32;
 }
 
+void vFlip(std::vector<uint8_t>& input, uint32_t width, uint32_t height, uint32_t bpp) {
+    Initialize();
+
+    auto bitmap = FreeImage_ConvertFromRawBits(input.data(), width, height, width, bpp, 0xFF, 0xFF, 0xFF);
+    if (!bitmap) {
+        throw std::runtime_error("Failed to create FIBITMAP from input data.");
+    }
+
+    FreeImage_FlipVertical(bitmap);
+
+    uint8_t* flipped_data = FreeImage_GetBits(bitmap);
+    memcpy(input.data(), flipped_data, input.size());
+
+    FreeImage_Unload(bitmap);
+}
+
 }
 
 #endif

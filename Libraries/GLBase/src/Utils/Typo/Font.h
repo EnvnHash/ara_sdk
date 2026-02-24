@@ -34,14 +34,15 @@ public:
     bool create(const std::string &font_path, int size, float pixRatio);
     bool create(const std::vector<uint8_t> &vp, const std::string &font_path, int size, float pixRatio);
 
-    glm::ivec2 calculateAtlasSize(void* info, float fontHeight, int padding=1);
-    void pushGlyphAtlas(int wh, const std::vector<uint8_t>& bmp);
+    static glm::ivec2 getOptimalAtlasPixSize(const int32_t& ch_off, const int32_t& ch_count, const uint8_t* buff, float fontSize);
+    void pushGlyphAtlas(uint32_t wh, const std::vector<uint8_t>& bmp);
     int drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, glm::vec2 off,
                     glm::vec2 maskPos, glm::vec2 maskSize) const;
 
     int write(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float x, float y, const std::string &str);
     int writeFormat(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float x, float y, char *f, ...);
 
+    void setOversampling(int32_t val) { m_overSampling = static_cast<float>(val); }
     void setFontType(std::string fonttype) { m_fontType = std::move(fonttype); }
     void setTexLayer(GLuint texId, GLuint layerId, GLuint layerSize);
 
@@ -49,30 +50,32 @@ public:
     [[nodiscard]] bool      isOK() const { return !m_glyphs.empty(); }
     [[nodiscard]] auto&     getGlyphTexSize() const { return m_glyphTexSize; }
     [[nodiscard]] float     getPixHeight() const { return static_cast<float>(m_fontSize); }                 ///> return in virtual pixels
-    [[nodiscard]] float     getPixAscent() const { return static_cast<float>(m_fontVMetrics[0]) * m_FontScale / m_pixRatio; }   ///> return in virtual pixels
-    [[nodiscard]] float     getPixDescent() const { return static_cast<float>(m_fontVMetrics[1]) * m_FontScale / m_pixRatio; }  ///> return in virtual pixels
-    [[nodiscard]] float     getPixLineGap() const { return static_cast<float>(m_fontVMetrics[2]) * m_FontScale / m_pixRatio; }  ///> return in virtual pixels
-    [[nodiscard]] float     getScale() const { return m_FontScale / m_pixRatio; }              ///> return in virtual pixels
+    [[nodiscard]] float     getPixAscent() const { return m_fontVMetrics.ascent / m_pixRatio; }   ///> return in virtual pixels
+    [[nodiscard]] float     getPixDescent() const { return m_fontVMetrics.descent / m_pixRatio; }  ///> return in virtual pixels
+    [[nodiscard]] float     getPixLineGap() const { return m_fontVMetrics.lineGap / m_pixRatio; }  ///> return in virtual pixels
+    [[nodiscard]] float     getScale() const { return m_fontScale / m_pixRatio; }              ///> return in virtual pixels
     [[nodiscard]] float     getPixRatio() const { return m_pixRatio; }
     [[nodiscard]] float     getPixHeightHwp() const { return m_hwFontSize; }                       ///> return in hw pixels
-    [[nodiscard]] float     getPixAscentHwp() const { return static_cast<float>(m_fontVMetrics[0]) * m_FontScale; }   ///> return in hw pixels
-    [[nodiscard]] float     getPixDescentHwp() const { return static_cast<float>(m_fontVMetrics[1]) * m_FontScale; }  ///> return in hw pixels
-    [[nodiscard]] float     getPixLineGapHwp() const { return static_cast<float>(m_fontVMetrics[2]) * m_FontScale; }  ///> return in hw pixels
-    [[nodiscard]] float     getScaleHwp() const { return m_FontScale; }                            ///> return in hw pixels
+    [[nodiscard]] float     getPixAscentHwp() const { return m_fontVMetrics.ascent; }   ///> return in hw pixels
+    [[nodiscard]] float     getPixDescentHwp() const { return m_fontVMetrics.descent; }  ///> return in hw pixels
+    [[nodiscard]] float     getPixLineGapHwp() const { return m_fontVMetrics.lineGap; }  ///> return in hw pixels
+    [[nodiscard]] float     getScaleHwp() const { return m_fontScale; }                            ///> return in hw pixels
     [[nodiscard]] GLuint    getTexId() const { return gl_TexID; }
     [[nodiscard]] GLuint    getLayerTexId() const { return m_layerTexId; }
     [[nodiscard]] GLuint    getLayerTexLayerId() const { return m_layerTexLayerId; }
     [[nodiscard]] float     getLayerTexLayerIdRel() const { return m_layerTexLayerIdRel; }
     [[nodiscard]] GLuint    getLayerTexSize() const { return m_layerTexSize; }
-    e_fontglyph*            getGlyph(int cp);
+    [[nodiscard]] float     getOverSamplling() const { return m_overSampling; }
+    Fontglyph*              getGlyph(int cp);
 
 private:
-    std::vector<e_fontglyph> m_glyphs;
+    std::vector<Fontglyph> m_glyphs;
     Shaders                 *m_glyphShader        = nullptr;
     GLuint                   gl_TexID             = 0;
-    float                    m_FontScale          = 0.f;        ///> in hw pixels
+    float                    m_fontScale          = 0.f;        ///> in hw pixels
     float                    m_pixRatio           = 1.f;        ///> fontSize up or downscaling, display dpi dependent
-    int                      m_fontVMetrics[3]    = {0, 0, 0};  ///> [0]:ascent,[1]:descent,[2]:lineGap, in hw pixels
+    //int                      m_fontVMetrics[3]    = {0, 0, 0};  ///> [0]:ascent,[1]:descent,[2]:lineGap, in hw pixels
+    AtlasPar                 m_fontVMetrics{};
     int                      m_codepointRange[2] = {32, 255};
     glm::uvec2               m_glyphTexSize{};
     int                      m_texLayerInd = 0;    ///> Layer index into the FontLists 3d texture containing this font
@@ -85,6 +88,7 @@ private:
     GLuint                   m_layerTexLayerId    = 0;
     GLuint                   m_layerTexSize       = 0;
     float                    m_layerTexLayerIdRel = 0;
+    float                    m_overSampling = 2.f;
 
     // temporary local variables, made member variables for performance reasons
     bool           ret  = false;

@@ -265,7 +265,7 @@ void TextBlock::updateFontGeo() {
 
 void TextBlock::prepareSelBgVao() {
     list<pair<vec2, vec2>> lines;  // Left/Top,  Right/Bottom
-    for (e_fontline &l : m_fontDGV.getFontLines()) {
+    for (auto &l : m_fontDGV.getFontLines()) {
         if (l.ptr[0] && l.ptr[1]) {
             std::array<int32_t, 2> ci{};  /// first and last character index
 

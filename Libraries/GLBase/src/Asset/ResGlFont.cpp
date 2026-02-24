@@ -130,9 +130,8 @@ void FontList::update3DLayers() {
 #endif
                 m_fbo.setGlbase(m_glbase);
                 m_fbo.getActStates();  // save last state
-                std::array<int32_t, 4> currScissor;
-                glGetIntegerv(GL_SCISSOR_BOX, currScissor.data());
                 m_fbo.genFbo();
+                glDisable(GL_SCISSOR_TEST);
 
                 std::array<GLenum, 2> bufModes = {GL_NONE, GL_COLOR_ATTACHMENT1};
                 glDrawBuffers(2, &bufModes[0]);
@@ -154,7 +153,7 @@ void FontList::update3DLayers() {
 
                 m_fbo.deleteFbo();
                 m_fbo.restoreStates();  // restore states
-                glScissor(currScissor[0], currScissor[1], currScissor[2], currScissor[3]);
+                glEnable(GL_SCISSOR_TEST);
 
 #ifdef __APPLE__
             } else {

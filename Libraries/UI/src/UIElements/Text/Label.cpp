@@ -308,7 +308,7 @@ void Label::prepareVao(bool checkFontTex) {
 
         size_t ind    = 0;
         size_t elmInd = 0;
-        for (e_fontdglyph& g : m_fontDGV.getGlyphs()) {
+        for (auto& g : m_fontDGV.getGlyphs()) {
             if (g.glyphPtr) {
                 for (const auto& v : m_vtxPos) {
                     tuv                = glm::floor(m_bo + g.pos + v * g.size);
@@ -375,7 +375,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
                 break;
             }
 
-            tuv = floor(m_bo + g.pos + v * g.size);
+            tuv = m_bo + g.pos + v * g.size;
 
             ld->aux1.x = tuv.x;
             ld->aux1.y = tuv.y;

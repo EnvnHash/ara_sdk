@@ -40,7 +40,7 @@ public:
     /// get a reference to GLBase instance containing all opengl related shared resources
     auto getGLBase() { return &m_glbase; }
     auto getMainWindow() const { return m_mainWindow; }
-    const glm::ivec2& getWinSize() { return m_winSize; }
+    const glm::ivec2& getWinSize() const { return m_winSize; }
 
     virtual void update() { m_iterate.notify(); }
 
@@ -48,7 +48,7 @@ public:
     void setWinHeight(int g) { m_winSize.y = g; }
     void setWinSize(const glm::ivec2& s) { m_winSize = s; }
     void setWinSizeReal(const glm::ivec2& s) { m_winSizeReal = s; }
-    void setRunFlag(bool val) { m_run = val; }
+    void setRunFlag(const bool val) { m_run = val; }
 
 public:
     std::string m_internalPath;
@@ -68,8 +68,8 @@ protected:
     Conditional m_initSema;
     UIWindow*   m_mainWindow = nullptr;
     Conditional m_iterate;
-    glm::ivec2  m_winSize = { 1280, 720 };
-    glm::ivec2  m_winSizeReal = { 1280, 720 };
+    glm::ivec2  m_winSize = { 1440, 900 };
+    glm::ivec2  m_winSizeReal = { 1440, 900 };
 
 #ifdef ARA_USE_GLBASE
     GLBase m_glbase;

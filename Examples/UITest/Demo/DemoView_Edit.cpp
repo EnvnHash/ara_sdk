@@ -12,7 +12,7 @@ using namespace ara;
 using namespace glm;
 using namespace std;
 
-DemoView_Edit::DemoView_Edit() : DemoView("Edit Demo",glm::vec4(.15f,.15f,.15f,1.f)) {
+DemoView_Edit::DemoView_Edit() : DemoView("Edit Demo",vec4(.15f,.15f,.15f,1.f)) {
     setName(getTypeName<DemoView_Edit>());
     UINodeStyle::addStyleClass("demos.edit");
     setScissorChildren(true);
@@ -33,8 +33,6 @@ void DemoView_Edit::init() {
     ed.setFontSize(19);
     ed.setSingleLine();
 
-    push<Label>({ .style = getStyleClass()+".ed-sl-label" });
-
     auto& ed2 = push<UIEdit>();
     ed2.addStyleClass(getStyleClass()+".ed-sl");
     ed2.setOpt(UIEdit::single_line | UIEdit::num_int);
@@ -43,13 +41,13 @@ void DemoView_Edit::init() {
     ed2.setOnFocusedCb([]{ LOG << "focused"; });
     ed2.setOnLostFocusCb([]{ LOG << "lost focus";  });
     ed2.setUseWheel(true);
-
-    push<Label>({ .style = getStyleClass()+".ed-sl-label-float" });
+    push<Label>({ .style = getStyleClass()+".ed-sl-label" });
 
     auto& ed3 = push<UIEdit>(UINodePars{ .style = getStyleClass()+".ed-sl-float" });
     ed3.setOpt(UIEdit::single_line | UIEdit::num_fp);
-    ed3.setValue(1.f);
+    ed3.setValue(1.234f);
     ed3.setUseWheel(true);
+    push<Label>({ .style = getStyleClass()+".ed-sl-label-float" });
 
     auto& ed4 = push<UIEdit>(UINodePars{
         .pos = ivec2{10,200},
@@ -68,6 +66,4 @@ void DemoView_Edit::init() {
         .style = getStyleClass()+".tb-color"
     });
     tb.setText("HEADLINE:\n\nLorem ipsum dolor sit ##[120,0,255,255]amet, consectetur adipiscing elit. ##[0,0,255,255]Sed neque ligula, tristique euismod scelerisque ut, finibus id libero. ##[255,0,0,255]Praesent sagittis consectetur consequat. Integer et elit sed lorem finibus placerat in sit amet libero. Praesent sed nibh nec magna auctor aliquam quis ultrices sapien. ");
-
-    push<Label>({ .style = getStyleClass()+".label" });
 }
