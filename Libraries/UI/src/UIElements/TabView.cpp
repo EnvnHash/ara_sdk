@@ -100,7 +100,7 @@ void TabView::arrangeTabs() {
     m_Tab.updateGeo(m_tabArea->getSize().x, m_tabArea->getSize().y, 0, 0, 0, 0, 5, 0);
 
     int            i = 0;
-    eTable_CellGeo cg;
+    Table_CellGeo cg;
 
     for (auto&[title, ui_Node, tab, underline, selected] : m_Tab) {
         if (m_Tab.getCellGeo(cg, i++)) {

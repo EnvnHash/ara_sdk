@@ -27,7 +27,7 @@ public:
     int32_t getHeight();
     int32_t getBitCount();
     int32_t getCurrFrame() { return m_currFrame; }
-    int32_t getNumFrames() { return m_textures.size(); }
+    int32_t getNumFrames() { return static_cast<int32_t>(m_textures.size()); }
 
 private:
     std::vector<Texture>                    m_textures;

@@ -35,11 +35,10 @@ void DemoView_Table_2::init() {
     taux->setColor(.4f, .4f, 0.6f, 1.f);
     taux->setBackgroundColor(.2f, .2f, .2f, 1.0f);
 
-    Label* l =  ui_Table->setCell<Label>(0, 1);
+    auto l =  ui_Table->setCell<Label>(0, 1);
     l->setColor(1.f, 1.f, 0.8f, 1.f);
     l->setBackgroundColor(.3f, .3f, .4f, 1.0f);
     l->setPadding(10.f, 0.f, 0.f, 0.f);
     l->setText("TABLE TITLE SAMPLE (FIXED ROW)");
     l->setTextAlignY(valign::center);
-
 }

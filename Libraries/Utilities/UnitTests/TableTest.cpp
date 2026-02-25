@@ -46,7 +46,7 @@ TEST(TableRCTest, AddPercentElements) {
 
 TEST(TableRC, InsertElements) {
     TableRC tableRC;
-    eTable_rc tb{10.0f, dTableType::Pix};
+    Table_rc tb{10.0f, dTableType::Pix};
     ASSERT_TRUE(tableRC.ins(-1, 1, tb));
     ASSERT_EQ(tableRC.getCount(), 1);
     EXPECT_FLOAT_EQ(tableRC(0).value, 10.0f);
@@ -54,7 +54,7 @@ TEST(TableRC, InsertElements) {
 
 TEST(TableRC, SetElements) {
     TableRC tableRC;
-    eTable_rc tb{20.0f, dTableType::Pix};
+    Table_rc tb{20.0f, dTableType::Pix};
     tableRC.ins(-1, 1, tb);
     tb.value = 30.0f;
     EXPECT_TRUE(tableRC.set(0, tb));
@@ -63,7 +63,7 @@ TEST(TableRC, SetElements) {
 
 TEST(TableRC, GetElements) {
     TableRC tableRC;
-    eTable_rc tb{40.0f, dTableType::Pix};
+    Table_rc tb{40.0f, dTableType::Pix};
     tableRC.ins(-1, 1, tb);
     EXPECT_FLOAT_EQ(tableRC.get(0).value, 40.0f);
 }
@@ -142,7 +142,7 @@ TEST(TableRCTest, DeletionTest) {
 TEST(TableRCTest, SetOperations) {
     ara::TableRC table_rc;
     EXPECT_TRUE(table_rc.add(1));
-    eTable_rc rc{5.0f, dTableType::Pix};
+    Table_rc rc{5.0f, dTableType::Pix};
     EXPECT_TRUE(table_rc.set(0, rc));
 
     rc.type = dTableType::Percent;

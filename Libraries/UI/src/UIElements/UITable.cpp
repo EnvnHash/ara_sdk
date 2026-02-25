@@ -42,11 +42,11 @@ UITable::UITable(const UITableParameters& par) {
             [&] { addStyleClass(par.style.value()); },
             [&] {
                 if (par.topology.value().y) {
-                    m_Cells(0).add(par.topology.value().y);
+                    m_cells(0).add(par.topology.value().y);
                     updateCells = true;
                 }
                 if (par.topology.value().x) {
-                    m_Cells(1).add(par.topology.value().x);
+                    m_cells(1).add(par.topology.value().x);
                     updateCells = true;
                 } },
             [&] { UITable::setMargins(par.margin.value().x, par.margin.value().y); },
@@ -65,30 +65,30 @@ int UITable::geo_Update() {
     m_geoUpdating = true;
 
     if (getDynamicWidth()) {
-        float v = m_Cells(1).calculatePixGeo(m_margin[0].x, m_margin[1].x, m_spacing.x);
+        float v = m_cells(1).calculatePixGeo(m_margin[0].x, m_margin[1].x, m_spacing.x);
         if (v != getContentSize().x) {
             setWidth(static_cast<int>(v));
         }
     }
 
     if (getDynamicHeight()) {
-        float v = m_Cells(0).calculatePixGeo(m_margin[0].y, m_margin[1].y, m_spacing.y);
+        float v = m_cells(0).calculatePixGeo(m_margin[0].y, m_margin[1].y, m_spacing.y);
         if (v != getContentSize().y) {
             setHeight(static_cast<int>(v));
         }
     }
 
-    if (!m_Cells.updateGeo(getContentSize().x, getContentSize().y, m_margin[0].x, m_margin[0].y, m_margin[1].x,
+    if (!m_cells.updateGeo(getContentSize().x, getContentSize().y, m_margin[0].x, m_margin[0].y, m_margin[1].x,
                            m_margin[1].y, m_spacing.x, m_spacing.y)) {
         return 0;
     }
 
     UINode*        uinode = nullptr;
-    eTable_CellGeo cg;
+    Table_CellGeo cg;
     int            i = 0;
 
-    for (e_cell& cell : m_Cells) {
-        if (m_Cells.getCellGeo(cg, i)) {
+    for (e_cell& cell : m_cells) {
+        if (m_cells.getCellGeo(cg, i)) {
             if ((uinode = cell.ui_node) != nullptr) {
                 if (uinode->getPos().x != cg.pixPos[0] || uinode->getPos().y != cg.pixPos[1]) {
                     uinode->setPos(static_cast<int>(cg.pixPos[0]), static_cast<int>(cg.pixPos[1]));
@@ -108,24 +108,24 @@ int UITable::geo_Update() {
     }
 
     m_geoUpdating = false;
-    return m_Cells.getCellCount();
+    return m_cells.getCellCount();
 }
 
 void UITable::setRowHeight(int32_t idx, int32_t heightInPix) {
-    m_Cells(0).setPix(idx, heightInPix);
+    m_cells(0).setPix(idx, heightInPix);
 }
 
 /** to be used for moving UINodes from existing parents to the table */
 UINode* UITable::setCell(int row, int column, const vector<shared_ptr<UINode> >::iterator& nodeIt) {
-    if (int idx; (idx = m_Cells.rowColumnToIndex(row, column, true)) >= 0) {
+    if (int idx; (idx = m_cells.rowColumnToIndex(row, column, true)) >= 0) {
         // get the cell's ui_node
-        auto cell = m_Cells[idx].ui_node;
+        auto cell = m_cells[idx].ui_node;
 
         // move from another parent to the cell
         cell->children().insert(cell->children().end(), std::make_move_iterator(nodeIt),
                                    std::make_move_iterator(nodeIt + 1));
 
-        m_Cells[idx].content = dynamic_cast<UINode *>(cell->children().back().get());
+        m_cells[idx].content = dynamic_cast<UINode *>(cell->children().back().get());
     }
 
     geo_Update();
@@ -141,15 +141,19 @@ void UITable::updateMatrix() {
 
 void UITable::mouseDrag(hidData& data) {
     if (mouseEvent & 1) {
-        m_Cells.updateSepInt(&data.mousePosNodeRel[0]);
+        m_cells.updateSepInt(data.mousePosNodeRel);
         setDrawFlag();
         m_geoChanged = true;
+        data.consumed = true;
     }
 }
 
 void UITable::mouseMove(hidData& data) {
-    pp[0] = m_Cells(1).evalByPix(ii[0], data.mousePosNodeRel.x);
-    pp[1] = m_Cells(0).evalByPix(ii[1], data.mousePosNodeRel.y);
+    std::array<dTableType, 2>   pp{};
+    ivec2                       ii {};
+
+    pp[0] = m_cells(1).evalByPix(ii.x, data.mousePosNodeRel.x);
+    pp[1] = m_cells(0).evalByPix(ii.y, data.mousePosNodeRel.y);
 
 #ifdef ARA_USE_GLFW
     if (pp[0] == dTableType::Separator && pp[1] == dTableType::Separator) {
@@ -162,6 +166,7 @@ void UITable::mouseMove(hidData& data) {
         m_sharedRes->winHandle->setMouseCursor(WinMouseIcon::arrow);
     }
 #endif
+    data.consumed = true;
 }
 
 void UITable::mouseOut(hidData& data) {
@@ -175,7 +180,7 @@ void UITable::mouseDown(hidData& data) {
         return;
     }
 
-    if (m_Cells.startSepInt(&data.mousePosNodeRel[0])) {
+    if (m_cells.startSepInt(data.mousePosNodeRel)) {
         mouseEvent |= 1;
         data.consumed = true;
     }
@@ -187,7 +192,7 @@ void UITable::mouseUp(hidData& data) {
     }
 
     if (mouseEvent & 1) {
-        m_Cells.stopSepInt(&data.mousePosNodeRel[0]);
+        m_cells.stopSepInt(data.mousePosNodeRel);
         mouseEvent &= ~1;
     }
 
@@ -196,32 +201,32 @@ void UITable::mouseUp(hidData& data) {
 
 bool UITable::insertRow(int at, int count, float size, bool percent, bool fixed, float min_pix_size,
                         float max_pix_size) {
-    eTable_rc tb{size,
+    Table_rc tb{size,
                  size <= 0 ? dTableType::Undef
                  : percent ? dTableType::Percent
                            : dTableType::Pix,
-                 fixed, min_pix_size, max_pix_size};
-    m_Cells(0).ins(at, count, tb);
+                 fixed, {min_pix_size, max_pix_size}};
+    m_cells(0).ins(at, count, tb);
     initNewCellNode();
     return true;
 }
 
 bool UITable::insertColumn(int at, int count, float size, bool percent, bool fixed, float min_pix_size,
                            float max_pix_size) {
-    eTable_rc tb{size,
+    Table_rc tb{size,
                  size <= 0 ? dTableType::Undef
                  : percent ? dTableType::Percent
                            : dTableType::Pix,
-                 fixed, min_pix_size, max_pix_size};
-    m_Cells(1).ins(at, count, tb);
+                 fixed, {min_pix_size, max_pix_size}};
+    m_cells(1).ins(at, count, tb);
     initNewCellNode();
     return true;
 }
 
 void UITable::initNewCellNode() {
-    m_Cells.updateCells();
+    m_cells.updateCells();
 
-    for (auto & m_Cell : m_Cells) {
+    for (auto & m_Cell : m_cells) {
         if (!m_Cell.ui_node) {
             m_Cell.ui_node = &push<Div>();
             m_Cell.ui_node->setName("TableCell");
@@ -232,15 +237,15 @@ void UITable::initNewCellNode() {
 
 bool UITable::clearCell(int row, int column, bool updateGeo) {
     int idx;
-    if ((idx = m_Cells.rowColumnToIndex(row, column, true)) < 0) {
+    if ((idx = m_cells.rowColumnToIndex(row, column, true)) < 0) {
         return false;
     }
 
-    if (m_Cells[idx].ui_node) {
-        m_Cells[idx].ui_node->clearChildren();
+    if (m_cells[idx].ui_node) {
+        m_cells[idx].ui_node->clearChildren();
     }
 
-    m_Cells[idx].content = nullptr;
+    m_cells[idx].content = nullptr;
 
     if (updateGeo) {
         geo_Update();
@@ -250,31 +255,31 @@ bool UITable::clearCell(int row, int column, bool updateGeo) {
 }
 
 bool UITable::removeRow(int row) {
-    if (m_Cells(0).getCount() > row) {
+    if (m_cells(0).getCount() > row) {
         // iterate through all cells of this row and remove all content
         vector<vector<e_cell>::iterator> cellsToDelete;
-        for (int col = 0; col < m_Cells(1).getCount(); col++) {
+        for (int col = 0; col < m_cells(1).getCount(); col++) {
             int idx;
-            if ((idx = m_Cells.rowColumnToIndex(row, col, true)) < 0) {
+            if ((idx = m_cells.rowColumnToIndex(row, col, true)) < 0) {
                 return false;
             }
 
-            m_Cells[idx].content = nullptr;
+            m_cells[idx].content = nullptr;
 
-            if (m_Cells[idx].ui_node) {
-                m_Cells[idx].ui_node->clearChildren();
-                remove(m_Cells[idx].ui_node);
+            if (m_cells[idx].ui_node) {
+                m_cells[idx].ui_node->clearChildren();
+                remove(m_cells[idx].ui_node);
             }
 
-            cellsToDelete.emplace_back(m_Cells.begin() + idx);
+            cellsToDelete.emplace_back(m_cells.begin() + idx);
         }
 
         for (const auto& it : cellsToDelete) {
-            m_Cells.erase(it);
+            m_cells.erase(it);
         }
 
         // remove the row
-        m_Cells(0).del(row, 1);
+        m_cells(0).del(row, 1);
         geo_Update();
     }
 
@@ -282,7 +287,7 @@ bool UITable::removeRow(int row) {
 }
 
 void UITable::clearCells() {
-    for (auto& it : m_Cells) {
+    for (auto& it : m_cells) {
         it.content = nullptr;
         if (it.ui_node) {
             it.ui_node->clearChildren();
@@ -290,13 +295,13 @@ void UITable::clearCells() {
         }
     }
 
-    m_Cells.reset();
+    m_cells.reset();
     geo_Update();
 }
 
 void UITable::setFixedCellSize(bool val) {
     for (int i=0; i<2; ++i) {
-        for (auto& rc : m_Cells(1).V()) {
+        for (auto& rc : m_cells(1).V()) {
             rc.fixed = val;
         }
     }

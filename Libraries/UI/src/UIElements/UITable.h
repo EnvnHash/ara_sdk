@@ -33,8 +33,8 @@ public:
     UITable(const UITableParameters& par);
     ~UITable() override = default;
 
-    virtual int getRowCount() { return m_Cells(0).getCount(); }
-    virtual int getColumnCount() { return m_Cells(1).getCount(); }
+    virtual int getRowCount() { return m_cells(0).getCount(); }
+    virtual int getColumnCount() { return m_cells(1).getCount(); }
 
     virtual void setSpacing(float px, float py) {
         m_spacing.x = px;
@@ -71,13 +71,13 @@ public:
     // background color
     virtual void setColor(float r, float g, float b, float a) {
         m_color = glm::vec4(r, g, b, a);
-        for (const auto& it : m_Cells) {
+        for (const auto& it : m_cells) {
             it.ui_node->setBackgroundColor(getColor());
         }
     }
     virtual void setColor(glm::vec4& col) {
         m_color = col;
-        for (const auto& it : m_Cells) {
+        for (const auto& it : m_cells) {
             it.ui_node->setBackgroundColor(getColor());
         }
     }
@@ -96,29 +96,29 @@ public:
                               float min_pix_size = -1, float max_pix_size = -1);
     virtual void initNewCellNode();
 
-    virtual Table& getTable() { return m_Cells; }
+    virtual Table& getTable() { return m_cells; }
 
     virtual int geo_Update();  // returns number of cells
 
-    virtual bool setDynamicWidth(bool on_off) { return m_Cells(1).setDynamicSize(on_off); }
-    virtual bool getDynamicWidth() { return m_Cells(1).getDynamicSize(); }
-    virtual bool setDynamicHeight(bool on_off) { return m_Cells(0).setDynamicSize(on_off); }
-    virtual bool getDynamicHeight() { return m_Cells(0).getDynamicSize(); }
-    virtual eTable_rc getRow(int idx) { return (m_Cells(0).getCount() > idx ? m_Cells(0).get(idx) : eTable_rc{}); }
-    virtual CellTable<e_cell>& getCells() { return m_Cells; }
+    virtual bool setDynamicWidth(bool on_off) { return m_cells(1).setDynamicSize(on_off); }
+    virtual bool getDynamicWidth() { return m_cells(1).getDynamicSize(); }
+    virtual bool setDynamicHeight(bool on_off) { return m_cells(0).setDynamicSize(on_off); }
+    virtual bool getDynamicHeight() { return m_cells(0).getDynamicSize(); }
+    virtual Table_rc getRow(int idx) { return (m_cells(0).getCount() > idx ? m_cells(0).get(idx) : Table_rc{}); }
+    virtual CellTable<e_cell>& getCells() { return m_cells; }
 
     /** add a new UINode to the Table */
     template <typename T>
     T* setCell(int row, int column, std::shared_ptr<T> node = nullptr) {
-        if (int idx; (idx = m_Cells.rowColumnToIndex(row, column, true)) >= 0) {
+        if (int idx; (idx = m_cells.rowColumnToIndex(row, column, true)) >= 0) {
             T* newNode;
             if (node) {
-                newNode = static_cast<T*>(&m_Cells[idx].ui_node->push(std::move(node)));
+                newNode = static_cast<T*>(&m_cells[idx].ui_node->push(std::move(node)));
             } else {
-                newNode = &m_Cells[idx].ui_node->push<T>();
+                newNode = &m_cells[idx].ui_node->push<T>();
             }
 
-            m_Cells[idx].content = newNode;
+            m_cells[idx].content = newNode;
             geo_Update();
             return newNode;
         }
@@ -126,7 +126,7 @@ public:
     }
 
 private:
-    CellTable<e_cell> m_Cells;
+    CellTable<e_cell> m_cells;
 
     glm::vec2 m_spacing{};
     std::array<glm::vec2, 2> m_margin{};
@@ -136,9 +136,6 @@ private:
     bool opt_DrawEmptyCells = true;
     bool m_geoUpdating      = false;
 
-    // temporary local variables made members for performance reasons
-    dTableType pp[2] {};
-    int        ii[2] {0,0};
 };
 
 }  // namespace ara

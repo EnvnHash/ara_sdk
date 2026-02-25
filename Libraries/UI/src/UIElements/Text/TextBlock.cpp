@@ -453,12 +453,12 @@ std::string TextBlock::parseTextForColors(const std::string& str) {
                 }
 
                 if (!m_fontDGV.getTextColors().empty()) {
-                    m_fontDGV.getLastTextColor().first.y = charCntr -1;
+                    m_fontDGV.getLastTextColor().first.y = static_cast<float>(charCntr -1);
                 }
 
                 m_fontDGV.addTextColor(ivec2{charCntr, 0}, vec4{1.f, 1.f, 1.f, 0.f});
                 for (int i=0;i<4;++i) {
-                    m_fontDGV.getLastTextColor().second[i] = stoi(colValList[i]) / 255.0;
+                    m_fontDGV.getLastTextColor().second[i] = static_cast<float>(stoi(colValList[i]) / 255.0);
                 }
 
                 auto firstAfterColIt = colValList.begin() + 3;

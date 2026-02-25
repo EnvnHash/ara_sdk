@@ -88,7 +88,7 @@ bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, int f
 
         std::vector<stbtt_packedchar> chardata(ch_count);
         stbtt_PackSetOversampling(&pc, static_cast<uint32_t>(m_overSampling), static_cast<uint32_t>(m_overSampling));
-        stbtt_PackFontRange(&pc, buff, 0, font_size, ch_off, ch_count, chardata.data());
+        stbtt_PackFontRange(&pc, buff, 0, static_cast<float>(font_size), ch_off, ch_count, chardata.data());
         stbtt_PackEnd(&pc);
 
         auto cdiv = 1.f / static_cast<float>(wh);
