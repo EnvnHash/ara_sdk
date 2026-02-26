@@ -148,15 +148,15 @@ json Node::asJson() {
     return root;
 }
 
-json Node::serializeValues() {
+json Node::serializeClassValues() { // helper function for comparing during deserialization
     json j;
-    serializeValues(j);
+    serializeClassValues(j);
     return j;
 }
 
 // Serialize the node tree to JSON
 void Node::serialize(json& j)  {
-    serializeValues(j);
+    serializeClassValues(j);
 
     if (!m_children.empty()) {
         j["children"] = json::array();
@@ -173,8 +173,8 @@ void Node::deserialize(const string& str) {
 }
 
 void Node::deserialize(const json& j, std::optional<std::list<std::function<void()>*>*> postLoadCbs) {
-    if (serializeValues() != getValues(j)) {
-        deserializeValues(j);
+    if (serializeClassValues() != getValues(j)) {
+        deserializeClassValues(j);
         for (const auto &func: m_changeCb[cbType::postChange] | views::values) {
             func(std::nullopt);
         }
@@ -191,26 +191,7 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
     }
 
     if (j.contains("children") && j["children"].is_array()) {
-        for (auto jChild = j["children"].begin(); jChild != j["children"].end(); ++jChild) {
-            auto it = existingChildren.find(jChild->at("uuid"));
-            if (it != existingChildren.end()) {
-                it->second->deserialize(*jChild, postLoadCbsArg);
-                // assure correct order
-                auto childIt = ranges::find_if(m_children, [&](auto& el){ return el.get() == it->second; });
-                auto childIdx = distance(m_children.begin(), childIt);
-                auto jChildIdx = distance(j["children"].begin(), jChild);
-                if (childIdx != jChildIdx) {
-                    m_children.splice(next(m_children.begin(), jChildIdx), m_children, childIt);
-                }
-                existingChildren.erase(it);
-            } else {
-                // Create a new child and add it to the node
-                if (auto fact_child = m_factory.create(jChild->contains("typeName") ? jChild->at("typeName") : "Node")) {
-                    auto& newChild = push(std::move(fact_child));
-                    newChild.deserialize(*jChild, postLoadCbsArg);
-                }
-            }
-        }
+        parseClassChildren(j["children"], existingChildren, postLoadCbsArg);
     }
 
     // Remove remaining existing children that were not found in the JSON input
@@ -221,6 +202,62 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
     if (!postLoadCbs.has_value()) {
         for (const auto it : m_postCbList) {
             (*it)();
+        }
+    }
+
+    parseNonClassEntries(j, postLoadCbsArg);
+}
+
+void Node::parseClassChildren(const json& j, unordered_map<string, Node*>& existingChildren, std::list<std::function<void()>*>* postLoadCbsArg) {
+    for (auto jChild = j.begin(); jChild != j.end(); ++jChild) {
+        const auto it = existingChildren.find(jChild->at("uuid"));
+        if (it != existingChildren.end()) {
+            it->second->deserialize(*jChild, postLoadCbsArg);
+            // assure correct order
+            auto childIt = ranges::find_if(m_children, [&](auto& el){ return el.get() == it->second; });
+            const auto childIdx = distance(m_children.begin(), childIt);
+            const auto jChildIdx = distance(j.begin(), jChild);
+            if (childIdx != jChildIdx) {
+                m_children.splice(next(m_children.begin(), jChildIdx), m_children, childIt);
+            }
+            existingChildren.erase(it);
+        } else {
+            // Create a new child and add it to the node
+            if (auto fact_child = m_factory.create(jChild->contains("typeName") ? jChild->at("typeName") : "Node")) {
+                auto& newChild = push(std::move(fact_child));
+                newChild.deserialize(*jChild, postLoadCbsArg);
+            }
+        }
+    }
+}
+
+void Node::parseNonClassEntries(const json& j, std::list<std::function<void()>*>* postLoadCbsArg) {
+    for (auto& [key, value] : j.items()) {
+        if (key == "children" || ranges::find(m_classKeys[m_typeName].first, key) != m_classKeys[m_typeName].first.end()) {
+            continue;
+        }
+
+        if (value.is_array() || value.is_object()) {
+            auto& newChild = push<Node>();
+            newChild.setKey(key);
+            newChild.deserialize(value, postLoadCbsArg);
+        } else {
+            auto childIt = ranges::find_if(m_children, [&](auto& el){ return el.get()->key() == key; });
+            if (childIt == m_children.end()) {
+                push<Node>();
+                childIt = --m_children.end();
+                childIt->get()->setKey(key);
+            }
+
+            if (value.is_boolean()) {
+                childIt->get()->setValue(value.get<bool>());
+            } else if (value.is_number_float()) {
+                childIt->get()->setValue(value.get<float>());
+            } else if (value.is_number()) {
+                childIt->get()->setValue(value.get<int32_t>());
+            } else if (value.is_string()) {
+                childIt->get()->setValue(value.get<std::string>());
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ namespace ara {
 Label::Label() {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
+    m_fontType = "regular";
 #endif
     setTypeName<Label>();
     setName(getTypeName<Label>());
@@ -23,6 +24,7 @@ Label::Label(const LabelPars &initData) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
+    m_fontType = "regular";
     setFocusAllowed(false);
     setTypeName<Label>();
     setName(getTypeName<Label>());
@@ -396,7 +398,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
         }
 
         ld -= 4;  // reset iterator to quad beginning
-        m_uvSize      = (ld + 3)->texCoord - ld->texCoord;
+        auto uvSize      = (ld + 3)->texCoord - ld->texCoord;
         auto charSizePix = g.size / getWindow()->getPixelRatio();
 
         int i = 0;
@@ -408,7 +410,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
             limitDrawVaoToBounds(ld, charSizePix, m_uvDiff, scLabelIndDraw, m_viewPort);  // scissoring, calculates m_uvDiff
 
             if (m_uvDiff.x != 0.f || m_uvDiff.y != 0.f) {
-                limitTexCoordsToBounds(&ld->texCoord[0], i, m_uvSize, m_uvDiff);
+                limitTexCoordsToBounds(&ld->texCoord[0], i, uvSize, m_uvDiff);
             }
 
             ++ld;

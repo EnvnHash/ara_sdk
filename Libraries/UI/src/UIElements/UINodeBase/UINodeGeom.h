@@ -38,7 +38,7 @@ public:
 
     template <typename T>
     requires std::integral<T> || std::floating_point<T>
-    void setCoord(T coord, coordComp comp, state st) {
+    void setCoord(T coord, const coordComp comp, state st) {
         if (st == state::m_state || st == m_state) {
             if (comp == coordComp::x) {
                 if constexpr (std::is_same_v<T, int>) {
@@ -72,7 +72,7 @@ public:
 
     template <typename T>
     requires std::integral<T> || std::floating_point<T>
-    void setSizeComp(T val, coordComp comp, state st) {
+    void setSizeComp(T val, const coordComp comp, state st) {
         if (st == state::m_state || st == m_state) {
             if (comp == coordComp::x) {
                 if constexpr (std::is_same_v<T, int>) {
@@ -197,7 +197,7 @@ public:
         setStyleInitVal("padding", styleInitStr, st);
     }
 
-    virtual void setPadding(float left, float top, float right, float bottom, state st = state::m_state) {
+    virtual void setPadding(const float left, const float top, const float right, const float bottom, state st = state::m_state) {
         setPadding(glm::vec4{left, top, right, bottom});
     }
 
@@ -216,7 +216,7 @@ public:
     /** in pixels */
     virtual void setContentTransTransl(float x, float y);
     virtual void setContentRotation(float angle, float ax, float ay, float az);
-    void         setContentTransCentered(bool val) { m_contTransMatCentered = val; }
+    void         setContentTransCentered(const bool val) { m_contTransMatCentered = val; }
 
     static bool contains(UINodeGeom* outer, UINodeGeom* node);
 
@@ -307,14 +307,14 @@ public:
     void                updateContentTransMat();
     void                calcContentTransMat(glm::mat4& mat, const glm::vec3& trans);
 
-    void                excludeFromPadding(bool val) { m_excludeFromPadding = val; }
+    void                excludeFromPadding(const bool val) { m_excludeFromPadding = val; }
     [[nodiscard]] bool  isExcludedFromPadding() const { return m_excludeFromPadding; }
-    void                excludeFromParentViewTrans(bool val) { m_excludeFromParentContentTrans = val; }
+    void                excludeFromParentViewTrans(const bool val) { m_excludeFromParentContentTrans = val; }
     [[nodiscard]] bool  isExcludedFromParentContentTrans() const { return m_excludeFromParentContentTrans; }
-    void                excludeFromOutOfBorderCheck(bool val) { m_skipBoundCheck = val; }
-    void                excludeFromScissoring(bool val) { m_excludeFromParentScissoring = val; }
+    void                excludeFromOutOfBorderCheck(const bool val) { m_skipBoundCheck = val; }
+    void                excludeFromScissoring(const bool val) { m_excludeFromParentScissoring = val; }
     [[nodiscard]] bool  isExcludedFromScissoring() const { return m_excludeFromParentScissoring; }
-    void                limitContentTrans(bool val) { m_limitContentTrans = val; }
+    void                limitContentTrans(const bool val) { m_limitContentTrans = val; }
     [[nodiscard]] bool  changed() const { return m_geoChanged; }
 
     // Bounding Box

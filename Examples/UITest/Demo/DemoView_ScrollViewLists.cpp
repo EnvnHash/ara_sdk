@@ -8,7 +8,7 @@ using listT = std::list<std::string>;
 using listT2 = std::vector<int32_t>;
 
 DemoView_ScrollViewList::DemoView_ScrollViewList() : DemoView("Scroll View with a table inside", glm::vec4(.15f,.15f,.15f,1.f)) {
-    setName("DemoView_ScrollViewTable");
+    setName("DemoView_ScrollViewList");
 }
 
 void DemoView_ScrollViewList::init() {

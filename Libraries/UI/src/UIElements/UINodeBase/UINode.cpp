@@ -607,7 +607,7 @@ void UINode::limitDrawVaoToBounds(const vector<DivVaoData>::iterator& dIt, vec2&
     dIt->pos.y *= -1.f;
 }
 
-void UINode::limitTexCoordsToBounds(float* tc, int stdQuadVertInd, const vec2& tvSize, const glm::vec2& uvDiff) {
+void UINode::limitTexCoordsToBounds(float* tc, const int stdQuadVertInd, const vec2& tvSize, const vec2& uvDiff) {
     // limit left side of texture view
     if (stdQuadVertInd == 0 || stdQuadVertInd == 2) {
         tc[0] += tvSize.x * uvDiff.x;

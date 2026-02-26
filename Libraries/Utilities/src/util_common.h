@@ -46,9 +46,9 @@
 
 namespace ara {
 
-enum class restCallType : int { post = 0, get, downloadBuffer, downloadFile };
+enum class restCallType : int32_t { post = 0, get, downloadBuffer, downloadFile };
 
-enum class tpi : int {
+enum class tpi : int32_t {
     tp_string = 0,
     tp_char,
     tp_int8,
@@ -65,6 +65,8 @@ enum class tpi : int {
     none,
     count
 };
+
+using nodeValue = std::variant<std::string, int32_t, float, bool>;
 
 static std::unordered_map<std::type_index, tpi> tpiTypeMap {
     { typeid(std::string), tpi::tp_string },

@@ -41,9 +41,6 @@ void Div::updateDrawData() {
             return;
         }
 
-        m_uvSize.x = 1.f;
-        m_uvSize.y = 1.f;
-
         auto dIt = m_indDrawBlock.vaoData.begin();
 
         // calculate position in normalized screen coordinates
@@ -61,12 +58,13 @@ void Div::updateDrawData() {
         m_divRefSize[1] *= -1.f;
 
         int i = 0;
+        vec2 uvSize {1.f, 1.f};
         for (auto &it : stdQuadVertices) {
             limitDrawVaoToBounds(dIt, m_divRefSize, m_uvDiff, m_scIndDraw, m_viewPort);  // scissoring
             dIt->texCoord = it;
 
             if (m_uvDiff.x != 0.f || m_uvDiff.y != 0.f) {
-                limitTexCoordsToBounds(&dIt->texCoord[0], i, m_uvSize, m_uvDiff);
+                limitTexCoordsToBounds(&dIt->texCoord[0], i, uvSize, m_uvDiff);
             }
 
             dIt->color  = m_bgColor;

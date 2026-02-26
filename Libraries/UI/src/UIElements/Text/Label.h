@@ -26,7 +26,7 @@ struct LabelPars {
 
 class Label : public Div {
 public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Div, m_fontType, m_fontSize, m_tOpt,  m_tPos, m_tSize, m_tSep, m_tAlignX, m_tAlignY, m_offset, m_alignOffset, m_tabSize, m_adaptScaling, m_text)
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Div, m_fontSize, m_tOpt,  m_tPos, m_tSize, m_tSep, m_tAlignX, m_tAlignY, m_offset, m_alignOffset, m_tabSize, m_adaptScaling, m_text)
 
     enum eopt {
         none         = 0x0000,
@@ -122,7 +122,6 @@ protected:
     [[nodiscard]] glm::vec4 calculateMask() const;
 
     int         m_fontSize = 17;
-    std::string m_fontType = "regular";
 
     FontGlyphVector m_fontDGV;
     Font           *m_riFont      = nullptr;

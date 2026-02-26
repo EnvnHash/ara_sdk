@@ -205,6 +205,18 @@ public:
         return out;
     }
 
+    Node* findChildByKey(const std::string& key) {
+        Node* out = nullptr;
+        iterateChildren(*root(), [&out, &key] (Node& node) {
+            if (node.key() == key) {
+                out = &node;
+                return false;
+            }
+            return true;
+        });
+        return out;
+    }
+
     template <class T>
     std::deque<T*> findChildrenByType() {
         std::deque<T*> outList;
@@ -254,6 +266,9 @@ public:
         return std::move(outList);
     }
 
+    template <class T>
+    T value() { return std::get<T>(m_value); }
+
     void                                    pop();
     void                                    remove(Node&);
     void                                    remove(Node*);
@@ -262,9 +277,11 @@ public:
     void                                    clearChildren();
     nlohmann::json                          asJson();
     void                                    serialize(nlohmann::json& json);
-    nlohmann::json                          serializeValues();
+    nlohmann::json                          serializeClassValues();
     void                                    deserialize(const std::string&);
     void                                    deserialize(const nlohmann::json& j, std::optional<std::list<std::function<void()>*>*> cbs = std::nullopt);
+    void                                    parseClassChildren(const nlohmann::json& j, std::unordered_map<std::string, Node*>& existingChildren, std::list<std::function<void()>*>*);
+    void                                    parseNonClassEntries(const nlohmann::json& j, std::list<std::function<void()>*>* postLoadCbsArg);
     virtual void                            load(const std::filesystem::path& filePath);
     void                                    loadFromAssets(const std::filesystem::path& filePath);
     virtual void                            load();
@@ -294,6 +311,7 @@ public:
     const std::string&                      typeName() { return m_typeName; }
     std::string&                            name() { return m_name; }
     std::string&                            uuid() { return m_uuid; }
+    std::string&                            key() { return m_key; }
     std::deque<std::vector<std::uint8_t>>&  undoBufQueue() { return m_undoBuf; }
 
     std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>>&   changeCb() { return m_changeCb; }
@@ -303,7 +321,11 @@ public:
     void setTypeName(const std::string& name)   { m_typeName = name; }
     void setParent(Node* ptr)                   { m_parent = ptr; }
     void setUndoBufferRoot(Node* node)          { m_undoBufRoot = node; }
-    void setOnChangeCb(cbType cbType, void *ptr, std::function<void(std::optional<Node*>)> func)  { m_changeCb[cbType][ptr] = std::move(func); }
+    void setOnChangeCb(cbType cbType, void *ptr, std::function<void(std::optional<Node*>)> func) {
+        m_changeCb[cbType][ptr] = std::move(func);
+    }
+    void setValue(nodeValue val)                { m_value = val; }
+    void setKey(const std::string& key)         { m_key = key; }
 
     static nlohmann::json getValues(const nlohmann::json& j) {
         nlohmann::json valueJson;
@@ -315,6 +337,12 @@ public:
         return valueJson;
     }
 
+    void callChangeCbs(cbType cbType) {
+        for (auto & it: m_changeCb[cbType]) {
+            it.second(std::nullopt);
+        }
+    }
+
     static inline NodeFactory               m_factory;
     static inline std::thread               m_watchThrd;
     static inline std::mutex                m_watchMtx;
@@ -323,16 +351,15 @@ public:
     static inline std::list<NodeWatchFile>  m_watchFiles;
 
 protected:
-    // values
     std::string                                     m_name;
     std::string                                     m_typeName;
     std::string                                     m_uuid;
     std::string                                     m_path;
-
+    std::string                                     m_key;
+    nodeValue                                       m_value;
     bool                                            m_watch = false;
     bool                                            m_useAssetLoader = false;
     NodeWatchFile*                                  m_watchFile = nullptr;
-
     Node*                                           m_parent = nullptr; // can't use weak pointer, since can't create weak_ptr from this without previous shared_ptr creation
     std::mutex                                      m_mtx;
     std::list<std::shared_ptr<Node>>                m_children;
@@ -346,7 +373,7 @@ protected:
     std::optional<std::function<void()>>            m_postLoadCb;
     std::list<std::function<void()>*>               m_postCbList;
 
-
+    static inline std::unordered_map<std::string, std::pair<std::vector<std::string>, bool>> m_classKeys;
     static inline std::filesystem::file_time_type   m_initFt{};
 
     std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>> m_changeCb {
@@ -357,6 +384,31 @@ protected:
         { cbType::preRemoveChild, {}},
         { cbType::postRemoveChild, {}} };
 
+    static void checkClassKeyEntry(const std::string& key, const std::vector<std::string>& newClassKeys) {
+        if (!m_classKeys.contains(key)) {
+            m_classKeys[key] = { {}, false };
+        }
+
+        if (m_classKeys[key].second) { // prevent permanent rebuild and unnecessary checks
+            return;
+        }
+
+        // special case: m_children is not part of the variable serialization idiom
+        if (key == "Node" && std::ranges::find(m_classKeys[key].first, "children") == m_classKeys[key].first.end()) {
+            m_classKeys[key].first.emplace_back("children");
+        }
+
+        auto keysOverlap = std::ranges::any_of(m_classKeys[key].first, [&newClassKeys](const auto& elem) {
+            return std::ranges::find(newClassKeys, elem) != newClassKeys.end();
+        });
+
+        if (keysOverlap) {
+            m_classKeys[key].second = true;
+            return;
+        }
+
+        m_classKeys[key].first.insert(m_classKeys[key].first.end(), newClassKeys.begin(), newClassKeys.end());
+    }
 };
 
 }

@@ -328,8 +328,8 @@ TEST(Functional_Node, Serialize_Values) {
     node.setName("Name");
 
     json j;
-    node.serializeValues(j);
-    std::string s = j.dump();
+    node.serializeClassValues(j);
+    const auto s = j.dump();
 
     EXPECT_EQ(s, "{\"name\":\"Name\",\"typeName\":\"Node\",\"uuid\":\"\"}");
 }
@@ -385,7 +385,7 @@ TEST(Functional_Node, Parse_Values) {
     auto j = R"({"name":"Name","typeName":"Node","uuid":"6998A327-29B0-90E9-984A-366FEB38BFFE"})"_json;
 
     Node node;
-    node.deserializeValues(j);
+    node.deserializeClassValues(j);
 
     EXPECT_EQ(node.name(), "Name");
     EXPECT_EQ(node.typeName(), "Node");
@@ -401,6 +401,63 @@ TEST(Functional_Node, Parse_Node) {
     EXPECT_EQ(node.name(), "Name");
     EXPECT_EQ(node.typeName(), "Node");
     EXPECT_EQ(node.uuid(), "6998A327-29B0-90E9-984A-366FEB38BFFE");
+}
+
+TEST(Functional_Node, Parse_Generic) {
+    auto j = R"({"key0":0,"key1":1.2345,"key2":"value"})"_json;
+
+    Node node;
+    node.deserialize(j);
+
+    ASSERT_NE(node.findChildByKey("key0"), nullptr);
+    ASSERT_NE(node.findChildByKey("key1"), nullptr);
+    ASSERT_NE(node.findChildByKey("key2"), nullptr);
+
+    auto key0 = node.findChildByKey("key0");
+    EXPECT_EQ(key0->value<int32_t>(), 0);
+
+    auto key1 = node.findChildByKey("key1");
+    EXPECT_EQ(key1->value<float>(), 1.2345f);
+
+    auto key2 = node.findChildByKey("key2");
+    EXPECT_EQ(key2->value<std::string>(), "value");
+}
+
+TEST(Functional_Node, Parse_Generic_Array) {
+    auto j = R"({"array":[1,2,3,4]})"_json;
+
+    Node node;
+    node.deserialize(j);
+    const auto arrayChild = node.findChildByKey("array");
+    ASSERT_NE(arrayChild, nullptr);
+
+    for (int i=0; i<4; i++) {
+        const auto entr = arrayChild->findChildByKey(std::to_string(i));
+        ASSERT_NE(arrayChild, nullptr);
+        EXPECT_EQ(entr->value<int32_t>(), i+1);
+    }
+}
+
+TEST(Functional_Node, Parse_Generic_Object) {
+    auto j = R"({"objEntry":{ "key0" : 1, "key1" : 1.234, "key2" : "some string"}})"_json;
+
+    Node node;
+    node.deserialize(j);
+    const auto objChild = node.findChildByKey("objEntry");
+    ASSERT_NE(objChild, nullptr);
+
+    ASSERT_NE(objChild->findChildByKey("key0"), nullptr);
+    ASSERT_NE(objChild->findChildByKey("key1"), nullptr);
+    ASSERT_NE(objChild->findChildByKey("key2"), nullptr);
+
+    auto key0 = objChild->findChildByKey("key0");
+    EXPECT_EQ(key0->value<int32_t>(), 1);
+
+    auto key1 = objChild->findChildByKey("key1");
+    EXPECT_EQ(key1->value<float>(), 1.234f);
+
+    auto key2 = objChild->findChildByKey("key2");
+    EXPECT_EQ(key2->value<std::string>(), "some string");
 }
 
 TEST(Functional_Node, Parse_Children) {

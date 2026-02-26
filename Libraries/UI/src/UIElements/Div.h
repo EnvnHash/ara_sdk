@@ -10,7 +10,7 @@ namespace ara {
 
 class Div : public UINode {
 public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(UINodeStyle, m_uvSize, m_divRefSize)
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(UINodeStyle, m_divRefSize)
 
     Div();
     ~Div() override = default;
@@ -22,7 +22,6 @@ public:
 
 protected:
     static inline std::string m_objIdName = "objId";
-    glm::vec2                 m_uvSize{1.f};
     glm::vec2                 m_divRefSize{1.f};
 };
 

@@ -1,0 +1,12 @@
+{
+    "arrayOfFloats" : [ 0.1, 0.2, 0.3, 0.4 ],
+    "arrayOfIntegers" : [ 1, 2, 3, 4 ],
+    "arrayOfObjects" : [ { "name": "obj1", "val": 1 }, { "name": "obj2", "val": 2 }, { "name": "obj3", "val": 3 }],
+    "arrayOfStrings" : [ "str1", "str2", "str3" ],
+    "boolean": true,
+    "float": 0.2023820983,
+    "integer": 0,
+    "object": { "name": "someObject", "valInt": 1, "valFloat": 1.3 },
+    "objectWithArrayOfObjects": { "name": "someObject", "children": [ { "name": "child1", "val": 1 }, { "name": "child1", "val": 1 } ] },
+    "simpleString": "Root"
+}

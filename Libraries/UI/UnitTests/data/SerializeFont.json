@@ -188,10 +188,6 @@
             "typeName": "MenuBar",
             "useTexId": false,
             "uuid": "388C0401-D99B-3D7E-D1EE-AE2775B92BFF",
-            "uvSize": [
-                0.0,
-                0.0
-            ],
             "viewPort": [
                 0.0,
                 0.0,
@@ -349,10 +345,6 @@
             "text": "SerializeLabel",
             "typeName": "Label",
             "uuid": "921A6627-EED7-5AD8-34BD-33416F368E6C",
-            "uvSize": [
-                1.0,
-                1.0
-            ],
             "viewPort": [
                 0.0,
                 0.0,

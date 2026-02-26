@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(Applications)
 
+add_subdirectory(JsonEditor)
 add_subdirectory(UITest)
 add_subdirectory(VisualStudioExample)
 

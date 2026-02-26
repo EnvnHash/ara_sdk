@@ -188,10 +188,6 @@
             "typeName": "MenuBar",
             "useTexId": false,
             "uuid": "2D230168-C839-AA1E-2B77-E316CF7AB867",
-            "uvSize": [
-                0.0,
-                0.0
-            ],
             "viewPort": [
                 0.0,
                 0.0,
@@ -375,10 +371,6 @@
             "typeName": "Image",
             "useTexId": false,
             "uuid": "3F6BF7EE-A835-F908-E445-6B152FF06782",
-            "uvSize": [
-                0.0,
-                0.0
-            ],
             "viewPort": [
                 0.0,
                 0.0,

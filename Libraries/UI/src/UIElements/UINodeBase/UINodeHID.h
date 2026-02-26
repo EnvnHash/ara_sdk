@@ -71,8 +71,8 @@ public:
     void addMouseMoveCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void addMouseWheelCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void addScaleGestCb(const std::function<void(hidData&)>& func, bool onHit = true);
-    void addScaleBeginCb(const std::function<void(hidData&)>& func, bool onHit = true);
-    void addScaleEndCb(const std::function<void(hidData&)>& func, bool onHit = true);
+    //void addScaleBeginCb(const std::function<void(hidData&)>& func, bool onHit = true);
+    //void addScaleEndCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void clearMouseCb(hidEvent evt);
     void addMouseInCb(std::function<void(hidData&)> func, state st = state::m_state);
     void addMouseOutCb(std::function<void(hidData&)> func, state st = state::none);
