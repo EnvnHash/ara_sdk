@@ -404,6 +404,8 @@ TEST(Functional_Node, Parse_Node) {
 }
 
 TEST(Functional_Node, ParseDerived) {
+    Node::clearClassKeys();
+
     class Derived : public Node {
     public:
         Derived() { setTypeName<Derived>(); }
@@ -429,6 +431,7 @@ TEST(Functional_Node, ParseDerived) {
 }
 
 TEST(Functional_Node, ParseDerivedNested) {
+    Node::clearClassKeys();
     class Derived : public Node {
     public:
         Derived() { setTypeName<Derived>(); }

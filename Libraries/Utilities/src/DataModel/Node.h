@@ -315,7 +315,8 @@ public:
     const std::string&  uuid() { return m_uuid; }
     const std::string&  key() { return m_key; }
     auto&               undoBufQueue() { return m_undoBuf; }
-    const auto&         getClassKeys() { return m_classKeys; }
+    static const auto&  getClassKeys() { return m_classKeys; }
+    static void         clearClassKeys() { m_classKeys.clear(); }
 
     std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>>&   changeCb() { return m_changeCb; }
 
