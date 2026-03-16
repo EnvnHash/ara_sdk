@@ -459,7 +459,6 @@ TEST(Functional_Node, ParseDerivedNested) {
     EXPECT_EQ(loadedD.m_par2, 3.f);
     EXPECT_EQ(loadedD.m_par3, 2.f);
     EXPECT_EQ(loadedD.m_par4, 3);
-    auto ck = loadedD.getClassKeys();
     EXPECT_EQ(loadedD.getClassKeys().size(), 1);
     EXPECT_EQ(loadedD.getClassKeys().at("DerivedDerived").first.size(), 7);
 }
