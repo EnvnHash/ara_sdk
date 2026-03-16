@@ -403,6 +403,67 @@ TEST(Functional_Node, Parse_Node) {
     EXPECT_EQ(node.uuid(), "6998A327-29B0-90E9-984A-366FEB38BFFE");
 }
 
+TEST(Functional_Node, ParseDerived) {
+    class Derived : public Node {
+    public:
+        Derived() { setTypeName<Derived>(); }
+        ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_par1, m_par2)
+        int     m_par1 = 2;
+        float   m_par2 = 3.f;
+    };
+
+    Derived d;
+    d.setName("Name");
+    d.setUuid("6998A327-29B0-90E9-984A-366FEB38BFFE");
+    const auto& serialized = d.asJson();
+
+    Derived loadedD;
+    loadedD.deserialize(serialized);
+
+    EXPECT_EQ(loadedD.name(), "Name");
+    EXPECT_EQ(loadedD.typeName(), "Derived");
+    EXPECT_EQ(loadedD.m_par1, 2);
+    EXPECT_EQ(loadedD.m_par2, 3.f);
+    EXPECT_EQ(loadedD.getClassKeys().size(), 1);
+    EXPECT_EQ(loadedD.getClassKeys().at("Derived").first.size(), 5);
+}
+
+TEST(Functional_Node, ParseDerivedNested) {
+    class Derived : public Node {
+    public:
+        Derived() { setTypeName<Derived>(); }
+        ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_par1, m_par2)
+        int     m_par1 = 2;
+        float   m_par2 = 3.f;
+    };
+
+    class DerivedDerived : public Derived {
+    public:
+        DerivedDerived() { setTypeName<DerivedDerived>(); }
+        ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Derived, m_par3, m_par4)
+        float   m_par3 = 2.f;
+        int     m_par4 = 3;
+    };
+
+    DerivedDerived d;
+    d.setName("Name");
+    d.setUuid("6998A327-29B0-90E9-984A-366FEB38BFFE");
+    const auto& serialized = d.asJson();
+
+    DerivedDerived loadedD;
+    loadedD.deserialize(serialized);
+
+    EXPECT_EQ(loadedD.name(), "Name");
+    EXPECT_EQ(loadedD.typeName(), "DerivedDerived");
+    EXPECT_EQ(loadedD.m_par1, 2);
+    EXPECT_EQ(loadedD.m_par2, 3.f);
+    EXPECT_EQ(loadedD.m_par3, 2.f);
+    EXPECT_EQ(loadedD.m_par4, 3);
+    auto ck = loadedD.getClassKeys();
+    EXPECT_EQ(loadedD.getClassKeys().size(), 1);
+    EXPECT_EQ(loadedD.getClassKeys().at("DerivedDerived").first.size(), 7);
+}
+
 TEST(Functional_Node, Parse_Generic) {
     auto j = R"({"key0":0,"key1":1.2345,"key2":"value"})"_json;
 

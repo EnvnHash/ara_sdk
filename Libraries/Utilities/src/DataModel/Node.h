@@ -307,14 +307,15 @@ public:
     static void                             watchThreadIterate();
     static void                             stopWatchThread();
 
-    std::mutex&                             mutex() { return m_mtx; }
-    std::list<std::shared_ptr<Node>>&       children() const { return const_cast<std::list<std::shared_ptr<Node>>&>(m_children); }
-    Node*                                   parent() const { return m_parent; }
-    const std::string&                      typeName() { return m_typeName; }
-    std::string&                            name() { return m_name; }
-    std::string&                            uuid() { return m_uuid; }
-    std::string&                            key() { return m_key; }
-    std::deque<std::vector<std::uint8_t>>&  undoBufQueue() { return m_undoBuf; }
+    auto&               mutex() { return m_mtx; }
+    auto&               children() const { return const_cast<std::list<std::shared_ptr<Node>>&>(m_children); }
+    Node*               parent() const { return m_parent; }
+    const std::string&  typeName() { return m_typeName; }
+    const auto&         name() { return m_name; }
+    const std::string&  uuid() { return m_uuid; }
+    const std::string&  key() { return m_key; }
+    auto&               undoBufQueue() { return m_undoBuf; }
+    const auto&         getClassKeys() { return m_classKeys; }
 
     std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>>&   changeCb() { return m_changeCb; }
 
