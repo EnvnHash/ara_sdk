@@ -326,8 +326,8 @@
             "posYInt": 10,
             "scissorChildren": false,
             "skipBoundCheck": false,
-            "tAlign_X": "center",
-            "tAlign_Y": "center",
+            "tAlignX": "center",
+            "tAlignY": "center",
             "tOpt": 0,
             "tPos": [
                 0.0,

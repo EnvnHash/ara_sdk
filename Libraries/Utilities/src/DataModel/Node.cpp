@@ -185,23 +185,25 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
         postLoadCbsArg->emplace_back(&m_postLoadCb.value());
     }
 
-    unordered_map<string, Node*> existingChildren;
-    for (const auto& child : m_children) {
-        existingChildren[child->uuid()] = child.get();
-    }
+    if (!m_parseAsGenericJson) {
+        unordered_map<string, Node*> existingChildren;
+        for (const auto& child : m_children) {
+            existingChildren[child->uuid()] = child.get();
+        }
 
-    if (j.contains("children") && j["children"].is_array()) {
-        parseClassChildren(j["children"], existingChildren, postLoadCbsArg);
-    }
+        if (j.contains("children") && j["children"].is_array()) {
+            parseClassChildren(j["children"], existingChildren, postLoadCbsArg);
+        }
 
-    // Remove remaining existing children that were not found in the JSON input
-    for (const auto &val: existingChildren | views::values) {
-        remove(val);
-    }
+        // Remove remaining existing children that were not found in the JSON input
+        for (const auto &val: existingChildren | views::values) {
+            remove(val);
+        }
 
-    if (!postLoadCbs.has_value()) {
-        for (const auto it : m_postCbList) {
-            (*it)();
+        if (!postLoadCbs.has_value()) {
+            for (const auto it : m_postCbList) {
+                (*it)();
+            }
         }
     }
 
@@ -210,7 +212,8 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
 
 void Node::parseClassChildren(const json& j, unordered_map<string, Node*>& existingChildren, std::list<std::function<void()>*>* postLoadCbsArg) {
     for (auto jChild = j.begin(); jChild != j.end(); ++jChild) {
-        const auto it = existingChildren.find(jChild->at("uuid"));
+        bool skipChildCheck = !jChild->contains("uuid") || existingChildren.empty();
+        const auto it = skipChildCheck ? existingChildren.end() : existingChildren.find(jChild->at("uuid"));
         if (it != existingChildren.end()) {
             it->second->deserialize(*jChild, postLoadCbsArg);
             // assure correct order
@@ -231,9 +234,11 @@ void Node::parseClassChildren(const json& j, unordered_map<string, Node*>& exist
     }
 }
 
-void Node::parseNonClassEntries(const json& j, std::list<std::function<void()>*>* postLoadCbsArg) {
+void Node::parseNonClassEntries(const nlohmann::json& j, std::list<std::function<void()>*>* postLoadCbsArg) {
     for (auto& [key, value] : j.items()) {
-        if (key == "children" || ranges::find(m_classKeys[m_typeName].first, key) != m_classKeys[m_typeName].first.end()) {
+        if (!m_parseAsGenericJson
+            && (key == "children"
+                || std::ranges::find(m_classKeys[m_typeName].first, key) != m_classKeys[m_typeName].first.end())) {
             continue;
         }
 
@@ -241,8 +246,9 @@ void Node::parseNonClassEntries(const json& j, std::list<std::function<void()>*>
             auto& newChild = push<Node>();
             newChild.setKey(key);
             newChild.deserialize(value, postLoadCbsArg);
+            // TODO: missing check if node to add already exists
         } else {
-            auto childIt = ranges::find_if(m_children, [&](auto& el){ return el.get()->key() == key; });
+            auto childIt = std::ranges::find_if(m_children, [&](auto& el){ return el.get()->key() == key; });
             if (childIt == m_children.end()) {
                 push<Node>();
                 childIt = --m_children.end();

@@ -29,7 +29,7 @@ void WindowBase::init(const glm::ivec2& pos, const glm::ivec2& size) {
     s_windowViewport.z = static_cast<float>(size.x);
     s_windowViewport.w = static_cast<float>(size.y);
 
-    s_viewPort = vec4(pos, size.x * s_devicePixelRatio, size.y * s_devicePixelRatio);
+    s_viewPort = vec4(pos, static_cast<float>(size.x) * s_devicePixelRatio, static_cast<float>(size.y) * s_devicePixelRatio);
     s_orthoMat = glm::ortho(0.f, static_cast<float>(size.x), static_cast<float>(size.y), 0.f);
 }
 

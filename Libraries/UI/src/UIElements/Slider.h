@@ -44,7 +44,7 @@ public:
     void            setMax(float max) { m_max = max; }
     void            setValueChangeCb(std::function<void(float)> f) { m_valueChangeCb = std::move(f); }
     void            setAbsValue(float val) override;
-    void            setValue(float val) override;
+    void            setValue(float val);
     virtual void    setValuePtr(float* val);
     void            setValueString(std::string val) { m_valueAsString = std::move(val); }
     void            setScale(sliderScale scaling) { m_scaling = scaling; }

@@ -18,6 +18,8 @@
 
 #include <DataModel/NodeMacros.h>
 
+#include <utility>
+
 namespace ara {
 
 class Node;
@@ -281,7 +283,7 @@ public:
     void                                    deserialize(const std::string&);
     void                                    deserialize(const nlohmann::json& j, std::optional<std::list<std::function<void()>*>*> cbs = std::nullopt);
     void                                    parseClassChildren(const nlohmann::json& j, std::unordered_map<std::string, Node*>& existingChildren, std::list<std::function<void()>*>*);
-    void                                    parseNonClassEntries(const nlohmann::json& j, std::list<std::function<void()>*>* postLoadCbsArg);
+    virtual void                            parseNonClassEntries(const nlohmann::json& j, std::list<std::function<void()>*>* postLoadCbsArg);
     virtual void                            load(const std::filesystem::path& filePath);
     void                                    loadFromAssets(const std::filesystem::path& filePath);
     virtual void                            load();
@@ -307,7 +309,7 @@ public:
 
     std::mutex&                             mutex() { return m_mtx; }
     std::list<std::shared_ptr<Node>>&       children() const { return const_cast<std::list<std::shared_ptr<Node>>&>(m_children); }
-    Node*                                   parent() { return m_parent; }
+    Node*                                   parent() const { return m_parent; }
     const std::string&                      typeName() { return m_typeName; }
     std::string&                            name() { return m_name; }
     std::string&                            uuid() { return m_uuid; }
@@ -321,10 +323,11 @@ public:
     void setTypeName(const std::string& name)   { m_typeName = name; }
     void setParent(Node* ptr)                   { m_parent = ptr; }
     void setUndoBufferRoot(Node* node)          { m_undoBufRoot = node; }
+    void setParseAsGenericJson(bool val)        { m_parseAsGenericJson = true; }
     void setOnChangeCb(cbType cbType, void *ptr, std::function<void(std::optional<Node*>)> func) {
         m_changeCb[cbType][ptr] = std::move(func);
     }
-    void setValue(nodeValue val)                { m_value = val; }
+    void setValue(nodeValue val)                { m_value = std::move(val); }
     void setKey(const std::string& key)         { m_key = key; }
 
     static nlohmann::json getValues(const nlohmann::json& j) {
@@ -359,6 +362,7 @@ protected:
     nodeValue                                       m_value;
     bool                                            m_watch = false;
     bool                                            m_useAssetLoader = false;
+    bool                                            m_parseAsGenericJson = false;
     NodeWatchFile*                                  m_watchFile = nullptr;
     Node*                                           m_parent = nullptr; // can't use weak pointer, since can't create weak_ptr from this without previous shared_ptr creation
     std::mutex                                      m_mtx;

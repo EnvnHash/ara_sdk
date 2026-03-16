@@ -99,8 +99,8 @@ void UINodeHID::mouseIn(hidData& data) {
         }
 
         // call all style definitions for the highlighted state if there are any
-        for (const auto& it : m_setStyleFunc[state::highlighted]) {
-            it.second();
+        for (const auto &val: m_setStyleFunc[state::highlighted] | views::values) {
+            val();
         }
 
         if (!m_setStyleFunc[state::highlighted].empty()) {
