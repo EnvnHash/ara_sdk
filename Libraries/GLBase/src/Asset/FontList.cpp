@@ -13,12 +13,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#include <Asset/ResGlFont.h>
-#include <Utils/Typo/Font.h>
+#include <Asset/FontList.h>
 #include <GLBase.h>
-#include <Utils/Texture.h>
-
 #include <RwBinFile.h>
+#include <Utils/Texture.h>
+#include <Utils/Typo/Font.h>
 
 using namespace std;
 using namespace glm;
@@ -37,7 +36,7 @@ Font *FontList::get(const std::string& font_path, int size, float pixRatio) {
 }
 
 Font *FontList::find(const std::string &font_path, int size, float pixRatio) const {
-    for (auto &f : m_FontList) {
+    for (auto &f : m_fontList) {
         if (f->isFontType(font_path, size, pixRatio)) {
             return f.get();
         }
@@ -51,9 +50,13 @@ Font *FontList::add(const std::string& font_path, int size, float pixRatio) {
         return font;
     }
 
-    m_FontList.push_back(make_unique<Font>(font_path, size, pixRatio));
-    update3DLayers();
-    return m_FontList.back().get();
+    {
+        std::unique_lock l(m_mtx);
+        m_fontList.emplace_back(make_unique<Font>(font_path, size, pixRatio));
+        update3DLayers();
+    }
+
+    return m_fontList.back().get();
 }
 
 Font *FontList::addFromFilePath(const std::string& font_path, int size, float pixRatio) {
@@ -66,9 +69,13 @@ Font *FontList::addFromFilePath(const std::string& font_path, int size, float pi
         return nullptr;
     }
 
-    m_FontList.push_back(make_unique<Font>(vp, font_path, size, pixRatio));
-    update3DLayers();
-    return m_FontList.back().get();
+    {
+        std::unique_lock l(m_mtx);
+        m_fontList.emplace_back(make_unique<Font>(vp, font_path, size, pixRatio));
+        update3DLayers();
+    }
+
+    return m_fontList.back().get();
 }
 
 Font *FontList::add(std::vector<uint8_t> &vp, const std::string& font_path, int size, float pixRatio) {
@@ -76,10 +83,13 @@ Font *FontList::add(std::vector<uint8_t> &vp, const std::string& font_path, int 
         return font;
     }
 
-    m_FontList.emplace_back(make_unique<Font>(vp, font_path, size, pixRatio));
-    update3DLayers();
+    {
+        std::unique_lock l(m_mtx);
+        m_fontList.emplace_back(make_unique<Font>(vp, font_path, size, pixRatio));
+        update3DLayers();
+    }
 
-    return m_FontList.back().get();
+    return m_fontList.back().get();
 }
 
 /** copy all glyph texture maps of the same size into one TEXTURE_3D for DrawManager indirect drawing */
@@ -87,30 +97,26 @@ void FontList::update3DLayers() {
     m_layerCount.clear();
 
     // check how many glyph texture maps are there for each size
-    for (auto &fnt : m_FontList) {
-        m_layerCount[fnt->getGlyphTexSize().x].emplace_back(fnt.get());
+    for (auto &fnt : m_fontList) {
+        m_layerCount[static_cast<int32_t>(fnt->getGlyphTexSize().x)].emplace_back(fnt.get());
     }
 
     // check which of the layers changed and update those
     bool entrExists = false;
     int  layerCnt   = 0;
-    int  sz         = 0;
-    for (auto &lc : m_layerCount) {
-        sz         = lc.first;
+    for (auto &[sz, font] : m_layerCount) {
         entrExists = m_fontTexLayers.contains(sz);
 
         // 3d texture doesn't exist, or quantity changed
-        if (!entrExists || m_fontTexLayers[sz]->getDepth() != static_cast<uint>(lc.second.size())) {
+        if (!entrExists || m_fontTexLayers[sz]->getDepth() != static_cast<uint>(font.size())) {
             // unfortunately textures can't be resized, conserving the existing content, so we have to delete them
             if (entrExists) {
                 m_fontTexLayers[sz]->releaseTexture();
             }
 
-            // allocate a new texture
             m_fontTexLayers[sz] = make_unique<Texture>(m_glbase);
             m_fontTexLayers[sz]->allocate3D(sz, sz, static_cast<uint32_t>(m_layerCount[sz].size()), GL_R8, GL_RED, GL_TEXTURE_3D,
                                             GL_UNSIGNED_BYTE);
-
             layerCnt = 0;
 
 #ifdef ARA_USE_GLES31
@@ -118,7 +124,7 @@ void FontList::update3DLayers() {
 
             // on GLES the blitting trick doesn't work ... do this by copying to
             // the cpu and back copy the glyph textures into them, do this by
-            for (auto &fnt : lc.second) {
+            for (auto &fnt : font) {
                 glesGetTexImage(fnt->getTexId(), GL_TEXTURE_2D, GL_RED, GL_UNSIGNED_BYTE, sz, sz, &pixels[0]);
                 glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, layerCnt, sz, sz, 1, GL_RED, GL_UNSIGNED_BYTE, &pixels[0]);
                 fnt->setTexLayer(m_fontTexLayers[sz]->getId(), layerCnt, (uint32_t)m_layerCount[sz].size());
@@ -138,7 +144,7 @@ void FontList::update3DLayers() {
                 glScissor(0, 0, sz, sz);
 
                 // copy the glyph textures into them, do this by fbo blitting if possible
-                for (auto &fnt : lc.second) {
+                for (auto fnt : font) {
                     glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fnt->getTexId(),
                                            0);
 
@@ -160,7 +166,7 @@ void FontList::update3DLayers() {
                 // special treatment for macOS with intel gpu which don't supported mixed TEXTURE_2D and TEXTURE_3D
                 // attachments copy to cpu and back
                 std::vector<uint8_t> pixels(sz * sz);
-                for (auto &fnt : lc.second) {
+                for (auto &fnt : font) {
                     glBindTexture(GL_TEXTURE_2D, fnt->getTexId());
                     glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_UNSIGNED_BYTE, &pixels[0]);
                     glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, layerCnt, sz, sz, 1, GL_RED, GL_UNSIGNED_BYTE, &pixels[0]);
@@ -170,6 +176,10 @@ void FontList::update3DLayers() {
             }
 #endif
 #endif
+        }
+
+        for (const auto fnt : font) {
+            fnt->callChangedCb();
         }
     }
 }

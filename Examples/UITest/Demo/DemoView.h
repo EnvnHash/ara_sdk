@@ -1,14 +1,15 @@
 #pragma once
 
+#include <Asset/AssetFont.h>
+#include <Asset/FontList.h>
+#include <Dialoges/FloatingMenuDialog.h>
 #include <UIElements/Button/ImageButton.h>
-#include <UIElements/Text/Label.h>
-#include <UIElements/UITable.h>
-#include <UIElements/ScrollView.h>
 #include <UIElements/List.h>
 #include <UIElements/Menu/ComboBox.h>
-#include <Dialoges/FloatingMenuDialog.h>
-#include <Asset/AssetFont.h>
-#include <Asset/ResGlFont.h>
+#include <UIElements/ScrollView.h>
+#include <UIElements/Text/Label.h>
+#include <UIElements/UITable.h>
+
 #include "Transitions/Carrousel.h"
 
 namespace ara {

@@ -37,20 +37,22 @@ public:
     void  update3DLayers();
 
     void  setGlbase(GLBase *glbase) { m_glbase = glbase; }
-    [[nodiscard]] int   getCount() const { return static_cast<int>(m_FontList.size()); }
-    [[nodiscard]] Font *get(int index) const { return (index < 0 || index >= getCount()) ? nullptr : m_FontList[index].get(); }
+    [[nodiscard]] int   getCount() const { return static_cast<int>(m_fontList.size()); }
+    [[nodiscard]] Font *get(int index) const { return (index < 0 || index >= getCount()) ? nullptr : m_fontList[index].get(); }
     void clear() {
-        if (!m_FontList.empty()) {
-            m_FontList.clear();
+        if (!m_fontList.empty()) {
+            m_fontList.clear();
         }
     }
 
 private:
-    std::vector<std::unique_ptr<Font>>                m_FontList;
+    std::vector<std::unique_ptr<Font>>                m_fontList;
     std::unordered_map<int, std::unique_ptr<Texture>> m_fontTexLayers;
     std::unordered_map<int, std::list<Font *>>        m_layerCount;
     FBO                                               m_fbo;
     GLBase                                           *m_glbase = nullptr;
+    std::mutex                                        m_mtx;
+    std::list<std::function<void()>>                  m_changeCb;
 };
 
 }  // namespace ara

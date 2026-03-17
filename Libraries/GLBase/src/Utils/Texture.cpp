@@ -514,12 +514,12 @@ GLuint Texture::allocate1D(uint w, GLenum internalGlDataType, GLenum extGlDataTy
 }
 #endif
 
-GLuint Texture::allocate3D(uint w, uint h, uint d, GLenum internalGlDataType, GLenum extGlDataType, GLenum textTarget,
-                           GLenum pixelType) {
+GLuint Texture::allocate3D(const uint w, const uint h, const uint d, const GLenum internalGlDataType,
+                            const GLenum extGlDataType, const GLenum textTarget, const GLenum pixelType) {
     m_texData.width  = w;
     m_texData.height = h;
     m_texData.depth  = d;
-    m_texData.slices = d;
+    m_texData.slices = static_cast<GLsizei>(d);
 
     m_texData.internalFormat = internalGlDataType;
     m_texData.format         = extGlDataType;
@@ -527,9 +527,7 @@ GLuint Texture::allocate3D(uint w, uint h, uint d, GLenum internalGlDataType, GL
     m_texData.pixelType      = pixelType;
     m_texData.mipLevels      = 1;
 
-    vector<uint64_t> nullImg(m_texData.width * m_texData.height * m_texData.depth *
-                             4);  // make an array with initial zero data, ...don't care about the
-                                  // number of channel, just make it big enough
+    vector<uint64_t> nullImg(m_texData.width * m_texData.height * m_texData.depth * 4);
 
     genTexture(m_texData.textureID);
 

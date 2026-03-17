@@ -141,6 +141,7 @@ protected:
     float     m_adaptScaling = 1.f;   // matrix scaling when using adaptive flag
 
     bool      m_glyphsPrepared = false;
+    bool      m_fontLayerTexChanged = false;
 
     std::string m_text;
 
@@ -164,6 +165,7 @@ protected:
     glm::vec2       tuv{0.f};
     FontGlyphVector faux;
     float           m_fontTexUnit = -1.f;
+    int32_t         m_fontLayerTexId = -1;
     size_t          dstSize       = 0;
 
     static inline std::unordered_map<std::string, unsigned> m_textOptMap {

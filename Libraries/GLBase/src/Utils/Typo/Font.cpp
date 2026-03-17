@@ -27,23 +27,24 @@ using namespace std;
 
 namespace ara {
 
-Font::Font(const std::string& font_path, int size, float pixRatio) {
+Font::Font(const std::string& font_path, const int size, const float pixRatio) {
     m_fontSize = size;
     m_pixRatio = pixRatio;
     setFontType(font_path);
 }
 
-Font::Font(const vector<uint8_t> &vp, const std::string &font_path, int size, float pixRatio) {
+Font::Font(const vector<uint8_t> &vp, const std::string &font_path, const int size, const float pixRatio) {
     m_pixRatio = pixRatio;
     create(vp, font_path, size, pixRatio);
 }
 
-bool Font::createFromMem(const vector<uint8_t>& vp, const std::string &name, int font_size, float pixRatio) {
+bool Font::createFromMem(const vector<uint8_t>& vp, const std::string &name, const int font_size,
+                         const float pixRatio) {
     m_pixRatio = pixRatio;
     return create(vp, name, font_size, pixRatio);
 }
 
-bool Font::create(const std::string &font_path, int font_size, float pixRatio) {
+bool Font::create(const std::string &font_path, const int size, const float pixRatio) {
     m_pixRatio = pixRatio;
     vector<uint8_t> vp;
     if (ReadBinFile(vp, font_path) <= 0) {
@@ -51,11 +52,11 @@ bool Font::create(const std::string &font_path, int font_size, float pixRatio) {
         return false;
     }
 
-    return create(vp, font_path, font_size, pixRatio);
+    return create(vp, font_path, size, pixRatio);
 }
 
-bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, int font_size, float pixRatio) {
-    if (font_size <= 0 || vp.empty()) {
+bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, const int size, const float pixRatio) {
+    if (size <= 0 || vp.empty()) {
         LOGE << "Font::Create return false";
         return false;
     }
@@ -72,8 +73,8 @@ bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, int f
 
     ret          = false;
     m_pixRatio   = pixRatio;
-    m_fontSize   = font_size;
-    m_hwFontSize = static_cast<float>(font_size) * pixRatio;
+    m_fontSize   = size;
+    m_hwFontSize = static_cast<float>(size) * pixRatio;
 
     if (rerr) {
         const auto ch_off = m_codepointRange[0];
@@ -88,7 +89,7 @@ bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, int f
 
         std::vector<stbtt_packedchar> chardata(ch_count);
         stbtt_PackSetOversampling(&pc, static_cast<uint32_t>(m_overSampling), static_cast<uint32_t>(m_overSampling));
-        stbtt_PackFontRange(&pc, buff, 0, static_cast<float>(font_size), ch_off, ch_count, chardata.data());
+        stbtt_PackFontRange(&pc, buff, 0, static_cast<float>(size), ch_off, ch_count, chardata.data());
         stbtt_PackEnd(&pc);
 
         auto cdiv = 1.f / static_cast<float>(wh);
@@ -107,7 +108,7 @@ bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, int f
 
         pushGlyphAtlas(wh, bitmap);
 
-        std::array<int32_t, 3> fontMetrics;
+        std::array<int32_t, 3> fontMetrics{};
         stbtt_GetFontVMetrics(&info, &fontMetrics[0], &fontMetrics[1], &fontMetrics[2]);
         m_fontScale = stbtt_ScaleForPixelHeight(&info, m_hwFontSize);
         m_fontVMetrics.ascent = static_cast<float>(fontMetrics[0]) * m_fontScale;
@@ -121,7 +122,8 @@ bool Font::create(const vector<uint8_t> &vp, const std::string &font_path, int f
     return ret;
 }
 
-ivec2 Font::getOptimalAtlasPixSize(const int32_t& ch_off, const int32_t& ch_count, const uint8_t* buff, float fontSize) {
+ivec2 Font::getOptimalAtlasPixSize(const int32_t& ch_off, const int32_t& ch_count, const uint8_t* buff,
+                                   const float fontSize) {
     int wh = 0;
     std::vector<stbtt_bakedchar> bchar(ch_count);
 
@@ -137,10 +139,10 @@ ivec2 Font::getOptimalAtlasPixSize(const int32_t& ch_off, const int32_t& ch_coun
 }
 
 void Font::pushGlyphAtlas(const uint32_t wh, const std::vector<uint8_t>& bmp) {
-    glGenTextures(1, &gl_TexID);
-    glBindTexture(GL_TEXTURE_2D, gl_TexID);
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, wh, wh);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, wh, wh, GL_RED, GL_UNSIGNED_BYTE, bmp.data());
+    glGenTextures(1, &m_glTexId);
+    glBindTexture(GL_TEXTURE_2D, m_glTexId);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_R8, static_cast<GLsizei>(wh), static_cast<GLsizei>(wh));
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, static_cast<GLsizei>(wh), static_cast<GLsizei>(wh), GL_RED, GL_UNSIGNED_BYTE, bmp.data());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -151,7 +153,7 @@ void Font::pushGlyphAtlas(const uint32_t wh, const std::vector<uint8_t>& bmp) {
 }
 
 // all input values are in virtual pixels and must be converted to hw pixels
-int Font::drawDGlyphs(FontGlyphVector &dgv, mat4 *mvp, Shaders *shdr, const GLuint vao, float *tcolor, const vec2 off,
+int Font::drawDGlyphs(FontGlyphVector &dgv, mat4 *mvp, Shaders *shader, const GLuint vao, float *tcolor, const vec2 off,
                       const vec2 maskPos, const vec2 maskSize) const {
     if (!isOK()) {
         return -1;
@@ -161,25 +163,25 @@ int Font::drawDGlyphs(FontGlyphVector &dgv, mat4 *mvp, Shaders *shdr, const GLui
         tcolor = def_color;
     }
 
-    if (shdr) {
+    if (shader) {
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, gl_TexID);
+        glBindTexture(GL_TEXTURE_2D, m_glTexId);
 
-        shdr->begin();
-        shdr->setUniform1i("stex", 0);
-        shdr->setUniformMatrix4fv("mvp", &(*mvp)[0][0]);
-        shdr->setUniform4fv("tcolor", tcolor);
-        shdr->setUniform2f("off", off.x * m_pixRatio, off.y * m_pixRatio);
-        shdr->setUniform2f("mask_pos", maskPos.x * m_pixRatio, maskPos.y * m_pixRatio);
-        shdr->setUniform2f("mask_size", maskSize.x * m_pixRatio, maskSize.y * m_pixRatio);
-        shdr->setUniform1f("pixRatio", m_pixRatio);
+        shader->begin();
+        shader->setUniform1i("stex", 0);
+        shader->setUniformMatrix4fv("mvp", &(*mvp)[0][0]);
+        shader->setUniform4fv("tcolor", tcolor);
+        shader->setUniform2f("off", off.x * m_pixRatio, off.y * m_pixRatio);
+        shader->setUniform2f("mask_pos", maskPos.x * m_pixRatio, maskPos.y * m_pixRatio);
+        shader->setUniform2f("mask_size", maskSize.x * m_pixRatio, maskSize.y * m_pixRatio);
+        shader->setUniform1f("pixRatio", m_pixRatio);
 
         for (auto &g : dgv.getGlyphs()) {
             if (g.glyphPtr) {
-                shdr->setUniform2fv("opos", &g.pos[0]);
-                shdr->setUniform2fv("osize", &g.size[0]);
-                shdr->setUniform2fv("tpos", &g.glyphPtr->srcpixpos[0]);
-                shdr->setUniform2fv("tsize", &g.glyphPtr->srcpixsize[0]);
+                shader->setUniform2fv("opos", &g.pos[0]);
+                shader->setUniform2fv("osize", &g.size[0]);
+                shader->setUniform2fv("tpos", &g.glyphPtr->srcpixpos[0]);
+                shader->setUniform2fv("tsize", &g.glyphPtr->srcpixsize[0]);
 
                 glBindVertexArray(vao);
                 glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -197,27 +199,27 @@ int Font::write(mat4 *mvp, Shaders *shdr, const GLuint vao, float *tcolor, float
     }
 
     FontGlyphVector dgv;
-    const vec2 size{1e10, 1e10};
-    const vec2 pos{0, 0};
+    constexpr vec2 size{1e10, 1e10};
+    constexpr vec2 pos{0, 0};
     dgv.process(this, size, pos, align::left, str, true);
     drawDGlyphs(dgv, mvp, shdr, vao, tcolor, {x, y + getPixAscent()}, {0.f, 0.f}, {1e10, 1e10});
 
     return 0;
 }
 
-void Font::setTexLayer(GLuint texId, GLuint layerId, GLuint layerSize) {
+void Font::setTexLayer(const GLuint texId, const GLuint layerId, const GLuint layerSize) {
     m_layerTexId         = texId;
     m_layerTexLayerId    = layerId;
     m_layerTexSize       = layerSize;
     m_layerTexLayerIdRel = layerSize <= 1 ? 0.f : static_cast<float>(m_layerTexId) / static_cast<float>(layerSize - 1);
 }
 
-Fontglyph *Font::getGlyph(int cp) {
+Fontglyph *Font::getGlyph(const int cp) {
     return cp >= m_codepointRange[0] && cp <= m_codepointRange[1] ? &m_glyphs.at(cp - m_codepointRange[0]) : nullptr;
 }
 
-bool Font::isFontType(const std::string &fonttype, const int size, const float pixRatio) const {
-    return m_fontType == fonttype && m_fontSize == size && m_pixRatio == pixRatio;
+bool Font::isFontType(const std::string &fontType, const int size, const float pixRatio) const {
+    return m_fontType == fontType && m_fontSize == size && m_pixRatio == pixRatio;
 }
 
 }

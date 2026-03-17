@@ -45,6 +45,7 @@ public:
     virtual void                    draw();
     std::list<DrawSet>::reference   push(IndDrawBlock& block, UINode* node);
     float                           pushFont(GLuint texId, float nrLayers);
+    static void                     popFont(DrawSet &ds, GLuint texId);
     float                           pushTexture(GLuint texId);
     float                           pushTexture(DrawSet& ds, GLuint texId);
     static void                     popTexture(DrawSet& ds, GLuint texId);

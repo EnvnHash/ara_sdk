@@ -313,16 +313,18 @@ list<DrawSet>::reference DrawManager::push(IndDrawBlock &block, UINode *node) {
     return m_drawSets.back();
 }
 
-float DrawManager::pushFont(GLuint texId, float nrLayers) {
+float DrawManager::pushFont(const GLuint texId, const float nrLayers) {
     if (m_drawSets.empty()) {
         return 0.f;
     }
 
-    size_t newFontTexSize = m_drawSets.back().fontTex.size() +
+    const size_t newFontTexSize = m_drawSets.back().fontTex.size() +
         static_cast<size_t>(!m_drawSets.back().fontTex.contains(texId));
 
     // check if the maximum number of parallel texture units are used if this is the case, create a new draw set
-    if (newFontTexSize + m_drawSets.back().textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) m_drawSets.emplace_back();
+    if (newFontTexSize + m_drawSets.back().textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
+        m_drawSets.emplace_back();
+    }
 
     // in case this is a new texId or the nrLayers has changed
     if (!m_drawSets.back().fontTex.contains(texId)) {
@@ -339,14 +341,22 @@ float DrawManager::pushFont(GLuint texId, float nrLayers) {
     return static_cast<float>(m_drawSets.back().fontTex[texId]);
 }
 
-float DrawManager::pushTexture(GLuint texId) {
+void DrawManager::popFont(DrawSet &ds, const GLuint texId) {
+    std::erase(ds.layerUnits, ds.fontTex[texId]);
+    ds.layerSizes.erase(ds.layerSizes.begin() + ds.fontTex[texId]);
+    if (ds.fontTex.contains(texId)) {
+        ds.fontTex.erase(texId);
+    }
+}
+
+float DrawManager::pushTexture(const GLuint texId) {
     if (m_drawSets.empty()) {
         return 0.f;
     }
     return pushTexture(m_drawSets.back(), texId);
 }
 
-float DrawManager::pushTexture(DrawSet &ds, GLuint texId) {
+float DrawManager::pushTexture(DrawSet &ds, const GLuint texId) {
     size_t newTexSize = ds.textures.size() + static_cast<size_t>(!ds.textures.contains(texId));
 
     // check if the maximum number of parallel texture units is used. if this is the case, create a new draw set
@@ -362,13 +372,13 @@ float DrawManager::pushTexture(DrawSet &ds, GLuint texId) {
     return static_cast<float>(ds.textures[texId]);
 }
 
-void DrawManager::popTexture(DrawSet &ds, GLuint texId) {
+void DrawManager::popTexture(DrawSet &ds, const GLuint texId) {
     if (ds.textures.contains(texId)) {
         ds.textures.erase(texId);
     }
 }
 
-void DrawManager::replaceTexture(DrawSet &ds, GLuint texUnit, GLuint texId) {
+void DrawManager::replaceTexture(DrawSet &ds, GLuint texUnit, const GLuint texId) {
     std::erase_if(ds.textures, [&](auto& it) { return it.second == texUnit; });
     ds.textures.erase(texId);
     ds.textures[texId] = texUnit;  // associate a texUnit to this new texId
@@ -388,7 +398,7 @@ void DrawManager::clear() {
         }
     }
 
-    for (const auto it : m_nodeList | std::views::filter([](auto it) { return it != nullptr; }) ) {
+    for (const auto it : m_nodeList | std::views::filter([](auto el) { return el != nullptr; }) ) {
         it->clearDs();
     }
 

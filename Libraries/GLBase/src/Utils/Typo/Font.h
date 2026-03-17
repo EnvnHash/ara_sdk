@@ -42,9 +42,16 @@ public:
     int write(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float x, float y, const std::string &str);
     int writeFormat(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float x, float y, char *f, ...);
 
+    void callChangedCb() {
+        for (auto &cb : m_changedCb | std::views::values) {
+            cb();
+        }
+    }
+
     void setOversampling(int32_t val) { m_overSampling = static_cast<float>(val); }
     void setFontType(std::string fonttype) { m_fontType = std::move(fonttype); }
     void setTexLayer(GLuint texId, GLuint layerId, GLuint layerSize);
+    void setLayertTexChangedCb(void* id, const std::function<void()>& cb) { m_changedCb[id] = cb; }
 
     [[nodiscard]] bool      isFontType(const std::string &fonttype, int size, float pixRatio) const;
     [[nodiscard]] bool      isOK() const { return !m_glyphs.empty(); }
@@ -60,18 +67,18 @@ public:
     [[nodiscard]] float     getPixDescentHwp() const { return m_fontVMetrics.descent; }  ///> return in hw pixels
     [[nodiscard]] float     getPixLineGapHwp() const { return m_fontVMetrics.lineGap; }  ///> return in hw pixels
     [[nodiscard]] float     getScaleHwp() const { return m_fontScale; }                            ///> return in hw pixels
-    [[nodiscard]] GLuint    getTexId() const { return gl_TexID; }
+    [[nodiscard]] GLuint    getTexId() const { return m_glTexId; }
     [[nodiscard]] GLuint    getLayerTexId() const { return m_layerTexId; }
     [[nodiscard]] GLuint    getLayerTexLayerId() const { return m_layerTexLayerId; }
     [[nodiscard]] float     getLayerTexLayerIdRel() const { return m_layerTexLayerIdRel; }
     [[nodiscard]] GLuint    getLayerTexSize() const { return m_layerTexSize; }
-    [[nodiscard]] float     getOverSamplling() const { return m_overSampling; }
+    [[nodiscard]] float     getOverSampling() const { return m_overSampling; }
     Fontglyph*              getGlyph(int cp);
 
 private:
     std::vector<Fontglyph> m_glyphs;
     Shaders                 *m_glyphShader        = nullptr;
-    GLuint                   gl_TexID             = 0;
+    GLuint                   m_glTexId             = 0;
     float                    m_fontScale          = 0.f;        ///> in hw pixels
     float                    m_pixRatio           = 1.f;        ///> fontSize up or downscaling, display dpi dependent
     //int                      m_fontVMetrics[3]    = {0, 0, 0};  ///> [0]:ascent,[1]:descent,[2]:lineGap, in hw pixels
@@ -89,6 +96,8 @@ private:
     GLuint                   m_layerTexSize       = 0;
     float                    m_layerTexLayerIdRel = 0;
     float                    m_overSampling = 2.f;
+
+    std::unordered_map<void*, std::function<void()>>    m_changedCb;
 
     // temporary local variables, made member variables for performance reasons
     bool           ret  = false;

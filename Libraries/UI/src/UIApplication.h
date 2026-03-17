@@ -86,7 +86,7 @@ public:
     /// startThreadedRendering function, which will start an individual drawing thread for each window
     virtual void startRenderLoop();
 
-    // Info dialoges
+    // Info dialogues
     virtual void openInfoDiag(const InfoDiagParams& params);
     virtual void openInfoDiag(infoDiagType tp, const std::string& msg, const std::function<bool()>& onConfirm);
     virtual void showInfo(const std::string& msg, long minStayTime = 500, int width = 250, int height = 100,

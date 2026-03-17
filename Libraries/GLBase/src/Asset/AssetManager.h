@@ -15,9 +15,10 @@
 
 #pragma once
 
-#include "Asset/AssetFont.h"
-#include "Asset/ResGlFont.h"
 #include <AssetLoader.h>
+
+#include "Asset/AssetFont.h"
+#include "Asset/FontList.h"
 
 namespace ara {
 

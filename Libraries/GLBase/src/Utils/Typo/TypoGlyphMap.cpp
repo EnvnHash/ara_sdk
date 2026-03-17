@@ -334,8 +334,6 @@ void TypoGlyphMap::setScreenSize(uint32_t screenWidth, uint32_t screenHeight) {
     m_othoProj      = glm::ortho(0.0f, static_cast<float>(screenWidth), static_cast<float>(screenHeight), 0.0f);
 }
 
-// - - - - - - - - - - - - - - - - - - -
-
 int TypoGlyphMap::m_print(glm::vec2 offset, const char *text, int font_size, float *col, float *pvm, float x_range_lo,
                           float x_range_hi) {
     if (text == nullptr || !text[0]) return 0;

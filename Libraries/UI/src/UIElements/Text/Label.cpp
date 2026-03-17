@@ -87,6 +87,9 @@ Font* Label::updateDGV(bool* checkFontTex) {
     }
 
     m_riFont = font;
+    font->setLayertTexChangedCb(this, [this] {
+        m_fontLayerTexChanged = true;
+    });
 
     if (!hasOpt(manual_space)) {
         m_tSize = m_tContSize;
@@ -109,8 +112,8 @@ Font* Label::updateDGV(bool* checkFontTex) {
                 bas = faux.getPixSize();
 
                 const auto limit = m_tContSize.x - bas.x;  // get the available space (content size - ellipsis size)
-                int i      = 0;
-                auto rightLimit = m_fontDGV.getRightLimit();
+                int i = 0;
+                const auto rightLimit = m_fontDGV.getRightLimit();
 
                 // sum up char until the max bounds is reached
                 for (const auto& g : m_fontDGV.getGlyphs())
@@ -278,6 +281,16 @@ void Label::updateDrawData() {
 }
 
 void Label::updateMatrix() {
+    if (m_fontLayerTexChanged) {
+        m_fontLayerTexChanged = false;
+
+        if (m_riFont && m_lblDB.drawSet) {
+            m_drawMan->popFont(*m_lblDB.drawSet, m_fontLayerTexId);
+            m_fontTexUnit = m_drawMan->pushFont(m_riFont->getLayerTexId(), static_cast<float>(m_riFont->getLayerTexSize()));
+            m_fontLayerTexId = m_riFont->getLayerTexId();
+        }
+    }
+
     if (!m_geoChanged || m_updating) {
         return;
     }
@@ -356,6 +369,7 @@ void Label::updateIndDrawData(bool checkFontTex) {
     // updating in order to have the correct texUnit value set to the vao data)
     if (m_riFont && checkFontTex) {
         m_fontTexUnit = m_drawMan->pushFont(m_riFont->getLayerTexId(), static_cast<float>(m_riFont->getLayerTexSize()));
+        m_fontLayerTexId = m_riFont->getLayerTexId();
     }
 
     auto ld = m_lblDB.vaoData.begin();
@@ -454,53 +468,53 @@ unsigned long Label::removeOpt(unsigned long f) {
     return m_tOpt;
 }
 
-void Label::setFont(const std::string& fontType, uint32_t fontSize, align ax, valign ay, vec4 fontColor, state st) {
+void Label::setFont(const std::string& fontType, const uint32_t fontSize, const align ax, const valign ay, vec4 fontColor, const state st) {
     setFontType(fontType, st);
     setFontSize(static_cast<int>(fontSize), st);
     setTextAlign(ax, ay, st);
     setColor(fontColor, st);
 }
 
-void Label::setColor(float r, float g, float b, float a, state st)  {
+void Label::setColor(float r, float g, float b, float a, const state st)  {
     Label::setColor({r, g, b, a}, st);
 }
 
-void Label::setColor(const glm::vec4 &col, state st)  {
+void Label::setColor(const glm::vec4 &col, const state st)  {
     UINode::setColor(col, st);
 }
 
-void Label::setTextAlign(align ax, valign ay, state st) {
+void Label::setTextAlign(const align ax, const valign ay, const state st) {
     setTextAlignX(ax, st);
     setTextAlignY(ay, st);
 }
 
-void Label::setTextAlignX(align ax, state st) {
+void Label::setTextAlignX(const align ax, const state st) {
     m_tAlignX       = ax;
     m_glyphsPrepared = false;
     setStyleInitVal("text-align", ax == align::justify_ex ? "justify-ex" : ax == align::justify ? "justify" : ax == align::center ? "center" : ax == align::left ? "left" : "right", st);
 }
 
-void Label::setTextAlignY(valign ay, state st) {
+void Label::setTextAlignY(const valign ay, const state st) {
     m_tAlignY       = ay;
     m_glyphsPrepared = false;
     setStyleInitVal("text-valign", ay == valign::center ? "center" : (ay == valign::top ? "top" : "bottom"), st);
 }
 
-void Label::setText(const std::string &val, state st) {
+void Label::setText(const std::string &val, const state st) {
     bool updt = val.size() != m_text.size();
     m_text    = val;
     reqUpdtGlyphs(updt);
     setStyleInitVal("text", val, st);
 }
 
-void Label::setFontSize(int fontSize, state st) {
+void Label::setFontSize(const int fontSize, const state st) {
     if (st == state::m_state || st == m_state) {
         m_fontSize       = fontSize;
         m_glyphsPrepared = false;
     }
 }
 
-void Label::setFontType(std::string fontType, state st) {
+void Label::setFontType(std::string fontType, const state st) {
     if (st == state::m_state || st == m_state) {
         m_fontType       = std::move(fontType);
         m_glyphsPrepared = false;
