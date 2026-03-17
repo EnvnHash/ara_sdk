@@ -14,7 +14,7 @@
 //
 
 #include "Asset/AssetFont.h"
-#include "Asset/ResGlFont.h"
+#include "Asset/FontList.h"
 
 using namespace std;
 
