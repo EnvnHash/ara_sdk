@@ -82,8 +82,7 @@ bool SrcFile::process(ResNode *root) {
                 e = clearSpaces(e);
 
                 if (rpar) {
-                    auto endIt = m_line.end();
-                    if ((e = readPar(name, e, line, endIt)) == nullptr) {
+                    if (auto endIt = m_line.end(); (e = readPar(name, e, line, endIt)) == nullptr) {
                         LOGE << "STOP.   Error reading parameters for " << funcname;
                         return false;
                     }
@@ -99,8 +98,7 @@ bool SrcFile::process(ResNode *root) {
                         ++e;
                     }
                 } else {
-                    auto endIt = m_line.end();
-                    if ((e = readStr(name, e, line, endIt)) == nullptr) {
+                    if (auto endIt = m_line.end(); (e = readStr(name, e, line, endIt)) == nullptr) {
                         LOGE << "STOP.   Error reading string";
                         return false;
                     }
@@ -202,22 +200,19 @@ const char *SrcFile::processRawText(std::string &dest, const char *e, std::vecto
 
 const char *SrcFile::readStr(std::string &dest, const char *e, std::vector<SrcLine>::iterator &line,
                              const std::vector<SrcLine>::iterator &src_end) {
-    auto b = e = clearSpaces(e);
-
+    const auto b = e = clearSpaces(e);
     if ((e = processRawText(dest, e, line, src_end)) != b) {
         return e;
     }
 
     if (e[0] == '\"') {
         ++e;
-
         while (e[0] && e[0] != '\"') {
             ++e;
         }
 
         if (e[0] == '\"') {
             dest = std::string(b + 1, std::distance(b, e) - 1);
-
             while (e[0] && e[0] > 32 && e[0] != '{' && e[0] != '}' && e[0] != ':' && e[0] != '(' && e[0] != ')') {
                 ++e;
             }
@@ -252,13 +247,11 @@ const char *SrcFile::readPar(std::string &dest, const char *e, std::vector<SrcLi
 
     if (e[0] == '\"') {
         ++e;
-
         while (e[0] && e[0] != '\"') {
             ++e;
         }
 
         dest = std::string(b + 1, std::distance(b, e) - 1);
-
         while (e[0] && e[0] != ',' && e[0] != ')') {
             ++e;
         }
@@ -271,7 +264,6 @@ const char *SrcFile::readPar(std::string &dest, const char *e, std::vector<SrcLi
     }
 
     dest = std::string(b, std::distance(b, e));
-
     while (e[0] && e[0] <= 32 && e[0] != ',' && e[0] != ')') {
         ++e;
     }

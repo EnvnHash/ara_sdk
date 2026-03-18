@@ -106,7 +106,7 @@ public:
 #else
     GLContext getGlfwHnd();
 #endif
-    WindowManager *getWinMan();
+    WindowManager *getWinMan() const;
 #endif
 
     void runOnMainThread(const std::function<bool()> &func, bool forcePush = false) { addEvtCb(func, forcePush); }

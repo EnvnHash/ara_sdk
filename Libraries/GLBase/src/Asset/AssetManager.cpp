@@ -216,36 +216,28 @@ bool AssetManager::reload() {
     nroot = std::make_unique<ResNode>("root", m_glbase);
     nroot->setAssetManager(this);
 
-    SrcFile              sfile(m_glbase);
+    SrcFile              srcFile(m_glbase);
     std::vector<uint8_t> vp;
-    bool                 err = true;
 
     loadResource(nullptr, vp, m_resFilePath);
     insertPreAndPostContent(vp);
 
-    if (sfile.process(nroot.get(), vp)) {
+    if (srcFile.process(nroot.get(), vp)) {
         nroot->preprocess();
         nroot->process();
 
-        if (nroot->errList.empty()) {
-            if (nroot->load()) {
-                if (nroot->errList.empty()) {
-                    m_rootNode = std::move(nroot);
-                    err      = false;
-                    return true;
-                }
-            }
+        if (nroot->errList.empty() && nroot->load() && nroot->errList.empty()) {
+            m_rootNode = std::move(nroot);
+            return true;
         }
 
-        if (err) {
-            LOGE << "New resource file has errors";
-            for (auto &[lineIndex, errorString] : nroot->errList) {
-                LOGE << "Line " << std::to_string(lineIndex + 1) << " " << errorString;
-            }
+        LOGE << "New resource file has errors";
+        for (auto &[lineIndex, errorString] : nroot->errList) {
+            LOGE << "Line " << std::to_string(lineIndex + 1) << " " << errorString;
         }
     }
 
-    return err;
+    return false;
 }
 
 void AssetManager::insertPreAndPostContent(std::vector<uint8_t>& vp) {
@@ -309,30 +301,28 @@ void AssetManager::callForChangesInFolderFiles() {
 
     // check for file deletion or modification
     bool keep;
-
     do {
         keep = false;
-
         for (auto &[folder, modTime] : m_resFolderFiles) {
             if (!filesystem::exists(folder)) {
                 m_resFolderFiles.erase(folder);
                 keep = true;
                 break;
-            } else {
-                try {
-                    ft = filesystem::last_write_time(folder);
-                } catch (...) {
-                }
+            }
 
-                if (ft != modTime) {
-                    /*
-                    auto str = e.first.path().string();
-                    std::replace(str.begin(), str.end(), '\\', '/');
-                    str.erase(0, m_dataRootPath.size());
-                    PropagateFileChange(false, str);
-                    m_resFolderFiles[e.first] = ft;
-                    */
-                }
+            try {
+                ft = filesystem::last_write_time(folder);
+            } catch (...) {
+            }
+
+            if (ft != modTime) {
+                /*
+                auto str = e.first.path().string();
+                std::replace(str.begin(), str.end(), '\\', '/');
+                str.erase(0, m_dataRootPath.size());
+                PropagateFileChange(false, str);
+                m_resFolderFiles[e.first] = ft;
+                */
             }
         }
     } while (keep);

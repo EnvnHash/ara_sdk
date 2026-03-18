@@ -226,12 +226,11 @@ void GLBase::checkResourceChanges() {
     if (g_assetManager->checkForChangesInFolderFiles()) {
 #ifdef ARA_USE_GLFW
         // style updating must be sync with the gl loop
-        // get the actually focused window and push the update to its glqueue
+        // get the actually focused window and push the update to its gl-queue
         if (const auto win = getWinMan()->getFocusedWin()) {
             win->setGlCb([&] {
-                // Resources reside inside GLBase to not consume more memory
-                // than necessary threaded access to the resources is provided
-                // via an internal mutex
+                // Resources reside inside GLBase to not consume more memory than necessary threaded access to the
+                // resources is provided via an internal mutex
                 g_assetManager->callResSourceChange();
                 g_assetManager->callForChangesInFolderFiles();
 
@@ -568,8 +567,8 @@ void GLBase::switchCtx(GLNativeCtxHnd &ctx) {
     if (!ctx.ctx) {
         return;
     }
-    glXMakeContextCurrent((Display *)ctx.deviceHandle, static_cast<GLXDrawable>(ctx.drawable),
-                          static_cast<GLXDrawable>(ctx.drawable), (GLXContext)ctx.ctx);
+    glXMakeContextCurrent(static_cast<Display *>(ctx.deviceHandle), static_cast<GLXDrawable>(ctx.drawable),
+                          static_cast<GLXDrawable>(ctx.drawable), static_cast<GLXContext>(ctx.ctx));
 #endif
 }
 
@@ -651,7 +650,7 @@ GLContext GLBase::getGlfwHnd() {
     return nullptr;
 }
 #endif
-WindowManager *GLBase::getWinMan() {
+WindowManager *GLBase::getWinMan() const {
     return g_winMan.get();
 }
 #endif

@@ -60,7 +60,7 @@ public:
         m_glbase = glbase;
     }
 
-    ResNode(std::string name, SrcLine *line, GLBase *glbase);
+    ResNode(std::string name, const SrcLine *line, GLBase *glBase);
 
     virtual ~ResNode() = default;
 
@@ -93,13 +93,13 @@ public:
         }
     }
 
-    ResNode                                     *findNode(std::vector<std::string> &v, int level);  // Recursive function to find a child in the tree
+    ResNode                                     *findNode(std::vector<std::string> &v, int level) const;  // Recursive function to find a child in the tree
     std::tuple<ResNode *, unitType, std::string> findNumericNode(const std::string &path);  // same as above but resolves reference to other styles and checks if the value is numeric
     ResNode *findNodeFromNode(const std::string &path, ResNode *rnode);  // Finds a node by path starting from a root rnode (snode)
     ResNode *findNodeFromRoot(const std::string& path) {
         return findNodeFromNode(path, nullptr);
     }  // Finds a node by path starting from the root
-    ResNode *getByName(const std::string &name);  // Finds an immediate child with the giving name (childs in m_Node)
+    ResNode *getByName(const std::string &name) const;  // Finds an immediate child with the giving name (childs in m_Node)
 
     void setValue(std::string value) {
         m_value = std::move(value);
@@ -123,7 +123,7 @@ public:
         return getFlag(flagname) != nullptr; // Returns true if finds a flag with the giving name
     }
 
-    ResNode *getFlag(const std::string &flagname);  // Returns the pointer to the flag
+    ResNode *getFlag(const std::string &flagname) const;  // Returns the pointer to the flag
 
     bool hasFunc() const { return !m_func.empty(); }  // Does this have a function
     Ptr  preprocess(int level = 0);
@@ -159,7 +159,7 @@ public:
     // Values
 
     bool                hasValue(const std::string &path) { return getByName(path) != nullptr; }
-    std::string         getValue(const std::string &name, std::string def = {});  // Returns the value of a
+    std::string         getValue(const std::string &name, std::string def = {}) const;  // Returns the value of a
 
     template<CoordinateType32Signed T>
     T value(const std::string &name, T def) {
@@ -200,14 +200,14 @@ public:
 
     std::vector<float>  valuefv(const std::string &path, int fcount = 0, float def = 0);
 
-    bool                isInPixels(const std::string &name);
-    bool                isInPercent(const std::string &name);
-    ParVec              splitValue(char sep = ',');  // Splits in tokens the m_value for this node
-    ParVec              splitNodeValue(const std::string &value_name, char sep = ',');  // Splits in tokens the m_value for a node with name value_name
+    bool                isInPixels(const std::string &name) const;
+    bool                isInPercent(const std::string &name) const;
+    ParVec              splitValue(char sep = ',') const;  // Splits in tokens the m_value for this node
+    ParVec              splitNodeValue(const std::string &valueName, char sep = ',') const;  // Splits in tokens the m_value for a node with name value_name
     bool                generateReport(std::vector<e_repitem> &ritem, int level = 0);
     void                setAssetManager(AssetManager *inst) { m_assetManager = inst; }
     AssetManager*       getAssetManager() { return m_assetManager; }
-    bool                isEqual(ResNode *unode);
+    bool                isEqual(const ResNode *unode) const;
     bool                copy(ResNode *unode);
     unsigned            setFlags(unsigned flags) { return (m_Flags = flags); }
     unsigned            addFlags(unsigned flags) { return (m_Flags |= flags); }

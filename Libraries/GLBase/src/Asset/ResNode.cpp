@@ -25,7 +25,7 @@ using namespace std;
 namespace ara {
 
 bool SrcLine::isEmpty() {
-    return !(std::find_if(str.begin(), str.end(), [&](auto &x) { return x > 32; }) != str.end());
+    return ranges::find_if(str, [&](auto &x) { return x > 32; }) == str.end();
 }
 
 bool SrcLine::isComment() const {
@@ -33,9 +33,9 @@ bool SrcLine::isComment() const {
     return (e[0] == '#');
 }
 
-ResNode::ResNode(std::string name, SrcLine *line, GLBase *glbase) {
+ResNode::ResNode(std::string name, const SrcLine *line, GLBase *glBase) {
     m_name       = std::move(name);
-    m_glbase     = glbase;
+    m_glbase     = glBase;
     srcLineIndex = line != nullptr ? line->index : 0;
 }
 
@@ -43,8 +43,8 @@ string ResNode::getPath() {
     string            str;
     vector<ResNode *> nl;
     _r_getPath(nl);
-    int i, n = static_cast<int>(nl.size());
-    for (i = n - 2; i >= 0; i--) {
+    const int n = static_cast<int>(nl.size());
+    for (int i = n - 2; i >= 0; i--) {
         str += nl[i]->m_name;
         if (i > 0) {
             str += ".";
@@ -59,35 +59,25 @@ bool ResNode::_r_getPath(vector<ResNode *> &nl) {
     return !getParent() || getParent()->_r_getPath(nl);
 }
 
-/*
-bool ResNode::error_string(const string &str) {
-    ResNode *root = getRoot();
-    root->errList.push_back(e_error{srcLineIndex, string(string(typeid(this[0]).name()) + " / (" + m_name + ") : " + str)});
-    return false;
-}*/
-
-void ResNode::logtree(int level) {
-    if (!m_value.empty()) {
-    } else {
-        if (!m_func.empty()) {
-            string str;
-            for (string &sp : m_par) {
-                str += sp + "|";
-            }
+void ResNode::logtree(const int level) {
+    if (m_value.empty() && !m_func.empty()) {
+        string str;
+        for (string &sp : m_par) {
+            str += sp + "|";
         }
     }
 
-    for (Ptr &node : m_node) {
+    for (const auto &node : m_node) {
         node->logtree(level + 1);
     }
 }
 
-ResNode *ResNode::add(ResNode::Ptr node) {
+ResNode *ResNode::add(Ptr node) {
     if (!node) {
         return nullptr;
     }
     m_node.emplace_back(std::move(node));
-    auto rnode = m_node.back().get();
+    const auto rnode = m_node.back().get();
     rnode->setParent(this);
     return rnode;
 }
@@ -98,8 +88,8 @@ ResNode *ResNode::setParent(ResNode *parent) {
     return m_parent;
 }
 
-ResNode *ResNode::getFlag(const string &flagname) {
-    for (Ptr &node : m_node) {
+ResNode *ResNode::getFlag(const string &flagname) const {
+    for (const auto &node : m_node) {
         if (node->isFlag(flagname)) {
             return node.get();
         }
@@ -109,7 +99,7 @@ ResNode *ResNode::getFlag(const string &flagname) {
 
 void ResNode::process() {
     onProcess();
-    for (Ptr &node : m_node) {
+    for (const auto &node : m_node) {
         node->process();
     }
 }
@@ -119,7 +109,7 @@ bool ResNode::load() {
 
     try {
         onLoad();
-        for (Ptr &node : m_node) {
+        for (const auto &node : m_node) {
             node->load();
         }
         return true;
@@ -163,23 +153,21 @@ ResNode::Ptr ResNode::choose() {
     return nullptr;
 }
 
-ResNode::Ptr ResNode::preprocess(int level) {
-    int      i, n = static_cast<int>(m_node.size());
-    Ptr      pret;
+ResNode::Ptr ResNode::preprocess(const int level) {
+    const int   n = static_cast<int>(m_node.size());
+    Ptr         pret;
 
-    for (i = 0; i < n; i++) {
-        auto node = m_node[i].get();
-
-        if ((pret = node->choose()) != nullptr) {
-            auto newnode = pret.get();
-            newnode->setParent(this);
-            newnode->grabNode(node);
+    for (int i = 0; i < n; i++) {
+        if (const auto node = m_node[i].get(); (pret = node->choose()) != nullptr) {
+            const auto newNode = pret.get();
+            newNode->setParent(this);
+            newNode->grabNode(node);
 
             m_node[i] = std::move(pret);  // previous node gets deleted here
         }
     }
 
-    for (Ptr &nd : m_node) {
+    for (const auto &nd : m_node) {
         nd->preprocess(level + 1);
     }
 
@@ -188,8 +176,7 @@ ResNode::Ptr ResNode::preprocess(int level) {
 
 ResNode *ResNode::findNode(const string &path) {
     // first check for cached results
-    auto n = m_findNodeCache.find(path);
-    if (n != m_findNodeCache.end()) {
+    if (const auto n = m_findNodeCache.find(path); n != m_findNodeCache.end()) {
         return n->second;
     }
 
@@ -208,36 +195,38 @@ ResNode *ResNode::findNode(const string &path) {
 }
 
 tuple<ResNode *, unitType, std::string> ResNode::findNumericNode(const string &path) {
-    auto ptr = findNode(path);
-
     // check if result is numeric, if this is not the case, try to resolve it as
     // a reference to another node
-    if (ptr) {
+    if (auto ptr = findNode(path)) {
         auto v = split(ptr->m_value, "px");
         if (v.size() > 1) {
             return make_tuple(ptr, unitType::Pixels, v[0]);
-        } else {
+        }
+
+        v = split(ptr->m_value, "%");
+        if (v.size() > 1) {
+            return make_tuple(ptr, unitType::Percent, v[0]);
+        }
+
+        if (is_number(ptr->m_value)) {
+            return make_tuple(ptr, unitType::Pixels, ptr->m_value);
+        }
+
+        // try to resolve as node reference
+        ptr = getRoot()->findNode(ptr->m_value);
+        if (ptr) {
+            v = split(ptr->m_value, "px");
+            if (v.size() > 1) {
+                return make_tuple(ptr, unitType::Pixels, v[0]);
+            }
+
             v = split(ptr->m_value, "%");
             if (v.size() > 1) {
                 return make_tuple(ptr, unitType::Percent, v[0]);
-            } else if (is_number(ptr->m_value)) {
+            }
+
+            if (is_number(ptr->m_value)) {
                 return make_tuple(ptr, unitType::Pixels, ptr->m_value);
-            } else {
-                // try to resolve as node reference
-                ptr = getRoot()->findNode(ptr->m_value);
-                if (ptr) {
-                    v = split(ptr->m_value, "px");
-                    if (v.size() > 1) {
-                        return make_tuple(ptr, unitType::Pixels, v[0]);
-                    } else {
-                        v = split(ptr->m_value, "%");
-                        if (v.size() > 1) {
-                            return make_tuple(ptr, unitType::Percent, v[0]);
-                        } else if (is_number(ptr->m_value)) {
-                            return make_tuple(ptr, unitType::Pixels, ptr->m_value);
-                        }
-                    }
-                }
             }
         }
     }
@@ -245,9 +234,9 @@ tuple<ResNode *, unitType, std::string> ResNode::findNumericNode(const string &p
     return make_tuple(nullptr, unitType::Pixels, "");
 }
 
-ResNode *ResNode::getByName(const string &name) {
+ResNode *ResNode::getByName(const string &name) const {
     if (!m_node.empty()) {
-        for (Ptr &node : m_node) {
+        for (const auto &node : m_node) {
             if (node->isName(name)) {
                 return node.get();
             }
@@ -257,7 +246,7 @@ ResNode *ResNode::getByName(const string &name) {
     return nullptr;
 }
 
-ResNode *ResNode::findNode(vector<string> &v, int level) {
+ResNode *ResNode::findNode(vector<string> &v, const int level) const {
     ResNode *r;
     if (level >= static_cast<int>(v.size())) {
         return nullptr;
@@ -277,8 +266,8 @@ ResNode *ResNode::findNodeFromNode(const string &path, ResNode *rnode) {
 
 // ---------------------------------------------------[ VALUES ]--------------------------------------------------------
 
-string ResNode::getValue(const string &name, string def) {
-    for (Ptr &node : m_node) {
+string ResNode::getValue(const string &name, string def) const {
+    for (const auto &node : m_node) {
         if (node->isName(name)) {
             return node->m_value;
         }
@@ -289,35 +278,35 @@ string ResNode::getValue(const string &name, string def) {
 
 std::vector<float> ResNode::valuefv(const string &path, int fcount, float def) {
     std::vector<float> v;
-    ResNode           *node = findNode(path);
+    const ResNode *node = findNode(path);
     if (node == nullptr) {
         return std::move(v);
     }
-    ParVec tok = node->splitValue();
-    fcount     = fcount ? fcount : tok.getParCount();
+    const ParVec tok = node->splitValue();
+    fcount = fcount ? fcount : tok.getParCount();
     for (int i = 0; i < fcount; i++) {
         v.emplace_back(tok.getFloatPar(i, def));
     }
     return std::move(v);
 }
 
-bool ResNode::isInPixels(const string &name) {
-    ResNode *ptr = getByName(name);
+bool ResNode::isInPixels(const string &name) const {
+    const auto ptr = getByName(name);
     if (!ptr) {
         return false;
     }
     return split(ptr->m_value, "px").size() > 1;
 }
 
-bool ResNode::isInPercent(const string &name) {
-    ResNode *ptr = getByName(name);
+bool ResNode::isInPercent(const string &name) const {
+    const auto ptr = getByName(name);
     if (!ptr) {
         return false;
     }
     return split(ptr->m_value, "%").size() > 1;
 }
 
-ParVec ResNode::splitValue(char sep) {
+ParVec ResNode::splitValue(const char sep) const {
     ParVec        tok;
     istringstream f(m_value);
     string        s;
@@ -327,24 +316,23 @@ ParVec ResNode::splitValue(char sep) {
     return tok;
 }
 
-ParVec ResNode::splitNodeValue(const string &value_name, char sep) {
+ParVec ResNode::splitNodeValue(const string &valueName, const char sep) const {
     ParVec   tok;
-    ResNode *node;
-    if ((node = getByName(value_name)) != nullptr) {
+    if (ResNode *node; (node = getByName(valueName)) != nullptr) {
         return node->splitValue(sep);
     }
     return tok;
 }
 
-bool ResNode::generateReport(std::vector<e_repitem> &ritem, int level) {
+bool ResNode::generateReport(std::vector<e_repitem> &ritem, const int level) {
     ritem.emplace_back(e_repitem{this, level, getPath()});
-    for (Ptr &node : m_node) {
+    for (const auto &node : m_node) {
         node->generateReport(ritem, level + 1);
     }
     return true;
 }
 
-bool ResNode::isEqual(ResNode *unode) {
+bool ResNode::isEqual(const ResNode *unode) const {
     if (unode == nullptr) {
         return false;
     }
@@ -360,8 +348,8 @@ bool ResNode::isEqual(ResNode *unode) {
     if (m_par.getParCount() != unode->m_par.getParCount()) {
         return false;
     }
-    int i, n = m_par.getParCount();
-    for (i = 0; i < n; i++) {
+    const int n = m_par.getParCount();
+    for (int i = 0; i < n; i++) {
         if (m_par[i] != unode->m_par[i]) {
             return false;
         }
