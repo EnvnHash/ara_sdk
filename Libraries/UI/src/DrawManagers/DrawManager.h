@@ -13,6 +13,7 @@ class UINode;
 class Shaders;
 class ShaderCollector;
 class GLBase;
+class Font;
 
 class DrawSet {
 public:
@@ -23,10 +24,8 @@ public:
     VAO                                                       vao;
     std::deque<std::vector<DivVaoData>*>                      divData;
     std::deque<std::vector<GLuint>*>                          divIndices;
-    std::unordered_map<GLuint, GLuint>                        fontTex;  // texId, texUnit
-    std::vector<float>                                        layerSizes;
-    std::vector<GLint>                                        layerUnits;
-    std::unordered_map<GLuint, GLuint>                        textures;  // texId, texUnit
+    std::vector<GlFontPar>                                    fontTex;
+    std::unordered_map<GLuint, GLuint>                        textures;  /// <texId, texUnit>
     std::deque<std::pair<std::vector<DivVaoData>*, uint32_t>> updtNodes;
     GLuint                                                    vaoSize    = 0;
     GLuint                                                    indOffs    = 0;
@@ -43,8 +42,9 @@ public:
     bool                            rebuildVaos();
     void                            update();
     virtual void                    draw();
+    void                            bindFontTextures(DrawSet& ds);
     std::list<DrawSet>::reference   push(IndDrawBlock& block, UINode* node);
-    float                           pushFont(GLuint texId, float nrLayers);
+    GLuint                          pushFont(Font* font);
     static void                     popFont(DrawSet &ds, GLuint texId);
     float                           pushTexture(GLuint texId);
     float                           pushTexture(DrawSet& ds, GLuint texId);

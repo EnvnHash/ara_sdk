@@ -138,7 +138,7 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
         return nullptr;
     }
 
-    const auto font = getSharedRes()->res->getGLFont(m_fontType, m_fontSize, getPixRatio());
+    const auto font = getSharedRes()->res->getGLFont(getSharedRes()->winHandle, m_fontType, m_fontSize, getPixRatio());
     if (!font) {
         LOGE << "[ERROR] UIEdit::UpdateDGV() / Cannot get font for " << m_fontType << "   size=" << m_fontSize;
         return nullptr;
@@ -162,7 +162,7 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
     // Calculate offset
     if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
         auto cpos = m_fontDGV.getCaretPos(m_caretIndex);
-        float pa = m_riFont->getPixAscent();
+        const float pa = m_riFont->getPixAscent();
 
         // resulting x-position
         auto x1 = cpos.x + m_offset.x;

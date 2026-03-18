@@ -57,12 +57,12 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
     updtStyleSingleValue<align>(node, styleInit::textAlign, st, align::center, m_tAlignX);
     updtStyleSingleValue<valign>(node, styleInit::textValign, st, valign::center, m_tAlignY);
 
-    if (auto color = node->findNode<AssetColor>("text-color")) {
+    if (const auto color = node->findNode<AssetColor>("text-color")) {
         auto col                                 = color->getColorvec4();
         m_setStyleFunc[st][styleInit::textColor] = [col, this, st] { setColor(col.r, col.g, col.b, col.a, st); };
     }
 
-    if (auto f = node->findNode<AssetFont>("font")) {
+    if (const auto f = node->findNode<AssetFont>("font")) {
         auto        size = f->value<int32_t>("size", 0);
         std::string font = f->getValue("font");
 
@@ -75,20 +75,27 @@ vec4 Label::calculateMask() const {
     return {m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
 }
 
-Font* Label::updateDGV(bool* checkFontTex) {
+Font* Label::updateDGV(bool* checkFontTexture) {
     if (!getSharedRes() || !getSharedRes()->res) {
         return nullptr;
     }
 
-    const auto font = getSharedRes()->res->getGLFont(m_fontType, m_fontSize, getPixRatio());
+    const auto font = getSharedRes()->res->getGLFont(getSharedRes()->winHandle, m_fontType, m_fontSize, getPixRatio());
     if (!font) {
         LOGE << "[ERROR] UIEdit::UpdateDGV() / Cannot get font for " << m_fontType << "   size=" << m_fontSize;
         return nullptr;
     }
 
     m_riFont = font;
-    font->setLayertTexChangedCb(this, [this] {
+
+    m_riFont->setFontTexChangedCb(this, [this] {
+        // this is called when the font related 3D texture got a different texId, num of Layers or layerid,
+        // so the VAO draw data needs to be updated (updateIndDrawData)
         m_fontLayerTexChanged = true;
+
+        // in case num of layers or texId has changed, the DrawManager needs to updated it's fontTex data
+        m_updateDrawSetFontData = m_riFont->getLayerTexId() != m_glFontPar.texId || m_riFont->getLayerTexNrLayers() != m_glFontPar.nrLayers;
+        getSharedRes()->reqRedraw();
     });
 
     if (!hasOpt(manual_space)) {
@@ -148,7 +155,7 @@ Font* Label::updateDGV(bool* checkFontTex) {
     return m_riFont;
 }
 
-void Label::setEditPixSpace(float width, float height, bool set_flag) {
+void Label::setEditPixSpace(const float width, const float height, const bool set_flag) {
     m_tSize[0] = width;
     m_tSize[1] = height;
 
@@ -197,20 +204,22 @@ bool Label::drawIndirect(uint32_t& objId) {
 }
 
 bool Label::checkGlyphsPrepared(bool checkFontTex) {
-    if (!m_glyphsPrepared) {
+    if (!m_glyphsPrepared || m_fontLayerTexChanged) {
         if (!m_sharedRes) {
             return false;
         }
 
-        updateDGV(&checkFontTex);
-        updateFontGeo();
+        if (!m_glyphsPrepared) {
+            updateDGV(&checkFontTex);
+            updateFontGeo();
 
-        if (!m_drawImmediate) {
-            m_lblDB.vaoData.resize(m_fontDGV.getGlyphs().size() * 4);
-            m_lblDB.indices.resize(m_fontDGV.getGlyphs().size() * 6);
+            if (!m_drawImmediate) {
+                m_lblDB.vaoData.resize(m_fontDGV.getGlyphs().size() * 4);
+                m_lblDB.indices.resize(m_fontDGV.getGlyphs().size() * 6);
+            }
         }
 
-        prepareVao(checkFontTex);
+        prepareVao(checkFontTex || m_fontLayerTexChanged);
 
         m_glyphsPrepared = true;
         return true;
@@ -243,7 +252,7 @@ void Label::updateFontGeo() {
 
     if (m_adaptScaling < 1.f) {
         // get in bounds offset
-        auto inBoundsOffs = m_textBounds * (1.f - m_adaptScaling);
+        const auto inBoundsOffs = m_textBounds * (1.f - m_adaptScaling);
 
         m_bo.x = m_tAlignX == align::center
                      ? m_bo.x + inBoundsOffs.x * 0.5f
@@ -281,17 +290,7 @@ void Label::updateDrawData() {
 }
 
 void Label::updateMatrix() {
-    if (m_fontLayerTexChanged) {
-        m_fontLayerTexChanged = false;
-
-        if (m_riFont && m_lblDB.drawSet) {
-            m_drawMan->popFont(*m_lblDB.drawSet, m_fontLayerTexId);
-            m_fontTexUnit = m_drawMan->pushFont(m_riFont->getLayerTexId(), static_cast<float>(m_riFont->getLayerTexSize()));
-            m_fontLayerTexId = m_riFont->getLayerTexId();
-        }
-    }
-
-    if (!m_geoChanged || m_updating) {
+    if ((!m_geoChanged || m_updating) && !m_fontLayerTexChanged) {
         return;
     }
 
@@ -306,7 +305,7 @@ void Label::updateMatrix() {
 }
 
 // all input values are in virtual pixels and must be converted to hw pixels
-void Label::prepareVao(bool checkFontTex) {
+void Label::prepareVao(const bool checkFontTex) {
     if (m_drawImmediate) {
         dstSize = m_fontDGV.getGlyphs().size() * 4;
 
@@ -359,7 +358,7 @@ void Label::prepareVao(bool checkFontTex) {
     }
 }
 
-void Label::updateIndDrawData(bool checkFontTex) {
+void Label::updateIndDrawData(const bool checkFontTex) {
     if (!m_riFont || !m_riFont->isOK() || !m_sharedRes || !m_sharedRes->objSel || m_lblDB.vaoData.empty() ||
         !getWindow()) {
         return;
@@ -367,9 +366,14 @@ void Label::updateIndDrawData(bool checkFontTex) {
 
     // check if the layerTexture containing this font was already collected, if not append it (must happen before Glyph
     // updating in order to have the correct texUnit value set to the vao data)
-    if (m_riFont && checkFontTex) {
-        m_fontTexUnit = m_drawMan->pushFont(m_riFont->getLayerTexId(), static_cast<float>(m_riFont->getLayerTexSize()));
-        m_fontLayerTexId = m_riFont->getLayerTexId();
+    if (m_riFont && (checkFontTex || m_updateDrawSetFontData)) {
+        m_texUnitArrayIndex = m_drawMan->pushFont(m_riFont);
+        m_glFontPar.texId = m_riFont->getLayerTexId();
+        m_glFontPar.layerId = m_riFont->getLayerTexLayerId();
+        m_glFontPar.nrLayers = m_riFont->getLayerTexNrLayers();
+
+        m_fontLayerTexChanged = false;
+        m_updateDrawSetFontData = false;
     }
 
     auto ld = m_lblDB.vaoData.begin();
@@ -401,8 +405,8 @@ void Label::updateIndDrawData(bool checkFontTex) {
             ld->pos         = m_modMvp * ld->aux1;
             ld->texCoord    = g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize;
             ld->color       = g.color ? *g.color : m_color;
-            ld->aux2.x      = m_fontTexUnit;                          // layerTex Id
-            ld->aux2.y      = static_cast<float>(m_riFont->getLayerTexLayerId());  // layer Id
+            ld->aux2.x      = m_texUnitArrayIndex;
+            ld->aux2.y      = static_cast<float>(m_glFontPar.layerId);
             ld->aux2.z      = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
             ld->aux2.w      = m_zPos;
             ld->aux3.x      = 1.f;  // type indicator (1=Label)
@@ -441,7 +445,7 @@ void Label::pushVaoUpdtOffsets() {
     }
 }
 
-void Label::reqUpdtGlyphs(bool updateTree) {
+void Label::reqUpdtGlyphs(const bool updateTree) {
     m_glyphsPrepared = false;
     if (updateTree) {
         reqUpdtTree();
@@ -456,19 +460,20 @@ void Label::clearDs() {
     m_lblDB.drawSet = nullptr;
 }
 
-unsigned long Label::setOpt(unsigned long f) {
+unsigned long Label::setOpt(const unsigned long f) {
     m_tOpt |= f;
     m_glyphsPrepared = false;
     return m_tOpt;
 }
 
-unsigned long Label::removeOpt(unsigned long f) {
+unsigned long Label::removeOpt(const unsigned long f) {
     m_tOpt &= ~f;
     m_glyphsPrepared = false;
     return m_tOpt;
 }
 
-void Label::setFont(const std::string& fontType, const uint32_t fontSize, const align ax, const valign ay, vec4 fontColor, const state st) {
+void Label::setFont(const std::string& fontType, const uint32_t fontSize, const align ax, const valign ay,
+                    const vec4 fontColor, const state st) {
     setFontType(fontType, st);
     setFontSize(static_cast<int>(fontSize), st);
     setTextAlign(ax, ay, st);
@@ -479,7 +484,7 @@ void Label::setColor(float r, float g, float b, float a, const state st)  {
     Label::setColor({r, g, b, a}, st);
 }
 
-void Label::setColor(const glm::vec4 &col, const state st)  {
+void Label::setColor(const vec4 &col, const state st)  {
     UINode::setColor(col, st);
 }
 

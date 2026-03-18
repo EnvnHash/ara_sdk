@@ -51,7 +51,6 @@ private:
     std::unordered_map<int, std::list<Font *>>        m_layerCount;
     FBO                                               m_fbo;
     GLBase                                           *m_glbase = nullptr;
-    std::mutex                                        m_mtx;
     std::list<std::function<void()>>                  m_changeCb;
 };
 

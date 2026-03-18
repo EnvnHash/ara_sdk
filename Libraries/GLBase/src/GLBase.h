@@ -117,11 +117,11 @@ public:
     void useSelfManagedCtx(bool val) { m_selfManagedCtx = val; }
 
     void    procGlCb() { g_sema.notify(); }
-    auto    getNrCtx() { return g_contexts.size(); }
+    auto    getNrCtx() const { return g_contexts.size(); }
     auto    &shaderCollector() { return g_shaderCollector; }
     auto    &textureCollector() { return g_textureCollector; }
     auto    *nullVao() { return &g_nullVao; }
-    auto    getMainThreadId() { return g_mainThreadId; }
+    auto    getMainThreadId() const { return g_mainThreadId; }
     auto    rendererIsIntel() const { return g_isIntelRenderer; }
     auto    maxTexUnits() const { return g_caps.max_tex_units; }
     auto    maxShaderInvocations() const { return g_caps.max_shader_invoc; }
@@ -131,12 +131,12 @@ public:
     auto    getMajorVer() const { return g_caps.major_vers; }
     auto    getMinorVer() const { return g_caps.minor_vers; }
     auto    glMtx() { return &g_mtx; }
-    auto    getNativeCtxHndl() const { return g_nativeCtx.ctx; }
-    auto    getNativeDeviceHndl() const { return g_nativeCtx.deviceHandle; }
-    auto&   getShaderHeader() { return g_shaderCollector.getShaderHeader(); }
+    auto    getNativeCtxHandle() const { return g_nativeCtx.ctx; }
+    auto    getNativeDeviceHandle() const { return g_nativeCtx.deviceHandle; }
+    auto&   getShaderHeader() const { return g_shaderCollector.getShaderHeader(); }
     auto    isInited() const { return g_inited; }
     bool    isRunning() { return g_glCallbackLoopRunning; }
-    auto    getAssetManager() { return g_assetManager.get(); }
+    auto    getAssetManager() const { return g_assetManager.get(); }
     auto&   getLoopExitSema() { return g_loopExit; }
     auto&   perCtxQuads() { return g_perCtxQuad; }
 

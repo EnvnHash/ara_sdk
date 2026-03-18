@@ -39,7 +39,7 @@ GLBase::GLBase() {
 /// <summary>
 /// init a GL context with standard resources
 /// </summary>
-bool GLBase::init(bool doInitResources, void *winHnd) {
+bool GLBase::init(const bool doInitResources, void *winHnd) {
     if (g_inited) {
         return true;
     }

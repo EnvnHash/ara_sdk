@@ -36,24 +36,18 @@ public:
 
     static glm::ivec2 getOptimalAtlasPixSize(const int32_t& ch_off, const int32_t& ch_count, const uint8_t* buff, float fontSize);
     void pushGlyphAtlas(uint32_t wh, const std::vector<uint8_t>& bmp);
-    int drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, glm::vec2 off,
+    int drawDGlyphs(FontGlyphVector &dgv, glm::mat4 *mvp, Shaders *shader, GLuint vao, float *tcolor, glm::vec2 off,
                     glm::vec2 maskPos, glm::vec2 maskSize) const;
 
-    int write(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float x, float y, const std::string &str);
-    int writeFormat(glm::mat4 *mvp, Shaders *shdr, GLuint vao, float *tcolor, float x, float y, char *f, ...);
-
-    void callChangedCb() {
-        for (auto &cb : m_changedCb | std::views::values) {
-            cb();
-        }
-    }
+    int write(glm::mat4 *mvp, Shaders *shader, GLuint vao, float *tcolor, float x, float y, const std::string &str);
+    int writeFormat(glm::mat4 *mvp, Shaders *shader, GLuint vao, float *tcolor, float x, float y, char *f, ...);
 
     void setOversampling(int32_t val) { m_overSampling = static_cast<float>(val); }
-    void setFontType(std::string fonttype) { m_fontType = std::move(fonttype); }
-    void setTexLayer(GLuint texId, GLuint layerId, GLuint layerSize);
-    void setLayertTexChangedCb(void* id, const std::function<void()>& cb) { m_changedCb[id] = cb; }
+    void setFontType(std::string fontType) { m_fontType = std::move(fontType); }
+    void setTexLayer(const GlFontPar& par);
+    void setFontTexChangedCb(void* id, const std::function<void()>& f) { m_layerTexChangedCb[id] = f; }
 
-    [[nodiscard]] bool      isFontType(const std::string &fonttype, int size, float pixRatio) const;
+    [[nodiscard]] bool      isFontType(const std::string &fontType, int size, float pixRatio) const;
     [[nodiscard]] bool      isOK() const { return !m_glyphs.empty(); }
     [[nodiscard]] auto&     getGlyphTexSize() const { return m_glyphTexSize; }
     [[nodiscard]] float     getPixHeight() const { return static_cast<float>(m_fontSize); }                 ///> return in virtual pixels
@@ -68,36 +62,38 @@ public:
     [[nodiscard]] float     getPixLineGapHwp() const { return m_fontVMetrics.lineGap; }  ///> return in hw pixels
     [[nodiscard]] float     getScaleHwp() const { return m_fontScale; }                            ///> return in hw pixels
     [[nodiscard]] GLuint    getTexId() const { return m_glTexId; }
-    [[nodiscard]] GLuint    getLayerTexId() const { return m_layerTexId; }
-    [[nodiscard]] GLuint    getLayerTexLayerId() const { return m_layerTexLayerId; }
+    [[nodiscard]] GLuint    getLayerTexId() const { return m_glFontPar.texId; }
+    [[nodiscard]] GLuint    getLayerTexLayerId() const { return m_glFontPar.layerId; }
     [[nodiscard]] float     getLayerTexLayerIdRel() const { return m_layerTexLayerIdRel; }
-    [[nodiscard]] GLuint    getLayerTexSize() const { return m_layerTexSize; }
+    [[nodiscard]] GLuint    getLayerTexNrLayers() const { return m_glFontPar.nrLayers; }
     [[nodiscard]] float     getOverSampling() const { return m_overSampling; }
+    const std::string&      getFontType() const { return m_fontType; }
+    auto&                   getMtx() { return m_mtx; }
     Fontglyph*              getGlyph(int cp);
+    //GLuint                  getTexUnit(void* id) { return m_assignedTexUnit.contains(id) ? m_assignedTexUnit[id] : 0; }
 
 private:
-    std::vector<Fontglyph> m_glyphs;
-    Shaders                 *m_glyphShader        = nullptr;
-    GLuint                   m_glTexId             = 0;
-    float                    m_fontScale          = 0.f;        ///> in hw pixels
-    float                    m_pixRatio           = 1.f;        ///> fontSize up or downscaling, display dpi dependent
-    //int                      m_fontVMetrics[3]    = {0, 0, 0};  ///> [0]:ascent,[1]:descent,[2]:lineGap, in hw pixels
-    AtlasPar                 m_fontVMetrics{};
-    int                      m_codepointRange[2] = {32, 255};
-    glm::uvec2               m_glyphTexSize{};
-    int                      m_texLayerInd = 0;    ///> Layer index into the FontLists 3d texture containing this font
-    int                      m_fontSize    = 0;    ///> font size, virtual pixels
-    float                    m_hwFontSize  = 0.f;  ///> font size, hw pixels
-    std::string              m_fontType;
-    bool                     m_glCreated = false;
-    static inline float      def_color[4]{1, 1, 1, 1};
-    GLuint                   m_layerTexId         = 0;
-    GLuint                   m_layerTexLayerId    = 0;
-    GLuint                   m_layerTexSize       = 0;
-    float                    m_layerTexLayerIdRel = 0;
-    float                    m_overSampling = 2.f;
+    std::vector<Fontglyph>  m_glyphs;
+    Shaders                 *m_glyphShader          = nullptr;
+    GLuint                  m_glTexId              = 0;
+    float                   m_fontScale            = 0.f;        ///> in hw pixels
+    float                   m_pixRatio             = 1.f;        ///> fontSize up or downscaling, display dpi dependent
+    AtlasPar                m_fontVMetrics{};
+    int                     m_codepointRange[2]    = {32, 255};
+    glm::uvec2              m_glyphTexSize{};
+    int                     m_texLayerInd          = 0;    ///> Layer index into the FontLists 3d texture containing this font
+    int                     m_fontSize             = 0;    ///> font size, virtual pixels
+    float                   m_hwFontSize           = 0.f;  ///> font size, hw pixels
+    std::string             m_fontType;
+    bool                    m_glCreated            = false;
+    static inline float     def_color[4]{1, 1, 1, 1};
+    GlFontPar               m_glFontPar{};
+    float                   m_layerTexLayerIdRel   = 0;
+    float                   m_overSampling         = 2.f;
+    std::mutex              m_mtx;
 
-    std::unordered_map<void*, std::function<void()>>    m_changedCb;
+    //std::unordered_map<void*, GLuint> m_assignedTexUnit{};
+    std::unordered_map<void*, std::function<void()>> m_layerTexChangedCb;
 
     // temporary local variables, made member variables for performance reasons
     bool           ret  = false;

@@ -47,7 +47,7 @@ bool DrawManager::rebuildVaos() {
 
             // build the indices
             if (auto ip = static_cast<GLuint *>(ds.vao.mapElementBuffer())) {
-                for (auto it : ds.divIndices) {
+                for (const auto it : ds.divIndices) {
                     ranges::copy(*it, ip);
                     ip += it->size();
                 }
@@ -70,12 +70,12 @@ void DrawManager::update() {
         // update VBO
         try {
             if (auto ptr = static_cast<DivVaoData*>(ds.vao.getMapBuffer(CoordType::Position))) {
-                for (auto &it : ds.updtNodes) {
-                    ptr += it.second;
-                    if (it.first) {
-                        ranges::copy(*it.first, ptr);
+                for (auto &[vaoDataList, idx] : ds.updtNodes) {
+                    ptr += idx;
+                    if (vaoDataList) {
+                        ranges::copy(*vaoDataList, ptr);
                     }
-                    ptr -= it.second;
+                    ptr -= idx;
                 }
                 VAO::unMapBuffer();
             }
@@ -87,9 +87,9 @@ void DrawManager::update() {
 }
 
 Shaders *DrawManager::getShader(DrawSet &ds) {
-    std::string shdrName = "DrawManager_" + std::to_string(ds.fontTex.size()) + "_" + std::to_string(ds.textures.size());
+    std::string shaderName = "DrawManager_" + std::to_string(ds.fontTex.size()) + "_" + std::to_string(ds.textures.size());
 
-    m_shdr = m_shCol->get(shdrName);
+    m_shdr = m_shCol->get(shaderName);
     if (m_shdr) {
         return m_shdr;
     }
@@ -119,7 +119,7 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
         \t   gl_Position = position;            \n
         });
 
-    vert = ara::ShaderCollector::getShaderHeader() + "// " + shdrName + ", vert\n" + vert;
+    vert = ara::ShaderCollector::getShaderHeader() + "// " + shaderName + ", vert\n" + vert;
 
     std::string frag = "layout(location = 0) out vec4 fragColor;\n";
     frag += STRINGIFY(
@@ -135,7 +135,7 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
 
     if (!ds.fontTex.empty()) {
         frag += "uniform sampler3D fontTex[" + std::to_string(std::max<int>(1, static_cast<int>(ds.fontTex.size()))) + "]; \n";
-        frag += "uniform float fontTexSize[" + std::to_string(std::max<int>(1, static_cast<int>(ds.fontTex.size()))) + "]; \n";
+        frag += "uniform float fontTexNrLayers[" + std::to_string(std::max<int>(1, static_cast<int>(ds.fontTex.size()))) + "]; \n";
     }
 
     if (!ds.textures.empty()) {
@@ -178,7 +178,7 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
                 return vec4(
                     vin.color.rgb,
                     vin.color.a *
-                        texture(fontTex[li], vec3(vin.tex_coord, vin.aux2.y / fontTexSize[li] + 0.5 / fontTexSize[li])).r); \n  // needs "half pixel offset" same as 2d tex access
+                        texture(fontTex[li], vec3(vin.tex_coord, vin.aux2.y / fontTexNrLayers[li] + 0.5 / fontTexNrLayers[li])).r); \n  // needs "half pixel offset" same as 2d tex access
         }\n);
     }
 
@@ -237,9 +237,9 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
     frag += "\tfragColor = vec4(out_col.rgb, out_col.a * vin.aux3.w);\n";
     frag += "}\n";
 
-    frag = ara::ShaderCollector::getShaderHeader() + "// " + shdrName + " shader, frag\n" + frag;
+    frag = ara::ShaderCollector::getShaderHeader() + "// " + shaderName + " shader, frag\n" + frag;
 
-    return m_shCol->add(shdrName, vert, frag);
+    return m_shCol->add(shaderName, vert, frag);
 }
 
 void DrawManager::draw() {
@@ -261,32 +261,43 @@ void DrawManager::draw() {
 
         ds.shdr->begin();
 
-        if (!ds.layerSizes.empty() && !ds.fontTex.empty()) {
-            ds.shdr->setUniform1fv("fontTexSize", &ds.layerSizes[0], static_cast<int>(ds.layerSizes.size()));
-            ds.shdr->setUniform1iv("fontTex", &ds.layerUnits[0], static_cast<int>(ds.layerUnits.size()));
-
-            for (auto &ft : ds.fontTex) {
-                glActiveTexture(GL_TEXTURE0 + ft.second);
-                glBindTexture(GL_TEXTURE_3D, ft.first);
-            }
-        }
+        bindFontTextures(ds);
 
         if (!ds.textures.empty()) {
             if (m_texUnitMap.size() != ds.textures.size()) {
                 m_texUnitMap.resize(ds.textures.size());
             }
 
-            for (auto &tx : ds.textures) {
-                if (tx.second >= m_texUnitMap.size()) {
+            for (auto &[id, mapId] : ds.textures) {
+                if (mapId >= m_texUnitMap.size()) {
                     continue;
                 }
-                m_texUnitMap[tx.second] = static_cast<GLint>(ds.fontTex.size() + tx.second);
-                glActiveTexture(GL_TEXTURE0 + m_texUnitMap[tx.second]);
-                glBindTexture(GL_TEXTURE_2D, tx.first);
+                m_texUnitMap[mapId] = static_cast<GLint>(ds.fontTex.size() + mapId);
+                glActiveTexture(GL_TEXTURE0 + m_texUnitMap[mapId]);
+                glBindTexture(GL_TEXTURE_2D, id);
             }
             ds.shdr->setUniform1iv("textures", &m_texUnitMap[0], static_cast<int>(m_texUnitMap.size()));
         }
         ds.vao.drawElements(GL_TRIANGLES, nullptr, GL_TRIANGLES, static_cast<GLsizei>(ds.indOffs));
+    }
+}
+
+void DrawManager::bindFontTextures(DrawSet& ds) {
+    std::vector<int> layerUnits;
+    std::vector<float> layerSizes;
+    for (const auto &[texUnit, nrLayers, layerId, texId, fontRef] : ds.fontTex) {
+        layerUnits.emplace_back(texUnit);
+        layerSizes.emplace_back(nrLayers);
+    }
+
+    if (!ds.fontTex.empty()) {
+        ds.shdr->setUniform1fv("fontTexNrLayers", &layerSizes[0], static_cast<int>(layerSizes.size()));
+        ds.shdr->setUniform1iv("fontTex", &layerUnits[0], static_cast<int>(layerUnits.size()));
+
+        for (auto &par : ds.fontTex) {
+            glActiveTexture(GL_TEXTURE0 + par.texUnit);
+            glBindTexture(GL_TEXTURE_3D, static_cast<GLuint>(par.texId));
+        }
     }
 }
 
@@ -313,39 +324,44 @@ list<DrawSet>::reference DrawManager::push(IndDrawBlock &block, UINode *node) {
     return m_drawSets.back();
 }
 
-float DrawManager::pushFont(const GLuint texId, const float nrLayers) {
+GLuint DrawManager::pushFont(Font* font) {
     if (m_drawSets.empty()) {
-        return 0.f;
+        return 0;
     }
 
-    const size_t newFontTexSize = m_drawSets.back().fontTex.size() +
-        static_cast<size_t>(!m_drawSets.back().fontTex.contains(texId));
+    auto& ds = m_drawSets.back();
+    auto entry = std::ranges::find_if(ds.fontTex, [font](const auto& it) {
+        return it.texId == font->getLayerTexId();
+    });
+    const bool entryExists = entry != ds.fontTex.end();
+    const auto newFontTexNrLayers = ds.fontTex.size() + static_cast<size_t>(!entryExists);
 
     // check if the maximum number of parallel texture units are used if this is the case, create a new draw set
-    if (newFontTexSize + m_drawSets.back().textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
+    if (newFontTexNrLayers + ds.textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
         m_drawSets.emplace_back();
     }
 
-    // in case this is a new texId or the nrLayers has changed
-    if (!m_drawSets.back().fontTex.contains(texId)) {
-        m_drawSets.back().fontTex[texId] = static_cast<int>(m_drawSets.back().fontTex.size());  // associate a texUnit to this new texId
-
-        if (m_drawSets.back().layerSizes.size() < m_drawSets.back().fontTex.size()) {
-            m_drawSets.back().layerSizes.emplace_back(static_cast<float>(nrLayers));
-            m_drawSets.back().layerUnits.emplace_back(m_drawSets.back().fontTex[texId]);
-        } else if (m_drawSets.back().layerSizes[m_drawSets.back().fontTex[texId]] != nrLayers) {
-            m_drawSets.back().layerSizes[m_drawSets.back().fontTex[texId]] = nrLayers;
-        }
+    if (!entryExists) {
+        ds.fontTex.emplace_back(GlFontPar{
+            .texUnit = static_cast<GLuint>(ds.fontTex.size()),
+            .texId = font->getLayerTexId(),
+            .fontRef = font
+        });
+        entry = std::next(ds.fontTex.end(), -1);
     }
 
-    return static_cast<float>(m_drawSets.back().fontTex[texId]);
+    entry->nrLayers = font->getLayerTexNrLayers();
+
+    return std::distance( ds.fontTex.begin(), entry);
 }
 
 void DrawManager::popFont(DrawSet &ds, const GLuint texId) {
-    std::erase(ds.layerUnits, ds.fontTex[texId]);
-    ds.layerSizes.erase(ds.layerSizes.begin() + ds.fontTex[texId]);
-    if (ds.fontTex.contains(texId)) {
-        ds.fontTex.erase(texId);
+    auto entry = std::ranges::find_if(ds.fontTex, [texId](const auto& it) {
+        return it.texId == texId;
+    });
+    const bool entryExists = entry != ds.fontTex.end();
+    if (entryExists) {
+        ds.fontTex.erase(entry);
     }
 }
 

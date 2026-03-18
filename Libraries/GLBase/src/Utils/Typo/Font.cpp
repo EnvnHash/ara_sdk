@@ -193,7 +193,7 @@ int Font::drawDGlyphs(FontGlyphVector &dgv, mat4 *mvp, Shaders *shader, const GL
 }
 
 /** input x and y in virtual pixels */
-int Font::write(mat4 *mvp, Shaders *shdr, const GLuint vao, float *tcolor, float x, float y, const std::string &str) {
+int Font::write(mat4 *mvp, Shaders *shader, const GLuint vao, float *tcolor, float x, float y, const std::string &str) {
     if (!isOK()) {
         return -1;
     }
@@ -202,16 +202,23 @@ int Font::write(mat4 *mvp, Shaders *shdr, const GLuint vao, float *tcolor, float
     constexpr vec2 size{1e10, 1e10};
     constexpr vec2 pos{0, 0};
     dgv.process(this, size, pos, align::left, str, true);
-    drawDGlyphs(dgv, mvp, shdr, vao, tcolor, {x, y + getPixAscent()}, {0.f, 0.f}, {1e10, 1e10});
+    drawDGlyphs(dgv, mvp, shader, vao, tcolor, {x, y + getPixAscent()}, {0.f, 0.f}, {1e10, 1e10});
 
     return 0;
 }
 
-void Font::setTexLayer(const GLuint texId, const GLuint layerId, const GLuint layerSize) {
-    m_layerTexId         = texId;
-    m_layerTexLayerId    = layerId;
-    m_layerTexSize       = layerSize;
-    m_layerTexLayerIdRel = layerSize <= 1 ? 0.f : static_cast<float>(m_layerTexId) / static_cast<float>(layerSize - 1);
+void Font::setTexLayer(const GlFontPar& par) {
+    if (par.texId != m_glFontPar.texId || par.nrLayers != m_glFontPar.nrLayers || par.layerId != m_glFontPar.layerId) {
+        const bool isInitialCall = m_glFontPar.texId == 0 && m_glFontPar.nrLayers == 0;
+        m_glFontPar = par;
+        m_layerTexLayerIdRel = par.nrLayers <= 1 ? 0.f : static_cast<float>(par.texId) / static_cast<float>(par.nrLayers - 1);
+
+        if (!isInitialCall) {
+            for (auto &it : m_layerTexChangedCb | views::values) {
+                it();
+            }
+        }
+    }
 }
 
 Fontglyph *Font::getGlyph(const int cp) {

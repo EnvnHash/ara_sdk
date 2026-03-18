@@ -129,6 +129,8 @@ protected:
     VAO             m_vao;
     UniformBlock    m_uniBlockLbl;
     IndDrawBlock    m_lblDB;
+    GlFontPar       m_glFontPar{};
+    GLuint          m_texUnitArrayIndex = 0;
 
     unsigned  m_tOpt = 0;                 // options
     glm::vec2 m_tPos{0.f}, m_tSize{0.f};  // pixel space, offset and size
@@ -142,6 +144,7 @@ protected:
 
     bool      m_glyphsPrepared = false;
     bool      m_fontLayerTexChanged = false;
+    bool      m_updateDrawSetFontData = false;
 
     std::string m_text;
 
@@ -164,9 +167,9 @@ protected:
     glm::vec2       bas{0.f};
     glm::vec2       tuv{0.f};
     FontGlyphVector faux;
-    float           m_fontTexUnit = -1.f;
-    int32_t         m_fontLayerTexId = -1;
-    size_t          dstSize       = 0;
+    //float           m_fontTexUnit   = -1.f;
+    //GLuint          m_fontTexId     = 0;
+    size_t          dstSize         = 0;
 
     static inline std::unordered_map<std::string, unsigned> m_textOptMap {
         { "single-line", single_line },

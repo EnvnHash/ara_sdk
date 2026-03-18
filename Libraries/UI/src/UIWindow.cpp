@@ -72,6 +72,8 @@ void UIWindow::init(const UIWindowParams& par) {
 
         initColors();
 
+        m_glbase->getAssetManager()->addFontListForContext(getWinHandle());
+
         m_minWinSize = ivec2{300, 300};
         m_sharedRes  = UISharedRes{static_cast<void *>(this), &s_shCol, m_winHandle,m_objSel.get(),
             m_quad.get(), m_normQuad.get(), getOrthoMat(), m_dataFolder, &m_procSteps, this,

@@ -26,9 +26,7 @@ namespace ara {
 
 AssetManager::AssetManager(const string &data_root_path, const string &compilation_filepath, GLBase *glbase)
     : m_glbase(glbase) {
-    ara::AssetLoader::setAssetPath(data_root_path);
-    m_fontList.setGlbase(glbase);
-
+    AssetLoader::setAssetPath(data_root_path);
     m_rootNode = std::make_unique<ResNode>("root", m_glbase);
     m_rootNode->setAssetManager(this);
 }
@@ -107,12 +105,12 @@ float *AssetManager::color(const string& path) {
     return c == nullptr ? default_Color : c->getColor4fv();
 }
 
-Font *AssetManager::font(const string& path, const float pixRatio) {
+Font *AssetManager::font(void* context, const string& path, const float pixRatio) {
     const auto font = findNode<AssetFont>(path);
-    auto f    = getGLFont(string("Fonts/verdana.ttf"), 20, pixRatio);
+    auto f    = getGLFont(context, string("Fonts/verdana.ttf"), 20, pixRatio);
 
     if (font != nullptr) {
-        if (Font *faux; (faux = getGLFont(font->m_FontPath, font->m_Size, pixRatio)) != nullptr) {
+        if (Font *faux; (faux = getGLFont(context, font->m_FontPath, font->m_Size, pixRatio)) != nullptr) {
             f = faux;
         }
     }
@@ -120,17 +118,17 @@ Font *AssetManager::font(const string& path, const float pixRatio) {
     return f;
 }
 
-Font *AssetManager::getGLFont(string font_type_path, const int size, const float pixRatio) {
+Font *AssetManager::getGLFont(void* context, string font_type_path, const int size, const float pixRatio) {
     if (m_fontLUT.contains(font_type_path)) {
         auto [path, sz]   = m_fontLUT[font_type_path];
         font_type_path = path;
     }
 
-    auto f = m_fontList.find(font_type_path, size, pixRatio);
+    auto f = m_fontList[context].find(font_type_path, size, pixRatio);
 
     if (!f) {
         if (std::vector<uint8_t> vp; loadResource(nullptr, vp, font_type_path) > 0) {
-            if ((f = m_fontList.add(vp, font_type_path, size, pixRatio)) != nullptr) {
+            if ((f = m_fontList[context].add(vp, font_type_path, size, pixRatio)) != nullptr) {
                 return f;
             }
         }
@@ -175,12 +173,12 @@ std::pair<const uint8_t*, size_t> AssetManager::loadResource(ResNode *node, cons
 }
 #endif
 
-Font *AssetManager::loadFont(const string& path, const int size, const float pixRatio) {
+Font *AssetManager::loadFont(void* context, const string& path, const int size, const float pixRatio) {
     std::vector<uint8_t> v;
     if (loadResource(nullptr, v, path) <= 0) {
         return nullptr;
     }
-    return m_fontList.add(v, path, size, pixRatio);
+    return m_fontList[context].add(v, path, size, pixRatio);
 }
 
 bool AssetManager::checkForChangesInFolderFiles() {
@@ -374,4 +372,7 @@ std::string AssetManager::value(const std::string &path, const std::string& def)
     return node ? node->m_value : std::string{};
 }
 
+void AssetManager::addFontListForContext(void* context) {
+    m_fontList[context].setGlbase(m_glbase);
+}
 }  // namespace ara

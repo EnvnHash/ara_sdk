@@ -332,6 +332,18 @@ struct FboInitParams {
     bool layered = false;
 };
 
+struct GlFontPar {
+    GLuint texUnit{};
+    GLuint nrLayers{};
+    GLuint layerId{};
+    GLuint texId{};
+    void* fontRef = nullptr;
+    bool operator==(const GlFontPar& other) const noexcept {
+        return std::tie(texId, texUnit, nrLayers, layerId)
+             == std::tie(other.texId, other.texUnit, other.nrLayers, other.layerId);
+    }
+};
+
 // -----------------------------------------------
 
 glm::quat RotationBetweenVectors(glm::vec3 start, glm::vec3 dest);

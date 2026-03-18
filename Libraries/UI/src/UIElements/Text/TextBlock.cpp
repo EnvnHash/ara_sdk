@@ -179,7 +179,7 @@ Font *TextBlock::updateDGV(bool *checkFontTexture) {
         return nullptr;
     }
 
-    const auto font = getSharedRes()->res->getGLFont(m_fontType, m_fontSize, getPixRatio());
+    const auto font = getSharedRes()->res->getGLFont(getSharedRes()->winHandle, m_fontType, m_fontSize, getPixRatio());
     if (!font) {
         LOGE << "[ERROR] TextBlock::UpdateDGV() / Cannot get font for " << m_fontType << "   size=" << m_fontSize;
         return nullptr;
@@ -188,7 +188,7 @@ Font *TextBlock::updateDGV(bool *checkFontTexture) {
     m_riFont     = font;
     m_renderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
 
-    vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
+    const vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
     int  lidx;
 
     if (!hasOpt(manual_space)) {
@@ -203,13 +203,13 @@ Font *TextBlock::updateDGV(bool *checkFontTexture) {
     // Calculate offset
     if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
         auto cpos = m_fontDGV.getCaretPos(m_caretIndex);
-        auto pa = m_riFont->getPixAscent();
+        const auto pa = m_riFont->getPixAscent();
 
         // resulting x-position
-        auto x1 = cpos.x + m_offset.x;
-        auto x2 = x1 + 2;
-        auto y1 = m_fontDGV.getFontLines(lidx).getYSelRange(0) + m_offset.y + pa;
-        auto y2 = m_fontDGV.getFontLines(lidx).getYSelRange(1) + m_offset.y + pa;
+        const auto x1 = cpos.x + m_offset.x;
+        const auto x2 = x1 + 2;
+        const auto y1 = m_fontDGV.getFontLines(lidx).getYSelRange(0) + m_offset.y + pa;
+        const auto y2 = m_fontDGV.getFontLines(lidx).getYSelRange(1) + m_offset.y + pa;
 
         // the beginning of the rendered text will be outside the mask add an
         // offset to move it into the non-mask area

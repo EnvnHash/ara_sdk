@@ -57,6 +57,7 @@ public:
 
     std::string value(const std::string &path);
     std::string value(const std::string &path, const std::string& def);
+    void addFontListForContext(void* context);
 
     template<CoordinateType32Signed T>
     T value(const std::string &path, T def) {
@@ -91,13 +92,12 @@ public:
         return true;
     }
 
-
     float   *color(const std::string& path);
-    Font    *font(const std::string& path, float pixRatio);
+    Font    *font(void* context, const std::string& path, float pixRatio);
 
     // resources
     size_t          loadResource(ResNode *node, std::vector<uint8_t> &dest, const std::string& path);
-    Font           *loadFont(const std::string& path, int size, float pixRatio);
+    Font           *loadFont(void* context, const std::string& path, int size, float pixRatio);
     AssetImageBase *img(const std::string& path) const;
 
 #ifdef ARA_USE_CMRC
@@ -118,26 +118,24 @@ public:
     std::string &getPostContent() { return m_postContent; }
 
     // Fonts
-    Font       *getGLFont(std::string font_type_path, int size, float pixRatio);
+    Font       *getGLFont(void* context, std::string font_type_path, int size, float pixRatio);
     void        clearGLFonts() { m_fontList.clear(); }
     std::mutex *getMtx() { return &m_updtMtx; }
-    FontList&   getGLFont() { return m_fontList; }
+    FontList*   getGLFont(void* glCtx) { return m_fontList.contains(glCtx) ? &m_fontList[glCtx] : nullptr; }
 
     AssetLoader &getAssetLoader() { return m_assetLoader; }
 
 private:
     void propagateFileChange(bool deleted, const std::string &fpath);
 
-    AssetLoader                     m_assetLoader;
-    FontList                        m_fontList;
-    ResNode::Ptr                    m_rootNode = nullptr;
-    //ResFile                         m_resFile;
-    std::string                     m_preContent;
-    std::string                     m_postContent;
-    //std::string                     m_dataRootPath;
-    std::string                     m_resFilePath;
-    std::filesystem::file_time_type m_resFileLastTime;
-    bool                            m_loadState = false;
+    AssetLoader                         m_assetLoader;
+    std::unordered_map<void*, FontList> m_fontList;
+    ResNode::Ptr                        m_rootNode = nullptr;
+    std::string                         m_preContent;
+    std::string                         m_postContent;
+    std::string                         m_resFilePath;
+    std::filesystem::file_time_type     m_resFileLastTime;
+    bool                                m_loadState = false;
 
     std::unordered_map<std::string, std::filesystem::file_time_type> m_resFolderFiles;
     //std::map<std::filesystem::directory_entry, std::filesystem::file_time_type> m_resFolderFiles;
