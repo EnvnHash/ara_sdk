@@ -188,4 +188,12 @@ static float interpolVal(float inInd, int arraySize, const std::vector<float> *a
     return outVal;
 }
 
+static std::string formatFileTime(const std::filesystem::file_time_type& time) {
+    const auto sctp = std::chrono::clock_cast<std::chrono::system_clock>(time);
+    const std::time_t tt = std::chrono::system_clock::to_time_t(sctp);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&tt), "%Y-%m-%d %H:%M:%S");
+    return ss.str();
+}
+
 }  // namespace ara

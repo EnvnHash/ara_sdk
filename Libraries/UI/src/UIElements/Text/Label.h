@@ -98,7 +98,7 @@ public:
             T val = defVal;
 
             if constexpr (std::is_same_v<T, std::string>) {
-                val = node->findNode(key)->m_value;
+                val = node->findNode(key)->getRawValue();
             } else {
                 auto p = node->splitNodeValue(key);
                 if constexpr (std::is_same_v<T, uint32_t>) {
@@ -121,7 +121,7 @@ protected:
 
     [[nodiscard]] glm::vec4 calculateMask() const;
 
-    int         m_fontSize = 17;
+    int m_fontSize = 17;
 
     FontGlyphVector m_fontDGV;
     Font           *m_riFont      = nullptr;
@@ -167,8 +167,6 @@ protected:
     glm::vec2       bas{0.f};
     glm::vec2       tuv{0.f};
     FontGlyphVector faux;
-    //float           m_fontTexUnit   = -1.f;
-    //GLuint          m_fontTexId     = 0;
     size_t          dstSize         = 0;
 
     static inline std::unordered_map<std::string, unsigned> m_textOptMap {

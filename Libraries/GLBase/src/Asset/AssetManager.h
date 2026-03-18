@@ -52,8 +52,8 @@ public:
         return (n && typeid(n[0]) == typeid(T)) ? static_cast<T*>(n) : nullptr;
     }
 
-    bool getvalue(std::string &dest, const std::string &path);
-    bool getvalue(std::string &dest, const std::string &path, int index);
+    std::optional<std::string> getValue(const std::string &path);
+    std::optional<std::string> getValue(const std::string &path, int index);
 
     std::string value(const std::string &path);
     std::string value(const std::string &path, const std::string& def);
@@ -61,31 +61,31 @@ public:
 
     template<CoordinateType32Signed T>
     T value(const std::string &path, T def) {
-        std::string s;
-        if (!getvalue(s, path)) {
+        auto s = getValue(path);
+        if (!s.has_value()) {
             return def;
         }
 
         try {
-            return typeid(T) == typeid(int32_t) ? stoi(s) : stof(s);
+            return typeid(T) == typeid(int32_t) ? stoi(s.value()) : stof(s.value());
         } catch (...) {
             return def;
         }
     }
 
     template<CoordinateType32Signed T>
-    bool value_v(std::vector<T> &v, const std::string &path, int fcount = 0, T def = 0) {
+    bool value_v(std::vector<T> &v, const std::string &path, int floatCount = 0, T def = 0) {
         v.clear();
 
-        auto *node = findNode<AssetFont>(path);
+        const auto node = findNode<AssetFont>(path);
         if (node == nullptr) {
             return false;
         }
 
-        ParVec tok = node->splitValue();
-        fcount     = fcount > 0 ? fcount : tok.getParCount();
+        auto tok = node->splitValue();
+        floatCount = floatCount > 0 ? floatCount : tok.getParCount();
 
-        for (int i = 0; i < fcount; i++) {
+        for (int i = 0; i < floatCount; i++) {
             v.emplace_back(tok.getFloatPar(i, static_cast<T>(def)));
         }
 
@@ -138,10 +138,9 @@ private:
     bool                                m_loadState = false;
 
     std::unordered_map<std::string, std::filesystem::file_time_type> m_resFolderFiles;
-    //std::map<std::filesystem::directory_entry, std::filesystem::file_time_type> m_resFolderFiles;
     std::vector<e_file_bind>                                         m_fileBind;
 
-    float                                       default_Color[4] = {1, 1, 1, 1};
+    float                                       m_defaultColor[4] = {1, 1, 1, 1};
     std::mutex                                  m_updtMtx;
     std::unordered_map<std::string, e_font_lut> m_fontLUT;
     GLBase                                     *m_glbase = nullptr;

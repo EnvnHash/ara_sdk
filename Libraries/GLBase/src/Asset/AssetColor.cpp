@@ -19,7 +19,7 @@ using namespace std;
 
 namespace ara {
 
-AssetColor::AssetColor(string name, GLBase *glbase) : ResNode(std::move(name), glbase) {}
+AssetColor::AssetColor(string name, GLBase *glBase) : ResNode(std::move(name), glBase) {}
 
 void AssetColor::onProcess() {
     if (hasFunc()) {
@@ -63,7 +63,7 @@ bool AssetColor::isClass(const ResNode *snode) {
             }
         }
     } else {
-        if (!snode->m_value.empty() && hexColor2rgba(nullptr, snode->m_value.c_str())) {
+        if (!snode->getRawValue().empty() && hexColor2rgba(nullptr, snode->getRawValue().c_str())) {
             return true;
         }
     }
@@ -123,10 +123,10 @@ bool AssetColor::hexColor2rgba(float *rgba, const char *str) {
     return false;
 }
 
-bool AssetColor::hsla2rgba(float *rgba, float h, float s, float l, float a) {
-    float C = (1 - fabsf(2 * l - 1)) * s;
-    float X = C * (1 - fabsf(fmodf(h / 60.f, 2) - 1));
-    float m = l - C / 2.f;
+bool AssetColor::hsla2rgba(float *rgba, const float h, const float s, const float l, const float a) {
+    const auto C = (1 - fabsf(2 * l - 1)) * s;
+    const auto X = C * (1 - fabsf(fmodf(h / 60.f, 2) - 1));
+    const auto m = l - C / 2.f;
 
     if (h >= 0 && h < 60) {
         rgba[0] = C;

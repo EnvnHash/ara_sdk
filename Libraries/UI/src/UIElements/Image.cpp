@@ -62,7 +62,7 @@ void Image::init() {
     }
 }
 
-void Image::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
+void Image::updateStyleIt(ResNode* node, const state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     if (!m_sharedRes) {
@@ -84,8 +84,8 @@ void Image::updateStyleIt(ResNode* node, state st, const std::string& styleClass
             setImgBase(m_sharedRes->res->img(m_baseStyleClass));
         }
     } else {
-        if (auto* inode = node->findNode<ResNode>("image")) {
-            std::string name                     = inode->m_value;
+        if (const auto inode = node->findNode<ResNode>("image")) {
+            std::string name                     = inode->getRawValue();
             m_setStyleFunc[st][styleInit::image] = [name, this]() { setImgBase(m_sharedRes->res->img(name)); };
         }
     }
@@ -101,11 +101,11 @@ void Image::updateStyleIt(ResNode* node, state st, const std::string& styleClass
     }
 }
 
-void Image::setImgFlag(ResNode* node, state st) {
-    ParVec   p      = node->splitNodeValue("img-flags");
+void Image::setImgFlag(ResNode* node, const state st) {
+    const auto   p  = node->splitNodeValue("img-flags");
     unsigned iflags = 0;
 
-    for (std::string& par : p) {
+    for (auto& par : p) {
         for (auto &[str, fl] : m_imgFlagStrMap) {
             if (par == str) {
                 iflags |= toType(fl);
@@ -113,14 +113,12 @@ void Image::setImgFlag(ResNode* node, state st) {
         }
     }
 
-    m_setStyleFunc[st][styleInit::imgFlag] = [iflags, this]() { m_imgFlags = iflags; };
+    m_setStyleFunc[st][styleInit::imgFlag] = [iflags, this] { m_imgFlags = iflags; };
 }
 
-void Image::setImgAlign(ResNode* node, state st) {
+void Image::setImgAlign(ResNode* node, const state st) {
     unsigned a[2] = {1, 1};
-    ParVec   p    = node->splitNodeValue("img-align");
-
-    for (std::string& par : p) {
+    for (auto p = node->splitNodeValue("img-align"); std::string& par : p) {
         if (par == "left") {
             a[0] = 0;
         }
@@ -142,19 +140,19 @@ void Image::setImgAlign(ResNode* node, state st) {
         }
     }
 
-    m_setStyleFunc[st][styleInit::imgAlign] = [a, this]() {
+    m_setStyleFunc[st][styleInit::imgAlign] = [a, this] {
         m_imgAlign.x = a[0];
         m_imgAlign.y = a[1];
     };
 }
 
-void Image::setImgScale(ResNode* node, state st) {
+void Image::setImgScale(ResNode* node, const state st) {
     auto scale                             = node->value<float>("img-scale", 1.f);
     m_imgScale                              = scale;
     m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() { m_imgScale = scale; };
 }
 
-void Image::setImg(const std::string& file, int mipMapLevel) {
+void Image::setImg(const std::string& file, const int mipMapLevel) {
     m_imageFile   = file;
     m_mipMapLevel = mipMapLevel;
     if (m_drawImmediate) {
@@ -175,12 +173,12 @@ uint32_t Image::setImgFlags(uint32_t flags) {
     return m_imgFlags;
 }
 
-uint32_t Image::setImgFlags(imgFlags flags) {
+uint32_t Image::setImgFlags(const imgFlags flags) {
     return setImgFlags(toType(flags));
 }
 
 void Image::setImgScale(float scale) {
-    m_setStyleFunc[m_state][styleInit::imgScale] = [this, scale]() { m_imgScale = scale; };
+    m_setStyleFunc[m_state][styleInit::imgScale] = [this, scale] { m_imgScale = scale; };
     setStyleInitVal("img-scale", std::to_string(scale));
 }
 
@@ -200,7 +198,7 @@ void Image::setImgBase(AssetImageBase* imgBase) {
     }
 }
 
-void Image::setFillToNodeSize(bool val, state st) {
+void Image::setFillToNodeSize(bool val, const state st) {
     if (st == state::m_state || st == m_state) {
         m_imgFlags |= 32;
     }
@@ -457,7 +455,7 @@ bool Image::draw(uint32_t& objId) {
     return true;  // count up objId
 }
 
-void Image::setBlendFunc() {
+void Image::setBlendFunc() const {
 #ifdef ARA_USE_GLES31
     glBlendFunc(m_srcBlendFunc, m_dstBlendFunc);
 #else

@@ -58,7 +58,7 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
     updtStyleSingleValue<valign>(node, styleInit::textValign, st, valign::center, m_tAlignY);
 
     if (const auto color = node->findNode<AssetColor>("text-color")) {
-        auto col                                 = color->getColorvec4();
+        auto col                                 = color->getColorVec4();
         m_setStyleFunc[st][styleInit::textColor] = [col, this, st] { setColor(col.r, col.g, col.b, col.a, st); };
     }
 

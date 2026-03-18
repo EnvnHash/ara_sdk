@@ -16,16 +16,16 @@ std::function<void()> renderLambda(vector<GLFWWindow>& windows, GLBase& m_glBase
         ASSERT_EQ(true, initGLEW());
 
         // since we are using the same resource, we need to acquire a lock to the GLBase
-        unique_lock<mutex> lock(*m_glBase.glMtx());
+        unique_lock lock(*m_glBase.glMtx());
 
         // unfortunately, VAOs can't be shared since they are just a set of states, but don't contain actual data
-        unique_ptr<Quad> quad = make_unique<Quad>(QuadInitParams{ .color = { 1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
+        const auto quad = make_unique<Quad>(QuadInitParams{ .color = { 1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
 
         // set some OpenGL parameters
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                    // clear the screen
-        glViewport(0, 0, (GLsizei) windows[i].getWidth(), (GLsizei) windows[i].getHeight());        // set the drawable arean
+        glViewport(0, 0, static_cast<GLsizei>(windows[i].getWidth()), static_cast<GLsizei>(windows[i].getHeight()));        // set the drawable arean
 
-        auto colShader = m_glBase.shaderCollector().getStdCol(); // get the shared color shader
+        const auto colShader = m_glBase.shaderCollector().getStdCol(); // get the shared color shader
         colShader->begin();                                // bind the shader
         colShader->setIdentMatrix4fv("m_pvm");    // set the model-view-projection matrix to an indent matrix
         quad->draw();                                    // draw the quad, the quad will be white which is the standard color of a Quad
@@ -53,7 +53,7 @@ TEST(GLBaseTest, ContextSharing) {
     ASSERT_TRUE(m_glbase.init(false));
 
     // prepare separate rendering threads
-    int nrThreads = 4;
+    constexpr int nrThreads = 4;
     vector<thread> threads;
     auto windows = vector<GLFWWindow>(nrThreads);
     createThreads(nrThreads, windows, &m_glbase);

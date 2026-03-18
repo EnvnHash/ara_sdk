@@ -88,9 +88,9 @@ ResNode *ResNode::setParent(ResNode *parent) {
     return m_parent;
 }
 
-ResNode *ResNode::getFlag(const string &flagname) const {
+ResNode *ResNode::getFlag(const string &flagName) const {
     for (const auto &node : m_node) {
-        if (node->isFlag(flagname)) {
+        if (node->isFlag(flagName)) {
             return node.get();
         }
     }
@@ -276,15 +276,15 @@ string ResNode::getValue(const string &name, string def) const {
     return def;
 }
 
-std::vector<float> ResNode::valuefv(const string &path, int fcount, float def) {
+std::vector<float> ResNode::valuefv(const string &path, int floatCount, float def) {
     std::vector<float> v;
     const ResNode *node = findNode(path);
     if (node == nullptr) {
         return std::move(v);
     }
     const ParVec tok = node->splitValue();
-    fcount = fcount ? fcount : tok.getParCount();
-    for (int i = 0; i < fcount; i++) {
+    floatCount = floatCount ? floatCount : tok.getParCount();
+    for (int i = 0; i < floatCount; i++) {
         v.emplace_back(tok.getFloatPar(i, def));
     }
     return std::move(v);

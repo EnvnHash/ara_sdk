@@ -30,7 +30,7 @@ void UIApplication::initGLBase() {
         // only a flag is set and a redraw forced. Styles will be updated during UINode::draw iteration this is only
         // needed in debug mode, when the resources can change during runtime
         if (m_glbase.getAssetManager() && !m_glbase.getAssetManager()->usingComp()) {
-            m_glbase.setUpdtResCb([this] {
+            m_glbase.addUpdtResCb([this] {
                 for (const auto& it : m_uiWindows) {
                     it->setResChanged(true);
                     it->update();

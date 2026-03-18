@@ -47,12 +47,12 @@ void UIWindow::init(const UIWindowParams& par) {
 
 #if defined(__ANDROID__) && !defined(ARA_ANDROID_PURE_NATIVE_APP)
     m_glbase->init();  // makes no context current
-    s_devicePixelRatio = m_glbase->g_androidDensity;
+    s_devicePixelRatio = m_glbase->m_androidDensity;
     m_virtSize = par.size;
     m_realSize = par.sizeReal;
 #endif
 
-    m_dataFolder = m_glbase->g_resRootPath;
+    m_dataFolder = m_glbase->m_resRootPath;
     initGLEW();
 
     if (!s_inited) {
@@ -131,7 +131,7 @@ void UIWindow::initUIWindow(const UIWindowParams& par) {
                 .transparentFramebuffer = par.transparentFB,
                 .extWinHandle = par.extWinHandle,
                 .glbase = par.glbase,
-                .contScale = { par.glbase->g_androidDensity, par.glbase->g_androidDensity }
+                .contScale = { par.glbase->m_androidDensity, par.glbase->m_androidDensity }
         });
         if (!m_winHandle) {
             LOGE << "UIWindow::initUIWindow Error: Couldn't create new Window";
@@ -164,14 +164,10 @@ void UIWindow::initToCurrentCtx() {
 
 #ifndef __ANDROID__
     // resources updating must be done this way in case of non-window managed setup
-    m_glbase->setUpdtResCb([this] {
+    m_glbase->addUpdtResCb([this] {
         addGlCb(this, "resUpt", [this] {
-            if (m_glbase->getAssetManager()) {
-                m_glbase->getAssetManager()->callResSourceChange();
-                m_glbase->getAssetManager()->callForChangesInFolderFiles();
-                setResChanged(true);
-                update();
-            }
+            setResChanged(true);
+            update();
             return true;
         });
     });

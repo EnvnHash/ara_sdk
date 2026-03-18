@@ -46,25 +46,25 @@ void UINodeStyle::rebuildCustomStyle() {
         { state::disabledHighlighted, "disabledHighlighted" }
     };
 
-    for (const auto& stateDef : m_styleCustDefs) {
-        if (stateStringMap.find(stateDef.first) != stateStringMap.end()) {
-            m_custDefStyleSheet += stateStringMap[stateDef.first]+" { \n";
+    for (const auto&[state, defs] : m_styleCustDefs) {
+        if (stateStringMap.contains(state)) {
+            m_custDefStyleSheet += stateStringMap[state]+" { \n";
         }
         m_styleChanged = true;
 
-        if (!stateDef.second.empty()) {
-            for (const auto& it : stateDef.second) {
-                if (it.first == "text") {
-                    m_custDefStyleSheet += "\t" + it.first + ":\"" + it.second + "\"\n";
+        if (!defs.empty()) {
+            for (const auto&[name, val] : defs) {
+                if (name == "text") {
+                    m_custDefStyleSheet += "\t" + name + ":\"" + val + "\"\n";
                 } else {
-                    m_custDefStyleSheet += "\t" + it.first + ":" + it.second + "\n";
+                    m_custDefStyleSheet += "\t" + name + ":" + val + "\n";
                 }
             }
         }
 
-        if (stateDef.first == state::selected || stateDef.first == state::highlighted ||
-            stateDef.first == state::disabled || stateDef.first == state::disabledHighlighted ||
-            stateDef.first == state::disabledSelected) {
+        if (state == state::selected || state == state::highlighted ||
+            state == state::disabled || state == state::disabledHighlighted ||
+            state == state::disabledSelected) {
             m_custDefStyleSheet += "} \n";
         }
     }
@@ -73,7 +73,7 @@ void UINodeStyle::rebuildCustomStyle() {
     if (!m_custDefStyleSheet.empty()) {
         SrcFile              s(m_glbase);
         std::vector<uint8_t> vp(m_custDefStyleSheet.begin(), m_custDefStyleSheet.end());
-        ResNode::Ptr         n = std::make_unique<ResNode>(getCustomDefName(), m_glbase);
+        auto         n = std::make_unique<ResNode>(getCustomDefName(), m_glbase);
 
         if (s.process(n.get(), vp)) {
             n->preprocess();
@@ -93,9 +93,8 @@ void UINodeStyle::rebuildCustomStyle() {
 }
 
 template <typename Callable>
-void UINodeStyle::updateStylePixAndPercent(ResNode* node, state st, const std::string& findNode, styleInit si, const Callable& f) {
-    auto numNode = node->findNumericNode(findNode);
-    if (get<ResNode*>(numNode)) {
+void UINodeStyle::updateStylePixAndPercent(ResNode* node, const state st, const std::string& findNode, const styleInit si, const Callable& f) {
+    if (const auto numNode = node->findNumericNode(findNode); get<ResNode*>(numNode)) {
         if (get<unitType>(numNode) == unitType::Percent) {
             float val = stof(get<string>(numNode)) * 0.01f;
             m_setStyleFunc[st][si] = [val, f]() { f(val); };
@@ -106,15 +105,14 @@ void UINodeStyle::updateStylePixAndPercent(ResNode* node, state st, const std::s
     }
 }
 
-void UINodeStyle::updateStyleColor(ResNode* node, state st, const std::string& findNode, styleInit si, const std::function<void(glm::vec4)>& f) {
-    if (auto color = node->findNode<AssetColor>(findNode)) {
-        vec4 col = color->getColorvec4();
+void UINodeStyle::updateStyleColor(ResNode* node, const state st, const std::string& findNode, const styleInit si, const std::function<void(vec4)>& f) {
+    if (const auto color = node->findNode<AssetColor>(findNode)) {
+        vec4 col = color->getColorVec4();
         m_setStyleFunc[st][si] = [f, col] { f(col); };
     }
 }
-void UINodeStyle::updateStylePixel(ResNode* node, state st, const std::string& findNode, styleInit si, const std::function<void(int)>& f) {
-    auto resNode = node->findNumericNode(findNode);
-    if (get<ResNode*>(resNode) && get<unitType>(resNode) == unitType::Pixels) {
+void UINodeStyle::updateStylePixel(ResNode* node, const state st, const std::string& findNode, const styleInit si, const std::function<void(int)>& f) {
+    if (const auto resNode = node->findNumericNode(findNode); get<ResNode*>(resNode) && get<unitType>(resNode) == unitType::Pixels) {
         auto val = stoi(get<string>(resNode));
         m_setStyleFunc[st][si] = [val, f]() { f(val); };
     }
@@ -130,26 +128,26 @@ void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styl
     updateStyleColor(node, st, "bkcolor", styleInit::bkcolor, [this, st](const vec4& col) { setBackgroundColor(col.r, col.g, col.b, col.a, st); });
     updateStyleColor(node, st, "border-color", styleInit::brdColor, [this, st](const vec4& col) { setBorderColor(col.r, col.g, col.b, col.a, st); });
 
-    updateStylePixel(node, st, "border-width", styleInit::brdWidth, [this, st](int32_t val){ setBorderWidth(val, st); });
-    updateStylePixel(node, st, "border-radius", styleInit::brdRadius, [this, st](int32_t val){ setBorderRadius(val, st); });
+    updateStylePixel(node, st, "border-width", styleInit::brdWidth, [this, st](const int32_t val){ setBorderWidth(val, st); });
+    updateStylePixel(node, st, "border-radius", styleInit::brdRadius, [this, st](const int32_t val){ setBorderRadius(val, st); });
 
-    if (auto align = node->findNode("align")) {
-        if (align->m_value == "center") {
-            m_setStyleFunc[st][styleInit::align] = [this, st]() { setAlignX(align::center, st); };
-        } else if (align->m_value == "left") {
-            m_setStyleFunc[st][styleInit::align] = [this, st]() { setAlignX(align::left, st); };
-        } else if (align->m_value == "right") {
-            m_setStyleFunc[st][styleInit::align] = [this, st]() { setAlignX(align::right, st); };
+    if (const auto align = node->findNode("align")) {
+        if (align->getRawValue() == "center") {
+            m_setStyleFunc[st][styleInit::align] = [this, st] { setAlignX(align::center, st); };
+        } else if (align->getRawValue() == "left") {
+            m_setStyleFunc[st][styleInit::align] = [this, st] { setAlignX(align::left, st); };
+        } else if (align->getRawValue() == "right") {
+            m_setStyleFunc[st][styleInit::align] = [this, st] { setAlignX(align::right, st); };
         }
     }
 
-    if (auto v_align = node->findNode("v-align")) {
-        if (v_align->m_value == "center")
-            m_setStyleFunc[st][styleInit::valign] = [this, st]() { setAlignY(valign::center, st); };
-        else if (v_align->m_value == "top")
-            m_setStyleFunc[st][styleInit::valign] = [this, st]() { setAlignY(valign::top, st); };
-        else if (v_align->m_value == "bottom")
-            m_setStyleFunc[st][styleInit::valign] = [this, st]() { setAlignY(valign::bottom, st); };
+    if (const auto v_align = node->findNode("v-align")) {
+        if (v_align->getRawValue() == "center")
+            m_setStyleFunc[st][styleInit::valign] = [this, st] { setAlignY(valign::center, st); };
+        else if (v_align->getRawValue() == "top")
+            m_setStyleFunc[st][styleInit::valign] = [this, st] { setAlignY(valign::top, st); };
+        else if (v_align->getRawValue() == "bottom")
+            m_setStyleFunc[st][styleInit::valign] = [this, st] { setAlignY(valign::bottom, st); };
     }
 
     if (node->has("padding")) {
@@ -169,8 +167,8 @@ void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styl
         // default is first value, so one can make it padding:10 for example and will become 10,10,10,10
     }
 
-    if (auto vis = node->findNode("visible")) {
-        bool val                               = vis->m_value == "true";
+    if (const auto vis = node->findNode("visible")) {
+        bool val                               = vis->getRawValue() == "true";
         m_setStyleFunc[st][styleInit::visible] = [this, val, st]() { setVisibility(val, st); };
     }
 }
@@ -191,7 +189,7 @@ void UINodeStyle::updateStyle() {
     loadStyleDefaults();
 
     for (auto& it : m_styleTree) {
-        auto resNode = (getCustomDefName() == it) ? m_customStyleNode.get() : m_sharedRes->res->findNode(it);
+        const auto resNode = (getCustomDefName() == it) ? m_customStyleNode.get() : m_sharedRes->res->findNode(it);
         if (!resNode) {
             continue;
         }
@@ -222,7 +220,7 @@ void UINodeStyle::updateStyle() {
     }
 
     // execute style functions for the none state to set default values
-    auto tmpState = m_state;
+    const auto tmpState = m_state;
 
     // need to change m_state to none temporarily in order to allow setters take effect
     if (m_state == state::selected) {
@@ -232,8 +230,8 @@ void UINodeStyle::updateStyle() {
 
     // set state to none and update styles
     m_state = m_lastState = state::none;
-    for (const auto& it : m_setStyleFunc[state::none]) {
-        it.second();
+    for (const auto &val: m_setStyleFunc[state::none] | views::values) {
+        val();
     }
 
     // change state back
@@ -245,8 +243,8 @@ void UINodeStyle::updateStyle() {
         if (m_state == state::selected) {
             setSelected(true, true);
         } else {
-            for (const auto& it : m_setStyleFunc[m_state]) {
-                it.second();
+            for (const auto &val: m_setStyleFunc[m_state] | views::values) {
+                val();
             }
         }
     }
@@ -294,8 +292,8 @@ void UINodeStyle::clearStyles() {
 void UINodeStyle::applyStyle() {
     if (!m_excludeFromStyles) {
         // call all style definitions for the highlighted state if there are any
-        for (const auto& it : m_setStyleFunc[m_state]) {
-            it.second();
+        for (const auto &val: m_setStyleFunc[m_state] | views::values) {
+            val();
         }
 
         m_drawParamChanged = true;
@@ -310,11 +308,11 @@ ResNode* UINodeStyle::getStyleResNode() const {
     return m_sharedRes->res->findNode(m_baseStyleClass);
 }
 
-void UINodeStyle::setStyleInitVal(const std::string& name, const std::string& val, state st) {
+void UINodeStyle::setStyleInitVal(const std::string& name, const std::string& val, const state st) {
     m_styleCustDefs[st == state::m_state ? m_state : st][name] = val;
 }
 
-void UINodeStyle::setStyleInitCol(const std::string& propName, const glm::vec4& col, state st) {
+void UINodeStyle::setStyleInitCol(const std::string& propName, const vec4& col, const state st) {
     setStyleInitVal(propName,
                     "rgba(" + std::to_string(static_cast<int>(col.r * 255)) + ","
                     + std::to_string(static_cast<int>(col.g * 255)) + ","
@@ -323,11 +321,11 @@ void UINodeStyle::setStyleInitCol(const std::string& propName, const glm::vec4& 
                     st);
 }
 
-void UINodeStyle::setBorderColor(float r, float g, float b, float a, state st) {
+void UINodeStyle::setBorderColor(float r, float g, float b, float a, const state st) {
     setBorderColor({r, g, b, a}, st);
 }
 
-void UINodeStyle::setBorderColor(const glm::vec4& col, state st) {
+void UINodeStyle::setBorderColor(const vec4& col, const state st) {
     if (st == state::m_state || st == m_state) {
         m_borderColor      = col;
         m_drawParamChanged = true;
@@ -335,11 +333,11 @@ void UINodeStyle::setBorderColor(const glm::vec4& col, state st) {
     setStyleInitCol("border-color", col, st);
 }
 
-void UINodeStyle::setColor(float r, float g, float b, float a, state st) {
+void UINodeStyle::setColor(float r, float g, float b, float a, const state st) {
     setColor({r, g, b, a}, st);
 }
 
-void UINodeStyle::setColor(const glm::vec4& col, state st) {
+void UINodeStyle::setColor(const vec4& col, state st) {
     if (st == state::m_state || st == m_state) {
         m_color            = col;
         m_drawParamChanged = true;
@@ -347,11 +345,11 @@ void UINodeStyle::setColor(const glm::vec4& col, state st) {
     setStyleInitCol("color", col, st);
 }
 
-void UINodeStyle::setBackgroundColor(float r, float g, float b, float a, state st) {
+void UINodeStyle::setBackgroundColor(float r, float g, float b, float a, const state st) {
     setBackgroundColor({r, g, b, a}, st);
 }
 
-void UINodeStyle::setBackgroundColor(const glm::vec4& col, state st) {
+void UINodeStyle::setBackgroundColor(const vec4& col, const state st) {
     if (st == state::m_state || st == m_state) {
         m_bgColor          = col;
         m_drawParamChanged = true;
@@ -359,12 +357,12 @@ void UINodeStyle::setBackgroundColor(const glm::vec4& col, state st) {
     setStyleInitCol("bkcolor", col, st);
 }
 
-void UINodeStyle::setAlpha(float val) {
+void UINodeStyle::setAlpha(const float val) {
     m_alpha = val;
     setChanged(true);
 }
 
-void UINodeStyle::setSelected(bool val, bool forceStyleUpdt) {
+void UINodeStyle::setSelected(const bool val, const bool forceStyleUpdt) {
     if (m_state == state::disabled || m_state == state::disabledSelected || m_state == state::disabledHighlighted) {
         return;
     }
@@ -380,7 +378,7 @@ void UINodeStyle::setSelected(bool val, bool forceStyleUpdt) {
     }
 }
 
-void UINodeStyle::setDisabled(bool val, bool forceStyleUpdt) {
+void UINodeStyle::setDisabled(const bool val, const bool forceStyleUpdt) {
     setState(val ? state::disabled : state::none);
 
     // clear m_lastState -> otherwise will cause unwanted style changed on mouseout
@@ -397,28 +395,28 @@ void UINodeStyle::setDisabled(bool val, bool forceStyleUpdt) {
     }
 }
 
-void UINodeStyle::setHighlighted(bool val, bool forceStyleUpdt) {
+void UINodeStyle::setHighlighted(const bool val, const bool forceStyleUpdt) {
     setState(val ? state::highlighted : m_lastState);
     if (forceStyleUpdt) {
         applyStyle();
     }
 }
 
-void UINodeStyle::setDisabledHighlighted(bool val, bool forceStyleUpdt) {
+void UINodeStyle::setDisabledHighlighted(const bool val, const bool forceStyleUpdt) {
     setState(val ? state::disabledHighlighted : m_lastState);
     if (forceStyleUpdt) {
         applyStyle();
     }
 }
 
-void UINodeStyle::setDisabledSelected(bool val, bool forceStyleUpdt) {
+void UINodeStyle::setDisabledSelected(const bool val, const bool forceStyleUpdt) {
     setState(val ? state::disabledSelected : m_lastState);
     if (forceStyleUpdt) {
         applyStyle();
     }
 }
 
-void UINodeStyle::setVisibility(bool val, state st) {
+void UINodeStyle::setVisibility(const bool val, const state st) {
     if (st == state::m_state || st == m_state) {
         m_visible = val;
     }
@@ -426,7 +424,7 @@ void UINodeStyle::setVisibility(bool val, state st) {
     setStyleInitVal("visible", val ? "true" : "false", st);
 }
 
-void  UINodeStyle::setState(state st) {
+void  UINodeStyle::setState(const state st) {
     if (m_state != st) {
         m_lastState = m_state;
     }

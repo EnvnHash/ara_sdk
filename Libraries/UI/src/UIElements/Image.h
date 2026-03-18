@@ -105,7 +105,7 @@ public:
 
 protected:
     void bindTexture(uint32_t& objId);
-    void setBlendFunc();
+    void setBlendFunc() const;
 
     Texture                     *m_tex     = nullptr;
     Shaders                     *m_texShdr = nullptr;

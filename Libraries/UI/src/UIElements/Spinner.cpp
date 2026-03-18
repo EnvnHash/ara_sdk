@@ -19,7 +19,7 @@ Spinner::Spinner() {
     UINode::setColor(1.f, 1.f, 1.f, 1.f);
 }
 
-Spinner::Spinner(SpinnerPars& pars) {
+Spinner::Spinner(const SpinnerPars& pars) {
     setTypeName<Spinner>();
     setName(getTypeName<Spinner>());
     setFocusAllowed(false);
@@ -63,7 +63,7 @@ void Spinner::init() {
     m_initTime = std::chrono::system_clock::now();
 }
 
-void Spinner::updateStyleIt(ResNode * node, state st, const std::string& styleClass) {
+void Spinner::updateStyleIt(ResNode* node, const state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     if (!m_sharedRes) {
@@ -81,9 +81,9 @@ void Spinner::updateStyleIt(ResNode * node, state st, const std::string& styleCl
             setImgBase(m_sharedRes->res->img(m_baseStyleClass));
         }
     } else {
-        if (auto* inode = node->findNode<ResNode>("image")) {
-            std::string name                     = inode->m_value;
-            m_setStyleFunc[st][styleInit::image] = [name, this]() { setImgBase(m_sharedRes->res->img(name)); };
+        if (const auto inode = node->findNode<ResNode>("image")) {
+            std::string name                     = inode->getRawValue();
+            m_setStyleFunc[st][styleInit::image] = [name, this] { setImgBase(m_sharedRes->res->img(name)); };
         }
     }
 }

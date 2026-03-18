@@ -629,7 +629,7 @@ void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClas
     }
 
     if (auto cc = node->findNode<AssetColor>("caret-color")) {
-        vec4 col                                  = cc->getColorvec4();
+        vec4 col                                  = cc->getColorVec4();
         m_setStyleFunc[st][styleInit::caretColor] = [this, col]() { setCaretColor(col.r, col.g, col.b, col.a); };
     }
 }

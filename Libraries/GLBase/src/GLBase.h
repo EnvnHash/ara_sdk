@@ -76,10 +76,7 @@ public:
     static std::unique_ptr<GLWindow> createOpenGLCtx(bool initGLFW = true);
 #endif
 
-    void appmsg(const char *format, ...);
-    void appMsgStatic(size_t lineIdx, const char *format, ...);
     void initAppMsg(const char *fontFile, int fontHeight, int screenWidth, int screenHeight);
-    void renderAppMsgs();
     void startGlCallbackProcLoop();
     void stopProcCallbackLoop();
     void addEvtCb(const std::function<bool()> &func, bool forcePush = false);
@@ -87,7 +84,8 @@ public:
     void glCallbackLoop();
     void iterateGlCallback();
     void initResources();
-    void checkResourceChanges();
+    void startContinousCheck();
+    void checkResourceChanges() const;
     void clearGlCbQueue();
     void addGlCbSync(const std::function<bool()> &f);
     void setResRootPath(const std::string &str); // relative to application
@@ -110,53 +108,55 @@ public:
 #endif
 
     void runOnMainThread(const std::function<bool()> &func, bool forcePush = false) { addEvtCb(func, forcePush); }
-    void setResFile(std::string str) { g_resFile = std::move(str); }
-    void setShaderHeader(std::string hdr) { return g_shaderCollector.setShaderHeader(std::move(hdr)); }
-    void setAppMsgNumLines(size_t count) { g_appMessagesNumLines = count; }
-    void setUpdtResCb(std::function<void()> f) { g_updtResCb = std::move(f); }
-    void useSelfManagedCtx(bool val) { m_selfManagedCtx = val; }
+    void setResFile(const std::string& str) { m_resFile = str; }
+    void setShaderHeader(const std::string& hdr) { return m_shaderCollector.setShaderHeader(hdr); }
+    void setAppMsgNumLines(const size_t count) { m_appMessagesNumLines = count; }
+    void addUpdtResCb(const std::function<void()>& f) { m_updtResCb.emplace_back(f); }
+    void useSelfManagedCtx(const bool val) { m_selfManagedCtx = val; }
+    void setLoadMouseCursorIcons(const bool val) { m_loadMouseCursorIcons = val; }
+    void setContinousChangeCheck(const bool val) { m_continousChangeCheck = val; }
 
-    void    procGlCb() { g_sema.notify(); }
-    auto    getNrCtx() const { return g_contexts.size(); }
-    auto    &shaderCollector() { return g_shaderCollector; }
-    auto    &textureCollector() { return g_textureCollector; }
-    auto    *nullVao() { return &g_nullVao; }
-    auto    getMainThreadId() const { return g_mainThreadId; }
-    auto    rendererIsIntel() const { return g_isIntelRenderer; }
-    auto    maxTexUnits() const { return g_caps.max_tex_units; }
-    auto    maxShaderInvocations() const { return g_caps.max_shader_invoc; }
-    auto    getNrSamples() const { return static_cast<int32_t>(g_nrSamples); }
-    auto    maxNrDrawBuffers() const { return g_caps.max_nr_drawbuffers; }
-    auto    maxTexMipMapLevels() const { return g_caps.max_tex_level; }
-    auto    getMajorVer() const { return g_caps.major_vers; }
-    auto    getMinorVer() const { return g_caps.minor_vers; }
-    auto    glMtx() { return &g_mtx; }
-    auto    getNativeCtxHandle() const { return g_nativeCtx.ctx; }
-    auto    getNativeDeviceHandle() const { return g_nativeCtx.deviceHandle; }
-    auto&   getShaderHeader() const { return g_shaderCollector.getShaderHeader(); }
-    auto    isInited() const { return g_inited; }
-    bool    isRunning() { return g_glCallbackLoopRunning; }
-    auto    getAssetManager() const { return g_assetManager.get(); }
-    auto&   getLoopExitSema() { return g_loopExit; }
-    auto&   perCtxQuads() { return g_perCtxQuad; }
+    void    procGlCb() { m_sema.notify(); }
+    auto    getNrCtx() const { return m_contexts.size(); }
+    auto    &shaderCollector() { return m_shaderCollector; }
+    auto    &textureCollector() { return m_textureCollector; }
+    auto    *nullVao() { return &m_nullVao; }
+    auto    getMainThreadId() const { return m_mainThreadId; }
+    auto    rendererIsIntel() const { return m_isIntelRenderer; }
+    auto    maxTexUnits() const { return m_caps.max_tex_units; }
+    auto    maxShaderInvocations() const { return m_caps.max_shader_invoc; }
+    auto    getNrSamples() const { return static_cast<int32_t>(m_nrSamples); }
+    auto    maxNrDrawBuffers() const { return m_caps.max_nr_drawbuffers; }
+    auto    maxTexMipMapLevels() const { return m_caps.max_tex_level; }
+    auto    getMajorVer() const { return m_caps.major_vers; }
+    auto    getMinorVer() const { return m_caps.minor_vers; }
+    auto    glMtx() { return &m_mtx; }
+    auto    getNativeCtxHandle() const { return m_nativeCtx.ctx; }
+    auto    getNativeDeviceHandle() const { return m_nativeCtx.deviceHandle; }
+    auto&   getShaderHeader() const { return m_shaderCollector.getShaderHeader(); }
+    auto    isInited() const { return m_inited; }
+    bool    isRunning() { return m_glCallbackLoopRunning; }
+    auto    getAssetManager() const { return m_assetManager.get(); }
+    auto&   getLoopExitSema() { return m_loopExit; }
+    auto&   perCtxQuads() { return m_perCtxQuad; }
+
+    std::string m_resRootPath    = "resdata";
+    std::string m_resFile        = "res.txt";
+    int32_t     m_hwDpi          = 96;
+    float       m_androidDensity = 1.f;
+    glm::vec2   m_androidDpi{};
 
 #if !defined(ARA_USE_GLFW) && defined(_WIN32)
     static LRESULT CALLBACK WGLMessageHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 #endif
-    std::string g_resRootPath    = "resdata";
-    std::string g_resFile        = "res.txt";
-    int32_t     g_hwDpi          = 96;
-    float       g_androidDensity = 1.f;
-    glm::vec2   g_androidDpi{};
-
 #ifdef __ANDROID__
     void *android_app = nullptr;
 #endif
 
 protected:
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    std::unique_ptr<WindowManager> g_winMan;
-    GLWindow                      *g_win = nullptr;
+    std::unique_ptr<WindowManager> m_winMan;
+    GLWindow                      *m_win = nullptr;
 #elif _WIN32
     WNDCLASSEX         wcex;
     static inline HWND m_hWnd = nullptr;
@@ -169,53 +169,53 @@ protected:
     Conditional        m_msgLoopEnd;
     bool               m_msgLoopRunning = false;
 #endif
+    GLCaps                          m_caps;
+    GLNativeCtxHnd                  m_nativeCtx;
+    GLStateManager                  m_stateMan;
+    std::shared_ptr<Quad>           m_stdQuad;
+    std::unique_ptr<TypoGlyphMap>   m_typoGlyphMap;
+    ShaderCollector                 m_shaderCollector;
+    TextureCollector                m_textureCollector;
+    std::unique_ptr<AssetManager>   m_assetManager;
+    std::list<void *>               m_contexts;
+    std::vector<std::string>        m_appMessages;
+    std::vector<std::string>        m_appMsgStatic;
+    glm::vec4                       m_appMsgCol{1.f};
+    int                             m_typoFontHeight       = 0;
+    GLuint                          m_nullVao              = 0;
+    GLuint                          m_nrSamples            = 2;
+    size_t                          m_appMessagesNumLines  = 10;
+    size_t                          m_appMsgStaticNumLines = 10;
+    int32_t                         m_max_tex_units        = 0;
 
-    GLCaps                          g_caps;
-    GLNativeCtxHnd                  g_nativeCtx;
-    GLStateManager                  g_stateMan;
-    std::shared_ptr<Quad>           g_stdQuad;
-    std::unique_ptr<TypoGlyphMap>   g_typoGlyphMap;
-    ShaderCollector                 g_shaderCollector;
-    TextureCollector                g_textureCollector;
-    std::unique_ptr<AssetManager>   g_assetManager;
-    std::list<void *>               g_contexts;
-    std::vector<std::string>        g_appMessages;
-    std::vector<std::string>        g_appMsgStatic;
-    glm::vec4                       g_appMsgCol{1.f};
-    int                             g_typoFontHeight       = 0;
-    GLuint                          g_nullVao              = 0;
-    GLuint                          g_nrSamples            = 2;
-    size_t                          g_appMessagesNumLines  = 10;
-    size_t                          g_appMsgStaticNumLines = 10;
-    int32_t                         g_max_tex_units        = 0;
+    std::unordered_map<void *, std::shared_ptr<Quad>>           m_perCtxQuad;
+    std::list<std::pair<std::function<bool()>, Conditional *>>  m_glCallbacks;
 
-    std::unordered_map<void *, std::shared_ptr<Quad>> g_perCtxQuad;
-    std::list<std::pair<std::function<bool()>, Conditional *>> g_glCallbacks;
+    bool m_continousChangeCheck = true;
+    bool m_loadMouseCursorIcons = true;
+    bool m_inited               = false;
+    bool m_checkedCaps          = false;
+    bool m_useFallback          = false;
+    bool m_isIntelRenderer      = false;
+    bool m_ctx                  = false;
+    bool m_doResetCtx           = false;
+    bool m_selfManagedCtx       = true;
+    void *m_enterCtx            = nullptr;
 
-    bool g_inited           = false;
-    bool m_checkedCaps      = false;
-    bool g_useFallback      = false;
-    bool g_isIntelRenderer  = false;
-    bool m_ctx              = false;
-    bool m_doResetCtx       = false;
-    bool m_selfManagedCtx   = true;
-    void *m_enterCtx        = nullptr;
-
-    std::thread::id g_mainThreadId;
-    std::thread     g_glCallbackLoop;
+    std::thread::id m_mainThreadId;
+    std::thread     m_glCallbackLoop;
     std::thread     m_resUpdt;
-    std::mutex      g_mtx;
+    std::mutex      m_mtx;
 
-    std::atomic<bool> g_glCallbackLoopRunning = {false};
-    std::atomic<bool> m_resUpdtRun  = {false};
+    std::atomic<bool> m_glCallbackLoopRunning = {false};
+    std::atomic<bool> m_resUpdtRun  = {true};
 
-    Conditional              g_sema;
-    Conditional              g_glCallbackLoopRunningSem;
-    Conditional              g_loopExit;
-    Conditional              m_resUpdtExited;
-    std::list<Conditional *> m_semaqueue;
-
-    std::function<void()> g_updtResCb;
+    Conditional                         m_sema;
+    Conditional                         m_glCallbackLoopRunningSem;
+    Conditional                         m_loopExit;
+    Conditional                         m_resUpdtExited;
+    std::list<Conditional*>             m_semaQueue;
+    std::list<std::function<void()>>    m_updtResCb;
 };
 
 }  // namespace ara

@@ -16,7 +16,7 @@ struct SpinnerPars{
 class Spinner : public Div {
 public:
     Spinner();
-    Spinner(SpinnerPars& pars);
+    Spinner(const SpinnerPars& pars);
     ~Spinner() override = default;
 
     void init() override;

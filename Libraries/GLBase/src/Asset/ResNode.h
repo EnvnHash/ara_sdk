@@ -105,25 +105,25 @@ public:
         m_value = std::move(value);
     }
 
-    void setFunc(std::string func, ParVec &par) {
+    void setFunc(std::string func, const ParVec &par) {
         m_func = std::move(func);
         m_par  = par;
     }
 
     void                    logtree(int level = 0);
     ResNode*                add(Ptr node);
-    ResNode*                getParent() { return m_parent; }
+    ResNode*                getParent() const { return m_parent; }
     bool                    has(const std::string& path) { return findNode(path) != nullptr; };
     [[nodiscard]] bool      isFlag() const { return m_node.empty(); };
-    [[nodiscard]] bool      isFlag(const std::string &flagname) const {
-        return m_node.empty() && isName(flagname);
+    [[nodiscard]] bool      isFlag(const std::string &flagName) const {
+        return m_node.empty() && isName(flagName);
     }  // Finds a flag in the immediate childs (flag is a sole name item, such as "bold", "img", ...)
 
-    bool hasFlag(const std::string &flagname) {
-        return getFlag(flagname) != nullptr; // Returns true if finds a flag with the giving name
+    bool hasFlag(const std::string &flagName) const {
+        return getFlag(flagName) != nullptr; // Returns true if it finds a flag with the giving name
     }
 
-    ResNode *getFlag(const std::string &flagname) const;  // Returns the pointer to the flag
+    ResNode *getFlag(const std::string &flagName) const;  // Returns the pointer to the flag
 
     bool hasFunc() const { return !m_func.empty(); }  // Does this have a function
     Ptr  preprocess(int level = 0);
@@ -148,18 +148,16 @@ public:
     bool isName(const std::string &str) const { return m_name == str; }
     bool isFunc(const std::string &str) const { return m_func == str; }
 
-    std::string getPar(int index, const std::string &def = {}) {
+    std::string getPar(const int index, const std::string &def = {}) {
         return m_par.getPar(index, def);
     }  // Gets the token value for the current m_Par
 
-    int   getIntPar(int index, int def = 0) { return m_par.getIntPar(index, def); }
-    float getFloatPar(int index, float def = 0) { return m_par.getFloatPar(index, def); }
-    int   getParCount() { return (int)m_par.getParCount(); }
-
-    // Values
-
-    bool                hasValue(const std::string &path) { return getByName(path) != nullptr; }
-    std::string         getValue(const std::string &name, std::string def = {}) const;  // Returns the value of a
+    int             getIntPar(const int index, const int def = 0) const { return m_par.getIntPar(index, def); }
+    float           getFloatPar(const int index, const float def = 0) const { return m_par.getFloatPar(index, def); }
+    int             getParCount() const { return m_par.getParCount(); }
+    bool            hasValue(const std::string &path) const { return getByName(path) != nullptr; }
+    std::string     getValue(const std::string &name, std::string def = {}) const;  // Returns the value of a
+    std::string     getName() const { return m_name; }
 
     template<CoordinateType32Signed T>
     T value(const std::string &name, T def) {
@@ -171,34 +169,34 @@ public:
         }
 
         try {
-        auto vp = split(ptr->m_value, "px");
-            if (vp.size() > 1) {
+            if (const auto vp = split(ptr->m_value, "px"); vp.size() > 1) {
                 v = typeid(T) == typeid(int32_t) ? stoi(vp[0]) : stof(vp[0]);
             } else {
                 v = typeid(T) == typeid(int32_t) ? stoi(ptr->m_value) : stof(ptr->m_value);
             }
         } catch (...) {
+            std::cerr << "ResNode::value() failed" << std::endl;
         }
 
         return v;
     }
 
     template<CoordinateType32Signed T>
-    bool value_v(std::vector<T> &v, const std::string &path, int fcount = 0, T def = 0) {
+    bool value_v(std::vector<T> &v, const std::string &path, int floatCount = 0, T def = 0) {
         v.clear();
-        ResNode *node = findNode(path);
+        const auto node = findNode(path);
         if (node == nullptr) {
             return false;
         }
-        ParVec tok = node->splitValue();
-        fcount     = fcount > 0 ? fcount : tok.getParCount();
-        for (int i = 0; i < fcount; i++) {
+        auto tok = node->splitValue();
+        floatCount     = floatCount > 0 ? floatCount : tok.getParCount();
+        for (int i = 0; i < floatCount; i++) {
             v.emplace_back(typeid(T) == typeid(int32_t) ? tok.getIntPar(i, def) : tok.getFloatPar(i, def));
         }
         return true;
     }
 
-    std::vector<float>  valuefv(const std::string &path, int fcount = 0, float def = 0);
+    std::vector<float>  valuefv(const std::string &path, int floatCount = 0, float def = 0);
 
     bool                isInPixels(const std::string &name) const;
     bool                isInPercent(const std::string &name) const;
@@ -206,30 +204,32 @@ public:
     ParVec              splitNodeValue(const std::string &valueName, char sep = ',') const;  // Splits in tokens the m_value for a node with name value_name
     bool                generateReport(std::vector<e_repitem> &ritem, int level = 0);
     void                setAssetManager(AssetManager *inst) { m_assetManager = inst; }
-    AssetManager*       getAssetManager() { return m_assetManager; }
+    AssetManager*       getAssetManager() const { return m_assetManager; }
+    std::string         getRawValue() const { return m_value; }
     bool                isEqual(const ResNode *unode) const;
     bool                copy(ResNode *unode);
-    unsigned            setFlags(unsigned flags) { return (m_Flags = flags); }
-    unsigned            addFlags(unsigned flags) { return (m_Flags |= flags); }
-    unsigned            removeFlags(unsigned flags) { return (m_Flags &= ~flags); }
+    unsigned            setFlags(const unsigned flags) { return m_flags = flags; }
+    unsigned            addFlags(const unsigned flags) { return m_flags |= flags; }
+    unsigned            removeFlags(const unsigned flags) { return m_flags &= ~flags; }
 
-    [[nodiscard]] unsigned getFlags() const { return m_Flags; }
+    [[nodiscard]] unsigned getFlags() const { return m_flags; }
 
     ErrorList           errList;
     int                 srcLineIndex = -1;
-    std::string         m_name;
-    std::string         m_value;
     std::string         m_func;
     ParVec              m_par;
     std::vector<Ptr>    m_node;
 
 protected:
+    std::string         m_name;
+    std::string         m_value;
+
     ResNode *setParent(ResNode *parent);
 
     AssetManager    *m_assetManager = nullptr;
     ResNode         *m_parent   = nullptr;
     GLBase          *m_glbase   = nullptr;
-    unsigned         m_Flags = 0;
+    unsigned         m_flags = 0;
 
     std::unordered_map<std::string, ResNode *> m_findNodeCache;
 };

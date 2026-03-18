@@ -15,6 +15,7 @@
 
 #include <RwBinFile.h>
 #include "Asset/AssetManager.h"
+#include "GLBase.h"
 #include "Asset/AssetImageSection.h"
 #include "Asset/AssetImageSource.h"
 #include "Asset/AssetColor.h"
@@ -32,7 +33,7 @@ AssetManager::AssetManager(const string &data_root_path, const string &compilati
 }
 
 bool AssetManager::load(const string &path) {
-    SrcFile sfile(m_glbase);
+    SrcFile srcFile(m_glbase);
 
     m_loadState   = true;
     m_resFilePath = path;
@@ -44,7 +45,7 @@ bool AssetManager::load(const string &path) {
     m_loadState = false;
 
     try {
-        if (sfile.process(m_rootNode.get(), vp)) {
+        if (srcFile.process(m_rootNode.get(), vp)) {
             m_rootNode->preprocess();
             m_rootNode->process();
 
@@ -59,7 +60,7 @@ bool AssetManager::load(const string &path) {
             // get fonts
             if (const auto fontsNode = findNode("fonts")) {
                 for (const auto &f : fontsNode->m_node) {
-                    m_fontLUT.insert({f->m_name, e_font_lut{f->m_value, 20}});
+                    m_fontLUT.insert({f->getName(), e_font_lut{f->getRawValue(), 20}});
                 }
             }
 
@@ -74,35 +75,31 @@ bool AssetManager::load(const string &path) {
     }
 }
 
-bool AssetManager::getvalue(string &dest, const string &path) {
+std::optional<std::string> AssetManager::getValue(const string &path) {
     const auto node = findNode<AssetFont>(path);
     if (!node) {
-        return false;
+        return std::nullopt;
     }
-
-    dest = node->m_value;
-    return true;
+    return std::optional(node->getRawValue());
 }
 
-bool AssetManager::getvalue(string &dest, const string &path, const int index) {
+std::optional<std::string> AssetManager::getValue(const string &path, const int index) {
     const auto node = findNode<AssetFont>(path);
     if (!node) {
-        return false;
+        return std::nullopt;
     }
 
-    ParVec tok = node->splitValue();
-
+    auto tok = node->splitValue();
     if (index < 0 || index >= tok.getParCount()) {
-        return false;
+        return std::nullopt;
     }
 
-    dest = tok.getPar(index);
-    return true;
+    return std::optional(tok.getPar(index));
 }
 
 float *AssetManager::color(const string& path) {
     const auto c = findNode<AssetColor>(path);
-    return c == nullptr ? default_Color : c->getColor4fv();
+    return c == nullptr ? m_defaultColor : c->getColor4fv();
 }
 
 Font *AssetManager::font(void* context, const string& path, const float pixRatio) {
@@ -187,27 +184,25 @@ bool AssetManager::checkForChangesInFolderFiles() {
     }
 
     filesystem::file_time_type ft;
-    bool change = false;
     const auto dataPath = AssetLoader::getAssetPath();
 
-    // check for file deletion or modification
+    // check for file deletion or modification, stop at first change found
     for (auto &[filename, lastChangeTime] : m_resFolderFiles) {
-        if (auto p = dataPath / filename; !exists(p)) {
-            change = true;
-            break;
+        if (auto p = dataPath / filename; !std::filesystem::exists(p)) {
+            return true;
         } else {
             try {
                 ft = last_write_time(p);
             } catch (...) {
+                LOGE << "AssetManager::checkForChangesInFolderFiles Error: Failed to get last write time";
             }
 
             if (ft != lastChangeTime) {
-                change = true;
+                return true;
             }
         }
     }
-
-    return change;
+    return false;
 }
 
 bool AssetManager::reload() {
@@ -256,10 +251,9 @@ void AssetManager::callResSourceChange() {
     }
 
     std::unique_lock lock(m_updtMtx);
-    ResNode::Ptr nroot;
 
-    nroot = std::make_unique<ResNode>("root", m_glbase);
-    nroot->setAssetManager(this);
+    auto root = std::make_unique<ResNode>("root", m_glbase);
+    root->setAssetManager(this);
 
     SrcFile              sfile(m_glbase);
     std::vector<uint8_t> vp;
@@ -267,20 +261,19 @@ void AssetManager::callResSourceChange() {
     loadResource(nullptr, vp, m_resFilePath);
     insertPreAndPostContent(vp);
 
-    if (sfile.process(nroot.get(), vp)) {
-        nroot->preprocess();
-        nroot->process();
+    if (sfile.process(root.get(), vp)) {
+        root->preprocess();
+        root->process();
 
         bool err = true;
-
-        if (nroot->errList.empty() && nroot->load() && nroot->errList.empty()) {
-            m_rootNode = std::move(nroot);
-            err      = false;
+        if (root->errList.empty() && root->load() && root->errList.empty()) {
+            m_rootNode  = std::move(root);
+            err         = false;
         }
 
         if (err) {
             LOGE << "New resource file has errors";
-            for (auto &[lineIndex, errorString] : nroot->errList) {
+            for (auto &[lineIndex, errorString] : root->errList) {
                 LOGE << "Line " << std::to_string(lineIndex + 1) << " " << errorString;
             }
         }
@@ -293,9 +286,9 @@ void AssetManager::callForChangesInFolderFiles() {
     filesystem::file_time_type ft;
 
     // Check for new files...
-    for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator("resdata")) {
-        if (auto fileStr = file.path().string(); !m_resFolderFiles.contains(fileStr)) {
-            m_resFolderFiles[fileStr] = filesystem::last_write_time(file);
+    for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator(m_glbase->m_resRootPath)) {
+        if (auto filePath = file.path(); !m_resFolderFiles.contains( filePath.filename())) {
+            m_resFolderFiles[filePath.string()] = filesystem::last_write_time(file);
         }
     }
 
@@ -303,15 +296,16 @@ void AssetManager::callForChangesInFolderFiles() {
     bool keep;
     do {
         keep = false;
-        for (auto &[folder, modTime] : m_resFolderFiles) {
-            if (!filesystem::exists(folder)) {
-                m_resFolderFiles.erase(folder);
+        for (auto &[file, modTime] : m_resFolderFiles) {
+            const auto& p = filesystem::path(m_glbase->m_resRootPath) / file;
+            if (!filesystem::exists(p)) {
+                m_resFolderFiles.erase(p);
                 keep = true;
                 break;
             }
 
             try {
-                ft = filesystem::last_write_time(folder);
+                ft = filesystem::last_write_time(p);
             } catch (...) {
             }
 
@@ -321,8 +315,8 @@ void AssetManager::callForChangesInFolderFiles() {
                 std::replace(str.begin(), str.end(), '\\', '/');
                 str.erase(0, m_dataRootPath.size());
                 PropagateFileChange(false, str);
-                m_resFolderFiles[e.first] = ft;
                 */
+                m_resFolderFiles[file] = ft;
             }
         }
     } while (keep);
@@ -354,12 +348,12 @@ AssetImageBase *AssetManager::img(const string& path) const {
 
 std::string AssetManager::value(const std::string &path) {
     const auto node = findNode<AssetFont>(path);
-    return node ? node->m_value : std::string{};
+    return node ? node->getRawValue() : std::string{};
 }
 
 std::string AssetManager::value(const std::string &path, const std::string& def) {
     const auto node = findNode<AssetFont>(path);
-    return node ? node->m_value : std::string{};
+    return node ? node->getRawValue() : std::string{};
 }
 
 void AssetManager::addFontListForContext(void* context) {
