@@ -326,7 +326,7 @@ public:
     void setParent(Node* ptr)                   { m_parent = ptr; }
     void setUndoBufferRoot(Node* node)          { m_undoBufRoot = node; }
     void setParseAsGenericJson(bool val)        { m_parseAsGenericJson = true; }
-    void setOnChangeCb(cbType cbType, void *ptr, std::function<void(std::optional<Node*>)> func) {
+    void setOnChangeCb(const cbType cbType, void *ptr, std::function<void(std::optional<Node*>)> func) {
         m_changeCb[cbType][ptr] = std::move(func);
     }
     void setValue(nodeValue val)                { m_value = std::move(val); }

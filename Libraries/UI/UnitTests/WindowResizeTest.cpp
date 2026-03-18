@@ -12,9 +12,9 @@ namespace ara::UiUnitTest::WindowResizeTest {
 
 #ifdef ARA_USE_GLFW
 
-void setMouseTo(const UIApplication &app, ivec2 pos) {
-    auto mainWin = app.getMainWindow();
-    mainWin->onMouseMove(pos.x, pos.y, 0); // should set dragStart on WindowResizeArea
+void setMouseTo(const UIApplication &app, const ivec2 pos) {
+    const auto mainWin = app.getMainWindow();
+    mainWin->onMouseMove(static_cast<float>(pos.x), static_cast<float>(pos.y), 0); // should set dragStart on WindowResizeArea
     glfwSetCursorPos(static_cast<GLFWwindow*>(mainWin->getWinHandle()->getWin()), pos.x, pos.y);
     app.getWinBase()->draw(0, 0, 0);
     app.getMainWindow()->swap();
@@ -24,18 +24,18 @@ void runScaling(const ivec2& initMp, const ivec2& moveTo, const ivec2& resulting
     registerDefaultUITypes();
     LOG << "WindowResizeTest: DON'T MOVE THE MOUSE WHILE RUNNING THIS TEST!!!";
     appBody([&](const UIApplication &app) {
-        auto mainWin = app.getMainWindow();
-        auto sz = mainWin->getSize();
+        const auto mainWin = app.getMainWindow();
+        const auto sz = mainWin->getSize();
         EXPECT_EQ(300, sz.x);
         EXPECT_EQ(300, sz.y);
     }, [&](const UIApplication &app) {
-        auto mainWin = app.getMainWindow();
+        const auto mainWin = app.getMainWindow();
         for (int i=0; i<2; ++i) setMouseTo(app, initMp); // should set dragStart on WindowResizeArea
-        mainWin->onMouseDownLeft(initMp.x, initMp.y, false, false, false);
+        mainWin->onMouseDownLeft(static_cast<float>(initMp.x), static_cast<float>(initMp.y), false, false, false);
         for (int i=0; i<2; ++i) setMouseTo(app, moveTo); // one redundant call to have winCB called
         mainWin->onMouseUpLeft();
 
-        auto sz = mainWin->getSize();
+        const auto sz = mainWin->getSize();
         EXPECT_EQ(resultingWinSize.x, sz.x);
         EXPECT_EQ(resultingWinSize.y, sz.y);
     }, 300, 300, nullptr, true);

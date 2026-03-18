@@ -119,8 +119,7 @@ void FontList::update3DLayers() {
                 fnt->setTexLayer({
                     .nrLayers = static_cast<GLuint>(fonts.size()),
                     .layerId = static_cast<GLuint>(layerCnt),
-                    .texId = m_fontTexLayers[sz]->getId(),
-                    .mutex = &m_mtx
+                    .texId = m_fontTexLayers[sz]->getId()
                 });
                 layerCnt++;
             }
@@ -174,8 +173,7 @@ void FontList::update3DLayers() {
                     fnt->setTexLayer({
                         .nrLayers = static_cast<GLuint>(fonts.size()),
                         .layerId = static_cast<GLuint>(layerCnt),
-                        .texId = m_fontTexLayers[sz]->getId(),
-                        .mutex = &m_mtx
+                        .texId = m_fontTexLayers[sz]->getId()
                     });
                     layerCnt++;
                 }
