@@ -234,7 +234,7 @@ void Carrousel::slideToNextIdx(float movedPixX) {
         auto it = m_slides.begin();
         accuSlideSum += static_cast<int32_t>((*it)->getSize().x);
         while (accuSlideSum < currentDrawWayInPix && ++it < m_slides.end()) {
-            accuSlideSum += static_cast<int32_t>((*it)->getSize().x) + m_padding.x;
+            accuSlideSum += static_cast<int32_t>((*it)->getSize().x) + static_cast<int32_t>(m_padding.x);
         }
 
         nextIdx = static_cast<int32_t>(std::distance(m_slides.begin(), it));

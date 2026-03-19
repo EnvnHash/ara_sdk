@@ -352,7 +352,7 @@ GLuint DrawManager::pushFont(Font* font) {
 
     entry->nrLayers = font->getLayerTexNrLayers();
 
-    return std::distance( ds.fontTex.begin(), entry);
+    return static_cast<GLuint>(std::distance( ds.fontTex.begin(), entry));
 }
 
 void DrawManager::popFont(DrawSet &ds, const GLuint texId) {

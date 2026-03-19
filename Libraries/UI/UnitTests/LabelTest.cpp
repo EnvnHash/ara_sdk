@@ -33,10 +33,10 @@ TEST(UITest, LabelTest) {
     std::array fontSizeList { 8, 16, 24, 32, 40, 48 };
     for (auto& fsz: fontSizeList) {
         auto fn = "label_test_"+std::to_string(fsz)+".png";
-        appBody([&](UIApplication &app) {
+        appBody([&](const UIApplication &app) {
             auto root = app.getMainWindow()->getRootNode();
             addLabel(root, fsz);
-        }, [&](UIApplication &app) {
+        }, [&](const UIApplication &app) {
             compareFrameBufferToImage(filesystem::current_path() / fn,
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
         }, 300, 300);

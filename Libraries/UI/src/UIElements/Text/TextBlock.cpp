@@ -77,8 +77,8 @@ void TextBlock::initSelBgShader() {
 void TextBlock::loadStyleDefaults() {
     UINode::loadStyleDefaults();
 
-    m_setStyleFunc[state::none][styleInit::fontFontSize]   = [this]() { setFontSize(18); };
-    m_setStyleFunc[state::none][styleInit::fontFontFamily] = [this]() { setFontType("regular"); };
+    m_setStyleFunc[state::none][styleInit::fontFontSize]   = [this] { setFontSize(18); };
+    m_setStyleFunc[state::none][styleInit::fontFontFamily] = [this] { setFontType("regular"); };
 }
 
 bool TextBlock::draw(uint32_t& objId) {
@@ -107,8 +107,7 @@ bool TextBlock::drawIndirect(uint32_t& objId) {
 }
 
 void TextBlock::drawSelectionBg() {
-    if (getSelRange(m_charSelection)
-        && m_state == state::selected) {
+    if (getSelRange(m_charSelection) && m_state == state::selected) {
         if (!all(glm::equal(m_charSelection, m_lastSelRange))) {
             m_lastSelRange = m_charSelection;
 
@@ -189,7 +188,6 @@ Font *TextBlock::updateDGV(bool *checkFontTexture) {
     m_renderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
 
     const vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
-    int  lidx;
 
     if (!hasOpt(manual_space)) {
         m_tSize = m_tContSize;
@@ -201,29 +199,29 @@ Font *TextBlock::updateDGV(bool *checkFontTexture) {
     m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
 
     // Calculate offset
-    if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
-        auto cpos = m_fontDGV.getCaretPos(m_caretIndex);
+    if (int lineIndex; (lineIndex = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
+        auto caretPos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
         const auto pa = m_riFont->getPixAscent();
 
         // resulting x-position
-        const auto x1 = cpos.x + m_offset.x;
+        const auto x1 = caretPos.x + m_offset.x;
         const auto x2 = x1 + 2;
-        const auto y1 = m_fontDGV.getFontLines(lidx).getYSelRange(0) + m_offset.y + pa;
-        const auto y2 = m_fontDGV.getFontLines(lidx).getYSelRange(1) + m_offset.y + pa;
+        const auto y1 = m_fontDGV.getFontLines(lineIndex).getYSelRange(0) + m_offset.y + pa;
+        const auto y2 = m_fontDGV.getFontLines(lineIndex).getYSelRange(1) + m_offset.y + pa;
 
         // the beginning of the rendered text will be outside the mask add an
         // offset to move it into the non-mask area
         if (x1 < mask.x) {
-            m_offset.x = -(cpos[0] - mask.x);
+            m_offset.x = -(caretPos[0] - mask.x);
         }
         if (x2 > mask.z) {
-            m_offset.x = std::max(m_offset.x, -(2 + cpos[0] - mask.z));
+            m_offset.x = std::max(m_offset.x, -(2 + caretPos[0] - mask.z));
         }
         if (y1 < mask.y) {
-            m_offset.y = -(pa + m_fontDGV.getFontLines(lidx).getYSelRange(0) - mask.y);
+            m_offset.y = -(pa + m_fontDGV.getFontLines(lineIndex).getYSelRange(0) - mask.y);
         }
         if (y2 > mask.w) {
-            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.getFontLines(lidx).getYSelRange(1) - mask.w));
+            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.getFontLines(lineIndex).getYSelRange(1) - mask.w));
         }
     }
 
@@ -255,7 +253,6 @@ void TextBlock::updateFontGeo() {
     m_bo.x = m_offset.x + m_alignOffset.x;
     m_bo.y = m_offset.y + m_riFont->getPixAscent() + m_alignOffset.y;
     m_mask = calculateMask();
-    //memcpy(&m_modMvp[0][0], &m_mvp[0][0], sizeof(float) * 16);
     std::copy_n(&m_mvp[0][0], 16, &m_modMvp[0][0]);
 
     m_mask *= m_riFont->getPixRatio();
@@ -264,42 +261,46 @@ void TextBlock::updateFontGeo() {
 }
 
 void TextBlock::prepareSelBgVao() {
+    int lineCntr = 0;
     list<pair<vec2, vec2>> lines;  // Left/Top,  Right/Bottom
-    for (auto &l : m_fontDGV.getFontLines()) {
-        if (l.ptr[0] && l.ptr[1]) {
+    for (auto &[ptr, y, width, characterIdx, yrange, yselrange, pixRatio] : m_fontDGV.getFontLines()) {
+        if (ptr[0] && ptr[1]) {
             std::array<int32_t, 2> ci{};  /// first and last character index
 
-            ci[0] = l.ptr[0]->characterIdx;  // assign the character index of the first character in the actual line
-            ci[1] = l.ptr[1]->characterIdx;  // assign the character index of the last character in the actual line
+            ci[0] = ptr[0]->characterIdx;  // assign the character index of the first character in the actual line
+            ci[1] = ptr[1]->characterIdx;  // assign the character index of the last character in the actual line
 
-            // check if this line is within the range of selected charters
+            // check if this line is within the range of selected characters
             if (!(ci[0] > m_charSelection[1] || ci[1] < m_charSelection[0])) {
-                cp.x = ci[0] > m_charSelection[0] ? m_tPos.x / l.pixRatio
-                                                  : m_fontDGV.getCaretPos(m_charSelection[0])[0];
-                cp.y = ci[1] < m_charSelection[1] ? (m_tPos.x + m_tSize.x)
-                                                  : m_fontDGV.getCaretPos(m_charSelection[1])[0];
+                auto caretPosAndSize = m_fontDGV.getCaretPosAndSize(m_charSelection[0]);
+                cp.x = ci[0] > m_charSelection[0] ? m_tPos.x / pixRatio : caretPosAndSize.first.x;
 
-                vec2 posLT{};
-                posLT.x = cp.x + m_offset.x + m_alignOffset.x;
-                posLT.y = l.y / l.pixRatio + m_offset.y + m_alignOffset.y;
+                caretPosAndSize = m_fontDGV.getCaretPosAndSize(m_charSelection[1]);
+                cp.y = ci[1] < m_charSelection[1] ? m_fontDGV.getFontLines().size() -1 == lineCntr ? caretPosAndSize.first.x + caretPosAndSize.second.x
+                                                                                                   : m_tPos.x + m_tSize.x
+                                                  : caretPosAndSize.first.x;
 
-                vec2 posRB{};
-                posRB.x = cp.y + m_offset.x + m_alignOffset.x;
-                posRB.y = posLT.y + (l.yrange[1] - l.yrange[0]) / l.pixRatio;
+                vec2 posLT{
+                    cp.x + m_offset.x + m_alignOffset.x,
+                    y / pixRatio + m_offset.y + m_alignOffset.y
+                };
+                vec2 posRB{
+                    cp.y + m_offset.x + m_alignOffset.x,
+                    posLT.y + (yrange[1] - yrange[0]) / pixRatio
+                };
 
-                // check if the selected part of this line is within the visible
-                // range
-                if (posLT.x < m_mask.z && posRB.x > m_mask.x && posLT.y < m_mask.w && posRB.y > m_mask.y) {
+                // check if the selected part of this line is within the visible range
+                if (posLT.x < m_mask.z && posRB.x >= m_mask.x && posLT.y < m_mask.w && posRB.y >= m_mask.y) {
                     posLT.x = std::max<float>(posLT.x, m_mask.x);
                     posLT.y = std::max<float>(posLT.y, m_mask.y);
                     posRB.x = std::min<float>(posRB.x, m_mask.z);
                     posRB.y = std::min<float>(posRB.y, m_mask.w);
 
-                    auto lSize = posRB - posLT;
-                    lines.emplace_back(posLT, lSize);
+                    lines.emplace_back(posLT, posRB - posLT);
                 }
             }
         }
+        ++lineCntr;
     }
 
     if (m_backPos.size() != lines.size() * 4) {
@@ -369,10 +370,9 @@ void TextBlock::mouseDrag(hidData& data) {
     m_mousePosCr = data.mousePosNodeRel / getParentContentScale() - m_alignOffset;
 
     if (m_mouseEvent & 1) {
-        auto cpos = getCaretByPixPos(m_mousePosCr.x, m_mousePosCr.y);
-
-        m_caretIndex    = cpos;
-        m_caretRange[1] = cpos;
+        const auto caretPos = getCaretByPixPos(m_mousePosCr.x, m_mousePosCr.y);
+        m_caretIndex    = caretPos;
+        m_caretRange[1] = caretPos;
 
         if (!m_drawImmediate) {
             reqUpdtTree();
@@ -383,11 +383,9 @@ void TextBlock::mouseDrag(hidData& data) {
 }
 
 void TextBlock::mouseDown(hidData& data) {
-    vec2 p = data.mousePosNodeRel / getParentContentScale();
-    int cpos = getCaretByPixPos(p.x - m_alignOffset.x, p.y - m_alignOffset.y);
-
-    if (cpos >= 0) {
-        m_caretIndex    = cpos;
+    const vec2 p = data.mousePosNodeRel / getParentContentScale();
+    if (const int caretPos = getCaretByPixPos(p.x - m_alignOffset.x, p.y - m_alignOffset.y); caretPos >= 0) {
+        m_caretIndex    = caretPos;
         m_caretRange[0] = m_caretRange[1] = m_caretIndex;
         m_mouseEvent                      = 1;
 
@@ -427,8 +425,8 @@ void TextBlock::globalMouseDown(hidData& data) {
 }
 
 void TextBlock::setText(const std::string &str) {
-    bool updt = str.size() != m_text.size();
-    auto pureText = parseTextForColors(str);
+    const bool updt = str.size() != m_text.size();
+    const auto pureText = parseTextForColors(str);
     m_text.assign(pureText, 0, std::min(m_maxCount, static_cast<int>(pureText.size())));
     m_caretIndex = static_cast<int>(m_text.size());
     clearSelRange();
@@ -440,12 +438,12 @@ std::string TextBlock::parseTextForColors(const std::string& str) {
     std::string out;
 
     try {
-        auto splitted = split(str, "##[");
+        auto splitString = split(str, "##[");
         size_t cntr = 0;
         size_t charCntr = 0;
-        m_fontDGV.addTextColor(ivec2{0, str.size() -1}, m_color);
+        m_fontDGV.addTextColor(ivec2{0, str.size()-1}, m_color);
 
-        for (auto &it : splitted) {
+        for (auto &it : splitString) {
             if (cntr > 0) {
                 auto colValList = split(it, ',');
                 if (colValList.size() < 4) {
@@ -461,8 +459,8 @@ std::string TextBlock::parseTextForColors(const std::string& str) {
                     m_fontDGV.getLastTextColor().second[i] = static_cast<float>(stoi(colValList[i]) / 255.0);
                 }
 
-                auto firstAfterColIt = colValList.begin() + 3;
-                auto closeBrIt = firstAfterColIt->find(']');
+                const auto firstAfterColIt = colValList.begin() + 3;
+                const auto closeBrIt = firstAfterColIt->find(']');
 
                 it = firstAfterColIt->substr(closeBrIt+1, firstAfterColIt->size() - closeBrIt -1);
 
@@ -478,8 +476,8 @@ std::string TextBlock::parseTextForColors(const std::string& str) {
             charCntr += it.size();
             ++cntr;
 
-            if (cntr == splitted.size() && splitted.size() > 1) {
-                m_fontDGV.getLastTextColor().first.y = charCntr;
+            if (cntr == splitString.size() && splitString.size() > 1) {
+                m_fontDGV.getLastTextColor().first.y = static_cast<float>(charCntr);
             }
         }
     } catch (std::exception& e) {
@@ -490,7 +488,7 @@ std::string TextBlock::parseTextForColors(const std::string& str) {
     return out;
 }
 
-std::string TextBlock::validateInputToString(int ch) {
+std::string TextBlock::validateInputToString(const int ch) {
     auto tempStr = std::string(m_text);
     if (!tempStr.empty()) {
         tempStr.insert(std::max<size_t>(std::min<size_t>(m_caretIndex, tempStr.size()), 0), 1, static_cast<char>(ch));
@@ -500,13 +498,13 @@ std::string TextBlock::validateInputToString(int ch) {
     return tempStr;
 }
 
-int TextBlock::getCaretByPixPos(float px, float py) {
+int TextBlock::getCaretByPixPos(const float px, const float py) {
     if (!m_riFont) {
         return 0;
     }
     int off_bound = 0;
-    int idx = m_fontDGV.getCharIndexByPixPos(px, py - m_riFont->getPixAscent(), m_tPos[0] + m_offset.x,
-                                             m_tPos[1] + m_offset.y, off_bound);
+    const int idx = m_fontDGV.getCharIndexByPixPos(px, py - m_riFont->getPixAscent(), m_tPos[0] + m_offset.x,
+                                                   m_tPos[1] + m_offset.y, off_bound);
     m_caretIndex = idx;
     return idx;
 }
@@ -516,7 +514,8 @@ bool TextBlock::setSelRangeAll() {
 }
 
 bool TextBlock::setSelRange(int loIndex, int highIndex) {
-    int len = static_cast<int>(m_text.size());
+    // [0 - 1] = select first char, [0 - size], select all including the last char
+    const int len = static_cast<int>(m_text.size());
 
     loIndex = std::clamp(loIndex, 0, len);
     highIndex = std::clamp(highIndex, 0, len);
@@ -532,19 +531,13 @@ bool TextBlock::setSelRange(int loIndex, int highIndex) {
 
 bool TextBlock::getSelRange(ivec2 &range) {
     if (m_caretRange[0] == m_caretRange[1]) {
-        memset(&range[0], 0, sizeof(int) * 2);
+        range = {};
         return false;
     }
 
-    range.x = std::min(m_caretRange.x, m_caretRange.y);
-    range.y = std::max(m_caretRange.x, m_caretRange.y);
+    range.x = std::max(0, std::min(m_caretRange.x, m_caretRange.y));
+    range.y = std::min(static_cast<int>(m_text.size()),std::max(m_caretRange.x, m_caretRange.y));
 
-    if (range.x < 0) {
-        range.x = 0;
-    }
-    if (range.y > static_cast<int>(m_text.size())) {
-        range.y = static_cast<int>(m_text.size());
-    }
     return true;
 }
 
@@ -552,41 +545,39 @@ void TextBlock::clearSelRange() {
     m_caretRange[0] = m_caretRange[1] = 0;
 }
 
-bool TextBlock::eraseContent(int lo_index, int hi_index) {
+bool TextBlock::eraseContent(int loIndex, int highIndex) {
     const int len = static_cast<int>(m_text.size());
 
     if (len <= 0) {
         return false;
     }
-    if (lo_index > hi_index) {
+    if (loIndex > highIndex) {
         return false;
     }
 
-    lo_index = std::clamp(lo_index, 0, len);
-    hi_index = std::clamp(hi_index, 0, len);
+    loIndex = std::clamp(loIndex, 0, len);
+    highIndex = std::clamp(highIndex, 0, len);
 
-    m_text.erase(lo_index, hi_index - lo_index);
+    m_text.erase(loIndex, highIndex - loIndex);
     reqUpdtGlyphs(true);
     return true;
 }
 
-int TextBlock::validateCaretPos(int cpos) const {
-    if (cpos < 0) {
-        cpos = 0;
+int TextBlock::validateCaretPos(int caretPos) const {
+    if (caretPos < 0) {
+        caretPos = 0;
     }
-    if (cpos > static_cast<int>(m_text.size())) {
-        cpos = static_cast<int>(m_text.size());
+    if (caretPos > static_cast<int>(m_text.size())) {
+        caretPos = static_cast<int>(m_text.size());
     }
-    return cpos;
+    return caretPos;
 }
 
-void TextBlock::updateStyleIt(ResNode *node, state st, const std::string& styleClass) {
+void TextBlock::updateStyleIt(ResNode *node, const state st, const std::string& styleClass) {
     Label::updateStyleIt(node, st, styleClass);
 
     if (node->hasValue("edit-align")) {
-        auto p = node->splitNodeValue("edit-align");
-
-        for (auto &par : p) {
+        for (const auto p = node->splitNodeValue("edit-align"); auto &par : p) {
             if (par == "left") m_tAlignX = align::left;
             else if (par == "center") m_tAlignX = align::center;
             else if (par == "right") m_tAlignX = align::right;
@@ -596,20 +587,18 @@ void TextBlock::updateStyleIt(ResNode *node, state st, const std::string& styleC
     }
 
     if (node->hasValue("edit-valign")) {
-        ParVec p   = node->splitNodeValue("edit-valign");
         auto auxAlign = valign::center;
-
-        for (std::string &par : p) {
+        for (auto p   = node->splitNodeValue("edit-valign"); std::string &par : p) {
             if (par == "top") auxAlign = valign::top;
             else if (par == "vcenter" || par == "center") auxAlign = valign::center;
             else if (par == "bottom") auxAlign = valign::bottom;
         }
 
-        m_tAlignY                                = auxAlign;
+        m_tAlignY                                 = auxAlign;
         m_setStyleFunc[st][styleInit::textValign] = [this, auxAlign] { m_tAlignY = auxAlign; };
     }
 
-    if (auto f = node->findNode<AssetFont>("font")) {
+    if (const auto f = node->findNode<AssetFont>("font")) {
         int         size = f->value<int32_t>("size", 0);
         std::string font = f->getValue("font");
 
@@ -634,7 +623,7 @@ void TextBlock::setPropItem(Item *item) {
     }
 }
 
-void TextBlock::setBkSelColor(vec4 c) {
+void TextBlock::setBkSelColor(const vec4 c) {
     m_bkSelColor     = c;
     m_glyphsPrepared = false;
 }

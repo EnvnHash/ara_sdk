@@ -15,7 +15,7 @@ using namespace glm;
 
 namespace ara::UiUnitTest::UIEditTest {
 
-UIEdit& addFloatEdit(UIApplication& app) {
+UIEdit& addFloatEdit(const UIApplication& app) {
     auto& ed = app.getRootNode()->push<UIEdit>(UINodePars {
         .pos = ivec2{10,10},
         .size = ivec2{200,28},
@@ -26,7 +26,7 @@ UIEdit& addFloatEdit(UIApplication& app) {
     return ed;
 }
 
-std::string getSelAllCopyOutput(UIApplication &app, UIEdit* ed) {
+std::string getSelAllCopyOutput(const UIApplication &app, UIEdit* ed) {
     std::string value;
 #ifdef ARA_USE_CLIP
     auto mainWin = app.getMainWindow();
@@ -51,9 +51,9 @@ std::string getSelAllCopyOutput(UIApplication &app, UIEdit* ed) {
 TEST(UITest, UIEditFloatTest) {
     registerDefaultUITypes();
 
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         auto& ed3 = addFloatEdit(app);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 100);
@@ -63,7 +63,7 @@ TEST(UITest, UIEditFloatBackspaceTest) {
     registerDefaultUITypes();
 
     UIEdit* ed = nullptr;
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
 
         auto mainWin = app.getMainWindow();
@@ -75,10 +75,10 @@ TEST(UITest, UIEditFloatBackspaceTest) {
 
         mainWin->onKeyDown(ARA_KEY_BACKSPACE, false, false, false);
         mainWin->onKeyUp(ARA_KEY_BACKSPACE, false, false, false);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_backspace_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
-        auto str = getSelAllCopyOutput(app, ed);
+        const auto str = getSelAllCopyOutput(app, ed);
         EXPECT_EQ(str, "1.340");
         EXPECT_EQ(ed->getValue(), 1.34f);
     }, 300, 100);
@@ -88,7 +88,7 @@ TEST(UITest, UIEditFloatDelTest) {
     registerDefaultUITypes();
 
     UIEdit* ed = nullptr;
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
 
         auto mainWin = app.getMainWindow();
@@ -100,7 +100,7 @@ TEST(UITest, UIEditFloatDelTest) {
 
         mainWin->onKeyDown(ARA_KEY_DELETE, false, false, false);
         mainWin->onKeyUp(ARA_KEY_DELETE, false, false, false);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_del_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
 
@@ -114,14 +114,14 @@ TEST(UITest, UIEditFloatInsertTest) {
     registerDefaultUITypes();
 
     UIEdit* ed = nullptr;
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
 
         auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(114, 22, false, false, false);
         mainWin->onMouseUpLeft();
         mainWin->onChar(ARA_KEY_7);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_insert_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
 
@@ -135,7 +135,7 @@ TEST(UITest, UIEditFloatWheelTest) {
     registerDefaultUITypes();
 
     UIEdit* ed = nullptr;
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
         ed->setUseWheel(true);
 
@@ -143,7 +143,7 @@ TEST(UITest, UIEditFloatWheelTest) {
         mainWin->onMouseDownLeft(122, 22, false, false, false);
         mainWin->onMouseUpLeft();
         mainWin->onWheel(1.f);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_wheel_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
         auto str = getSelAllCopyOutput(app, ed);

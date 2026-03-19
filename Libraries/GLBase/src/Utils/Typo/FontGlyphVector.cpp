@@ -25,17 +25,17 @@ unsigned FontGlyphVector::calculateBoundingBoxHwp(vec4 &bb) const {
     memset(&bb[0], 0, 16);
 
     unsigned i = 0;
-    for (auto &fl : m_vline) {
+    for (const auto &[ptr, y, width, characterIdx, yrange, yselrange, pixRatio] : m_vline) {
         if (!i) {
-            bb.x = fl.ptr[0]->pos.x;
-            bb.z = fl.ptr[0]->pos.x + fl.width;
-            bb.y = fl.yrange[0];
-            bb.w = fl.yrange[1];
+            bb.x = ptr[0]->pos.x;
+            bb.z = ptr[0]->pos.x + width;
+            bb.y = yrange[0];
+            bb.w = yrange[1];
         } else {
-            bb.x = std::min(bb.x, fl.ptr[0]->pos.x);
-            bb.z = std::max(bb.z, fl.ptr[0]->pos.x + fl.width);
-            bb.y = std::min(bb.y, fl.yrange[0]);
-            bb.w = std::max(bb.w, fl.yrange[1]);
+            bb.x = std::min(bb.x, ptr[0]->pos.x);
+            bb.z = std::max(bb.z, ptr[0]->pos.x + width);
+            bb.y = std::min(bb.y, yrange[0]);
+            bb.w = std::max(bb.w, yrange[1]);
         }
         ++i;
     }
@@ -43,7 +43,7 @@ unsigned FontGlyphVector::calculateBoundingBoxHwp(vec4 &bb) const {
 }
 
 unsigned FontGlyphVector::calculateBoundingBox(vec4 &bb) const {
-    unsigned res = calculateBoundingBoxHwp(bb);
+    const auto res = calculateBoundingBoxHwp(bb);
     for (int i = 0; i < 4; i++) {
         bb[i] /= m_pixRatio;
     }
@@ -57,12 +57,12 @@ vec4 FontGlyphVector::calculateBoundingBoxHwp() const {
 }
 
 vec2 FontGlyphVector::getPixSize() const {
-    auto bb = calculateBoundingBoxHwp();
+    const auto bb = calculateBoundingBoxHwp();
     return {(bb.z - bb.x) / m_pixRatio, (bb.w - bb.y) / m_pixRatio};
 }
 
 vec2 FontGlyphVector::getPixSizeHwp() const {
-    auto bb = calculateBoundingBoxHwp();
+    const auto bb = calculateBoundingBoxHwp();
     return {(bb.z - bb.x), (bb.w - bb.y)};
 }
 
@@ -78,22 +78,15 @@ void FontGlyphVector::reset(const Font *font) {
     }
 }
 
-Fontdglyph FontGlyphVector::findByCharIndex(int idx) const {
-    for (auto &gIt : m_glyphs) {
-        if (gIt.characterIdx == idx) {
-            return gIt;
-        }
-    }
-
-    return Fontdglyph{};
+Fontdglyph FontGlyphVector::findByCharIndex(const int idx) const {
+    auto r = std::ranges::find_if(m_glyphs, [idx](auto& glyph) { return glyph.characterIdx == idx; });
+    return r != m_glyphs.end() ? *r : Fontdglyph();
 }
 
-int FontGlyphVector::getLineIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y) {
+int FontGlyphVector::getLineIndexByPixPos(const float pix_x, float pix_y, float off_x, const float off_y) {
     int i = 0;
-
     pix_y -= off_y;
-
-    vec2 hwPix{ pix_x * m_pixRatio, pix_y * m_pixRatio };
+    const vec2 hwPix{ pix_x * m_pixRatio, pix_y * m_pixRatio };
 
     // convert to hw pixels
     if (hwPix.x < m_bb[1]) {
@@ -104,8 +97,8 @@ int FontGlyphVector::getLineIndexByPixPos(float pix_x, float pix_y, float off_x,
         return -2;
     }
 
-    for (auto &l : m_vline) {
-        if (hwPix.y >= l.yselrange[0] && hwPix.y < l.yselrange[1]) {
+    for (auto &[ptr, y, width, characterIdx, yrange, yselrange, pixRatio] : m_vline) {
+        if (hwPix.y >= yselrange[0] && hwPix.y < yselrange[1]) {
             return i;
         }
         i++;
@@ -114,10 +107,10 @@ int FontGlyphVector::getLineIndexByPixPos(float pix_x, float pix_y, float off_x,
     return -1;
 }
 
-int FontGlyphVector::getLineIndexByCharIndex(int ch_index) const {
+int FontGlyphVector::getLineIndexByCharIndex(const int ch_index) const {
     int i = 0;
-    for (auto &l : m_vline) {
-        if (ch_index >= l.characterIdx[0] && ch_index <= l.characterIdx[1]) {
+    for (const auto &[ptr, y, width, characterIdx, yrange, yselrange, pixRatio] : m_vline) {
+        if (ch_index >= characterIdx[0] && ch_index <= characterIdx[1]) {
             return i;
         }
         ++i;
@@ -127,15 +120,15 @@ int FontGlyphVector::getLineIndexByCharIndex(int ch_index) const {
 }
 
 int FontGlyphVector::getCharIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y, int &off_bound) {
-    auto lidx = getLineIndexByPixPos(pix_x, pix_y, off_x, off_y);
+    const auto lineIndex = getLineIndexByPixPos(pix_x, pix_y, off_x, off_y);
     off_bound = 0;
 
-    if (lidx < 0) {
-        if (lidx == -1) {
+    if (lineIndex < 0) {
+        if (lineIndex == -1) {
             return 0;
         }
 
-        if (lidx == -2) {
+        if (lineIndex == -2) {
             return static_cast<int>(m_glyphs.size());
         }
 
@@ -143,94 +136,89 @@ int FontGlyphVector::getCharIndexByPixPos(float pix_x, float pix_y, float off_x,
     }
 
     pix_x -= off_x;
+    const float hwPix_x = pix_x * m_pixRatio;
+    auto e = m_vline[lineIndex].ptr[0];
 
-    float hwPix_x = pix_x * m_pixRatio;
-
-    auto e = m_vline[lidx].ptr[0];
-
-    if (e == nullptr || !m_vline[lidx].ptr[1]) {
+    if (e == nullptr || !m_vline[lineIndex].ptr[1]) {
         return -1;
     }
 
     if (hwPix_x <= m_bb[0]) {
-        return m_vline[lidx].ptr[0]->characterIdx;
+        return m_vline[lineIndex].ptr[0]->characterIdx;
     }
 
     if (hwPix_x >= m_bb[2]) {
-        return m_vline[lidx].ptr[1]->characterIdx;
+        return m_vline[lineIndex].ptr[1]->characterIdx;
     }
 
     if (hwPix_x < e[0].pos.x) {
         return e[0].characterIdx;
     }
 
-    e = m_vline[lidx].ptr[0];
+    e = m_vline[lineIndex].ptr[0];
 
-    while (e < m_vline[lidx].ptr[1]) {
+    while (e < m_vline[lineIndex].ptr[1]) {
         if (hwPix_x >= e[0].pos.x && hwPix_x < e[1].pos.x) {
             return e[0].characterIdx;
         }
         ++e;
     }
 
-    if (e == m_vline[lidx].ptr[1]) {
+    if (e == m_vline[lineIndex].ptr[1]) {
         if (hwPix_x >= e[0].pos.x && hwPix_x <= e[0].pos.x + e[0].size.x) {
             return e[0].characterIdx;
         }
     }
 
-    return m_vline[lidx].ptr[1]->characterIdx;
+    return m_vline[lineIndex].ptr[1]->characterIdx;
 }
 
-vec2 FontGlyphVector::getCaretPos(int caret_index) const {
-    vec2 pos{};
-    auto nchars = static_cast<int>(size());
-    memset(&pos[0], 0, sizeof(float) * 2);
-
-    if (!nchars) {
-        return pos;
+std::pair<vec2, vec2> FontGlyphVector::getCaretPosAndSize(const int caret_index) const {
+    std::pair<vec2, vec2> outPair {};
+    const auto numChars = static_cast<int>(size());
+    if (!numChars) {
+        return outPair;
     }
 
-    if (nchars > 0) {
-        auto pr = findByCharIndex(caret_index);
-
-        if (caret_index < nchars) {
-            if (pr.charAsCodepoint > 0) {
-                pos.x = pr.pos.x;
-                pos.y = pr.pos.y + pr.size.y;
+    if (numChars > 0) {
+        auto [charAsCodepoint, pos, size, glyphPtr, color, characterIdx, pixRatio] = findByCharIndex(caret_index);
+        outPair.second = size;
+        if (caret_index < numChars) {
+            if (charAsCodepoint > 0) {
+                outPair.first.x = pos.x;
+                outPair.first.y = pos.y + size.y;
             }
         } else {
-            pos = m_glyphs[nchars - 1].pos + m_glyphs[nchars - 1].size;
+            outPair.first = m_glyphs[numChars - 1].pos + m_glyphs[numChars - 1].size;
         }
 
         if (caret_index < 0) {
-            pos.y = m_vline[0].y;
-        } else if (caret_index >= static_cast<int>(m_glyphs.size())) {
-            pos.y = m_vline[m_vline.size() - 1].y;
+            outPair.first.y = m_vline[0].y;
+        } else if (caret_index > static_cast<int>(m_glyphs.size() -1)) {
+            outPair.first.y = m_vline[m_vline.size() - 1].y;
         } else {
-            auto lidx = getLineIndexByCharIndex(caret_index);
-            if (lidx < 0) {
-                pos.y = m_vline[0].y;
+            if (const auto lineIndex = getLineIndexByCharIndex(caret_index); lineIndex < 0) {
+                outPair.first.y = m_vline[0].y;
             } else {
-                pos.y = m_vline[lidx].y;
+                outPair.first.y = m_vline[lineIndex].y;
             }
         }
     }
 
-    pos /= m_pixRatio;  // convert to virtual pixels
-    return pos;
+    outPair.first /= m_pixRatio;  // convert to virtual pixels
+    return outPair;
 }
 
-int FontGlyphVector::jumpToLine(int caret_index, int line_delta) {
+int FontGlyphVector::jumpToLine(const int caret_index, const int line_delta) {
     int ci   = caret_index;
-    int lidx = getLineIndexByCharIndex(ci) + line_delta;
+    const int lidx = getLineIndexByCharIndex(ci) + line_delta;
 
     if (lidx < 0 || lidx >= static_cast<int>(m_vline.size())) {
         return ci;
     }
 
-    m_tCaretPos = getCaretPos(ci);
-    auto ve = m_vline[lidx].ptr[0];
+    m_tCaretPos = getCaretPosAndSize(ci).first;
+    const auto ve = m_vline[lidx].ptr[0];
 
     if (ve == nullptr || !m_vline[lidx].ptr[1]) {
         return ci;
@@ -261,8 +249,8 @@ int FontGlyphVector::jumpToLine(int caret_index, int line_delta) {
     return ci;
 }
 
-int FontGlyphVector::jumpToBeginOfLine(int caret_index) const {
-    auto lidx = getLineIndexByCharIndex(caret_index);
+int FontGlyphVector::jumpToBeginOfLine(const int caret_index) const {
+    const auto lidx = getLineIndexByCharIndex(caret_index);
 
     if (lidx < 0 || lidx >= static_cast<int>(m_vline.size())) {
         return caret_index;
@@ -275,8 +263,8 @@ int FontGlyphVector::jumpToBeginOfLine(int caret_index) const {
     return m_vline[lidx].ptr[0]->characterIdx;
 }
 
-int FontGlyphVector::jumpToEndOfLine(int caret_index) const {
-    auto lidx = getLineIndexByCharIndex(caret_index);
+int FontGlyphVector::jumpToEndOfLine(const int caret_index) const {
+    const auto lidx = getLineIndexByCharIndex(caret_index);
     if (lidx < 0 || lidx >= static_cast<int>(m_vline.size())) {
         return caret_index;
     }
@@ -312,7 +300,7 @@ bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, ali
     // resize the glyph vector to the size of the input string
     m_glyphs.resize(str.size() + 2);
 
-    auto vorig = par.ve = &m_glyphs[0];
+    const auto vorig = par.ve = &m_glyphs[0];
 
     for (par.textIt = par.text.begin(); par.textIt != par.text.end(); ++par.textIt) {
         UtfIterator iter(par.textIt);
@@ -362,7 +350,7 @@ Fontdglyph FontGlyphVector::addDGlyph(procPar &par, const vec2& offs, const vec2
         .size = size,
         .glyphPtr = g,
         .color = getCharColor(par),
-        .characterIdx = static_cast<int>(par.textIt - par.text.begin()),
+        .characterIdx = std::min(static_cast<int>(par.text.size()) -1, static_cast<int>(par.textIt - par.text.begin())),
         .pixRatio = m_pixRatio
     };
 }
@@ -371,8 +359,8 @@ vec4* FontGlyphVector::getCharColor(procPar& par) const {
     if (m_textColors.empty()) {
         return nullptr;
     }
-    auto absCharIdx = par.textIt - par.text.begin();
-    if (par.textColIt->first.y < absCharIdx) {
+
+    if (const auto absCharIdx = par.textIt - par.text.begin(); par.textIt != par.text.end() && par.textColIt->first.y < absCharIdx) {
         ++par.textColIt;
     }
     return &par.textColIt->second;
@@ -420,7 +408,7 @@ void FontGlyphVector::procSpace(procPar& par, Font* font) const {
     }
 }
 
-void FontGlyphVector::procChar(procPar& par, Font* font, bool word_wrap) {
+void FontGlyphVector::procChar(procPar& par, Font* font, const bool word_wrap) {
     if (!par.linep[0]) {
         par.linep[0] = par.linep[1] = par.ve;
     }
@@ -432,7 +420,7 @@ void FontGlyphVector::procChar(procPar& par, Font* font, bool word_wrap) {
         par.ws = par.ve;
     }
 
-    if (auto g  = font->getGlyph(par.charAsCodepoint)) {
+    if (const auto g  = font->getGlyph(par.charAsCodepoint)) {
         par.ve[0]  = addDGlyph(par, g->off[0], g->outpixsize, g);
         if (par.pos.x + par.ve[0].size.x >= par.l_size.x && word_wrap) {
             if (!par.fword.empty()) {
@@ -474,11 +462,11 @@ void FontGlyphVector::procChar(procPar& par, Font* font, bool word_wrap) {
 }
 
 /**  y and width are in hw pixels */
-Fontline *FontGlyphVector::addLine(const procPar& par, bool eol, int lineEndOffs) {
+Fontline *FontGlyphVector::addLine(const procPar& par, const bool eol, const int lineEndOffs) {
 
     auto p_begin = par.linep[0];
     auto p_end = par.linep[1] + lineEndOffs;
-    float y = par.pos.y;
+    const float y = par.pos.y;
     auto &inFword = par.fword;
     align text_align_x = par.text_align_x;
     float width = par.l_size.x;
@@ -497,7 +485,7 @@ Fontline *FontGlyphVector::addLine(const procPar& par, bool eol, int lineEndOffs
         return fline;
     }
 
-    float lw = p_end->pos.x - p_begin->pos.x;
+    const float lw = p_end->pos.x - p_begin->pos.x;
 
     m_vline.emplace_back(Fontline{p_begin, p_end, y, lw, p_begin->characterIdx, p_end->characterIdx, y - m_pixVMetrics[0],
                                   y - m_pixVMetrics[1], y - m_pixVMetrics[0],
@@ -507,16 +495,16 @@ Fontline *FontGlyphVector::addLine(const procPar& par, bool eol, int lineEndOffs
     if (text_align_x != align::left) {
         Fontdglyph *dg;
         if (text_align_x == align::center)  { // CENTER
-            float xo = width * 0.5f - lw * 0.5f;
-            for (auto &w : inFword) {
-                for (dg = w.ptr[0]; dg < w.ptr[1]; dg++) {
+            const float xo = width * 0.5f - lw * 0.5f;
+            for (const auto &[ptr, width, characterIdx] : inFword) {
+                for (dg = ptr[0]; dg < ptr[1]; dg++) {
                     dg->pos.x += xo;
                 }
             }
         } else if (text_align_x == align::right) {  // RIGHT
-            float xo = width - lw;
-            for (auto &w : inFword) {
-                for (dg = w.ptr[0]; dg < w.ptr[1]; dg++) {
+            const float xo = width - lw;
+            for (const auto &[ptr, width, characterIdx] : inFword) {
+                for (dg = ptr[0]; dg < ptr[1]; dg++) {
                     dg->pos.x += xo;
                 }
             }
@@ -528,7 +516,7 @@ Fontline *FontGlyphVector::addLine(const procPar& par, bool eol, int lineEndOffs
             }
 
             if (doit) {
-                float xo = 0;
+                const float xo = 0;
                 dg       = p_begin;
 
                 while (dg->charAsCodepoint <= 32 && dg < p_end) {
@@ -564,7 +552,7 @@ Fontline *FontGlyphVector::addLine(const procPar& par, bool eol, int lineEndOffs
                         }
 
                         if (nc > 0) {
-                            auto dx = (width - tx) / static_cast<float>(nc);
+                            const auto dx = (width - tx) / static_cast<float>(nc);
                             auto x  = xo;
 
                             for (dg = rr[0]; dg <= rr[1]; ++dg) {

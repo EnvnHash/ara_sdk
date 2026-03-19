@@ -15,7 +15,7 @@ namespace ara::UiUnitTest::LabelTest {
 TEST(UITest, SerializeLabelSaveAndReload) {
     registerDefaultUITypes();
 
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         auto root = app.getMainWindow()->getRootNode();
 
         auto& lbl = root->push<Label>(LabelPars{
@@ -35,7 +35,7 @@ TEST(UITest, SerializeLabelSaveAndReload) {
         root->saveAs("test.json");
         root->remove(lbl);
         root->load("test.json");
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "label_serialization_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 300);
@@ -44,10 +44,10 @@ TEST(UITest, SerializeLabelSaveAndReload) {
 TEST(UITest, SerializeLoadLabelTest) {
     registerDefaultUITypes();
 
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         auto root = app.getMainWindow()->getRootNode();
         root->load("SerializeFont.json");
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "label_serialization_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 300);

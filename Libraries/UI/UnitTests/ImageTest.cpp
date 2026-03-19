@@ -10,8 +10,8 @@ using namespace std;
 
 namespace ara::UiUnitTest::ImageTests {
 
-Image* addImage(UIApplication &app, const std::string& imageFile, const glm::ivec2& size={400,400},
-    const glm::vec4& bgCol = {0.5f, 0.2f, 0.2f, 1.f}, int mipMap=1) {
+Image* addImage(const UIApplication &app, const std::string& imageFile, const glm::ivec2& size={400,400},
+    const glm::vec4& bgCol = {0.5f, 0.2f, 0.2f, 1.f}, const int mipMap=1) {
     auto& img = app.getMainWindow()->getRootNode()->push<Image>();
     img.setImg(( std::filesystem::path("test") / imageFile).string(), mipMap);
     img.setSize(size.x, size.y);
@@ -21,9 +21,9 @@ Image* addImage(UIApplication &app, const std::string& imageFile, const glm::ive
 }
 
 TEST(UITest, ImageSingle) {
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         addImage(app, "test_img.jpg", {200,200}, {0.f, 0.f, 0.f, 0.f});
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 300);
@@ -32,10 +32,10 @@ TEST(UITest, ImageSingle) {
 /* mipmap calculations leads to pretty different results depending on hardware and OS
 TEST(UITest, ImageSingleLod) {
     Image* img;
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         img = addImage(app, "test_img.jpg", {400,400}, {0.f, 0.f, 0.f, 0.f}, 8);
         img->setLod(8);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_lod8.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
         img->setLod(3);
@@ -61,47 +61,47 @@ TEST(UITest, ImageSingleLod) {
 */
 
 TEST(UITest, ImageSingleFill) {
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         addImage(app, "test-tex.png")->setImgFlags(imgFlags::fill);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_fill.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 2);
     }, 500, 500);
 }
 
 TEST(UITest, ImageSingleScale) {
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         auto img = addImage(app, "test-tex.png");
         img->setImgFlags(imgFlags::scale);
         img->setImgScale(0.3f);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_scale_0_3.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 500, 500);
 }
 
 TEST(UITest, ImageSingleHFlip) {
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         addImage(app, "test-tex.png")->setImgFlags(imgFlags::hflip);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_hflip.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 500, 500);
 }
 
 TEST(UITest, ImageSingleVFlip) {
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         addImage(app, "test-tex.png")->setImgFlags(imgFlags::vflip);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_vflip.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 500, 500);
 }
 
 TEST(UITest, ImageSingleNoAspect) {
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         addImage(app, "test-tex.png")->setImgFlags(imgFlags::noAspect);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_single_no_aspect.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 500, 500);

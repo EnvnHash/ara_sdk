@@ -91,10 +91,8 @@ public:
 
     template <typename... Args>
     static void callWinAndGlobalHidCb(GLContext& ctx, winCb tp, Args&&... args) {
-        auto winMan = getThis(ctx);
-        if (winMan) {
-            auto winIt = winMan->m_winHidCbMap[tp].find(ctx);
-            if (winIt != winMan->m_winHidCbMap[tp].end()) {
+        if (auto winMan = getThis(ctx)) {
+            if (auto winIt = winMan->m_winHidCbMap[tp].find(ctx); winIt != winMan->m_winHidCbMap[tp].end()) {
                 resolveWinCbFunc<winHidCb>(winIt->second, args...);
             }
 
@@ -165,8 +163,8 @@ public:
     void                    setFixFocus(GLWindow *win) { m_fixFocusWin = win; }
     auto                    getFixFocus() const { return m_fixFocusWin; }
     void                    setAssetManager(AssetManager *res) { m_assetManager = res; }
-    auto                    getAssetManager() { return m_assetManager; }
-    [[maybe_unused]] auto   getMainThreadId() { return m_mainThreadId; }
+    auto                    getAssetManager() const { return m_assetManager; }
+    [[maybe_unused]] auto   getMainThreadId() const { return m_mainThreadId; }
     void                    setMainThreadId(std::thread::id inId) { m_mainThreadId = inId; }
     void                    setBreakEvtLoop(bool val) { m_breakEvtLoop = val; }
     [[maybe_unused]] auto   getGlobMouseLoopMtx() { return &m_globMouseLoopMtx; }

@@ -405,7 +405,7 @@ void Label::updateIndDrawData(const bool checkFontTex) {
             ld->pos         = m_modMvp * ld->aux1;
             ld->texCoord    = g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize;
             ld->color       = g.color ? *g.color : m_color;
-            ld->aux2.x      = m_texUnitArrayIndex;
+            ld->aux2.x      = static_cast<float>(m_texUnitArrayIndex);
             ld->aux2.y      = static_cast<float>(m_glFontPar.layerId);
             ld->aux2.z      = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
             ld->aux2.w      = m_zPos;

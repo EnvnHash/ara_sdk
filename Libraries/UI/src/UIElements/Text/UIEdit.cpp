@@ -93,7 +93,7 @@ void UIEdit::drawCaret(bool forceCaretVaoUpdt) {
             updtTree = true;
         }
 
-        auto tCaretPos = m_fontDGV.getCaretPos(m_caretIndex);
+        auto tCaretPos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
         tCaretPos = floor(tCaretPos + m_offset + m_alignOffset);
 
         // if there is no text, set the caret corresponding to the text format
@@ -161,14 +161,14 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
 
     // Calculate offset
     if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
-        auto cpos = m_fontDGV.getCaretPos(m_caretIndex);
+        const auto cpos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
         const float pa = m_riFont->getPixAscent();
 
         // resulting x-position
-        auto x1 = cpos.x + m_offset.x;
-        auto x2 = x1 + 2;
-        auto y1 = m_fontDGV.getFontLines(lidx).getYSelRange(0) + m_offset.y + pa;
-        auto y2 = m_fontDGV.getFontLines(lidx).getYSelRange(1) + m_offset.y + pa;
+        const auto x1 = cpos.x + m_offset.x;
+        const auto x2 = x1 + 2;
+        const auto y1 = m_fontDGV.getFontLines(lidx).getYSelRange(0) + m_offset.y + pa;
+        const auto y2 = m_fontDGV.getFontLines(lidx).getYSelRange(1) + m_offset.y + pa;
 
         // the beginning of the rendered text will be outside the mask add an
         // offset to move it into the non-mask area

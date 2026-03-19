@@ -115,10 +115,10 @@ public:
 
         onChanged<T>(prop, [this](const std::any &val) { setText(std::to_string(std::any_cast<T>(val))); });
         addEnterCb([&prop](const std::string &txt) {
-            prop = std::is_floating_point_v<T> ? static_cast<float>(atof(txt.c_str())) : atoi(txt.c_str());
+            prop = std::is_floating_point_v<T> ? static_cast<T>(atof(txt.c_str())) : atoi(txt.c_str());
         }, &prop);
         setOnLostFocusCb([this, &prop] {
-            prop = std::is_floating_point_v<T> ? static_cast<float>(atof(m_text.c_str())) : std::get<T>(m_value);
+            prop = std::is_floating_point_v<T> ? static_cast<T>(atof(m_text.c_str())) : std::get<T>(m_value);
         });
         setMinMax(prop.getMin(), prop.getMax());
         setStep(prop.getStep());

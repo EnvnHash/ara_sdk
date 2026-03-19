@@ -287,7 +287,7 @@ void AssetManager::callForChangesInFolderFiles() {
 
     // Check for new files...
     for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator(m_glbase->m_resRootPath)) {
-        if (const auto& filePath = file.path(); !m_resFolderFiles.contains( filePath.filename())) {
+        if (const auto& filePath = file.path(); !m_resFolderFiles.contains(filePath.filename().string())) {
             m_resFolderFiles[filePath.string()] = filesystem::last_write_time(file);
         }
     }
@@ -299,7 +299,7 @@ void AssetManager::callForChangesInFolderFiles() {
         for (auto &[file, modTime] : m_resFolderFiles) {
             const auto& p = filesystem::path(m_glbase->m_resRootPath) / file;
             if (!filesystem::exists(p)) {
-                m_resFolderFiles.erase(p);
+                m_resFolderFiles.erase(p.string());
                 keep = true;
                 break;
             }

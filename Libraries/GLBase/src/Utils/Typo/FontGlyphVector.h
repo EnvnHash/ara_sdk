@@ -42,7 +42,7 @@ public:
     unsigned     charAsCodepoint = 0;
     glm::vec2    pos{0.f};
     glm::vec2    size{0.f};
-    Fontglyph *glyphPtr   = nullptr;
+    Fontglyph   *glyphPtr   = nullptr;
     glm::vec4   *color      = nullptr;
     int32_t      characterIdx      = 0;  // character position in source string
     float        pixRatio = 0.f;
@@ -52,7 +52,7 @@ public:
 
 class Fontline {
 public:
-    std::array<Fontdglyph*, 2>    ptr{nullptr};  /// pointer to the first and last glyph in the line
+    std::array<Fontdglyph*, 2>      ptr{nullptr};  /// pointer to the first and last glyph in the line
     float                           y     = 0.f;
     float                           width = 0.f;
     std::array<int32_t, 2>          characterIdx{};
@@ -64,22 +64,22 @@ public:
 };
 
 struct Fontword {
-    std::array<Fontdglyph*, 2>    ptr{nullptr};
+    std::array<Fontdglyph*, 2>      ptr{nullptr};
     float                           width = 0.f;
     std::array<int32_t, 2>          characterIdx{};
 };
 
 struct procPar {
     glm::vec2                       pos{};
-    Fontdglyph                    *ws = nullptr;
-    Fontdglyph                    *ve = nullptr;
-    std::array<Fontdglyph*, 2>    linep{nullptr, nullptr};
+    Fontdglyph                      *ws = nullptr;
+    Fontdglyph                      *ve = nullptr;
+    std::array<Fontdglyph*, 2>      linep{nullptr, nullptr};
     uint8_t                         charAsCodepoint = 0;
     uint8_t                         lch = 0;
     float                           spheight = 0;
     std::string                     text;
     std::string::iterator           textIt;
-    std::vector<Fontword>         fword;
+    std::vector<Fontword>           fword;
     float                           lineheight = 0;
     align                           text_align_x{};
     glm::vec2                       sep{};
@@ -99,42 +99,43 @@ public:
                  bool word_wrap);  // text_align : see e_fontalign
 
     static void     glyphPtrCheck(procPar& par);
-    Fontdglyph    addDGlyph(procPar &par, const glm::vec2& offs, const glm::vec2& size, Fontglyph* g=nullptr) const;
+    Fontdglyph      addDGlyph(procPar &par, const glm::vec2& offs, const glm::vec2& size, Fontglyph* g=nullptr) const;
     glm::vec4*      getCharColor(procPar& par) const;
     void            procTab(procPar& p) const;
     void            procCrAndNl(procPar& par);
     void            procSpace(procPar& par, Font* font) const;
     void            procChar(procPar& par, Font* font, bool word_wrap);
 
-    unsigned        calculateBoundingBoxHwp(glm::vec4 &bb) const;  // bb vec4 / [x1,y1,x2,y2]
-    unsigned        calculateBoundingBox(glm::vec4 &bb) const;     // bb vec4 / [x1,y1,x2,y2]
-    glm::vec4       calculateBoundingBoxHwp() const;
-    glm::vec2       getPixSize() const;  ///> in virtual pixels
-    glm::vec2       getPixSizeHwp() const;
-    void            reset(const Font *font);
-    Fontdglyph    findByCharIndex(int idx) const;
-    int             getLineIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y);      // returns -1 : before, -2 : beyond
-    int             getLineIndexByCharIndex(int ch_index) const;  // returns -1 if not found
-    int             getCharIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y, int &off_bound);  // off_bound==-1 : before, off_bound=1 beyond
-    glm::vec2       getCaretPos(int caret_index) const;
+    unsigned                    calculateBoundingBoxHwp(glm::vec4 &bb) const;  // bb vec4 / [x1,y1,x2,y2]
+    unsigned                    calculateBoundingBox(glm::vec4 &bb) const;     // bb vec4 / [x1,y1,x2,y2]
+    [[nodiscard]] glm::vec4     calculateBoundingBoxHwp() const;
+    [[nodiscard]] glm::vec2     getPixSize() const;  ///> in virtual pixels
+    [[nodiscard]] glm::vec2     getPixSizeHwp() const;
+    void                        reset(const Font *font);
+    [[nodiscard]] Fontdglyph    findByCharIndex(int idx) const;
+    int                         getLineIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y);      // returns -1 : before, -2 : beyond
+    [[nodiscard]] int           getLineIndexByCharIndex(int ch_index) const;  // returns -1 if not found
+    int                         getCharIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y, int &off_bound);  // off_bound==-1 : before, off_bound=1 beyond
 
-    int jumpToLine(int caret_index, int line_delta);// returns new caret position, on error returns caret_index
-    int jumpToBeginOfLine(int caret_index) const;         // returns new caret position, on error returns caret_index
-    int jumpToEndOfLine(int caret_index) const;           // returns new caret position, on error returns caret_index
+    [[nodiscard]] std::pair<glm::vec2, glm::vec2> getCaretPosAndSize(int caret_index) const;
+
+    int                 jumpToLine(int caret_index, int line_delta);// returns new caret position, on error returns caret_index
+    [[nodiscard]] int   jumpToBeginOfLine(int caret_index) const;         // returns new caret position, on error returns caret_index
+    [[nodiscard]] int   jumpToEndOfLine(int caret_index) const;           // returns new caret position, on error returns caret_index
 
     auto& getGlyphs() { return m_glyphs; }
     [[nodiscard]] size_t size() const { return m_glyphs.size(); }
     Fontdglyph &operator[](size_t index) { return m_glyphs[index]; }
 
     auto& getFontLines() { return m_vline; }
-    auto& getFontLines(size_t idx) { return m_vline[idx]; }
+    auto& getFontLines(const size_t idx) { return m_vline[idx]; }
     float getRightLimit() { return (m_glyphs.back().pos[0] + m_glyphs.back().size[0]) / m_pixRatio; }
     auto& getTextColors() { return m_textColors; }
     auto& getLastTextColor() { return m_textColors.back(); }
-    void  setTabPixSize(float ts) { m_tabSize = ts * m_pixRatio; }
-    void  setPixRatio(float pixRatio) { m_pixRatio = pixRatio; }
-    void clearTextColors() { m_textColors.clear(); }
-    void addTextColor(const glm::ivec2& range, const glm::vec4& color) { m_textColors.emplace_back(std::make_pair(range, color)); }
+    void  setTabPixSize(const float ts) { m_tabSize = ts * m_pixRatio; }
+    void  setPixRatio(const float pixRatio) { m_pixRatio = pixRatio; }
+    void  clearTextColors() { m_textColors.clear(); }
+    void  addTextColor(const glm::ivec2& range, const glm::vec4& color) { m_textColors.emplace_back(range, color); }
 
     static int codepoint(const std::string& u);
 

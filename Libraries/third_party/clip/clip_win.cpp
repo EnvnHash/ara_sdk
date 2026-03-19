@@ -237,12 +237,13 @@ bool lock::impl::is_convertible(format f) const {
     return (IsClipboardFormatAvailable(CF_TEXT) ||
             IsClipboardFormatAvailable(CF_UNICODETEXT) ||
             IsClipboardFormatAvailable(CF_OEMTEXT));
-  } else if (f == image_format()) {
+  }
+  if (f == image_format()) {
     return (IsClipboardFormatAvailable(CF_DIB) ? true : false);
-  } else if (IsClipboardFormatAvailable(f))
+  }
+  if (IsClipboardFormatAvailable(f))
     return true;
-  else
-    return false;
+  return false;
 }
 
 bool lock::impl::set_data(format f, const char *buf, size_t len) {
@@ -250,7 +251,7 @@ bool lock::impl::set_data(format f, const char *buf, size_t len) {
 
   if (f == text_format()) {
     if (len > 0) {
-      int reqsize = MultiByteToWideChar(CP_UTF8, 0, buf, len, NULL, 0);
+      int reqsize = MultiByteToWideChar(CP_UTF8, 0, buf, len, nullptr, 0);
       if (reqsize > 0) {
         ++reqsize;
 

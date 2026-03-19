@@ -19,8 +19,8 @@ std::string testText = "HEADLINE:\n\nLorem ipsum dolor sit amet, consectetur adi
 
 std::string colorText = "HEADLINE:\n\nLorem ipsum dolor sit ##[120,0,255,255]amet, consectetur adipiscing elit. ##[0,0,255,255]Sed neque ligula, tristique euismod scelerisque ut, finibus id libero. ##[255,0,0,255]Praesent sagittis consectetur consequat. Integer et elit sed lorem finibus placerat in sit amet libero. Praesent sed nibh nec magna auctor aliquam quis ultrices sapien. ";
 
-auto& createStdTextBlock(UIApplication &app) {
-    auto root = app.getMainWindow()->getRootNode();
+auto& createStdTextBlock(const UIApplication &app) {
+    const auto root = app.getMainWindow()->getRootNode();
     return root->push<TextBlock>(UINodePars{
         .pos = ivec2{10,10},
         .size = ivec2{250,250},
@@ -41,11 +41,11 @@ TEST(UITest, DrawTextBlock) {
     };
 
     for (auto& [al, fl] : compareList) {
-        appBody([&](UIApplication &app) {
+        appBody([&](const UIApplication &app) {
             auto& tb = createStdTextBlock(app);
             tb.setText(testText);
             tb.setTextAlignX(al);
-        }, [&](UIApplication &app) {
+        }, [&](const UIApplication &app) {
             compareFrameBufferToImage(filesystem::current_path() / fl,
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
         }, 300, 300);
@@ -62,11 +62,11 @@ TEST(UITest, DrawTextBlockValign) {
     };
 
     for (auto& [al, fl] : compareList) {
-        appBody([&](UIApplication &app) {
+        appBody([&](const UIApplication &app) {
             auto& tb = createStdTextBlock(app);
             tb.setText(testText);
             tb.setTextAlign(align::left, al);
-        }, [&](UIApplication &app) {
+        }, [&](const UIApplication &app) {
             compareFrameBufferToImage(filesystem::current_path() / fl,
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
         }, 300, 300);
@@ -76,19 +76,19 @@ TEST(UITest, DrawTextBlockValign) {
 TEST(UITest, SelectAllTextBlockTest) {
     registerDefaultUITypes();
 
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         auto& tb = createStdTextBlock(app);
         tb.setText(testText);
         tb.setTextAlign(align::left, valign::center);
 
         // simulate double click
-        auto mainWin = app.getMainWindow();
+        const auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(100, 100, false, false, false);
         mainWin->onMouseUpLeft();
         mainWin->onMouseDownLeft(100, 100, false, false, false);
         mainWin->onMouseUpLeft();
 
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "textblock_select_all_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 300);
@@ -97,18 +97,18 @@ TEST(UITest, SelectAllTextBlockTest) {
 TEST(UITest, SelectTextBlockTest) {
     registerDefaultUITypes();
 
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         auto& tb = createStdTextBlock(app);
         tb.setText(testText);
         tb.setTextAlign(align::left, valign::center);
 
         // simulate selection
-        auto mainWin = app.getMainWindow();
+        const auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(150, 80, false, false, false);
         mainWin->onMouseMove(20, 200, 0);
         mainWin->onMouseUpLeft();
 
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "textblock_select_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 300);
@@ -118,17 +118,17 @@ TEST(UITest, SelectTextBlockTest) {
 TEST(UITest, TextBlockCopyTest) {
     registerDefaultUITypes();
 
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         auto& tb = createStdTextBlock(app);
         tb.setText(testText);
         tb.setTextAlign(align::left, valign::center);
 
         // simulate selection
-        auto mainWin = app.getMainWindow();
+        const auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(150, 80, false, false, false);
         mainWin->onMouseMove(20, 200, 0);
         mainWin->onMouseUpLeft();
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         // simulate ctrl +c
         app.getMainWindow()->onKeyDown(ARA_KEY_C, false, true, false);
 
@@ -141,10 +141,10 @@ TEST(UITest, TextBlockCopyTest) {
 #endif
 
 TEST(UITest, TextBlockColoredTest) {
-    appBody([&](UIApplication &app) {
+    appBody([&](const UIApplication &app) {
         auto& tb = createStdTextBlock(app);
         tb.setText(colorText);
-    }, [&](UIApplication &app) {
+    }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "textblock_colored_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 300);

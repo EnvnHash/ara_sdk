@@ -189,10 +189,8 @@ static float interpolVal(const float inInd, const int arraySize, const std::vect
 }
 
 static std::string formatFileTime(const std::filesystem::file_time_type& time) {
-    const auto sctp = std::chrono::file_clock::to_sys(time);
-    const std::time_t tt = std::chrono::system_clock::to_time_t(sctp);
     std::stringstream ss;
-    ss << std::put_time(std::localtime(&tt), "%Y-%m-%d %H:%M:%S");
+    ss << std::format("{}", time);
     return ss.str();
 }
 

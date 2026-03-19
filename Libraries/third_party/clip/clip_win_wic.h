@@ -96,7 +96,7 @@ bool write_png_on_stream(const image &image,
     return false;
 
   std::vector<uint32_t> buf;
-  uint8_t              *ptr           = (uint8_t *)image.data();
+  uint8_t              *ptr           = reinterpret_cast<uint8_t *>(image.data());
   int                   bytes_per_row = spec.bytes_per_row;
 
   // Convert to GUID_WICPixelFormat32bppBGRA if needed
@@ -105,11 +105,11 @@ bool write_png_on_stream(const image &image,
       spec.blue_mask != 0xff ||
       spec.alpha_mask != 0xff000000) {
     buf.resize(spec.width * spec.height);
-    uint32_t *dst = (uint32_t *)&buf[0];
-    uint32_t *src = (uint32_t *)image.data();
-    for (int y = 0; y < spec.height; ++y) {
+    uint32_t *dst = &buf[0];
+    uint32_t *src = reinterpret_cast<uint32_t *>(image.data());
+    for (int y = 0; y < static_cast<int>(spec.height); ++y) {
       auto src_line_start = src;
-      for (int x = 0; x < spec.width; ++x) {
+      for (int x = 0; x < static_cast<int>(spec.width); ++x) {
         uint32_t c = *src;
         *dst       = ((((c & spec.red_mask) >> spec.red_shift) << 16) |
                 (((c & spec.green_mask) >> spec.green_shift) << 8) |
@@ -118,9 +118,9 @@ bool write_png_on_stream(const image &image,
         ++dst;
         ++src;
       }
-      src = (uint32_t *)(((uint8_t *)src_line_start) + spec.bytes_per_row);
+      src = reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(src_line_start) + spec.bytes_per_row);
     }
-    ptr           = (uint8_t *)&buf[0];
+    ptr           = reinterpret_cast<uint8_t *>(&buf[0]);
     bytes_per_row = 4 * spec.width;
   }
 
