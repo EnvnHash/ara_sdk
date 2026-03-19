@@ -126,7 +126,7 @@ static std::string generateUUID() {
     return ss.str();
 }
 
-static float getRandF(float min, float max) {
+static float getRandF(const float min, const float max) {
     static std::random_device rd;          // Obtain a random number from hardware
     static std::mt19937 gen(rd());       // Seed the generator
     std::uniform_real_distribution<> dis(min, max); // Define the range
@@ -135,7 +135,7 @@ static float getRandF(float min, float max) {
 
 // calculates value in between the indices of an array
 // inInd ranges from 0.0f to arraySize
-static float interpolVal(float inInd, int arraySize, const float *array) {
+static float interpolVal(const float inInd, const int arraySize, const float *array) {
     float outVal   = 0.0f;
     auto lowerInd = static_cast<int>(std::floor(inInd));
     auto upperInd = static_cast<int>(std::min(static_cast<float>(lowerInd + 1), static_cast<float>(arraySize - 1)));
@@ -151,7 +151,7 @@ static float interpolVal(float inInd, int arraySize, const float *array) {
 
 // calculates value in between the indices of an array
 // index ranges from 0-1
-static float interpolVal2(float inInd, int arraySize, const float *array) {
+static float interpolVal2(const float inInd, const int arraySize, const float *array) {
     float outVal     = 0.0f;
     auto  fArraySize = static_cast<float>(arraySize);
     float fInd       = std::fmod(inInd, 1.0f) * (fArraySize - 1.0f);
@@ -170,7 +170,7 @@ static float interpolVal2(float inInd, int arraySize, const float *array) {
 
 // calculates value in between the indices of an array
 // enter index ranges from 0-1
-static float interpolVal(float inInd, int arraySize, const std::vector<float> *array) {
+static float interpolVal(const float inInd, const int arraySize, const std::vector<float> *array) {
     float outVal     = 0.0f;
     auto  fArraySize = static_cast<float>(arraySize);
     float fInd       = std::fmod(inInd, 1.0f) * (fArraySize - 1.0f);
@@ -189,11 +189,12 @@ static float interpolVal(float inInd, int arraySize, const std::vector<float> *a
 }
 
 static std::string formatFileTime(const std::filesystem::file_time_type& time) {
-    const auto sctp = std::chrono::clock_cast<std::chrono::system_clock>(time);
+    const auto sctp = std::chrono::file_clock::to_sys(time);
     const std::time_t tt = std::chrono::system_clock::to_time_t(sctp);
     std::stringstream ss;
     ss << std::put_time(std::localtime(&tt), "%Y-%m-%d %H:%M:%S");
     return ss.str();
 }
+
 
 }  // namespace ara
