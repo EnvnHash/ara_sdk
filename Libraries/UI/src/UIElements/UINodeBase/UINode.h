@@ -33,8 +33,8 @@ public:
     std::optional<glm::vec4> bgColor{};
     std::optional<std::string> name{};
     std::optional<std::string> style{};
-    std::optional<ara::align> align{};
-    std::optional<ara::valign> valign{};
+    std::optional<align> align{};
+    std::optional<valign> valign{};
     std::optional<uint32_t> borderWidth{};
     std::optional<uint32_t> borderRadius{};
     std::optional<glm::vec4> borderColor{};

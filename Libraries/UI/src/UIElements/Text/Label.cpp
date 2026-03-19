@@ -37,6 +37,7 @@ Label::Label(const LabelPars &initData) {
     setFontSize(initData.font_height);
     setAlignX(initData.align);
     setAlignY(initData.valign);
+    UINodeStyle::addStyleClass(initData.style);
 }
 
 void Label::loadStyleDefaults() {

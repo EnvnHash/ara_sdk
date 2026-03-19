@@ -7,6 +7,7 @@ namespace ara {
 class Button : public Label {
 public:
     Button();
+    explicit Button(const LabelPars& initData);
     Button(glm::vec2 pos, glm::vec2 size, glm::vec4 text_color, glm::vec4 bg_color, const std::string& text,
            std::pair<align, valign> align, const std::string& font_type, int font_height);
     ~Button() override = default;

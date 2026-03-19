@@ -13,14 +13,15 @@ class Font;
 struct LabelPars {
     glm::ivec2 pos{};
     glm::ivec2 size{};
-    ara::align align = align::left;
-    ara::valign valign = valign::top;
+    std::string style{};
+    align align = align::left;
+    valign valign = valign::top;
     glm::vec4 text_color{};
     glm::vec4 bg_color{};
     const std::string& text;
     ara::align text_align_x{};
     ara::valign text_align_y{};
-    const std::string& font_type;
+    std::string font_type = "regular";
     int font_height=0;
 };
 
