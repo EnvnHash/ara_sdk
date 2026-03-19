@@ -287,7 +287,7 @@ void AssetManager::callForChangesInFolderFiles() {
 
     // Check for new files...
     for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator(m_glbase->m_resRootPath)) {
-        if (auto filePath = file.path(); !m_resFolderFiles.contains( filePath.filename())) {
+        if (const auto& filePath = file.path(); !m_resFolderFiles.contains( filePath.filename())) {
             m_resFolderFiles[filePath.string()] = filesystem::last_write_time(file);
         }
     }
