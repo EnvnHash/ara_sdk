@@ -27,7 +27,7 @@ file(GLOB UI_UT_SRC
     TabTest.cpp
     TextBlockTest.cpp
     UIEditTest.cpp
-    WindowResizeTest.cpp
+    #WindowResizeTest.cpp ... requires mouse not be moved
     ZoomViewTest.cpp
 )
 

@@ -14,8 +14,8 @@ struct LabelPars {
     glm::ivec2 pos{};
     glm::ivec2 size{};
     std::string style{};
-    align align = align::left;
-    valign valign = valign::top;
+    ara::align align = align::left; // gcc fails without the namespace specification
+    ara::valign valign = valign::top;
     glm::vec4 text_color{};
     glm::vec4 bg_color{};
     const std::string& text;
