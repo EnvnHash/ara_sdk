@@ -21,21 +21,47 @@ public:
     void onResize() override;
 
     template <class T>
-    T* addTab(std::string title) {
-        return static_cast<T *>(addTab(title, std::make_shared<T>()));
+    T* addTab(const std::string& title) {
+        const UINodePars nodePars{};
+        return addTab<T>(title, nodePars);
     }
 
-    UINode* addTab(const std::string& title, std::shared_ptr<UINode> uinode);
-    void    clearTabs();
-    bool    setActivateTab(int idx);
-    void    setTabSelected(bool val, e_tab& tab) const;
+    template <class T>
+    T* addTab(const std::string& title, const UINodePars& nodePars) {
+        // be sure there is one row in the table
+        if (!m_tab(0).getCount()) {
+            m_tab(0).add(1);
+        }
 
-    virtual void setTabButBgColSelected(glm::vec4 col) { m_tabButtBgColSel = col; }
-    virtual void setTabButBgColDeSelected(glm::vec4 col) { m_tabButtBgColDeSel = col; }
+        m_tab(1).add(1);
+
+        auto& pushedNode = m_contentArea->push<T>(nodePars);
+        pushedNode.setVisibility(m_tab.empty());
+        auto& tab = addTabLabelButton(title);
+        auto& underline = addTabUnderline(tab);
+
+        // create a Tab Object, with the title, the content node and the Tab-Button
+        m_tab.emplace_back(e_tab{title, &pushedNode, &tab, &underline, m_tab.empty()});
+
+        arrangeTabs();
+        m_geoChanged = true;
+        return &pushedNode;
+    }
+
+    //UINode* addTab(const std::string& title, std::shared_ptr<UINode> uinode, UINodePars* nodePars=nullptr);
+
+    Button& addTabLabelButton(const std::string& title);
+    Div& addTabUnderline(Button& tab);
+    void clearTabs();
+    bool setActivateTab(int idx);
+    void setTabSelected(bool val, e_tab& tab) const;
+
+    virtual void setTabButBgColSelected(const glm::vec4 col) { m_tabButtBgColSel = col; }
+    virtual void setTabButBgColDeSelected(const glm::vec4 col) { m_tabButtBgColDeSel = col; }
     void         setTabSwitchCb(const std::function<void(size_t)>& f) { m_switchTabCb = f; }
 
 protected:
-    CellTable<e_tab> m_Tab;
+    CellTable<e_tab> m_tab;
 
     int m_TabHeight = 40;  // marco.g: again, this should be a value that we get from a global resource
     unsigned int m_selectedTab = 0;

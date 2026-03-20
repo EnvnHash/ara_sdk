@@ -27,6 +27,7 @@ TabView::TabView() {
     m_tabButtBgColSel   = vec4{.2f, .2f, .2f, 1.0f};
 }
 
+/*
 UINode* TabView::addTab(const std::string& title, std::shared_ptr<UINode> uinode) {
     // be sure there is one row in the table
     if (!m_Tab(0).getCount()) {
@@ -78,6 +79,39 @@ UINode* TabView::addTab(const std::string& title, std::shared_ptr<UINode> uinode
     }
 
     return nullptr;
+}*/
+
+Button& TabView::addTabLabelButton(const std::string& title) {
+    auto& tab = m_tabArea->push<Button>();
+    tab.setBackgroundColor(m_tabButtBgColDeSel);
+    tab.setFont("regular", 17, align::left, valign::center, textcolor);
+    tab.setPadding(5.f, 0.f, 5.f, 0.f);
+    tab.setText(title);
+    tab.setTextAlignX(align::center);
+    tab.setTextAlignY(valign::center);
+    tab.addMouseClickCb([this](const hidData& data) {
+        const auto ret = ranges::find_if(m_tabArea->children(), [&data](auto& item){
+            return std::dynamic_pointer_cast<UINode>(item)->getId() == data.objId;
+        });
+        if (ret != m_tabArea->children().end()) {
+            setActivateTab(static_cast<int32_t>(std::distance( m_tabArea->children().begin(), ret)));
+            setDrawFlag();
+            getSharedRes()->reqRedraw();
+        }
+    });
+    return tab;
+}
+
+Div& TabView::addTabUnderline(Button& tab) {
+    auto& underline = tab.push<Div>();
+    underline.setName("underline");
+    underline.setHeight(1);
+    underline.setAlign(align::center, valign::bottom);
+    underline.setBackgroundColor(m_sharedRes->colors->at(uiColors::blue));
+    underline.excludeFromPadding(true);
+    underline.excludeFromObjMap(true);
+    underline.setVisibility(false);
+    return underline;
 }
 
 void TabView::onResize() {
@@ -91,19 +125,19 @@ void TabView::onResize() {
 }
 
 void TabView::clearTabs() {
-    m_Tab.reset();
+    m_tab.reset();
     m_contentArea->clearChildren();
     m_tabArea->clearChildren();
 }
 
 void TabView::arrangeTabs() {
-    m_Tab.updateGeo(m_tabArea->getSize().x, m_tabArea->getSize().y, 0, 0, 0, 0, 5, 0);
+    m_tab.updateGeo(m_tabArea->getSize().x, m_tabArea->getSize().y, 0, 0, 0, 0, 5, 0);
 
     int            i = 0;
     Table_CellGeo cg;
 
-    for (auto&[title, ui_Node, tab, underline, selected] : m_Tab) {
-        if (m_Tab.getCellGeo(cg, i++)) {
+    for (auto&[title, ui_Node, tab, underline, selected] : m_tab) {
+        if (m_tab.getCellGeo(cg, i++)) {
             if (cg.pixSize[0] > 0) {
                 tab->setPos(static_cast<int>(cg.pixPos[0]), static_cast<int>(cg.pixPos[1]));
                 tab->setSize(static_cast<int>(cg.pixSize[0]), static_cast<int>(cg.pixSize[1]));
@@ -117,19 +151,19 @@ void TabView::arrangeTabs() {
 }
 
 bool TabView::setActivateTab(int idx) {
-    if (idx < 0 || idx >= m_Tab.getCellCount()) {
+    if (idx < 0 || idx >= m_tab.getCellCount()) {
         return false;
     }
 
     m_selectedTab = idx;
 
     // deselect all
-    for (auto& it : m_Tab) {
+    for (auto& it : m_tab) {
         setTabSelected(false, it);
     }
 
     // select the request tab
-    setTabSelected(true, m_Tab[idx]);
+    setTabSelected(true, m_tab[idx]);
 
     if (m_switchTabCb) {
         m_switchTabCb(idx);
