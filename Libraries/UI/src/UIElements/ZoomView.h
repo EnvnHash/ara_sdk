@@ -54,7 +54,7 @@ private:
     void mouseWheel(hidData& data) override;
     void scaleGest(hidData& data) override;
 
-    void dragContent(hidData& data);
+    void dragContent(hidData& data) const;
     void addWorkingArea();
     void addZoomSlider();
     void addResetButton();

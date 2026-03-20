@@ -24,6 +24,8 @@ public:
     void clearTabs();
     bool setActivateTab(int idx);
     void setTabSelected(bool val, e_tab& tab) const;
+    UINode* getTabByTitle(const std::string& str);
+    int32_t getTabIndexByTitle(const std::string& str);
 
     virtual void setTabButBgColSelected(const glm::vec4 col) { m_tabButtBgColSel = col; }
     virtual void setTabButBgColDeSelected(const glm::vec4 col) { m_tabButtBgColDeSel = col; }

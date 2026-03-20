@@ -95,7 +95,7 @@ void TabView::arrangeTabs() {
     m_preventArrangeFdbk = true;
 }
 
-bool TabView::setActivateTab(int idx) {
+bool TabView::setActivateTab(const int idx) {
     if (idx < 0 || idx >= m_tab.getCellCount()) {
         return false;
     }
@@ -117,11 +117,25 @@ bool TabView::setActivateTab(int idx) {
     return true;
 }
 
-void TabView::setTabSelected(bool val, e_tab& tab) const {
+void TabView::setTabSelected(const bool val, e_tab& tab) const {
     tab.selected = val;
     tab.tab->setColor(m_sharedRes->colors->at(val ? uiColors::blue : uiColors::white));
     tab.ui_Node->setVisibility(val);
     tab.underline->setVisibility(val);
+}
+
+UINode* TabView::getTabByTitle(const std::string& str) {
+    if (const auto r = std::ranges::find_if(m_tab, [&str](auto& tab) { return tab.title == str; }); r != m_tab.end()) {
+        return r->ui_Node;
+    }
+    return nullptr;
+}
+
+int32_t TabView::getTabIndexByTitle(const std::string& str) {
+    if (const auto r = std::ranges::find_if(m_tab, [&str](auto& tab) { return tab.title == str; }); r != m_tab.end()) {
+        return static_cast<int32_t>(std::distance(m_tab.begin(), r));
+    }
+    return -1;
 }
 
 }

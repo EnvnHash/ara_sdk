@@ -81,11 +81,11 @@ void ZoomView::addWorkingArea() {
     m_content = &m_workingArea->push<Div>({ .name = "ZoomViewContent" });
 }
 
-void ZoomView::dragContent(hidData& data) {
+void ZoomView::dragContent(hidData& data) const {
     // translate the working area view
     if (data.mousePressed && !data.altPressed && !data.shiftPressed) {
-        auto moved    = vec2(data.mousePos) - m_mouseDownPos;
-        auto resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(m_workingArea->getContentTransScale());
+        const auto moved    = vec2(data.mousePos) - m_mouseDownPos;
+        const auto resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(m_workingArea->getContentTransScale());
         m_workingArea->setContentTransTransl(resTrans.x, resTrans.y);
         setDrawFlag();
     }
@@ -94,7 +94,8 @@ void ZoomView::dragContent(hidData& data) {
 void ZoomView::addZoomSlider() {
     m_zoomSlider = &m_bottomMenu->push<PropSlider>({
         .bgColor = vec4{0.2f, 0.2f, 0.2f, 1.f},
-        .name = "ZoomViewZoomSlider"
+        .name = "ZoomViewZoomSlider",
+        .style = getStyleClass()+".slider",
     });
     m_zoomSlider->setSize(1.f - (m_showResetButton ? m_resetButtWidth + 0.01f : 0.f), m_bottMenHeight);
     m_zoomSlider->setProp(m_zoomProp);
@@ -102,12 +103,16 @@ void ZoomView::addZoomSlider() {
     m_zoomSlider->setPrecision(1);
     m_zoomSlider->setValueChgCb([this] { m_zoomUseWheel = false; });
     m_zoomSlider->setOnLostFocusCb([this] { getWindow()->setInputFocusNode(this, false); });
+    m_zoomSlider->getEdit()->addStyleClass(getStyleClass()+ ".edit");
+    m_zoomSlider->getLabel()->addStyleClass(getStyleClass()+ ".label");
+
 }
 
 void ZoomView::addResetButton() {
     m_resetZoom = &m_bottomMenu->push<Button>({
         .size = vec2{ m_resetButtWidth, 1.f },
         .bgColor = vec4{0.2f, 0.2f, 0.2f, 1.f},
+        .style = getStyleClass()+".resetButton",
         .align = align::right,
         .borderWidth = 1,
         .borderColor = vec4{0.8f, 0.8f, 0.8f, 1.f},

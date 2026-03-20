@@ -7,7 +7,7 @@ using namespace std;
 
 namespace ara {
 
-Slider::Slider() : Div() {
+Slider::Slider() {
     m_canReceiveDrag = true;
     setTypeName<Slider>();
     setName(getTypeName<Slider>());
@@ -42,9 +42,9 @@ void Slider::adjustKnob() {
 }
 
 void Slider::updateMatrix() {
-    bool chgd = m_geoChanged;
+    const bool changed = m_geoChanged;
     UINode::updateMatrix();
-    if (chgd) {
+    if (changed) {
         adjustKnob();
         m_knob->setX(m_normValue * m_maxDragWayRel);
     }
@@ -52,21 +52,21 @@ void Slider::updateMatrix() {
 
 UINode* Slider::addChild(std::shared_ptr<UINode> child) {
     m_children.emplace_back(std::move(child));
-    auto nd = dynamic_cast<UINode*>(children().back().get());
+    const auto node = dynamic_cast<UINode*>(children().back().get());
 
     // if there is a numeric view as a child, use it to display the value
     if (m_children.back()->name() == "NumericView") {
-        m_numView = nd;
+        m_numView = node;
     }
 
-    initChild(*nd, this);
+    initChild(*node, this);
 
     // if a value was set earlier, update now
     if (m_numView) {
         m_numView->setValue(getValue());
     }
 
-    return nd;
+    return node;
 }
 
 void SliderKnob::mouseDrag(hidData& data) {
@@ -77,8 +77,8 @@ void SliderKnob::mouseDrag(hidData& data) {
         m_dragStartValue = slid->getUnScaled(slid->getScaledNormValue());
     } else {
         // values from slider are scaled,
-        float relMove      = data.movedPix.x / slid->getMaxDragWay();
-        float newNormValue = std::min<float>(std::max<float>(m_dragStartValue + relMove, 0.f), 1.f);
+        const float relMove      = data.movedPix.x / slid->getMaxDragWay();
+        const float newNormValue = std::min<float>(std::max<float>(m_dragStartValue + relMove, 0.f), 1.f);
         slid->setValue(newNormValue);
 
         setDrawFlag();
@@ -87,51 +87,53 @@ void SliderKnob::mouseDrag(hidData& data) {
     data.consumed = true;
 }
 
-float Slider::getScaledVal(float in) {
+float Slider::getScaledVal(const float in) {
     if (m_scaling == sliderScale::slideLinear) {
         return in;
-    } else if (m_scaling == sliderScale::slidSquared) {
-        return std::sqrt(in);
-    } else if (m_scaling == sliderScale::slidSqrt) {
-        return in * in;
-    } else {
-        return 0.f;
     }
+    if (m_scaling == sliderScale::slidSquared) {
+        return std::sqrt(in);
+    }
+    if (m_scaling == sliderScale::slidSqrt) {
+        return in * in;
+    }
+
+    return 0.f;
 }
 
-float Slider::getUnScaled(float in) {
+float Slider::getUnScaled(const float in) {
     if (m_scaling == sliderScale::slideLinear) {
         return in;
-    } else if (m_scaling == sliderScale::slidSquared) {
-        return std::sqrt(in);
-    } else if (m_scaling == sliderScale::slidSqrt) {
-        return in * in;
-    } else {
-        return 0.f;
     }
+    if (m_scaling == sliderScale::slidSquared) {
+        return std::sqrt(in);
+    }
+    if (m_scaling == sliderScale::slidSqrt) {
+        return in * in;
+    }
+
+    return 0.f;
 }
 
 // absolute value has to be normalized internally
-void Slider::setAbsValue(float val) {
-    float c_val       = std::fmin(std::fmax(val, m_min), m_max);
+void Slider::setAbsValue(const float val) {
+    const float c_val = std::fmin(std::fmax(val, m_min), m_max);
     m_normValue       = (c_val - m_min) / (m_max - m_min);
     m_scaledNormValue = getScaledVal(m_normValue);
 
     if (m_maxDragWayRel != 0.f) {
         m_knob->setX(m_normValue * m_maxDragWayRel);
     }
-
     if (m_numView) {
         m_numView->setValue(getValue());
     }
-
     if (m_valueChangeCb) {
         m_valueChangeCb(getValue());
     }
 }
 
 // normalized value input 0-1
-void Slider::setValue(float val) {
+void Slider::setValue(const float val) {
     m_normValue       = val;
     m_scaledNormValue = getScaledVal(m_normValue);
     m_mappedValue     = val * (m_max - m_min) + m_min;
@@ -146,8 +148,8 @@ void Slider::setValue(float val) {
 }
 
 // normalized value input 0-1
-void Slider::setValuePtr(float* _val) {
-    m_normValue   = *_val;
+void Slider::setValuePtr(float* val) {
+    m_normValue   = *val;
     m_mappedValue = m_normValue * (m_max - m_min) + m_min;
     m_valueAsString = std::to_string(m_mappedValue);
 

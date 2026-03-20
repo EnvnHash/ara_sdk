@@ -15,7 +15,7 @@ PropSlider::PropSlider() {
     setFocusAllowed(false);
     setScissorChildren(true);
 
-    m_label = &push<Label>();
+    m_label = &push<Label>({ .style = getStyleClass()+ ".label" });
     m_label->setWidth(0.15f);
     m_label->setTextAlign(align::center, valign::center);
     m_label->setFontSize(20);
@@ -43,7 +43,7 @@ PropSlider::PropSlider() {
     m_slider->setNumEdit(m_edit);
 }
 
-void PropSlider::setProp(Property<glm::vec2>& prop, int idx) {
+void PropSlider::setProp(Property<vec2>& prop, int idx) {
     // update elements when property changes
     onChanged<glm::vec2>(prop, [this, &prop, idx](const std::any &val) {
         auto v = std::any_cast<glm::vec2>(val);

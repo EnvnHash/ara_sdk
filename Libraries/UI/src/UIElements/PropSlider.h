@@ -83,6 +83,7 @@ public:
     void setSliderOnMouseUpUpdtMode(bool val) { m_onMouseUpUpdtMode = val; }
     void setValueChgCb(const std::function<void()>& f) { m_valChangeCb = f; }
     [[nodiscard]] UIEdit* getEdit() const { return m_edit; }
+    [[nodiscard]] Label* getLabel() const { return m_label; }
 
 private:
     Label*                m_label             = nullptr;
