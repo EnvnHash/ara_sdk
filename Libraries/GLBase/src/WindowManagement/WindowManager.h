@@ -92,7 +92,7 @@ public:
     template <typename... Args>
     static void callWinAndGlobalHidCb(GLContext& ctx, winCb tp, Args&&... args) {
         if (auto winMan = getThis(ctx)) {
-            if (auto winIt = winMan->m_winHidCbMap[tp].find(ctx); winIt != winMan->m_winHidCbMap[tp].end()) {
+            if (const auto winIt = winMan->m_winHidCbMap[tp].find(ctx); winIt != winMan->m_winHidCbMap[tp].end()) {
                 resolveWinCbFunc<winHidCb>(winIt->second, args...);
             }
 

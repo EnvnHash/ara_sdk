@@ -266,9 +266,7 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
         // callback maps
         m_winHidCbMap[winCb::Key][win->getCtx()]      = [win](int p1, int p2, int p3, int p4) { win->onKey(p1, p2, p3, p4); };
         m_winHidCbMap[winCb::Char][win->getCtx()]     = std::function([win](unsigned int p1) { win->onChar(p1); });
-        m_winHidCbMap[winCb::MouseButton][win->getCtx()] = [win](int button, int action, int mods) {
-            win->onMouseButton(button, action, mods);
-        };
+        m_winHidCbMap[winCb::MouseButton][win->getCtx()] = [win](int button, int action, int mods) { win->onMouseButton(button, action, mods); };
         m_winHidCbMap[winCb::WindowClose][win->getCtx()]     = [win] { win->onWindowClose(); };
         m_winHidCbMap[winCb::WindowMaximize][win->getCtx()] = std::function([win](int maximized) { win->onWindowMaximize(maximized); });
         m_winHidCbMap[winCb::WindowIconify][win->getCtx()]  = std::function([win](int iconified) { win->onWindowIconify(iconified); });
@@ -284,7 +282,7 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
 #endif
         });
 
-        m_winHidCbMap[winCb::WindowSize][win->getCtx()] = std::function([win](int w, int h) {
+        m_winHidCbMap[winCb::WindowSize][win->getCtx()] = std::function([win](const int w, const int h) {
 #if defined(_WIN32) || defined(__linux__)
             win->onWindowSize(static_cast<int>(static_cast<float>(w) / win->getContentScale().x), static_cast<int>(static_cast<float>(h) / win->getContentScale().x));
 #else
@@ -437,7 +435,6 @@ void WindowManager::globalMouseCursorCb(GLContext ctx, double xpos, double ypos)
 
 void WindowManager::globalWindowSizeCb(GLContext ctx, int width, int height) {
     callWinAndGlobalHidCb(ctx, winCb::WindowSize, width, height);
-
 }
 
 void WindowManager::globalWindowCloseCb(GLContext ctx) {
@@ -455,14 +452,14 @@ void WindowManager::globalWindowIconifyCb(GLContext ctx, int flag) {
 void WindowManager::globalWindowFocusCb(GLContext ctx, int flag) {
     // get the window user pointer -> this is the GWindowManger instance, set
     // above in "addWin" method
-    auto winMan = getThis(ctx);
+    const auto winMan = getThis(ctx);
     if (!winMan) {
         return;
     }
 
-    auto winIt    = ranges::find_if(*winMan->getWindows(),
+    const auto winIt    = ranges::find_if(*winMan->getWindows(),
                                     [ctx](const auto &p) { return p->getCtx() == ctx; });
-    auto isWinMan = winIt != winMan->getWindows()->end();
+    const auto isWinMan = winIt != winMan->getWindows()->end();
 
     if (winMan->m_fixFocusWin && isWinMan && ctx != winMan->m_fixFocusWin->getCtx()) {
         GLWindow::focusWin(winMan->m_fixFocusWin->getCtx());
@@ -531,11 +528,10 @@ std::vector<std::pair<int, int>> WindowManager::getMonitorOffsets() {
 }
 
 [[maybe_unused]] GLFWvidmode const &WindowManager::getDispMode(unsigned int idx) const {
-    if (m_dispModes.size() > idx)
+    if (m_dispModes.size() > idx) {
         return m_dispModes[idx];
-    else {
-        return m_defaultDispMode;
     }
+    return m_defaultDispMode;
 }
 
 GLFWcursor *WindowManager::createMouseCursor(const std::string &file, float xHot, float yHot) const {
@@ -543,19 +539,19 @@ GLFWcursor *WindowManager::createMouseCursor(const std::string &file, float xHot
 
 #ifdef ARA_USE_FREEIMAGE
     std::vector<uint8_t> vp;
-    ara::AssetLoader::loadAssetToMem(vp, file);
+    AssetLoader::loadAssetToMem(vp, file);
     if (vp.empty()) {
         return nullptr;
     }
 
-    auto bitmap = FreeImage::Load(vp);
+    const auto bitmap = FreeImage::Load(vp);
     GLFWimage image;
     image.pixels    = FreeImage::GetBits(bitmap);
-    auto sz = FreeImage::GetSizeFromBitmap(bitmap);
+    const auto sz = FreeImage::GetSizeFromBitmap(bitmap);
     image.width     = static_cast<int>(sz[0]);
     image.height    = static_cast<int>(sz[1]);
 
-    auto c = glfwCreateCursor(&image,
+    const auto c = glfwCreateCursor(&image,
                               static_cast<int>(static_cast<float>(image.width) * xHot),
                               static_cast<int>(static_cast<float>(image.height) * yHot));
     FreeImage_Unload(bitmap);

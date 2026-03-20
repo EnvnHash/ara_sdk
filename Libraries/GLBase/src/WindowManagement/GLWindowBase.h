@@ -227,7 +227,7 @@ protected:
 
     WindowCallbacks m_callbacks;
     std::array<short int, ARA_KEY_LAST + 1>            m_scancodes{};
-    std::array<short int, 512>                          m_keycodes{};
+    std::array<short int, 512>                         m_keycodes{};
     std::array<char, ARA_KEY_LAST + 1>                 m_keys{};
     std::array<char, ARA_MOUSE_BUTTON_LAST + 1>        m_mouseButtons{};
     std::array<std::array<char, ARA_KEY_LAST + 1>, 5>  m_keynames{};

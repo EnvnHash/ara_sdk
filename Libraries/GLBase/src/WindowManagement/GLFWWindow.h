@@ -128,7 +128,7 @@ public:
     void         *getWin() override { return m_window; }
     GLFWwindow   *getCtx() const { return m_window; }
     GLFWmonitor **getMonitors() const { return m_monitors; }
-    GLFWmonitor  *getMonitor(int i) const { return m_monitors[i]; }
+    GLFWmonitor  *getMonitor(const int i) const { return m_monitors[i]; }
     int           getNrMonitors() const { return m_count; }
     uint32_t      getPosX() const override { return static_cast<int>(m_posVirt.x); }      /// in virtual pixels
     uint32_t      getPosY() const override { return static_cast<int>(m_posVirt.y); }      /// in virtual pixels
@@ -137,7 +137,7 @@ public:
     int           getFocus() const { return glfwGetWindowAttrib(m_window, GLFW_FOCUSED); }
     void*         getNativeCtx() override { return m_nativeHandle; }
     /// return virtual pixels
-    glm::ivec2    getLastMousePos();
+    glm::ivec2    getLastMousePos() const;
     glm::ivec2    getAbsMousePos() const;
 #ifdef _WIN32
     HWND  getHwndHandle() const { return m_hwndHandle; }

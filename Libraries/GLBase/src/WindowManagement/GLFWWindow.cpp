@@ -189,12 +189,12 @@ int GLFWWindow::init(const glWinPar &gp) {
         };
         glfwSetCharCallback(m_window, charCb);
 
-        auto mouseButCb = [](GLFWwindow *w, int button, int action, int mods) {
+        auto mouseButCb = [](GLFWwindow *w, const int button, const int action, const int mods) {
             static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onMouseButton(button, action, mods);
         };
         glfwSetMouseButtonCallback(m_window, mouseButCb);
 
-        auto scrollCb = [](GLFWwindow *w, double xpos, double ypos) {
+        auto scrollCb = [](GLFWwindow *w, const double xpos, const double ypos) {
             static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onScroll(xpos, ypos);
         };
         glfwSetScrollCallback(m_window, scrollCb);
@@ -204,23 +204,23 @@ int GLFWWindow::init(const glWinPar &gp) {
         };
         glfwSetWindowCloseCallback(m_window, windowCloseCb);
 
-        auto windowMaxCb = [](GLFWwindow *w, int flag) {
+        auto windowMaxCb = [](GLFWwindow *w, const int flag) {
             static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowMaximize(flag);
         };
         glfwSetWindowMaximizeCallback(m_window, windowMaxCb);
 
-        auto windowIconifyCb = [](GLFWwindow *w, int flag) {
+        auto windowIconifyCb = [](GLFWwindow *w, const int flag) {
             static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowIconify(flag);
         };
         glfwSetWindowIconifyCallback(m_window, windowIconifyCb);
 
-        auto windowFocusCb = [](GLFWwindow *w, int flag) {
+        auto windowFocusCb = [](GLFWwindow *w, const int flag) {
             static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowFocus(flag);
         };
         glfwSetWindowFocusCallback(m_window, windowFocusCb);
 
-        auto windowSizeCb = [](GLFWwindow *w, int width, int height) {
-            auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
+        auto windowSizeCb = [](GLFWwindow *w, const int width, const int height) {
+            auto const win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
 #if defined(_WIN32) || defined(__linux__)
             win->onWindowSize(static_cast<int>(static_cast<float>(width) / win->getContentScale().x),
                               static_cast<int>(static_cast<float>(height) / win->getContentScale().y));
@@ -230,8 +230,8 @@ int GLFWWindow::init(const glWinPar &gp) {
         };
         glfwSetWindowSizeCallback(m_window, windowSizeCb);
 
-        auto mouseCursorCb = [](GLFWwindow *w, double xpos, double ypos) {
-            auto win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
+        auto mouseCursorCb = [](GLFWwindow *w, const double xpos, const double ypos) {
+            auto const win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
 #if defined(_WIN32) || defined(__linux__)
             win->onMouseCursor(xpos / static_cast<double>(win->getContentScale().x), ypos / static_cast<double>(win->getContentScale().y));
 #else
@@ -249,7 +249,7 @@ int GLFWWindow::init(const glWinPar &gp) {
 void GLFWWindow::initFullScreen(const glWinPar &gp) {
     if (gp.debug) {
         for (int i = 0; i < m_count; i++) {
-            auto vm = glfwGetVideoMode(m_monitors[i]);
+            auto const vm = glfwGetVideoMode(m_monitors[i]);
             LOG << "monitor " << i << " " << glfwGetMonitorName(m_monitors[i]) << " current video mode: width: " << vm->width << " height: " << vm->height << " refreshRate: " << vm->refreshRate;
         }
     }
@@ -372,8 +372,8 @@ void GLFWWindow::initLibrary() {
     }
 }
 
-void GLFWWindow::runLoop(const std::function<bool(double, double, int)>& f, bool eventBased, bool terminateGLFW,
-                         bool destroyWinOnExit) {
+void GLFWWindow::runLoop(const std::function<bool(double, double, int)>& f, const bool eventBased,
+                         const bool terminateGLFW, const bool destroyWinOnExit) {
     m_drawFunc       = f;
     m_run            = true;
     m_eventBasedLoop = eventBased;
@@ -493,7 +493,7 @@ void GLFWWindow::destroy() {
     m_exitSema.notify();
 }
 
-void GLFWWindow::destroy(bool terminate) {
+void GLFWWindow::destroy(const bool terminate) {
     glfwDestroyWindow(m_window);
     if (terminate) {
         glfwTerminate();
@@ -501,8 +501,8 @@ void GLFWWindow::destroy(bool terminate) {
     m_exitSema.notify();
 }
 
-void GLFWWindow::resize(GLsizei width, GLsizei height)  {
-    bool unlock = m_drawMtx.try_lock();
+void GLFWWindow::resize(const GLsizei width, const GLsizei height)  {
+    const bool unlock = m_drawMtx.try_lock();
     glfwSetWindowSize(m_window, width, height);
     m_virtSize.x  = width;
     m_virtSize.y = height;
@@ -519,23 +519,23 @@ void GLFWWindow::focus() const {
 
 void GLFWWindow::removeMouseCursors() {
     if (m_window) {
-        for (auto it : m_mouseCursors | std::views::filter([](const auto it){ return it != nullptr; })) {
+        for (const auto it : m_mouseCursors | std::views::filter([](const auto item){ return item != nullptr; })) {
             glfwDestroyCursor(it);
         }
     }
 }
 
-void GLFWWindow::error_callback(int error, const char *description) {
+void GLFWWindow::error_callback(int, const char *description) {
     LOGE << "GLFW ERROR: " << description;
     fputs(description, stderr);
 }
 
 /// input in virtual pixels
-void GLFWWindow::setSize(int inWidth, int inHeight) {
-    m_virtSize.x  = inWidth;
-    m_virtSize.y = inHeight;
-    m_realSize.x  = static_cast<int>(static_cast<float>(inWidth) * m_contentScale.x);
-    m_realSize.y = static_cast<int>(static_cast<float>(inHeight) * m_contentScale.y);
+void GLFWWindow::setSize(const int width, const int height) {
+    m_virtSize.x  = width;
+    m_virtSize.y = height;
+    m_realSize.x  = static_cast<int>(static_cast<float>(width) * m_contentScale.x);
+    m_realSize.y = static_cast<int>(static_cast<float>(height) * m_contentScale.y);
 #ifdef __APPLE__
     glfwSetWindowSize(m_window, inWidth, inHeight);
 #else
@@ -559,20 +559,19 @@ void GLFWWindow::setPosition(int posx, int posy) {
     iterate();
 }
 
-glm::vec2 GLFWWindow::getDpi() {
+vec2 GLFWWindow::getDpi() {
 #ifdef __linux__
     auto   dpy = glfwGetX11Display();
     auto   scr = 0;
-    double dDisplayDPI_H, dDisplayDPI_V;
-    dDisplayDPI_H = (double)DisplayWidth(dpy, scr) / ((double)DisplayWidthMM(dpy, scr) / 25.4);
-    dDisplayDPI_V = (double)DisplayHeight(dpy, scr) / ((double)DisplayHeightMM(dpy, scr) / 25.4);
-    return glm::vec2{dDisplayDPI_H, dDisplayDPI_V};
+    double dDisplayDPI_H = static_cast<double>(DisplayWidth(dpy, scr)) / (static_cast<double>(DisplayWidthMM(dpy, scr)) / 25.4);
+    double dDisplayDPI_V = static_cast<double>(DisplayHeight(dpy, scr)) / (static_cast<double>(DisplayHeightMM(dpy, scr)) / 25.4);
+    return vec2{dDisplayDPI_H, dDisplayDPI_V};
 #else
-    return glm::vec2{92.f, 92.f};
+    return vec2{92.f, 92.f};
 #endif
 }
 
-glm::ivec2 GLFWWindow::getLastMousePos() {
+ivec2 GLFWWindow::getLastMousePos() const {
     double xpos, ypos;
     glfwGetCursorPos(m_window, &xpos, &ypos);
 #ifdef __APPLE__
@@ -617,7 +616,7 @@ double GLFWWindow::getFps() {
 
     m_lastTime = glfwGetTime();
 
-    if ((m_lastTime - lastPrintFps) > printFpsIntv) {
+    if (m_lastTime - lastPrintFps > printFpsIntv) {
         LOG << "FPS: " << 1.0 / m_medDt << " dt: " << m_medDt;
         lastPrintFps = m_lastTime;
     }
@@ -661,15 +660,15 @@ std::vector<std::pair<float, float>> GLFWWindow::getMonitorScales() {
     return m_monContScale;
 }
 
-glm::vec2 GLFWWindow::getPrimaryMonitorWindowContentScale() {
-    glm::vec2 contentScale{};
+vec2 GLFWWindow::getPrimaryMonitorWindowContentScale() {
+    vec2 contentScale{};
 
     if (!glfwInit()) {
         LOGE << "GLFW init failed!!!!";
         return {};
     }
 
-    auto window = glfwCreateWindow(50, 50, "", nullptr, nullptr);
+    const auto window = glfwCreateWindow(50, 50, "", nullptr, nullptr);
     if (!window) {
         LOGE << " GWindow ERROR creating window";
         return {};
