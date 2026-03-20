@@ -537,7 +537,7 @@ void GLFWWindow::setSize(const int width, const int height) {
     m_realSize.x  = static_cast<int>(static_cast<float>(width) * m_contentScale.x);
     m_realSize.y = static_cast<int>(static_cast<float>(height) * m_contentScale.y);
 #ifdef __APPLE__
-    glfwSetWindowSize(m_window, inWidth, inHeight);
+    glfwSetWindowSize(m_window, width, height);
 #else
     // glfw calls immediately the corresponding callback without passing through glfwWaitEvents
     glfwSetWindowSize(m_window, m_realSize.x, m_realSize.y);
