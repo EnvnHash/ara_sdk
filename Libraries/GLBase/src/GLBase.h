@@ -140,7 +140,7 @@ public:
     auto&   getLoopExitSema() { return m_loopExit; }
     auto&   perCtxQuads() { return m_perCtxQuad; }
 
-    std::string m_resRootPath    = "resdata";
+    std::string m_resRootPath; // must be an absolute path
     std::string m_resFile        = "res.txt";
     int32_t     m_hwDpi          = 96;
     float       m_androidDensity = 1.f;

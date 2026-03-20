@@ -33,14 +33,14 @@ void DemoView_Resources::init() {
     });
 
     auto& image = push<Image>({
-        .pos = ivec2{150,350},
+        .pos = ivec2{150,320},
         .size = ivec2{300,200},
         .style = "chtest.icon"
     });
     image.setSelected(isSelected());
 
-    auto& image2 = push<Image>({
-        .pos = ivec2{150,600},
+    push<Image>({
+        .pos = ivec2{150,540},
         .size = ivec2{300,200},
         .style = "one.but1"
     });

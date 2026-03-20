@@ -137,9 +137,9 @@ private:
     std::filesystem::file_time_type     m_resFileLastTime;
     bool                                m_loadState = false;
 
-    std::unordered_map<std::string, std::filesystem::file_time_type> m_resFolderFiles;
-    std::vector<e_file_bind>                                         m_fileBind;
+    std::unordered_map<std::string, std::filesystem::file_time_type> m_resFolderFiles; // resRootPath relative filename and modification time
 
+    std::vector<e_file_bind>                    m_fileBind;
     float                                       m_defaultColor[4] = {1, 1, 1, 1};
     std::mutex                                  m_updtMtx;
     std::unordered_map<std::string, e_font_lut> m_fontLUT;

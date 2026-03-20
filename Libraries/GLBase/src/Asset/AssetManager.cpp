@@ -184,11 +184,12 @@ bool AssetManager::checkForChangesInFolderFiles() {
     }
 
     filesystem::file_time_type ft;
-    const auto dataPath = AssetLoader::getAssetPath();
+    const auto dataPath = AssetLoader::getAssetPath(); // absolute path
 
     // check for file deletion or modification, stop at first change found
     for (auto &[filename, lastChangeTime] : m_resFolderFiles) {
         if (auto p = dataPath / filename; !std::filesystem::exists(p)) {
+            LOG << "AssetManager detected a file was deleted in the resource folder";
             return true;
         } else {
             try {
@@ -198,6 +199,7 @@ bool AssetManager::checkForChangesInFolderFiles() {
             }
 
             if (ft != lastChangeTime) {
+                LOG << "AssetManager detected a file was modified in the resource folder";
                 return true;
             }
         }
@@ -206,9 +208,7 @@ bool AssetManager::checkForChangesInFolderFiles() {
 }
 
 bool AssetManager::reload() {
-    ResNode::Ptr nroot;
-
-    nroot = std::make_unique<ResNode>("root", m_glbase);
+    auto nroot = std::make_unique<ResNode>("root", m_glbase);
     nroot->setAssetManager(this);
 
     SrcFile              srcFile(m_glbase);

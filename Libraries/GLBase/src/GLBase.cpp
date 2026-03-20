@@ -179,6 +179,9 @@ void GLBase::initToThisCtx() {
 /// </summary>
 void GLBase::initResources() {
     if (!m_assetManager) {
+        if (m_resRootPath.empty()) {
+            setResRootPath("resdata"); // default path
+        }
         m_assetManager = make_unique<AssetManager>(m_resRootPath, "res_comp", this);
         if (m_assetManager->load(m_resFile)) {
             LOG << "[OK] GLBase Resource file " << m_resRootPath + "/" + m_resFile << " loaded. "

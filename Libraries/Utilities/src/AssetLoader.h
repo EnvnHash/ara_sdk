@@ -67,7 +67,7 @@ public:
     }
 
 private:
-    static inline std::filesystem::path m_assetPath;
+    static inline std::filesystem::path m_assetPath; // must be absolute
 };
 
 }

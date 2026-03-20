@@ -236,7 +236,7 @@ styles {
 
 text_test {
     width: 450
-    height: 40
+    height: 30px
     y: 50
 	bkcolor:hsla(40,30,50, 0.5) 
 	text-color:hsla(190,100,50, 1.0) 
@@ -359,7 +359,7 @@ chtest {
 		width:100px
 		height:100px
 		x:0px
-		y:350px
+		y:320px
 		bkcolor:colors.lightBackground
 		
 		image:imageButText
