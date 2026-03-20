@@ -19,6 +19,15 @@ public:
     ~TabView() override = default;
 
     void onResize() override;
+    Button& addTabLabelButton(const std::string& title);
+    Div& addTabUnderline(Button& tab) ;
+    void clearTabs();
+    bool setActivateTab(int idx);
+    void setTabSelected(bool val, e_tab& tab) const;
+
+    virtual void setTabButBgColSelected(const glm::vec4 col) { m_tabButtBgColSel = col; }
+    virtual void setTabButBgColDeSelected(const glm::vec4 col) { m_tabButtBgColDeSel = col; }
+    void         setTabSwitchCb(const std::function<void(size_t)>& f) { m_switchTabCb = f; }
 
     template <class T>
     T* addTab(const std::string& title) {
@@ -47,18 +56,6 @@ public:
         m_geoChanged = true;
         return &pushedNode;
     }
-
-    //UINode* addTab(const std::string& title, std::shared_ptr<UINode> uinode, UINodePars* nodePars=nullptr);
-
-    Button& addTabLabelButton(const std::string& title);
-    Div& addTabUnderline(Button& tab);
-    void clearTabs();
-    bool setActivateTab(int idx);
-    void setTabSelected(bool val, e_tab& tab) const;
-
-    virtual void setTabButBgColSelected(const glm::vec4 col) { m_tabButtBgColSel = col; }
-    virtual void setTabButBgColDeSelected(const glm::vec4 col) { m_tabButtBgColDeSel = col; }
-    void         setTabSwitchCb(const std::function<void(size_t)>& f) { m_switchTabCb = f; }
 
 protected:
     CellTable<e_tab> m_tab;

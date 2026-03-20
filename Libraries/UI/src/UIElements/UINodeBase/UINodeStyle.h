@@ -49,7 +49,7 @@ public:
 
     void setSelectedCb(std::function<void(bool)> f) { m_selectedCb = std::move(f); }
     void setFontType(std::string fontType) { m_fontType = std::string(std::move(fontType)); }
-    void excludeFromStyles(bool val) { m_excludeFromStyles = val; }
+    void excludeFromStyles(const bool val) { m_excludeFromStyles = val; }
     void setState(state st);
     void setGlBase(GLBase* glbase);
     void setAlpha(float val);
