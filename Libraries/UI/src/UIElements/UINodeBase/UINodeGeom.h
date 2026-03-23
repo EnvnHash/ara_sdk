@@ -38,10 +38,10 @@ public:
 
     template <typename T>
     requires std::integral<T> || std::floating_point<T>
-    void setCoord(T coord, const coordComp comp, state st) {
+    void setCoord(T coord, const coordComp comp, const state st) {
         if (st == state::m_state || st == m_state) {
             if (comp == coordComp::x) {
-                if constexpr (std::is_same_v<T, int>) {
+                if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>) {
                     m_posXInt = coord;
                     m_posXType = unitType::Pixels;
                 } else if constexpr (std::is_same_v<T, float>) {
@@ -49,7 +49,7 @@ public:
                     m_posXType = unitType::Percent;
                 }
             } else {
-                if constexpr (std::is_same_v<T, int>) {
+                if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>) {
                     m_posYInt = coord;
                     m_posYType = unitType::Pixels;
                 } else if constexpr (std::is_same_v<T, float>) {
@@ -61,7 +61,7 @@ public:
         }
 
         std::string valueStr;
-        if constexpr (std::is_same_v<T, int>) {
+        if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>) {
             valueStr = std::to_string(coord) + "px";
         } else if constexpr (std::is_same_v<T, float>) {
             valueStr = std::to_string(coord * 100) + "%";
@@ -72,10 +72,10 @@ public:
 
     template <typename T>
     requires std::integral<T> || std::floating_point<T>
-    void setSizeComp(T val, const coordComp comp, state st) {
+    void setSizeComp(T val, const coordComp comp, const state st) {
         if (st == state::m_state || st == m_state) {
             if (comp == coordComp::x) {
-                if constexpr (std::is_same_v<T, int>) {
+                if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>) {
                     m_widthInt = val;
                     m_widthType = unitType::Pixels;
                 } else if constexpr (std::is_same_v<T, float>) {
@@ -83,7 +83,7 @@ public:
                     m_widthType = unitType::Percent;
                 }
             } else {
-                if constexpr (std::is_same_v<T, int>) {
+                if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>) {
                     m_heightInt = val;
                     m_heightType = unitType::Pixels;
                 } else if constexpr (std::is_same_v<T, float>) {
@@ -95,7 +95,7 @@ public:
         }
 
         std::string valueStr;
-        if constexpr (std::is_same_v<T, int>) {
+        if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, uint32_t>) {
             valueStr = std::to_string(val) + "px";
         } else if constexpr (std::is_same_v<T, float>) {
             valueStr = std::to_string(val * 100) + "%";
@@ -132,7 +132,7 @@ public:
         setCoord(pos.y, coordComp::y, st);
     }
 
-    virtual void       setZPos(float val) { m_zPos = val; }
+    virtual void       setZPos(const float val) { m_zPos = val; }
 
     /** set width in absolute pixels (int), in relative percentage (float) 0-1 **/
     template<typename T>
@@ -177,7 +177,7 @@ public:
     /** padding is the in the parent, the children read it from the parent's value when calculating their matrices */
     template<typename T>
     requires std::is_same_v<T, glm::vec4> || std::is_same_v<T, float>
-    void setPadding(const T& val, state st = state::m_state) {
+    void setPadding(const T& val, const state st = state::m_state) {
         if (st == state::m_state || st == m_state) {
             if constexpr (std::is_same_v<T, float>) {
                 m_padding = glm::vec4{val, val, val, val};
@@ -301,7 +301,7 @@ public:
     virtual glm::mat4*  getContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPadding = false);
     virtual glm::mat4*  getFlatContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPadding = false);
 
-    UISharedRes*        getSharedRes() { return m_sharedRes; }
+    UISharedRes*        getSharedRes() const { return m_sharedRes; }
     virtual void        setSharedRes(UISharedRes* shared);
 
     void                updateContentTransMat();
@@ -318,10 +318,10 @@ public:
     [[nodiscard]] bool  changed() const { return m_geoChanged; }
 
     // Bounding Box
-    bool setScissorChildren(bool on_off) { return (m_scissorChildren = on_off); }
+    bool setScissorChildren(const bool on_off) { return (m_scissorChildren = on_off); }
 
     /** get the bounding box around the children in parent relative coordinates
-     * (without the parent's transformation matrix) */
+     * (without the parent's transformation matrix). [0]: left/top x, [1]: left/top y, [2]: right/bottom x, [3]: right/bottom  */
     glm::vec4& getChildrenBoundBox() { return m_childBoundBox; }
 
     /** get the bounding box around the children in parent relative coordinates

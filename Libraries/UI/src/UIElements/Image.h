@@ -55,20 +55,20 @@ public:
     uint32_t        setImgFlags(imgFlags flags);
     void            setImgScale(float scale);
 
-    virtual void    setSizeToAspect(bool val) { m_sizeToAspect = val; }
-    virtual void    selectSection(int idx) { m_sectIndex = idx; }
+    virtual void    setSizeToAspect(const bool val) { m_sizeToAspect = val; }
+    virtual void    selectSection(const int idx) { m_sectIndex = idx; }
     void            setSizeChangeCb(std::function<void(int, int)> f) { m_sizeChangeCb = std::move(f); }
-    void            setSrcBlendFunc(GLenum bf) { m_srcBlendFunc = bf; }
-    void            setDstBlendFunc(GLenum bf) { m_dstBlendFunc = bf; }
-    void            setSrcBlendAlphaFunc(GLenum bf) { m_srcBlendAlphaFunc = bf; }
-    void            setDstBlendAlphaFunc(GLenum bf) { m_dstBlendAlphaFunc = bf; }
-    void            setSepBlendFunc(bool val) { m_sepBlendFunc = val; }
+    void            setSrcBlendFunc(const GLenum bf) { m_srcBlendFunc = bf; }
+    void            setDstBlendFunc(const GLenum bf) { m_dstBlendFunc = bf; }
+    void            setSrcBlendAlphaFunc(const GLenum bf) { m_srcBlendAlphaFunc = bf; }
+    void            setDstBlendAlphaFunc(const GLenum bf) { m_dstBlendAlphaFunc = bf; }
+    void            setSepBlendFunc(const bool val) { m_sepBlendFunc = val; }
     void            setLod(float val);
     void            setSectionSize(const glm::ivec2& sz) { m_secSize = sz; }
     void            setSectionSep(const glm::ivec2& sp) { m_secSep = sp; }
     void            setSectionPos(const glm::ivec2& pos) { m_secPos = pos; }
     void            setTextureSize(const glm::ivec2& tsz) { m_texSize = tsz; }
-    void            setZOffsPos(float z) { m_offsZPos = z; }
+    void            setZOffsPos(const float z) { m_offsZPos = z; }
 
     [[nodiscard]] AssetImageBase    *getImgBase() const { return m_imgBase; }
     [[nodiscard]] Texture           *getTexture() const { return m_tex; }
@@ -82,7 +82,7 @@ public:
     [[nodiscard]] int               getSectIdx() const { return m_sectIndex; }
     PBO                            *getUplPbo() { return &m_uplPbo; }
 
-    void            resizeUplPbo(int w, int h, GLenum format) { m_uplPbo.resize(w, h, format); }
+    void            resizeUplPbo(const int w, const int h, const GLenum format) { m_uplPbo.resize(w, h, format); }
     PingPongFbo    *getUplFbo() const;
     void            initUplPbo(int w, int h, GLenum format);
     void            initUplFbo(const FboInitParams& params);

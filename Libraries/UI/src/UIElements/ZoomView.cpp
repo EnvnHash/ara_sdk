@@ -86,6 +86,9 @@ void ZoomView::dragContent(hidData& data) const {
     if (data.mousePressed && !data.altPressed && !data.shiftPressed) {
         const auto moved    = vec2(data.mousePos) - m_mouseDownPos;
         const auto resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(m_workingArea->getContentTransScale());
+
+        LOG << glm::to_string(resTrans);
+
         m_workingArea->setContentTransTransl(resTrans.x, resTrans.y);
         setDrawFlag();
     }
@@ -120,11 +123,20 @@ void ZoomView::addResetButton() {
     m_resetZoom->setText("Reset");
 
     m_resetZoom->setClickedCb([this] {
-        m_workingArea->setContentTransTransl(0.f, 0.f);
-        m_workingArea->setContentTransScale(m_initZoomPropVal * 0.01f, m_initZoomPropVal * 0.01f);
-        m_zoomProp = m_initZoomPropVal;
-        setDrawFlag();
+        resetZoom();
     });
+}
+
+void ZoomView::resetZoom() {
+    m_zoomProp = m_initZoomPropVal;
+
+    if (m_centerAndScaleOnReset) {
+        scaleAndCenterContent();
+    } else {
+        m_workingArea->setContentTransTransl(0.f, 0.f);
+        m_workingArea->setContentTransScale(m_zoomProp() * 0.01f, m_zoomProp() * 0.01f);
+    }
+    setDrawFlag();
 }
 
 void ZoomView::checkForWorkingArea() {
@@ -157,7 +169,7 @@ void ZoomView::mouseWheel(hidData& data) {
     }
 #endif
     if (m_zoomProp) {
-        float newVal   = m_zoomProp() * 0.01f * (1.f + data.degrees * (data.ctrlPressed ? 0.01f : 0.1f));
+        const float newVal   = m_zoomProp() * 0.01f * (1.f + data.degrees * (data.ctrlPressed ? 0.01f : 0.1f));
         m_zoomUseWheel = true;
         m_zoomProp.setClamp(newVal * 100.f);
     }
@@ -168,7 +180,7 @@ void ZoomView::mouseWheel(hidData& data) {
 
 void ZoomView::scaleGest(hidData& data) {
     if (data.scaleFact != 0.f && m_zoomProp) {
-        float newVal   = m_zoomProp() * data.scaleFact;
+        const float newVal   = m_zoomProp() * data.scaleFact;
         m_zoomProp.setClamp(newVal);
         data.consumed = true;
         getSharedRes()->reqRedraw();
@@ -178,6 +190,21 @@ void ZoomView::scaleGest(hidData& data) {
 void ZoomView::keepContentWithinBoundaries(bool val) {
     checkForWorkingArea();
     m_workingArea->limitContentTrans(val);
+}
+
+void ZoomView::scaleAndCenterContent() {
+    if (!m_workingArea || !m_content) {
+        return;
+    }
+
+    const auto bb = m_content->getChildrenBoundBox();
+    const auto childBBSize = vec2(bb[2] - bb[0], bb[3] - bb[1]);
+    m_zoomProp = std::min(m_workingArea->getWinRelSize().x / childBBSize.x,
+                        m_workingArea->getWinRelSize().y / childBBSize.y) * m_centerAndScaleMargin * 100.f;
+
+    const auto diff = m_workingArea->getWinRelSize() - childBBSize;
+    m_workingArea->setContentTransTransl(diff.x * 0.5f, diff.y * 0.5f);
+    m_workingArea->setContentTransScale(m_zoomProp() * 0.01f, m_zoomProp() * 0.01f);
 }
 
 }  // namespace ara

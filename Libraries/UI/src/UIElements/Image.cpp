@@ -534,7 +534,7 @@ void Image::loadImg() {
             m_tex = nullptr;
         });
 
-        if (m_sizeToAspect && (getAspect() != m_texAspect)) {
+        if (m_sizeToAspect && getAspect() != m_texAspect) {
             setFixAspect(m_texAspect);
         }
 
@@ -553,7 +553,7 @@ void Image::setLod(float val) {
     m_drawParamChanged = true;
 }
 
-bool Image::setTexId(GLuint inTexId, int width, int height, int bitCount) {
+bool Image::setTexId(const GLuint inTexId, const int width, const int height, const int bitCount) {
     if (m_extTexWidth == width && m_extTexHeight == height && bitCount == m_extTexBitCount){
         return false;
     }
@@ -587,7 +587,7 @@ bool Image::setTexId(GLuint inTexId, int width, int height, int bitCount) {
     return true;
 }
 
-void Image::updateTexId(GLuint inTexId) {
+void Image::updateTexId(const GLuint inTexId) {
     if (inTexId != m_texId && m_imgDB.drawSet) {
         m_drawMan->replaceTexture(*m_imgDB.drawSet, static_cast<GLuint>(m_texUnit), m_texId);
         m_texId          = inTexId;
@@ -600,7 +600,7 @@ void Image::clearDs() {
     m_imgDB.drawSet = nullptr;
 }
 
-bool Image::isInBounds(glm::vec2& pos) {
+bool Image::isInBounds(vec2& pos) {
     if (!m_visible) {
         return false;
     }
@@ -650,7 +650,7 @@ void Image::rebuildUplFbo(const FboInitParams& params) {
     m_uplFbo = std::make_unique<PingPongFbo>(params);
 }
 
-void Image::initUplPbo(int w, int h, GLenum format) {
+void Image::initUplPbo(const int w, const int h, const GLenum format) {
     m_uplPbo.setSize(w, h);
     m_uplPbo.setFormat(format);
     m_uplPbo.init();
