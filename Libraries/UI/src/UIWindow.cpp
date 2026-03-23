@@ -146,7 +146,7 @@ void UIWindow::initUIWindow(const UIWindowParams& par) {
         return;
     }
 
-    m_winHandle->setDrawFunc([this](double time, double dt, int ctxNr) { return draw(time, dt, ctxNr); });
+    m_winHandle->setDrawFunc([this](const double time, const double dt, const int ctxNr) { return draw(time, dt, ctxNr); });
     initHidCallbacks();
 
     // double check if the requested size was accepted
@@ -563,7 +563,7 @@ void UIWindow::iterate() const {
 #endif
 }
 
-void UIWindow::getActualMonitorMaxArea(int win_xpos, int win_ypos) {
+void UIWindow::getActualMonitorMaxArea(const int win_xpos, const int win_ypos) {
 #ifdef ARA_USE_GLFW
     int           count;
     GLFWmonitor **monitors = glfwGetMonitors(&count);
@@ -584,7 +584,7 @@ void UIWindow::getActualMonitorMaxArea(int win_xpos, int win_ypos) {
 }
 
 /** HID callbacks called from the glfw event loop */
-void UIWindow::key_callback(int key, int scancode, int action, int mods) {
+void UIWindow::key_callback(const int key, int scancode, const int action, const int mods) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     int  outKey  = key;
     bool isAlt   = (key == ARA_KEY_LEFT_ALT) || (key == ARA_KEY_RIGHT_ALT);
@@ -599,7 +599,7 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
         { ARA_KEY_RIGHT, 20 },
     };
 
-    if (specialKeys.find(key) != specialKeys.end()) {
+    if (specialKeys.contains(key)) {
         outKey = specialKeys[key];
     }
 
@@ -650,7 +650,7 @@ void UIWindow::key_callback(int key, int scancode, int action, int mods) {
 #endif
 }
 
-void UIWindow::char_callback(unsigned int codepoint) {
+void UIWindow::char_callback(const unsigned int codepoint) {
     WindowBase::osChar(codepoint);
     iterate();
 }
@@ -658,7 +658,7 @@ void UIWindow::char_callback(unsigned int codepoint) {
 /** input in virtual pixels. The inconsistency between windows and osx (Windows
  * returns real pixels, macOS returns virtual (hdpi independent) pixels) is
  * fixed for GLFWWindows before this method is called **/
-void UIWindow::cursor_callback(double xpos, double ypos) {
+void UIWindow::cursor_callback(const double xpos, const double ypos) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     m_lastMouseX = xpos;
     m_lastMouseY = ypos;
@@ -672,7 +672,7 @@ void UIWindow::cursor_callback(double xpos, double ypos) {
 #endif
 }
 
-void UIWindow::mouseBut_callback(int button, int action, int mods) {
+void UIWindow::mouseBut_callback(const int button, const int action, const int mods) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
 
 #ifdef ARA_USE_GLFW
@@ -741,7 +741,7 @@ void UIWindow::window_pos_callback(int xpos, int ypos) {
 
 void UIWindow::window_maximize_callback(int maximized) {
     WindowBase::osMaximize([this] {
-        ivec2 actWinSize = getSize();
+        const auto actWinSize = getSize();
         setMonitorMaxArea(0, 0, actWinSize.x, actWinSize.y);
     });
     iterate();
@@ -769,7 +769,7 @@ void UIWindow::window_minimize_callback(int iconified) {
         }
 
         // if the mainwindow was restored, be sure that in case there is any
-        // modal dialog present, it also get's restored
+        // modal dialog present, it also gets restored
         if (!iconified && getApplicationHandle() && getApplicationHandle()->getMainWindow() == this)
             for (auto &w : *getApplicationHandle()->getUIWindows()) {
                 if (w->isModal() && w->getWinHandle()->isMinimized()) {
@@ -795,7 +795,7 @@ void UIWindow::window_minimize_callback(int iconified) {
 
 void UIWindow::window_focus_callback(int focused) {}
 
-void UIWindow::window_size_callback(int width, int height) {
+void UIWindow::window_size_callback(const int width, const int height) {
     WindowBase::osSetViewport(0, 0, width, height);
     iterate();
 }
@@ -816,7 +816,7 @@ void UIWindow::window_refresh_callback() {
 
 /** HID callbacks, called from the gl draw loop */
 
-void UIWindow::onKeyDown(int key, bool shiftPressed, bool ctrlPressed, bool altPressed) {
+void UIWindow::onKeyDown(const int key, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
     if (key == ARA_KEY_O && shiftPressed) {
         m_showObjMap = !m_showObjMap;
         m_sharedRes.setDrawFlag();

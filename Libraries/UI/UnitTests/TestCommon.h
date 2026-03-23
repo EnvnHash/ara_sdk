@@ -29,13 +29,16 @@ static void stdAppSetup(ara::UIApplication& app, int width, int height, bool ena
 
 static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
                     const std::function<void(ara::UIApplication&)>& verifyFunc,
-                    int width=1280, int height=720,
+                    const int width=1280, const int height=720,
                     const std::function<void(ara::UIApplication&)>& postInitFunc=nullptr,
-                    bool enableMenuAndResizeHandles=false) { // width and height are in hardware pixels (non-scaled)
+                    const bool enableMenuAndResizeHandles=false) { // width and height are in hardware pixels (non-scaled)
     ara::UIApplication app;
     stdAppSetup(app, width, height, enableMenuAndResizeHandles);
 
     app.initSingleThreaded([&]{
+        app.getMainWindow()->getWinHandle()->setIsInited(true);
+        app.getMainWindow()->getWinHandle()->setIsRunning(true);
+
         drawFunc(app);
 
         EXPECT_EQ(ara::postGLError(), GL_NO_ERROR);
@@ -43,6 +46,8 @@ static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
         app.getMainWindow()->swap();
 
         verifyFunc(app);
+
+        app.getMainWindow()->getWinHandle()->setIsRunning(false);
         app.setRunFlag(false); // for debugging comment this line in order to have to window stay
     });
 
@@ -91,7 +96,7 @@ static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFun
     appBody(drawFunc, verifyFunc, width, height, postVerifyFunc);
 }
 
-static std::vector<GLubyte> getPixels(int x, int y, uint32_t width, uint32_t height) {
+static std::vector<GLubyte> getPixels(const int x, const int y, const uint32_t width, const uint32_t height) {
     std::vector<GLubyte> data(width * height * 4);	// make some space to download
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -99,7 +104,7 @@ static std::vector<GLubyte> getPixels(int x, int y, uint32_t width, uint32_t hei
     return data;
 }
 
-static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesystem::path& p, uint32_t width, uint32_t height, uint8_t eps) {
+static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesystem::path& p, uint32_t width, const uint32_t height, uint8_t eps) {
     if (!std::filesystem::exists(p)) {
         LOGE << "compareBitmaps error, couldn't load " << p.string();
         return;
@@ -142,7 +147,7 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
     };
 }
 
-static void compareFrameBufferToImage(const std::filesystem::path& p, uint32_t width, uint32_t height, uint8_t eps=0) {
+static void compareFrameBufferToImage(const std::filesystem::path& p, const uint32_t width, const uint32_t height, const uint8_t eps=0) {
     auto data = getPixels(0, 0, width, height);
     compareBitmaps(data, p, width, height, eps);
 }
@@ -152,13 +157,13 @@ struct checkPix {
     glm::vec4 col{};
 };
 
-static void checkVals(const std::vector<GLubyte>& data, ara::GLWindow* mainWin, const std::vector<checkPix>& cv) {
-    for (auto &it : cv) {
-        auto ptr = (it.pos.x + it.pos.y * mainWin->getWidthReal()) * 4;
-        ASSERT_EQ(data[ptr], static_cast<GLubyte>(it.col.r * 255));
-        ASSERT_EQ(data[ptr +1], static_cast<GLubyte>(it.col.g * 255));
-        ASSERT_EQ(data[ptr +2], static_cast<GLubyte>(it.col.b * 255));
-        ASSERT_EQ(data[ptr +3], static_cast<GLubyte>(it.col.a * 255));
+static void checkVals(const std::vector<GLubyte>& data, const ara::GLWindow* mainWin, const std::vector<checkPix>& cv) {
+    for (const auto &[pos, col] : cv) {
+        const auto ptr = (pos.x + pos.y * mainWin->getWidthReal()) * 4;
+        ASSERT_EQ(data[ptr], static_cast<GLubyte>(col.r * 255));
+        ASSERT_EQ(data[ptr +1], static_cast<GLubyte>(col.g * 255));
+        ASSERT_EQ(data[ptr +2], static_cast<GLubyte>(col.b * 255));
+        ASSERT_EQ(data[ptr +3], static_cast<GLubyte>(col.a * 255));
     }
 }
 
@@ -167,17 +172,17 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
     auto data = getPixels(0, 0, win->getWidthReal(), win->getHeightReal());
 
     // convert from virtual to hardware pixels
-    glm::ivec2 size { win->virt2RealX(virtSize.x) -1, win->virt2RealY(virtSize.y) -1 };
+    const glm::ivec2 size { win->virt2RealX(virtSize.x) -1, win->virt2RealY(virtSize.y) -1 };
     glm::ivec2 pos { win->virt2RealX(virtPos.x), win->virt2RealY(virtPos.y) };
 
-    std::array<glm::ivec2, 4> edges {
+    const std::array<glm::ivec2, 4> edges {
         pos,                        // left-top
         { pos.x + size.x, pos.y },  // right-top
         { pos.x, pos.y + size.y },  // left-bottom,
         pos + size                  // right-bottom
     };
 
-    std::array edgeOffsets {
+    const std::array edgeOffsets {
         std::array{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0, -1 } },   // left-top
         std::array{ glm::ivec2{  1, 0 }, glm::ivec2{ 0, -1 } },   // right-top
         std::array{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0,  1 } },   // left-bottom,
@@ -189,8 +194,7 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
     for (auto i=0; i<edges.size(); ++i) {
         checkPixels.emplace_back(checkPix{edges[i], col});
         for (auto j=0; j<2; ++j) {
-            auto p = edges[i] + edgeOffsets[i][j];
-            if (p.x > 0 && p.y > 0 && p.x < static_cast<float>(win->getWidthReal()) && p.y < static_cast<float>(win->getHeightReal())) {
+            if (auto p = edges[i] + edgeOffsets[i][j]; p.x > 0 && p.y > 0 && p.x < static_cast<float>(win->getWidthReal()) && p.y < static_cast<float>(win->getHeightReal())) {
                 checkPixels.emplace_back(checkPix{p, backCol});
             }
         }

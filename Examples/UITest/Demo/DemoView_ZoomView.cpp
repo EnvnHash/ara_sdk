@@ -10,7 +10,7 @@ using namespace ara;
 using namespace glm;
 using namespace std;
 
-DemoView_ZoomView::DemoView_ZoomView() : DemoView("Zoom view", glm::vec4(.1f,.1f,.1f,1.f)) {
+DemoView_ZoomView::DemoView_ZoomView() : DemoView("Zoom view", vec4(.1f,.1f,.1f,1.f)) {
     setName(getTypeName<DemoView_ZoomView>());
 }
 

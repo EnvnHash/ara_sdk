@@ -107,4 +107,26 @@ TEST(UITest, ImageSingleNoAspect) {
     }, 500, 500);
 }
 
+TEST(UITest, ImageReloadTest) {
+    Image* img = nullptr;
+    appBody([&](const UIApplication &app) {
+        img = addImage(app, "test_img.jpg", {200,200}, {0.f, 0.f, 0.f, 0.f});
+
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
+
+        compareFrameBufferToImage(filesystem::current_path() / "image_single.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+
+        img->setImg(( std::filesystem::path("test") / "test-tex.png").string());
+        img->reload();
+
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "image_reloaded.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
+    }, 300, 300);
+}
+
 }

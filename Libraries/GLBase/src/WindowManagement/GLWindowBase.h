@@ -146,6 +146,8 @@ public:
     void setCloseCb(const std::function<void()>& f) { m_closeCb = f; }
     void setWindowRefreshCb(const std::function<void()>& f) { m_windowRefreshCb = f; }
     std::function<bool(double, double, int)> &getDrawFunc() { return m_drawFunc; }
+    void setIsRunning(const bool val) { m_run = val; }
+    void setIsInited(const bool val) { m_initSignaled = val; }
 
     int                 getKeyScancode(int key)  const { return m_scancodes[key]; }
     virtual uint32_t    getWidth() const { return m_virtSize.x; }

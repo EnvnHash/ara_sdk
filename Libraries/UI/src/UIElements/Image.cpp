@@ -11,6 +11,7 @@
 #include <GLBase.h>
 #include <UISharedRes.h>
 #include <Shaders/ShaderCollector.h>
+#include <UIWindow.h>
 
 using namespace std;
 using namespace glm;
@@ -205,7 +206,7 @@ void Image::setFillToNodeSize(bool val, const state st) {
     setStyleInitVal("img-flags", "no-aspect", st);
 }
 
-void Image::setObjUsesTexAlpha(bool val) {
+void Image::setObjUsesTexAlpha(const bool val) {
     m_objUsesTexAlpha = val;
     Image::updateDrawData();
 }
@@ -539,9 +540,9 @@ void Image::loadImg() {
             m_sizeChangeCb(static_cast<int>(m_tex->getWidth()), static_cast<int>(m_tex->getHeight()));
         }
 
-        if (m_drawImmediate) {
+       // if (m_drawImmediate) {
             Image::updateDrawData();
-        }
+        //}
     }
 }
 
@@ -630,6 +631,10 @@ void Image::reload() {
         return;
     }
     loadImg();
+    if (getParent()) {
+        getParent()->reqTreeChanged(true);
+    }
+    getWindow()->update();
 }
 
 PingPongFbo *Image::getUplFbo() const {

@@ -48,7 +48,7 @@ public:
         p.glbase        = &m_glbase;
 
         m_uiWindows.emplace_back(std::make_unique<T>(p));
-        auto newWindow = m_uiWindows.back().get();
+        const auto newWindow = m_uiWindows.back().get();
         if (newWindow->getProcSteps()) {
             newWindow->getProcSteps()->at(Draw).active = true;
         }
