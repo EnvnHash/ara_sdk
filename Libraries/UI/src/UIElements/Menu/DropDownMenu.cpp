@@ -31,7 +31,7 @@ DropDownMenu::~DropDownMenu() {
 
 void DropDownMenu::init() {
     // create the button in the MenuBar which by clicked will expand the EntryList
-    m_menuEntryButt = &push<Button>();
+    m_menuEntryButt = &push<Button>({ .style = getStyleClass()+".button"});
     m_menuEntryButt->setText(m_menuEntryName);
     m_menuEntryButt->setTextAlignX(align::left);
     m_menuEntryButt->setBorderWidth(1);
@@ -163,7 +163,7 @@ void DropDownMenu::rebuildEntryList() {
 
     int i = 0;
     for (const auto& entry : m_entries) {
-        auto& butt = m_entryList->push<Button>();
+        auto& butt = m_entryList->push<Button>({ .style = getStyleClass() + ".list.button" });
         m_entryButts.emplace_back(&butt);  // maintain a separate list of entry button since m_entries
                                        // may contain other elements
 

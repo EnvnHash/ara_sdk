@@ -21,6 +21,7 @@ public:
     void addEntry(const std::string& name, const std::function<void()>& f) {
         m_entries.emplace_back(name, f);
     }
+
     virtual void setMenuName(const std::string& str);
 
 protected:
