@@ -87,8 +87,6 @@ void ZoomView::dragContent(hidData& data) const {
         const auto moved    = vec2(data.mousePos) - m_mouseDownPos;
         const auto resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(m_workingArea->getContentTransScale());
 
-        LOG << glm::to_string(resTrans);
-
         m_workingArea->setContentTransTransl(resTrans.x, resTrans.y);
         setDrawFlag();
     }
