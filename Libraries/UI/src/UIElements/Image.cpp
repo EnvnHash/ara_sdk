@@ -303,7 +303,6 @@ void Image::updateDrawData() {
                 dIt->aux0.z = v.x;
                 dIt->aux0.w = v.y;
             } else {
-                //dIt->pos = m_mvp * vec4(m_nPos + v, 0.f, 1.f);
                 dIt->pos = m_mvp * vec4(it * m_size, 0.f, 1.0);
 
                 dIt->aux0.x = uv.x;
@@ -488,10 +487,8 @@ void Image::bindTexture(uint32_t& objId) {
     } else if (m_imgBase) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_imgBase->getTexID());
-    } else {
-        if (m_tex && !m_useTexId) {
-            m_tex->bind(0);
-        }
+    } else if (m_tex) {
+        m_tex->bind(0);
     }
 }
 
@@ -548,7 +545,7 @@ void Image::loadImg() {
     }
 }
 
-void Image::setLod(float val) {
+void Image::setLod(const float val) {
     m_lod = val;
     m_drawParamChanged = true;
 }
@@ -589,7 +586,7 @@ bool Image::setTexId(const GLuint inTexId, const int width, const int height, co
 
 void Image::updateTexId(const GLuint inTexId) {
     if (inTexId != m_texId && m_imgDB.drawSet) {
-        m_drawMan->replaceTexture(*m_imgDB.drawSet, static_cast<GLuint>(m_texUnit), m_texId);
+        DrawManager::replaceTexture(*m_imgDB.drawSet, static_cast<GLuint>(m_texUnit), m_texId);
         m_texId          = inTexId;
         m_drawParamChanged = true;
     }

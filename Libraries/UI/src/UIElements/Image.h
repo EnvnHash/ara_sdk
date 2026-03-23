@@ -81,6 +81,7 @@ public:
     int                            *getImgBasePos() { return m_ppos; }
     [[nodiscard]] int               getSectIdx() const { return m_sectIndex; }
     PBO                            *getUplPbo() { return &m_uplPbo; }
+    const std::string&              getImgFilePath() { return m_imageFile; }
 
     void            resizeUplPbo(const int w, const int h, const GLenum format) { m_uplPbo.resize(w, h, format); }
     PingPongFbo    *getUplFbo() const;
