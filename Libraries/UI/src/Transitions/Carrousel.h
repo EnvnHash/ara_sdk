@@ -41,7 +41,7 @@ public:
     void show(int32_t, bool animate = true);
     void show(const std::string& name) override {};
     void showSelector(bool val) const;
-    void showArrows(bool val);
+    void showArrows(bool val) const;
     void setMode(CarrouselMode m) { m_carMode = m; }
     void setSpacing(int32_t val) { m_spacing = val; }
     void setInset(int32_t val) { m_inset = val; }

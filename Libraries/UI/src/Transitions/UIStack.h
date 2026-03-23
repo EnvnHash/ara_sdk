@@ -13,15 +13,20 @@ public:
     virtual ~UIStack() = default;
 
     template <class T>
-    T* add(const std::string& name) {
-        m_nodes[name] = &m_rootNode->push<T>();
+    T* add(const std::string& name, const std::optional<UINodePars>& nodePars = std::nullopt) {
+        if (nodePars.has_value()) {
+            m_nodes[name] = &m_rootNode->push<T>(nodePars.value());
+        } else {
+            m_nodes[name] = &m_rootNode->push<T>();
+        }
         m_nodes[name]->setVisibility(false);
         return dynamic_cast<T*>(m_nodes[name]);
     }
 
     template <class T>
-    T* add(const std::string& name, const std::function<void()>& f) {
-        auto newNode = add<T>(name);
+    T* add(const std::string& name, const std::function<void()>& f,
+           const std::optional<UINodePars>& nodePars = std::nullopt) {
+        auto newNode = add<T>(name, nodePars);
         m_onShowFunctions[name] = f;
         return newNode;
     }

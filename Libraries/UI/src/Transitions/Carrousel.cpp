@@ -76,7 +76,7 @@ void Carrousel::mouseDrag(hidData& data) {
     } else if (m_carMode == CarrouselMode::leftAlign) {
         rotateNoFit(m_dragSlidePos);
     } else if (m_carMode == CarrouselMode::fitOneSlideOnScreen) {
-        auto absSlideWidth = getAbsSlideWidth();
+        const auto absSlideWidth = getAbsSlideWidth();
         m_dragSlidePos = m_dragStartPos - data.movedPix.x / static_cast<float>(absSlideWidth * (m_slides.size() -1));
         rotateCentered(m_dragSlidePos);
     }
@@ -102,10 +102,10 @@ void Carrousel::postAdd(CarrouselSlide* sl) {
     }
 }
 
-void Carrousel::show(int32_t toIdx, bool animate) {
+void Carrousel::show(const int32_t toIdx, const bool animate) {
     m_moveToIdx = toIdx;
     if (animate && m_blend.stopped()) {
-        m_blend.start(m_dragSlidePos, getPosFromSlideIdx(toIdx), m_transTime, false, [this](float v) { rotate(v); });
+        m_blend.start(m_dragSlidePos, getPosFromSlideIdx(toIdx), m_transTime, false, [this](const float v) { rotate(v); });
         m_blend.setEndFunc([this]{
             m_currentIdx = m_moveToIdx;
             m_dragSlidePos = getDragSlidePos();
@@ -135,12 +135,12 @@ CarrouselSlide* Carrousel::add(const UINodePars& pars) {
     return m_slides.back();
 }
 
-void Carrousel::showSelector(bool val) const {
+void Carrousel::showSelector(const bool val) const {
     m_selector->setVisibility(val);
     m_selector->excludeFromObjMap(true);
 }
 
-void Carrousel::showArrows(bool val)  {
+void Carrousel::showArrows(const bool val) const {
     for (auto &it : m_arrows) {
         it->setVisibility(val);
     }
@@ -149,21 +149,21 @@ void Carrousel::showArrows(bool val)  {
     }
 }
 
-void Carrousel::rotate(float pos) {
+void Carrousel::rotate(const float pos) {
     std::unordered_map<CarrouselMode, std::function<void(float)>> moveFuncMap{
-        { CarrouselMode::fitAllOnScreen, [&](float p){ rotateCentered(p); } },
-        { CarrouselMode::fitOneSlideOnScreen, [&](float p){ rotateCentered(p); } },
-        { CarrouselMode::leftAlign, [&](float p){ rotateNoFit(p); } }
+        { CarrouselMode::fitAllOnScreen, [&](const float p){ rotateCentered(p); } },
+        { CarrouselMode::fitOneSlideOnScreen, [&](const float p){ rotateCentered(p); } },
+        { CarrouselMode::leftAlign, [&](const float p){ rotateNoFit(p); } }
     };
-    auto limitPos = std::max(0.f, std::min(1.f, pos));
+    const auto limitPos = std::max(0.f, std::min(1.f, pos));
     moveFuncMap[m_carMode](limitPos);
     m_dragStartPos = limitPos;
 }
 
-void Carrousel::rotateCentered(float pos) {
+void Carrousel::rotateCentered(const float pos) {
     int i = 0;
-    auto slideWidth = getAbsSlideWidth();
-    auto slidePlusSpace = slideWidth + m_spacing;
+    const auto slideWidth = getAbsSlideWidth();
+    const auto slidePlusSpace = slideWidth + m_spacing;
     m_zeroPos = getZeroPos();
     m_selector->setWidth(slideWidth);
 
@@ -171,13 +171,13 @@ void Carrousel::rotateCentered(float pos) {
         if (static_cast<int32_t>(slid->getSize().x) != slideWidth) {
             slid->setSize(slideWidth, 1.f);
         }
-        auto slidOffs = i++ * slidePlusSpace;
-        auto rotOffs = static_cast<int32_t>(pos * static_cast<float>(m_slides.size() -1) * static_cast<float>(slidePlusSpace) +0.5f);
+        const auto slidOffs = i++ * slidePlusSpace;
+        const auto rotOffs = static_cast<int32_t>(pos * static_cast<float>(m_slides.size() -1) * static_cast<float>(slidePlusSpace) +0.5f);
         slid->setX(slidOffs + m_zeroPos - rotOffs);
     }
 }
 
-void Carrousel::rotateNoFit(float pos) {
+void Carrousel::rotateNoFit(const float pos) {
     auto xPos = 0;
     for (const auto slid : m_slides) {
         slid->setAlignX(align::left);
@@ -222,7 +222,7 @@ float Carrousel::getDragSlidePos() {
     }
 }
 
-void Carrousel::slideToNextIdx(float movedPixX) {
+void Carrousel::slideToNextIdx(const float movedPixX) {
     int32_t nextIdx = 0;
     if (m_carMode != CarrouselMode::leftAlign) {
         nextIdx = std::clamp(static_cast<int>(m_dragSlidePos * static_cast<float>(m_slides.size() - 1))
@@ -244,7 +244,7 @@ void Carrousel::slideToNextIdx(float movedPixX) {
     show(nextIdx);
 }
 
-float Carrousel::getPosFromSlideIdx(int32_t idx) {
+float Carrousel::getPosFromSlideIdx(const int32_t idx) {
     if (m_carMode == CarrouselMode::leftAlign) {
         return getSlideWidthSum(idx) / getMaxSlideWay();
     } else {
