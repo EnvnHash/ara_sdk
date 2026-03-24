@@ -66,7 +66,7 @@ static Node& createNestedNode(Node& nd, int depth) {
 
 TEST(Functional_Node, Parent) {
     Node nd;
-    auto& lowestChild = createNestedNode(nd, 1);
+    const auto& lowestChild = createNestedNode(nd, 1);
     EXPECT_EQ(lowestChild.parent(), &nd);
 }
 
@@ -79,7 +79,7 @@ TEST(Functional_Node, GetRoot) {
 TEST(Functional_Node, FindChildrenByName) {
     Node nd;
     createNestedNode(nd, 2);
-    auto list = nd.findChild("Child2");
+    const auto list = nd.findChild("Child2");
     EXPECT_EQ(list.size(), 1);
     EXPECT_EQ(list[0]->name(), "Child2");
 }
@@ -159,8 +159,8 @@ TEST(Functional_Node, InsertAfterByName) {
     n3.setName(names[2]);
 
     int cntr=0;
-    std::array newOrder = { 0, 2, 1 };
-    for (auto& it : nd.children()) {
+    const std::array newOrder = { 0, 2, 1 };
+    for (const auto& it : nd.children()) {
         EXPECT_EQ(it->name(), names[newOrder[cntr]]);
         ++cntr;
     }
@@ -184,7 +184,7 @@ TEST(Functional_Node, AddChildByRef) {
 }
 
 TEST(Functional_Node, AddChildByRefMemCheck) {
-    std::string child1Name = "child1";
+    const std::string child1Name = "child1";
     Node nd1;
     auto& child1 = nd1.push<Node>();
     child1.setName(child1Name);
@@ -476,13 +476,13 @@ TEST(Functional_Node, Parse_Generic) {
     ASSERT_NE(node.findChildByKey("key1"), nullptr);
     ASSERT_NE(node.findChildByKey("key2"), nullptr);
 
-    auto key0 = node.findChildByKey("key0");
+    const auto key0 = node.findChildByKey("key0");
     EXPECT_EQ(key0->value<int32_t>(), 0);
 
-    auto key1 = node.findChildByKey("key1");
+    const auto key1 = node.findChildByKey("key1");
     EXPECT_EQ(key1->value<float>(), 1.2345f);
 
-    auto key2 = node.findChildByKey("key2");
+    const auto key2 = node.findChildByKey("key2");
     EXPECT_EQ(key2->value<std::string>(), "value");
 }
 

@@ -5,7 +5,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 project(JsonEditorDemo)
 
-set(SOURCES JsonEditor.cpp JsonEditorDemo.cpp main.cpp)
+set(SOURCES JsonEditorDemo.cpp main.cpp)
 
 if (ANDROID)
 	add_library(${PROJECT_NAME} STATIC ${ALLSOURCES})

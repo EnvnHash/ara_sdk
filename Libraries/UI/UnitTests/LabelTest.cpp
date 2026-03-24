@@ -11,7 +11,7 @@ using namespace glm;
 
 namespace ara::UiUnitTest::LabelTest {
 
-auto& addLabel(UINode* root, int32_t fontSize) {
+auto& addLabel(UINode* root, const int32_t fontSize) {
     return root->push<Label>(LabelPars{
          .pos = ivec2{ 10, 10 },
          .size = ivec2{ 200, 100 },

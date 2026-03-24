@@ -4,8 +4,7 @@
 
 #include "JsonEditorDemo.h"
 #include <UIElements/Text/Label.h>
-
-#include "JsonEditor.h"
+#include <UIElements/DataBinding/JsonEditor.h>
 
 using namespace std;
 using namespace ara;

@@ -30,7 +30,7 @@ namespace ara {
 class Conditional {
 public:
     void notify() {
-        std::unique_lock<std::mutex> lock(m_mtx);
+        std::unique_lock lock(m_mtx);
         m_flag = true;
         m_cv.notify_all();
     }
@@ -39,7 +39,7 @@ public:
         if (!m_flag) {
             ++m_waitingThreads;
 
-            std::unique_lock<std::mutex> lock(m_mtx);
+            std::unique_lock lock(m_mtx);
 
 #ifdef SEMA_CHECK_TIMEOUT
             start = std::chrono::system_clock::now();
@@ -70,8 +70,8 @@ public:
 
     bool isNotified() { return m_flag; }
     void reset() { m_flag = false; m_waitingThreads = 0; }
-    bool hasWaitingThreads() { return !m_waitingThreads; }
-    void setFlagResetOnWaitEnd(bool val) { m_flagResetOnWaitEnd = val; }
+    bool hasWaitingThreads() const { return !m_waitingThreads; }
+    void setFlagResetOnWaitEnd(const bool val) { m_flagResetOnWaitEnd = val; }
 
     std::string name;
 private:

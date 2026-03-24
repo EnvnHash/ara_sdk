@@ -7,7 +7,7 @@
 
 #include "Button/Button.h"
 #include "Button/ImageButton.h"
-#include "UIElements/PropSlider.h"
+#include "DataBinding/PropSlider.h"
 #include "UIElements/Slider.h"
 
 namespace ara {

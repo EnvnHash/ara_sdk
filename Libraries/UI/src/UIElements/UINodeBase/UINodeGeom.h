@@ -326,7 +326,7 @@ public:
 
     /** get the bounding box around the children in parent relative coordinates
      * (without the parent's transformation matrix) plus padding  */
-    glm::vec2 getChildrenBBSizeWithPadd() {
+    glm::vec2 getChildrenBBSizeWithPadding() {
         return {m_childBoundBox.z - m_childBoundBox.x + getPadding().x + getPadding().z,
                 m_childBoundBox.w - m_childBoundBox.y + getPadding().y + getPadding().w};
     }

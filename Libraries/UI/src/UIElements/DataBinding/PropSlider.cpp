@@ -2,7 +2,7 @@
 // Created by user on 09.03.2021.
 //
 
-#include "PropSlider.h"
+#include "UIElements/DataBinding/PropSlider.h"
 
 using namespace std;
 using namespace glm;
@@ -45,8 +45,8 @@ PropSlider::PropSlider() {
 
 void PropSlider::setProp(Property<vec2>& prop, int idx) {
     // update elements when property changes
-    onChanged<glm::vec2>(prop, [this, &prop, idx](const std::any &val) {
-        auto v = std::any_cast<glm::vec2>(val);
+    onChanged<vec2>(prop, [this, &prop, idx](const std::any &val) {
+        auto v = std::any_cast<vec2>(val);
         m_slider->setValue((v[idx] - prop.getMin()[idx]) / (prop.getMax()[idx] - prop.getMin()[idx]));
         m_edit->setValue(v[idx]);
         if (m_valChangeCb) {
@@ -65,7 +65,7 @@ void PropSlider::setProp(Property<vec2>& prop, int idx) {
         }, &prop);
 
     m_slider->addMouseDragCb([this, &prop, idx](hidData& data) {
-        float newVal = m_slider->getValue() * (prop.getMax()[idx] - prop.getMin()[idx]) + prop.getMin()[idx];
+        const float newVal = m_slider->getValue() * (prop.getMax()[idx] - prop.getMin()[idx]) + prop.getMin()[idx];
         if (!m_onMouseUpUpdtMode) {
             auto lastVal = prop();
             lastVal[idx] = newVal;

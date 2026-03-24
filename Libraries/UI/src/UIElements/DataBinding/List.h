@@ -40,7 +40,7 @@ public:
         setData(val, m_idx);
     }
 
-    virtual void setData(const T& data, int idx) {
+    virtual void setData(const T& data, const int idx) {
         val   = data;
         m_idx = idx;
         if constexpr (std::is_floating_point_v<T> || std::is_integral_v<T>) {

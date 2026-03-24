@@ -25,9 +25,11 @@ public:
     static void rebuildCollapseState(JsonEditor* nd, int32_t& yOffsCntr);
 
     bool isExpanded() const { return m_expanded; }
-
     void setExpanded(const bool val) { m_expanded = val; }
     void setJsonObjectType(const JsonEntryType& tp) { m_jsonEntryType = tp; }
+    void setSpacing(const int32_t& s);
+    void setLabelWidth(const int32_t& w);
+    void setLineHeight(const int32_t& h);
     void setYOffs(const int32_t& val);
 
     auto getJsonEntryType() const { return m_jsonEntryType; }
@@ -52,15 +54,18 @@ public:
         return std::max<size_t>(0, cntr -2);
     }
 
-private:
+protected:
     JsonEntryType m_jsonEntryType = JsonEntryType::nullObject;
     Label* m_label = nullptr;
     UIEdit* m_edit = nullptr;
+    int32_t m_labelWidth = 180;
     int32_t m_lineHeight = 22;
+    int32_t m_xSpacing = 3;
     int32_t m_ySpacing = 3;
     int32_t m_xIdent = 50;
     int32_t m_yOffs = 0;
     bool m_expanded = false;
+    bool m_enableExpandButton = true;
 
     static inline int32_t m_yOffsCntr = 0;
 };

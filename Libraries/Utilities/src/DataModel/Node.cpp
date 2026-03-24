@@ -126,14 +126,13 @@ deque<Node*> Node::findChild(const string& name) {
     return list;
 }
 
-void Node::removeChangeCb(cbType cbType, void *ptr) {
-    auto c = m_changeCb[cbType].find(ptr);
-    if (c != m_changeCb[cbType].end()) {
+void Node::removeChangeCb(const cbType cbType, void *ptr) {
+    if (const auto c = m_changeCb[cbType].find(ptr); c != m_changeCb[cbType].end()) {
         m_changeCb[cbType].erase(c);
     }
 }
 
-void Node::signalChange(cbType cbType, std::optional<Node*> node) {
+void Node::signalChange(const cbType cbType, const std::optional<Node*> node) {
     for (auto &val: m_changeCb[cbType] | views::values) {
         val(node);
     }
@@ -180,7 +179,7 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
         }
     }
 
-    auto postLoadCbsArg = postLoadCbs.value_or(&m_postCbList);
+    const auto postLoadCbsArg = postLoadCbs.value_or(&m_postCbList);
     if (m_postLoadCb.has_value()) {
         postLoadCbsArg->emplace_back(&m_postLoadCb.value());
     }
@@ -212,9 +211,9 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
 
 void Node::parseClassChildren(const json& j, unordered_map<string, Node*>& existingChildren, std::list<std::function<void()>*>* postLoadCbsArg) {
     for (auto jChild = j.begin(); jChild != j.end(); ++jChild) {
-        bool skipChildCheck = !jChild->contains("uuid") || existingChildren.empty();
-        const auto it = skipChildCheck ? existingChildren.end() : existingChildren.find(jChild->at("uuid"));
-        if (it != existingChildren.end()) {
+        const bool skipChildCheck = !jChild->contains("uuid") || existingChildren.empty();
+        if (const auto it = skipChildCheck ? existingChildren.end() : existingChildren.find(jChild->at("uuid"));
+            it != existingChildren.end()) {
             it->second->deserialize(*jChild, postLoadCbsArg);
             // assure correct order
             auto childIt = ranges::find_if(m_children, [&](auto& el){ return el.get() == it->second; });
@@ -324,6 +323,13 @@ void Node::loadFromString(const string& str) {
     }
 }
 
+void Node::loadFromJson(const nlohmann::json& json) {
+    if (m_undoBufRoot) {
+        saveState();
+    }
+    deserialize(json);
+}
+
 void Node::saveAs(const filesystem::path& filePath) {
     m_fileName = filePath;
     save();
@@ -393,6 +399,15 @@ void Node::redo() {
 bool Node::iterateChildren(Node& node, const function<void(Node&)>& f) {
     f(node);
     for (const auto& it: node.children()) {
+        if (!iterateChildren(*it, f)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Node::iterateChildren(const function<void(Node&)>& f) {
+    for (const auto& it: children()) {
         if (!iterateChildren(*it, f)) {
             return false;
         }

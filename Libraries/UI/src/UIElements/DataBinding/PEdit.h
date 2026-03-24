@@ -19,8 +19,8 @@ concept PEditPropTypeVec = std::is_same_v<T, glm::vec2> || std::is_same_v<T, glm
 
 class PEdit : public UIEdit, ItemRef {
 public:
-    PEdit(ItemUi *item = nullptr) :  ItemRef(item) {}
-    virtual ~PEdit() {}
+    explicit PEdit(ItemUi *item = nullptr) :  ItemRef(item) {}
+    ~PEdit() override {}
 
     template<PEditPropTypeSingle T>
     void setProp(Property<T>* prop) {
@@ -49,14 +49,14 @@ public:
                 m_item->saveState();
             }
             T newVal = (*prop)();
-            newVal[idx]       = atoi(txt.c_str());
-            (*prop)           = newVal;
+            newVal[idx] = atoi(txt.c_str());
+            *prop       = newVal;
         }, prop);
 
         setOnLostFocusCb([this, prop, idx] {
             T newVal = (*prop)();
-            newVal[idx]       = atoi(m_text.c_str());
-            (*prop)           = newVal;
+            newVal[idx] = atoi(m_text.c_str());
+            *prop       = newVal;
         });
 
         setMinMax(prop->getMin()[idx], prop->getMax()[idx]);

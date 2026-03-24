@@ -19,7 +19,7 @@ UINode::UINode() {
     setName(getTypeName<UINode>());
     setOnChangeCb(cbType::postAddChild, this, [this](const std::optional<Node*> node) {
         reqTreeChanged(true);
-        if (node.has_value()) {
+        if (node.has_value() && node.value()) {
             initChild(dynamic_cast<UINode &>(*node.value()), this);
         }
     });
@@ -277,11 +277,12 @@ void UINode::updtMatrIt(scissorStack* ss) {
 
     // continue iterating through the children
     for (const auto& it : m_children) {
-        const auto node = dynamic_cast<UINode*>(it.get());
-        node->updtMatrIt(ss);
-        // keep track of the children's boundingBox
-        if (node->isVisible()) {
-            node->recChildrenBoundBox(m_childBoundBox);
+        if (const auto node = dynamic_cast<UINode*>(it.get())) {
+            node->updtMatrIt(ss);
+            // keep track of the children's boundingBox
+            if (node->isVisible()) {
+                node->recChildrenBoundBox(m_childBoundBox);
+            }
         }
     }
 

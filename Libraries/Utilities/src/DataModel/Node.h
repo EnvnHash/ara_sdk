@@ -82,9 +82,12 @@ public:
     T& push(const std::shared_ptr<T>& ptr) {
         prePush();
         {
-            std::unique_lock l(m_mtx);
+            const bool unlock = m_mtx.try_lock();
             m_children.emplace_back(ptr);
             setDefault(m_children.back());
+            if (unlock) {
+                m_mtx.unlock();
+            }
         }
         signalChange(cbType::postAddChild, std::make_optional<Node*>(m_children.back().get()));
         return static_cast<T&>(*m_children.back().get());
@@ -93,10 +96,11 @@ public:
     template <class T>
     T& push(std::shared_ptr<T>&& ptr) {
         prePush();
-        {
-            std::unique_lock l(m_mtx);
-            m_children.emplace_back(ptr);
-            setDefault(m_children.back());
+        const bool unlock = m_mtx.try_lock();
+        m_children.emplace_back(ptr);
+        setDefault(m_children.back());
+        if (unlock) {
+            m_mtx.unlock();
         }
         signalChange(cbType::postAddChild, std::make_optional<Node*>(m_children.back().get()));
         return static_cast<T&>(*m_children.back().get());
@@ -113,7 +117,7 @@ public:
     }
 
     template <class T>
-    T& insertChild(int position, std::shared_ptr<T>&& child) {
+    T& insertChild(const int position, std::shared_ptr<T>&& child) {
         if (!child) {
             LOGE << "Node::insertChild failed, child empty!";
         } else {
@@ -166,7 +170,7 @@ public:
         return push<T>(child);
     }
 
-    void setDefault(std::shared_ptr<Node> &child) {
+    void setDefault(const std::shared_ptr<Node> &child) {
         child->setUuid(generateUUID());
         child->setParent(this);
         if (m_undoBufRoot) {
@@ -177,20 +181,22 @@ public:
     template <class T>
     void setTypeName() {
         signalChange(cbType::preChange, std::nullopt);
-        {
-            std::unique_lock l(m_mtx);
-            setTypeName(ara::getTypeName<T>());
+        const bool unlock = m_mtx.try_lock();
+        setTypeName(ara::getTypeName<T>());
+        if (unlock) {
+            m_mtx.unlock();
         }
         signalChange(cbType::postChange, std::nullopt);
     }
 
     Node* findParentByType(const std::string& typeStr) {
         Node* par = parent();
-        {
-            std::unique_lock l(m_mtx);
-            while (par && par->typeName() != typeStr) {
-                par = par->parent();
-            }
+        const bool unlock = m_mtx.try_lock();
+        while (par && par->typeName() != typeStr) {
+            par = par->parent();
+        }
+        if (unlock) {
+            m_mtx.unlock();
         }
         return par;
     }
@@ -223,14 +229,15 @@ public:
     std::deque<T*> findChildrenByType() {
         std::deque<T*> outList;
         auto typeStr = getTypeName<T>();
-        {
-            std::unique_lock l(m_mtx);
-            iterateChildren(*this, [&outList, &typeStr] (Node& node) {
-                if (node.typeName() == typeStr) {
-                    outList.emplace_back(dynamic_cast<T*>(&node));
-                }
-                return true;
-            });
+        const bool unlock = m_mtx.try_lock();
+        iterateChildren(*this, [&outList, &typeStr] (Node& node) {
+            if (node.typeName() == typeStr) {
+                outList.emplace_back(dynamic_cast<T*>(&node));
+            }
+            return true;
+        });
+        if (unlock) {
+            m_mtx.unlock();
         }
         return std::move(outList);
     }
@@ -239,31 +246,33 @@ public:
     std::optional<T*> getFirstChildByType() {
         std::optional<T*> out{};
         auto typeStr = getTypeName<T>();
-        {
-            std::unique_lock l(m_mtx);
-            iterateChildren(*this, [&typeStr, &out] (Node& node) {
-                if (node.typeName() == typeStr) {
-                    out = dynamic_cast<T*>(&node);
-                    return false;
-                }
-                return true;
-            });
+        const bool unlock = m_mtx.try_lock();
+        iterateChildren(*this, [&typeStr, &out] (Node& node) {
+            if (node.typeName() == typeStr) {
+                out = dynamic_cast<T*>(&node);
+                return false;
+            }
+            return true;
+        });
+        if (unlock) {
+            m_mtx.unlock();
         }
         return out;
     }
 
     std::deque<Node*> findChildrenByTypes(const std::list<std::string>& typeStrList) {
         std::deque<Node*> outList;
-        {
-            std::unique_lock l(m_mtx);
-            iterateChildren(*this, [&outList, &typeStrList] (Node& node) {
-                auto res = std::ranges::find_if(typeStrList, [&node](auto& it){
-                    return it == node.typeName();
-                });
-                if (res != typeStrList.end()) {
-                    outList.emplace_back(&node);
-                }
+        const bool unlock = m_mtx.try_lock();
+        iterateChildren(*this, [&outList, &typeStrList] (Node& node) {
+            const auto res = std::ranges::find_if(typeStrList, [&node](auto& it){
+                return it == node.typeName();
             });
+            if (res != typeStrList.end()) {
+                outList.emplace_back(&node);
+            }
+        });
+        if (unlock) {
+            m_mtx.unlock();
         }
         return std::move(outList);
     }
@@ -288,6 +297,7 @@ public:
     void                                    loadFromAssets(const std::filesystem::path& filePath);
     virtual void                            load();
     virtual void                            load(bool fromAssets);
+    void                                    loadFromJson(const nlohmann::json& json);
     void                                    loadFromString(const std::string& str);
     void                                    saveAs(const std::filesystem::path& filePath);
     void                                    save();
@@ -297,6 +307,7 @@ public:
     void                                    signalChange(cbType cbType, std::optional<Node*> node);
     std::deque<std::function<void(std::optional<Node*>)>> collectCallbacks(cbType cbType, bool withChildrenOnly);
     static bool                             iterateChildren(Node& node, const std::function<void(Node&)>& f);
+    bool                                    iterateChildren(const std::function<void(Node&)>& f);
     Node*                                   root();
     void                                    changeVal(const std::function<void()>& f);
     void                                    setUndoBuffer(bool enabled, size_t size);
@@ -326,11 +337,12 @@ public:
     void setParent(Node* ptr)                   { m_parent = ptr; }
     void setUndoBufferRoot(Node* node)          { m_undoBufRoot = node; }
     void setParseAsGenericJson(bool val)        { m_parseAsGenericJson = true; }
+    void setValue(nodeValue val)                { m_value = std::move(val); }
+    void setKey(const std::string& key)         { m_key = key; }
+
     void setOnChangeCb(const cbType cbType, void *ptr, std::function<void(std::optional<Node*>)> func) {
         m_changeCb[cbType][ptr] = std::move(func);
     }
-    void setValue(nodeValue val)                { m_value = std::move(val); }
-    void setKey(const std::string& key)         { m_key = key; }
 
     static nlohmann::json getValues(const nlohmann::json& j) {
         nlohmann::json valueJson;
@@ -342,9 +354,9 @@ public:
         return valueJson;
     }
 
-    void callChangeCbs(cbType cbType) {
-        for (auto & it: m_changeCb[cbType]) {
-            it.second(std::nullopt);
+    void callChangeCbs(const cbType cbType) {
+        for (auto &cb: m_changeCb[cbType] | std::views::values) {
+            cb(std::nullopt);
         }
     }
 
@@ -404,7 +416,7 @@ protected:
             m_classKeys[key].first.emplace_back("children");
         }
 
-        auto keysOverlap = std::ranges::any_of(m_classKeys[key].first, [&newClassKeys](const auto& elem) {
+        const auto keysOverlap = std::ranges::any_of(m_classKeys[key].first, [&newClassKeys](const auto& elem) {
             return std::ranges::find(newClassKeys, elem) != newClassKeys.end();
         });
 
