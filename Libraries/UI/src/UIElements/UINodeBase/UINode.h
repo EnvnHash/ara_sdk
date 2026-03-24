@@ -202,9 +202,9 @@ public:
     void                setChanged(bool val) override;
     void                setHIDBlocked(bool val) override;
     bool                removeFocus() override;
-    void                setId(uint32_t val) { m_objIdMin = val; m_objIdMax = val; }
-    void                setMinId(uint32_t val) { m_objIdMin = val; }
-    void                setMaxId(uint32_t val) { m_objIdMax = val; }
+    void                setId(const uint32_t val) { m_objIdMin = val; m_objIdMax = val; }
+    void                setMinId(const uint32_t val) { m_objIdMin = val; }
+    void                setMaxId(const uint32_t val) { m_objIdMax = val; }
     void                reqTreeChanged(bool val) { m_reqTreeChanged = true; }
     virtual void        setParent(UINode* parent) { m_parent = parent; }
     virtual void        setRefDraw(bool v) { m_referenceDrawing = true; }
@@ -214,20 +214,20 @@ public:
     virtual void        setPath(const std::filesystem::path& file) { m_filepath = file; }
     [[nodiscard]] bool  isVisible() const { return m_visible; }
     [[nodiscard]] bool  isInited() const { return m_inited; }
-    void                setInited(bool val) { m_inited = val; }
-    void                setForceInit(bool val) { m_forceInit = val; }
-    void                excludeFromObjMap(bool val) { m_excludeFromObjMap = val; }
+    void                setInited(const bool val) { m_inited = val; }
+    void                setForceInit(const bool val) { m_forceInit = val; }
+    void                excludeFromObjMap(const bool val) { m_excludeFromObjMap = val; }
     [[nodiscard]] bool  isExcludedFromObjMap() const { return m_excludeFromObjMap; }
     void                setViewport(float x, float y, float width, float height) override;
     void                setViewport(glm::vec4* viewport) override { UINodeGeom::setViewport(viewport); }
     void                setVisibility(bool val, state st = state::m_state) override;
     void                setDrawFlag() const;
-    void                setHasDepth(bool val) { m_hasDepth = val; }
-    void                setDrawInmediate(bool val) { m_drawImmediate = val; }
+    void                setHasDepth(const bool val) { m_hasDepth = val; }
+    void                setDrawInmediate(const bool val) { m_drawImmediate = val; }
     void                setShaderCollector(ShaderCollector* shCol) { m_shCol = shCol; }
     void                setSharedRes(UISharedRes* shared) override;
     void                reqUpdtTree() const;
-    void                setVaoOffset(GLuint v) { m_indDrawBlock.vaoOffset = v; }
+    void                setVaoOffset(const GLuint v) { m_indDrawBlock.vaoOffset = v; }
     virtual void        clearDs() { m_indDrawBlock.drawSet = nullptr; }
 
     auto                    getVaoOffset() const { return m_indDrawBlock.vaoOffset; }
@@ -244,7 +244,7 @@ public:
     UINode*                 getNodeById(uint32_t searchID) const;
     virtual float           getValue() { return 0.f; }
 
-    [[nodiscard]] bool containsObjectId(uint32_t id) const { return (id >= m_objIdMin && id <= m_objIdMax); }
+    [[nodiscard]] bool containsObjectId(const uint32_t id) const { return (id >= m_objIdMin && id <= m_objIdMax); }
 
     virtual uint32_t getSubNodeCount();
     virtual void     getSubNodeCountIt(UINode* node, uint32_t* count);
@@ -260,14 +260,14 @@ public:
     void keyDownIt(hidData& data) override;
     void onCharIt(hidData& data) override;
 
-    std::filesystem::path   dataPath();
+    std::filesystem::path   dataPath() const;
     UIApplication*          getApp() const;
 
     bool isInBounds(glm::vec2& pos) override;
     bool recChildrenBoundBox(glm::vec4& ref);
 
     void            runOnMainThread(const std::function<bool()>& func, bool forcePush = false) const;
-    WindowManager*  getWinMan();
+    WindowManager*  getWinMan() const;
     void            addGlCbSync(const std::function<bool()>& func) const;
 
     static void limitDrawVaoToBounds(const std::vector<DivVaoData>::iterator& dIt, glm::vec2& size, glm::vec2& uvDiff,

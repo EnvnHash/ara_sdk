@@ -17,9 +17,8 @@ namespace ara {
 UINode::UINode() {
     setTypeName<UINode>();
     setName(getTypeName<UINode>());
-    setOnChangeCb(cbType::postAddChild, this, [this](std::optional<Node*> node) {
+    setOnChangeCb(cbType::postAddChild, this, [this](const std::optional<Node*> node) {
         reqTreeChanged(true);
-        //auto& node = dynamic_cast<UINode&>(*m_children.back().get());
         if (node.has_value()) {
             initChild(dynamic_cast<UINode &>(*node.value()), this);
         }
@@ -37,12 +36,12 @@ UINode* UINode::getNode(const std::string& name) {
     return fn;
 }
 
-void UINode::moveChildTo(int position, UINode* node) {
+void UINode::moveChildTo(const int position, UINode* node) {
     if (!node->getParent()) {
         return;
     }
 
-    auto nodeIt = ranges::find_if(node->parent()->children(),
+    const auto nodeIt = ranges::find_if(node->parent()->children(),
                                   [node](const auto& it) { return node == it.get(); });
     if (nodeIt == node->parent()->children().end()) {
         return;
@@ -67,11 +66,11 @@ void UINode::initChild(UINode& child, UINode* parent) {
     child.setParent(parent);
 }
 
-uint32_t UINode::getMinChildId(uint32_t minId) const {
+uint32_t UINode::getMinChildId(const uint32_t minId) const {
     auto nextMinId = m_objIdMin ? std::min(m_objIdMin, minId) : minId;
 
     for (const auto& child : m_children) {
-        auto node = dynamic_cast<UINode*>(child.get());
+        const auto node = dynamic_cast<UINode*>(child.get());
         if (node->getMinId() < nextMinId) {
             nextMinId = node->getMinId();
         }
@@ -81,11 +80,11 @@ uint32_t UINode::getMinChildId(uint32_t minId) const {
     return nextMinId;
 }
 
-uint32_t UINode::getMaxChildId(uint32_t maxId) const {
+uint32_t UINode::getMaxChildId(const uint32_t maxId) const {
     auto nextMaxId = std::max(m_objIdMax, maxId);
 
     for (const auto& child : m_children) {
-        auto node = dynamic_cast<UINode*>(child.get());
+        const auto node = dynamic_cast<UINode*>(child.get());
         if (node->getMaxId() > nextMaxId) {
             nextMaxId = node->getMaxId();
         }
@@ -95,13 +94,13 @@ uint32_t UINode::getMaxChildId(uint32_t maxId) const {
     return nextMaxId;
 }
 
-UINode* UINode::getNodeById(uint32_t searchID) const {
+UINode* UINode::getNodeById(const uint32_t searchID) const {
     for (const auto& child : m_children) {
-        auto node = dynamic_cast<UINode*>(child.get());
+        const auto node = dynamic_cast<UINode*>(child.get());
         if (node->getId() == searchID) {
             return node;
         }
-        if (auto cN = node->getNodeById(searchID)) {
+        if (const auto cN = node->getNodeById(searchID)) {
             return cN;
         }
     }
@@ -130,7 +129,7 @@ bool UINode::getNodeIt(UINode* node, UINode** fn, const std::string& name) {
 }
 
 UINode* UINode::getRoot() {
-    UINode* out = this;
+    auto out = this;
     while (out->getParent()) {
         out = out->getParent();
     }
@@ -195,14 +194,14 @@ void UINode::drawAsRoot(uint32_t& objId) {
     }
 }
 
-void UINode::drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool& skip) {
+void UINode::drawIt(scissorStack& ss, uint32_t& objId, const bool treeChanged, bool& skipFirst) {
     // draw to the screen and the object map
     if (!m_visible || !m_inited || m_isOutOfParentBounds || m_referenceDrawing) {
         return;
     }
 
-    if (!skip) {
-        if (!glm::all(glm::equal(m_sc, ss.active))) {
+    if (!skipFirst) {
+        if (!all(glm::equal(m_sc, ss.active))) {
             ss.active = m_sc;
             if (m_drawImmediate) {
                 glScissor(static_cast<GLint>(m_sc.x), static_cast<GLint>(m_sc.y), static_cast<GLint>(m_sc.z), static_cast<GLint>(m_sc.w));
@@ -237,11 +236,11 @@ void UINode::drawIt(scissorStack& ss, uint32_t& objId, bool treeChanged, bool& s
         }
 
     } else {
-        skip = false;
+        skipFirst = false;
     }
 
     for (const auto& it : m_children) {
-        dynamic_cast<UINode*>(it.get())->drawIt(ss, objId, treeChanged, skip);
+        dynamic_cast<UINode*>(it.get())->drawIt(ss, objId, treeChanged, skipFirst);
     }
 
     // Note: although the recursive call to drawIt is not the last call, difference in performance is not relevant
@@ -278,7 +277,7 @@ void UINode::updtMatrIt(scissorStack* ss) {
 
     // continue iterating through the children
     for (const auto& it : m_children) {
-        auto node = dynamic_cast<UINode*>(it.get());
+        const auto node = dynamic_cast<UINode*>(it.get());
         node->updtMatrIt(ss);
         // keep track of the children's boundingBox
         if (node->isVisible()) {
@@ -337,8 +336,7 @@ void UINode::checkStyles() {
         // of the initial window size, so if this is called from a res update "rescale" the window
         // TODO: default styles should be updated on resize
         if (m_sharedRes && m_sharedRes->win) {
-            auto win = static_cast<UIWindow*>(m_sharedRes->win);
-            if (win->resChanged()) {
+            if (const auto win = static_cast<UIWindow*>(m_sharedRes->win); win->resChanged()) {
                 win->window_size_callback(win->getSize().x, win->getSize().y);
                 m_sharedRes->requestRedraw = true;
             }
@@ -364,7 +362,7 @@ void UINode::checkScissoring(scissorStack* ss) {
     // forward casting to int will produce wrong results...
     if (ss && m_scissorChildren && m_sc.z != 0.f && m_sc.w != 0.f) {
         // here we get the top left corner, but glScissor needs lower left corner scissor area can't exceed actual scissor bounds
-        auto nodeViewPortGL = getNodeViewportGL();
+        const auto nodeViewPortGL = getNodeViewportGL();
 
         m_scissVp.x = std::max(std::floor(std::round(nodeViewPortGL.x + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.x);
         m_scissVp.y = std::max(std::floor(std::round(nodeViewPortGL.y + static_cast<float>(getBorderWidth()))) * getPixRatio(), m_sc.y);
@@ -515,8 +513,8 @@ void UINode::setAlignment() {
 }
 
 bool UINode::objPosIt(ObjPosIt& opi) {
-    auto opiIt = dynamic_cast<UINode*>(opi.it->get());
-    bool inBounds = opiIt->isInBounds(opi.pos);
+    const auto opiIt = dynamic_cast<UINode*>(opi.it->get());
+    const bool inBounds = opiIt->isInBounds(opi.pos);
 
     // optional callback for additional ui elements there are not part of the regular tree
     if (opiIt->m_outOfTreeObjId) {
@@ -527,7 +525,7 @@ bool UINode::objPosIt(ObjPosIt& opi) {
         }
     }
 
-    bool inAndVisible = inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible();
+    const bool inAndVisible = inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible();
     if (inAndVisible) {
         if (opi.foundTreeLevel < opi.treeLevel) {
             opi.foundNode      = opiIt;
@@ -576,8 +574,8 @@ bool UINode::objPosIt(ObjPosIt& opi) {
 
 void UINode::reqUpdtTree() const {
     if (!m_drawImmediate && m_sharedRes && m_sharedRes->win) {
-        const auto win = static_cast<UIWindow*>(m_sharedRes->win);
-        if (win->getRootNode() && win->getRootNode()->getRoot()) {
+        if (const auto win = static_cast<UIWindow*>(m_sharedRes->win);
+            win->getRootNode() && win->getRootNode()->getRoot()) {
             win->getRootNode()->getRoot()->reqTreeChanged(true);
         }
     }
@@ -586,7 +584,7 @@ void UINode::reqUpdtTree() const {
 void UINode::limitDrawVaoToBounds(const vector<DivVaoData>::iterator& dIt, vec2& size, vec2& uvDiff, vec4& scIndDraw, vec4& vp) {
     dIt->pos.y *= -1.f;
 
-    bool limit = compAdd(scIndDraw) > 0.f;
+    const bool limit = compAdd(scIndDraw) > 0.f;
     for (int i = 0; i < 2; i++) {
         // convert to pixels and limit to NDC bounds
         dIt->pos[i] = (dIt->pos[i] * 0.5f + 0.5f) * vp[2 + i];
@@ -629,7 +627,7 @@ void UINode::limitTexCoordsToBounds(float* tc, const int stdQuadVertInd, const v
     }
 }
 
-void UINode::runOnMainThread(const std::function<bool()>& func, bool forcePush) const {
+void UINode::runOnMainThread(const std::function<bool()>& func, const bool forcePush) const {
     if (m_glbase) {
         m_glbase->runOnMainThread(func, forcePush);
     }
@@ -655,21 +653,21 @@ void UINode::setDrawFlag() const {
     }
 }
 
-void UINode::setChanged(bool val) {
+void UINode::setChanged(const bool val) {
     m_geoChanged = val;
     for (const auto& it : m_children) {
         dynamic_cast<UINode*>(it.get())->setChanged(val);
     }
 }
 
-void UINode::setViewport(float x, float y, float width, float height) {
+void UINode::setViewport(const float x, const float y, const float width, const float height) {
     UINodeGeom::setViewport(x, y, width, height);
     for (const auto& it : m_children) {
         dynamic_cast<UINode*>(it.get())->setViewport(x, y, width, height);
     }
 }
 
-void UINode::setVisibility(bool val, state st) {
+void UINode::setVisibility(const bool val, const state st) {
     UINodeStyle::setVisibility(val, st);
     if (st == state::m_state || st == m_state) {
         // object ids won't be updated when not visible - set them all to zero immediately
@@ -712,11 +710,11 @@ void UINode::setSharedRes(UISharedRes* shared) {
     setOnChangeCb(cbType::postChange, this, [this](std::optional<Node*>) { onResize(); });
 }
 
-std::filesystem::path UINode::dataPath() {
+std::filesystem::path UINode::dataPath() const {
     return m_sharedRes ? m_sharedRes->dataPath : std::filesystem::current_path();
 }
 
-WindowManager* UINode::getWinMan() {
+WindowManager* UINode::getWinMan() const {
     return m_glbase->getWinMan();
 }
 
@@ -755,7 +753,7 @@ bool UINode::removeFocus() {
     return false;
 }
 
-void UINode::setHIDBlocked(bool val) {
+void UINode::setHIDBlocked(const bool val) {
     UINodeHID::setHIDBlocked(val);
     for (const auto& it : m_children) {
         if (it) {
@@ -770,7 +768,7 @@ void UINode::dump() {
     dumpIt(this, &depth, true);
 }
 
-void UINode::dumpIt(UINode* node, int* depth, bool dumpLocalTree) {
+void UINode::dumpIt(UINode* node, int* depth, const bool dumpLocalTree) {
     string pr;
     string state;
 
@@ -818,7 +816,7 @@ UINode::~UINode() {
     }
 }
 
-void UINode::util_FillRect(ivec2 pos, ivec2 size, vec4 col, Shaders* shdr, Quad* quad) {
+void UINode::util_FillRect(const ivec2 pos, const ivec2 size, const vec4 col, Shaders* shdr, Quad* quad) {
     if (shdr == nullptr) {
         shdr = m_shdr;
     }

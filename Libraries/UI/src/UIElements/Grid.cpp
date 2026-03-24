@@ -45,14 +45,20 @@ void Grid::init() {
         uniform vec2 alias; \n
         uniform vec4 color;\n
         uniform vec4 bgColor;\n
+        uniform vec4 nodeViewPort;\n
         uniform vec2 nrSep;\n
         uniform float aspect;\n
         uniform vec2 size; \n // in pixels
-        // uniform vec2 halfPix; \n // in pixels
-        //uniform vec2 aliasRng; \n // in pixels
         const float pi_2 = 1.57079632679489661923;\n
         \n
-        void main() {\n
+        void main() { \n
+            if (gl_FragCoord.x < nodeViewPort.x
+                || gl_FragCoord.x > nodeViewPort.x + nodeViewPort.z
+                || gl_FragCoord.y < nodeViewPort.y
+                || gl_FragCoord.y > nodeViewPort.y + nodeViewPort.w) {
+               discard;
+            }\n
+
             // origin to center, map all quadrants to the first quadrant
             vec2 tn = abs(tex_coord - 0.5);
 
@@ -115,7 +121,7 @@ bool Grid::drawIndirect(uint32_t& objId) {
     return false;
 }
 
-bool Grid::drawFunc(const uint32_t& objId) {
+bool Grid::drawFunc(const uint32_t& ) {
 #ifndef ARA_USE_GLES31
     glBlendFuncSeparatei(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 #endif
@@ -130,10 +136,10 @@ bool Grid::drawFunc(const uint32_t& objId) {
     m_gridShdr->setUniform2fv("alias", &getBorderAliasRel()[0]);
     m_gridShdr->setUniform2fv("nrSep", &m_numOfSeparations[0]);
     m_gridShdr->setUniform1f("aspect", m_aspect);
+    m_gridShdr->setUniform4fv("nodeViewPort", &m_sc[0]);
 
     glBindVertexArray(*m_sharedRes->nullVao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    // glBindVertexArray(0);
 
 #ifndef ARA_USE_GLES31
     glBlendFunci(0, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
