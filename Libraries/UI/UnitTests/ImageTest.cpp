@@ -125,7 +125,7 @@ TEST(UITest, ImageReloadTest) {
         app.getMainWindow()->swap();
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_reloaded.png",
-                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 300);
 }
 

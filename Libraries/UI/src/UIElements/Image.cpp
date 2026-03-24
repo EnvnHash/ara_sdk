@@ -532,9 +532,9 @@ void Image::loadImg() {
             m_sizeChangeCb(static_cast<int>(m_tex->getWidth()), static_cast<int>(m_tex->getHeight()));
         }
 
-       // if (m_drawImmediate) {
+        if (m_drawImmediate) {
             Image::updateDrawData();
-        //}
+        }
     }
 }
 
