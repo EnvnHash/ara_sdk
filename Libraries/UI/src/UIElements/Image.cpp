@@ -233,11 +233,19 @@ void Image::updateDrawData() {
         }
     } else {
         if (m_tex && !m_useTexId) {
-            m_secSize.x = static_cast<int>(m_tex->getWidth());
-            m_secSize.y = static_cast<int>(m_tex->getHeight());
+            if (m_secPos.x == 0 && m_secPos.y == 0) {
+                memset(&m_secPos[0], 0, 8);
+            }
 
-            m_texSize.x = static_cast<int>(m_tex->getWidth());
-            m_texSize.y = static_cast<int>(m_tex->getHeight());
+            if (m_secSize.x == 0 && m_secSize.y == 0) {
+                m_secSize.x = static_cast<int>(m_tex->getWidth());
+                m_secSize.y = static_cast<int>(m_tex->getHeight());
+            }
+
+            if (m_texSize.x == 0 && m_texSize.y == 0) {
+                m_texSize.x = static_cast<int>(m_tex->getWidth());
+                m_texSize.y = static_cast<int>(m_tex->getHeight());
+            }
         }
     }
 
@@ -518,6 +526,12 @@ void Image::loadImg() {
     if (m_tex){
         m_loaded    = true;
         m_texAspect = m_tex->getWidthF() / m_tex->getHeightF();
+
+        // in case no sub segmenting was used, adjust the segment size to the full new texture size
+        if (m_secSize.x == m_texSize.x && m_secSize.y == m_texSize.y) {
+            m_secSize   = { m_tex->getWidth(), m_tex->getHeight() };
+        }
+
         m_texSize   = { m_tex->getWidth(), m_tex->getHeight() };
 
         texCol.addRemoveCb(m_imageFile, [this]{
