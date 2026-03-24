@@ -233,19 +233,11 @@ void Image::updateDrawData() {
         }
     } else {
         if (m_tex && !m_useTexId) {
-            if (m_secPos.x == 0 && m_secPos.y == 0) {
-                memset(&m_secPos[0], 0, 8);
-            }
+            m_secSize.x = static_cast<int>(m_tex->getWidth());
+            m_secSize.y = static_cast<int>(m_tex->getHeight());
 
-            if (m_secSize.x == 0 && m_secSize.y == 0) {
-                m_secSize.x = static_cast<int>(m_tex->getWidth());
-                m_secSize.y = static_cast<int>(m_tex->getHeight());
-            }
-
-            if (m_texSize.x == 0 && m_texSize.y == 0) {
-                m_texSize.x = static_cast<int>(m_tex->getWidth());
-                m_texSize.y = static_cast<int>(m_tex->getHeight());
-            }
+            m_texSize.x = static_cast<int>(m_tex->getWidth());
+            m_texSize.y = static_cast<int>(m_tex->getHeight());
         }
     }
 
