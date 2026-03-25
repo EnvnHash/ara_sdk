@@ -29,7 +29,7 @@ void UIApplication::initGLBase() {
         // this is called from GLBase resource update thread, in order to not update Resource while they are used,
         // only a flag is set and a redraw forced. Styles will be updated during UINode::draw iteration this is only
         // needed in debug mode, when the resources can change during runtime
-        if (m_glbase.getAssetManager() && !m_glbase.getAssetManager()->usingComp()) {
+        if (m_glbase.getAssetManager() && !AssetManager::usingComp()) {
             m_glbase.addUpdtResCb([this] {
                 for (const auto& it : m_uiWindows) {
                     it->setResChanged(true);
@@ -148,7 +148,7 @@ void UIApplication::openInfoDiag(const InfoDiagParams& params) {
         // check if another info dialog is open, if this is the case, close it
         if (m_infoDiag) {
             m_infoDiag->setRemoveCb(nullptr);  // avoid removeWindow to be called twice
-            auto ptr   = m_infoDiag;
+            const auto ptr = m_infoDiag;
             m_infoDiag = nullptr;
             ptr->addCloseEvent(nullptr);  // frees GLFWWindow instance in GLFWWindowManager
             removeWindow(ptr);            // remove the dialog from the m_uiWindow vector -> calls dtor
@@ -192,7 +192,7 @@ void UIApplication::openInfoDiag(const InfoDiagParams& params) {
     });
 }
 
-void UIApplication::showInfo(const std::string& msg, long minStayTime, int width, int height, bool isModal,
+void UIApplication::showInfo(const std::string& msg, const long minStayTime, int width, int height, const bool isModal,
                              std::function<void()> onClose, std::function<void()> onInfoOpen) {
     m_infoDiagCreatedCb = std::move(onInfoOpen);
 
@@ -213,7 +213,7 @@ void UIApplication::showInfo(const std::string& msg, long minStayTime, int width
     });
 }
 
-void UIApplication::showCancel(std::string msg, long minStayTime, int width, int height, bool isModal,
+void UIApplication::showCancel(std::string msg, const long minStayTime, int width, int height, const bool isModal,
                                std::function<bool()> cancelCb) {
     ivec2 diagPos{0, 0};
     if (!m_uiWindows.empty()) {
@@ -234,7 +234,7 @@ void UIApplication::showCancel(std::string msg, long minStayTime, int width, int
 
 void UIApplication::openInfoDiag(infoDiagType tp, const std::string& msg, const std::function<bool()>& onConfirm) {
     ivec2 diagPos{0, 0};
-    ivec2 diagSize{750, 150};
+    constexpr ivec2 diagSize{750, 150};
 
     if (!m_uiWindows.empty()) {
         diagPos = (m_uiWindows.front()->getSize() - diagSize) / 2 + m_uiWindows.front()->getPosition();
@@ -263,7 +263,7 @@ void UIApplication::setActiveModalWin(UIWindow *win) {
     }
 }
 
-void UIApplication::startEventLoop() {
+void UIApplication::startEventLoop() const {
 #ifdef ARA_USE_GLFW
     m_glbase.getWinMan()->startEventLoop();
 #endif

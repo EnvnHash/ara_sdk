@@ -77,7 +77,7 @@ bool UIEdit::drawIndirect(uint32_t& objId) {
     return true;  // count up objId
 }
 
-void UIEdit::drawCaret(bool forceCaretVaoUpdt) {
+void UIEdit::drawCaret(const bool forceCaretVaoUpdt) {
     if (!m_caret) {
         return;
     }
@@ -147,8 +147,7 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
     m_riFont     = font;
     m_renderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
 
-    vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
-    int  lidx;
+    const vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
 
     if (!hasOpt(manual_space)) {
         m_tSize = m_tContSize;
@@ -160,7 +159,7 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
     m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
 
     // Calculate offset
-    if ((lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
+    if (int lidx; (lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
         const auto cpos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
         const float pa = m_riFont->getPixAscent();
 
@@ -454,8 +453,8 @@ void UIEdit::mouseWheel(hidData& data) {
     data.consumed = m_useWheel;
 }
 
-void UIEdit::incValue(float amt, cfState cf) {
-    float mAmt = amt * (cf == cfState::coarse ? 10.f : cf == cfState::normal ? 1.f : 0.1f);
+void UIEdit::incValue(const float amt, const cfState cf) {
+    const float mAmt = amt * (cf == cfState::coarse ? 10.f : cf == cfState::normal ? 1.f : 0.1f);
 
     if (hasOpt(num_int)) {
         incValue<int32_t>(mAmt);
@@ -494,7 +493,7 @@ void UIEdit::setTextDist(const std::filesystem::path& p) {
 }
 
 void UIEdit::setText(const std::string &str) {
-    bool updt = str.size() != m_text.size();
+    const bool updt = str.size() != m_text.size();
     m_text.assign(str, 0, std::min(m_maxCount, static_cast<int>(str.size())));
     checkLimits();
     m_caretIndex = static_cast<int>(m_text.size());
@@ -532,7 +531,7 @@ void UIEdit::clampValue() {
     }
 }
 
-bool UIEdit::validateInputToString(int ch) {
+bool UIEdit::validateInputToString(const int ch) {
     auto str = TextBlock::validateInputToString(ch);
 
     if (hasOpt(num_int)) {
@@ -544,9 +543,7 @@ bool UIEdit::validateInputToString(int ch) {
     return true;
 }
 
-int UIEdit::insertChar(int ch, int position, bool call_cb) {
-    bool validNewValue = true;
-
+int UIEdit::insertChar(const int ch, int position, const bool call_cb) {
     // error check caretIndex == position
     position = static_cast<int>(std::min<size_t>(std::max<size_t>(static_cast<size_t>(position), 0), m_text.size()));
 
@@ -588,7 +585,7 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
 
     m_text.insert(position, 1, static_cast<char>(ch));
 
-    if (call_cb && m_setTextCb && validNewValue) {
+    if (bool validNewValue = true; call_cb && m_setTextCb && validNewValue) {
         m_setTextCb(m_text);
     }
 
@@ -596,7 +593,7 @@ int UIEdit::insertChar(int ch, int position, bool call_cb) {
     return position + 1;
 }
 
-void UIEdit::updateValFromText(std::string& txt, bool updateText) {
+void UIEdit::updateValFromText(const std::string& txt, const bool updateText) {
     try {
         if (hasOpt(num_int)) {
             setValue<int32_t>(txt.empty() ? 0 : std::stoi(txt), updateText);
@@ -608,7 +605,7 @@ void UIEdit::updateValFromText(std::string& txt, bool updateText) {
     }
 }
 
-void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClass) {
+void UIEdit::updateStyleIt(ResNode *node, const state st, const std::string& styleClass) {
     TextBlock::updateStyleIt(node, st, styleClass);
 
     if (node->hasValue("edit-opt")) {
@@ -628,13 +625,13 @@ void UIEdit::updateStyleIt(ResNode *node, state st, const std::string& styleClas
         m_tOpt = opt;
     }
 
-    if (auto cc = node->findNode<AssetColor>("caret-color")) {
+    if (const auto cc = node->findNode<AssetColor>("caret-color")) {
         vec4 col                                  = cc->getColorVec4();
         m_setStyleFunc[st][styleInit::caretColor] = [this, col]() { setCaretColor(col.r, col.g, col.b, col.a); };
     }
 }
 
-void UIEdit::changeValType(unsigned long t) {
+void UIEdit::changeValType(const unsigned long t) {
     if (t != num_int && t != num_fp) {
         return;
     }
@@ -658,18 +655,18 @@ void UIEdit::setPropItem(Item *item) {
     }
 }
 
-void UIEdit::blockEdit(bool val) {
+void UIEdit::blockEdit(const bool val) {
     m_blockEdit      = val;
     m_glyphsPrepared = false;
 }
 
 void UIEdit::removeEnterCb(void* ptr) {
-    if (auto it = m_onEnterCb.find(ptr); it != m_onEnterCb.end()) {
+    if (const auto it = m_onEnterCb.find(ptr); it != m_onEnterCb.end()) {
         m_onEnterCb.erase(it);
     }
 }
 
-void UIEdit::setCaretColor(vec4 c, state st) {
+void UIEdit::setCaretColor(const vec4 c, const state st) {
     m_caretColor     = c;
     m_glyphsPrepared = false;
     setStyleInitVal("caret-color",
@@ -678,7 +675,7 @@ void UIEdit::setCaretColor(vec4 c, state st) {
                     st);
 }
 
-void UIEdit::setCaretColor(float r, float g, float b, float a, state st) {
+void UIEdit::setCaretColor(const float r, const float g, const float b, const float a, const state st) {
     m_caretColor.r   = r;
     m_caretColor.g   = g;
     m_caretColor.b   = b;

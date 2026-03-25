@@ -97,7 +97,7 @@ public:
 
     UIWindow* getInfoDiag() const { return m_infoDiag; }
     void      waitForExit() { m_exitSema.wait(0); }
-    void      startEventLoop(); // run a pure event loop inside WindowManager, -> event will be distributed to all registered windows
+    void      startEventLoop() const; // run a pure event loop inside WindowManager, -> event will be distributed to all registered windows
 
     virtual void    setActiveModalWin(UIWindow* win);
     void            setEnableMenuBar(const bool val) { m_menuBarEnabled = val; }
@@ -117,22 +117,22 @@ public:
     auto        getDataModel() const { return m_dataModel; }
 
     void stop();            /// for single threaded mode
-    virtual void exit();    /// exit the application, must called from the main thread in multi-thread setups
+    virtual void exit();    /// exit the application, must be called from the main thread in multi-thread setups
 
 protected:
-    std::thread                                                               m_guiThread;
-    Conditional                                                               m_exitSema;
-    Conditional                                                               m_loopExitSema;
-    std::function<void()>                                                     m_infoDiagCreatedCb;
-    std::unordered_map<void*, std::shared_ptr<std::function<void(std::any)>>> m_onValChangedCb;
+    double                  dt = 1.0;
+    void*                   m_dataModel = nullptr;
+    bool                    m_scaleToMonitor = false;
+    std::thread             m_guiThread;
+    Conditional             m_exitSema;
+    Conditional             m_loopExitSema;
+    std::function<void()>   m_infoDiagCreatedCb;
+    InfoDialog*             m_infoDiag = nullptr;
+    std::thread::id         m_mainThreadId{};
 
     std::vector<std::unique_ptr<UIWindow>> m_uiWindows;
-    InfoDialog*                            m_infoDiag = nullptr;
-    std::thread::id                        m_mainThreadId{};
 
-    double dt          = 1.0;
-    void*  m_dataModel = nullptr;
-    bool   m_scaleToMonitor = false;
+    std::unordered_map<void*, std::shared_ptr<std::function<void(std::any)>>> m_onValChangedCb;
 };
 
 }  // namespace ara

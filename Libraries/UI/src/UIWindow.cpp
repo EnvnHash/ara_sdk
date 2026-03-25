@@ -842,7 +842,7 @@ void UIWindow::onKeyDown(const int key, const bool shiftPressed, const bool ctrl
     }
 }
 
-void UIWindow::onKeyUp(int key, bool shiftReleased, bool ctrlReleased, bool altReleased) {
+void UIWindow::onKeyUp(const int key, const bool shiftReleased, const bool ctrlReleased, bool altReleased) {
     if (shiftReleased) {
         m_hidData.shiftPressed = false;
     }
@@ -878,7 +878,7 @@ void UIWindow::onChar(unsigned int codepoint) {
     }
 }
 
-void UIWindow::fillHidData(hidEvent evt, float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
+void UIWindow::fillHidData(const hidEvent evt, const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
     if (evt == hidEvent::MouseDownLeft || evt == hidEvent::MouseDownRight) {
         m_hidData.dragStart = true;
         m_mouseDownPos.x = xPos;
@@ -1123,7 +1123,7 @@ void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
     }
 }
 
-void UIWindow::onWheel(float deg) {
+void UIWindow::onWheel(const float deg) {
     m_hidData.objId   = getObjAtPos(m_hidData.mousePos, hidEvent::MouseWheel);
     m_hidData.degrees = deg;
 
@@ -1147,7 +1147,7 @@ void UIWindow::onScale(float fact, float focusX, float focusY) {
 }
 
 // input always in virtual pixels
-void UIWindow::onSetViewport(int x, int y, int width, int height) {
+void UIWindow::onSetViewport(int x, int y, const int width, int height) {
     bool clearFonts = false;
 
 #ifdef ARA_USE_GLFW
@@ -1220,7 +1220,7 @@ void UIWindow::onNodeRemove(UINode *node) {
     }
 }
 
-int32_t UIWindow::getObjAtPos(vec2& pos, hidEvent evt) {
+int32_t UIWindow::getObjAtPos(vec2& pos, const hidEvent evt) {
     m_opi.it             = std::next(m_uiRoot.children().end(), -1); // take the last element of the tree
     m_opi.list           = &m_uiRoot.children();
     m_opi.pos            = pos;
@@ -1249,7 +1249,7 @@ int32_t UIWindow::getObjAtPos(vec2& pos, hidEvent evt) {
     return static_cast<int32_t>(m_opi.foundId);
 }
 
-void UIWindow::setModal(bool val) {
+void UIWindow::setModal(const bool val) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     if (m_selfManagedCtx) {
         m_isModal = val;

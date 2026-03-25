@@ -5,10 +5,10 @@
 #pragma once
 
 #include <UIElements/UINodeBase/UINodeGeom.h>
+#include <Asset/ResNode.h>
 
 namespace ara {
 
-class ResNode;
 class GLBase;
 
 class UINodeStyle : public UINodeGeom {
@@ -21,7 +21,17 @@ public:
     virtual void rebuildCustomStyle();
 
     template <typename Callable>
-    void updateStylePixAndPercent(ResNode* node, state st, const std::string& findNode, styleInit si, const Callable& f);
+    void updateStylePixAndPercent(ResNode* node, const state st, const std::string& findNode, const styleInit si, const Callable& f) {
+        if (const auto numNode = node->findNumericNode(findNode); get<ResNode*>(numNode)) {
+            if (get<unitType>(numNode) == unitType::Percent) {
+                float val = std::stof(get<std::string>(numNode)) * 0.01f;
+                m_setStyleFunc[st][si] = [val, f] { f(val); };
+            } else {
+                int val = std::stoi(get<std::string>(numNode));
+                m_setStyleFunc[st][si] = [val, f] { f(val); };
+            }
+        }
+    }
 
     void updateStyleColor(ResNode* node, state st, const std::string& findNode, styleInit si, const std::function<void(glm::vec4)>& f);
     void updateStylePixel(ResNode* node, state st, const std::string& findNode, styleInit si, const std::function<void(int)>& f);
@@ -51,7 +61,7 @@ public:
     void setFontType(std::string fontType) { m_fontType = std::string(std::move(fontType)); }
     void excludeFromStyles(const bool val) { m_excludeFromStyles = val; }
     void setState(state st);
-    void setGlBase(GLBase* glbase);
+    void setGlBase(GLBase* glBase);
     void setAlpha(float val);
 
     static std::string&     getCustomDefName() { return m_customDefName; }

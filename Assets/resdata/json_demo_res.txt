@@ -1,0 +1,188 @@
+#fonts
+fonts {
+    "light":"Fonts/VeraMono.ttf"
+    "regular":"Fonts/verdana.ttf"
+    "bold":"Fonts/verdanab.ttf"
+    "tab::regular":"Fonts/verdanaz.ttf"
+    "tab::bold":"Fonts/verdanab.ttf"
+}
+
+#icons
+icons {imgsrc:"ui-icons.png" grid:32 mipmaps:3
+    close {img pos:15,1 size:64,64}
+	minimize {img pos:19,1 size:64,64}
+	maximize {img pos:17,1 size:64,64}
+	restore {img pos:21,1 size:64,64}
+}
+
+defaults {
+	padding:5
+}
+
+colors {
+	white:#FFF
+	#white:rgb(255,255,255)
+	black:rgb(0,0,0)
+	transparent:rgba(0,0,0,0)
+    blue:rgb(0, 153, 230)
+    darkBlue:rgb(0, 92, 125)
+	background:rgb(40,40,40)
+	red:rgb(255,0,0)
+	lightBackground:rgb(92, 92, 92)
+    darkBackground:rgb(30,30,30)
+    highlight:rgb(0, 153, 222)
+	hiBg:rgb(140,140,140)
+
+	green:rgb(0,255,0)
+	yellow:rgb(255,255,0)
+	title:rgb(50,250,160)
+	comment:rgb(200,100,100)
+
+	viButtonHoverBg:rgb(33, 33, 33)
+	viButtonBg:rgb(89, 89, 89)
+
+    text:rgb(204, 204, 204)
+}
+
+menuBar {
+	close {
+        image: icons.close
+	}
+
+	minimize {
+        image: icons.minimize
+	}
+
+	maximize {
+        image: icons.maximize
+		imageOnState: icons.restore
+	}
+}
+
+propertySlider {
+	height:40px
+	align:center
+
+	label {
+		width:15%
+		text-color:colors.white
+		text-align:left
+		font-size:21
+	}
+
+	slider {
+		align:left
+		x:15%
+		width:62%
+		height:40px
+	}
+
+	edit {
+		align:right
+		border-width:1
+		border-radius:4
+		border-color:colors.lightBackground
+		width:20%
+		height:80%
+		v-align:center
+		text-valign:center
+		bkcolor:rgba(255,255,255,30)
+	}
+}
+
+#----- Icons (global) --------------------------------------------------------------------------------------------------
+
+icons {imgsrc:"ui-icons.png" grid:32 mipmaps:3
+
+	combo_down {img pos:1,1 size:32,32}
+	node_add_butt {img pos:1,2 size:64,64}
+	node_add_butt_cam {img pos:1,4 size:192,64}
+	node_add_butt_surf {img pos:1,6 size:192,64}
+	node_add_butt_eyep {img pos:1,8 size:192,64}
+	mt_view_butt {img pos:4,13 size:96,64}
+	mt_view_butt_dark {img pos:4,13 size:96,64}
+	folder {img pos:13,13 size:96,96}
+
+}
+
+#----- Info Dialog --------------------------------------------------------------------------------------------------
+
+infoDiag {
+	padding:10
+	border-width:1
+	text-align:left
+	border-color:rgb(110,110,110)
+	bkcolor:colors.darkBackground
+
+	message {
+
+		border-width:1px
+		border-radius:4px
+		bkcolor:colors.background
+		font {font:"regular" size:21}
+		text-color:colors.white
+
+		info {
+			border-color:colors.blue
+		}
+		warning {
+			border-color:colors.yellow
+		}
+		error {
+			padding:0,28,0,0
+			text-valign:top
+			border-color:colors.red
+		}
+	}
+
+	okButt {
+		bkcolor:colors.lightBackground
+		align:center
+		v-align:bottom
+		y: -20px
+		width:100px
+		height:36px
+		border-radius:4px
+		font {font:"regular" size:22}
+		text:"OK"
+	}
+
+	cancelButt {
+		bkcolor:colors.lightBackground
+		align:center
+		v-align:bottom
+		y:-20px
+		width:100px
+		height:36px
+		border-radius:4px
+		font {font:"regular" size:22}
+		text:"CANCEL"
+	}
+}
+
+#----- Json Editor --------------------------------------------------------------------------------------------------
+# settings are automatically applied to subnodes
+
+jsonEditor {
+    width: 1000px
+    lh : 25px
+
+    expand {
+        width: 10px
+        height: jsonEditor.lh
+    }
+
+    label {
+        x: 15px
+        width: 120px
+        height: jsonEditor.lh
+        font {font:"regular" size:18}
+    }
+
+    edit {
+        x: 135px
+        width: 150px
+        height: jsonEditor.lh
+        font {font:"regular" size:17}
+    }
+}

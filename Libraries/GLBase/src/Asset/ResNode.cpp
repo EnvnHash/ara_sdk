@@ -194,7 +194,7 @@ ResNode *ResNode::findNode(const string &path) {
     return r;
 }
 
-tuple<ResNode *, unitType, std::string> ResNode::findNumericNode(const string &path) {
+tuple<ResNode*, unitType, std::string> ResNode::findNumericNode(const string &path) {
     // check if result is numeric, if this is not the case, try to resolve it as
     // a reference to another node
     if (auto ptr = findNode(path)) {
@@ -272,11 +272,10 @@ string ResNode::getValue(const string &name, string def) const {
             return node->m_value;
         }
     }
-
     return def;
 }
 
-std::vector<float> ResNode::valuefv(const string &path, int floatCount, float def) {
+std::vector<float> ResNode::valuefv(const string &path, int floatCount, const float def) {
     std::vector<float> v;
     const ResNode *node = findNode(path);
     if (node == nullptr) {

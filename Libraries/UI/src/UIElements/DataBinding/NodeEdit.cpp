@@ -12,10 +12,16 @@ namespace ara {
 NodeEdit::NodeEdit() {
     m_enableExpandButton = false;
     m_xIdent = 0;
-}
 
-void NodeEdit::init() {
-    JsonEditor::init();
+    m_valChangedCb = [this](const std::string& str) {
+        if (m_jsonEntryType == JsonEntryType::float_number) {
+            LOG << "m_edit->changed float " << m_edit->getValue<float>();
+        } else if (m_jsonEntryType == JsonEntryType::int_number) {
+            LOG << "m_edit->changed int " << m_edit->getValue<int32_t>();
+        } else if (m_jsonEntryType == JsonEntryType::string) {
+            LOG << "m_edit->changed " << str;
+        }
+    };
 }
 
 void NodeEdit::rebuild() {
@@ -30,7 +36,7 @@ void NodeEdit::rebuild() {
         loadFromJson(j);
         setExpanded(true);
         int32_t yOffsCntr = 0;
-        rebuildCollapseState(this, yOffsCntr);
+        rebuildCollapseState(this, yOffsCntr, m_lineHeight);
     }
 }
 

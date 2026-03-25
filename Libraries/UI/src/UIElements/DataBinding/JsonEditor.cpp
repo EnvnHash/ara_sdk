@@ -11,7 +11,7 @@ using namespace glm;
 using namespace nlohmann;
 
 namespace ara {
-    JsonEditor::JsonEditor() {
+JsonEditor::JsonEditor() {
     setTypeName<JsonEditor>();
     setName(getTypeName<JsonEditor>());
     setParseAsGenericJson(true);
@@ -23,7 +23,7 @@ void JsonEditor::init() {
         return;
     }
 
-    setHeight( m_lineHeight);
+    setHeight(m_lineHeight);
     if (m_enableExpandButton) {
         addExpandButt();
     }
@@ -31,6 +31,7 @@ void JsonEditor::init() {
     m_label = &push<Label>(LabelPars{
         .pos = ivec2{ 0, 0 },
         .size = ivec2{ m_labelWidth, m_lineHeight },
+        .style = getStyleClass()+".label",
         .align = align::left,
         .valign = valign::top,
         .text_color = vec4{ 1.f, 1.f, 1.f, 1.f },
@@ -38,7 +39,7 @@ void JsonEditor::init() {
         .text_align_x = align::left,
         .text_align_y = valign::center,
         .font_type = "regular",
-        .font_height = m_lineHeight - 5
+        .font_height = 22
     });
 
     if (m_jsonEntryType != JsonEntryType::object && m_jsonEntryType != JsonEntryType::array) {
@@ -46,12 +47,14 @@ void JsonEditor::init() {
             .pos = ivec2{ m_labelWidth + m_xSpacing, 0 },
             .size = { ivec2{ -m_labelWidth -m_xSpacing, m_lineHeight } },
             .bgColor = vec4{.15f, .15f, .15f, 1.f},
+            .style = getStyleClass()+".edit",
             .borderWidth = 2,
             .borderRadius = 4,
             .borderColor = vec4{.3f, .3f, .3f, 1.f},
             .padding = vec4{2.f, 2.f, 2.f, 2.f},
         });
-        m_edit->setFontSize(m_lineHeight -9);
+        m_edit->setFontSize(22);
+        m_edit->setUseWheel(true);
 
         if (m_jsonEntryType == JsonEntryType::float_number) {
             m_edit->setValue(value<float>());
@@ -60,9 +63,29 @@ void JsonEditor::init() {
         } else if (m_jsonEntryType == JsonEntryType::string) {
             m_edit->setText(value<std::string>());
         }
+        m_edit->addEnterCb([&](const std::string &str) {
+            if (m_valChangedCb) {
+                m_valChangedCb(str);
+            }
+        }, this);
     }
 
     //m_edit->setProp();
+}
+
+void JsonEditor::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
+    UINode::updateStyleIt(node, st, styleClass);
+
+    if (m_jsonEntryType == JsonEntryType::rootObject) {
+        m_lineHeight = getLineHeight(node);
+        int32_t yOffsCntr = 0;
+        setLineOffset(this, yOffsCntr, m_lineHeight);
+    } else {
+        // override standard UINode settings
+        m_setStyleFunc[state::none][styleInit::x] = [this] { setX(m_custPos.x, state::none); };
+        m_setStyleFunc[state::none][styleInit::y] = [this] { setY(m_custPos.y, state::none); };
+        m_setStyleFunc[state::none][styleInit::height] = [this] { setHeight(m_lineHeight, state::none); };
+    }
 }
 
 void JsonEditor::addExpandButt() {
@@ -70,6 +93,7 @@ void JsonEditor::addExpandButt() {
         auto& arrowButt = push<ImageButton>(UINodePars{
             .pos = ivec2{ 0.f,  3 },
             .size = ivec2{ 12, m_lineHeight - 5 },
+            .style = getStyleClass()+".expand",
             .align = align::left,
             .valign = valign::top,
         });
@@ -89,7 +113,7 @@ void JsonEditor::addExpandButt() {
             }
             const auto root = getJsonRoot();
             int32_t yOffsCntr = 0;
-            rebuildCollapseState(root, yOffsCntr);
+            rebuildCollapseState(root, yOffsCntr, m_lineHeight);
 
             return true;
         });
@@ -104,20 +128,17 @@ void JsonEditor::loadFile(const filesystem::path& p) {
         setExpanded(true);
 
         int32_t yOffsCntr = 0;
-        rebuildCollapseState(this, yOffsCntr);
+        rebuildCollapseState(this, yOffsCntr, m_lineHeight);
 
         return true;
     });
 }
 
-void JsonEditor::parseNonClassEntries(const json& j, std::list<std::function<void()>*>* postLoadCbsArg) {
+void JsonEditor::parseNonClassEntries(const json& j, list<function<void()>*>* postLoadCbsArg) {
     for (auto& [key, value] : j.items()) {
         if (value.is_array() || value.is_object()) {
             auto& newChild = push<JsonEditor>();
-            newChild.setLineHeight(m_lineHeight);
-            newChild.setSpacing(m_xSpacing);
-            newChild.setLabelWidth(m_labelWidth);
-            newChild.setKey(key);
+            initChild(newChild, key);
             newChild.setJsonObjectType(value.is_array() ? JsonEntryType::array : JsonEntryType::object);
             newChild.deserialize(value, postLoadCbsArg);
             newChild.setVisibility(false);
@@ -127,10 +148,7 @@ void JsonEditor::parseNonClassEntries(const json& j, std::list<std::function<voi
             if (childIt == m_children.end()) {
                 auto& je = push<JsonEditor>();
                 childIt = --m_children.end();
-                je.setKey(key);
-                je.setLineHeight(m_lineHeight);
-                je.setSpacing(m_xSpacing);
-                je.setLabelWidth(m_labelWidth);
+                initChild(je, key);
             }
 
             const auto child = dynamic_cast<JsonEditor*>(childIt->get());
@@ -152,7 +170,31 @@ void JsonEditor::parseNonClassEntries(const json& j, std::list<std::function<voi
     }
 }
 
-void JsonEditor::rebuildCollapseState(JsonEditor* nd, int32_t& yOffsCntr) {
+void JsonEditor::initChild(JsonEditor& je, const std::string& key)  {
+    je.setKey(key);
+    je.addStyleClass(getStyleClass());
+    if (m_label && m_edit) {
+        je.setLineHeight(m_label->getSize().y);
+        je.setSpacing(m_edit->getPos().x - m_label->getSize().x - m_label->getPos().x);
+        je.setLabelWidth(m_label->getSize().x);
+    }
+}
+
+void JsonEditor::setLineOffset(JsonEditor* nd, int32_t& yOffsCntr, int32_t& lineHeight) {
+    if (!nd) {
+        return;
+    }
+
+    if (const auto parent = dynamic_cast<JsonEditor*>(nd->parent())) {
+        nd->setYOffs(parent, yOffsCntr, lineHeight);
+    }
+
+    for (auto& c : nd->children()) {
+        setLineOffset(dynamic_cast<JsonEditor *>(c.get()), yOffsCntr, lineHeight);
+    }
+}
+
+void JsonEditor::rebuildCollapseState(JsonEditor* nd, int32_t& yOffsCntr, int32_t& lineHeight) {
     if (!nd) {
         return;
     }
@@ -166,10 +208,7 @@ void JsonEditor::rebuildCollapseState(JsonEditor* nd, int32_t& yOffsCntr) {
             }
         }
 
-        if (parent->isExpanded()) {
-            nd->setYOffs(yOffsCntr);
-            ++yOffsCntr;
-        }
+        nd->setYOffs(parent, yOffsCntr, lineHeight);
 
         if (!parent->isExpanded() && !uiChildren.empty()) {
             nd->setVisibility(false);
@@ -181,55 +220,49 @@ void JsonEditor::rebuildCollapseState(JsonEditor* nd, int32_t& yOffsCntr) {
     }
 
     for (auto& c : nd->children()) {
-        rebuildCollapseState(dynamic_cast<JsonEditor *>(c.get()), yOffsCntr);
+        rebuildCollapseState(dynamic_cast<JsonEditor *>(c.get()), yOffsCntr, lineHeight);
     }
 }
 
-void JsonEditor::setYOffs(const int32_t& val) {
-    m_yOffs = val;
-    if (const auto p = dynamic_cast<JsonEditor*>(parent())) {
-        m_yOffs -= p->getYOffs();
+void JsonEditor::setYOffs(const JsonEditor* parent, int32_t& yOffsCntr, int32_t& lineHeight) {
+    if (parent->isExpanded()) {
+        if (getJsonEntryType() != JsonEntryType::rootObject) {
+            setLineHeight(lineHeight);
+        }
+
+        m_yOffs = yOffsCntr++;
+
+        m_treeDepth = getTreeDepth();
+        m_custPos.x = (m_treeDepth - parent->getDepth()) * m_xIdent;
+        m_custPos.y = (m_ySpacing + lineHeight) * (m_yOffs - parent->getYOffs());
+        setPos(m_custPos);
     }
-   // LOG << getTreeDepth() ;
-    setPos(getTreeDepth() * m_xIdent, (m_ySpacing + m_lineHeight) * m_yOffs);
+}
+
+int32_t JsonEditor::getLineHeight(ResNode* node) const {
+    int32_t lineHeight = m_lineHeight;
+    if (const auto editNode = node->findNode("edit")) {
+        if (const auto numNode = editNode->findNumericNode("height"); get<ResNode*>(numNode)) {
+            if (get<unitType>(numNode) == unitType::Percent) {
+                lineHeight = std::stof(get<std::string>(numNode)) * 0.01f;
+            } else {
+                lineHeight = std::stoi(get<std::string>(numNode));
+            }
+        }
+    }
+    return lineHeight;
 }
 
 void JsonEditor::setSpacing(const int32_t& s) {
     m_xSpacing = s;
-
-    if (m_edit) {
-        m_edit->setX(m_labelWidth +s);
-        m_edit->setWidth(-m_labelWidth -s);
-    }
-    getSharedRes()->reqRedraw();
 }
 
 void JsonEditor::setLabelWidth(const int32_t& w) {
     m_labelWidth = w;
-
-    if (m_label) {
-        m_label->setWidth(w);
-    }
-    if (m_edit) {
-        m_edit->setX(m_labelWidth +m_xSpacing);
-        m_edit->setWidth(-m_labelWidth -m_xSpacing);
-
-    }
-    getSharedRes()->reqRedraw();
 }
 
 void JsonEditor::setLineHeight(const int32_t& h) {
     m_lineHeight = h;
-
-    if (m_label) {
-        m_label->setHeight(h);
-    }
-
-    if (m_edit) {
-        m_edit->setHeight(h);
-    }
-
-    getSharedRes()->reqRedraw();
 }
 
 }

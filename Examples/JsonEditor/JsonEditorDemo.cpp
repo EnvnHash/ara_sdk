@@ -11,6 +11,8 @@ using namespace ara;
 using namespace glm;
 
 void JsonEditorDemo::init(std::function<void(UINode&)>) {
+    setResFile("json_demo_res.txt");
+
     UIApplication::init([](UINode& rootNode){
         rootNode.setBackgroundColor(vec4(.1f, .1f, .1f, 1.f));
         rootNode.setPadding(20.f);
@@ -22,6 +24,7 @@ void JsonEditorDemo::init(std::function<void(UINode&)>) {
         auto& edit = rootNode.push<JsonEditor>(UINodePars{
             .pos = ivec2{ 0, 40 },
             .bgColor = vec4(.1f, .1f, .8f, 0.3f),
+            .style = "jsonEditor"
         });
         edit.setSize(1.f, -40);
         edit.loadFile("test.json");

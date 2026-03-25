@@ -12,7 +12,6 @@ class Label;
 class NodeEdit : public JsonEditor {
 public:
     NodeEdit();
-    void init() override;
     void rebuild();
 
     void setNode(Node& node) {

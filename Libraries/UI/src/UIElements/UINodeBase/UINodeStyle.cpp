@@ -92,25 +92,13 @@ void UINodeStyle::rebuildCustomStyle() {
     }
 }
 
-template <typename Callable>
-void UINodeStyle::updateStylePixAndPercent(ResNode* node, const state st, const std::string& findNode, const styleInit si, const Callable& f) {
-    if (const auto numNode = node->findNumericNode(findNode); get<ResNode*>(numNode)) {
-        if (get<unitType>(numNode) == unitType::Percent) {
-            float val = stof(get<string>(numNode)) * 0.01f;
-            m_setStyleFunc[st][si] = [val, f]() { f(val); };
-        } else {
-            int val = stoi(get<string>(numNode));
-            m_setStyleFunc[st][si] = [val, f]() { f(val); };
-        }
-    }
-}
-
 void UINodeStyle::updateStyleColor(ResNode* node, const state st, const std::string& findNode, const styleInit si, const std::function<void(vec4)>& f) {
     if (const auto color = node->findNode<AssetColor>(findNode)) {
         vec4 col = color->getColorVec4();
         m_setStyleFunc[st][si] = [f, col] { f(col); };
     }
 }
+
 void UINodeStyle::updateStylePixel(ResNode* node, const state st, const std::string& findNode, const styleInit si, const std::function<void(int)>& f) {
     if (const auto resNode = node->findNumericNode(findNode); get<ResNode*>(resNode) && get<unitType>(resNode) == unitType::Pixels) {
         auto val = stoi(get<string>(resNode));
@@ -337,7 +325,7 @@ void UINodeStyle::setColor(float r, float g, float b, float a, const state st) {
     setColor({r, g, b, a}, st);
 }
 
-void UINodeStyle::setColor(const vec4& col, state st) {
+void UINodeStyle::setColor(const vec4& col, const state st) {
     if (st == state::m_state || st == m_state) {
         m_color            = col;
         m_drawParamChanged = true;
@@ -431,8 +419,8 @@ void  UINodeStyle::setState(const state st) {
     m_state = st;
 }
 
-void UINodeStyle::setGlBase(GLBase* glbase) {
-    m_glbase = glbase;
+void UINodeStyle::setGlBase(GLBase* glBase) {
+    m_glbase = glBase;
 }
 
 }

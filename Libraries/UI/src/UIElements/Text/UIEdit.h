@@ -21,7 +21,7 @@ public:
     bool drawIndirect(uint32_t& objId) override;
     void drawCaret(bool forceCaretVaoUpdt = true);
 
-    void updateValFromText(std::string& txt, bool updateText=true);
+    void updateValFromText(const std::string& txt, bool updateText=true);
     void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
     void updateFontGeo() override;
 
@@ -33,9 +33,9 @@ public:
     void clearEnterCb() { m_onEnterCb.clear(); }
 
     void setText(const std::string &str) override;
-    void setTextCb(std::function<void(std::string)> func) { m_setTextCb = std::move(func); }
-    void setPrecision(int prec) { m_precision = prec; }
-    void setUseWheel(bool val) { m_useWheel = val; }
+    void setTextCb(std::function<void(const std::string&)> func) { m_setTextCb = std::move(func); }
+    void setPrecision(const int prec) { m_precision = prec; }
+    void setUseWheel(const bool val) { m_useWheel = val; }
     void setCaretColor(glm::vec4 c, state st = state::m_state) ;
     void setCaretColor(float r, float g, float b, float a, state st = state::m_state) ;
     void setCaretWidth(int w) { m_caretWidth = w; }
@@ -56,13 +56,14 @@ public:
 
     template <typename T>
     requires std::integral<T> || std::floating_point<T>
-    void setValue(T val, bool updtText=true) {
+    void setValue(T val, const bool updtText=true) {
         std::get<T>(m_value) = std::max(std::min(val, std::get<T>(m_maxVal)), std::get<T>(m_minVal));
+        setOpt(std::is_floating_point_v<T> ? num_fp : num_int);
 
         if (updtText) {
             std::stringstream stream;
             stream << std::fixed << std::setprecision(m_precision) << std::get<T>(m_value);
-            bool updt = m_text.size() != stream.str().size();
+            const bool updt = m_text.size() != stream.str().size();
             m_text    = stream.str();
             reqUpdtGlyphs(updt);
         }
@@ -169,8 +170,8 @@ protected:
 
     int insertChar(int ch, int position, bool call_cb = true);  // returns new caret position
 
-    std::function<void(std::string)>                            m_setTextCb;
-    std::unordered_map<void*, std::function<void(std::string)>> m_onEnterCb;
+    std::function<void(const std::string&)>                             m_setTextCb;
+    std::unordered_map<void*, std::function<void(const std::string&)>>  m_onEnterCb;
 
     Number m_minVal{ std::numeric_limits<int32_t>::min(), std::numeric_limits<float>::min(), std::numeric_limits<double>::min()};
     Number m_maxVal{ std::numeric_limits<int32_t>::max(), std::numeric_limits<float>::max(), std::numeric_limits<double>::max()};

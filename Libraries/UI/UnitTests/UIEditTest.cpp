@@ -29,7 +29,7 @@ UIEdit& addFloatEdit(const UIApplication& app) {
 std::string getSelAllCopyOutput(const UIApplication &app, UIEdit* ed) {
     std::string value;
 #ifdef ARA_USE_CLIP
-    auto mainWin = app.getMainWindow();
+    const auto mainWin = app.getMainWindow();
     // simulate select all
     mainWin->onMouseDownLeft(102, 22, false, false, false);
     mainWin->onMouseUpLeft();
@@ -66,7 +66,7 @@ TEST(UITest, UIEditFloatBackspaceTest) {
     appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
 
-        auto mainWin = app.getMainWindow();
+        const auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(122, 22, false, false, false);
         mainWin->onMouseUpLeft();
 
@@ -91,7 +91,7 @@ TEST(UITest, UIEditFloatDelTest) {
     appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
 
-        auto mainWin = app.getMainWindow();
+        const auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(114, 22, false, false, false);
         mainWin->onMouseUpLeft();
 
@@ -104,7 +104,7 @@ TEST(UITest, UIEditFloatDelTest) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_del_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
 
-        auto str = getSelAllCopyOutput(app, ed);
+        const auto str = getSelAllCopyOutput(app, ed);
         EXPECT_EQ(str, "1.240");
         EXPECT_EQ(ed->getValue(), 1.24f);
     }, 300, 100);
@@ -117,7 +117,7 @@ TEST(UITest, UIEditFloatInsertTest) {
     appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
 
-        auto mainWin = app.getMainWindow();
+        const auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(114, 22, false, false, false);
         mainWin->onMouseUpLeft();
         mainWin->onChar(ARA_KEY_7);
@@ -125,7 +125,7 @@ TEST(UITest, UIEditFloatInsertTest) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_insert_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
 
-        auto str = getSelAllCopyOutput(app, ed);
+        const auto str = getSelAllCopyOutput(app, ed);
         EXPECT_EQ(str, "1.2734");
         EXPECT_EQ(ed->getValue(), 1.2734f);
     }, 300, 100);
@@ -139,14 +139,14 @@ TEST(UITest, UIEditFloatWheelTest) {
         ed = &addFloatEdit(app);
         ed->setUseWheel(true);
 
-        auto mainWin = app.getMainWindow();
+        const auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(122, 22, false, false, false);
         mainWin->onMouseUpLeft();
         mainWin->onWheel(1.f);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_wheel_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
-        auto str = getSelAllCopyOutput(app, ed);
+        const auto str = getSelAllCopyOutput(app, ed);
         EXPECT_EQ(str, "1.334");
         EXPECT_EQ(ed->getValue(), 1.334f);
     }, 300, 100);

@@ -34,7 +34,7 @@ UITable::UITable(const UITableParameters& par) {
     }, par.size);
 
     bool updateCells = false;
-    std::array<std::function<void()>, 8> funcMap {
+    const std::array<std::function<void()>, 8> funcMap {
             [&] { auto c = par.fgColor.value(); UITable::setColor(c.r, c.g, c.b, c.a); },
             [&] { UITable::setBackgroundColor(par.bgColor.value()); },
             [&] { setAlignX(par.alignX.value()); },
@@ -58,22 +58,20 @@ UITable::UITable(const UITableParameters& par) {
         UITable::initNewCellNode();
     }
 
-    UITable::geo_Update();
+    UITable::geoUpdate();
 }
 
-int UITable::geo_Update() {
+int UITable::geoUpdate() {
     m_geoUpdating = true;
 
     if (getDynamicWidth()) {
-        float v = m_cells(1).calculatePixGeo(m_margin[0].x, m_margin[1].x, m_spacing.x);
-        if (v != getContentSize().x) {
+        if (const float v = m_cells(1).calculatePixGeo(m_margin[0].x, m_margin[1].x, m_spacing.x); v != getContentSize().x) {
             setWidth(static_cast<int>(v));
         }
     }
 
     if (getDynamicHeight()) {
-        float v = m_cells(0).calculatePixGeo(m_margin[0].y, m_margin[1].y, m_spacing.y);
-        if (v != getContentSize().y) {
+        if (const float v = m_cells(0).calculatePixGeo(m_margin[0].y, m_margin[1].y, m_spacing.y); v != getContentSize().y) {
             setHeight(static_cast<int>(v));
         }
     }
@@ -87,9 +85,9 @@ int UITable::geo_Update() {
     Table_CellGeo cg;
     int            i = 0;
 
-    for (e_cell& cell : m_cells) {
+    for (auto&[ui_node, content] : m_cells) {
         if (m_cells.getCellGeo(cg, i)) {
-            if ((uinode = cell.ui_node) != nullptr) {
+            if ((uinode = ui_node) != nullptr) {
                 if (uinode->getPos().x != cg.pixPos[0] || uinode->getPos().y != cg.pixPos[1]) {
                     uinode->setPos(static_cast<int>(cg.pixPos[0]), static_cast<int>(cg.pixPos[1]));
                 }
@@ -111,12 +109,12 @@ int UITable::geo_Update() {
     return m_cells.getCellCount();
 }
 
-void UITable::setRowHeight(int32_t idx, int32_t heightInPix) {
+void UITable::setRowHeight(const int32_t idx, const int32_t heightInPix) {
     m_cells(0).setPix(idx, heightInPix);
 }
 
 /** to be used for moving UINodes from existing parents to the table */
-UINode* UITable::setCell(int row, int column, const vector<shared_ptr<UINode> >::iterator& nodeIt) {
+UINode* UITable::setCell(const int row, const int column, const vector<shared_ptr<UINode> >::iterator& nodeIt) {
     if (int idx; (idx = m_cells.rowColumnToIndex(row, column, true)) >= 0) {
         // get the cell's ui_node
         auto cell = m_cells[idx].ui_node;
@@ -128,13 +126,13 @@ UINode* UITable::setCell(int row, int column, const vector<shared_ptr<UINode> >:
         m_cells[idx].content = dynamic_cast<UINode *>(cell->children().back().get());
     }
 
-    geo_Update();
+    geoUpdate();
     return nodeIt->get();
 }
 
 void UITable::updateMatrix() {
     if (m_geoChanged && !m_geoUpdating) {
-        geo_Update();
+        geoUpdate();
     }
     UINode::updateMatrix();
 }
@@ -199,9 +197,9 @@ void UITable::mouseUp(hidData& data) {
     data.consumed = true;
 }
 
-bool UITable::insertRow(int at, int count, float size, bool percent, bool fixed, float min_pix_size,
-                        float max_pix_size) {
-    Table_rc tb{size,
+bool UITable::insertRow(const int at, const int count, const float size, const bool percent, const bool fixed,
+    const float min_pix_size, const float max_pix_size) {
+    const Table_rc tb{size,
                  size <= 0 ? dTableType::Undef
                  : percent ? dTableType::Percent
                            : dTableType::Pix,
@@ -211,7 +209,7 @@ bool UITable::insertRow(int at, int count, float size, bool percent, bool fixed,
     return true;
 }
 
-bool UITable::insertColumn(int at, int count, float size, bool percent, bool fixed, float min_pix_size,
+bool UITable::insertColumn(const int at, const int count, const float size, const bool percent, bool fixed, float min_pix_size,
                            float max_pix_size) {
     Table_rc tb{size,
                  size <= 0 ? dTableType::Undef
@@ -248,7 +246,7 @@ bool UITable::clearCell(int row, int column, bool updateGeo) {
     m_cells[idx].content = nullptr;
 
     if (updateGeo) {
-        geo_Update();
+        geoUpdate();
     }
 
     return true;
@@ -280,7 +278,7 @@ bool UITable::removeRow(int row) {
 
         // remove the row
         m_cells(0).del(row, 1);
-        geo_Update();
+        geoUpdate();
     }
 
     return true;
@@ -296,7 +294,7 @@ void UITable::clearCells() {
     }
 
     m_cells.reset();
-    geo_Update();
+    geoUpdate();
 }
 
 void UITable::setFixedCellSize(bool val) {

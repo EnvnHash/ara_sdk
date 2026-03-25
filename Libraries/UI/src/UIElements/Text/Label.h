@@ -93,15 +93,14 @@ public:
     }
 
     template <typename T>
-    void updtStyleSingleValue(ResNode* node, const styleInit& si, state st, const T& defVal, T& dest) {
-        auto& key = m_styleInitToString[si];
-        if (node->hasValue(key)) {
-            T val = defVal;
+    void updtStyleSingleValue(ResNode* node, const styleInit& si, const state st, const T& defVal, T& dest) {
+        if (const auto& key = m_styleInitToString[si]; node->hasValue(key)) {
+            auto val = defVal;
 
             if constexpr (std::is_same_v<T, std::string>) {
                 val = node->findNode(key)->getRawValue();
             } else {
-                auto p = node->splitNodeValue(key);
+                const auto p = node->splitNodeValue(key);
                 if constexpr (std::is_same_v<T, uint32_t>) {
                     for (auto& par : p) val |= m_textOptMap[par];
                 } else if constexpr (std::is_same_v<T, align>) {

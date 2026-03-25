@@ -98,7 +98,7 @@ public:
 
     virtual Table& getTable() { return m_cells; }
 
-    virtual int geo_Update();  // returns number of cells
+    virtual int geoUpdate();  // returns number of cells
 
     virtual bool setDynamicWidth(bool on_off) { return m_cells(1).setDynamicSize(on_off); }
     virtual bool getDynamicWidth() { return m_cells(1).getDynamicSize(); }
@@ -119,7 +119,7 @@ public:
             }
 
             m_cells[idx].content = newNode;
-            geo_Update();
+            geoUpdate();
             return newNode;
         }
         return nullptr;

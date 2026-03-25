@@ -36,7 +36,7 @@ public:
     virtual void startSingleThreadUiRendering(const std::function<void(UINode*)>& initCb) {}
 
     /// get a reference to the WindowManager
-    auto getWinMan() { return m_glbase.getWinMan(); }
+    auto getWinMan() const { return m_glbase.getWinMan(); }
     /// get a reference to GLBase instance containing all opengl related shared resources
     auto getGLBase() { return &m_glbase; }
     auto getMainWindow() const { return m_mainWindow; }
@@ -49,7 +49,8 @@ public:
     void setWinSize(const glm::ivec2& s) { m_winSize = s; }
     void setWinSizeReal(const glm::ivec2& s) { m_winSizeReal = s; }
     void setRunFlag(const bool val) { m_run = val; }
-
+    void setResFile(const std::string& p) { m_glbase.setResFile(p); }
+    void setResRootPath(const std::string& p) { m_glbase.setResRootPath(p); }
 public:
     std::string m_internalPath;
     std::string m_externalPath;

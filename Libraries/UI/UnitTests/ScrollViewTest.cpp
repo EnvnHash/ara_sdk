@@ -89,7 +89,7 @@ ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
 
 TEST(UITest, ScrollViewTestNoScrollbar) {
     appBody([&](UIApplication& app){
-        auto rootNode = app.getMainWindow()->getRootNode();
+        const auto rootNode = app.getMainWindow()->getRootNode();
         addScrollView(rootNode, 5);
     }, [&](UIApplication& app){
          compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref.png",
@@ -99,7 +99,7 @@ TEST(UITest, ScrollViewTestNoScrollbar) {
 
 TEST(UITest, ScrollViewTestScrollbarVisible) {
     appBody([&](UIApplication& app){
-        auto rootNode = app.getMainWindow()->getRootNode();
+        const auto rootNode = app.getMainWindow()->getRootNode();
         addScrollView(rootNode, 10);
     }, [&](UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref2.png",
@@ -109,8 +109,8 @@ TEST(UITest, ScrollViewTestScrollbarVisible) {
 
 TEST(UITest, ScrollViewTestScrollBarMoved) {
     appBody([&](UIApplication& app){
-        auto mainWin = app.getMainWindow();
-        auto rootNode = mainWin->getRootNode();
+        const auto mainWin = app.getMainWindow();
+        const auto rootNode = mainWin->getRootNode();
         addScrollView(rootNode, 10);
 
         app.getWinBase()->draw(0, 0, 0);
