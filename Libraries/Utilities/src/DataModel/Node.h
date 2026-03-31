@@ -279,9 +279,9 @@ public:
     }
 
     template <class T>
-    T value() { return std::get<T>(m_value); }
+    T value() { return std::get<T>(m_nodeValue); }
 
-    void                setValue(nodeValue&& val);
+    void                setValue(const nodeValue& val);
     void                pop();
     void                remove(Node&);
     void                remove(Node*);
@@ -382,7 +382,7 @@ protected:
     std::string                                     m_uuid;
     std::string                                     m_path;
     std::string                                     m_key;
-    nodeValue                                       m_value;
+    nodeValue                                       m_nodeValue;
     nodeValueType                                   m_nodeValueType{};
     bool                                            m_watch = false;
     bool                                            m_useAssetLoader = false;
@@ -450,17 +450,17 @@ protected:
 
     template <typename T>
     void serializeSingleValue(nlohmann::json &j) {
-        j[m_key] = get<T>(m_value);
+        j[m_key] = get<T>(m_nodeValue);
     };
 
     template <typename T>
     void serializeToArray(nlohmann::json &j) {
-        j.emplace_back(get<T>(m_value));
+        j.emplace_back(get<T>(m_nodeValue));
     };
 
     template <typename T>
     void serializeToObject(nlohmann::json &j) {
-        j[m_key] = get<T>(m_value);
+        j[m_key] = get<T>(m_nodeValue);
     };
 
     virtual Node& createNewElement() { return push<Node>(); }

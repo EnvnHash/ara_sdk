@@ -64,20 +64,24 @@ void JsonEditor::init() {
         }
 
         m_edit->addEnterCb([&](const std::string &str) {
-            if (m_nodeValueType == nodeValueType::floating) {
-                setValue(m_edit->getValue<float>());
-            } else if (m_nodeValueType == nodeValueType::integer) {
-                setValue(m_edit->getValue<int32_t>());
-            } else if (m_nodeValueType == nodeValueType::string) {
-                setValue(str);
-            }
-            if (const auto root = getJsonRoot()) {
-                root->save(true);
-            }
+            onEnter(str);
         }, this);
     }
 
     //m_edit->setProp();
+}
+
+void JsonEditor::onEnter(const std::string &str) {
+    if (m_nodeValueType == nodeValueType::floating) {
+        setValue(m_edit->getValue<float>());
+    } else if (m_nodeValueType == nodeValueType::integer) {
+        setValue(m_edit->getValue<int32_t>());
+    } else if (m_nodeValueType == nodeValueType::string) {
+        setValue(str);
+    }
+    if (const auto root = getJsonRoot()) {
+        root->save(true);
+    }
 }
 
 void JsonEditor::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {

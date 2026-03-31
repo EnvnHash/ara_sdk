@@ -12,12 +12,12 @@ namespace ara::UiUnitTest::DataBindingTests {
 
 class TestNode : public Node {
 public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_value)
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_testValue)
     TestNode() {
         setTypeName<TestNode>();
     }
-private:
-    int32_t m_value=0;
+
+    int32_t m_testValue=0;
 };
 
 void addNodeEdit(const UIApplication &app, TestNode& node) {
@@ -54,6 +54,7 @@ TEST(UITest, NodeEditChangeValTest) {
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "data_binding_change_val.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        EXPECT_EQ(testNode.m_testValue, 1);
     }, 400, 200);
 }
 

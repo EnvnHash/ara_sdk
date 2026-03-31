@@ -5,6 +5,7 @@
 #include "NodeEdit.h"
 
 using namespace std;
+using namespace nlohmann;
 using namespace glm;
 
 namespace ara {
@@ -12,6 +13,11 @@ namespace ara {
 NodeEdit::NodeEdit() {
     m_enableExpandButton = false;
     m_xIdent = 0;
+
+    Node n;
+    json js;
+    n.serialize(js);
+    m_nodeClassKeys = &n.getClassKeys().at(n.typeName()).first;
 }
 
 void NodeEdit::rebuild() {
@@ -19,10 +25,15 @@ void NodeEdit::rebuild() {
         clearChildren();
         setNodeValueType(nodeValueType::root);
         auto j = m_node->asJson();
-        j.erase("name");
-        j.erase("typeName");
-        j.erase("uuid");
-        LOG << j;
+        for (auto& key : *m_nodeClassKeys) {
+            j.erase(key);
+        }
+
+        m_boundClassKeys.clear();
+        for (auto &[key, value] : j.items()) {
+            m_boundClassKeys.emplace_back(key);
+        }
+
         loadFromJson(j);
         setExpanded(true);
         int32_t yOffsCntr = 0;
@@ -30,4 +41,20 @@ void NodeEdit::rebuild() {
     }
 }
 
+void NodeEdit::onEnter(const std::string &str) {
+    JsonEditor::onEnter(str);
+    auto p = dynamic_cast<NodeEdit*>(parent());
+    if (p) {
+        auto j = asJson();
+        json extractJson;
+        for (const auto &key : p->getBoundClassKeys()) {
+            extractJson[key] = j[key];
+        }
+
+        auto n = p->getBoundNode();
+        if (n) {
+            n->deserialize(extractJson);
+        }
+    }
+}
 }

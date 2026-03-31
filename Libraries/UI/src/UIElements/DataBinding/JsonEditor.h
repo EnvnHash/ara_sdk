@@ -17,6 +17,7 @@ class JsonEditor : public Div {
 public:
     JsonEditor();
     void init() override;
+    virtual void onEnter(const std::string &str);
     void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
 
     void addExpandButt();

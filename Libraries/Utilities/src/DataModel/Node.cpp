@@ -42,15 +42,15 @@ Node::~Node() {
     }
 }
 
-void Node::setValue(nodeValue&& val) {
-    m_value = std::move(val);
-    if (std::holds_alternative<int32_t>(m_value)) {
+void Node::setValue(const nodeValue& val) {
+    m_nodeValue = std::move(val);
+    if (std::holds_alternative<int32_t>(m_nodeValue)) {
         m_nodeValueType = nodeValueType::integer;
-    } else if (std::holds_alternative<float>(m_value)) {
+    } else if (std::holds_alternative<float>(m_nodeValue)) {
         m_nodeValueType = nodeValueType::floating;
-    } else if (std::holds_alternative<std::string>(m_value)) {
+    } else if (std::holds_alternative<std::string>(m_nodeValue)) {
         m_nodeValueType = nodeValueType::string;
-    } else if (std::holds_alternative<bool>(m_value)) {
+    } else if (std::holds_alternative<bool>(m_nodeValue)) {
         m_nodeValueType = nodeValueType::boolean;
     }
 }
@@ -396,6 +396,10 @@ void Node::saveAs(const filesystem::path& filePath) {
 }
 
 void Node::save(const bool skipNonClass) {
+    if (m_fileName.empty()) {
+        return;
+    }
+
     ofstream o(m_fileName);
     o << setw(4) << asJson(skipNonClass) << endl;
 
