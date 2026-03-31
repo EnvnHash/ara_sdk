@@ -209,7 +209,6 @@ public:
     virtual void        setParent(UINode* parent) { m_parent = parent; }
     virtual void        setRefDraw(bool v) { m_referenceDrawing = true; }
     void                setName(std::string name) { m_name = std::move(name); }
-    //virtual void        setValue(float val) {}
     virtual void        setAbsValue(float val) {}
     virtual void        setPath(const std::filesystem::path& file) { m_filepath = file; }
     [[nodiscard]] bool  isVisible() const { return m_visible; }

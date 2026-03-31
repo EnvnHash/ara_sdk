@@ -509,7 +509,7 @@ void UIEdit::checkLimits() {
             setValue<float>(std::stof(m_text));
             if (m_precision == -1) {
                 std::stringstream stream;
-                stream << std::fixed << std::setprecision(m_precision) << std::get<float>(m_value);
+                stream << std::fixed << std::setprecision(m_precision) << std::get<float>(m_val);
                 m_text = stream.str();
             }
         } else if (hasOpt(num_int)) {

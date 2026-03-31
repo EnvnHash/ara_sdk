@@ -331,8 +331,8 @@ public:
                 m_childBoundBox.w - m_childBoundBox.y + getPadding().y + getPadding().w};
     }
 
-    void load(const std::filesystem::path& filePath) override {
-        Node::load(filePath);
+    void load(const std::filesystem::path& filePath, bool skipNonClass = false) override {
+        Node::load(filePath, skipNonClass);
         setChanged(true);
     }
 

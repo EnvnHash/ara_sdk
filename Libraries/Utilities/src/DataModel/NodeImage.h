@@ -26,7 +26,7 @@ public:
 
     Image();
 
-    void load(bool fromAssets) override;
+    void load(bool fromAssets, bool skipNonClass=false) override;
     void setWatch(bool val) override;
 
     const std::string&  imgPath() { return m_imgPath; }

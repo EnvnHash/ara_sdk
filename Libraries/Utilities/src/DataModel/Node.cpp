@@ -14,9 +14,8 @@
 //
 
 #include <DataModel/Node.h>
-#include <string_utils.h>
-
 #include "AssetLoader.h"
+#include "UIElements/DataBinding/JsonEditor.h"
 
 using json = nlohmann::json;
 using namespace std::chrono_literals;
@@ -34,12 +33,25 @@ Node::~Node() {
             return it.path.string() == m_fileName;
         });
         if (r != m_watchFiles.end()) {
-            auto canLock = m_watchMtx.try_lock();
+            const auto canLock = m_watchMtx.try_lock();
             m_watchFiles.erase(r);
             if (canLock) {
                 m_watchMtx.unlock();
             }
         }
+    }
+}
+
+void Node::setValue(nodeValue&& val) {
+    m_value = std::move(val);
+    if (std::holds_alternative<int32_t>(m_value)) {
+        m_nodeValueType = nodeValueType::integer;
+    } else if (std::holds_alternative<float>(m_value)) {
+        m_nodeValueType = nodeValueType::floating;
+    } else if (std::holds_alternative<std::string>(m_value)) {
+        m_nodeValueType = nodeValueType::string;
+    } else if (std::holds_alternative<bool>(m_value)) {
+        m_nodeValueType = nodeValueType::boolean;
     }
 }
 
@@ -49,8 +61,8 @@ void Node::pop() {
     }
 
     if (!m_children.empty()) {
-        auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
-        auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
+        const auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
+        const auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
         for (auto &it : preRemoveCbs) {
             it(std::nullopt);
         }
@@ -74,11 +86,11 @@ void Node::remove(Node* node) {
     }
 
     if (!m_children.empty()) {
-        auto res = ranges::find_if(m_children,
+        const auto res = ranges::find_if(m_children,
                                         [&](auto& it) { return it.get() == node; });
         if (res != m_children.end()) {
-            auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
-            auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
+            const auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
+            const auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
             for (auto &it : preRemoveCbs) {
                 it(std::nullopt);
             }
@@ -98,8 +110,8 @@ void Node::clearChildren() {
         m_undoBufRoot->saveState();
     }
 
-    auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
-    auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
+    const auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
+    const auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
     for (auto &it : preRemoveCbs) {
         it(std::nullopt);
     }
@@ -138,41 +150,78 @@ void Node::signalChange(const cbType cbType, const std::optional<Node*> node) {
     }
 }
 
-json Node::asJson() {
+json Node::asJson(const bool skipClassEntries) {
     json root;
     {
         unique_lock l(m_mtx);
-        serialize(root);
+        serialize(root, skipClassEntries);
     }
     return root;
 }
 
-json Node::serializeClassValues() { // helper function for comparing during deserialization
+json Node::serializeClassValues() {
     json j;
     serializeClassValues(j);
     return j;
 }
 
-// Serialize the node tree to JSON
-void Node::serialize(json& j)  {
-    serializeClassValues(j);
+json& Node::serializeNonClassValue(json& j, const pushToType pushTo) {
+    // check if there is a parent and if it is of nodeType array
+    if (m_nodeValueType == nodeValueType::integer) {
+        serializeByType<int32_t>(pushTo, j);
+    } else if (m_nodeValueType == nodeValueType::floating) {
+        serializeByType<float>(pushTo, j);
+    } else if (m_nodeValueType == nodeValueType::string) {
+        serializeByType<std::string>(pushTo, j);
+    } else if (m_nodeValueType == nodeValueType::boolean) {
+        serializeByType<bool>(pushTo, j);
+    } else if (m_nodeValueType == nodeValueType::array || m_nodeValueType == nodeValueType::object) {
+        auto dest = pushTo == pushToType::array ? &j[std::stoi(m_key)] : &j[m_key];
+        *dest = m_nodeValueType == nodeValueType::array ? json::array() : json::object();
+        return *dest;
+    }
+    return j;
+}
 
+// Serialize the node tree to JSON
+void Node::serialize(json& j, const bool skipClassEntries)  {
+    if (!skipClassEntries) {
+        serializePerClass(j, skipClassEntries);
+    }
+    serializeNonClass(j);
+}
+
+void Node::serializePerClass(json& j, const bool skipClassEntries) {
+    serializeClassValues(j);
     if (!m_children.empty()) {
         j["children"] = json::array();
         for (const auto& child : m_children) {
             j["children"].emplace_back(json{});
-            child->serialize(j["children"].back());
+            child->serializePerClass(j["children"].back(), skipClassEntries);
         }
     }
 }
 
-void Node::deserialize(const string& str) {
-    json j = json::parse(str);
-    deserialize(j);
+void Node::serializeNonClass(json& j, const pushToType pushTo) {
+    json& sj = serializeNonClassValue(j, pushTo);
+
+    for (const auto& child : m_children) {
+        if (m_nodeValueType == nodeValueType::array) {
+            child->serializeNonClass(sj, pushToType::array);
+        } else if (m_nodeValueType == nodeValueType::object || m_nodeValueType == nodeValueType::root) {
+            child->serializeNonClass(sj, pushToType::object);
+        }
+    }
 }
 
-void Node::deserialize(const json& j, std::optional<std::list<std::function<void()>*>*> postLoadCbs) {
-    if (serializeClassValues() != getValues(j)) {
+void Node::deserialize(const string& str, const bool skipClassEntries) {
+    const auto j = json::parse(str);
+    setNodeValueType(nodeValueType::root);
+    deserialize(j, skipClassEntries);
+}
+
+void Node::deserialize(const json& j, const bool skipClassEntries, std::optional<std::list<std::function<void()>*>*> postLoadCbs) {
+    if (!skipClassEntries && serializeClassValues() != getValues(j)) {
         deserializeClassValues(j);
         for (const auto &func: m_changeCb[cbType::postChange] | views::values) {
             func(std::nullopt);
@@ -184,14 +233,14 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
         postLoadCbsArg->emplace_back(&m_postLoadCb.value());
     }
 
-    if (!m_parseAsGenericJson) {
+    if (!skipClassEntries) {
         unordered_map<string, Node*> existingChildren;
         for (const auto& child : m_children) {
             existingChildren[child->uuid()] = child.get();
         }
 
         if (j.contains("children") && j["children"].is_array()) {
-            parseClassChildren(j["children"], existingChildren, postLoadCbsArg);
+            parseClassChildren(j["children"], skipClassEntries, existingChildren, postLoadCbsArg);
         }
 
         // Remove remaining existing children that were not found in the JSON input
@@ -206,10 +255,14 @@ void Node::deserialize(const json& j, std::optional<std::list<std::function<void
         }
     }
 
-    parseNonClassEntries(j, postLoadCbsArg);
+    parseNonClassEntries(j, skipClassEntries, postLoadCbsArg);
+
+    for (const auto it : *postLoadCbsArg) {
+        (*it)();
+    }
 }
 
-void Node::parseClassChildren(const json& j, unordered_map<string, Node*>& existingChildren, std::list<std::function<void()>*>* postLoadCbsArg) {
+void Node::parseClassChildren(const json& j, const bool skipClassEntries, unordered_map<string, Node*>& existingChildren, std::list<std::function<void()>*>* postLoadCbsArg) {
     for (auto jChild = j.begin(); jChild != j.end(); ++jChild) {
         const bool skipChildCheck = !jChild->contains("uuid") || existingChildren.empty();
         if (const auto it = skipChildCheck ? existingChildren.end() : existingChildren.find(jChild->at("uuid"));
@@ -218,8 +271,7 @@ void Node::parseClassChildren(const json& j, unordered_map<string, Node*>& exist
             // assure correct order
             auto childIt = ranges::find_if(m_children, [&](auto& el){ return el.get() == it->second; });
             const auto childIdx = distance(m_children.begin(), childIt);
-            const auto jChildIdx = distance(j.begin(), jChild);
-            if (childIdx != jChildIdx) {
+            if (const auto jChildIdx = distance(j.begin(), jChild); childIdx != jChildIdx) {
                 m_children.splice(next(m_children.begin(), jChildIdx), m_children, childIt);
             }
             existingChildren.erase(it);
@@ -227,62 +279,72 @@ void Node::parseClassChildren(const json& j, unordered_map<string, Node*>& exist
             // Create a new child and add it to the node
             if (auto fact_child = m_factory.create(jChild->contains("typeName") ? jChild->at("typeName") : "Node")) {
                 auto& newChild = push(std::move(fact_child));
-                newChild.deserialize(*jChild, postLoadCbsArg);
+                newChild.deserialize(*jChild, skipClassEntries, postLoadCbsArg);
             }
         }
     }
 }
 
-void Node::parseNonClassEntries(const nlohmann::json& j, std::list<std::function<void()>*>* postLoadCbsArg) {
+void Node::parseNonClassEntries(const nlohmann::json& j, const bool skipClassEntries, std::list<std::function<void()>*>* postLoadCbsArg) {
     for (auto& [key, value] : j.items()) {
-        if (!m_parseAsGenericJson
+        if (!skipClassEntries
             && (key == "children"
                 || std::ranges::find(m_classKeys[m_typeName].first, key) != m_classKeys[m_typeName].first.end())) {
             continue;
         }
 
         if (value.is_array() || value.is_object()) {
-            auto& newChild = push<Node>();
-            newChild.setKey(key);
-            newChild.deserialize(value, postLoadCbsArg);
-            // TODO: missing check if node to add already exists
+            parseArrayOrObjectChild(value, key, skipClassEntries, postLoadCbsArg);
         } else {
-            auto childIt = std::ranges::find_if(m_children, [&](auto& el){ return el.get()->key() == key; });
-            if (childIt == m_children.end()) {
-                push<Node>();
-                childIt = --m_children.end();
-                childIt->get()->setKey(key);
-            }
-
-            if (value.is_boolean()) {
-                childIt->get()->setValue(value.get<bool>());
-            } else if (value.is_number_float()) {
-                childIt->get()->setValue(value.get<float>());
-            } else if (value.is_number()) {
-                childIt->get()->setValue(value.get<int32_t>());
-            } else if (value.is_string()) {
-                childIt->get()->setValue(value.get<std::string>());
-            }
+            parseSingleValueChild(value, key);
         }
     }
 }
 
-void Node::load(const filesystem::path& filePath) {
-    m_fileName = filePath;
-    load(false);
+void Node::parseArrayOrObjectChild(const json& value, const std::string& key, const bool skipClassEntries, list<function<void()>*>* postLoadCbsArg) {
+    auto& newChild = createNewElement();
+    newChild.setKey(key);
+    newChild.setNodeValueType(value.is_array() ? nodeValueType::array : nodeValueType::object);
+    newChild.deserialize(value, skipClassEntries, postLoadCbsArg);
+    // TODO: missing check if node to add already exists
 }
 
-void Node::loadFromAssets(const filesystem::path& filePath) {
+void Node::parseSingleValueChild(const json& value, const std::string& key) {
+    auto childIt = std::ranges::find_if(m_children, [&](auto& el){ return el.get()->key() == key; });
+    if (childIt == m_children.end()) {
+        auto& je = createNewElement();
+        childIt = --m_children.end();
+        childIt->get()->setKey(key);
+    }
+
+    if (value.is_boolean()) {
+        childIt->get()->setValue(value.get<bool>());
+    } else if (value.is_number_float()) {
+        childIt->get()->setValue(value.get<float>());
+    } else if (value.is_number()) {
+        childIt->get()->setValue(value.get<int32_t>());
+    } else if (value.is_string()) {
+        childIt->get()->setValue(value.get<std::string>());
+    }
+}
+
+void Node::load(const filesystem::path& filePath, const bool skipNonClass) {
     m_fileName = filePath;
-    load(true);
+    load(false, skipNonClass);
+}
+
+void Node::loadFromAssets(const filesystem::path& filePath, const bool skipNonClass) {
+    m_fileName = filePath;
+    load(true, skipNonClass);
 }
 
 void Node::load() {
     load(m_useAssetLoader);
 }
 
-void Node::load(bool fromAssets) {
+void Node::load(bool fromAssets, const bool skipNonClass) {
     m_useAssetLoader = fromAssets;
+    setNodeValueType(nodeValueType::root);
 
     if (m_undoBufRoot) {
         saveState();
@@ -292,14 +354,13 @@ void Node::load(bool fromAssets) {
         json j;
         ifstream i(m_fileName);
         i >> j;
-        deserialize(j);
+        deserialize(j, skipNonClass); // skip the root node which is always empty
         m_fileNameForWatcher = m_fileName;
     } else {
-        AssetLoader al;
-        auto str = al.loadAssetAsString(m_fileName);
-        json j = json::parse(str);
-        deserialize(j);
-        m_fileNameForWatcher = al.getAssetPath() / m_fileName;
+        auto str = AssetLoader::loadAssetAsString(m_fileName);
+        auto j = json::parse(str);
+        deserialize(j, skipNonClass);
+        m_fileNameForWatcher = AssetLoader::getAssetPath() / m_fileName;
     }
 
     if (m_watchFile && m_watchFile->time == filesystem::file_time_type{}) {
@@ -312,22 +373,21 @@ void Node::load(bool fromAssets) {
     }
 }
 
-void Node::loadFromString(const string& str) {
+void Node::loadFromString(const string& str, const bool skipClassEntries) {
     if (m_undoBufRoot) {
         saveState();
     }
 
     if (!str.empty()) {
-        json j = json::parse(str);
-        deserialize(j);
+        deserialize(json::parse(str), skipClassEntries);
     }
 }
 
-void Node::loadFromJson(const nlohmann::json& json) {
+void Node::loadFromJson(const nlohmann::json& json, const bool skipClassEntries) {
     if (m_undoBufRoot) {
         saveState();
     }
-    deserialize(json);
+    deserialize(json, skipClassEntries);
 }
 
 void Node::saveAs(const filesystem::path& filePath) {
@@ -335,9 +395,9 @@ void Node::saveAs(const filesystem::path& filePath) {
     save();
 }
 
-void Node::save() {
+void Node::save(const bool skipNonClass) {
     ofstream o(m_fileName);
-    o << setw(4) << asJson() << endl;
+    o << setw(4) << asJson(skipNonClass) << endl;
 
     if (m_watchFile) {
         m_watchFile->time = filesystem::last_write_time(m_watchFile->path);
@@ -398,15 +458,16 @@ void Node::redo() {
 
 bool Node::iterateChildren(Node& node, const function<void(Node&)>& f) {
     f(node);
-    for (const auto& it: node.children()) {
+    const auto r = ranges::all_of(node.children(), [f](auto& it) {
         if (!iterateChildren(*it, f)) {
             return false;
         }
-    }
-    return true;
+        return true;
+    });
+    return r;
 }
 
-bool Node::iterateChildren(const function<void(Node&)>& f) {
+bool Node::iterateChildren(const function<void(Node&)>& f) const {
     for (const auto& it: children()) {
         if (!iterateChildren(*it, f)) {
             return false;
@@ -466,7 +527,7 @@ void Node::changeVal(const function<void()>& f) {
     }
 }
 
-void Node::setUndoBuffer(bool enabled, size_t size) {
+void Node::setUndoBuffer(bool enabled, const size_t size) {
     m_maxUndoBufSize = size;
     iterateChildren(*this, [this](Node& node){
         node.setUndoBufferRoot(this);
@@ -475,7 +536,7 @@ void Node::setUndoBuffer(bool enabled, size_t size) {
 }
 
 void Node::checkAndAddWatchPath(const string& fn) {
-    auto r = ranges::find_if(m_watchFiles, [&](auto& it) {
+    const auto r = ranges::find_if(m_watchFiles, [&](auto& it) {
         return it.path.string() == fn;
     });
 
@@ -528,18 +589,17 @@ void Node::startWatchThread() {
 void Node::watchThreadIterate() {
     unique_lock lock(m_watchMtx);
     try {
-        for (auto &wfIt : m_watchFiles) {
-            if (exists(wfIt.path)) {
-                auto ft = filesystem::last_write_time(wfIt.path);
-                if (ft != m_initFt && ft != wfIt.time) {
+        for (auto &[node, path, time, fileSize] : m_watchFiles) {
+            if (exists(path)) {
+                if (auto ft = filesystem::last_write_time(path); ft != m_initFt && ft != time) {
                     // the file may actually being written to, file size needs to be constant
-                    if (wfIt.fileSize != file_size(wfIt.path)) {
-                        wfIt.fileSize = file_size(wfIt.path);
+                    if (fileSize != file_size(path)) {
+                        fileSize = file_size(path);
                     } else {
-                        LOG << "Detected File change: " << wfIt.path;
-                        wfIt.node->load();
-                        LOG << " loading finished after File change: " << wfIt.path;
-                        wfIt.time = ft;
+                        LOG << "Detected File change: " << path;
+                        node->load();
+                        LOG << " loading finished after File change: " << path;
+                        time = ft;
                     }
                 }
             }

@@ -14,12 +14,11 @@ namespace ara {
 JsonEditor::JsonEditor() {
     setTypeName<JsonEditor>();
     setName(getTypeName<JsonEditor>());
-    setParseAsGenericJson(true);
 }
 
 void JsonEditor::init() {
     if (const auto p = dynamic_cast<JsonEditor*>(parent());
-        m_jsonEntryType == JsonEntryType::rootObject || !p || !p->isExpanded()) {
+        m_nodeValueType == nodeValueType::root || !p || !p->isExpanded()) {
         return;
     }
 
@@ -42,7 +41,7 @@ void JsonEditor::init() {
         .font_height = 22
     });
 
-    if (m_jsonEntryType != JsonEntryType::object && m_jsonEntryType != JsonEntryType::array) {
+    if (m_nodeValueType != nodeValueType::object && m_nodeValueType != nodeValueType::array) {
         m_edit = &push<UIEdit>(UINodePars{
             .pos = ivec2{ m_labelWidth + m_xSpacing, 0 },
             .size = { ivec2{ -m_labelWidth -m_xSpacing, m_lineHeight } },
@@ -56,16 +55,24 @@ void JsonEditor::init() {
         m_edit->setFontSize(22);
         m_edit->setUseWheel(true);
 
-        if (m_jsonEntryType == JsonEntryType::float_number) {
+        if (m_nodeValueType == nodeValueType::floating) {
             m_edit->setValue(value<float>());
-        } else if (m_jsonEntryType == JsonEntryType::int_number) {
+        } else if (m_nodeValueType == nodeValueType::integer) {
             m_edit->setValue(value<int32_t>());
-        } else if (m_jsonEntryType == JsonEntryType::string) {
+        } else if (m_nodeValueType == nodeValueType::string) {
             m_edit->setText(value<std::string>());
         }
+
         m_edit->addEnterCb([&](const std::string &str) {
-            if (m_valChangedCb) {
-                m_valChangedCb(str);
+            if (m_nodeValueType == nodeValueType::floating) {
+                setValue(m_edit->getValue<float>());
+            } else if (m_nodeValueType == nodeValueType::integer) {
+                setValue(m_edit->getValue<int32_t>());
+            } else if (m_nodeValueType == nodeValueType::string) {
+                setValue(str);
+            }
+            if (const auto root = getJsonRoot()) {
+                root->save(true);
             }
         }, this);
     }
@@ -76,7 +83,7 @@ void JsonEditor::init() {
 void JsonEditor::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
-    if (m_jsonEntryType == JsonEntryType::rootObject) {
+    if (m_nodeValueType == nodeValueType::root) {
         m_lineHeight = getLineHeight(node);
         int32_t yOffsCntr = 0;
         setLineOffset(this, yOffsCntr, m_lineHeight);
@@ -123,8 +130,7 @@ void JsonEditor::addExpandButt() {
 void JsonEditor::loadFile(const filesystem::path& p) {
     addGlCb("JsonEditorRebuild", [p, this] {
         clearChildren();
-        setJsonObjectType(JsonEntryType::rootObject);
-        load(p);
+        load(p, true);
         setExpanded(true);
 
         int32_t yOffsCntr = 0;
@@ -134,44 +140,14 @@ void JsonEditor::loadFile(const filesystem::path& p) {
     });
 }
 
-void JsonEditor::parseNonClassEntries(const json& j, list<function<void()>*>* postLoadCbsArg) {
-    for (auto& [key, value] : j.items()) {
-        if (value.is_array() || value.is_object()) {
-            auto& newChild = push<JsonEditor>();
-            initChild(newChild, key);
-            newChild.setJsonObjectType(value.is_array() ? JsonEntryType::array : JsonEntryType::object);
-            newChild.deserialize(value, postLoadCbsArg);
-            newChild.setVisibility(false);
-            // TODO: missing check if node to add already exists
-        } else {
-            auto childIt = std::ranges::find_if(m_children, [&](auto& el){ return el.get()->key() == key; });
-            if (childIt == m_children.end()) {
-                auto& je = push<JsonEditor>();
-                childIt = --m_children.end();
-                initChild(je, key);
-            }
-
-            const auto child = dynamic_cast<JsonEditor*>(childIt->get());
-            child->setVisibility(false);
-            if (value.is_boolean()) {
-                child->setValue(value.get<bool>());
-                child->setJsonObjectType(JsonEntryType::boolean);
-            } else if (value.is_number_float()) {
-                child->setValue(value.get<float>());
-                child->setJsonObjectType(JsonEntryType::float_number);
-            } else if (value.is_number()) {
-                child->setValue(value.get<int32_t>());
-                child->setJsonObjectType(JsonEntryType::int_number);
-            } else if (value.is_string()) {
-                child->setValue(value.get<std::string>());
-                child->setJsonObjectType(JsonEntryType::string);
-            }
-        }
-    }
+Node& JsonEditor::createNewElement() {
+    auto& newChild = push<JsonEditor>();
+    initChild(newChild);
+    newChild.setVisibility(false);
+    return newChild;
 }
 
-void JsonEditor::initChild(JsonEditor& je, const std::string& key)  {
-    je.setKey(key);
+void JsonEditor::initChild(JsonEditor& je)  {
     je.addStyleClass(getStyleClass());
     if (m_label && m_edit) {
         je.setLineHeight(m_label->getSize().y);
@@ -226,7 +202,7 @@ void JsonEditor::rebuildCollapseState(JsonEditor* nd, int32_t& yOffsCntr, int32_
 
 void JsonEditor::setYOffs(const JsonEditor* parent, int32_t& yOffsCntr, int32_t& lineHeight) {
     if (parent->isExpanded()) {
-        if (getJsonEntryType() != JsonEntryType::rootObject) {
+        if (getNodeValueType() != nodeValueType::root) {
             setLineHeight(lineHeight);
         }
 

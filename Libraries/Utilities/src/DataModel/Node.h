@@ -62,6 +62,7 @@ public:
     ARA_NODE_ADD_VIRTUAL_SERIALIZE_FUNCTIONS(m_name, m_typeName, m_uuid)
 
     enum class cbType : int { preChange=0, postChange, preAddChild, postAddChild, preRemoveChild, postRemoveChild, Size };
+    enum class pushToType : int { undefined=0, array, object };
 
     Node();
     virtual ~Node();
@@ -280,43 +281,51 @@ public:
     template <class T>
     T value() { return std::get<T>(m_value); }
 
-    void                                    pop();
-    void                                    remove(Node&);
-    void                                    remove(Node*);
-    void                                    removeChangeCb(cbType, void *ptr);
-    std::deque<Node*>                       findChild(const std::string& name);
-    void                                    clearChildren();
-    nlohmann::json                          asJson();
-    void                                    serialize(nlohmann::json& json);
-    nlohmann::json                          serializeClassValues();
-    void                                    deserialize(const std::string&);
-    void                                    deserialize(const nlohmann::json& j, std::optional<std::list<std::function<void()>*>*> cbs = std::nullopt);
-    void                                    parseClassChildren(const nlohmann::json& j, std::unordered_map<std::string, Node*>& existingChildren, std::list<std::function<void()>*>*);
-    virtual void                            parseNonClassEntries(const nlohmann::json& j, std::list<std::function<void()>*>* postLoadCbsArg);
-    virtual void                            load(const std::filesystem::path& filePath);
-    void                                    loadFromAssets(const std::filesystem::path& filePath);
-    virtual void                            load();
-    virtual void                            load(bool fromAssets);
-    void                                    loadFromJson(const nlohmann::json& json);
-    void                                    loadFromString(const std::string& str);
-    void                                    saveAs(const std::filesystem::path& filePath);
-    void                                    save();
-    void                                    saveState();
-    void                                    undo();
-    void                                    redo();
-    void                                    signalChange(cbType cbType, std::optional<Node*> node);
+    void                setValue(nodeValue&& val);
+    void                pop();
+    void                remove(Node&);
+    void                remove(Node*);
+    void                removeChangeCb(cbType, void *ptr);
+    std::deque<Node*>   findChild(const std::string& name);
+    void                clearChildren();
+    nlohmann::json      asJson(bool skipClassEntries=false);
+    void                serialize(nlohmann::json& json, bool skipClassEntries=false);
+    void                serializePerClass(nlohmann::json& j, bool skipClassEntries);
+    void                serializeNonClass(nlohmann::json& j, const pushToType pushTo = pushToType::undefined);
+    nlohmann::json      serializeClassValues();
+    nlohmann::json&     serializeNonClassValue(nlohmann::json& json, pushToType pushToArray = pushToType::undefined);
+    void                deserialize(const std::string&, bool skipClassEntries=false);
+    void                deserialize(const nlohmann::json& j, bool skipClassEntries=false,
+                                    std::optional<std::list<std::function<void()>*>*> cbs = std::nullopt);
+    void                parseClassChildren(const nlohmann::json& j, bool skipClassEntries,
+                                           std::unordered_map<std::string, Node*>& existingChildren, std::list<std::function<void()>*>*);
+    virtual void        parseNonClassEntries(const nlohmann::json& j, bool skipClassEntries,
+                                             std::list<std::function<void()>*>* postLoadCbsArg);
+    virtual void        load(const std::filesystem::path& filePath, bool skipNonClass=false);
+    void                loadFromAssets(const std::filesystem::path& filePath, bool skipNonClass=false);
+    virtual void        load();
+    virtual void        load(bool fromAssets, bool skipNonClass=false);
+    void                loadFromJson(const nlohmann::json& json, bool skipClassEntries=false);
+    void                loadFromString(const std::string& str, bool skipClassEntries=false);
+    void                saveAs(const std::filesystem::path& filePath);
+    void                save(bool skipNonClass=false);
+    void                saveState();
+    void                undo();
+    void                redo();
+    void                signalChange(cbType cbType, std::optional<Node*> node);
+    static bool         iterateChildren(Node& node, const std::function<void(Node&)>& f);
+    bool                iterateChildren(const std::function<void(Node&)>& f) const;
+    Node*               root();
+    void                changeVal(const std::function<void()>& f);
+    void                setUndoBuffer(bool enabled, size_t size);
+    void                checkAndAddWatchPath(const std::string& fn);
+    static void         checkWatchThreadRunning();
+    virtual void        setWatch(bool val);
+    static void         startWatchThread();
+    static void         watchThreadIterate();
+    static void         stopWatchThread();
+
     std::deque<std::function<void(std::optional<Node*>)>> collectCallbacks(cbType cbType, bool withChildrenOnly);
-    static bool                             iterateChildren(Node& node, const std::function<void(Node&)>& f);
-    bool                                    iterateChildren(const std::function<void(Node&)>& f);
-    Node*                                   root();
-    void                                    changeVal(const std::function<void()>& f);
-    void                                    setUndoBuffer(bool enabled, size_t size);
-    void                                    checkAndAddWatchPath(const std::string& fn);
-    void                                    checkWatchThreadRunning();
-    virtual void                            setWatch(bool val);
-    static void                             startWatchThread();
-    static void                             watchThreadIterate();
-    static void                             stopWatchThread();
 
     auto&               mutex() { return m_mtx; }
     auto&               children() const { return const_cast<std::list<std::shared_ptr<Node>>&>(m_children); }
@@ -328,17 +337,17 @@ public:
     auto&               undoBufQueue() { return m_undoBuf; }
     static const auto&  getClassKeys() { return m_classKeys; }
     static void         clearClassKeys() { m_classKeys.clear(); }
+    const auto&         getNodeValueType() const { return m_nodeValueType; }
 
     std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>>&   changeCb() { return m_changeCb; }
 
-    void setName(const std::string& name)       { changeVal([&]{ m_name = name; }); }
-    void setUuid(const std::string& uuid)       { m_uuid = uuid; }
-    void setTypeName(const std::string& name)   { m_typeName = name; }
-    void setParent(Node* ptr)                   { m_parent = ptr; }
-    void setUndoBufferRoot(Node* node)          { m_undoBufRoot = node; }
-    void setParseAsGenericJson(bool val)        { m_parseAsGenericJson = true; }
-    void setValue(nodeValue val)                { m_value = std::move(val); }
-    void setKey(const std::string& key)         { m_key = key; }
+    void setName(const std::string& name)           { changeVal([&]{ m_name = name; }); }
+    void setUuid(const std::string& uuid)           { m_uuid = uuid; }
+    void setTypeName(const std::string& name)       { m_typeName = name; }
+    void setParent(Node* ptr)                       { m_parent = ptr; }
+    void setUndoBufferRoot(Node* node)              { m_undoBufRoot = node; }
+    void setKey(const std::string& key)             { m_key = key; }
+    void setNodeValueType(const nodeValueType& t)   { m_nodeValueType = t; }
 
     void setOnChangeCb(const cbType cbType, void *ptr, std::function<void(std::optional<Node*>)> func) {
         m_changeCb[cbType][ptr] = std::move(func);
@@ -374,9 +383,9 @@ protected:
     std::string                                     m_path;
     std::string                                     m_key;
     nodeValue                                       m_value;
+    nodeValueType                                   m_nodeValueType{};
     bool                                            m_watch = false;
     bool                                            m_useAssetLoader = false;
-    bool                                            m_parseAsGenericJson = false;
     NodeWatchFile*                                  m_watchFile = nullptr;
     Node*                                           m_parent = nullptr; // can't use weak pointer, since can't create weak_ptr from this without previous shared_ptr creation
     std::mutex                                      m_mtx;
@@ -427,6 +436,37 @@ protected:
 
         m_classKeys[key].first.insert(m_classKeys[key].first.end(), newClassKeys.begin(), newClassKeys.end());
     }
+
+    template <typename T>
+    void serializeByType(const pushToType& nv, nlohmann::json& j) {
+        if (nv == pushToType::array) {
+            serializeToArray<T>(j);
+        } else if (nv == pushToType::object) {
+            serializeToObject<T>(j);
+        } else {
+            serializeSingleValue<T>(j);
+        }
+    }
+
+    template <typename T>
+    void serializeSingleValue(nlohmann::json &j) {
+        j[m_key] = get<T>(m_value);
+    };
+
+    template <typename T>
+    void serializeToArray(nlohmann::json &j) {
+        j.emplace_back(get<T>(m_value));
+    };
+
+    template <typename T>
+    void serializeToObject(nlohmann::json &j) {
+        j[m_key] = get<T>(m_value);
+    };
+
+    virtual Node& createNewElement() { return push<Node>(); }
+
+    void parseArrayOrObjectChild(const nlohmann::json& value, const std::string& key, const bool skipClassEntries, std::list<std::function<void()>*>* postLoadCbsArg);
+    void parseSingleValueChild(const nlohmann::json& value, const std::string& key);
 };
 
 }

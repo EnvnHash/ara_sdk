@@ -13,6 +13,7 @@ class NodeEdit : public JsonEditor {
 public:
     NodeEdit();
     void rebuild();
+    JsonEditor& createNewElement() override { return push<NodeEdit>(); }
 
     void setNode(Node& node) {
         m_node = &node;

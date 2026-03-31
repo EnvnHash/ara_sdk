@@ -51,18 +51,18 @@ public:
     template <typename T>
     requires std::integral<T> || std::floating_point<T>
     T getValue() {
-        return std::get<T>(m_value);
+        return std::get<T>(m_val);
     }
 
     template <typename T>
     requires std::integral<T> || std::floating_point<T>
     void setValue(T val, const bool updtText=true) {
-        std::get<T>(m_value) = std::max(std::min(val, std::get<T>(m_maxVal)), std::get<T>(m_minVal));
+        std::get<T>(m_val) = std::max(std::min(val, std::get<T>(m_maxVal)), std::get<T>(m_minVal));
         setOpt(std::is_floating_point_v<T> ? num_fp : num_int);
 
         if (updtText) {
             std::stringstream stream;
-            stream << std::fixed << std::setprecision(m_precision) << std::get<T>(m_value);
+            stream << std::fixed << std::setprecision(m_precision) << std::get<T>(m_val);
             const bool updt = m_text.size() != stream.str().size();
             m_text    = stream.str();
             reqUpdtGlyphs(updt);
@@ -71,7 +71,7 @@ public:
 
     template <typename T>
     void incValue(float amt) {
-        setValue<T>(std::get<T>(m_value) + std::get<T>(m_step) * static_cast<T>(amt));
+        setValue<T>(std::get<T>(m_val) + std::get<T>(m_step) * static_cast<T>(amt));
     }
 
     template <typename T>
@@ -119,7 +119,7 @@ public:
             prop = std::is_floating_point_v<T> ? static_cast<T>(atof(txt.c_str())) : atoi(txt.c_str());
         }, &prop);
         setOnLostFocusCb([this, &prop] {
-            prop = std::is_floating_point_v<T> ? static_cast<T>(atof(m_text.c_str())) : std::get<T>(m_value);
+            prop = std::is_floating_point_v<T> ? static_cast<T>(atof(m_text.c_str())) : std::get<T>(m_val);
         });
         setMinMax(prop.getMin(), prop.getMax());
         setStep(prop.getStep());
@@ -148,7 +148,7 @@ public:
             prop        = newVal;
         });
 
-        setOpt(isFloat ? UIEdit::num_fp : UIEdit::num_int);
+        setOpt(isFloat ? num_fp : num_int);
         setMinMax(prop.getMin()[idx], prop.getMax()[idx]);
         setStep(prop.getStep()[idx]);
         setValue(prop()[idx]);
@@ -176,7 +176,7 @@ protected:
     Number m_minVal{ std::numeric_limits<int32_t>::min(), std::numeric_limits<float>::min(), std::numeric_limits<double>::min()};
     Number m_maxVal{ std::numeric_limits<int32_t>::max(), std::numeric_limits<float>::max(), std::numeric_limits<double>::max()};
     Number m_step{ 1, 0.1f, 0.1 };
-    Number m_value{ 0, 0.f, 0 };
+    Number m_val{ 0, 0.f, 0 };
 
     int m_precision = 3;
     bool m_blockEdit = false;

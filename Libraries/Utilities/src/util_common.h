@@ -67,6 +67,7 @@ enum class tpi : int32_t {
 };
 
 using nodeValue = std::variant<std::string, int32_t, float, bool>;
+enum class nodeValueType : int32_t { undefined=0, boolean=1, floating=2, integer=3, string=4, array=5, object=6, root=7 };
 
 static std::unordered_map<std::type_index, tpi> tpiTypeMap {
     { typeid(std::string), tpi::tp_string },
@@ -107,7 +108,7 @@ static std::string generateUUID() {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, 15);
-    auto hex = [](int n) -> char {
+    auto hex = [](const int n) -> char {
         if (n < 10){
             return static_cast<char>('0' + n);
         } else {
@@ -137,11 +138,10 @@ static float getRandF(const float min, const float max) {
 // inInd ranges from 0.0f to arraySize
 static float interpolVal(const float inInd, const int arraySize, const float *array) {
     float outVal   = 0.0f;
-    auto lowerInd = static_cast<int>(std::floor(inInd));
-    auto upperInd = static_cast<int>(std::min(static_cast<float>(lowerInd + 1), static_cast<float>(arraySize - 1)));
-    auto weight   = inInd - static_cast<float>(lowerInd);
+    const auto lowerInd = static_cast<int>(std::floor(inInd));
+    const auto upperInd = static_cast<int>(std::min(static_cast<float>(lowerInd + 1), static_cast<float>(arraySize - 1)));
 
-    if (weight == 0.0) {
+    if (const auto weight   = inInd - static_cast<float>(lowerInd); weight == 0.0) {
         outVal = array[lowerInd];
     } else {
         outVal = array[lowerInd] * (1.0f - weight) + array[upperInd] * weight;
@@ -153,14 +153,13 @@ static float interpolVal(const float inInd, const int arraySize, const float *ar
 // index ranges from 0-1
 static float interpolVal2(const float inInd, const int arraySize, const float *array) {
     float outVal     = 0.0f;
-    auto  fArraySize = static_cast<float>(arraySize);
-    float fInd       = std::fmod(inInd, 1.0f) * (fArraySize - 1.0f);
+    const auto  fArraySize = static_cast<float>(arraySize);
+    const float fInd       = std::fmod(inInd, 1.0f) * (fArraySize - 1.0f);
 
-    auto lowerInd = static_cast<int>(std::floor(fInd));
-    auto upperInd = static_cast<int>(std::min(static_cast<float>(lowerInd + 1), fArraySize - 1.0f));
-    auto weight   = fInd - static_cast<float>(lowerInd);
+    const auto lowerInd = static_cast<int>(std::floor(fInd));
+    const auto upperInd = static_cast<int>(std::min(static_cast<float>(lowerInd + 1), fArraySize - 1.0f));
 
-    if (weight == 0.0) {
+    if (const auto weight   = fInd - static_cast<float>(lowerInd); weight == 0.0) {
         outVal = array[lowerInd];
     } else {
         outVal = array[lowerInd] * (1.0f - weight) + array[upperInd] * weight;
@@ -172,14 +171,13 @@ static float interpolVal2(const float inInd, const int arraySize, const float *a
 // enter index ranges from 0-1
 static float interpolVal(const float inInd, const int arraySize, const std::vector<float> *array) {
     float outVal     = 0.0f;
-    auto  fArraySize = static_cast<float>(arraySize);
-    float fInd       = std::fmod(inInd, 1.0f) * (fArraySize - 1.0f);
+    const auto  fArraySize = static_cast<float>(arraySize);
+    const float fInd       = std::fmod(inInd, 1.0f) * (fArraySize - 1.0f);
 
-    auto lowerInd = static_cast<int>(std::floor(fInd));
-    auto upperInd = static_cast<int>(std::min(static_cast<float>(lowerInd + 1), fArraySize - 1.0f));
-    auto weight   = fInd - static_cast<float>(lowerInd);
+    const auto lowerInd = static_cast<int>(std::floor(fInd));
+    const auto upperInd = static_cast<int>(std::min(static_cast<float>(lowerInd + 1), fArraySize - 1.0f));
 
-    if (weight == 0.0) {
+    if (const auto weight   = fInd - static_cast<float>(lowerInd); weight == 0.0) {
         outVal = array->at(lowerInd);
     } else {
         outVal = array->at(lowerInd) * (1.0f - weight) + array->at(upperInd) * weight;

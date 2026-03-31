@@ -24,15 +24,15 @@ Image::Image() : Node() {
     ara::Node::setTypeName<Image>();
 }
 
-void Image::load(bool fromAssets) { // called when the image was changed on disk
-    for (const auto& cb : m_changeCb[cbType::postChange]) {
-        cb.second(std::nullopt);
+void Image::load(bool fromAssets, bool skipNonClass) { // called when the image was changed on disk
+    for (const auto &cb: m_changeCb[cbType::postChange] | std::views::values) {
+        cb(std::nullopt);
     }
 }
 
 void Image::setWatch(bool val) {
     if (!m_imgPath.empty()) {
-        auto comp_path = (fs(m_dataPath) / fs(m_imgPath)).string();
+        const auto comp_path = (fs(m_dataPath) / fs(m_imgPath)).string();
         checkAndAddWatchPath(comp_path);
         if (val) {
             checkWatchThreadRunning();

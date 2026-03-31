@@ -47,7 +47,7 @@ public:
     size_t m_postLoadCbCalled = 0;
 };
 
-static Node& createNestedNode(Node& nd, int depth) {
+static Node& createNestedNode(Node& nd, const int depth) {
     nd.setName("Root");
     Node* lowestChild = nullptr;
     std::function<void(Node&, int&)> addFunc = [&](Node& parent, int& level) {
@@ -87,9 +87,9 @@ TEST(Functional_Node, FindChildrenByName) {
 TEST(Functional_Node, FindChildrenByUuid) {
     Node nd;
     auto& lowest = createNestedNode(nd, 2);
-    std::string uuid = "6998A327-29B0-90E9-984A-366FEB38BFFE";
+    const std::string uuid = "6998A327-29B0-90E9-984A-366FEB38BFFE";
     lowest.setUuid(uuid);
-    auto node = nd.findChildByUuid(uuid);
+    const auto node = nd.findChildByUuid(uuid);
     ASSERT_FALSE(node == nullptr);
     EXPECT_EQ(node->uuid(), uuid);
 }
@@ -107,7 +107,7 @@ TEST(Functional_Node, AddChild) {
 }
 
 TEST(Functional_Node, InsertChildByPos) {
-    std::array names = { "Child1", "Child2", "Child3" };
+    constexpr std::array names = { "Child1", "Child2", "Child3" };
     Node nd;
     auto& n1 = nd.push<Node>();
     n1.setName(names[0]);
@@ -119,15 +119,15 @@ TEST(Functional_Node, InsertChildByPos) {
     n3.setName(names[2]);
 
     int cntr=0;
-    std::array newOrder = { 2, 0, 1 };
-    for (auto& it : nd.children()) {
+    for (const auto& it : nd.children()) {
+        constexpr std::array newOrder = { 2, 0, 1 };
         EXPECT_EQ(it->name(), names[newOrder[cntr]]);
         ++cntr;
     }
 }
 
 TEST(Functional_Node, InsertChildByName) {
-    std::array names = { "Child1", "Child2", "Child3" };
+    constexpr std::array names = { "Child1", "Child2", "Child3" };
     Node nd;
     auto& n1 = nd.push<Node>();
     n1.setName(names[0]);
@@ -139,15 +139,15 @@ TEST(Functional_Node, InsertChildByName) {
     n3.setName(names[2]);
 
     int cntr=0;
-    std::array newOrder = { 0, 2, 1 };
-    for (auto& it : nd.children()) {
+    for (const auto& it : nd.children()) {
+        constexpr std::array newOrder = { 0, 2, 1 };
         EXPECT_EQ(it->name(), names[newOrder[cntr]]);
         ++cntr;
     }
 }
 
 TEST(Functional_Node, InsertAfterByName) {
-    std::array<std::string, 3> names = { "Child1", "Child2", "Child3" };
+    constexpr std::array names = { "Child1", "Child2", "Child3" };
     Node nd;
     auto& n1 = nd.push<Node>();
     n1.setName(names[0]);
@@ -159,8 +159,8 @@ TEST(Functional_Node, InsertAfterByName) {
     n3.setName(names[2]);
 
     int cntr=0;
-    const std::array newOrder = { 0, 2, 1 };
     for (const auto& it : nd.children()) {
+        constexpr std::array newOrder = { 0, 2, 1 };
         EXPECT_EQ(it->name(), names[newOrder[cntr]]);
         ++cntr;
     }
@@ -176,10 +176,10 @@ TEST(Functional_Node, AddChildByRef) {
     child.setName("horst");
     EXPECT_EQ(nd2.children().size(), 1);
 
-    auto& list = nd2.children();
+    const auto& list = nd2.children();
     nd1.push(list.back());
 
-    auto child2 = nd2.children().back();
+    const auto child2 = nd2.children().back();
     EXPECT_EQ(child.name(), child2->name());
 }
 
@@ -190,13 +190,13 @@ TEST(Functional_Node, AddChildByRefMemCheck) {
     child1.setName(child1Name);
 
     Node nd2;
-    auto& list = nd1.children();
+    const auto& list = nd1.children();
     nd2.push(list.back());
 
     nd1.clearChildren();
     EXPECT_EQ(nd1.children().size(), 0);
 
-    auto child2 = nd2.children().back();
+    const auto child2 = nd2.children().back();
     EXPECT_EQ(child1Name, child2->name());
 }
 
@@ -231,7 +231,7 @@ TEST(Functional_Node, PostLoadCb) {
     j["arg1"] = 2;
     tc.deserialize(j);
 
-    auto child = dynamic_cast<ChildTestClass*>(tc.children().front().get());
+    const auto child = dynamic_cast<ChildTestClass*>(tc.children().front().get());
     EXPECT_EQ(child->m_postLoadCbCalled, 1);
 }
 
@@ -334,12 +334,123 @@ TEST(Functional_Node, Serialize_Values) {
     EXPECT_EQ(s, "{\"name\":\"Name\",\"typeName\":\"Node\",\"uuid\":\"\"}");
 }
 
+TEST(Functional_Node, Serialize_NonClassValueFloat) {
+    Node node;
+    node.setKey("Value");
+    node.setValue(1.5f);
+
+    json j;
+    node.serializeNonClassValue(j);
+    const auto s = j.dump();
+
+    EXPECT_EQ(s, "{\"Value\":1.5}");
+}
+
+TEST(Functional_Node, Serialize_NonClassValueBool) {
+    Node node;
+    node.setKey("Value");
+    node.setValue(true);
+
+    json j;
+    node.serializeNonClassValue(j);
+    const auto s = j.dump();
+
+    EXPECT_EQ(s, "{\"Value\":true}");
+}
+
+TEST(Functional_Node, Serialize_NonClassValueInt) {
+    Node node;
+    node.setKey("Value");
+    node.setValue(256);
+
+    json j;
+    node.serializeNonClassValue(j);
+    const auto s = j.dump();
+
+    EXPECT_EQ(s, "{\"Value\":256}");
+}
+
+TEST(Functional_Node, Serialize_NonClassValueString) {
+    Node node;
+    node.setKey("Value");
+    node.setValue("hello");
+
+    json j;
+    node.serializeNonClassValue(j);
+    const auto s = j.dump();
+
+    EXPECT_EQ(s, "{\"Value\":\"hello\"}");
+}
+
+TEST(Functional_Node, Serialize_NonClassValueArray) {
+    Node node;
+    node.setKey("array");
+    node.setNodeValueType(nodeValueType::array);
+    for (int i=0; i<3; i++) {
+        auto& v = node.push<Node>();
+        v.setKey(std::to_string(i));
+        v.setValue(i);
+    }
+
+    json j;
+    node.serialize(j, true);
+    const auto s = j.dump();
+    EXPECT_EQ(s, "{\"array\":[0,1,2]}");
+}
+
+TEST(Functional_Node, Serialize_NonClassValueObject) {
+    Node node;
+    node.setKey("object");
+    node.setNodeValueType(nodeValueType::object);
+
+    auto& v = node.push<Node>();
+    v.setKey("arg0");
+    v.setValue(1);
+
+    auto& v1 = node.push<Node>();
+    v1.setKey("arg1");
+    v1.setNodeValueType(nodeValueType::array);
+    for (int i=0; i<3; i++) {
+        auto& vv = v1.push<Node>();
+        vv.setKey(std::to_string(i));
+        vv.setValue(i);
+    }
+
+    auto& v2 = node.push<Node>();
+    v2.setKey("arg2");
+    v2.setNodeValueType(nodeValueType::object);
+    auto &vv = v2.push<Node>();
+    vv.setKey("subElement");
+    vv.setValue(2);
+
+    auto &vv2 = v2.push<Node>();
+    vv2.setKey("subElement");
+    vv2.setValue(2);
+
+    auto& v3 = node.push<Node>();
+    v3.setKey("arg3");
+    v3.setValue(2.f);
+
+    auto &v4 = node.push<Node>();
+    v4.setKey("arg4");
+    v4.setValue(true);
+
+    auto &v5 = node.push<Node>();
+    v5.setKey("arg5");
+    v5.setValue("hello");
+
+    json j;
+    node.serialize(j, true);
+    const auto s = j.dump();
+    EXPECT_EQ(s, "{\"object\":{\"arg0\":1,\"arg1\":[0,1,2],\"arg2\":{\"subElement\":2},\"arg3\":2.0,\"arg4\":true,\"arg5\":\"hello\"}}");
+}
+
 TEST(Functional_Node, Serialize_Node) {
     Node node;
     node.setName("Name");
 
-    auto j = node.asJson();
-    std::string s = j.dump();
+    const auto j = node.asJson();
+    const std::string s = j.dump();
     EXPECT_EQ(s, "{\"name\":\"Name\",\"typeName\":\"Node\",\"uuid\":\"\"}");
 }
 
@@ -351,8 +462,8 @@ TEST(Functional_Node, Serialize_Children) {
     child.setName("Child");
     child.setUuid(""); // reset uuid for testing
 
-    auto j = node.asJson();
-    std::string s = j.dump();
+    const auto j = node.asJson();
+    const std::string s = j.dump();
     EXPECT_EQ(s, "{\"children\":[{\"name\":\"Child\",\"typeName\":\"Node\",\"uuid\":\"\"}],\"name\":\"Name\",\"typeName\":\"Node\",\"uuid\":\"\"}");
 }
 
@@ -376,13 +487,13 @@ TEST(Functional_Node, Serialize_MultipleChildren) {
     child4.setName("Child4");
     child4.setUuid("");
 
-    auto j = node.asJson();
-    std::string s = j.dump();
+    const auto j = node.asJson();
+    const std::string s = j.dump();
     EXPECT_EQ(s, "{\"children\":[{\"name\":\"Child1\",\"typeName\":\"Node\",\"uuid\":\"\"},{\"name\":\"Child2\",\"typeName\":\"Node\",\"uuid\":\"\"},{\"name\":\"Child3\",\"typeName\":\"Node\",\"uuid\":\"\"},{\"name\":\"Child4\",\"typeName\":\"Node\",\"uuid\":\"\"}],\"name\":\"Root\",\"typeName\":\"Node\",\"uuid\":\"\"}");
 }
 
 TEST(Functional_Node, Parse_Values) {
-    auto j = R"({"name":"Name","typeName":"Node","uuid":"6998A327-29B0-90E9-984A-366FEB38BFFE"})"_json;
+    const auto j = R"({"name":"Name","typeName":"Node","uuid":"6998A327-29B0-90E9-984A-366FEB38BFFE"})"_json;
 
     Node node;
     node.deserializeClassValues(j);
@@ -393,7 +504,7 @@ TEST(Functional_Node, Parse_Values) {
 }
 
 TEST(Functional_Node, Parse_Node) {
-    auto j = R"({"name":"Name","typeName":"Node","uuid":"6998A327-29B0-90E9-984A-366FEB38BFFE"})"_json;
+    const auto j = R"({"name":"Name","typeName":"Node","uuid":"6998A327-29B0-90E9-984A-366FEB38BFFE"})"_json;
 
     Node node;
     node.deserialize(j);
@@ -467,10 +578,10 @@ TEST(Functional_Node, ParseDerivedNested) {
 }
 
 TEST(Functional_Node, Parse_Generic) {
-    auto j = R"({"key0":0,"key1":1.2345,"key2":"value"})"_json;
+    const auto j = R"({"key0":0,"key1":1.2345,"key2":"value"})"_json;
 
     Node node;
-    node.deserialize(j);
+    node.deserialize(j, true);
 
     ASSERT_NE(node.findChildByKey("key0"), nullptr);
     ASSERT_NE(node.findChildByKey("key1"), nullptr);
@@ -487,10 +598,10 @@ TEST(Functional_Node, Parse_Generic) {
 }
 
 TEST(Functional_Node, Parse_Generic_Array) {
-    auto j = R"({"array":[1,2,3,4]})"_json;
+    const auto j = R"({"array":[1,2,3,4]})"_json;
 
     Node node;
-    node.deserialize(j);
+    node.deserialize(j, true);
     const auto arrayChild = node.findChildByKey("array");
     ASSERT_NE(arrayChild, nullptr);
 
@@ -502,7 +613,7 @@ TEST(Functional_Node, Parse_Generic_Array) {
 }
 
 TEST(Functional_Node, Parse_Generic_Object) {
-    auto j = R"({"objEntry":{ "key0" : 1, "key1" : 1.234, "key2" : "some string"}})"_json;
+    const auto j = R"({"objEntry":{ "key0" : 1, "key1" : 1.234, "key2" : "some string"}})"_json;
 
     Node node;
     node.deserialize(j);
@@ -513,18 +624,41 @@ TEST(Functional_Node, Parse_Generic_Object) {
     ASSERT_NE(objChild->findChildByKey("key1"), nullptr);
     ASSERT_NE(objChild->findChildByKey("key2"), nullptr);
 
-    auto key0 = objChild->findChildByKey("key0");
+    const auto key0 = objChild->findChildByKey("key0");
     EXPECT_EQ(key0->value<int32_t>(), 1);
 
-    auto key1 = objChild->findChildByKey("key1");
+    const auto key1 = objChild->findChildByKey("key1");
     EXPECT_EQ(key1->value<float>(), 1.234f);
 
-    auto key2 = objChild->findChildByKey("key2");
+    const auto key2 = objChild->findChildByKey("key2");
     EXPECT_EQ(key2->value<std::string>(), "some string");
 }
 
+TEST(Functional_Node, Parse_Generic_And_Reserialize) {
+    const std::string str = "{\"object\":{\"arg0\":1,\"arg1\":[0,1,2],\"arg2\":{\"subElement\":2},\"arg3\":2.0,\"arg4\":true,\"arg5\":\"hello\"}}";
+
+    Node node;
+    node.deserialize(str, true);
+
+    const auto retJson = node.asJson(true);
+    const auto s = retJson.dump();
+    EXPECT_EQ(s, str);
+}
+
+TEST(Functional_Node, Parse_Generic_And_Reserialize_Array_of_Objects) {
+    const std::string str = "{\"arrayOfObjects\":[{\"name\":\"obj1\",\"val\":1},{\"name\":\"obj2\",\"val\":2},{\"name\":\"obj3\",\"val\":3}]}";
+
+    Node node;
+    node.deserialize(str, true);
+
+    LOG << "\n-------------------------\n";
+    const auto retJson = node.asJson(true);
+    const auto s = retJson.dump();
+    EXPECT_EQ(s, str);
+}
+
 TEST(Functional_Node, Parse_Children) {
-    std::string s = R"({
+    const std::string s = R"({
         "children":[
             {
                 "name":"Child",
@@ -546,7 +680,7 @@ TEST(Functional_Node, Parse_Children) {
 }
 
 TEST(Functional_Node, Parse_Update_SwappedNode) {
-    std::string s = R"({
+    const std::string s = R"({
         "children":[
             {
                 "name":"Child1",
@@ -581,7 +715,7 @@ TEST(Functional_Node, Parse_Update_SwappedNode) {
     bool triggered = false;
     node.children().front()->setOnChangeCb(Node::cbType::preChange, nullptr, [&](std::optional<Node*>){ triggered = true; });
 
-    std::string s2 = R"({
+    const std::string s2 = R"({
         "children":[
             {
                 "name":"Child2",
@@ -622,7 +756,7 @@ TEST(Functional_Node, SavingLoading) {
     auto& child2 = child1.push<Node>();
     child2.setName("Child2");
 
-    std::string fn = "Functional_Node_SavingLoading.json";
+    const std::string fn = "Functional_Node_SavingLoading.json";
     nd.saveAs(fn);
 
     Node newNode;
