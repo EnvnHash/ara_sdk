@@ -256,10 +256,6 @@ void Node::deserialize(const json& j, const bool skipClassEntries, std::optional
     }
 
     parseNonClassEntries(j, skipClassEntries, postLoadCbsArg);
-
-    for (const auto it : *postLoadCbsArg) {
-        (*it)();
-    }
 }
 
 void Node::parseClassChildren(const json& j, const bool skipClassEntries, unordered_map<string, Node*>& existingChildren, std::list<std::function<void()>*>* postLoadCbsArg) {
