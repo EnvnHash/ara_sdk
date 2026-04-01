@@ -267,7 +267,7 @@ void Node::parseClassChildren(const json& j, const bool skipClassEntries, unorde
         const bool skipChildCheck = !jChild->contains("uuid") || existingChildren.empty();
         if (const auto it = skipChildCheck ? existingChildren.end() : existingChildren.find(jChild->at("uuid"));
             it != existingChildren.end()) {
-            it->second->deserialize(*jChild, postLoadCbsArg);
+            it->second->deserialize(*jChild, skipClassEntries, postLoadCbsArg);
             // assure correct order
             auto childIt = ranges::find_if(m_children, [&](auto& el){ return el.get() == it->second; });
             const auto childIdx = distance(m_children.begin(), childIt);

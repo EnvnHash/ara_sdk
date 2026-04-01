@@ -38,7 +38,7 @@ public:
     void setUseWheel(const bool val) { m_useWheel = val; }
     void setCaretColor(glm::vec4 c, state st = state::m_state) ;
     void setCaretColor(float r, float g, float b, float a, state st = state::m_state) ;
-    void setCaretWidth(int w) { m_caretWidth = w; }
+    void setCaretWidth(const int w) { m_caretWidth = w; }
     void setPropItem(Item* item) override;
 
     void incValue(float amt, cfState cf);
@@ -48,21 +48,19 @@ public:
         return getValue<float>();
     }
 
-    template <typename T>
-    requires std::integral<T> || std::floating_point<T>
-    T getValue() {
-        return std::get<T>(m_val);
+    template <typename CoordinateType>
+    CoordinateType getValue() {
+        return std::get<CoordinateType>(m_val);
     }
 
-    template <typename T>
-    requires std::integral<T> || std::floating_point<T>
-    void setValue(T val, const bool updtText=true) {
-        std::get<T>(m_val) = std::max(std::min(val, std::get<T>(m_maxVal)), std::get<T>(m_minVal));
-        setOpt(std::is_floating_point_v<T> ? num_fp : num_int);
+    template <typename CoordinateType>
+    void setValue(CoordinateType val, const bool updtText=true) {
+        std::get<CoordinateType>(m_val) = std::max(std::min(val, std::get<CoordinateType>(m_maxVal)), std::get<CoordinateType>(m_minVal));
+        setOpt(std::is_floating_point_v<CoordinateType> ? num_fp : num_int);
 
         if (updtText) {
             std::stringstream stream;
-            stream << std::fixed << std::setprecision(m_precision) << std::get<T>(m_val);
+            stream << std::fixed << std::setprecision(m_precision) << std::get<CoordinateType>(m_val);
             const bool updt = m_text.size() != stream.str().size();
             m_text    = stream.str();
             reqUpdtGlyphs(updt);
@@ -74,29 +72,25 @@ public:
         setValue<T>(std::get<T>(m_val) + std::get<T>(m_step) * static_cast<T>(amt));
     }
 
-    template <typename T>
-    requires std::integral<T> || std::floating_point<T>
-    void setMinMax(T min, T max) {
-        setMin<T>(min);
-        setMax<T>(max);
+    template <typename CoordinateType>
+    void setMinMax(CoordinateType min, CoordinateType max) {
+        setMin<CoordinateType>(min);
+        setMax<CoordinateType>(max);
     }
 
-    template <typename T>
-    requires std::integral<T> || std::floating_point<T>
-    void setMin(T min) {
-        std::get<T>(m_minVal) = min;
+    template <typename CoordinateType>
+    void setMin(CoordinateType min) {
+        std::get<CoordinateType>(m_minVal) = min;
     }
 
-    template <typename T>
-    requires std::integral<T> || std::floating_point<T>
-    void setMax(T min) {
-        std::get<T>(m_maxVal) = min;
+    template <typename CoordinateType>
+    void setMax(CoordinateType min) {
+        std::get<CoordinateType>(m_maxVal) = min;
     }
 
-    template <typename T>
-    requires std::integral<T> || std::floating_point<T>
-    void setStep(T step) {
-        std::get<T>(m_step) = step;
+    template <typename CoordinateType>
+    void setStep(CoordinateType step) {
+        std::get<CoordinateType>(m_step) = step;
     }
 
     template<typename T>
@@ -109,25 +103,28 @@ public:
         setTextDist(prop());
     }
 
-    template<typename T>
-    requires std::is_integral_v<T> || std::is_floating_point_v<T>
-    void setProp(Property<T> &prop) {
-        setOpt(single_line | (std::is_floating_point_v<T> ? num_fp : num_int));
+    template<typename CoordinateType>
+    void setProp(Property<CoordinateType> &prop) {
+        setOpt(single_line | (std::is_floating_point_v<CoordinateType> ? num_fp : num_int));
 
-        onChanged<T>(prop, [this](const std::any &val) { setText(std::to_string(std::any_cast<T>(val))); });
+        onChanged<CoordinateType>(prop, [this](const std::any &val) { setText(std::to_string(std::any_cast<CoordinateType>(val))); });
         addEnterCb([&prop](const std::string &txt) {
-            prop = std::is_floating_point_v<T> ? static_cast<T>(atof(txt.c_str())) : atoi(txt.c_str());
+            prop = std::is_floating_point_v<CoordinateType> ? static_cast<CoordinateType>(atof(txt.c_str()))
+                                                            : atoi(txt.c_str());
         }, &prop);
         setOnLostFocusCb([this, &prop] {
-            prop = std::is_floating_point_v<T> ? static_cast<T>(atof(m_text.c_str())) : std::get<T>(m_val);
+            prop = std::is_floating_point_v<CoordinateType> ? static_cast<CoordinateType>(atof(m_text.c_str()))
+                                                            : std::get<CoordinateType>(m_val);
         });
         setMinMax(prop.getMin(), prop.getMax());
         setStep(prop.getStep());
-        if (std::is_floating_point_v<T>){
+
+        if (std::is_floating_point_v<CoordinateType>){
             setValue(prop());
         } else {
             setText(std::to_string(prop()));
         }
+
         setUseWheel(true);
     }
 
@@ -155,15 +152,15 @@ public:
         setUseWheel(true);
     }
 
-protected:
-    void keyDown(hidData& data) override;
     void onChar(hidData& data) override;
     void onLostFocus() override;
+    void mouseWheel(hidData& data) override;
 
+protected:
+    void keyDown(hidData& data) override;
     void mouseDrag(hidData& data) override;
     void mouseDown(hidData& data) override;
     void mouseUp(hidData& data) override;
-    void mouseWheel(hidData& data) override;
     void globalMouseDown(hidData& data) override;
     bool validateInputToString(int ch);
     void checkLimits();

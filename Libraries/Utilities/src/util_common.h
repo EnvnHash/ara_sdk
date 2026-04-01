@@ -40,6 +40,9 @@
 
 #include <Constants.h>
 
+#include "glm/vec2.hpp"
+#include "glm/vec3.hpp"
+
 #ifdef __ANDROID__
 #include <jni.h>
 #endif
@@ -82,7 +85,7 @@ static std::unordered_map<std::type_index, tpi> tpiTypeMap {
     { typeid(uint64_t), tpi::tp_uint64 },
     { typeid(float), tpi::tp_float },
     { typeid(double), tpi::tp_double },
-    { typeid(bool), tpi::tp_bool },
+    { typeid(bool), tpi::tp_bool }
 };
 
 template<typename T>
@@ -94,8 +97,10 @@ concept CoordinateType32Signed = std::is_same_v<T, int32_t> || std::is_same_v<T,
 template<typename T>
 concept PropertyType = std::is_same_v<T, std::string> || std::is_integral_v<T> || std::is_floating_point_v<T>;
 
-// helper enum for performance optimization. typeid can't be stored,
-// type_info.name() is too costly
+template<typename T>
+concept NodeValueType = std::is_same_v<T, bool> ||std::is_same_v<T, std::string> || std::is_integral_v<T>
+    || std::is_floating_point_v<T> || std::is_same_v<T, glm::ivec2> || std::is_same_v<T, glm::ivec3>
+    || std::is_same_v<T, glm::vec2> || std::is_same_v<T, glm::vec3>;
 
 template <typename TP>
 std::time_t to_time_t(TP tp) {
@@ -191,6 +196,5 @@ static std::string formatFileTime(const std::filesystem::file_time_type& time) {
     ss << std::format("{}", time);
     return ss.str();
 }
-
 
 }  // namespace ara

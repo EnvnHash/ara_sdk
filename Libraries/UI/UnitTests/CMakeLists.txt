@@ -7,29 +7,29 @@ include_directories(${ara_sdk_INCLUDE_DIRS})
 
 # add test source files
 file(GLOB UI_UT_SRC
-    #UIMatTests/GetPixelPosition_Absolute.cpp
-    #UIMatTests/GetPixelPosition_ParentRelative.cpp
-    #AlignTest.cpp
-    #ButtonTests.cpp
-    #CarrouselTest.cpp
-    #ComboBoxTest.cpp
-    #CollapsibleTreeTest.cpp
+    UIMatTests/GetPixelPosition_Absolute.cpp
+    UIMatTests/GetPixelPosition_ParentRelative.cpp
+    AlignTest.cpp
+    ButtonTests.cpp
+    CarrouselTest.cpp
+    ComboBoxTest.cpp
+    CollapsibleTreeTest.cpp
     DataBindingTest.cpp
-    #LabelTest.cpp
-    #ReloadGLContextTest.cpp
-    #HidTest.cpp
-    #ImageTest.cpp
-    #ScrollViewTest.cpp
-    #SerializeBasicTest.cpp
-    #SerializeImageTest.cpp
-    #SerializeLabelTest.cpp
-    #SerializeTestCreateAndRemove.cpp
-    #SetXSetY.cpp
-    #TabTest.cpp
-    #TextBlockTest.cpp
-    #UIEditTest.cpp
-    ##WindowResizeTest.cpp ... requires mouse not be moved
-    #ZoomViewTest.cpp
+    LabelTest.cpp
+    ReloadGLContextTest.cpp
+    HidTest.cpp
+    ImageTest.cpp
+    ScrollViewTest.cpp
+    SerializeBasicTest.cpp
+    SerializeImageTest.cpp
+    SerializeLabelTest.cpp
+    SerializeTestCreateAndRemove.cpp
+    SetXSetY.cpp
+    TabTest.cpp
+    TextBlockTest.cpp
+    UIEditTest.cpp
+    #WindowResizeTest.cpp ... requires mouse not be moved
+    ZoomViewTest.cpp
 )
 
 add_executable(${PROJECT_NAME} ${UI_UT_SRC})

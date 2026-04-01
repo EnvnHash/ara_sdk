@@ -55,20 +55,22 @@ void JsonEditor::init() {
         m_edit->setFontSize(22);
         m_edit->setUseWheel(true);
 
-        if (m_nodeValueType == nodeValueType::floating) {
-            m_edit->setValue(value<float>());
-        } else if (m_nodeValueType == nodeValueType::integer) {
-            m_edit->setValue(value<int32_t>());
-        } else if (m_nodeValueType == nodeValueType::string) {
-            m_edit->setText(value<std::string>());
-        }
+        setupEdit();
+    }
+}
 
-        m_edit->addEnterCb([&](const std::string &str) {
-            onEnter(str);
-        }, this);
+void JsonEditor::setupEdit() {
+    if (m_nodeValueType == nodeValueType::floating) {
+        m_edit->setValue(value<float>());
+    } else if (m_nodeValueType == nodeValueType::integer) {
+        m_edit->setValue(value<int32_t>());
+    } else if (m_nodeValueType == nodeValueType::string) {
+        m_edit->setText(value<std::string>());
     }
 
-    //m_edit->setProp();
+    m_edit->addEnterCb([&](const std::string &str) {
+        onEnter(str);
+    }, this);
 }
 
 void JsonEditor::onEnter(const std::string &str) {
@@ -84,7 +86,7 @@ void JsonEditor::onEnter(const std::string &str) {
     }
 }
 
-void JsonEditor::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
+void JsonEditor::updateStyleIt(ResNode* node, const state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
     if (m_nodeValueType == nodeValueType::root) {
@@ -154,7 +156,7 @@ Node& JsonEditor::createNewElement() {
 void JsonEditor::initChild(JsonEditor& je)  {
     je.addStyleClass(getStyleClass());
     if (m_label && m_edit) {
-        je.setLineHeight(m_label->getSize().y);
+        je.setLineHeight(static_cast<int32_t>(m_label->getSize().y));
         je.setSpacing(m_edit->getPos().x - m_label->getSize().x - m_label->getPos().x);
         je.setLabelWidth(m_label->getSize().x);
     }
@@ -204,7 +206,7 @@ void JsonEditor::rebuildCollapseState(JsonEditor* nd, int32_t& yOffsCntr, int32_
     }
 }
 
-void JsonEditor::setYOffs(const JsonEditor* parent, int32_t& yOffsCntr, int32_t& lineHeight) {
+void JsonEditor::setYOffs(const JsonEditor* parent, int32_t& yOffsCntr, const int32_t& lineHeight) {
     if (parent->isExpanded()) {
         if (getNodeValueType() != nodeValueType::root) {
             setLineHeight(lineHeight);

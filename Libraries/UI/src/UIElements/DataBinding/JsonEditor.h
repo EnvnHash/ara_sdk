@@ -5,7 +5,6 @@
 #pragma once
 
 #include <UIElements/Div.h>
-
 #include "UIElements/Text/UIEdit.h"
 
 namespace ara {
@@ -23,6 +22,7 @@ public:
     void addExpandButt();
     void loadFile(const std::filesystem::path& p);
     void initChild(JsonEditor& je);
+    virtual void setupEdit();
     static void setLineOffset(JsonEditor* nd, int32_t& yOffsCntr, int32_t& lineHeight);
     static void rebuildCollapseState(JsonEditor* nd, int32_t& yOffsCntr, int32_t& lineHeight);
     int32_t getLineHeight(ResNode* node) const;
@@ -32,7 +32,7 @@ public:
     void setSpacing(const int32_t& s);
     void setLabelWidth(const int32_t& w);
     void setLineHeight(const int32_t& h);
-    void setYOffs(const JsonEditor* parent, int32_t& yOffsCntr, int32_t& lineHeight);
+    void setYOffs(const JsonEditor* parent, int32_t& yOffsCntr, const int32_t& lineHeight);
 
     auto getYOffs() const { return m_yOffs; }
     auto getCustPos() const { return m_custPos; }
@@ -62,18 +62,18 @@ public:
 protected:
     Node& createNewElement() override;
 
-    Label* m_label = nullptr;
-    UIEdit* m_edit = nullptr;
-    int32_t m_labelWidth = 180;
-    int32_t m_lineHeight = 22;
-    int32_t m_xSpacing = 3;
-    int32_t m_ySpacing = 3;
-    int32_t m_xIdent = 50;
-    int32_t m_yOffs = 0;
-    int32_t m_treeDepth = 0;
-    glm::ivec2 m_custPos {};
-    bool m_expanded = false;
-    bool m_enableExpandButton = true;
+    Label*      m_label = nullptr;
+    UIEdit*     m_edit = nullptr;
+    int32_t     m_labelWidth = 180;
+    int32_t     m_lineHeight = 22;
+    int32_t     m_xSpacing = 3;
+    int32_t     m_ySpacing = 3;
+    int32_t     m_xIdent = 50;
+    int32_t     m_yOffs = 0;
+    int32_t     m_treeDepth = 0;
+    glm::ivec2  m_custPos {};
+    bool        m_expanded = false;
+    bool        m_enableExpandButton = true;
 
     static inline int32_t m_yOffsCntr = 0;
 };

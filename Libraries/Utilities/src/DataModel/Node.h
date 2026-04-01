@@ -18,8 +18,6 @@
 
 #include <DataModel/NodeMacros.h>
 
-#include <utility>
-
 namespace ara {
 
 class Node;
@@ -63,6 +61,12 @@ public:
 
     enum class cbType : int { preChange=0, postChange, preAddChild, postAddChild, preRemoveChild, postRemoveChild, Size };
     enum class pushToType : int { undefined=0, array, object };
+
+    struct memberVar {
+        std::function<std::any()>       get;
+        std::function<void(std::any&)>  set;
+        tpi                             typeIndex;
+    };
 
     Node();
     virtual ~Node();
@@ -338,6 +342,7 @@ public:
     static const auto&  getClassKeys() { return m_classKeys; }
     static void         clearClassKeys() { m_classKeys.clear(); }
     const auto&         getNodeValueType() const { return m_nodeValueType; }
+    const auto&         getMemberVariables() const { return m_memberVars; }
 
     std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>>&   changeCb() { return m_changeCb; }
 
@@ -377,40 +382,6 @@ public:
     static inline std::list<NodeWatchFile>  m_watchFiles;
 
 protected:
-    std::string                                     m_name;
-    std::string                                     m_typeName;
-    std::string                                     m_uuid;
-    std::string                                     m_path;
-    std::string                                     m_key;
-    nodeValue                                       m_nodeValue;
-    nodeValueType                                   m_nodeValueType{};
-    bool                                            m_watch = false;
-    bool                                            m_useAssetLoader = false;
-    NodeWatchFile*                                  m_watchFile = nullptr;
-    Node*                                           m_parent = nullptr; // can't use weak pointer, since can't create weak_ptr from this without previous shared_ptr creation
-    std::mutex                                      m_mtx;
-    std::list<std::shared_ptr<Node>>                m_children;
-    std::filesystem::path                           m_fileName;
-    std::filesystem::path                           m_fileNameForWatcher;
-    std::atomic<bool>                               m_undoing{false};
-    Node*                                           m_undoBufRoot = nullptr;
-    std::deque<std::vector<std::uint8_t>>           m_undoBuf;
-    std::deque<std::vector<std::uint8_t>>::iterator m_undoBufIt;
-    size_t                                          m_maxUndoBufSize=0;
-    std::optional<std::function<void()>>            m_postLoadCb;
-    std::list<std::function<void()>*>               m_postCbList;
-
-    static inline std::unordered_map<std::string, std::pair<std::vector<std::string>, bool>> m_classKeys;
-    static inline std::filesystem::file_time_type   m_initFt{};
-
-    std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>> m_changeCb {
-        { cbType::preChange, {}},
-        { cbType::postChange, {}},
-        { cbType::preAddChild, {}},
-        { cbType::postAddChild, {}},
-        { cbType::preRemoveChild, {}},
-        { cbType::postRemoveChild, {}} };
-
     static void checkClassKeyEntry(const std::string& key, const std::vector<std::string>& newClassKeys) {
         if (!m_classKeys.contains(key)) {
             m_classKeys[key] = { {}, false };
@@ -435,6 +406,68 @@ protected:
         }
 
         m_classKeys[key].first.insert(m_classKeys[key].first.end(), newClassKeys.begin(), newClassKeys.end());
+    }
+
+    static void addMemberVars(std::vector<std::string>::iterator) {}
+
+    // Base case that handles when there are no remaining arguments
+    static void serializeSingleClassValue(nlohmann::json&, std::vector<std::string>::iterator) {}
+
+    template <typename T, typename... Args>
+    void serializeSingleClassValue(nlohmann::json& j, std::vector<std::string>::iterator name, T&& arg, Args&&... args) {
+        j[*name] = arg;
+        addMemberVar(name, arg);
+        serializeSingleClassValue(j, ++name, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
+    }
+
+    template <typename... Args>
+    std::vector<std::string> splitAndSerializeClassValues(nlohmann::json& j, const std::string& inArgNames, Args&&... args) {
+        auto names = node::splitMacroStringArgs(inArgNames);
+        serializeSingleClassValue(j, names.begin(), std::forward<Args>(args)...);
+        return names;
+    }
+
+    static void createSingleProp(std::vector<std::string>::iterator) {}
+
+    template <typename NodeValueType, typename... Args>
+    void createSingleProp( std::vector<std::string>::iterator name, NodeValueType&& arg, Args&&... args) {
+        addMemberVar(name, arg);
+        createSingleProp(++name, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
+    }
+
+    template <typename... Args>
+    std::vector<std::string> splitAndCreateClassProps(const std::string& inArgNames, Args&&... args) {
+        auto names = node::splitMacroStringArgs(inArgNames);
+        createSingleProp(names.begin(), std::forward<Args>(args)...);
+        return names;
+    }
+
+    // Base case that handles when there are no remaining arguments
+    static void deserializeSingleClassValue(const nlohmann::json&, std::vector<std::string>::iterator) {}
+
+    template <typename T, typename... Args>
+    void deserializeSingleClassValue(const nlohmann::json& j, std::vector<std::string>::iterator name, T&& arg, Args&&... args) {
+        if (j.contains(*name) && !j[*name].is_null()) {
+            arg = j[*name];
+        }
+        addMemberVar(name, arg);
+        deserializeSingleClassValue(j, ++name, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
+    }
+
+    template <typename... Args>
+    std::vector<std::string> splitAndDeserializeClassValues(const nlohmann::json& j, const std::string& inArgNames, Args&&... args) {
+        auto names = node::splitMacroStringArgs(inArgNames);
+        deserializeSingleClassValue(j, names.begin(), std::forward<Args>(args)...);
+        return names;
+    }
+
+    template <typename NodeValueType>
+    void addMemberVar(const std::vector<std::string>::iterator name, NodeValueType&& arg) {
+        m_memberVars.emplace(*name, memberVar{
+            .get = [&]{ return arg; },
+            .set = [&] (std::any& val){ arg = std::any_cast<NodeValueType>(val); },
+            .typeIndex = tpiTypeMap[typeid(arg)]
+        });
     }
 
     template <typename T>
@@ -467,6 +500,42 @@ protected:
 
     void parseArrayOrObjectChild(const nlohmann::json& value, const std::string& key, const bool skipClassEntries, std::list<std::function<void()>*>* postLoadCbsArg);
     void parseSingleValueChild(const nlohmann::json& value, const std::string& key);
+
+    std::string                                     m_name;
+    std::string                                     m_typeName;
+    std::string                                     m_uuid;
+    std::string                                     m_path;
+    std::string                                     m_key;
+    nodeValue                                       m_nodeValue;
+    nodeValueType                                   m_nodeValueType{};
+    bool                                            m_watch = false;
+    bool                                            m_useAssetLoader = false;
+    NodeWatchFile*                                  m_watchFile = nullptr;
+    Node*                                           m_parent = nullptr; // can't use weak pointer, since can't create weak_ptr from this without previous shared_ptr creation
+    std::mutex                                      m_mtx;
+    std::list<std::shared_ptr<Node>>                m_children;
+    std::filesystem::path                           m_fileName;
+    std::filesystem::path                           m_fileNameForWatcher;
+    std::atomic<bool>                               m_undoing{false};
+    Node*                                           m_undoBufRoot = nullptr;
+    std::deque<std::vector<std::uint8_t>>           m_undoBuf;
+    std::deque<std::vector<std::uint8_t>>::iterator m_undoBufIt;
+    size_t                                          m_maxUndoBufSize=0;
+    std::optional<std::function<void()>>            m_postLoadCb;
+    std::list<std::function<void()>*>               m_postCbList;
+    std::unordered_map<std::string, memberVar>      m_memberVars;
+
+    static inline std::unordered_map<std::string, std::pair<std::vector<std::string>, bool>> m_classKeys;
+    static inline std::filesystem::file_time_type   m_initFt{};
+
+    std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>> m_changeCb {
+        { cbType::preChange, {}},
+        { cbType::postChange, {}},
+        { cbType::preAddChild, {}},
+        { cbType::postAddChild, {}},
+        { cbType::preRemoveChild, {}},
+        { cbType::postRemoveChild, {}} };
+
 };
 
 }

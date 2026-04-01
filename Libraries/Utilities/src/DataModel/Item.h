@@ -39,13 +39,13 @@ public:
     template <class T>
     T *add(std::unique_ptr<T> ptr) {
         std::unique_lock l(m_mtx);
-        for (auto &[fst, func] : m_aboutAddItem) {
+        for (auto &func: m_aboutAddItem | std::views::values) {
             func();
         }
 
         m_children.emplace_back(std::move(ptr));
 
-        for (auto &[fst, func] : m_itemAdded) {
+        for (auto &func: m_itemAdded | std::views::values) {
             func();
         }
 
@@ -132,7 +132,7 @@ public:
         }
 
         // std::unique_lock<std::mutex> l(m_mtx);
-        for (auto &[fst, func] : m_aboutRemoveItem) {
+        for (auto &func: m_aboutRemoveItem | std::views::values) {
             func();
         }
         auto it = std::find_if(m_children.begin(), m_children.end(),
@@ -141,7 +141,7 @@ public:
             m_children.erase(it);
         }
 
-        for (auto &[fst, func] : m_itemRemoved) {
+        for (auto &func: m_itemRemoved | std::views::values) {
             func();
         }
         signalItemChanged();
