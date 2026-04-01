@@ -65,7 +65,7 @@ public:
     struct memberVar {
         std::function<std::any()>       get;
         std::function<void(std::any&)>  set;
-        tpi                             typeIndex;
+        tpi                             typeIndex=tpi::none;
     };
 
     Node();
