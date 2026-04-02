@@ -17,8 +17,8 @@
 #pragma once
 
 #include <DataModel/Node.h>
-#include <glm/include/glm/vec4.hpp>
-#include <glm/include/glm/gtc/type_ptr.hpp>
+#include <glm/vec4.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace ara::node {
 
