@@ -16,7 +16,7 @@ TEST(UITest, SerializeLabelSaveAndReload) {
     registerDefaultUITypes();
 
     appBody([&](const UIApplication &app) {
-        auto root = app.getMainWindow()->getRootNode();
+        const auto root = app.getMainWindow()->getRootNode();
 
         auto& lbl = root->push<Label>(LabelPars{
           .pos = ivec2{ 10, 10},
