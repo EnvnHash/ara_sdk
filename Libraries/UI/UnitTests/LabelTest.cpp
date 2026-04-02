@@ -17,13 +17,13 @@ auto& addLabel(UINode* root, const int32_t fontSize) {
          .size = ivec2{ 200, 100 },
          .align = align::center,
          .valign = valign::center,
-         .text_color = vec4{ 0.8f, 0.6f, 1.f, 1.f },
-         .bg_color = vec4{ 0.2f, 0.2f, 0.2f, 1.f },
+         .color = vec4{ 0.8f, 0.6f, 1.f, 1.f },
+         .bgColor = vec4{ 0.2f, 0.2f, 0.2f, 1.f },
          .text = "!7DK67/ú",
-         .text_align_x = align::center,
-         .text_align_y = valign::center,
-         .font_type = "regular",
-         .font_height = fontSize
+         .textAlignX = align::center,
+         .textAlignY = valign::center,
+         .fontType = "regular",
+         .fontHeight = fontSize
     });
 }
 
@@ -34,7 +34,7 @@ TEST(UITest, LabelTest) {
     for (auto& fsz: fontSizeList) {
         auto fn = "label_test_"+std::to_string(fsz)+".png";
         appBody([&](const UIApplication &app) {
-            auto root = app.getMainWindow()->getRootNode();
+            const auto root = app.getMainWindow()->getRootNode();
             addLabel(root, fsz);
         }, [&](const UIApplication &app) {
             compareFrameBufferToImage(filesystem::current_path() / fn,

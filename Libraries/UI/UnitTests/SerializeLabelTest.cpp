@@ -23,13 +23,13 @@ TEST(UITest, SerializeLabelSaveAndReload) {
           .size = ivec2{ 200, 100 },
           .align = align::center,
           .valign = valign::center,
-          .text_color = vec4{ 0.8f, 0.6f, 1.f, 1.f },
-          .bg_color = vec4{ 0.2f, 0.2f, 0.2f, 1.f },
+          .color = vec4{ 0.8f, 0.6f, 1.f, 1.f },
+          .bgColor = vec4{ 0.2f, 0.2f, 0.2f, 1.f },
           .text = "SerializeLabel",
-          .text_align_x = align::center,
-          .text_align_y = valign::center,
-          .font_type = "regular",
-          .font_height=24
+          .textAlignX = align::center,
+          .textAlignY = valign::center,
+          .fontType = "regular",
+          .fontHeight=24
         });
 
         root->saveAs("test.json");
@@ -45,7 +45,7 @@ TEST(UITest, SerializeLoadLabelTest) {
     registerDefaultUITypes();
 
     appBody([&](const UIApplication &app) {
-        auto root = app.getMainWindow()->getRootNode();
+        const auto root = app.getMainWindow()->getRootNode();
         root->load("SerializeFont.json");
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "label_serialization_test.png",

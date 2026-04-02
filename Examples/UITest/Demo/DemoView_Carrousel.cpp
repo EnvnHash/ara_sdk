@@ -24,11 +24,11 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
         .size = ivec2{ 200, 30 },
         .align = align::left,
         .valign = valign::top,
-        .text_color = white,
+        .color = white,
         .text = carModeMap[cm],
-        .text_align_x = align::left,
-        .font_type = "regular",
-        .font_height = 18
+        .textAlignX = align::left,
+        .fontType = "regular",
+        .fontHeight = 18
     });
 
     auto& caru = push<Carrousel>(UINodePars{

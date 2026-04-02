@@ -26,13 +26,13 @@ Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::s
     : Label(LabelPars{
           .pos = static_cast<glm::ivec2>(pos),
           .size = static_cast<glm::ivec2>(size),
-          .text_color = text_color,
-          .bg_color = bg_color,
+          .color = text_color,
+          .bgColor = bg_color,
           .text = text,
-          .text_align_x = align.first,
-          .text_align_y = align.second,
-          .font_type = font_type,
-          .font_height=0
+          .textAlignX = align.first,
+          .textAlignY = align.second,
+          .fontType = font_type,
+          .fontHeight=0
       }), m_typoColor({0.f, 0.f, 0.f, 1.f}) {
     setName(getTypeName<Button>());
     setFocusAllowed(false);

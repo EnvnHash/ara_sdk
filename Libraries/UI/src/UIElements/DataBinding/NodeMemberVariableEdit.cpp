@@ -25,12 +25,12 @@ void NodeMemberVariableEdit::init() {
         .style = getStyleClass()+".label",
         .align = align::left,
         .valign = valign::top,
-        .text_color = vec4{ 1.f, 1.f, 1.f, 1.f },
+        .color = vec4{ 1.f, 1.f, 1.f, 1.f },
         .text = m_text + ":",
-        .text_align_x = align::left,
-        .text_align_y = valign::center,
-        .font_type = "regular",
-        .font_height = 22
+        .textAlignX = align::left,
+        .textAlignY = valign::center,
+        .fontType = "regular",
+        .fontHeight = 22
     });
 
     if (m_nodeValueType != nodeValueType::object && m_nodeValueType != nodeValueType::array) {

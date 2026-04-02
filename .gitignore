@@ -6,6 +6,7 @@
 /cmake-build-debug/CMakeFiles
 /cmake-build-release/
 /.idea/
+/.vs/
 /cmake-build-debug-coverage/
 /Libraries/third_party/opencv/
 /Libraries/third_party/assimp/

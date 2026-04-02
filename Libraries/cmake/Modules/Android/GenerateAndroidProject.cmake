@@ -71,11 +71,6 @@ endmacro()
 
 # APP_TYPE 0 = Pure native app without JAVA, APPTYPE = 1 Java MainActivity and JNI
 macro (gen_android_proj)
-    #get_property(APP_ORIENTATION TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_ORIENTATION)
-    #set(oneValueArgs APP_ORIENTATION)
-
-    #cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
     message(STATUS "Generating Android Project")
     if (NOT DEFINED ENV{ANDROID_NDK_HOME})
         message("GenerateAndroidProject.cmake Error!! Environmental variable ANDROID_NDK_HOME not set!! Aborting Android Studio project generation")
@@ -115,10 +110,6 @@ macro (gen_android_proj)
             set(DST_CMAKE_VERSION ${CMAKE_VERSION})
             message(STATUS "Using OSes cmake version ${DST_CMAKE_VERSION} for android project generation")
         endif ()
-
-        #get_property(APP_NAME TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_NAME)
-        #get_property(APP_PACKAGE_URL TARGET ${PROJECT_NAME} PROPERTY ARASDK_APP_PACKAGE_URL)
-        #set(SIGN_KEY_PASS dshUIYy287)
 
         # read ndk version string from the NDKs source.properties
         file(STRINGS $ENV{ANDROID_NDK_HOME}/source.properties NDK_VERS_STR)
