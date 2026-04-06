@@ -19,10 +19,19 @@ public:
 };
 
 template <typename T>
-void addNodeEdit(const UIApplication &app, TestNode<T>& node) {
+class TestNode2 : public Node {
+public:
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_testValue, m_testValue2)
+    TestNode2() { setTypeName<TestNode2>(); }
+        T m_testValue{};
+        T m_testValue2{};
+};
+
+template <typename T>
+void addNodeEdit(const UIApplication &app, T& node) {
     auto& ne = app.getRootNode()->push<NodeEdit>();
     ne.setLineHeight(22);
-    ne.setSpacing(10);
+    ne.setSpacing({10, 10});
     ne.setLabelWidth(100);
     ne.setNode(node);
 
@@ -59,7 +68,7 @@ TEST(UITest, NodeEditChangeFloatTest) {
 
 TEST(UITest, NodeEditChangeStringTest) {
     TestNode<std::string> testNode;
-    std::string testString = "hello";
+    const std::string testString = "hello";
 
     appBody([&](const UIApplication &app) {
         addNodeEdit(app, testNode);
@@ -80,9 +89,7 @@ TEST(UITest, NodeEditChangeStringTest) {
 }
 
 TEST(UITest, NodeEditChangeArrayTest) {
-    using ArrInt = std::vector<int32_t>;
-
-    TestNode<ArrInt> testNode;
+    TestNode<std::vector<int32_t>> testNode;
     testNode.m_testValue = { 0, 1, 2 };
 
     appBody([&](const UIApplication &app) {
@@ -104,6 +111,46 @@ TEST(UITest, NodeEditChangeArrayTest) {
         EXPECT_EQ(testNode.m_testValue[0],1);
         EXPECT_EQ(testNode.m_testValue[1],2);
         EXPECT_EQ(testNode.m_testValue[2],3);
+    }, 400, 200);
+}
+
+TEST(UITest, NodeEditChangeGlmIvec3Test) {
+    TestNode<glm::ivec3> testNode;
+    testNode.m_testValue = glm::ivec3{ 0, 1, 2 };
+
+    appBody([&](const UIApplication &app) {
+        addNodeEdit(app, testNode);
+
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
+
+        const auto mainWin = app.getMainWindow();
+        mainWin->onMouseMove(158, 12, 0);
+        mainWin->onWheel(1.f);
+
+        mainWin->onMouseMove(258, 12, 0);
+        mainWin->onWheel(1.f);
+
+        mainWin->onMouseMove(351, 12, 0);
+        mainWin->onWheel(1.f);
+
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "data_binding_change_array.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        EXPECT_EQ(testNode.m_testValue[0],1);
+        EXPECT_EQ(testNode.m_testValue[1],2);
+        EXPECT_EQ(testNode.m_testValue[2],3);
+    }, 400, 200);
+}
+
+TEST(UITest, NodeEditMultiVar) {
+    TestNode2<int32_t> testNode2;
+
+    appBody([&](const UIApplication &app) {
+        addNodeEdit(app, testNode2);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "data_binding_multi.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 400, 200);
 }
 

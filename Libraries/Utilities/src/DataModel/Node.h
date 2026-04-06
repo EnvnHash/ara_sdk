@@ -448,7 +448,7 @@ protected:
     template <typename T, typename... Args>
     void deserializeSingleClassValue(const nlohmann::json& j, std::vector<std::string>::iterator name, T&& arg, Args&&... args) {
         if (j.contains(*name) && !j[*name].is_null()) {
-            j.at(*name).get_to(arg);          // <-- replace arg = j[*name]
+            j.at(*name).get_to(arg);
         }
         addMemberVar(name, arg);
         deserializeSingleClassValue(j, ++name, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
@@ -471,7 +471,13 @@ protected:
             .set = [&] (std::any& val, size_t idx) {
                 if constexpr (tpIndex == tpi::tp_vector_float ||
                     tpIndex == tpi::tp_vector_int32 ||
-                    tpIndex == tpi::tp_vector_string) {
+                    tpIndex == tpi::tp_vector_string ||
+                    tpIndex == tpi::tp_ivec2 ||
+                    tpIndex == tpi::tp_ivec3 ||
+                    tpIndex == tpi::tp_ivec4 ||
+                    tpIndex == tpi::tp_vec2 ||
+                    tpIndex == tpi::tp_vec3 ||
+                    tpIndex == tpi::tp_vec4) {
                     using Elem = Container::value_type;
                     arg[idx] =  std::any_cast<Elem>(val);
                 } else {

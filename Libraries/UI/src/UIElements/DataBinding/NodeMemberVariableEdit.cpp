@@ -64,6 +64,18 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
         createArrayEdit<float>();
     } else if (m_memVar->typeIndex == tpi::tp_vector_int32) {
         createArrayEdit<int32_t>();
+    } else if (m_memVar->typeIndex == tpi::tp_vec2) {
+        createGlmEdit<vec2>(2);
+    } else if (m_memVar->typeIndex == tpi::tp_vec3) {
+        createGlmEdit<vec3>(3);
+    } else if (m_memVar->typeIndex == tpi::tp_vec4) {
+        createGlmEdit<vec4>(4);
+    }  else if (m_memVar->typeIndex == tpi::tp_ivec2) {
+        createGlmEdit<ivec2>(2);
+    } else if (m_memVar->typeIndex == tpi::tp_ivec3) {
+        createGlmEdit<ivec3>(3);
+    } else if (m_memVar->typeIndex == tpi::tp_ivec4) {
+        createGlmEdit<ivec4>(4);
     } else if (m_memVar->typeIndex == tpi::tp_vector_string) {
         createArrayEdit<std::string>();
     }

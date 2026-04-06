@@ -25,10 +25,10 @@ void NodeEdit::rebuild() {
             auto& nmve = push<NodeMemberVariableEdit>();
             nmve.setMemberVar(memVar);
             nmve.setLabelText(key);
-            nmve.setSpacing(m_xSpacing);
+            nmve.setSpacing(m_spacing.x);
             nmve.setLineHeight(m_lineHeight);
             nmve.setLabelWidth(m_labelWidth);
-            nmve.setY(y * m_lineHeight);
+            nmve.setY(y++ * (m_lineHeight + m_spacing.y));
         }
     }
 }

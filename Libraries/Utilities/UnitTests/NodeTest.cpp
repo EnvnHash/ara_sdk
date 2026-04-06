@@ -836,4 +836,96 @@ TEST(Functional_Node, Undo_Queue_Juggle) {
     EXPECT_EQ(nd.name(), "Child3");
 }
 
+TEST(Functional_Node, Serialize_GLM_IVec2) {
+    json j;
+    j["point"] = glm::ivec2{0,1};
+    const auto str = j.dump();
+    EXPECT_EQ(str, "{\"point\":[0,1]}");
+}
+
+TEST(Functional_Node, Deserialize_GLM_IVec2) {
+    const auto j = R"({"point":[2,3]})"_json;
+    const auto point = j["point"].get<glm::ivec2>();
+    EXPECT_EQ(2, point.x);
+    EXPECT_EQ(3, point.y);
+}
+
+TEST(Functional_Node, Serialize_GLM_IVec3) {
+    json j;
+    j["point"] = glm::ivec3{0,1,2};
+    const auto str = j.dump();
+    EXPECT_EQ(str, "{\"point\":[0,1,2]}");
+}
+
+TEST(Functional_Node, Deserialize_GLM_IVec3) {
+    const auto j = R"({"point":[2,3,4]})"_json;
+    const auto point = j["point"].get<glm::ivec3>();
+    EXPECT_EQ(2, point.x);
+    EXPECT_EQ(3, point.y);
+    EXPECT_EQ(4, point.z);
+}
+
+TEST(Functional_Node, Serialize_GLM_IVec4) {
+    json j;
+    j["point"] = glm::ivec4{0,1,2,3};
+    const auto str = j.dump();
+    EXPECT_EQ(str, "{\"point\":[0,1,2,3]}");
+}
+
+TEST(Functional_Node, Deserialize_GLM_IVec4) {
+    auto str = "{\"point\":[2,3,4,5]}";
+    const json j = json::parse(str);
+    const auto point = j["point"].get<glm::ivec4>();
+    EXPECT_EQ(2, point.x);
+    EXPECT_EQ(3, point.y);
+    EXPECT_EQ(4, point.z);
+    EXPECT_EQ(5, point.w);
+}
+
+TEST(Functional_Node, Serialize_GLM_Vec2) {
+    json j;
+    j["point"] = glm::vec2{0.5,1.5};
+    const auto str = j.dump();
+    EXPECT_EQ(str, "{\"point\":[0.5,1.5]}");
+}
+
+TEST(Functional_Node, Deserialize_GLM_Vec2) {
+    const auto j = R"({"point":[2.5,3.5]})"_json;
+    const auto point = j["point"].get<glm::vec2>();
+    EXPECT_EQ(2.5f, point.x);
+    EXPECT_EQ(3.5f, point.y);
+}
+
+TEST(Functional_Node, Serialize_GLM_Vec3) {
+    json j;
+    j["point"] = glm::vec3{0.5f,1.5f,2.5f};
+    const auto str = j.dump();
+    EXPECT_EQ(str, "{\"point\":[0.5,1.5,2.5]}");
+}
+
+TEST(Functional_Node, Deserialize_GLM_Vec3) {
+    const auto j = R"({"point":[2.5,3.5,4.5]})"_json;
+    const auto point = j["point"].get<glm::vec3>();
+    EXPECT_EQ(2.5f, point.x);
+    EXPECT_EQ(3.5f, point.y);
+    EXPECT_EQ(4.5f, point.z);
+}
+
+TEST(Functional_Node, Serialize_GLM_Vec4) {
+    json j;
+    j["point"] = glm::vec4{0.5f,1.5f,2.5f,3.5f};
+    const auto str = j.dump();
+    EXPECT_EQ(str, "{\"point\":[0.5,1.5,2.5,3.5]}");
+}
+
+TEST(Functional_Node, Deserialize_GLM_Vec4) {
+    auto str = "{\"point\":[2.5,3.5,4.5,5.5]}";
+    const json j = json::parse(str);
+    const auto point = j["point"].get<glm::vec4>();
+    EXPECT_EQ(2.5f, point.x);
+    EXPECT_EQ(3.5f, point.y);
+    EXPECT_EQ(4.5f, point.z);
+    EXPECT_EQ(5.5f, point.w);
+}
+
 }  // namespace ara

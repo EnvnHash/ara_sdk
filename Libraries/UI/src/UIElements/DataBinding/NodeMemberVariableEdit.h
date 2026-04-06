@@ -63,6 +63,15 @@ public:
         }
     }
 
+    template<typename T>
+    void createGlmEdit(const size_t sz) {
+        auto vec = std::any_cast<T>(m_memVar->get());
+        auto width = static_cast<int32_t>((getContentSize().x -m_labelWidth -m_xSpacing) / static_cast<float>(std::min(sz, m_numEditsPerRow)));
+        for (auto i=0; i<sz; ++i) {
+            createSingleEdit(vec[i], width, i);
+        }
+    }
+
     //void updateStyleIt(ResNode* node, const state st, const std::string& styleClass) override;
     //void setLineOffset(NodeMemberVariableEdit* nd, int32_t& yOffsCntr, int32_t& lineHeight);
     //void setYOffs(const NodeMemberVariableEdit* parent, int32_t& yOffsCntr, const int32_t& lineHeight);

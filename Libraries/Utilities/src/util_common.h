@@ -40,8 +40,9 @@
 
 #include <Constants.h>
 
-#include "glm/vec2.hpp"
-#include "glm/vec3.hpp"
+#include <glm/glm.hpp>
+#include <type_traits>
+#include "json/json.hpp"
 
 #ifdef __ANDROID__
 #include <jni.h>
@@ -68,6 +69,12 @@ enum class tpi : int32_t {
     tp_vector_int32,
     tp_vector_float,
     tp_vector_string,
+    tp_ivec2,      // glm::ivec2
+    tp_ivec3,      // glm::ivec3
+    tp_ivec4,      // glm::ivec4
+    tp_vec2,       // glm::vec2
+    tp_vec3,       // glm::vec3
+    tp_vec4,       // glm::vec4
     none,
     count
 };
@@ -76,20 +83,29 @@ using nodeValue = std::variant<std::string, int32_t, float, bool>;
 enum class nodeValueType : int32_t { undefined=0, boolean=1, floating=2, integer=3, string=4, array=5, object=6, root=7 };
 
 template <typename T>
+constexpr bool is_glm_vec_v =
+    std::is_same_v<T, glm::ivec2> ||
+    std::is_same_v<T, glm::ivec3> ||
+    std::is_same_v<T, glm::ivec4> ||
+    std::is_same_v<T, glm::vec2> ||
+    std::is_same_v<T, glm::vec3> ||
+    std::is_same_v<T, glm::vec4>;
+
+template <typename T>
 constexpr tpi tpiOfScalar() {
-    if constexpr (std::is_same_v<T, std::string>)  return tpi::tp_string;
+    if constexpr (std::is_same_v<T, std::string>)   return tpi::tp_string;
     else if constexpr (std::is_same_v<T, char>)     return tpi::tp_char;
     else if constexpr (std::is_same_v<T, int8_t>)   return tpi::tp_int8;
     else if constexpr (std::is_same_v<T, uint8_t>)  return tpi::tp_uint8;
     else if constexpr (std::is_same_v<T, int16_t>)  return tpi::tp_int16;
     else if constexpr (std::is_same_v<T, uint16_t>) return tpi::tp_uint16;
-    else if constexpr (std::is_same_v<T, int32_t>)   return tpi::tp_int32;
-    else if constexpr (std::is_same_v<T, uint32_t>)  return tpi::tp_uint32;
-    else if constexpr (std::is_same_v<T, int64_t>)   return tpi::tp_int64;
-    else if constexpr (std::is_same_v<T, uint64_t>)  return tpi::tp_uint64;
-    else if constexpr (std::is_same_v<T, float>)     return tpi::tp_float;
-    else if constexpr (std::is_same_v<T, double>)    return tpi::tp_double;
-    else if constexpr (std::is_same_v<T, bool>)      return tpi::tp_bool;
+    else if constexpr (std::is_same_v<T, int32_t>)  return tpi::tp_int32;
+    else if constexpr (std::is_same_v<T, uint32_t>) return tpi::tp_uint32;
+    else if constexpr (std::is_same_v<T, int64_t>)  return tpi::tp_int64;
+    else if constexpr (std::is_same_v<T, uint64_t>) return tpi::tp_uint64;
+    else if constexpr (std::is_same_v<T, float>)    return tpi::tp_float;
+    else if constexpr (std::is_same_v<T, double>)   return tpi::tp_double;
+    else if constexpr (std::is_same_v<T, bool>)     return tpi::tp_bool;
     else                                            return tpi::none;
 }
 
@@ -99,18 +115,17 @@ constexpr bool is_supported_container_element_v =
     std::is_same_v<T, float>   ||
     std::is_same_v<T, std::string>;
 
-/* arrays don't work because array size needs to be constexpr
-template <typename Elem>
-constexpr tpi arrayTpiOf() {
-    if constexpr (std::is_same_v<Elem, int32_t>) {
-        return tpi::tp_array_int32;
-    } else if constexpr (std::is_same_v<Elem, float>) {
-        return tpi::tp_array_float;
-    } else {
-        return tpi::tp_array_string;
-    }
+template <typename T>
+constexpr tpi glmTpiOf() {
+    if constexpr (std::is_same_v<T, glm::ivec2>) return tpi::tp_ivec2;
+    else if constexpr (std::is_same_v<T, glm::ivec3>) return tpi::tp_ivec3;
+    else if constexpr (std::is_same_v<T, glm::ivec4>) return tpi::tp_ivec4;
+    else if constexpr (std::is_same_v<T, glm::vec2>)  return tpi::tp_vec2;
+    else if constexpr (std::is_same_v<T, glm::vec3>)  return tpi::tp_vec3;
+    else if constexpr (std::is_same_v< T, glm::vec4>) return tpi::tp_vec4;
+    else return tpi::none;
 }
-*/
+
 template <typename Elem>
 constexpr tpi vectorTpiOf() {
     if constexpr (std::is_same_v<Elem, int32_t>) {
@@ -130,18 +145,15 @@ constexpr tpi getTpi() {
         return tpiOfScalar<Decayed>();
     } else if constexpr (!std::is_class_v<T>) {
         return tpiOfScalar<Decayed>();
+    } else if constexpr (is_glm_vec_v<Decayed>) {
+        return glmTpiOf<Decayed>();
     } else if constexpr (requires { typename Decayed::value_type; std::declval<Decayed>().size(); } &&
            std::same_as<Decayed, std::vector<typename Decayed::value_type>>) {
         using Elem = Decayed::value_type;
         if constexpr (is_supported_container_element_v<Elem>) {
             return vectorTpiOf<Elem>();
         }
-    }/* else if constexpr (requires { typename Decayed::value_type; std::declval<Decayed>().size(); }) {
-        using Elem = T::value_type;
-        if constexpr (is_supported_container_element_v<Elem>) {
-            return {arrayTpiOf<Elem>(), std::tuple_size_v<Decayed>};
-        }
-    }*/
+    }
 
     return tpi::none;
 }
@@ -160,18 +172,15 @@ constexpr bool isSupportedNodeValue_v =
     std::is_same_v<T, bool>           ||
     std::is_same_v<T, std::string>   ||
     std::is_integral_v<T>            ||
-    std::is_floating_point_v<T>      /*||
-    std::is_same_v<T, glm::ivec2>    ||
-    std::is_same_v<T, glm::ivec3>    ||
-    std::is_same_v<T, glm::vec2>     ||
-    std::is_same_v<T, glm::vec3>*/;
+    std::is_floating_point_v<T>      ||
+    is_glm_vec_v<T>;
 
 template<class T>
 concept NodeValueType = isSupportedNodeValue_v<std::decay_t<T>> || (
-        requires { typename T::value_type; } &&
-        std::is_class_v<T> &&                       // ensures we have a nested value_type
-        std::tuple_size_v<T> > 0 &&                 // non‑empty array (size known at compile time)
-        isSupportedNodeValue_v<typename T::value_type>);
+    requires { typename T::value_type; } &&
+    std::is_class_v<T> &&                       // ensures we have a nested value_type
+    std::tuple_size_v<T> > 0 &&                 // non‑empty array (size known at compile time)
+    isSupportedNodeValue_v<typename T::value_type>);
 
 template <typename TP>
 std::time_t to_time_t(TP tp) {
@@ -269,3 +278,70 @@ static std::string formatFileTime(const std::filesystem::file_time_type& time) {
 }
 
 }  // namespace ara
+
+namespace glm {
+
+namespace glm_json {
+    template <typename Vec, std::size_t N>
+    concept GlmVec = requires(Vec v) {
+        typename Vec::value_type;
+        { v[0] } -> std::convertible_to<typename Vec::value_type>;
+    } && (Vec::length() == N);
+
+    template <typename Vec>
+    requires requires { Vec::length(); }
+    void to_json(nlohmann::json& j, Vec& v) {
+        constexpr std::size_t N = Vec::length();
+        j = nlohmann::json::array();
+
+        for (std::size_t i = 0; i < N; ++i) {
+            j.emplace_back(v[i]);
+        }
+    }
+
+    template <typename Vec>
+    requires requires { Vec::length(); }
+    void from_json(const nlohmann::json& j, Vec& v) {
+        constexpr std::size_t N = Vec::length();
+
+        if (!j.is_array() || j.size() != N) {
+            throw std::runtime_error("Invalid JSON array size for glm vector");
+        }
+
+        for (std::size_t i = 0; i < N; ++i) {
+            v[i] = j.at(i).get<typename Vec::value_type>();
+        }
+    }
+}
+
+template <typename T, qualifier Q>
+void from_json(const nlohmann::json& j, vec<2, T, Q>& v) {
+    glm_json::from_json(j, v);
+}
+
+template <typename T, qualifier Q>
+void from_json(const nlohmann::json& j, vec<3, T, Q>& v) {
+    glm_json::from_json(j, v);
+}
+
+template <typename T, qualifier Q>
+void from_json(const nlohmann::json& j, vec<4, T, Q>& v) {
+    glm_json::from_json(j, v);
+}
+
+template <typename T, qualifier Q>
+void to_json(nlohmann::json& j, const vec<2, T, Q>& v) {
+    glm_json::to_json(j, v);
+}
+
+template <typename T, qualifier Q>
+void to_json(nlohmann::json& j, const vec<3, T, Q>& v) {
+    glm_json::to_json(j, v);
+}
+
+template <typename T, qualifier Q>
+void to_json(nlohmann::json& j, const vec<4, T, Q>& v) {
+    glm_json::to_json(j, v);
+}
+
+}
