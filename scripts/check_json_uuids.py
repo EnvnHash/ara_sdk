@@ -27,6 +27,7 @@ def save_json(data, file_path):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
+
 def main(file_path):
     try:
         json_data = load_json(file_path)
@@ -35,6 +36,7 @@ def main(file_path):
         save_json(json_data, file_path)
     except Exception as e:
         print(f"An error occurred: {e}")
+
 
 if __name__ == "__main__":
     import sys

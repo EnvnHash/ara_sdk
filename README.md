@@ -5,7 +5,6 @@ Cross-platform application framework for 2D User Interfaces (similar to QT) and 
 ![Static Badge](https://img.shields.io/badge/os-macos_windows_linux_android-blue?style=flat)
 [![CMake build on ubuntu, windows, macos](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/EnvnHash/ara_sdk/actions/workflows/cmake-multi-platform.yml)
 
-
 ![Ara Snapshot](Documentation/images/ara_snapshot.png)
 
 ## Building
