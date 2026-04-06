@@ -39,7 +39,7 @@ if (UNIX AND NOT ANDROID AND NOT APPLE)
 	string(APPEND CMAKE_CXX_FLAGS " -Wno-nonnull")
 
 	set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0" CACHE STRING "" FORCE)
-	# supress deprecated warnings
+	# suppress deprecated warnings
 	add_definitions(${GXX_COVERAGE_COMPILE_FLAGS})
 
 	MACRO(HEADER_DIRECTORIES return_list ending)
@@ -61,8 +61,8 @@ if (APPLE)
 	set(SUPPORTED_ARCHITECTURES "")
 	execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpmachine OUTPUT_VARIABLE MACHINE)
 
-	string(APPEND CMAKE_C_FLAGS " -Wno-deprecated-declarations")
-	string(APPEND CMAKE_CXX_FLAGS " -Wno-deprecated-declarations")
+	string(APPEND CMAKE_C_FLAGS " -Wno-deprecated-declarations -fexperimental-library")
+	string(APPEND CMAKE_CXX_FLAGS " -Wno-deprecated-declarations -fexperimental-library")
 
 	#try to build universal binary. on an intel mac x86_64 should be supported, on an m1 both should be supported
 	if(${MACHINE} MATCHES "arm64-*" OR ${MACHINE} MATCHES "aarch64-*")
