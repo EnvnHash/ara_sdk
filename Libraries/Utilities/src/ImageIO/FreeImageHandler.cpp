@@ -94,7 +94,7 @@ std::tuple<FREE_IMAGE_FORMAT, FIMEMORY*> LoadPrepare(void* ptr, size_t size, FRE
     return { fif ? *fif : f, mem };
 }
 
-FIBITMAP* Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
+FIBITMAP* Load(void* ptr, const size_t size, FREE_IMAGE_FORMAT* fif) {
     auto r = LoadPrepare(ptr, size, fif);
     FIBITMAP* bitmap = nullptr;
     if ((bitmap = FreeImage_LoadFromMemory(std::get<FREE_IMAGE_FORMAT>(r), std::get<FIMEMORY*>(r), 0)) == nullptr) {
@@ -104,7 +104,7 @@ FIBITMAP* Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
     return bitmap;
 }
 
-FIMULTIBITMAP* LoadMulti(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
+FIMULTIBITMAP* LoadMulti(void* ptr, const size_t size, FREE_IMAGE_FORMAT* fif) {
     auto r = LoadPrepare(ptr, size, fif);
 
     FIMULTIBITMAP* bitmap = nullptr;
@@ -167,7 +167,7 @@ uint8_t GetNumChannels(FIBITMAP* bitmap) {
     return 0;
 }
 
-void Save(const std::string& filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf) {
+void Save(const std::string& filename, const FREE_IMAGE_FORMAT filetype, const int w, const int h, const int nrChan, uint8_t *buf) {
     if (const auto saveBufCont = FreeImage_Allocate(w, h, nrChan * 8)) {
         std::copy_n(buf, (w * h * nrChan), FreeImage_GetBits(saveBufCont));
         if (!FreeImage_Save(filetype, saveBufCont, filename.c_str())) {
@@ -185,18 +185,18 @@ FIBITMAP* ConvertTo32Bits(FIBITMAP* bitmap) {
     return dib32;
 }
 
-void vFlip(std::vector<uint8_t>& input, uint32_t width, uint32_t height, uint32_t bpp) {
+void vFlip(std::vector<uint8_t>& input, const uint32_t width, const uint32_t height, const uint32_t bpp) {
     Initialize();
 
-    auto bitmap = FreeImage_ConvertFromRawBits(input.data(), width, height, width, bpp, 0xFF, 0xFF, 0xFF);
+    const auto bitmap = FreeImage_ConvertFromRawBits(input.data(), width, height, width, bpp, 0xFF, 0xFF, 0xFF);
     if (!bitmap) {
         throw std::runtime_error("Failed to create FIBITMAP from input data.");
     }
 
     FreeImage_FlipVertical(bitmap);
 
-    uint8_t* flipped_data = FreeImage_GetBits(bitmap);
-    memcpy(input.data(), flipped_data, input.size());
+    const uint8_t* flipped_data = FreeImage_GetBits(bitmap);
+    std::copy_n(flipped_data, input.size(), input.begin());
 
     FreeImage_Unload(bitmap);
 }

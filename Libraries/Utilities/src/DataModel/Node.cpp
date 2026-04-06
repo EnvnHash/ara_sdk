@@ -152,10 +152,8 @@ void Node::signalChange(const cbType cbType, const std::optional<Node*> node) {
 
 json Node::asJson(const bool skipClassEntries) {
     json root;
-    {
-        unique_lock l(m_mtx);
-        serialize(root, skipClassEntries);
-    }
+    unique_lock l(m_mtx);
+    serialize(root, skipClassEntries);
     return root;
 }
 
@@ -517,10 +515,7 @@ void Node::changeVal(const function<void()>& f) {
         val(std::nullopt);
     }
 
-    {
-        unique_lock l(m_mtx);
-        f();
-    }
+    { unique_lock l(m_mtx); f(); }
 
     for (auto &val: m_changeCb[cbType::postChange] | views::values) {
         val(std::nullopt);
@@ -598,7 +593,6 @@ void Node::watchThreadIterate() {
                     } else {
                         LOG << "Detected File change: " << path;
                         node->load();
-                        LOG << " loading finished after File change: " << path;
                         time = ft;
                     }
                 }

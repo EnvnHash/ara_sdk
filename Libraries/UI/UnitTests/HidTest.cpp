@@ -111,10 +111,8 @@ static void checkCbCalled(std::unordered_map<hidEvent, bool>& cbCalled, bool exp
 
 static void simulateAndCheckClick(UIApplication& app, HidNode* div, std::unordered_map<hidEvent, bool>& cb,
                                   glm::vec2 pos, bool expectedValue) {
-    auto mainWin = app.getMainWindow();
-
+    const auto mainWin = app.getMainWindow();
     simulateClickLeftRight(mainWin, div, pos, expectedValue);
-
     app.getWinBase()->draw(0, 0, 0);
     mainWin->swap();
 
@@ -366,6 +364,18 @@ TEST(UITest, HidDivNestedClickConsume) {
     }, 600, 400);
 }
 
+void clickNestedExpectFalseFalseTrue(HidNode* childChildDiv, HidNode* childDiv, HidNode* div, hidEvent evt) {
+    EXPECT_FALSE(childChildDiv->m_clicked[evt]);
+    EXPECT_FALSE(childDiv->m_clicked[evt]);
+    EXPECT_TRUE(div->m_clicked[evt]);
+}
+
+void clickNestedExpectAllFalse(HidNode* childChildDiv, HidNode* childDiv, HidNode* div, hidEvent evt) {
+    EXPECT_FALSE(childChildDiv->m_clicked[evt]);
+    EXPECT_FALSE(childDiv->m_clicked[evt]);
+    EXPECT_FALSE(div->m_clicked[evt]);
+}
+
 TEST(UITest, HidDivNestedClickExclude) {
     HidNode* div = nullptr;
     HidNode* childDiv = nullptr;
@@ -375,39 +385,33 @@ TEST(UITest, HidDivNestedClickExclude) {
         div = addDiv(app);
         div->setName("div1");
 
-        childDiv = &div->push<HidNode>();
-        childDiv->setSize(150,50);
-        childDiv->setPos(20,20);
-        childDiv->setBackgroundColor(0.f, 0.f, 1.f, 1.f);
+        childDiv = &div->push<HidNode>({
+            .pos = glm::ivec2{20,20},
+            .size = glm::ivec2{150,50},
+            .bgColor = glm::vec4{0.f, 0.f, 1.f, 1.f}
+        });
         childDiv->excludeFromObjMap(true);
         childDiv->setName("div2");
 
-        childChildDiv = &childDiv->push<HidNode>();
-        childChildDiv->setSize(30,30);
-        childChildDiv->setPos(10,10);
-        childChildDiv->setBackgroundColor(0.f, 1.f, 0.f, 1.f);
+        childChildDiv = &childDiv->push<HidNode>({
+            .pos = glm::ivec2{10,10},
+            .size = glm::ivec2{30,30},
+            .bgColor = glm::vec4{0.f, 1.f, 0.f, 1.f}
+        });
         childChildDiv->setName("div3");
-    }, [&](UIApplication& app){
-        auto mainWin = app.getMainWindow();
+    }, [&](const UIApplication& app){
+        const auto mainWin = app.getMainWindow();
         mainWin->onMouseDownLeft(95, 95, false, false, false);
-        EXPECT_FALSE(childChildDiv->m_clicked[hidEvent::MouseDownLeft]);
-        EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseDownLeft]);
-        EXPECT_TRUE(div->m_clicked[hidEvent::MouseDownLeft]);
+        clickNestedExpectFalseFalseTrue(childChildDiv, childDiv, div, hidEvent::MouseDownLeft);
 
         mainWin->onMouseUpLeft();
-        EXPECT_FALSE(childChildDiv->m_clicked[hidEvent::MouseUpLeft]);
-        EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseUpLeft]);
-        EXPECT_TRUE(div->m_clicked[hidEvent::MouseUpLeft]);
+        clickNestedExpectFalseFalseTrue(childChildDiv, childDiv, div, hidEvent::MouseUpLeft);
 
         mainWin->onMouseDownRight(95, 95, false, false, false);
-        EXPECT_FALSE(childChildDiv->m_clicked[hidEvent::MouseDownRight]);
-        EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseDownRight]);
-        EXPECT_TRUE(div->m_clicked[hidEvent::MouseDownRight]);
+        clickNestedExpectFalseFalseTrue(childChildDiv, childDiv, div, hidEvent::MouseDownRight);
 
         mainWin->onMouseUpRight();
-        EXPECT_FALSE(childChildDiv->m_clicked[hidEvent::MouseUpRight]);
-        EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseUpRight]);
-        EXPECT_TRUE(div->m_clicked[hidEvent::MouseUpRight]);
+        clickNestedExpectFalseFalseTrue(childChildDiv, childDiv, div, hidEvent::MouseUpRight);
 
         childChildDiv->resetClickFlags();
         childDiv->resetClickFlags();
@@ -416,25 +420,16 @@ TEST(UITest, HidDivNestedClickExclude) {
         div->excludeFromObjMap(true);
 
         mainWin->onMouseDownLeft(95, 95, false, false, false);
-        EXPECT_FALSE(childChildDiv->m_clicked[hidEvent::MouseDownLeft]);
-        EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseDownLeft]);
-        EXPECT_FALSE(div->m_clicked[hidEvent::MouseDownLeft]);
+        clickNestedExpectAllFalse(childChildDiv, childDiv, div, hidEvent::MouseDownLeft);
 
         mainWin->onMouseUpLeft();
-        EXPECT_FALSE(childChildDiv->m_clicked[hidEvent::MouseUpLeft]);
-        EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseUpLeft]);
-        EXPECT_FALSE(div->m_clicked[hidEvent::MouseUpLeft]);
+        clickNestedExpectAllFalse(childChildDiv, childDiv, div, hidEvent::MouseUpLeft);
 
         mainWin->onMouseDownRight(95, 95, false, false, false);
-        EXPECT_FALSE(childChildDiv->m_clicked[hidEvent::MouseDownRight]);
-        EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseDownRight]);
-        EXPECT_FALSE(div->m_clicked[hidEvent::MouseDownRight]);
+        clickNestedExpectAllFalse(childChildDiv, childDiv, div, hidEvent::MouseDownRight);
 
         mainWin->onMouseUpRight();
-        EXPECT_FALSE(childChildDiv->m_clicked[hidEvent::MouseUpRight]);
-        EXPECT_FALSE(childDiv->m_clicked[hidEvent::MouseUpRight]);
-        EXPECT_FALSE(div->m_clicked[hidEvent::MouseUpRight]);
-
+        clickNestedExpectAllFalse(childChildDiv, childDiv, div, hidEvent::MouseUpRight);
     }, 600, 400);
 }
 

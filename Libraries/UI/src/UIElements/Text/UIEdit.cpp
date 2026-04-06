@@ -213,7 +213,7 @@ void UIEdit::updateFontGeo() {
     m_bo.x = m_offset.x + m_alignOffset.x;
     m_bo.y = m_offset.y + m_riFont->getPixAscent() + m_alignOffset.y;
     m_mask = calculateMask();
-    memcpy(&m_modMvp[0][0], &m_mvp[0][0], sizeof(float) * 16);
+    m_modMvp = m_mvp;
 
     m_mask *= m_riFont->getPixRatio();
     m_bo *= m_riFont->getPixRatio();

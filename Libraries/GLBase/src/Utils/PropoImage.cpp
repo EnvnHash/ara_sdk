@@ -20,16 +20,14 @@
 
 namespace ara {
 
-PropoImage::PropoImage(GLBase* glbase) : m_imgTex(std::make_unique<Texture>(glbase)) {
+PropoImage::PropoImage(GLBase* glBase) : m_imgTex(std::make_unique<Texture>(glBase)) {
 }
 
-PropoImage::PropoImage(GLBase* glbase, const std::string& fileName, int screenW, int screenH, float logoWidth, propoImagePos pos,
-                       float border)
-    : m_pos(pos), m_imgWidth(logoWidth), m_border(border) {
+PropoImage::PropoImage(GLBase* glBase, const std::string& fileName, const int screenW, const int screenH,
+                       const float logoWidth, const propoImagePos pos, const float border)
+    : m_pos(pos), m_imgWidth(logoWidth), m_border(border), m_imgTex(std::make_unique<Texture>(glBase)) {
     m_screenW = static_cast<float>(screenW);
     m_screenH = static_cast<float>(screenH);
-
-    m_imgTex = std::make_unique<Texture>(glbase);
     m_imgTex->loadTexture2D(fileName, 1);
 
     setupQuad();
@@ -69,7 +67,7 @@ void PropoImage::draw() const {
     m_imgQuad->draw();
 }
 
-void PropoImage::setWidth(float newWidth) {
+void PropoImage::setWidth(const float newWidth) {
     m_oldImgWidth     = m_imgWidth;
     m_oldImgHeight    = m_imgHeight;
     m_imgWidth        = newWidth;

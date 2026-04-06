@@ -26,13 +26,13 @@ class PropoImage {
 public:
     enum propoImagePos { CENTER = 0, UPPER_LEFT = 1, UPPER_RIGHT = 2, LOWER_LEFT = 3, LOWER_RIGHT = 4 };
 
-    explicit PropoImage(GLBase* glbase);
-    PropoImage(GLBase* glbase, const std::string& fileName, int screenW, int screenH, float logoWidth = 0.5f,
+    explicit PropoImage(GLBase* glBase);
+    PropoImage(GLBase* glBase, const std::string& fileName, int screenW, int screenH, float logoWidth = 0.5f,
                propoImagePos pos = CENTER, float border = 0.f);
 
     void setupQuad();
     void draw() const;
-    void setWidth(float _newWidth);
+    void setWidth(float newWidth);
 
     [[nodiscard]] float getImgHeight() const { return m_imgHeight; }
     [[nodiscard]] float getImgAspectRatio() const { return m_imgAspectRatio; }
