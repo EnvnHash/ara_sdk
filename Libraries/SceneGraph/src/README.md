@@ -30,7 +30,7 @@
 - Position (translation) and rotation are multiplied onto the model matrix of the GLMCamera
 - The parameters camPos (0|0|1), lookAt (0|0|0), and upVector (0|1|0) of the view matrix remain unchanged. This means all screen position calculations must take this transformation into account, multiplying it with the inverse camera model matrix to get its position in 3D space within the scene
 - TrackBall rotates always relative to the center (0|0|0) of the Camera Model-Matrix
-- Each CameraSet must be assigned at least one Shader prototype (method addShaderProto("ShaderProtoName", std::list<renderPasses>)), this uses the ShaderProtoFact class
+- Each CameraSet must be assigned at least one Shader prototype, this uses the ShaderProtoFact class
 - Shader prototypes are render-pass specific, with the list passed to addShaderProto defining for which render passes the relevant shader should be used.
 
 ### Gizmos
@@ -70,7 +70,7 @@
 - Can have SubNodes (children)
 - Rendered recursively
 - Have model matrices (position, scaling, rotation)
-  - Matrices are hierarchically multiplied (from root node to SubNode); when rendering upon request (i.e., the "hasNewModelMat" flag is set somewhere in the NodeTree), a matrix stack (std::list<mat4>) is maintained, where the current parent matrix is always the multiplication of all current matrices in the list.
+  - Matrices are hierarchically multiplied (from root node to SubNode); when rendering upon request (i.e., the "hasNewModelMat" flag is set somewhere in the NodeTree), a matrix stack is maintained, where the current parent matrix is always the multiplication of all current matrices in the list.
   - To save computation time, this multiplication is only performed if the model matrix of the node or its parent has changed.
   - To prevent duplicate multiplications, this calculation is centrally executed at the beginning of the render loop. When changes occur (translate, rotate, scale), the flag "hasNewModelMat" is set in the node. In the render loop, each node checks for this flag. If found, it is removed from the current node and set for all children.
   - Callbacks can be set that are called when the model matrices change (also centrally in the render loop)

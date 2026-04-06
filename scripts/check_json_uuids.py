@@ -16,7 +16,7 @@ def print_json_keys_values(data, uuid_set):
                 print_json_keys_values(value, uuid_set)
 
     elif isinstance(data, list):
-        for i, item in enumerate(data):
+        for item in enumerate(data):
             if isinstance(item, (dict, list)):
                 print_json_keys_values(item, uuid_set)
 def load_json(file_path):
