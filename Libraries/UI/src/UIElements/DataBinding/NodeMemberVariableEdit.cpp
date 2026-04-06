@@ -39,45 +39,41 @@ void NodeMemberVariableEdit::init() {
 }
 
 void NodeMemberVariableEdit::setEditValFromMemberVar() {
-    if (!m_memVar) {
-        return;
-    }
+    if (!m_memVar) return;
 
     if (m_edit) {
         remove(m_edit);
     }
 
-    if (!m_arrayEdit.empty()) {
-        for (const auto it : m_arrayEdit) {
-            remove(it);
-        }
+    for (const auto& it : m_arrayEdit) {
+        remove(it);
     }
+    m_arrayEdit.clear();
 
     auto stdWidth = -m_labelWidth -m_xSpacing;
-    if (m_memVar->typeIndex == tpi::tp_float) {
-        createSingleEdit<float>(std::any_cast<float>(m_memVar->get()), stdWidth);
-    } else if (m_memVar->typeIndex == tpi::tp_int32) {
-        createSingleEdit<int32_t>(std::any_cast<int32_t>(m_memVar->get()), stdWidth);
-    } else if (m_memVar->typeIndex == tpi::tp_string) {
-        createSingleEdit<std::string>(std::any_cast<std::string>(m_memVar->get()), stdWidth);
-    } else if (m_memVar->typeIndex == tpi::tp_vector_float) {
-        createArrayEdit<float>();
-    } else if (m_memVar->typeIndex == tpi::tp_vector_int32) {
-        createArrayEdit<int32_t>();
-    } else if (m_memVar->typeIndex == tpi::tp_vec2) {
-        createGlmEdit<vec2>(2);
-    } else if (m_memVar->typeIndex == tpi::tp_vec3) {
-        createGlmEdit<vec3>(3);
-    } else if (m_memVar->typeIndex == tpi::tp_vec4) {
-        createGlmEdit<vec4>(4);
-    }  else if (m_memVar->typeIndex == tpi::tp_ivec2) {
-        createGlmEdit<ivec2>(2);
-    } else if (m_memVar->typeIndex == tpi::tp_ivec3) {
-        createGlmEdit<ivec3>(3);
-    } else if (m_memVar->typeIndex == tpi::tp_ivec4) {
-        createGlmEdit<ivec4>(4);
-    } else if (m_memVar->typeIndex == tpi::tp_vector_string) {
-        createArrayEdit<std::string>();
+    const static std::unordered_map<tpi, std::function<void()>> dispatch = {
+        { tpi::tp_float, [this, stdWidth] {
+            createSingleEdit<float>(std::any_cast<float>(m_memVar->get()), stdWidth);
+        }},
+        { tpi::tp_int32, [this, stdWidth] {
+            createSingleEdit<int32_t>(std::any_cast<int32_t>(m_memVar->get()), stdWidth);
+        }},
+        { tpi::tp_string, [this, stdWidth] {
+            createSingleEdit<std::string>( std::any_cast<std::string>(m_memVar->get()), stdWidth);
+        }},
+        { tpi::tp_vector_float, [this] { createArrayEdit<float>(); }},
+        { tpi::tp_vector_int32, [this] { createArrayEdit<int32_t>(); }},
+        { tpi::tp_vector_string, [this] { createArrayEdit<std::string>(); }},
+        { tpi::tp_vec2, [this] { createGlmEdit<vec2>(2); }},
+        { tpi::tp_vec3, [this] { createGlmEdit<vec3>(3); }},
+        { tpi::tp_vec4, [this] { createGlmEdit<vec4>(4); }},
+        { tpi::tp_ivec2, [this] { createGlmEdit<ivec2>(2); }},
+        { tpi::tp_ivec3, [this]  { createGlmEdit<ivec3>(3); }},
+        { tpi::tp_ivec4, [this] { createGlmEdit<ivec4>(4); }},
+    };
+
+    if (const auto it = dispatch.find(m_memVar->typeIndex); it != dispatch.end()) {
+        it->second();
     }
 }
 

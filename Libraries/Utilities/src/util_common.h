@@ -92,21 +92,27 @@ constexpr bool is_glm_vec_v =
     std::is_same_v<T, glm::vec4>;
 
 template <typename T>
+struct tpi_of_scalar {
+    static constexpr tpi value = tpi::none;
+};
+
+template <> struct tpi_of_scalar<std::string> { static constexpr tpi value = tpi::tp_string; };
+template <> struct tpi_of_scalar<char>        { static constexpr tpi value = tpi::tp_char; };
+template <> struct tpi_of_scalar<int8_t>      { static constexpr tpi value = tpi::tp_int8; };
+template <> struct tpi_of_scalar<uint8_t>     { static constexpr tpi value = tpi::tp_uint8; };
+template <> struct tpi_of_scalar<int16_t>     { static constexpr tpi value = tpi::tp_int16; };
+template <> struct tpi_of_scalar<uint16_t>    { static constexpr tpi value = tpi::tp_uint16; };
+template <> struct tpi_of_scalar<int32_t>     { static constexpr tpi value = tpi::tp_int32; };
+template <> struct tpi_of_scalar<uint32_t>    { static constexpr tpi value = tpi::tp_uint32; };
+template <> struct tpi_of_scalar<int64_t>     { static constexpr tpi value = tpi::tp_int64; };
+template <> struct tpi_of_scalar<uint64_t>    { static constexpr tpi value = tpi::tp_uint64; };
+template <> struct tpi_of_scalar<float>       { static constexpr tpi value = tpi::tp_float; };
+template <> struct tpi_of_scalar<double>      { static constexpr tpi value = tpi::tp_double; };
+template <> struct tpi_of_scalar<bool>        { static constexpr tpi value = tpi::tp_bool; };
+
+template <typename T>
 constexpr tpi tpiOfScalar() {
-    if constexpr (std::is_same_v<T, std::string>)   return tpi::tp_string;
-    else if constexpr (std::is_same_v<T, char>)     return tpi::tp_char;
-    else if constexpr (std::is_same_v<T, int8_t>)   return tpi::tp_int8;
-    else if constexpr (std::is_same_v<T, uint8_t>)  return tpi::tp_uint8;
-    else if constexpr (std::is_same_v<T, int16_t>)  return tpi::tp_int16;
-    else if constexpr (std::is_same_v<T, uint16_t>) return tpi::tp_uint16;
-    else if constexpr (std::is_same_v<T, int32_t>)  return tpi::tp_int32;
-    else if constexpr (std::is_same_v<T, uint32_t>) return tpi::tp_uint32;
-    else if constexpr (std::is_same_v<T, int64_t>)  return tpi::tp_int64;
-    else if constexpr (std::is_same_v<T, uint64_t>) return tpi::tp_uint64;
-    else if constexpr (std::is_same_v<T, float>)    return tpi::tp_float;
-    else if constexpr (std::is_same_v<T, double>)   return tpi::tp_double;
-    else if constexpr (std::is_same_v<T, bool>)     return tpi::tp_bool;
-    else                                            return tpi::none;
+    return tpi_of_scalar<std::decay_t<T>>::value;
 }
 
 template <typename T>

@@ -461,6 +461,13 @@ protected:
         return names;
     }
 
+    template <typename T>
+    struct is_index_assignable : std::false_type {};
+
+    template <> struct is_index_assignable<std::vector<float>> : std::true_type {};
+    template <> struct is_index_assignable<std::vector<int32_t>> : std::true_type {};
+    template <> struct is_index_assignable<std::vector<std::string>> : std::true_type {};
+
     template <typename NodeValueType>
     void addMemberVar(const std::vector<std::string>::iterator name, NodeValueType&& arg) {
         using Container = std::decay_t<NodeValueType>;
@@ -469,17 +476,9 @@ protected:
         m_memberVars.emplace(*name, memberVar{
             .get = [&]{ return arg; },
             .set = [&] (std::any& val, size_t idx) {
-                if constexpr (tpIndex == tpi::tp_vector_float ||
-                    tpIndex == tpi::tp_vector_int32 ||
-                    tpIndex == tpi::tp_vector_string ||
-                    tpIndex == tpi::tp_ivec2 ||
-                    tpIndex == tpi::tp_ivec3 ||
-                    tpIndex == tpi::tp_ivec4 ||
-                    tpIndex == tpi::tp_vec2 ||
-                    tpIndex == tpi::tp_vec3 ||
-                    tpIndex == tpi::tp_vec4) {
+                if constexpr (is_index_assignable<Container>::value) {
                     using Elem = Container::value_type;
-                    arg[idx] =  std::any_cast<Elem>(val);
+                    arg[idx] = std::any_cast<Elem>(val);
                 } else {
                     arg = std::any_cast<Container>(val);
                 }
