@@ -73,7 +73,7 @@ bool GLBase::init(const bool doInitResources, void *winHnd) {
     GLWindow::makeNoneCurrent();
 
     m_inited = true;
-    return m_win ? true : false;
+    return m_win != nullptr;
 }
 
 /// <summary>
@@ -278,7 +278,7 @@ void GLBase::destroy(bool terminateGLFW) {
     m_shaderCollector.clear();
     glDeleteVertexArrays(1, &m_nullVao);
 
-    if (const auto source = m_resUpdt.get_stop_source(); source.stop_possible()) {
+    if (auto source = m_resUpdt.get_stop_source(); source.stop_possible()) {
         source.request_stop();
         m_resUpdtExited.wait();
     }

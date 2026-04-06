@@ -2,7 +2,7 @@
 
 using namespace ara;
 
-int main(int, char*) {
+int main(int, char**) {
     UIPropertyExample app;
     app.init(nullptr);
     app.startEventLoop(); //blocking
