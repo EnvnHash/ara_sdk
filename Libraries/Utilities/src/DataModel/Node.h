@@ -540,7 +540,7 @@ protected:
     size_t                                          m_maxUndoBufSize=0;
     std::optional<std::function<void()>>            m_postLoadCb;
     std::list<std::function<void()>*>               m_postCbList;
-    std::unordered_map<std::string, memberVar>      m_memberVars;
+    std::map<std::string, memberVar>                m_memberVars;
 
     static inline std::unordered_map<std::string, std::pair<std::vector<std::string>, bool>> m_classKeys;
     static inline std::filesystem::file_time_type   m_initFt{};
