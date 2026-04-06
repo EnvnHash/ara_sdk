@@ -153,6 +153,7 @@ The UI graph is simple standard node structure with parent-child relations.
 ![Styles](../../../Documentation/images/uisdk_design-Styles.jpg)
 
 To take into account:
+
 - UINode may have different positions, size, etc when selected, highlighted, etc
 - when styles are edited via the styles.txt, default values are needed, in case a parameter is not set or deleted
 - style parsing and updating of UINodes must be done in a well-defined order
