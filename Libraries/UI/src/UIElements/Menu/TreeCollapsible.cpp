@@ -89,11 +89,11 @@ void TreeCollapsible::rebuildIt(Node* nd, size_t tabIdx, int32_t& yOffs) {
             .size = ivec2{ 200, m_fontHeight },
             .align = align::left,
             .valign = valign::top,
-            .text_color = m_color,
+            .color = m_color,
             .text = nd->name(),
-            .text_align_x = align::left,
-            .font_type = "regular",
-            .font_height = m_fontHeight
+            .textAlignX = align::left,
+            .fontType = "regular",
+            .fontHeight = m_fontHeight
         });
 
         yOffs += m_fontHeight + m_ySpacing;

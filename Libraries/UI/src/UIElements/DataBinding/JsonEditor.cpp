@@ -33,12 +33,12 @@ void JsonEditor::init() {
         .style = getStyleClass()+".label",
         .align = align::left,
         .valign = valign::top,
-        .text_color = vec4{ 1.f, 1.f, 1.f, 1.f },
+        .color = vec4{ 1.f, 1.f, 1.f, 1.f },
         .text = m_key + ":",
-        .text_align_x = align::left,
-        .text_align_y = valign::center,
-        .font_type = "regular",
-        .font_height = 22
+        .textAlignX = align::left,
+        .textAlignY = valign::center,
+        .fontType = "regular",
+        .fontHeight = 22
     });
 
     if (m_nodeValueType != nodeValueType::object && m_nodeValueType != nodeValueType::array) {
@@ -157,8 +157,8 @@ void JsonEditor::initChild(JsonEditor& je)  {
     je.addStyleClass(getStyleClass());
     if (m_label && m_edit) {
         je.setLineHeight(static_cast<int32_t>(m_label->getSize().y));
-        je.setSpacing(m_edit->getPos().x - m_label->getSize().x - m_label->getPos().x);
-        je.setLabelWidth(m_label->getSize().x);
+        je.setSpacing(static_cast<int32_t>(m_edit->getPos().x - m_label->getSize().x - m_label->getPos().x));
+        je.setLabelWidth(static_cast<int32_t>(m_label->getSize().x));
     }
 }
 
@@ -214,7 +214,7 @@ void JsonEditor::setYOffs(const JsonEditor* parent, int32_t& yOffsCntr, const in
 
         m_yOffs = yOffsCntr++;
 
-        m_treeDepth = getTreeDepth();
+        m_treeDepth = static_cast<int32_t>(getTreeDepth());
         m_custPos.x = (m_treeDepth - parent->getDepth()) * m_xIdent;
         m_custPos.y = (m_ySpacing + lineHeight) * (m_yOffs - parent->getYOffs());
         setPos(m_custPos);
@@ -226,7 +226,7 @@ int32_t JsonEditor::getLineHeight(ResNode* node) const {
     if (const auto editNode = node->findNode("edit")) {
         if (const auto numNode = editNode->findNumericNode("height"); get<ResNode*>(numNode)) {
             if (get<unitType>(numNode) == unitType::Percent) {
-                lineHeight = std::stof(get<std::string>(numNode)) * 0.01f;
+                lineHeight = static_cast<int32_t>(std::stof(get<std::string>(numNode)) * 0.01f);
             } else {
                 lineHeight = std::stoi(get<std::string>(numNode));
             }

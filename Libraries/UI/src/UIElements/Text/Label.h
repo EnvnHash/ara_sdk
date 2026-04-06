@@ -16,13 +16,16 @@ struct LabelPars {
     std::string style{};
     ara::align align = align::left; // gcc fails without the namespace specification
     ara::valign valign = valign::top;
-    glm::vec4 text_color{};
-    glm::vec4 bg_color{};
+    glm::vec4 color{};
+    glm::vec4 bgColor{};
+    uint32_t borderWidth{};
+    uint32_t borderRadius{};
+    glm::vec4 borderColor{};
     const std::string& text;
-    ara::align text_align_x{};
-    ara::valign text_align_y{};
-    std::string font_type = "regular";
-    int font_height=0;
+    ara::align textAlignX{};
+    ara::valign textAlignY{};
+    std::string fontType = "regular";
+    int fontHeight=0;
 };
 
 class Label : public Div {
@@ -44,7 +47,7 @@ public:
     ~Label() override = default;
 
     [[nodiscard]] unsigned long getOpt() const { return m_tOpt; }
-    [[nodiscard]] bool          hasOpt(unsigned long f) const { return m_tOpt & f; }
+    [[nodiscard]] bool          hasOpt(const unsigned long f) const { return m_tOpt & f; }
 
     unsigned long   setOpt(unsigned long f);
     unsigned long   removeOpt(unsigned long f);
@@ -121,7 +124,7 @@ protected:
 
     [[nodiscard]] glm::vec4 calculateMask() const;
 
-    int m_fontSize = 17;
+    int32_t m_fontSize = 17;
 
     FontGlyphVector m_fontDGV;
     Font           *m_riFont      = nullptr;

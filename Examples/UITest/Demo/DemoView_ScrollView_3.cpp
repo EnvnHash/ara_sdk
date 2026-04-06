@@ -38,13 +38,13 @@ void DemoView_ScrollView_3::Unit::init() {
         .pos = {0, 0},
         .size = {180, 24},
         .valign = valign::top,
-        .text_color = getColor(),
-        .bg_color = {.1f, .1f, .2f, 1.f},
+        .color = getColor(),
+        .bgColor = {.1f, .1f, .2f, 1.f},
         .text = m_Title,
-        .text_align_x = align::center,
-        .text_align_y = valign::center,
-        .font_type = "bold",
-        .font_height = 22
+        .textAlignX = align::center,
+        .textAlignY = valign::center,
+        .fontType = "bold",
+        .fontHeight = 22
     });
 
     push<Image>({
@@ -58,13 +58,13 @@ void DemoView_ScrollView_3::Unit::init() {
         .size = {180, 24},
         .align = align::center,
         .valign = valign::bottom,
-        .text_color = {.4f, .4f, .4f, 1.f},
-        .bg_color = getBackgroundColor(),
+        .color = {.4f, .4f, .4f, 1.f},
+        .bgColor = getBackgroundColor(),
         .text = "More text here",
-        .text_align_x = align::center,
-        .text_align_y = valign::center,
-        .font_type = "regular",
-        .font_height = 22
+        .textAlignX = align::center,
+        .textAlignY = valign::center,
+        .fontType = "regular",
+        .fontHeight = 22
     });
 
 }

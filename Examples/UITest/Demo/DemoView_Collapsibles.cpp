@@ -14,12 +14,12 @@ void DemoView_Collapsibles::init() {
     push<Label>(LabelPars {
         .pos = ivec2{0,50},
         .size = ivec2 {200, 40},
-        .text_color = vec4{ 1.f, 1.f, 1.f, 1.f },
+        .color = vec4{ 1.f, 1.f, 1.f, 1.f },
         .text = "ComboBoxes",
-        .text_align_x = align::left,
-        .text_align_y = valign::top,
-        .font_type = "regular",
-        .font_height = 20,
+        .textAlignX = align::left,
+        .textAlignY = valign::top,
+        .fontType = "regular",
+        .fontHeight = 20,
     });
 
     m_combo = &push<ComboBox>(UINodePars{
@@ -44,12 +44,12 @@ void DemoView_Collapsibles::init() {
     push<Label>(LabelPars {
         .pos = ivec2{250,50},
         .size = ivec2 {200, 40},
-        .text_color = vec4{ 1.f, 1.f, 1.f, 1.f },
+        .color = vec4{ 1.f, 1.f, 1.f, 1.f },
         .text = "Collapsibles Trees",
-        .text_align_x = align::left,
-        .text_align_y = valign::top,
-        .font_type = "regular",
-        .font_height = 20,
+        .textAlignX = align::left,
+        .textAlignY = valign::top,
+        .fontType = "regular",
+        .fontHeight = 20,
     });
 
     // Tree View, must use the ara sdk Node class or a derivative

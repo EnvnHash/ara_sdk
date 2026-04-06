@@ -30,11 +30,14 @@ Label::Label(const LabelPars &initData) {
     setName(getTypeName<Label>());
     setPos(initData.pos.x, initData.pos.y);
     setSize(initData.size.x, initData.size.y);
-    Div::setBackgroundColor(initData.bg_color);
-    Div::setColor(initData.text_color);
+    Div::setBackgroundColor(initData.bgColor);
+    Div::setColor(initData.color);
+    Div::setBorderColor(initData.borderColor);
+    Div::setBorderWidth(initData.borderWidth);
+    Div::setBorderRadius(initData.borderRadius);
     setText(initData.text);
-    setTextAlign(initData.text_align_x, initData.text_align_y);
-    setFontSize(initData.font_height);
+    setTextAlign(initData.textAlignX, initData.textAlignY);
+    setFontSize(initData.fontHeight ? initData.fontHeight : 17);
     setAlignX(initData.align);
     setAlignY(initData.valign);
     UINodeStyle::addStyleClass(initData.style);

@@ -287,16 +287,16 @@ void DrawManager::bindFontTextures(DrawSet& ds) {
     std::vector<float> layerSizes;
     for (const auto &[texUnit, nrLayers, layerId, texId, fontRef] : ds.fontTex) {
         layerUnits.emplace_back(texUnit);
-        layerSizes.emplace_back(nrLayers);
+        layerSizes.emplace_back(static_cast<float>(nrLayers));
     }
 
     if (!ds.fontTex.empty()) {
         ds.shdr->setUniform1fv("fontTexNrLayers", &layerSizes[0], static_cast<int>(layerSizes.size()));
         ds.shdr->setUniform1iv("fontTex", &layerUnits[0], static_cast<int>(layerUnits.size()));
 
-        for (auto &par : ds.fontTex) {
-            glActiveTexture(GL_TEXTURE0 + par.texUnit);
-            glBindTexture(GL_TEXTURE_3D, static_cast<GLuint>(par.texId));
+        for (auto &[texUnit, nrLayers, layerId, texId, fontRef] : ds.fontTex) {
+            glActiveTexture(GL_TEXTURE0 + texUnit);
+            glBindTexture(GL_TEXTURE_3D, texId);
         }
     }
 }
@@ -334,10 +334,10 @@ GLuint DrawManager::pushFont(Font* font) {
         return it.texId == font->getLayerTexId();
     });
     const bool entryExists = entry != ds.fontTex.end();
-    const auto newFontTexNrLayers = ds.fontTex.size() + static_cast<size_t>(!entryExists);
 
     // check if the maximum number of parallel texture units are used if this is the case, create a new draw set
-    if (newFontTexNrLayers + ds.textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
+    if (const auto newFontTexNrLayers = ds.fontTex.size() + static_cast<size_t>(!entryExists);
+        newFontTexNrLayers + ds.textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
         m_drawSets.emplace_back();
     }
 
@@ -356,11 +356,10 @@ GLuint DrawManager::pushFont(Font* font) {
 }
 
 void DrawManager::popFont(DrawSet &ds, const GLuint texId) {
-    auto entry = std::ranges::find_if(ds.fontTex, [texId](const auto& it) {
+    const auto entry = std::ranges::find_if(ds.fontTex, [texId](const auto& it) {
         return it.texId == texId;
     });
-    const bool entryExists = entry != ds.fontTex.end();
-    if (entryExists) {
+    if (entry != ds.fontTex.end()) {
         ds.fontTex.erase(entry);
     }
 }
@@ -373,10 +372,9 @@ float DrawManager::pushTexture(const GLuint texId) {
 }
 
 float DrawManager::pushTexture(DrawSet &ds, const GLuint texId) {
-    size_t newTexSize = ds.textures.size() + static_cast<size_t>(!ds.textures.contains(texId));
-
     // check if the maximum number of parallel texture units is used. if this is the case, create a new draw set
-    if (newTexSize + ds.textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
+    if (size_t newTexSize = ds.textures.size() + static_cast<size_t>(!ds.textures.contains(texId));
+        newTexSize + ds.textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
         m_drawSets.emplace_back();
     }
 
@@ -409,7 +407,7 @@ void DrawManager::pushFunc(const std::function<void()>& f) {
 void DrawManager::clear() {
     // remove shaders if necessary
     if (m_shCol) {
-        for (auto &ds : m_drawSets  | std::views::filter([](auto& ds) { return ds.shdr; }) ) {
+        for (const auto &ds : m_drawSets  | std::views::filter([](auto& ds) { return ds.shdr; }) ) {
             m_shCol->deleteShader(ds.shdr);
         }
     }

@@ -25,10 +25,14 @@ public:
 
         if (typeid(T) == typeid(int)) {
             m_edit->changeValType(UIEdit::num_int);
-            m_edit->addEnterCb([&prop](const std::string& txt) { prop = static_cast<T>(atoi(txt.c_str())); }, &prop);
+            m_edit->addEnterCb([&prop](const std::string& txt) {
+                prop = static_cast<T>(atoi(txt.c_str()));
+            }, &prop);
         } else if (typeid(T) == typeid(float) || typeid(T) == typeid(double)) {
             m_edit->changeValType(UIEdit::num_fp);
-            m_edit->addEnterCb([&prop](const std::string& txt) { prop = static_cast<T>(atof(txt.c_str())); }, &prop);
+            m_edit->addEnterCb([&prop](const std::string& txt) {
+                prop = static_cast<T>(atof(txt.c_str()));
+            }, &prop);
         }
 
         m_edit->setMinMax(prop.getMin(), prop.getMax());
@@ -70,20 +74,28 @@ public:
             m_label->setText(txt);
         }
     }
-    void setUseWheel(bool val) const {
+    void setUseWheel(const bool value) const {
         if (m_edit) {
-            m_edit->setUseWheel(val);
+            m_edit->setUseWheel(value);
         }
     }
-    void setPrecision(int prec) const {
+    void setPrecision(const int precision) const {
         if (m_edit) {
-            m_edit->setPrecision(prec);
+            m_edit->setPrecision(precision);
         }
     }
-    void setSliderOnMouseUpUpdtMode(bool val) { m_onMouseUpUpdtMode = val; }
-    void setValueChgCb(const std::function<void()>& f) { m_valChangeCb = f; }
-    [[nodiscard]] UIEdit* getEdit() const { return m_edit; }
-    [[nodiscard]] Label* getLabel() const { return m_label; }
+    void setSliderOnMouseUpUpdtMode(bool val) {
+        m_onMouseUpUpdtMode = val;
+    }
+    void setValueChgCb(const std::function<void()>& f) {
+        m_valChangeCb = f;
+    }
+    [[nodiscard]] UIEdit* getEdit() const {
+        return m_edit;
+    }
+    [[nodiscard]] Label* getLabel() const {
+        return m_label;
+    }
 
 private:
     Label*                m_label             = nullptr;

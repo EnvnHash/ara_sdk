@@ -4,7 +4,9 @@ project(Applications)
 
 add_subdirectory(JsonEditor)
 add_subdirectory(UITest)
-add_subdirectory(VisualStudioExample)
+add_subdirectory(UIElementsOverview)
+add_subdirectory(UIHelloWorld)
+add_subdirectory(UIPropertyExample)
 
 if(ANDROID)
     add_subdirectory(ARCore_Test)

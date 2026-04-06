@@ -42,7 +42,7 @@ public:
     bool                            rebuildVaos();
     void                            update();
     virtual void                    draw();
-    void                            bindFontTextures(DrawSet& ds);
+    static void                     bindFontTextures(DrawSet& ds);
     std::list<DrawSet>::reference   push(IndDrawBlock& block, UINode* node);
     GLuint                          pushFont(Font* font);
     static void                     popFont(DrawSet &ds, GLuint texId);
