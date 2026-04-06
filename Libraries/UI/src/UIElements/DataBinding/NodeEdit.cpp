@@ -22,7 +22,7 @@ void NodeEdit::rebuild() {
 
         int32_t y=0;
         for (auto &[key, memVar]: m_node->getMemberVariables()) {
-            auto& nmve = push<NodeMemberVariableEdit>();
+            auto& nmve = push<NodeMemberVariableEdit>({ .style = getStyleClass() });
             nmve.setMemberVar(memVar);
             nmve.setLabelText(key);
             nmve.setSpacing(m_spacing.x);
