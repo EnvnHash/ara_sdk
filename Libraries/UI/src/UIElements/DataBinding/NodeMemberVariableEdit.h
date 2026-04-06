@@ -89,6 +89,7 @@ public:
     auto getYOffs() const { return m_yOffs; }
     auto getLabel() const { return m_label; }
     auto getEdit() const { return m_edit; }
+    auto getMemVar() const { return m_memVar; }
 
 protected:
     Label*                  m_label = nullptr;

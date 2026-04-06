@@ -837,24 +837,24 @@ Shaders *ShaderCollector::getUITexInv() {
 
     vert = "// ui texture invert shader, vert\n" + shdr_Header + vert;
 
-        std::string frag = STRINGIFY(
-            uniform sampler2D tex; \n
-            uniform int invert; \n
-            uniform vec4 invClearColor; \n
-            uniform vec4 alphaToColor; \n
-            uniform float alpha; \n
-            in vec2 tex_coord; \n
-            layout(location = 0) out vec4 fragColor; \n
-            void main() {\n
-                vec4 col = texture(tex, tex_coord);
-                fragColor   = bool(invert) ? mix(alphaToColor, invClearColor, col.a) : col;\n
-                fragColor.a *= alpha;
-        );
+    std::string frag = STRINGIFY(
+        uniform sampler2D tex; \n
+        uniform int invert; \n
+        uniform vec4 invClearColor; \n
+        uniform vec4 alphaToColor; \n
+        uniform float alpha; \n
+        in vec2 tex_coord; \n
+        layout(location = 0) out vec4 fragColor; \n
+        void main() {\n
+            vec4 col = texture(tex, tex_coord);
+            fragColor   = bool(invert) ? mix(alphaToColor, invClearColor, col.a) : col;\n
+            fragColor.a *= alpha;
+    );
 
-        frag += m_uiObjMapMain + "}";
-        frag = shdr_Header + "// ui texture invert shader, frag\n" + m_uiObjMapUniforms + frag;
-        return add("ui_tex_inv", vert, frag);
-    }
+    frag += m_uiObjMapMain + "}";
+    frag = shdr_Header + "// ui texture invert shader, frag\n" + m_uiObjMapUniforms + frag;
+    return add("ui_tex_inv", vert, frag);
+}
 
 /** only used for direct drawing */
 Shaders *ShaderCollector::getUIGridTexSimple() {

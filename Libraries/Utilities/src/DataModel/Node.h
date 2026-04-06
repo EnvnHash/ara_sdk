@@ -18,6 +18,13 @@
 
 #include <DataModel/NodeMacros.h>
 
+template <typename T>
+struct is_index_assignable : std::false_type {};
+
+template <> struct is_index_assignable<std::vector<float>> : std::true_type {};
+template <> struct is_index_assignable<std::vector<int32_t>> : std::true_type {};
+template <> struct is_index_assignable<std::vector<std::string>> : std::true_type {};
+
 namespace ara {
 
 class Node;
@@ -460,13 +467,6 @@ protected:
         deserializeSingleClassValue(j, names.begin(), std::forward<Args>(args)...);
         return names;
     }
-
-    template <typename T>
-    struct is_index_assignable : std::false_type {};
-
-    template <> struct is_index_assignable<std::vector<float>> : std::true_type {};
-    template <> struct is_index_assignable<std::vector<int32_t>> : std::true_type {};
-    template <> struct is_index_assignable<std::vector<std::string>> : std::true_type {};
 
     template <typename NodeValueType>
     void addMemberVar(const std::vector<std::string>::iterator name, NodeValueType&& arg) {

@@ -51,30 +51,22 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
     m_arrayEdit.clear();
 
     auto stdWidth = -m_labelWidth -m_xSpacing;
-    const static std::unordered_map<tpi, std::function<void()>> dispatch = {
-        { tpi::tp_float, [this, stdWidth] {
-            createSingleEdit<float>(std::any_cast<float>(m_memVar->get()), stdWidth);
-        }},
-        { tpi::tp_int32, [this, stdWidth] {
-            createSingleEdit<int32_t>(std::any_cast<int32_t>(m_memVar->get()), stdWidth);
-        }},
-        { tpi::tp_string, [this, stdWidth] {
-            createSingleEdit<std::string>( std::any_cast<std::string>(m_memVar->get()), stdWidth);
-        }},
-        { tpi::tp_vector_float, [this] { createArrayEdit<float>(); }},
-        { tpi::tp_vector_int32, [this] { createArrayEdit<int32_t>(); }},
-        { tpi::tp_vector_string, [this] { createArrayEdit<std::string>(); }},
-        { tpi::tp_vec2, [this] { createGlmEdit<vec2>(2); }},
-        { tpi::tp_vec3, [this] { createGlmEdit<vec3>(3); }},
-        { tpi::tp_vec4, [this] { createGlmEdit<vec4>(4); }},
-        { tpi::tp_ivec2, [this] { createGlmEdit<ivec2>(2); }},
-        { tpi::tp_ivec3, [this]  { createGlmEdit<ivec3>(3); }},
-        { tpi::tp_ivec4, [this] { createGlmEdit<ivec4>(4); }},
+    static std::unordered_map<const tpi, std::function<void(NodeMemberVariableEdit* ctx)>> createMap = {
+        { tpi::tp_float, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<float>(std::any_cast<float>(ctx->getMemVar()->get()), stdWidth); }},
+        { tpi::tp_int32, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<int32_t>(std::any_cast<int32_t>(ctx->getMemVar()->get()), stdWidth); }},
+        { tpi::tp_string, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<std::string>( std::any_cast<std::string>(ctx->getMemVar()->get()), stdWidth); }},
+        { tpi::tp_vector_float, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<float>(); }},
+        { tpi::tp_vector_int32, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<int32_t>(); }},
+        { tpi::tp_vector_string, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<std::string>(); }},
+        { tpi::tp_vec2, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<vec2>(2); }},
+        { tpi::tp_vec3, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<vec3>(3); }},
+        { tpi::tp_vec4, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<vec4>(4); }},
+        { tpi::tp_ivec2, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<ivec2>(2); }},
+        { tpi::tp_ivec3, [] (NodeMemberVariableEdit* ctx)  { ctx->createGlmEdit<ivec3>(3); }},
+        { tpi::tp_ivec4, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<ivec4>(4); }},
     };
 
-    if (const auto it = dispatch.find(m_memVar->typeIndex); it != dispatch.end()) {
-        it->second();
-    }
+    createMap[m_memVar->typeIndex](this);
 }
 
 /*
