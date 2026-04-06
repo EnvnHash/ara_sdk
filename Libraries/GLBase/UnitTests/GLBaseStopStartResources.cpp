@@ -44,7 +44,7 @@ TEST(GLBaseTest, GLBaseStopStartResources) {
         m_glBase.stopProcCallbackLoop();                                       // blocks until the loop is really finished
         m_glBase.destroy(true);
 
-        std::cout << "." << std::flush;
+        std::cout << i << "/" << nrIterations << std::endl;
     }
 }
 

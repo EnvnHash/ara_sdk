@@ -204,11 +204,10 @@ protected:
 
     std::thread::id m_mainThreadId;
     std::thread     m_glCallbackLoop;
-    std::thread     m_resUpdt;
+    std::jthread    m_resUpdt;
     std::mutex      m_mtx;
 
     std::atomic<bool> m_glCallbackLoopRunning = {false};
-    std::atomic<bool> m_resUpdtRun  = {true};
 
     Conditional                         m_sema;
     Conditional                         m_glCallbackLoopRunningSem;

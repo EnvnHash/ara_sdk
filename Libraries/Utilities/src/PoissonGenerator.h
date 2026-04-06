@@ -340,3 +340,344 @@ static std::vector<uint8_t> generateBitmap(int width, int height, std::vector<Po
 }
 
 } // namespace PoissonGenerator
+
+/*
+ parallel version - WIP. does not yet fully work
+
+ #pragma once
+
+#include <vector>
+#include <cmath>
+#include <random>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
+
+#include <glm/glm.hpp>
+#include "threadpool/BS_thread_pool.hpp"
+
+namespace PoissonGenerator {
+
+struct FastRNG {
+    uint32_t state;
+
+    FastRNG() {
+        state = std::random_device{}();
+    }
+
+    inline float next() {
+        state = 1664525u * state + 1013904223u;
+        return (state >> 8) * (1.0f / 16777216.0f);
+    }
+};
+
+static thread_local FastRNG rng;
+
+struct Point {
+    Point() = default;
+    Point(const float X, const float Y) : x(X), y(Y), valid(true) {}
+    float x = 0.f;
+    float y = 0.f;
+    bool valid = false;
+
+
+    bool inRect() const {
+        return x >= 0 && y >= 0 && x <= 1 && y <= 1;
+    }
+
+    bool inCircle() const {
+        const float dx = x - 0.5f;
+        const float dy = y - 0.5f;
+        return dx * dx + dy * dy <= 0.25f;
+    }
+};
+
+struct Grid {
+    Grid(const int W, const int H, const float cs, std::vector<Point>* pts)
+        : w(W), h(H), cellSize(cs), cells(W * H), points(pts) {
+        for (auto& c : cells) c.store(-1);
+    }
+
+    void insert(const Point& p, const int idx) {
+        const auto gx = static_cast<int>(p.x / cellSize);
+        const auto gy = static_cast<int>(p.y / cellSize);
+        if (gx >= 0 && gy >= 0 && gx < w && gy < h) {
+            cells[index(gx, gy)].store(idx, std::memory_order_relaxed);
+        }
+    }
+
+    int index(const int x, const int y) const {
+        return y * w + x;
+    }
+
+    bool near(const Point& p, const float minDist2) const {
+        const auto g = glm::ivec2{ static_cast<int>(p.x / cellSize),
+                                static_cast<int>(p.y / cellSize) };
+
+        constexpr int D = 2;
+
+        for (int y = g.y - D; y <= g.y + D; ++y) {
+            for (int x = g.x - D; x <= g.x + D; ++x) {
+                if (x < 0 || y < 0 || x >= w || y >= h) {
+                    continue;
+                }
+
+                const int idx = cells[index(x, y)].load(std::memory_order_relaxed);
+                if (idx < 0) {
+                    continue;
+                }
+
+                const Point& q = (*points)[idx];
+                const float dx = q.x - p.x;
+                const float dy = q.y - p.y;
+
+                if (dx * dx + dy * dy < minDist2) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    [[nodiscard]] bool near(const Point& p, glm::vec2 minDist) const {
+        if (minDist.x == minDist.y) {
+            return near(p, minDist.x);
+        } else {
+            const auto g = glm::ivec2{ static_cast<int>(p.x / cellSize),
+                                    static_cast<int>(p.y / cellSize) };
+
+            constexpr int D = 5;
+
+            for (int x = g.x - D; x <= g.x + D; ++x) {
+                for (int y = g.y - D; y <= g.y + D; ++y) {
+                    if (x >= 0 && x < w && y >= 0 && y < h) {
+                        const int idx = cells[index(x, y)].load(std::memory_order_relaxed);
+                        if (idx < 0) {
+                            continue;
+                        }
+
+                        const Point& P = (*points)[idx];
+                        if (P.valid && std::abs(P.x - p.x) < minDist.x && std::abs(P.y - p.y) < minDist.y) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+
+    int w, h;
+    float cellSize;
+    std::vector<std::atomic<int>> cells;
+    std::vector<Point>* points;
+
+};
+
+inline Point randomAround(const Point& p, const float minDist) {
+    const float r1 = rng.next();
+    const float r2 = rng.next();
+
+    const float radius = minDist * (1.f + r1);
+    const float angle = 6.283185307f * r2;
+
+    return {
+        p.x + radius * std::cos(angle),
+        p.y + radius * std::sin(angle)
+    };
+}
+
+inline Point randomAround(const Point& p, const glm::vec2& minDist) {
+    if (minDist.x == minDist.y) {
+        return randomAround(p, minDist.x);
+    } else {
+        const float r1 = rng.next();
+        const float r2 = rng.next();
+
+        const glm::vec2 radius = minDist * (r1 + 1.f);
+        const float angle = 6.283185307f * r2;
+
+        const float y = std::sin(angle);
+        const float ellipticRadius = glm::mix(radius.x, radius.y, std::abs(y));
+        return {p.x + ellipticRadius * std::cos(angle),
+                p.y + ellipticRadius * y};
+    }
+}
+
+inline Point popRandom(std::vector<Point>& v) {
+    const auto idx = static_cast<int>(rng.next() * v.size());
+    const Point p = v[idx];
+    v[idx] = v.back();
+    v.pop_back();
+    return p;
+}
+
+static std::vector<Point> generatePoissonPoints(BS::thread_pool<>& pool,
+    const uint32_t numPoints,
+    const bool isCircle = true,
+    const uint32_t k = 30,
+    float minDist = -1.f,
+    const float aspectRatio = 1.f) {
+
+    if (!numPoints) {
+        return {};
+    }
+
+    if (minDist < 0.f) {
+        minDist = std::sqrt(static_cast<float>(numPoints)) / static_cast<float>(numPoints);
+    }
+
+    std::vector<Point> samples;
+    std::vector<Point> process;
+    samples.reserve(numPoints);
+
+    const float minDist2 = minDist * minDist;
+
+    // create the grid
+    const float cellSize = minDist / std::sqrt(2.f);
+    const int gridW = static_cast<int>(std::ceil(1.f / cellSize));
+    const int gridH = gridW;
+
+    Grid grid(gridW, gridH, cellSize, &samples);
+
+    const glm::vec2 minDistWithAspect { minDist, minDist * aspectRatio };
+    const glm::vec2 minDistWithAspect2 { minDist2, minDist2 * aspectRatio };
+
+    // first point
+    Point first;
+    do {
+        first = { rng.next(), rng.next() };
+    } while (!(isCircle ? first.inCircle() : first.inRect()));
+
+    samples.emplace_back(first);
+    process.emplace_back(first);
+    grid.insert(first, 0);
+
+    while (!process.empty() && samples.size() < numPoints) {
+        Point p = popRandom(process);
+
+        std::vector<Point> accepted;
+        std::mutex accMutex;
+        std::list<std::future<void>> futures;
+
+        for (uint32_t i = 0; i < k; ++i) {
+            futures.emplace_back(pool.submit_task([&, p]() {
+                Point np = randomAround(p, minDistWithAspect);
+
+                if (!(isCircle ? np.inCircle() : np.inRect())) {
+                    return;
+                }
+
+                if (grid.near(np, minDistWithAspect2)) {
+                    return;
+                }
+
+                std::lock_guard lock(accMutex);
+                accepted.emplace_back(np);
+            }));
+        }
+
+        for (auto &it : futures) {
+            if (it.valid()) {
+                it.wait();
+            }
+        };
+
+        for (auto& pt : accepted) {
+            const auto idx = static_cast<int>(samples.size());
+            samples.emplace_back(pt);
+            process.emplace_back(pt);
+            grid.insert(pt, idx);
+        }
+    }
+
+    return samples;
+}
+
+static std::vector<Point> generateVogelPoints(BS::thread_pool<>& pool, const uint32_t n) {
+    std::vector<Point> pts(n);
+
+    constexpr float golden = 2.4f;
+    std::list<std::future<void>> futures;
+
+    for (uint32_t i = 0; i < n; ++i) {
+        futures.emplace_back(pool.submit_task([&, i]() {
+            const float r = std::sqrt(i + 0.5f) / std::sqrt(static_cast<float>(n));
+            const float theta = i * golden;
+
+            pts[i] = {
+                0.5f + r * std::cos(theta),
+                0.5f + r * std::sin(theta)
+            };
+        }));
+    }
+
+    for (auto &it : futures) {
+        if (it.valid()) {
+            it.wait();
+        }
+    };
+
+    return pts;
+}
+
+inline float radicalInverse(uint32_t bits) {
+    bits = (bits << 16) | (bits >> 16);
+    bits = ((bits & 0x55555555) << 1) | ((bits & 0xAAAAAAAA) >> 1);
+    bits = ((bits & 0x33333333) << 2) | ((bits & 0xCCCCCCCC) >> 2);
+    bits = ((bits & 0x0F0F0F0F) << 4) | ((bits & 0xF0F0F0F0) >> 4);
+    bits = ((bits & 0x00FF00FF) << 8) | ((bits & 0xFF00FF00) >> 8);
+    return bits * 2.3283064365386963e-10f;
+}
+
+static std::vector<Point> generateHammersleyPoints(BS::thread_pool<>& pool, const uint32_t n) {
+    std::vector<Point> pts(n);
+    std::list<std::future<void>> futures;
+
+    for (uint32_t i = 0; i < n; ++i) {
+        futures.emplace_back(pool.submit_task([&, i]() {
+            pts[i] = { static_cast<float>(i) / n, radicalInverse(i) };
+        }));
+    }
+
+    for (auto &it : futures) {
+        if (it.valid()) {
+            it.wait();
+        }
+    };
+
+    return pts;
+}
+
+static std::vector<uint8_t> generateBitmap(BS::thread_pool<>& pool, const int width, const int height, const std::vector<Point>& pts) {
+    std::vector<uint8_t> img(width * height * 3, 0);
+    std::list<std::future<void>> futures;
+
+    for (size_t i = 0; i < pts.size(); ++i) {
+        futures.emplace_back(pool.submit_task([&, i]() {
+            const auto x = static_cast<int>(pts[i].x * width);
+            const auto y = static_cast<int>(pts[i].y * height);
+
+            if (x < 0 || y < 0 || x >= width || y >= height) {
+                return;
+            }
+
+            const int base = 3 * (x + y * width);
+            img[base] = img[base + 1] = img[base + 2] = 255;
+        }));
+    }
+
+    for (auto &it : futures) {
+        if (it.valid()) {
+            it.wait();
+        }
+    };
+
+    return img;
+}
+
+} // namespace PoissonGenerator
+
+ */

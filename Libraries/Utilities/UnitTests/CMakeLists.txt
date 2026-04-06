@@ -20,6 +20,7 @@ file(GLOB UTILITIES_UT_SRC
     StringUtilsTest.cpp
     #UdpSignalTest.cpp
     TableTest.cpp
+    TypeDeductionTest.cpp
 )
 
 add_executable(${PROJECT_NAME} ${UTILITIES_UT_SRC})

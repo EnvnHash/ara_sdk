@@ -321,7 +321,7 @@ void RestClient::call(json &&params, std::string url, restCallType callType, std
 
 void RestClient::call(std::string url, restCallType callType, std::function<void(json)> cb) {
     std::unique_lock<std::mutex> l(m_procCallMtx);
-    if (std::find_if(m_callQueue.begin(), m_callQueue.end(), [url](const RestCall &rc) { return rc.url == url; }) ==
+    if (ranges::find_if(m_callQueue, [url](const RestCall &rc) { return rc.url == url; }) ==
         m_callQueue.end())
         m_callQueue.emplace_back(RestCall{std::move(url), callType, std::move(cb)});
 
@@ -330,7 +330,7 @@ void RestClient::call(std::string url, restCallType callType, std::function<void
 
 void RestClient::call(std::string url, std::string *dstBuffer, restCallType callType, std::function<void(json)> cb) {
     std::unique_lock<std::mutex> l(m_procCallMtx);
-    if (std::find_if(m_callQueue.begin(), m_callQueue.end(), [url](const RestCall &rc) { return rc.url == url; }) ==
+    if (ranges::find_if(m_callQueue, [url](const RestCall &rc) { return rc.url == url; }) ==
         m_callQueue.end())
         m_callQueue.emplace_back(RestCall{std::move(url), callType, std::move(cb), false, nullptr, dstBuffer});
 
@@ -339,7 +339,7 @@ void RestClient::call(std::string url, std::string *dstBuffer, restCallType call
 
 void RestClient::call(std::string url, std::string dstPath, restCallType callType, std::function<void(json)> cb) {
     std::unique_lock<std::mutex> l(m_procCallMtx);
-    if (std::find_if(m_callQueue.begin(), m_callQueue.end(), [url](const RestCall &rc) { return rc.url == url; }) ==
+    if (ranges::find_if(m_callQueue, [url](const RestCall &rc) { return rc.url == url; }) ==
         m_callQueue.end())
         m_callQueue.emplace_back(RestCall{std::move(url), callType, std::move(cb), false, nullptr, nullptr, std::move(dstPath)});
 

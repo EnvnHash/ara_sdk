@@ -13,7 +13,7 @@ using namespace glm;
 namespace hfc::UnitTests::PoissonTest {
 
 static void measureLimitsAndMedium2(const std::vector<PoissonGenerator::Point>& points) {
-    std::array<vec2, 2> limits {vec2{std::numeric_limits<float>::max(), std::numeric_limits<float>::max()},
+    std::array limits {vec2{std::numeric_limits<float>::max(), std::numeric_limits<float>::max()},
                                vec2{std::numeric_limits<float>::min(), std::numeric_limits<float>::min()}};
 
     vec2 medPos = {};
@@ -52,7 +52,7 @@ static void checkRadius(std::vector<PoissonGenerator::Point>& randPoints, float 
     bool foundLessThanRadius = false;
     for (auto &it : randPoints) {
         if (ranges::any_of(randPoints, [it, minDist, aspect](auto& item){
-                auto dist = glm::distance(vec2(item.x, item.y / aspect), vec2(it.x, it.y / aspect));
+                const auto dist = glm::distance(vec2(item.x, item.y / aspect), vec2(it.x, it.y / aspect));
                 return dist != 0.f && dist < minDist;
             })) {
             foundLessThanRadius = true;
@@ -64,24 +64,24 @@ static void checkRadius(std::vector<PoissonGenerator::Point>& randPoints, float 
 }
 
 TEST(PoissonTest, DistribTest) {
-    int numPoints = 100000;
-    float minDist = 0.01f;
-    auto randPoints = PoissonGenerator::generatePoissonPoints(numPoints, false, 30, minDist);
+    constexpr int numPoints = 100000;
+    constexpr float minDist = 0.01f;
+    const auto randPoints = PoissonGenerator::generatePoissonPoints(numPoints, false, 30, minDist);
     measureLimitsAndMedium2(randPoints);
 }
 
 TEST(PoissonTest, CheckRad) {
-    int numPoints = 10000;
-    for (auto minDist : { 0.005f, 0.01f, 0.1f, 0.2f }) {
+    for (const auto minDist : { 0.005f, 0.01f, 0.1f, 0.2f }) {
+        constexpr int numPoints = 10000;
         auto randPoints = PoissonGenerator::generatePoissonPoints(numPoints, false, 30, minDist);
         checkRadius(randPoints, minDist, 1.f);
     }
 }
 
 TEST(PoissonTest, CheckRectangle) {
-    int numPoints = 100000;
-    float minDist = 0.01f;
-    float aspect = 2.24f;
+    constexpr int numPoints = 100000;
+    constexpr float minDist = 0.01f;
+    constexpr float aspect = 2.24f;
     auto randPoints = PoissonGenerator::generatePoissonPoints(numPoints, false, 30, minDist, aspect);
     measureLimitsAndMedium2(randPoints);
     checkRadius(randPoints, minDist, aspect);

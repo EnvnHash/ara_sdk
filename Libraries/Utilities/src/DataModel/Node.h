@@ -63,9 +63,9 @@ public:
     enum class pushToType : int { undefined=0, array, object };
 
     struct memberVar {
-        std::function<std::any()>       get;
-        std::function<void(std::any&)>  set;
-        tpi                             typeIndex=tpi::none;
+        std::function<std::any()>               get;
+        std::function<void(std::any&, size_t)>  set;
+        const tpi                               typeIndex;
     };
 
     Node();
@@ -448,7 +448,7 @@ protected:
     template <typename T, typename... Args>
     void deserializeSingleClassValue(const nlohmann::json& j, std::vector<std::string>::iterator name, T&& arg, Args&&... args) {
         if (j.contains(*name) && !j[*name].is_null()) {
-            arg = j[*name];
+            j.at(*name).get_to(arg);          // <-- replace arg = j[*name]
         }
         addMemberVar(name, arg);
         deserializeSingleClassValue(j, ++name, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
@@ -463,10 +463,22 @@ protected:
 
     template <typename NodeValueType>
     void addMemberVar(const std::vector<std::string>::iterator name, NodeValueType&& arg) {
+        using Container = std::decay_t<NodeValueType>;
+        constexpr auto tpIndex = getTpi<Container>();
+
         m_memberVars.emplace(*name, memberVar{
             .get = [&]{ return arg; },
-            .set = [&] (std::any& val){ arg = std::any_cast<NodeValueType>(val); },
-            .typeIndex = tpiTypeMap[typeid(arg)]
+            .set = [&] (std::any& val, size_t idx) {
+                if constexpr (tpIndex == tpi::tp_vector_float ||
+                    tpIndex == tpi::tp_vector_int32 ||
+                    tpIndex == tpi::tp_vector_string) {
+                    using Elem = Container::value_type;
+                    arg[idx] =  std::any_cast<Elem>(val);
+                } else {
+                    arg = std::any_cast<Container>(val);
+                }
+            },
+            .typeIndex = tpIndex,
         });
     }
 

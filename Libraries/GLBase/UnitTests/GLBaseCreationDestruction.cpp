@@ -12,14 +12,14 @@ using namespace std::chrono;
 namespace ara::GLBaseUnitTest::GLBaseCreationDestruction {
 
 TEST(GLBaseTest, GLBaseCreationDestruction) {
-    int nrIterations = 30;
+    constexpr int nrIterations = 30;
 
     // create and destroy the GLBase context - there should be no timeouts, deadlocks or memleaks
     for (int i = 0; i < nrIterations; i++) {
         GLBase m_glbase;
         // create a GLBase instance
         EXPECT_EQ(m_glbase.init(false), true);                  // init is synchronous
-        m_glbase.startGlCallbackProcLoop();                             // blocks until the loop is really running
+        m_glbase.startGlCallbackProcLoop();                     // blocks until the loop is really running
 
         // push something into the queue to process
         m_glbase.addGlCbSync([&] {
@@ -37,15 +37,14 @@ TEST(GLBaseTest, GLBaseCreationDestruction) {
             quad->draw();
 
             // insert some timing variation
-            std::this_thread::sleep_for(std::chrono::microseconds(i));
+            std::this_thread::sleep_for(microseconds(i));
 
             EXPECT_EQ(postGLError(), GL_NO_ERROR);
             return true;
         });
 
         m_glbase.stopProcCallbackLoop();                               // blocks until the loop is really finished
-        m_glbase.destroy(i == (nrIterations -
-                               1));         // destroy the GLBase context. on the last iteration terminate glfw
+        m_glbase.destroy(i == (nrIterations - 1));         // destroy the GLBase context. on the last iteration terminate glfw
 
         std::cout << "." << std::flush;
     }

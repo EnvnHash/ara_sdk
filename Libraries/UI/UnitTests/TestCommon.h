@@ -14,12 +14,12 @@
 static inline BS::thread_pool g_thread_pool;
 static inline glm::vec2       contentScale{1.f, 1.f};
 
-static void drawAndSwap(ara::UIApplication& app) {
+static void drawAndSwap(const ara::UIApplication& app) {
     app.getWinBase()->draw(0, 0, 0);
     app.getMainWindow()->swap();
 }
 
-static void stdAppSetup(ara::UIApplication& app, int width, int height, bool enableMenuAndResizeHandles=false) {
+static void stdAppSetup(ara::UIApplication& app, const int width, const int height, bool enableMenuAndResizeHandles=false) {
     app.setWinWidth(width);
     app.setWinHeight(height);
     app.setEnableMenuBar(enableMenuAndResizeHandles);
@@ -60,7 +60,7 @@ static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
 
 static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFunc,
                          const std::function<void(ara::UIApplication&)>& verifyFunc,
-                         int width = 1280, int height = 720) {
+                         const int width = 1280, const int height = 720) {
     auto postVerifyFunc = [&](ara::UIApplication& app) {
         // remove all gl resources, but leave the window and its UINode tree untouched
         app.stopGLBaseProcCallbackLoop();
@@ -80,7 +80,7 @@ static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFun
                     .multisample = app.getMainWindow()->usingMultiSample(),
             });
 
-            ara::UINode::itrNodes(app.getMainWindow()->getRootNode(), [](ara::UINode* node) {
+            ara::UINode::itrNodes(app.getMainWindow()->getRootNode(), [](const ara::UINode* node) {
                 node->reqUpdtTree();
             });
 
@@ -109,7 +109,7 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
         LOGE << "compareBitmaps error, couldn't load " << p.string();
         return;
     }
-    auto pBitmap = ara::FreeImage::Load(p.string(), 0);
+    auto pBitmap = ara::FreeImage::Load(p.string(), nullptr);
     ASSERT_TRUE(pBitmap);
 
     std::list<std::future<void>> futures;
@@ -148,7 +148,7 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
 }
 
 static void compareFrameBufferToImage(const std::filesystem::path& p, const uint32_t width, const uint32_t height, const uint8_t eps=0) {
-    auto data = getPixels(0, 0, width, height);
+    const auto data = getPixels(0, 0, width, height);
     compareBitmaps(data, p, width, height, eps);
 }
 
@@ -169,7 +169,7 @@ static void checkVals(const std::vector<GLubyte>& data, const ara::GLWindow* mai
 
 static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::ivec2& virtSize, const glm::vec4& col,
                       const glm::vec4& backCol) {
-    auto data = getPixels(0, 0, win->getWidthReal(), win->getHeightReal());
+    const auto data = getPixels(0, 0, win->getWidthReal(), win->getHeightReal());
 
     // convert from virtual to hardware pixels
     const glm::ivec2 size { win->virt2RealX(virtSize.x) -1, win->virt2RealY(virtSize.y) -1 };
@@ -182,7 +182,7 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
         pos + size                  // right-bottom
     };
 
-    const std::array edgeOffsets {
+    constexpr std::array edgeOffsets {
         std::array{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0, -1 } },   // left-top
         std::array{ glm::ivec2{  1, 0 }, glm::ivec2{ 0, -1 } },   // right-top
         std::array{ glm::ivec2{ -1, 0 }, glm::ivec2{ 0,  1 } },   // left-bottom,

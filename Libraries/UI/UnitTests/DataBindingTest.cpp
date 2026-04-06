@@ -79,4 +79,32 @@ TEST(UITest, NodeEditChangeStringTest) {
     }, 400, 200);
 }
 
+TEST(UITest, NodeEditChangeArrayTest) {
+    using ArrInt = std::vector<int32_t>;
+
+    TestNode<ArrInt> testNode;
+    testNode.m_testValue = { 0, 1, 2 };
+
+    appBody([&](const UIApplication &app) {
+        addNodeEdit(app, testNode);
+
+        const auto mainWin = app.getMainWindow();
+        mainWin->onMouseMove(158, 12, 0);
+        mainWin->onWheel(1.f);
+
+        mainWin->onMouseMove(258, 12, 0);
+        mainWin->onWheel(1.f);
+
+        mainWin->onMouseMove(351, 12, 0);
+        mainWin->onWheel(1.f);
+
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "data_binding_change_array.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        EXPECT_EQ(testNode.m_testValue[0],1);
+        EXPECT_EQ(testNode.m_testValue[1],2);
+        EXPECT_EQ(testNode.m_testValue[2],3);
+    }, 400, 200);
+}
+
 }

@@ -28,7 +28,7 @@ public:
     enum class CycleState { none=0, starting, running, stopping, finished, err_failed };
 
     CycleState GetCycleState()  { return m_CycleState; }
-    bool       IsRunning() { return (GetCycleState() == CycleState::running); }
+    bool       IsRunning() { return GetCycleState() == CycleState::running; }
     bool       Start();
     bool       Stop(bool async = false);
     void       Cycle();
@@ -41,7 +41,7 @@ protected:
     std::thread             m_Cycle_Thread;
     Conditional             m_stopCondition;
 
-    void SetCycleState(CycleState nst) { m_CycleState = nst; }
+    void SetCycleState(const CycleState nst) { m_CycleState = nst; }
 
     virtual bool OnCycleStop() {
         return true;

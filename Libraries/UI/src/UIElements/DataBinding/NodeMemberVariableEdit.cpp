@@ -33,51 +33,40 @@ void NodeMemberVariableEdit::init() {
         .font_height = 22
     });
 
-    if (m_nodeValueType != nodeValueType::object && m_nodeValueType != nodeValueType::array) {
-        m_edit = &push<UIEdit>(UINodePars{
-            .pos = ivec2{ m_labelWidth + m_xSpacing, 0 },
-            .size = { ivec2{ -m_labelWidth -m_xSpacing, m_lineHeight } },
-            .bgColor = vec4{.15f, .15f, .15f, 1.f},
-            .style = getStyleClass()+".edit",
-            .borderWidth = 2,
-            .borderRadius = 4,
-            .borderColor = vec4{.3f, .3f, .3f, 1.f},
-            .padding = vec4{2.f, 2.f, 2.f, 2.f},
-        });
-        m_edit->setFontSize(22);
-        m_edit->setUseWheel(true);
+    if (m_memVar) {
         setEditValFromMemberVar();
     }
 }
 
 void NodeMemberVariableEdit::setEditValFromMemberVar() {
-    if (!m_memVar || !m_edit) {
+    if (!m_memVar) {
         return;
     }
 
-    if (m_memVar->typeIndex == tpi::tp_float) {
-        m_edit->setValue(any_cast<float>(m_memVar->get()));
-    } else if (m_memVar->typeIndex == tpi::tp_int32) {
-        m_edit->setValue(any_cast<int32_t>(m_memVar->get()));
-    } else if (m_memVar->typeIndex == tpi::tp_string) {
-        m_edit->setText(any_cast<string>(m_memVar->get()));
+    if (m_edit) {
+        remove(m_edit);
     }
 
-    m_edit->addEnterCb([&](const std::string &str) {
-        if (m_memVar) {
-            std::any anyVal;
-            if (m_memVar->typeIndex == tpi::tp_float) {
-                anyVal = std::any(m_edit->getValue<float>());
-            } else if (m_memVar->typeIndex == tpi::tp_int32) {
-                anyVal = m_edit->getValue<int32_t>();
-            } else if (m_memVar->typeIndex == tpi::tp_string) {
-                anyVal = str;
-            } else {
-                return;
-            }
-            m_memVar->set(anyVal);
+    if (!m_arrayEdit.empty()) {
+        for (const auto it : m_arrayEdit) {
+            remove(it);
         }
-    }, this);
+    }
+
+    auto stdWidth = -m_labelWidth -m_xSpacing;
+    if (m_memVar->typeIndex == tpi::tp_float) {
+        createSingleEdit<float>(std::any_cast<float>(m_memVar->get()), stdWidth);
+    } else if (m_memVar->typeIndex == tpi::tp_int32) {
+        createSingleEdit<int32_t>(std::any_cast<int32_t>(m_memVar->get()), stdWidth);
+    } else if (m_memVar->typeIndex == tpi::tp_string) {
+        createSingleEdit<std::string>(std::any_cast<std::string>(m_memVar->get()), stdWidth);
+    } else if (m_memVar->typeIndex == tpi::tp_vector_float) {
+        createArrayEdit<float>();
+    } else if (m_memVar->typeIndex == tpi::tp_vector_int32) {
+        createArrayEdit<int32_t>();
+    } else if (m_memVar->typeIndex == tpi::tp_vector_string) {
+        createArrayEdit<std::string>();
+    }
 }
 
 /*

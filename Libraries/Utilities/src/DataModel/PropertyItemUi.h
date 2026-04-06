@@ -35,7 +35,7 @@ public:
     Property<bool>        visible = {true};
 
     template <class T>
-    Property<T> *addProp(std::string inName, const std::string &dpName = "", bool isVisible = true) {
+    Property<T> *addProp(const std::string inName, const std::string &dpName = "", bool isVisible = true) {
         auto it = add<PropertyItemUi<T>>(inName);
         if (!dpName.empty()) {
             it->displayName = dpName;
@@ -54,14 +54,14 @@ public:
         isPropertyItem = true;
         setTypeName<PropertyItemUi>();
         connectPostChangeCb();
-        m_typeId = tpiTypeMap[typeid(T)];
+        m_typeId = getTpi<T>();
     }
 
     explicit PropertyItemUi(const std::string &inName) {
         name           = inName;
         isPropertyItem = true;
         connectPostChangeCb();
-        m_typeId = tpiTypeMap[typeid(T)];
+        m_typeId = getTpi<T>();
     }
 
     Property<T> *getPtr() {
