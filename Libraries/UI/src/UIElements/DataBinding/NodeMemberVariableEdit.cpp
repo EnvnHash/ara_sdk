@@ -55,75 +55,19 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
         { tpi::tp_float, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<float>(std::any_cast<float>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_int32, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<int32_t>(std::any_cast<int32_t>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_string, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<std::string>( std::any_cast<std::string>(ctx->getMemVar()->get()), stdWidth); }},
-        { tpi::tp_vector_float, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<float>(); }},
-        { tpi::tp_vector_int32, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<int32_t>(); }},
-        { tpi::tp_vector_string, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<std::string>(); }},
-        { tpi::tp_vec2, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<vec2>(2); }},
-        { tpi::tp_vec3, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<vec3>(3); }},
-        { tpi::tp_vec4, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<vec4>(4); }},
-        { tpi::tp_ivec2, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<ivec2>(2); }},
-        { tpi::tp_ivec3, [] (NodeMemberVariableEdit* ctx)  { ctx->createGlmEdit<ivec3>(3); }},
-        { tpi::tp_ivec4, [] (NodeMemberVariableEdit* ctx) { ctx->createGlmEdit<ivec4>(4); }},
+        { tpi::tp_vector_float, [] (NodeMemberVariableEdit* ctx) { ctx->createVector<vector<float>>(); }},
+        { tpi::tp_vector_int32, [] (NodeMemberVariableEdit* ctx) { ctx->createVector<vector<int32_t>>(); }},
+        { tpi::tp_vector_string, [] (NodeMemberVariableEdit* ctx) { ctx->createVector<vector<std::string>>(); }},
+        { tpi::tp_vec2, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<vec2>(2); }},
+        { tpi::tp_vec3, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<vec3>(3); }},
+        { tpi::tp_vec4, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<vec4>(4); }},
+        { tpi::tp_ivec2, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<ivec2>(2); }},
+        { tpi::tp_ivec3, [] (NodeMemberVariableEdit* ctx)  { ctx->createArrayEdit<ivec3>(3); }},
+        { tpi::tp_ivec4, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<ivec4>(4); }},
     };
 
     createMap[m_memVar->typeIndex](this);
 }
-
-/*
-void NodeMemberVariableEdit::updateStyleIt(ResNode* node, const state st, const std::string& styleClass) {
-    UINode::updateStyleIt(node, st, styleClass);
-
-    if (m_nodeValueType == nodeValueType::root) {
-        m_lineHeight = getLineHeight(node);
-        int32_t yOffsCntr = 0;
-        setLineOffset(this, yOffsCntr, m_lineHeight);
-    } else {
-        // override standard UINode settings
-        m_setStyleFunc[state::none][styleInit::x] = [this] { setX(m_custPos.x, state::none); };
-        m_setStyleFunc[state::none][styleInit::y] = [this] { setY(m_custPos.y, state::none); };
-        m_setStyleFunc[state::none][styleInit::height] = [this] { setHeight(m_lineHeight, state::none); };
-    }
-}
-
-void NodeMemberVariableEdit::setLineOffset(NodeMemberVariableEdit* nd, int32_t& yOffsCntr, int32_t& lineHeight) {
-    if (!nd) {
-        return;
-    }
-
-    if (const auto parent = dynamic_cast<NodeMemberVariableEdit*>(nd->parent())) {
-        nd->setYOffs(parent, yOffsCntr, lineHeight);
-    }
-
-    for (auto& c : nd->children()) {
-        setLineOffset(dynamic_cast<NodeMemberVariableEdit*>(c.get()), yOffsCntr, lineHeight);
-    }
-}
-
-void NodeMemberVariableEdit::setYOffs(const NodeMemberVariableEdit* parent, int32_t& yOffsCntr, const int32_t& lineHeight) {
-    if (getNodeValueType() != nodeValueType::root) {
-        setLineHeight(lineHeight);
-    }
-
-    m_yOffs = yOffsCntr++;
-
-    m_custPos.y = (m_ySpacing + lineHeight) * (m_yOffs - parent->getYOffs());
-    setPos(m_custPos);
-}
-
-int32_t NodeMemberVariableEdit::getLineHeight(ResNode* node) const {
-    int32_t lineHeight = m_lineHeight;
-    if (const auto editNode = node->findNode("edit")) {
-        if (const auto numNode = editNode->findNumericNode("height"); get<ResNode*>(numNode)) {
-            if (get<unitType>(numNode) == unitType::Percent) {
-                lineHeight = std::stof(get<std::string>(numNode)) * 0.01f;
-            } else {
-                lineHeight = std::stoi(get<std::string>(numNode));
-            }
-        }
-    }
-    return lineHeight;
-}
-*/
 
 void NodeMemberVariableEdit::setLabelText(const std::string& text) {
     m_text = text;
@@ -132,6 +76,9 @@ void NodeMemberVariableEdit::setLabelText(const std::string& text) {
     }
 }
 
+int32_t NodeMemberVariableEdit::getEditWidth(const size_t nrEditFields) {
+    return static_cast<int32_t>((getContentSize().x - static_cast<float>(m_labelWidth + m_xSpacing)) / static_cast<float>(std::min(nrEditFields, m_numEditsPerRow)));
+}
 
 
 }

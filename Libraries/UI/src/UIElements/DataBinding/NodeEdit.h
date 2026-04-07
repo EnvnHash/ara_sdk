@@ -13,9 +13,9 @@ class NodeEdit : public Div {
 public:
     NodeEdit();
     void rebuild();
-    void exclude(const std::vector<std::string>& exclVars);
+    void exclude(const std::vector<std::string>& excludeKeys);
 
-    auto getBoundNode() { return m_node; }
+    auto getBoundNode() const { return m_node; }
 
     void setNode(Node& node) {
         m_node = &node;

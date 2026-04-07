@@ -53,29 +53,35 @@ public:
     }
 
     template<typename T>
-    void createArrayEdit() {
-        auto vec = std::any_cast<std::vector<T>>(m_memVar->get());
-        int32_t idx = 0;
-        auto width = static_cast<int32_t>((getContentSize().x - static_cast<float>(m_labelWidth +m_xSpacing)) / static_cast<float>(std::min(vec.size(), m_numEditsPerRow)));
-        for (auto &it : vec) {
-            createSingleEdit(vec[idx], width, idx);
-            ++idx;
+    void createVector() {
+        createArrayEdit<T>(std::any_cast<T>(m_memVar->get()).size());
+    }
+
+    template<typename T>
+    void createArrayEdit(const size_t sz) {
+        auto vec = std::any_cast<T>(m_memVar->get());
+        for (auto i=0; i<sz; ++i) {
+            m_arrayEdit.emplace_back(createSingleEdit(vec[i], getEditWidth(sz), i));
         }
     }
 
     template<typename T>
-    void createGlmEdit(const size_t sz) {
-        auto vec = std::any_cast<T>(m_memVar->get());
-        auto width = static_cast<int32_t>((getContentSize().x - static_cast<float>(m_labelWidth +m_xSpacing)) / static_cast<float>(std::min(sz, m_numEditsPerRow)));
-        for (auto i=0; i<sz; ++i) {
-            createSingleEdit(vec[i], width, i);
+    void setElementWidths(T val, state st) {
+        if (m_label) {
+            m_label->setWidth(val);
+        }
+
+        if (!m_arrayEdit.empty()) {
+            const auto width = getEditWidth(m_arrayEdit.size());
+            for (const auto it : m_arrayEdit) {
+                it->setWidth(width);
+            }
+        } else if (m_edit) {
+            m_edit->setWidth(getEditWidth(1));
         }
     }
 
-    //void updateStyleIt(ResNode* node, const state st, const std::string& styleClass) override;
-    //void setLineOffset(NodeMemberVariableEdit* nd, int32_t& yOffsCntr, int32_t& lineHeight);
-    //void setYOffs(const NodeMemberVariableEdit* parent, int32_t& yOffsCntr, const int32_t& lineHeight);
-    //int32_t getLineHeight(ResNode* node) const;
+    int32_t getEditWidth(size_t nrEditFields);
 
     void setEditValFromMemberVar();
     void setLabelText(const std::string& text);
