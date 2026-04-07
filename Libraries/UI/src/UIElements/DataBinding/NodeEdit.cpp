@@ -31,7 +31,7 @@ void NodeEdit::rebuild() {
             nmve.setSpacing(m_spacing);
             nmve.setLineHeight(m_lineHeight);
             nmve.setLabelWidth(m_labelWidth);
-            nmve.setEditAlign(m_editAlign);
+            nmve.setEditAlign(m_alignPerKey.contains(key) ? m_alignPerKey[key] : m_editAlign);
             nmve.setY(y * (m_lineHeight + m_spacing.y));
             y += nmve.getUnitHeight();
         }

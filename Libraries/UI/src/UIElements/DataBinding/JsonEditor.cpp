@@ -28,11 +28,8 @@ void JsonEditor::init() {
     }
 
     m_label = &push<Label>(LabelPars{
-        .pos = ivec2{ 0, 0 },
         .size = ivec2{ m_labelWidth, m_lineHeight },
         .style = getStyleClass()+".label",
-        .align = align::left,
-        .valign = valign::top,
         .color = vec4{ 1.f, 1.f, 1.f, 1.f },
         .text = m_key + ":",
         .textAlignX = align::left,

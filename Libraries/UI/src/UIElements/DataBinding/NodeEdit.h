@@ -30,6 +30,7 @@ public:
     void setLabelWidth(const int32_t& w) { m_labelWidth = w; }
     void setLineHeight(const int32_t& h) { m_lineHeight = h; }
     void setEditAlign(const arrange& a) { m_editAlign = a; }
+    void setAlignPerKey(const std::unordered_map<std::string, arrange>& a) { m_alignPerKey = a; }
 
 private:
     Label*      m_label = nullptr;
@@ -39,7 +40,8 @@ private:
     int32_t     m_labelWidth = 180;
     arrange     m_editAlign{};
 
-    std::vector<std::string>   m_excludeKeys;
+    std::unordered_map<std::string, arrange>    m_alignPerKey;
+    std::vector<std::string>                    m_excludeKeys;
 };
 
 }

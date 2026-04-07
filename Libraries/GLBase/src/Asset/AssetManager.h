@@ -110,6 +110,8 @@ public:
     bool checkForChangesInFolderFiles();
     void callResSourceChange();
     void callForChangesInFolderFiles();
+    void processFile(std::unique_ptr<ResNode>&& root);
+    void checkFolderFiles(bool& keep);
 
     void         setPreContent(const std::string &str) { m_preContent = str; }
     void         setPostContent(const std::string &str) { m_postContent = str; }

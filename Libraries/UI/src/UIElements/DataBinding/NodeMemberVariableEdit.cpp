@@ -93,7 +93,7 @@ int32_t NodeMemberVariableEdit::getUnitHeight() const {
     }
 
     int32_t nrEdits = 1;
-    if (tpi::tp_bool < m_memVar->typeIndex && m_memVar->typeIndex < tpi::tp_vec2) {
+    if (tpi::tp_bool < m_memVar->typeIndex && m_memVar->typeIndex < tpi::tp_ivec2) {
         unordered_map<tpi, std::function<size_t()>> vecSizeMap {
             { tpi::tp_vector_float, [this] { return std::any_cast<vector<float>>(m_memVar->get()).size(); } },
             { tpi::tp_vector_int32, [this] { return std::any_cast<vector<int32_t>>(m_memVar->get()).size(); } },

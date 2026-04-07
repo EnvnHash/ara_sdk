@@ -28,9 +28,13 @@ public:
 };
 
 template <typename T>
-auto& addNodeEdit(const UIApplication &app, T& node, const arrange ar = arrange::vertical) {
+auto& addNodeEdit(const UIApplication &app, T& node, const arrange ar = arrange::horizontal, const optional<unordered_map<string, arrange>> alignMap = std::nullopt) {
     auto& ne = app.getRootNode()->push<NodeEdit>();
-    ne.setEditAlign(ar);
+    if (alignMap.has_value()) {
+        ne.setAlignPerKey(alignMap.value());
+    } else {
+        ne.setEditAlign(ar);
+    }
     ne.setLineHeight(22);
     ne.setSpacing({10, 10});
     ne.setLabelWidth(100);
@@ -193,6 +197,24 @@ TEST(UITest, NodeEditMultiVar) {
         addNodeEdit(app, testNode2);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "data_binding_multi.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 400, 200);
+}
+
+TEST(UITest, NodeEditMixedAlignTest) {
+    TestNode2<std::vector<std::string>> testNode;
+    testNode.m_testVal = { "text1", "text2" };
+    testNode.m_testVal2 = { "text3", "text4", "text5", "text6" };
+
+    appBody([&](const UIApplication &app) {
+        addNodeEdit(
+            app,
+            testNode,
+            arrange::vertical,
+          unordered_map<string, arrange>{ {"testVal", arrange::horizontal}, {"testVal2", arrange::vertical} }
+        );
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "data_binding_change_mixedAlign.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 400, 200);
 }

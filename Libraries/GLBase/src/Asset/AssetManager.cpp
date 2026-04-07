@@ -255,35 +255,37 @@ void AssetManager::callResSourceChange() {
     auto root = std::make_unique<ResNode>("root", m_glbase);
     root->setAssetManager(this);
 
-    SrcFile              sfile(m_glbase);
+    SrcFile              srcFile(m_glbase);
     std::vector<uint8_t> vp;
 
     loadResource(nullptr, vp, m_resFilePath);
     insertPreAndPostContent(vp);
 
-    if (sfile.process(root.get(), vp)) {
-        root->preprocess();
-        root->process();
+    if (srcFile.process(root.get(), vp)) {
+        processFile(std::move(root));
+    }
+}
 
-        bool err = true;
-        if (root->errList.empty() && root->load() && root->errList.empty()) {
-            m_rootNode  = std::move(root);
-            err         = false;
-        }
+void AssetManager::processFile(std::unique_ptr<ResNode>&& root) {
+    root->preprocess();
+    root->process();
 
-        if (err) {
-            LOGE << "New resource file has errors";
-            for (auto &[lineIndex, errorString] : root->errList) {
-                LOGE << "Line " << std::to_string(lineIndex + 1) << " " << errorString;
-            }
+    bool err = true;
+    if (root->errList.empty() && root->load() && root->errList.empty()) {
+        m_rootNode  = std::move(root);
+        err         = false;
+    }
+
+    if (err) {
+        LOGE << "New resource file has errors";
+        for (auto &[lineIndex, errorString] : root->errList) {
+            LOGE << "Line " << std::to_string(lineIndex + 1) << " " << errorString;
         }
     }
 }
 
 void AssetManager::callForChangesInFolderFiles() {
     if (usingComp() || !isOK()) return;
-
-    filesystem::file_time_type ft;
 
     // Check for new files...
     for (const filesystem::directory_entry &file : filesystem::recursive_directory_iterator(m_glbase->m_resRootPath)) {
@@ -296,30 +298,36 @@ void AssetManager::callForChangesInFolderFiles() {
     bool keep;
     do {
         keep = false;
-        for (auto &[file, modTime] : m_resFolderFiles) {
-            const auto& p = filesystem::path(m_glbase->m_resRootPath) / file;
-            if (!filesystem::exists(p)) {
-                m_resFolderFiles.erase(p.string());
-                keep = true;
-                break;
-            }
-
-            try {
-                ft = filesystem::last_write_time(p);
-            } catch (...) {
-            }
-
-            if (ft != modTime) {
-                /*
-                auto str = e.first.path().string();
-                std::replace(str.begin(), str.end(), '\\', '/');
-                str.erase(0, m_dataRootPath.size());
-                PropagateFileChange(false, str);
-                */
-                m_resFolderFiles[file] = ft;
-            }
-        }
+        checkFolderFiles(keep);
     } while (keep);
+}
+
+void AssetManager::checkFolderFiles(bool& keep) {
+    for (auto &[file, modTime] : m_resFolderFiles) {
+        const auto& p = filesystem::path(m_glbase->m_resRootPath) / file;
+        if (!filesystem::exists(p)) {
+            m_resFolderFiles.erase(p.string());
+            keep = true;
+            break;
+        }
+
+        filesystem::file_time_type ft;
+
+        try {
+            ft = filesystem::last_write_time(p);
+        } catch (...) {
+        }
+
+        if (ft != modTime) {
+            /*
+            auto str = e.first.path().string();
+            std::replace(str.begin(), str.end(), '\\', '/');
+            str.erase(0, m_dataRootPath.size());
+            PropagateFileChange(false, str);
+            */
+            m_resFolderFiles[file] = ft;
+        }
+    }
 }
 
 void AssetManager::propagateFileChange(const bool deleted, const string &fpath) {
