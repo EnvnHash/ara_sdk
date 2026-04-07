@@ -28,8 +28,9 @@ public:
 };
 
 template <typename T>
-void addNodeEdit(const UIApplication &app, T& node) {
+auto& addNodeEdit(const UIApplication &app, T& node, const arrange ar = arrange::vertical) {
     auto& ne = app.getRootNode()->push<NodeEdit>();
+    ne.setEditAlign(ar);
     ne.setLineHeight(22);
     ne.setSpacing({10, 10});
     ne.setLabelWidth(100);
@@ -37,6 +38,7 @@ void addNodeEdit(const UIApplication &app, T& node) {
 
     app.getWinBase()->draw(0, 0, 0);
     app.getMainWindow()->swap();
+    return ne;
 }
 
 TEST(UITest, NodeEditBasicTest) {
@@ -169,6 +171,18 @@ TEST(UITest, NodeEditChangeGlmVec3Test) {
         EXPECT_EQ(testNode.m_testValue[0],0.1f);
         EXPECT_EQ(testNode.m_testValue[1],1.1f);
         EXPECT_EQ(testNode.m_testValue[2],2.1f);
+    }, 400, 200);
+}
+
+TEST(UITest, NodeEditVectorStringVertAlignTest) {
+    TestNode<std::vector<std::string>> testNode;
+    testNode.m_testValue = { "text1", "text2" };
+
+    appBody([&](const UIApplication &app) {
+        addNodeEdit(app, testNode, arrange::vertical);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "data_binding_change_vertAlign.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 400, 200);
 }
 

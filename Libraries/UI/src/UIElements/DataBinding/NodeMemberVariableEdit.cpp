@@ -50,7 +50,7 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
     }
     m_arrayEdit.clear();
 
-    auto stdWidth = -m_labelWidth -m_xSpacing;
+    auto stdWidth = -m_labelWidth - m_spacing.x;
     static std::unordered_map<tpi, std::function<void(NodeMemberVariableEdit* ctx)>> createMap = {
         { tpi::tp_float, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<float>(std::any_cast<float>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_int32, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<int32_t>(std::any_cast<int32_t>(ctx->getMemVar()->get()), stdWidth); }},
@@ -77,8 +77,46 @@ void NodeMemberVariableEdit::setLabelText(const std::string& text) {
 }
 
 int32_t NodeMemberVariableEdit::getEditWidth(const size_t nrEditFields) {
-    return static_cast<int32_t>((getContentSize().x - static_cast<float>(m_labelWidth + m_xSpacing)) / static_cast<float>(std::min(nrEditFields, m_numEditsPerRow)));
+    return m_editAlign == arrange::horizontal ?
+        static_cast<int32_t>((getContentSize().x - static_cast<float>(m_labelWidth + m_spacing.x))
+                                / static_cast<float>(std::min(nrEditFields, m_numEditsPerRow)))
+        : static_cast<int32_t>(getContentSize().x - static_cast<float>(m_labelWidth + m_spacing.x));
 }
 
+int32_t NodeMemberVariableEdit::getUnitHeight() const {
+    if (!m_memVar) {
+        return 0;
+    }
+
+    if (m_memVar->typeIndex <= tpi::tp_bool) {
+        return 1;
+    }
+
+    int32_t nrEdits = 1;
+    if (tpi::tp_bool < m_memVar->typeIndex && m_memVar->typeIndex < tpi::tp_vec2) {
+        unordered_map<tpi, std::function<size_t()>> vecSizeMap {
+            { tpi::tp_vector_float, [this] { return std::any_cast<vector<float>>(m_memVar->get()).size(); } },
+            { tpi::tp_vector_int32, [this] { return std::any_cast<vector<int32_t>>(m_memVar->get()).size(); } },
+            { tpi::tp_vector_string, [this] { return std::any_cast<vector<std::string>>(m_memVar->get()).size(); } },
+        };
+        nrEdits = vecSizeMap[m_memVar->typeIndex]();
+    } else {
+        static unordered_map<tpi, size_t> glmSizeMap {
+            { tpi::tp_vec2, 2 },
+            { tpi::tp_vec3, 3 },
+            { tpi::tp_vec4, 4 },
+            { tpi::tp_ivec2, 2 },
+            { tpi::tp_ivec3, 3 },
+            { tpi::tp_ivec4, 4 },
+        };
+        nrEdits = glmSizeMap[m_memVar->typeIndex];
+    }
+
+    if (m_editAlign == arrange::horizontal) {
+        return std::ceil( static_cast<float>(nrEdits) /  static_cast<float>(m_numEditsPerRow) );
+    }
+
+    return nrEdits;
+}
 
 }

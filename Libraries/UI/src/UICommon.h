@@ -58,6 +58,7 @@ enum class pivotX : int32_t { left = 0, right, center };
 enum class pivotY : int32_t { bottom = 0, top, center };
 enum class sliderScale : int32_t { slideLinear = 0, slidSqrt, slidSquared };
 enum class imgFlags : uint32_t { fill = 1, scale = 1 << 1, hflip = 1 << 2, vflip = 1 << 3, integer = 1 << 4, noAspect = 1 << 5};
+enum class arrange : int32_t { horizontal = 0, vertical };
 
 using Number = std::tuple<int32_t, float, double>;
 

@@ -29,6 +29,7 @@ public:
     void setSpacing(const glm::ivec2& s) { m_spacing = s; }
     void setLabelWidth(const int32_t& w) { m_labelWidth = w; }
     void setLineHeight(const int32_t& h) { m_lineHeight = h; }
+    void setEditAlign(const arrange& a) { m_editAlign = a; }
 
 private:
     Label*      m_label = nullptr;
@@ -36,6 +37,7 @@ private:
     glm::ivec2  m_spacing {5, 5};
     int32_t     m_lineHeight = 20;
     int32_t     m_labelWidth = 180;
+    arrange     m_editAlign{};
 
     std::vector<std::string>   m_excludeKeys;
 };
