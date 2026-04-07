@@ -29,10 +29,6 @@ namespace ara::GLBaseUnitTest::TypoGlyphMapTest {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // this is how to get the size of the rendered Text in pixel - just for demo reasons
-        auto textSize = typo->getPixTextWidth("Hello World", 45);
-        // LOG << glm::to_string(textSize);
-
         std::string str = "Hello World";
         typo->print(0, 25, str, 45, &white[0]);
         gwin.swap();

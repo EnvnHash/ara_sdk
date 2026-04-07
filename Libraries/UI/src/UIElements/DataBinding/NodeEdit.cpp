@@ -22,6 +22,9 @@ void NodeEdit::rebuild() {
 
         int32_t y=0;
         for (auto &[key, memVar]: m_node->getMemberVariables()) {
+            if (std::ranges::find(m_excludeKeys, key) != m_excludeKeys.end()) {
+                continue;
+            }
             auto& nmve = push<NodeMemberVariableEdit>({ .style = getStyleClass() });
             nmve.setMemberVar(memVar);
             nmve.setLabelText(key);
@@ -31,6 +34,10 @@ void NodeEdit::rebuild() {
             nmve.setY(y++ * (m_lineHeight + m_spacing.y));
         }
     }
+}
+
+void NodeEdit::exclude(const std::vector<std::string>& excludeKeys) {
+    m_excludeKeys = excludeKeys;
 }
 
 }

@@ -13,8 +13,9 @@ class NodeEdit : public Div {
 public:
     NodeEdit();
     void rebuild();
+    void exclude(const std::vector<std::string>& exclVars);
 
-    auto& getBoundNode() { return m_node; }
+    auto getBoundNode() { return m_node; }
 
     void setNode(Node& node) {
         m_node = &node;
@@ -35,6 +36,8 @@ private:
     glm::ivec2  m_spacing {5, 5};
     int32_t     m_lineHeight = 20;
     int32_t     m_labelWidth = 180;
+
+    std::vector<std::string>   m_excludeKeys;
 };
 
 }
