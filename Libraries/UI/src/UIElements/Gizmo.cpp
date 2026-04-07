@@ -58,7 +58,7 @@ void Gizmo::init() {
     }
 
     m_cam.setType(camType::perspective);
-    m_cam.setFov(M_PI * 0.3f);
+    m_cam.setFov(static_cast<float>(M_PI) * 0.3f);
     m_cam.setScreenWidth(viewWidth);
     m_cam.setScreenHeight(viewHeight);
     m_cam.setCamPos(0.f, 0.f, 3.f); // gizmo size is [2,2,2], camPos.z = 2.f would result in the gizmo fitting

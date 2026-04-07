@@ -21,10 +21,10 @@ public:
 template <typename T>
 class TestNode2 : public Node {
 public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_testValue, m_testValue2)
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_testVal, m_testVal2)
     TestNode2() { setTypeName<TestNode2>(); }
-        T m_testValue{};
-        T m_testValue2{};
+        T m_testVal{};
+        T m_testVal2{};
 };
 
 template <typename T>

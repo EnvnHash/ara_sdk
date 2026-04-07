@@ -326,15 +326,15 @@ void Label::prepareVao(const bool checkFontTex) {
 
         size_t ind    = 0;
         size_t elmInd = 0;
-        for (auto& g : m_fontDGV.getGlyphs()) {
-            if (g.glyphPtr) {
+        for (auto&[charAsCodepoint, pos, size, glyphPtr, color, characterIdx, pixRatio] : m_fontDGV.getGlyphs()) {
+            if (glyphPtr) {
                 for (const auto& v : m_vtxPos) {
-                    tuv                = glm::floor(m_bo + g.pos + v * g.size);
+                    tuv                = floor(m_bo + pos + v * size);
                     m_positions[ind].x = tuv.x;
                     m_positions[ind].y = tuv.y;
                     m_positions[ind].z = 0.f;
                     m_positions[ind].w = 1.f;
-                    m_texCoord[ind]    = g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize;
+                    m_texCoord[ind]    = glyphPtr->srcpixpos + v * glyphPtr->srcpixsize;
                     ind++;
                 }
 

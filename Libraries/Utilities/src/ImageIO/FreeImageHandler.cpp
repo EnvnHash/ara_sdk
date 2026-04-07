@@ -75,7 +75,7 @@ FIMULTIBITMAP* LoadMulti(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
     return LoadMulti(vp.data(), vp.size(), fif);
 }
 
-std::tuple<FREE_IMAGE_FORMAT, FIMEMORY*> LoadPrepare(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif) {
+std::tuple<FREE_IMAGE_FORMAT, FIMEMORY*> LoadPrepare(void* ptr, const size_t size, FREE_IMAGE_FORMAT* fif) {
     if (size == 0) {
         LOGE << "FreeImage::Load failed, size of memory to load to is zero";
         return {};
@@ -95,7 +95,7 @@ std::tuple<FREE_IMAGE_FORMAT, FIMEMORY*> LoadPrepare(void* ptr, size_t size, FRE
 }
 
 FIBITMAP* Load(void* ptr, const size_t size, FREE_IMAGE_FORMAT* fif) {
-    auto r = LoadPrepare(ptr, size, fif);
+    const auto r = LoadPrepare(ptr, size, fif);
     FIBITMAP* bitmap = nullptr;
     if ((bitmap = FreeImage_LoadFromMemory(std::get<FREE_IMAGE_FORMAT>(r), std::get<FIMEMORY*>(r), 0)) == nullptr) {
         LOGE << "Failed to load image from memory";
@@ -105,7 +105,7 @@ FIBITMAP* Load(void* ptr, const size_t size, FREE_IMAGE_FORMAT* fif) {
 }
 
 FIMULTIBITMAP* LoadMulti(void* ptr, const size_t size, FREE_IMAGE_FORMAT* fif) {
-    auto r = LoadPrepare(ptr, size, fif);
+    const auto r = LoadPrepare(ptr, size, fif);
 
     FIMULTIBITMAP* bitmap = nullptr;
     if ((bitmap = FreeImage_LoadMultiBitmapFromMemory(std::get<FREE_IMAGE_FORMAT>(r), std::get<FIMEMORY*>(r), 0)) == nullptr) {

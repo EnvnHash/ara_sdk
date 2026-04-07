@@ -302,7 +302,7 @@ public:
     nlohmann::json      asJson(bool skipClassEntries=false);
     void                serialize(nlohmann::json& json, bool skipClassEntries=false);
     void                serializePerClass(nlohmann::json& j, bool skipClassEntries);
-    void                serializeNonClass(nlohmann::json& j, const pushToType pushTo = pushToType::undefined);
+    void                serializeNonClass(nlohmann::json& j, pushToType pushTo = pushToType::undefined);
     nlohmann::json      serializeClassValues();
     nlohmann::json&     serializeNonClassValue(nlohmann::json& json, pushToType pushToArray = pushToType::undefined);
     void                deserialize(const std::string&, bool skipClassEntries=false);
@@ -476,9 +476,9 @@ protected:
         m_memberVars.emplace(*name, memberVar{
             .get = [&]{ return arg; },
             .set = [&] (std::any& val, size_t idx) {
-                if constexpr (is_index_assignable<Container>::value) {
-                    using Elem = Container::value_type;
-                    arg[idx] = std::any_cast<Elem>(val);
+                if constexpr (is_index_assignable<Container>::value || is_glm_vec_v<Container>) {
+                    using Elem = typename Container::value_type;
+                    arg[static_cast<int32_t>(idx)] = std::any_cast<Elem>(val);
                 } else {
                     arg = std::any_cast<Container>(val);
                 }
@@ -540,7 +540,7 @@ protected:
     size_t                                          m_maxUndoBufSize=0;
     std::optional<std::function<void()>>            m_postLoadCb;
     std::list<std::function<void()>*>               m_postCbList;
-    std::unordered_map<std::string, memberVar>      m_memberVars;
+    std::map<std::string, memberVar>                m_memberVars;
 
     static inline std::unordered_map<std::string, std::pair<std::vector<std::string>, bool>> m_classKeys;
     static inline std::filesystem::file_time_type   m_initFt{};

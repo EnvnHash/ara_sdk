@@ -55,8 +55,8 @@ public:
     template<typename T>
     void createArrayEdit() {
         auto vec = std::any_cast<std::vector<T>>(m_memVar->get());
-        size_t idx = 0;
-        auto width = static_cast<int32_t>((getContentSize().x -m_labelWidth -m_xSpacing) / static_cast<float>(std::min(vec.size(), m_numEditsPerRow)));
+        int32_t idx = 0;
+        auto width = static_cast<int32_t>((getContentSize().x - static_cast<float>(m_labelWidth +m_xSpacing)) / static_cast<float>(std::min(vec.size(), m_numEditsPerRow)));
         for (auto &it : vec) {
             createSingleEdit(vec[idx], width, idx);
             ++idx;
@@ -66,7 +66,7 @@ public:
     template<typename T>
     void createGlmEdit(const size_t sz) {
         auto vec = std::any_cast<T>(m_memVar->get());
-        auto width = static_cast<int32_t>((getContentSize().x -m_labelWidth -m_xSpacing) / static_cast<float>(std::min(sz, m_numEditsPerRow)));
+        auto width = static_cast<int32_t>((getContentSize().x - static_cast<float>(m_labelWidth +m_xSpacing)) / static_cast<float>(std::min(sz, m_numEditsPerRow)));
         for (auto i=0; i<sz; ++i) {
             createSingleEdit(vec[i], width, i);
         }
