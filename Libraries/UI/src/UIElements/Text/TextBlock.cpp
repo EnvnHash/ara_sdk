@@ -192,6 +192,7 @@ Font *TextBlock::updateDGV(bool *checkFontTexture) {
     if (!hasOpt(manual_space)) {
         m_tSize = m_tContSize;
     }
+    m_tSize -= m_borderWidth * 2;
 
     m_fontDGV.setPixRatio(getPixRatio());
     m_fontDGV.setTabPixSize(m_TabSize);
@@ -263,7 +264,7 @@ void TextBlock::updateFontGeo() {
 void TextBlock::prepareSelBgVao() {
     int lineCntr = 0;
     list<pair<vec2, vec2>> lines;  // Left/Top,  Right/Bottom
-    for (auto &[ptr, y, width, characterIdx, yrange, yselrange, pixRatio] : m_fontDGV.getFontLines()) {
+    for (auto &[ptr, y, width, characterIdx, yrange, yselrange, pixRatio, maxCharIdx] : m_fontDGV.getFontLines()) {
         if (ptr[0] && ptr[1]) {
             std::array<int32_t, 2> ci{};  /// first and last character index
 
@@ -281,11 +282,11 @@ void TextBlock::prepareSelBgVao() {
                                                   : caretPosAndSize.first.x;
 
                 vec2 posLT{
-                    cp.x + m_offset.x + m_alignOffset.x,
+                    cp.x + m_offset.x + m_alignOffset.x + m_lineOverflowOffset.second,
                     y / pixRatio + m_offset.y + m_alignOffset.y
                 };
                 vec2 posRB{
-                    cp.y + m_offset.x + m_alignOffset.x,
+                    cp.y + m_offset.x + m_alignOffset.x + m_lineOverflowOffset.second,
                     posLT.y + (yrange[1] - yrange[0]) / pixRatio
                 };
 
@@ -368,6 +369,7 @@ void TextBlock::clearDs() {
 
 void TextBlock::mouseDrag(hidData& data) {
     m_mousePosCr = data.mousePosNodeRel / getParentContentScale() - m_alignOffset;
+    m_mousePosCr.x -= m_lineOverflowOffset.second;
 
     if (m_mouseEvent & 1) {
         const auto caretPos = getCaretByPixPos(m_mousePosCr.x, m_mousePosCr.y);
@@ -383,11 +385,13 @@ void TextBlock::mouseDrag(hidData& data) {
 }
 
 void TextBlock::mouseDown(hidData& data) {
-    const vec2 p = data.mousePosNodeRel / getParentContentScale();
-    if (const int caretPos = getCaretByPixPos(p.x - m_alignOffset.x, p.y - m_alignOffset.y); caretPos >= 0) {
+    vec2 p = data.mousePosNodeRel / getParentContentScale() - m_alignOffset;
+    p.x -= m_lineOverflowOffset.second;
+
+    if (const int caretPos = getCaretByPixPos(p.x, p.y); caretPos >= 0) {
         m_caretIndex    = caretPos;
         m_caretRange[0] = m_caretRange[1] = m_caretIndex;
-        m_mouseEvent                      = 1;
+        m_mouseEvent    = 1;
 
         if (!m_drawImmediate) {
             reqUpdtTree();

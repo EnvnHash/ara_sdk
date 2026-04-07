@@ -162,7 +162,15 @@ protected:
     void mouseDown(hidData& data) override;
     void mouseUp(hidData& data) override;
     void globalMouseDown(hidData& data) override;
-    bool validateInputToString(int ch);
+
+    void procEnterAndReturn();
+    void procTab();
+    void procShiftPlusArrowSelect(const hidData& data);
+    void moveCaret(const hidData& data, bool& updateValue);
+    void keyModifySelection(const hidData& data, bool& updateValue);
+    bool validateNumInputToString(int ch);
+    void calcLeftLineOffset();
+    void calcRightLineOffset();
     void checkLimits();
 
     int insertChar(int ch, int position, bool call_cb = true);  // returns new caret position

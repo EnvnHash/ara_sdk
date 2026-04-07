@@ -59,6 +59,7 @@ public:
     std::array<float, 2>            yrange{};
     std::array<float, 2>            yselrange{};
     float                           pixRatio = 1.f;
+    int32_t                         maxCharIdx = -1;
 
     [[nodiscard]] float getYSelRange(int idx) const { return yselrange[idx] / pixRatio; }  ///>  return in hw pixels
 };
@@ -85,6 +86,7 @@ struct procPar {
     glm::vec2                       sep{};
     glm::vec2                       l_sep{};
     glm::vec2                       l_size{};
+    int32_t                         maxCharIdx=-1;
 
     std::vector<std::pair<glm::ivec2, glm::vec4>>::iterator textColIt{};
 };
@@ -95,8 +97,8 @@ class FontGlyphVector {
 public:
     virtual ~FontGlyphVector() = default;
 
-    bool process(Font *font, const glm::vec2 &size, const glm::vec2 &sep, align text_align_x, const std::string &str,
-                 bool word_wrap);  // text_align : see e_fontalign
+    bool process(Font *font, const glm::vec2 &size, const glm::vec2 &sep, align textAlignX, const std::string &str,
+                 bool wordWrap);  // text_align : see e_fontalign
 
     static void     glyphPtrCheck(procPar& par);
     Fontdglyph      addDGlyph(procPar &par, const glm::vec2& offs, const glm::vec2& size, Fontglyph* g=nullptr) const;

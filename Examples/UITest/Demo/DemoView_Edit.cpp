@@ -59,6 +59,7 @@ void DemoView_Edit::init() {
 
     push<Label>({ .style = getStyleClass()+".label" });
 
+    push<UIEdit>({ .style = getStyleClass()+".overFlowCheck" });
 
     auto& tb = push<TextBlock>(UINodePars{
         .pos = ivec2{650,200},

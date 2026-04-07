@@ -478,7 +478,7 @@ demos {
 
 		tb-color {
 			width:500px
-			height:300px
+			height:200px
 
 			bkcolor:hsla(220,10,20,1)
 			padding:5
@@ -495,9 +495,9 @@ demos {
 		
 		label {	
 			x:10px
-			y:540px
+			y:520px
 			width:500px
-			height:80px
+			height:60px
 			
 			color:hsla(220,10,90,1)
 			bkcolor:hsla(220,10,20,1)
@@ -515,6 +515,20 @@ demos {
 			
 			text:"This is a line of text to test the label, long enough to see the ellipsis at the end."
 		}
+
+		 overFlowCheck {
+            x: 10px
+            y: 600px
+            width: 500px
+            height: 60px
+
+            border-width: 2
+            border-color: hsla(20,80,50,1)
+			text-opt: single-line
+			text-align:left
+
+		 	text:"This is a line of text to test the label, long enough to see the ellipsis at the end."
+		 }
 	}
 }
 

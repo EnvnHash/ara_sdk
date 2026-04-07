@@ -76,24 +76,19 @@ protected:
     Div*         m_caret = nullptr;
     IndDrawBlock m_selBgDB;
 
-    float m_TabSize = 50.f;  // Tab size in pixels
-
-    glm::vec4 m_bkSelColor{0.f, 0.f, 1.f, 0.3f};  // Background selection color
-    glm::vec4 m_caretColor{1.f};                  // Background selection color
-    int       m_caretWidth = 2;
-
+    float       m_TabSize = 50.f;  // Tab size in pixels
+    glm::vec4   m_bkSelColor{0.f, 0.f, 1.f, 0.3f};  // Background selection color
+    glm::vec4   m_caretColor{1.f};                  // Background selection color
+    float       m_caretWidth = 1.5f;
     std::string m_renderText;
-
-    int        m_caretIndex = 0;
-    glm::ivec2 m_caretRange{0};
-    int        m_maxCount = 0;
-
-    glm::vec2 m_mousePosCr{0.f};
-    glm::vec2 m_bs{0};
-    int       m_mouseEvent = 0;
-
-    glm::ivec2 m_charSelection{0};
-    glm::ivec2 m_lastSelRange{0};
+    int         m_caretIndex = 0;
+    glm::ivec2  m_caretRange{0};
+    int         m_maxCount = 0;
+    glm::vec2   m_mousePosCr{0.f};
+    glm::vec2   m_bs{0};
+    int         m_mouseEvent = 0;
+    glm::ivec2  m_charSelection{0};
+    glm::ivec2  m_lastSelRange{0};
 
     bool m_useWheel     = false;
     bool m_updtUniBlock = false;

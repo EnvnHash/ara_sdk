@@ -87,27 +87,27 @@ void UIEdit::drawCaret(const bool forceCaretVaoUpdt) {
     if (m_state == state::selected) {
         if (!m_caret->isVisible()) {
             m_caret->setVisibility(true);
-            m_caret->setSize(static_cast<int>(static_cast<float>(m_caretWidth) / getParentContentScale().x),
+            m_caret->setSize(static_cast<int>(m_caretWidth / getParentContentScale().x),
                             static_cast<int>(m_riFont->getPixHeight()));
             m_caret->setBackgroundColor(m_caretColor);
             updtTree = true;
         }
 
         auto tCaretPos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
-        tCaretPos = floor(tCaretPos + m_offset + m_alignOffset);
+        tCaretPos = tCaretPos /*+ m_offset*/ + m_alignOffset;
+        tCaretPos.x += m_lineOverflowOffset.second;
 
         // if there is no text, set the caret corresponding to the text format
-        if (m_text.empty() && (m_tAlignX == align::right || m_tAlignX == align::center)) {
-            if (m_tAlignX == align::right) {
-                tCaretPos.x = getContentSize().x;
-            } else if (m_tAlignX == align::center) {
-                tCaretPos.x = getContentSize().x * 0.5f;
-            }
+        if (m_text.empty() && m_tAlignX == align::right) {
+            tCaretPos.x = getContentSize().x;
+        }
+        if (m_text.empty() && m_tAlignX == align::center) {
+            tCaretPos.x = getContentSize().x * 0.5f;
         }
 
         vec2 posLimit{};
         for (int i = 0; i < 2; i++) {
-            posLimit[i] = m_size[i] - (m_padding[i + 2] + static_cast<float>(m_borderWidth));
+            posLimit[i] = m_size[i] - (m_padding[i + 2] + static_cast<float>(m_borderWidth *2));
         }
 
         if (!all(glm::equal(m_caret->getPos(), tCaretPos))) {
@@ -152,6 +152,7 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
     if (!hasOpt(manual_space)) {
         m_tSize = m_tContSize;
     }
+    m_tSize -= m_borderWidth * 2;
 
     m_fontDGV.setPixRatio(getPixRatio());
     m_fontDGV.setTabPixSize(m_tabSize);
@@ -159,17 +160,17 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
     m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
 
     // Calculate offset
-    if (int lidx; (lidx = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
+    if (int lineIndex; (lineIndex = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
         const auto cpos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
         const float pa = m_riFont->getPixAscent();
 
         // resulting x-position
         const auto x1 = cpos.x + m_offset.x;
         const auto x2 = x1 + 2;
-        const auto y1 = m_fontDGV.getFontLines(lidx).getYSelRange(0) + m_offset.y + pa;
-        const auto y2 = m_fontDGV.getFontLines(lidx).getYSelRange(1) + m_offset.y + pa;
+        const auto y1 = m_fontDGV.getFontLines(lineIndex).getYSelRange(0) + m_offset.y + pa;
+        const auto y2 = m_fontDGV.getFontLines(lineIndex).getYSelRange(1) + m_offset.y + pa;
 
-        // the beginning of the rendered text will be outside the mask add an
+        // in case the beginning of the rendered text will be outside the mask, add an
         // offset to move it into the non-mask area
         if (x1 < mask.x) {
             m_offset.x = -(cpos[0] - mask.x);
@@ -178,10 +179,10 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
             m_offset.x = std::max(m_offset.x, -(2 + cpos[0] - mask.z));
         }
         if (y1 < mask.y) {
-            m_offset.y = -(pa + m_fontDGV.getFontLines(lidx).getYSelRange(0) - mask.y);
+            m_offset.y = -(pa + m_fontDGV.getFontLines(lineIndex).getYSelRange(0) - mask.y);
         }
         if (y2 > mask.w) {
-            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.getFontLines(lidx).getYSelRange(1) - mask.w));
+            m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.getFontLines(lineIndex).getYSelRange(1) - mask.w));
         }
     }
 
@@ -210,7 +211,7 @@ void UIEdit::updateFontGeo() {
 
     // take the matrix of the helper content Div, since this will use the
     // Label's content transformation
-    m_bo.x = m_offset.x + m_alignOffset.x;
+    m_bo.x = m_offset.x + m_alignOffset.x + m_lineOverflowOffset.second;
     m_bo.y = m_offset.y + m_riFont->getPixAscent() + m_alignOffset.y;
     m_mask = calculateMask();
     m_modMvp = m_mvp;
@@ -227,23 +228,8 @@ void UIEdit::keyDown(hidData& data) {
         return;
     }
 
-    // enter or return
     if (data.key == ARA_KEY_ENTER || data.key == ARA_KEY_KP_ENTER) {
-        if (hasOpt(single_line)) {
-            checkLimits();
-        } else {
-            m_caretIndex = insertChar('\r', m_caretIndex, true);
-        }
-
-        clampValue();  // in case of number double that they are within the valid range
-        setSelected(false, true);
-        drawCaret();
-
-        for (const auto& cb : m_onEnterCb | views::values) {
-            cb(m_text);
-        }
-
-        onLostFocus();
+        procEnterAndReturn();
         return;
     }
 
@@ -256,14 +242,7 @@ void UIEdit::keyDown(hidData& data) {
     }
 
     if (data.key == ARA_KEY_TAB) {
-        if (hasOpt(accept_tabs)) {
-            m_caretIndex = insertChar('\t', m_caretIndex, true);
-        } else {
-            setSelected(false, true);
-            drawCaret();
-            clampValue();  // in case of number double that they are within the valid range
-            onLostFocus();
-        }
+        procTab();
     }
 
     // increment decrement for integers and floats
@@ -276,110 +255,15 @@ void UIEdit::keyDown(hidData& data) {
     }
 
     if (data.shiftPressed) {
-        if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
-            if (!getSelRange(m_charSelection)) {
-                m_caretRange[0] = m_caretIndex;
-            }
-            --m_caretIndex;
-            m_caretRange[1] = m_caretIndex;
-            drawCaret();
-            if (!m_drawImmediate) {
-                prepareSelBgVao();
-                reqUpdtTree();
-            }
-
-            return;
-        }
-
-        if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
-            if (!getSelRange(m_charSelection)) {
-                m_caretRange[0] = m_caretIndex;
-            }
-            ++m_caretIndex;
-            m_caretRange[1] = m_caretIndex;
-            drawCaret();
-            if (!m_drawImmediate) {
-                prepareSelBgVao();
-                reqUpdtTree();
-            }
-            return;
-        }
-
-        if (data.key == ARA_KEY_HOME) {
-            if (!getSelRange(m_charSelection)) {
-                m_caretRange[0] = m_caretIndex;
-            }
-            m_caretIndex    = 0;
-            m_caretRange[1] = m_caretIndex;
-            drawCaret();
-            if (!m_drawImmediate) {
-                prepareSelBgVao();
-                reqUpdtTree();
-            }
-            return;
-        }
-
-        if (data.key == ARA_KEY_END) {
-            if (!getSelRange(m_charSelection)) {
-                m_caretRange[0] = m_caretIndex;
-            }
-            m_caretIndex = m_caretIndex = static_cast<int>(m_text.size());
-            m_caretRange[1]             = m_caretIndex;
-            drawCaret();
-            if (!m_drawImmediate) {
-                prepareSelBgVao();
-                reqUpdtTree();
-            }
-            return;
-        }
-
+        procShiftPlusArrowSelect(data);
         return;
     }
 
     bool updateValue = false;
     if (!getSelRange(m_charSelection)) {
-        if (data.key == ARA_KEY_BACKSPACE && m_caretIndex > 0 && !m_text.empty()) {
-            eraseContent(m_caretIndex -1, m_caretIndex);
-            --m_caretIndex;
-            updateValue = true;
-        } else if (data.key == ARA_KEY_DELETE && (m_caretIndex < static_cast<int>(m_text.size()))) {
-            m_text.erase(m_caretIndex, 1);
-            reqUpdtGlyphs(true);
-            updateValue = true;
-        } else if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
-            --m_caretIndex;
-        } else if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
-            ++m_caretIndex;
-        } else if (data.key == ARA_KEY_HOME) {
-            m_caretIndex = 0;
-        } else if (data.key == ARA_KEY_END) {
-            m_caretIndex = static_cast<int>(m_text.size());
-        }
+        moveCaret(data, updateValue);
     } else {
-        if (data.key == ARA_KEY_BACKSPACE || data.key == ARA_KEY_DELETE) {
-            eraseContent(m_charSelection[0], m_charSelection[1]);
-            m_caretIndex = m_charSelection[0];
-            clearSelRange();
-            updateValue = true;
-        }
-
-        // marco.g: got to do it this way (clearSelRange() on each) since the
-        // OnChar does pass through this callback first
-        //          if leaving it will then clear the sel range and onChar won't be able to use it
-
-        else if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
-            clearSelRange();
-            m_caretIndex--;
-        } else if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
-            clearSelRange();
-            m_caretIndex++;
-        } else if (data.key == ARA_KEY_HOME) {
-            clearSelRange();
-            m_caretIndex = 0;
-        } else if (data.key == ARA_KEY_END) {
-            clearSelRange();
-            m_caretIndex = static_cast<int>(m_text.size());
-        }
+        keyModifySelection(data, updateValue);
     }
 
     if (updateValue) {
@@ -397,6 +281,167 @@ void UIEdit::keyDown(hidData& data) {
     }
 
     setDrawFlag();
+}
+
+void UIEdit::keyModifySelection(const hidData& data, bool& updateValue) {
+    if (data.key == ARA_KEY_BACKSPACE || data.key == ARA_KEY_DELETE) {
+        eraseContent(m_charSelection[0], m_charSelection[1]);
+        m_caretIndex = m_charSelection[0];
+        clearSelRange();
+        updateValue = true;
+    }
+
+    // marco.g: got to do it this way (clearSelRange() on each) since the
+    // OnChar does pass through this callback first
+    //          if leaving it will then clear the sel range and onChar won't be able to use it
+
+    else if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
+        clearSelRange();
+        m_caretIndex--;
+    } else if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
+        clearSelRange();
+        m_caretIndex++;
+    } else if (data.key == ARA_KEY_HOME) {
+        clearSelRange();
+        m_caretIndex = 0;
+    } else if (data.key == ARA_KEY_END) {
+        clearSelRange();
+        m_caretIndex = static_cast<int>(m_text.size());
+    }
+}
+
+void UIEdit::moveCaret(const hidData& data, bool& updateValue) {
+    if (data.key == ARA_KEY_BACKSPACE && m_caretIndex > 0 && !m_text.empty()) {
+        eraseContent(m_caretIndex -1, m_caretIndex);
+        --m_caretIndex;
+        updateValue = true;
+    } else if (data.key == ARA_KEY_DELETE && (m_caretIndex < static_cast<int>(m_text.size()))) {
+        m_text.erase(m_caretIndex, 1);
+        reqUpdtGlyphs(true);
+        updateValue = true;
+    } else if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
+        --m_caretIndex;
+        if (hasOpt(single_line) && m_lineOverflowOffset.first >= m_caretIndex) {
+            calcLeftLineOffset();
+        }
+    } else if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
+        ++m_caretIndex;
+        if (hasOpt(single_line)) {
+            calcRightLineOffset();
+        }
+    } else if (data.key == ARA_KEY_HOME) {
+        m_caretIndex = 0;
+    } else if (data.key == ARA_KEY_END) {
+        m_caretIndex = static_cast<int>(m_text.size());
+    }
+}
+
+void UIEdit::calcLeftLineOffset() {
+    m_lineOverflowOffset.first -= m_lineOverflowOffset.first - m_caretIndex;
+    m_lineOverflowOffset.second = 0;
+    for (int i=0; i<m_lineOverflowOffset.first; ++i) {
+        m_lineOverflowOffset.second -= m_fontDGV.getCaretPosAndSize(i).second.x;
+    }
+    reqUpdtGlyphs(true);
+}
+
+void UIEdit::calcRightLineOffset() {
+    if (const auto line = m_fontDGV.getFontLines()[0];
+        line.maxCharIdx < m_caretIndex) {
+        m_lineOverflowOffset.first = m_caretIndex - line.maxCharIdx;
+        m_lineOverflowOffset.second = 0;
+        for (int i=line.maxCharIdx+1; i<std::min(static_cast<int32_t>(m_fontDGV.getGlyphs().size()), m_caretIndex+1); ++i) {
+            m_lineOverflowOffset.second -= m_fontDGV.getCaretPosAndSize(i).second.x;
+        }
+        reqUpdtGlyphs(true);
+    }
+}
+
+void UIEdit::procEnterAndReturn() {
+    if (hasOpt(single_line)) {
+        checkLimits();
+    } else {
+        m_caretIndex = insertChar('\r', m_caretIndex, true);
+    }
+
+    clampValue();  // in case of number double that they are within the valid range
+    setSelected(false, true);
+    drawCaret();
+
+    for (const auto& cb : m_onEnterCb | views::values) {
+        cb(m_text);
+    }
+
+    onLostFocus();
+}
+
+void UIEdit::procTab() {
+    if (hasOpt(accept_tabs)) {
+        m_caretIndex = insertChar('\t', m_caretIndex, true);
+    } else {
+        setSelected(false, true);
+        drawCaret();
+        clampValue();  // in case of number double that they are within the valid range
+        onLostFocus();
+    }
+}
+
+void UIEdit::procShiftPlusArrowSelect(const hidData& data) {
+    if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
+        if (!getSelRange(m_charSelection)) {
+            m_caretRange[0] = m_caretIndex;
+        }
+        --m_caretIndex;
+        m_caretRange[1] = m_caretIndex;
+        drawCaret();
+        if (!m_drawImmediate) {
+            prepareSelBgVao();
+            reqUpdtTree();
+        }
+
+        return;
+    }
+
+    if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
+        if (!getSelRange(m_charSelection)) {
+            m_caretRange[0] = m_caretIndex;
+        }
+        ++m_caretIndex;
+        m_caretRange[1] = m_caretIndex;
+        drawCaret();
+        if (!m_drawImmediate) {
+            prepareSelBgVao();
+            reqUpdtTree();
+        }
+        return;
+    }
+
+    if (data.key == ARA_KEY_HOME) {
+        if (!getSelRange(m_charSelection)) {
+            m_caretRange[0] = m_caretIndex;
+        }
+        m_caretIndex    = 0;
+        m_caretRange[1] = m_caretIndex;
+        drawCaret();
+        if (!m_drawImmediate) {
+            prepareSelBgVao();
+            reqUpdtTree();
+        }
+        return;
+    }
+
+    if (data.key == ARA_KEY_END) {
+        if (!getSelRange(m_charSelection)) {
+            m_caretRange[0] = m_caretIndex;
+        }
+        m_caretIndex = m_caretIndex = static_cast<int>(m_text.size());
+        m_caretRange[1]             = m_caretIndex;
+        drawCaret();
+        if (!m_drawImmediate) {
+            prepareSelBgVao();
+            reqUpdtTree();
+        }
+    }
 }
 
 void UIEdit::onChar(hidData& data) {
@@ -531,7 +576,7 @@ void UIEdit::clampValue() {
     }
 }
 
-bool UIEdit::validateInputToString(const int ch) {
+bool UIEdit::validateNumInputToString(const int ch) {
     auto str = TextBlock::validateInputToString(ch);
 
     if (hasOpt(num_int)) {
@@ -552,17 +597,16 @@ int UIEdit::insertChar(const int ch, int position, const bool call_cb) {
     }
     auto tempStr = std::to_string(ch);
 
-    ivec2 cpi;
-    if (getSelRange(cpi)
-        && !((hasOpt(num_int) && !isValidIntInput(tempStr))
-            || (hasOpt(num_fp) && !isValidFloatInput(tempStr)))
+    if (ivec2 cpi; getSelRange(cpi)
+                   && !((hasOpt(num_int) && !isValidIntInput(tempStr))
+                        || (hasOpt(num_fp) && !isValidFloatInput(tempStr)))
     ) {
         eraseContent(cpi[0], cpi[1]);
         position = cpi[0];
         clearSelRange();
     }
 
-    if (!validateInputToString(ch)) {
+    if (!validateNumInputToString(ch)) {
         return position;
     }
 
@@ -585,7 +629,7 @@ int UIEdit::insertChar(const int ch, int position, const bool call_cb) {
 
     m_text.insert(position, 1, static_cast<char>(ch));
 
-    if (bool validNewValue = true; call_cb && m_setTextCb && validNewValue) {
+    if (call_cb && m_setTextCb) {
         m_setTextCb(m_text);
     }
 

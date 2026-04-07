@@ -53,7 +53,7 @@ public:
     void   setExtElemIndices(size_t count, GLuint buffer);
     void   resize(size_t newNrVertices);
     void   remove();
-    void   bindBuffer(GLuint buffer, GLenum type = GL_ARRAY_BUFFER) const;
+    void   bindBuffer(GLuint inBuffer, GLenum type = GL_ARRAY_BUFFER) const;
     GLuint addBuffer(CoordType type);
     void   addExtBuffer(CoordType type, GLuint buffer);
 

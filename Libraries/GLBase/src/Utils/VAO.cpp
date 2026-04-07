@@ -196,7 +196,7 @@ void VAO::init(std::string &&format, bool createBuffers, bool interleaved) {
     m_inited = true;
 }
 
-void VAO::initData(int nrVert, const GLfloat *data) {
+void VAO::initData(const int nrVert, const GLfloat *data) {
     if (m_createBuffers) {
         for (auto &m_attribute : m_attributes) {
             CoordType uploadType = CoordType::Position;
@@ -221,7 +221,7 @@ void VAO::initData(int nrVert, const GLfloat *data) {
     }
 }
 
-void VAO::upload(CoordType type, const GLfloat *entries, size_t nrVertices) {
+void VAO::upload(const CoordType type, const GLfloat *entries, const size_t nrVertices) {
     // check if CoordType exists
     bool   exists = false;
     int    size   = 0;
@@ -277,7 +277,7 @@ void VAO::uploadFloat(uint32_t location, uint32_t size, GLfloat *_entries, int _
 }
 #endif
 
-void VAO::setElemIndices(size_t count, const GLuint *indices) {
+void VAO::setElemIndices(const size_t count, const GLuint *indices) {
     m_nrElements = static_cast<GLsizei>(count);
 
     if (!m_elementBuffer) {
@@ -292,7 +292,7 @@ void VAO::setElemIndices(size_t count, const GLuint *indices) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void VAO::setExtElemIndices(size_t count, GLuint buffer) {
+void VAO::setExtElemIndices(const size_t count, const GLuint buffer) {
     if (buffer != 0) {
         m_elementBuffer = buffer;
         m_nrElements    = static_cast<GLsizei>(count);
@@ -330,7 +330,7 @@ void VAO::remove() {
     m_inited = false;
 }
 
-void VAO::resize(size_t newNrVertices) {
+void VAO::resize(const size_t newNrVertices) {
 #ifndef STRICT_WEBGL_1
     glBindVertexArray(m_VAOId);
 #else
@@ -372,7 +372,7 @@ GLuint VAO::addBuffer(CoordType type) {
         .stride   = static_cast<GLsizei>(sizeof(float) * getCoTypeStdSize()[toType(type)]),
     });
 
-    string attribName = v[toType(type)];
+    const string attribName = v[toType(type)];
     if (attribName == "CoordType::ModMatr") {
         m_attributes.back().nrConsecLocs = 4;
     }
@@ -396,7 +396,7 @@ GLuint VAO::addBuffer(CoordType type) {
     return m_buffers[m_attributes.back().location];
 }
 
-void VAO::addExtBuffer(CoordType type, GLuint buffer) {
+void VAO::addExtBuffer(const CoordType type, const GLuint buffer) {
     VertexAttribute *vAttrib = nullptr;
     auto v          = getStdAttribNames();
     auto attribName     = getStdAttribNames()[toType(type)];

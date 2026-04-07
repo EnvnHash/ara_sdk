@@ -385,8 +385,8 @@ void Label::updateIndDrawData(const bool checkFontTex) {
     getWinPos();
     vec4 scLabelIndDraw{0.f};
     for (int i = 0; i < 2; i++) {
-        scLabelIndDraw[i] = std::max(m_scIndDraw[i], m_winRelPos[i]);
-        scLabelIndDraw[i + 2] = m_size[i] - std::max(m_winRelPos[i] + m_size[i] - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f);
+        scLabelIndDraw[i] = std::max(m_scIndDraw[i], m_winRelPos[i]) + m_borderWidth;
+        scLabelIndDraw[i + 2] = m_size[i] - std::max(m_winRelPos[i] + m_size[i] - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f) - m_borderWidth *2;
     }
 
     for (auto& g : m_fontDGV.getGlyphs()) {
@@ -510,7 +510,7 @@ void Label::setTextAlignY(const valign ay, const state st) {
 }
 
 void Label::setText(const std::string &val, const state st) {
-    bool updt = val.size() != m_text.size();
+    const bool updt = val.size() != m_text.size();
     m_text    = val;
     reqUpdtGlyphs(updt);
     setStyleInitVal("text", val, st);

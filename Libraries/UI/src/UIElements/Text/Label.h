@@ -145,6 +145,8 @@ protected:
     float     m_tabSize      = 50.f;  // Tab size in pixels
     float     m_adaptScaling = 1.f;   // matrix scaling when using adaptive flag
 
+    std::pair<int32_t, float> m_lineOverflowOffset{};   // when single_line opt is activated and the text overflows, defines how much to shift, to move visible range
+
     bool      m_glyphsPrepared = false;
     bool      m_fontLayerTexChanged = false;
     bool      m_updateDrawSetFontData = false;
