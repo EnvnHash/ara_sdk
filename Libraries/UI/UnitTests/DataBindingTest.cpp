@@ -143,6 +143,35 @@ TEST(UITest, NodeEditChangeGlmIvec3Test) {
     }, 400, 200);
 }
 
+TEST(UITest, NodeEditChangeGlmVec3Test) {
+    TestNode<glm::vec3> testNode;
+    testNode.m_testValue = glm::vec3{ 0.f, 1.f, 2.f };
+
+    appBody([&](const UIApplication &app) {
+        addNodeEdit(app, testNode);
+
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
+
+        const auto mainWin = app.getMainWindow();
+        mainWin->onMouseMove(158, 12, 0);
+        mainWin->onWheel(1.f);
+
+        mainWin->onMouseMove(258, 12, 0);
+        mainWin->onWheel(1.f);
+
+        mainWin->onMouseMove(351, 12, 0);
+        mainWin->onWheel(1.f);
+
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "data_binding_change_vec3.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        EXPECT_EQ(testNode.m_testValue[0],0.1f);
+        EXPECT_EQ(testNode.m_testValue[1],1.1f);
+        EXPECT_EQ(testNode.m_testValue[2],2.1f);
+    }, 400, 200);
+}
+
 TEST(UITest, NodeEditMultiVar) {
     TestNode2<int32_t> testNode2;
 
