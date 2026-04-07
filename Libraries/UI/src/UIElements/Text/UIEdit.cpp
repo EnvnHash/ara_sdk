@@ -13,7 +13,7 @@ using namespace glm;
 using namespace std;
 
 namespace ara {
-UIEdit::UIEdit(unsigned opt, int max_count) {
+UIEdit::UIEdit(const unsigned opt, const int max_count) {
     setTypeName<UIEdit>();
     setName(getTypeName<UIEdit>());
     setFocusAllowed(true);
@@ -445,8 +445,8 @@ void UIEdit::mouseWheel(hidData& data) {
 
     if (m_useWheel) {
         incValue(data.degrees, data.shiftPressed  ? cfState::coarse
-                                       : data.ctrlPressed ? cfState::fine
-                                                           : cfState::normal);
+                                                  : data.ctrlPressed ? cfState::fine
+                                                                     : cfState::normal);
     }
 
     setDrawFlag();
@@ -458,8 +458,8 @@ void UIEdit::incValue(const float amt, const cfState cf) {
 
     if (hasOpt(num_int)) {
         incValue<int32_t>(mAmt);
-        for (auto &snd: m_onEnterCb | views::values) {
-            snd(m_text);
+        for (auto &cb: m_onEnterCb | views::values) {
+            cb(m_text);
         }
 
     } else if (hasOpt(num_fp)) {

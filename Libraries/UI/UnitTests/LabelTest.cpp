@@ -30,8 +30,8 @@ auto& addLabel(UINode* root, const int32_t fontSize) {
 TEST(UITest, LabelTest) {
     registerDefaultUITypes();
 
-    std::array fontSizeList { 8, 16, 24, 32, 40, 48 };
-    for (auto& fsz: fontSizeList) {
+    for (constexpr std::array fontSizeList { 8, 16, 24, 32, 40, 48 };
+         auto& fsz: fontSizeList) {
         auto fn = "label_test_"+std::to_string(fsz)+".png";
         appBody([&](const UIApplication &app) {
             const auto root = app.getMainWindow()->getRootNode();

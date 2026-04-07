@@ -51,7 +51,7 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
     m_arrayEdit.clear();
 
     auto stdWidth = -m_labelWidth -m_xSpacing;
-    static std::unordered_map<const tpi, std::function<void(NodeMemberVariableEdit* ctx)>> createMap = {
+    static std::unordered_map<tpi, std::function<void(NodeMemberVariableEdit* ctx)>> createMap = {
         { tpi::tp_float, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<float>(std::any_cast<float>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_int32, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<int32_t>(std::any_cast<int32_t>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_string, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<std::string>( std::any_cast<std::string>(ctx->getMemVar()->get()), stdWidth); }},
