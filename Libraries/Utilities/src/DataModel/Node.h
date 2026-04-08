@@ -472,16 +472,17 @@ protected:
     void addMemberVar(const std::vector<std::string>::iterator name, NodeValueType&& arg) {
         using Container = std::decay_t<NodeValueType>;
         constexpr auto tpIndex = getTpi<Container>();
-
         m_memberVars.emplace(*name, memberVar{
             .get = [&]{ return arg; },
-            .set = [&] (std::any& val, size_t idx) {
+            .set = [&] (std::any& val, const size_t idx) {
+                callChangeCbs(cbType::preChange);
                 if constexpr (is_index_assignable<Container>::value || is_glm_vec_v<Container>) {
                     using Elem = typename Container::value_type;
                     arg[static_cast<int32_t>(idx)] = std::any_cast<Elem>(val);
                 } else {
                     arg = std::any_cast<Container>(val);
                 }
+                callChangeCbs(cbType::postChange);
             },
             .typeIndex = tpIndex,
         });
@@ -489,29 +490,13 @@ protected:
 
     template <typename T>
     void serializeByType(const pushToType& nv, nlohmann::json& j) {
-        if (nv == pushToType::array) {
-            serializeToArray<T>(j);
-        } else if (nv == pushToType::object) {
-            serializeToObject<T>(j);
-        } else {
-            serializeSingleValue<T>(j);
-        }
+        static std::unordered_map<pushToType, std::function<void(Node*, nlohmann::json&)>> serializeFuncs {
+            { pushToType::array,     [] (Node* ctx, nlohmann::json& j) { j.emplace_back(ctx->value<T>()); }},
+            { pushToType::object,    [] (Node* ctx, nlohmann::json& j) { j[ctx->key()] = ctx->value<T>(); }},
+            { pushToType::undefined, [] (Node* ctx, nlohmann::json& j) { j[ctx->key()] = ctx->value<T>(); }},
+        };
+        serializeFuncs[nv](this, j);
     }
-
-    template <typename T>
-    void serializeSingleValue(nlohmann::json &j) {
-        j[m_key] = get<T>(m_nodeValue);
-    };
-
-    template <typename T>
-    void serializeToArray(nlohmann::json &j) {
-        j.emplace_back(get<T>(m_nodeValue));
-    };
-
-    template <typename T>
-    void serializeToObject(nlohmann::json &j) {
-        j[m_key] = get<T>(m_nodeValue);
-    };
 
     virtual Node& createNewElement() { return push<Node>(); }
 

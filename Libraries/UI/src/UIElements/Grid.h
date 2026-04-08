@@ -18,6 +18,7 @@ public:
     bool drawIndirect(uint32_t& objId) override;
     bool drawFunc(const uint32_t& objId);
     void setNumOfSeparations(float sepX, float sepY) { m_numOfSeparations = glm::vec2(sepX, sepY); }
+    const auto& getNumOfSeparations() const  { return m_numOfSeparations; }
 
 protected:
     Shaders *m_gridShdr  = nullptr;
