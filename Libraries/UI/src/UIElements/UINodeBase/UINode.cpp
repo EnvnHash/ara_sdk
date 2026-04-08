@@ -817,7 +817,7 @@ UINode::~UINode() {
     }
 }
 
-void UINode::util_FillRect(const ivec2 pos, const ivec2 size, const vec4 col, Shaders* shdr, Quad* quad) {
+void UINode::util_FillRect(const ivec2 pos, const ivec2 size, const vec4 col, Shaders* shdr, const Quad* quad) {
     if (shdr == nullptr) {
         shdr = m_shdr;
     }
@@ -844,11 +844,11 @@ void UINode::util_FillRect(const ivec2 pos, const ivec2 size, const vec4 col, Sh
     glBindVertexArray(0);
 }
 
-void UINode::util_FillRect(const ivec2& pos, const ivec2& size, float* color, Shaders* shdr, Quad* quad) {
+void UINode::util_FillRect(const ivec2& pos, const ivec2& size, float* color, Shaders* shdr, const Quad* quad) {
     return util_FillRect(pos, size, {color[0], color[1], color[2], color[3]}, shdr, quad);
 }
 
-void UINode::util_FillRect(glm::ivec4& r, float* color, Shaders* shdr, Quad* quad) {
+void UINode::util_FillRect(glm::ivec4& r, float* color, Shaders* shdr, const Quad* quad) {
     return util_FillRect({r.x, r.y}, {r.z, r.w}, {color[0], color[1], color[2], color[3]}, shdr, quad);
 }
 

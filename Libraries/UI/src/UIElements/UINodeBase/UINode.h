@@ -303,9 +303,10 @@ public:
         }
     }
 
-    void util_FillRect(glm::ivec2 pos, glm::ivec2 size, glm::vec4 col = {1.f, 1.f, 1.f, 1.f}, Shaders* shdr=nullptr, Quad* quad=nullptr);
-    void util_FillRect(const glm::ivec2& pos, const glm::ivec2& size, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
-    void util_FillRect(glm::ivec4& r, float* color, Shaders* shdr = nullptr, Quad* quad = nullptr);
+    void util_FillRect(glm::ivec2 pos, glm::ivec2 size, glm::vec4 col = {1.f, 1.f, 1.f, 1.f}, Shaders* shdr=nullptr,
+                       const Quad* quad=nullptr);
+    void util_FillRect(const glm::ivec2& pos, const glm::ivec2& size, float* color, Shaders* shdr = nullptr, const Quad* quad = nullptr);
+    void util_FillRect(glm::ivec4& r, float* color, Shaders* shdr = nullptr, const Quad* quad = nullptr);
 
 protected:
     static bool getNodeIt(UINode* node, UINode** fn, const std::string& name);
