@@ -28,12 +28,11 @@ public:
 };
 
 template <typename T>
-auto& addNodeEdit(const UIApplication &app, T& node, const arrange ar = arrange::horizontal, const optional<unordered_map<string, arrange>> alignMap = std::nullopt) {
+auto& addNodeEdit(const UIApplication &app, T& node, const arrange ar = arrange::horizontal, const optional<unordered_map<string, VariableEditOption<>>> alignMap = std::nullopt) {
     auto& ne = app.getRootNode()->push<NodeEdit>();
+    ne.setEditAlign(ar);
     if (alignMap.has_value()) {
-        ne.setAlignPerKey(alignMap.value());
-    } else {
-        ne.setEditAlign(ar);
+        ne.setOptPerKey(alignMap.value());
     }
     ne.setLineHeight(22);
     ne.setSpacing({10, 10});
@@ -211,7 +210,9 @@ TEST(UITest, NodeEditMixedAlignTest) {
             app,
             testNode,
             arrange::vertical,
-          unordered_map<string, arrange>{ {"testVal", arrange::horizontal}, {"testVal2", arrange::vertical} }
+          unordered_map<string, VariableEditOption<>>{
+            { "testVal", { arrange::horizontal } },
+            {"testVal2", { arrange::vertical } } }
         );
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "data_binding_change_mixedAlign.png",
