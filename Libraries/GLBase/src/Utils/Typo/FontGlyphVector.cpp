@@ -119,7 +119,7 @@ int FontGlyphVector::getLineIndexByCharIndex(const int ch_index) const {
     return -1;
 }
 
-int FontGlyphVector::getCharIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y, int &off_bound) {
+int FontGlyphVector::getCharIndexByPixPos(float pix_x, const float pix_y, const float off_x, const float off_y, int &off_bound) {
     const auto lineIndex = getLineIndexByPixPos(pix_x, pix_y, off_x, off_y);
     off_bound = 0;
 
@@ -278,14 +278,15 @@ int FontGlyphVector::jumpToEndOfLine(const int caret_index) const {
     return m_vline[lidx].ptr[1]->characterIdx;
 }
 
-bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, const align textAlignX, const std::string &str, const bool wordWrap) {
+bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, const align textAlignX,
+                              const std::string &str, const bool wordWrap) {
     if (!font || size.x == 0.f || size.y == 0.f || str.empty()) {
-        return false;
+        return {};
     }
 
     reset(font);  // gets font metrics
     if (!font->isOK()) {
-        return false;
+        return {};
     }
 
     auto par = procPar{
@@ -303,7 +304,7 @@ bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, con
     m_glyphs.resize(str.size() + 2);
 
     const auto vorig = par.ve = &m_glyphs[0];
-
+    bool hasOverflowText = false;
     for (par.textIt = par.text.begin(); par.textIt != par.text.end(); ++par.textIt) {
         UtfIterator iter(par.textIt);
         par.charAsCodepoint = codepoint(*iter);
@@ -320,6 +321,7 @@ bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, con
 
         if (par.pos.x > size.x && par.maxCharIdx == -1) {
             par.maxCharIdx = std::distance(par.text.begin(), par.textIt);
+            hasOverflowText = true;
         }
         par.lch = par.charAsCodepoint;
     }
@@ -336,7 +338,7 @@ bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, con
     m_glyphs.resize(par.ve - vorig);
     calculateBoundingBoxHwp(m_bb);
 
-    return true;
+    return hasOverflowText;
 }
 
 void FontGlyphVector::glyphPtrCheck(procPar &par) {
@@ -407,7 +409,7 @@ void FontGlyphVector::procCrAndNl(procPar& par) {
 void FontGlyphVector::procSpace(procPar& par, Font* font) const {
     glyphPtrCheck(par);
 
-    if (auto g = font->getGlyph(par.charAsCodepoint)) {
+    if (const auto g = font->getGlyph(par.charAsCodepoint)) {
         par.ve[0] = addDGlyph(par, {g->off[0].x, -par.spheight}, {g->xadv,  par.spheight}, g);
         ++par.ve;
         par.pos.x += g->xadv + par.l_sep.x;
@@ -502,14 +504,14 @@ Fontline *FontGlyphVector::addLine(const procPar& par, const bool eol, const int
         Fontdglyph *dg;
         if (text_align_x == align::center)  { // CENTER
             const float xo = width * 0.5f - lw * 0.5f;
-            for (const auto &[ptr, width, characterIdx] : inFword) {
+            for (const auto &[ptr, w, characterIdx] : inFword) {
                 for (dg = ptr[0]; dg < ptr[1]; dg++) {
                     dg->pos.x += xo;
                 }
             }
         } else if (text_align_x == align::right) {  // RIGHT
             const float xo = width - lw;
-            for (const auto &[ptr, width, characterIdx] : inFword) {
+            for (const auto &[ptr, w, characterIdx] : inFword) {
                 for (dg = ptr[0]; dg < ptr[1]; dg++) {
                     dg->pos.x += xo;
                 }
@@ -522,7 +524,7 @@ Fontline *FontGlyphVector::addLine(const procPar& par, const bool eol, const int
             }
 
             if (doit) {
-                const float xo = 0;
+                constexpr float xo = 0;
                 dg       = p_begin;
 
                 while (dg->charAsCodepoint <= 32 && dg < p_end) {
@@ -579,12 +581,12 @@ Fontline *FontGlyphVector::addLine(const procPar& par, const bool eol, const int
 }
 
 int FontGlyphVector::codepoint(const std::string& u) {
-    auto l = static_cast<int>(u.length());
+    const auto l = static_cast<int>(u.length());
     if (l < 1) {
         return -1;
     }
 
-    unsigned char u0 = u[0];
+    const unsigned char u0 = u[0];
     if (u0 >= 0 && u0 <= 127) {
         return u0;
     }
@@ -593,7 +595,7 @@ int FontGlyphVector::codepoint(const std::string& u) {
         return -1;
     }
 
-    unsigned char u1 = u[1];
+    const unsigned char u1 = u[1];
     if (u0 >= 192 && u0 <= 223) {
         return (u0 - 192) * 64 + (u1 - 128);
     }
@@ -606,7 +608,7 @@ int FontGlyphVector::codepoint(const std::string& u) {
         return -1;
     }
 
-    unsigned char u2 = u[2];
+    const unsigned char u2 = u[2];
     if (u0 >= 224 && u0 <= 239) {
         return (u0 - 224) * 4096 + (u1 - 128) * 64 + (u2 - 128);
     }
@@ -615,7 +617,7 @@ int FontGlyphVector::codepoint(const std::string& u) {
         return -1;
     }
 
-    unsigned char u3 = u[3];
+    const unsigned char u3 = u[3];
     if (u0 >= 240 && u0 <= 247) {
         return (u0 - 240) * 262144 + (u1 - 128) * 4096 + (u2 - 128) * 64 + (u3 - 128);
     }

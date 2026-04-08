@@ -157,7 +157,7 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
     m_fontDGV.setPixRatio(getPixRatio());
     m_fontDGV.setTabPixSize(m_tabSize);
     // process input text, break up in lines
-    m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
+    m_needsOverflowHandling = m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
 
     // Calculate offset
     if (int lineIndex; (lineIndex = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
@@ -340,7 +340,7 @@ void UIEdit::moveCaret(const hidData& data, bool& updateValue) {
         { ARA_KEY_LEFT,      [&] {
             if (m_caretIndex > 0) {
                 --m_caretIndex;
-                if (hasOpt(single_line) && m_lineOverflowOffset.first >= m_caretIndex) {
+                if (m_needsOverflowHandling && m_lineOverflowOffset.first >= m_caretIndex) {
                     calcLeftLineOffset();
                 }
             }
@@ -348,7 +348,7 @@ void UIEdit::moveCaret(const hidData& data, bool& updateValue) {
         { ARA_KEY_RIGHT,     [&] {
             if (m_caretIndex < static_cast<int>(m_text.size())) {
                 ++m_caretIndex;
-                if (hasOpt(single_line)) {
+                if (m_needsOverflowHandling) {
                     calcRightLineOffset();
                 }
             }

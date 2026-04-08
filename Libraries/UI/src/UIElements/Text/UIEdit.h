@@ -34,7 +34,7 @@ public:
 
     void setText(const std::string &str) override;
     void setTextCb(std::function<void(const std::string&)> func) { m_setTextCb = std::move(func); }
-    void setPrecision(const int prec) { m_precision = prec; }
+    void setPrecision(const int precision) { m_precision = precision; }
     void setUseWheel(const bool val) { m_useWheel = val; }
     void setCaretColor(glm::vec4 c, state st = state::m_state) ;
     void setCaretColor(float r, float g, float b, float a, state st = state::m_state) ;
@@ -185,6 +185,7 @@ protected:
 
     int m_precision = 3;
     bool m_blockEdit = false;
+    bool m_needsOverflowHandling = false;
 };
 
 }  // namespace ara

@@ -97,13 +97,12 @@ class FontGlyphVector {
 public:
     virtual ~FontGlyphVector() = default;
 
-    bool process(Font *font, const glm::vec2 &size, const glm::vec2 &sep, align textAlignX, const std::string &str,
-                 bool wordWrap);  // text_align : see e_fontalign
-
+    bool            process(Font *font, const glm::vec2 &size, const glm::vec2 &sep, align textAlignX,
+                            const std::string &str, bool wordWrap);  // text_align : see e_fontalign
     static void     glyphPtrCheck(procPar& par);
     Fontdglyph      addDGlyph(procPar &par, const glm::vec2& offs, const glm::vec2& size, Fontglyph* g=nullptr) const;
     glm::vec4*      getCharColor(procPar& par) const;
-    void            procTab(procPar& p) const;
+    void            procTab(procPar& par) const;
     void            procCrAndNl(procPar& par);
     void            procSpace(procPar& par, Font* font) const;
     void            procChar(procPar& par, Font* font, bool word_wrap);

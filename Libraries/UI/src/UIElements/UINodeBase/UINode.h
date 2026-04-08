@@ -130,6 +130,10 @@ public:
         return nc;
     }
 
+    void remove(Node& node) override {
+        UINode::remove(&node);
+    }
+
     void remove(Node* node) override {
         Node::remove(node);
         if (!m_drawImmediate && root()) {
