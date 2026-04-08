@@ -16,7 +16,7 @@
 /Libraries/third_party/portaudio/
 /Libraries/third_party/OpenAL/
 /cmake-build-relwithdebinfo/
-/Examples/UITest/UITest_Android/
+/Examples/UIElementsOverview/UIElementsOverview_Android/
 .DS_STORE
 Libraries/GLBase/src/.DS_Store
 /Libraries/UI/src/UINodeFactory.h

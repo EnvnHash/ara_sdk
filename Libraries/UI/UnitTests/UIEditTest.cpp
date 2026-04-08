@@ -15,14 +15,28 @@ using namespace glm;
 
 namespace ara::UiUnitTest::UIEditTest {
 
-UIEdit& addFloatEdit(const UIApplication& app) {
-    auto& ed = app.getRootNode()->push<UIEdit>(UINodePars {
+UIEdit& pushEdit(const UIApplication& app, int32_t width=200) {
+    return app.getRootNode()->push<UIEdit>(UINodePars {
         .pos = ivec2{10,10},
-        .size = ivec2{200,28},
+        .size = ivec2{width,28},
         .bgColor = vec4{.15f, .15f, .15f, 1.f}
     });
+}
+
+UIEdit& addFloatEdit(const UIApplication& app) {
+    auto& ed = pushEdit(app);
     ed.setOpt(UIEdit::single_line | UIEdit::num_fp);
     ed.setValue(1.234f);
+    return ed;
+}
+
+UIEdit& addStringEdit(const UIApplication& app) {
+    auto& ed = pushEdit(app, 202);
+    ed.setOpt(UIEdit::single_line);
+    ed.setBorderWidth(1);
+    ed.setBorderColor(1.f, 1.f, 1.f, 1.f);
+    ed.setTextAlignX(align::left);
+    ed.setText("This is a line of text to test the label, long enough to see the ellipsis at the end.");
     return ed;
 }
 
@@ -46,6 +60,21 @@ std::string getSelAllCopyOutput(const UIApplication &app, UIEdit* ed) {
     clip::get_text(value);
 #endif
     return value;
+}
+
+void clickEditField(const UIApplication& app) {
+    const auto mainWin = app.getMainWindow();
+    mainWin->onMouseDownLeft(195, 22, false, false, false);
+    mainWin->onMouseUpLeft();
+
+    app.getWinBase()->draw(0, 0, 0);
+    app.getMainWindow()->swap();
+}
+
+void clickArrowKey(const int key, const UIApplication& app) {
+    const auto mainWin = app.getMainWindow();
+    mainWin->onKeyDown(key, false, false, false);
+    mainWin->onKeyUp(key, false, false, false);
 }
 
 TEST(UITest, UIEditFloatTest) {
@@ -149,6 +178,79 @@ TEST(UITest, UIEditFloatWheelTest) {
         const auto str = getSelAllCopyOutput(app, ed);
         EXPECT_EQ(str, "1.334");
         EXPECT_EQ(ed->getValue(), 1.334f);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditOverflowTest) {
+    registerDefaultUITypes();
+
+    appBody([&](const UIApplication &app) {
+        addStringEdit(app);
+        clickEditField(app);
+        clickArrowKey(ARA_KEY_RIGHT, app);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditOverflowTestMoveCursoToEnd) {
+    registerDefaultUITypes();
+
+    appBody([&](const UIApplication &app) {
+        addStringEdit(app);
+        clickEditField(app);
+        for (int i = 0; i < 56; ++i) {
+            clickArrowKey(ARA_KEY_RIGHT, app);
+        }
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test2.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditOverflowTestMoveCursoToEndAndBack) {
+    registerDefaultUITypes();
+
+    appBody([&](const UIApplication &app) {
+        addStringEdit(app);
+        clickEditField(app);
+        for (int i = 0; i < 56; ++i) {
+            clickArrowKey(ARA_KEY_RIGHT, app);
+        }
+        for (int i = 0; i < 85; ++i) {
+            clickArrowKey(ARA_KEY_LEFT, app);
+        }
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test3.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditOverflowTestEndKeyTest) {
+    registerDefaultUITypes();
+
+    appBody([&](const UIApplication &app) {
+        addStringEdit(app);
+        clickEditField(app);
+        clickArrowKey(ARA_KEY_END, app);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test2.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditOverflowTestEndAndHomeKey) {
+    registerDefaultUITypes();
+
+    appBody([&](const UIApplication &app) {
+        addStringEdit(app);
+        clickEditField(app);
+        clickArrowKey(ARA_KEY_END, app);
+        clickArrowKey(ARA_KEY_HOME, app);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test3.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 100);
 }
 

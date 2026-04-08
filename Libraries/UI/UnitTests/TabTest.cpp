@@ -27,7 +27,7 @@ TabView* addTabView(UIApplication& app, std::array<bool, 3>& checks) {
     tabView.setPadding(10.f);
 
     for (auto i=0; i<3; i++) {
-        auto div = tabView.addTab<Div>("Entry "+std::to_string(i));
+        const auto div = tabView.addTab<Div>("Entry "+std::to_string(i));
         div->setName("TabContent"+std::to_string(i));
 
         auto& divChild = div->push<Div>();

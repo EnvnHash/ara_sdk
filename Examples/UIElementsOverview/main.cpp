@@ -1,11 +1,12 @@
-#include "UIElementsOverview.h"
+#include <UITestApp.h>
+#include "Demo/DemoView.h"
 
 using namespace ara;
 
 int main(int, char**) {
-    UIElementsOverview app;
-    app.init(nullptr);
-    app.startEventLoop(); //blocking
-    return 0;
+    UITestApp app;
+	app.init(nullptr);
+	app.startEventLoop(); //blocking
+	return 0;
 }
 

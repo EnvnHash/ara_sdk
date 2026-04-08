@@ -11,6 +11,8 @@ using namespace glm;
 
 namespace ara::UiUnitTest::LabelTest {
 
+const std::string ellipsisTestText = "This is a line of text to test the label, long enough to see the ellipsis at the end.";
+
 auto& addLabel(UINode* root, const int32_t fontSize) {
     return root->push<Label>(LabelPars{
          .pos = ivec2{ 10, 10 },
@@ -41,6 +43,36 @@ TEST(UITest, LabelTest) {
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
         }, 300, 300);
     }
+}
+
+TEST(UITest, LabelEndEllipsisTest) {
+    registerDefaultUITypes();
+
+    appBody([&](const UIApplication &app) {
+        const auto root = app.getMainWindow()->getRootNode();
+        auto& lbl = addLabel(root, 16);
+        lbl.setOpt(Label::single_line | Label::end_ellipsis);
+        lbl.setText(ellipsisTestText);
+        lbl.setTextAlign(align::left, valign::top);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "label_ellipsis_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 300);
+}
+
+TEST(UITest, LabelFrontEllipsisTest) {
+    registerDefaultUITypes();
+
+    appBody([&](const UIApplication &app) {
+        const auto root = app.getMainWindow()->getRootNode();
+        auto& lbl = addLabel(root, 16);
+        lbl.setOpt(Label::single_line | Label::front_ellipsis);
+        lbl.setText(ellipsisTestText);
+        lbl.setTextAlign(align::right, valign::top);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "label_front_ellipsis_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 300);
 }
 
 }

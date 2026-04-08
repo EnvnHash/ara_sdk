@@ -284,55 +284,92 @@ void UIEdit::keyDown(hidData& data) {
 }
 
 void UIEdit::keyModifySelection(const hidData& data, bool& updateValue) {
-    if (data.key == ARA_KEY_BACKSPACE || data.key == ARA_KEY_DELETE) {
+    auto backspaceAndDeleteAction = [&] {
         eraseContent(m_charSelection[0], m_charSelection[1]);
         m_caretIndex = m_charSelection[0];
         clearSelRange();
         updateValue = true;
-    }
+    };
 
-    // marco.g: got to do it this way (clearSelRange() on each) since the
-    // OnChar does pass through this callback first
-    //          if leaving it will then clear the sel range and onChar won't be able to use it
+    unordered_map<int, function<void()>> keyMap {
+        { ARA_KEY_BACKSPACE, [&]  { backspaceAndDeleteAction(); }},
+        { ARA_KEY_DELETE,    [&] { backspaceAndDeleteAction(); }},
+        { ARA_KEY_LEFT,      [&] {
+            if (m_caretIndex > 0) {
+                clearSelRange();
+                m_caretIndex--;
+            }
+        }},
+        { ARA_KEY_RIGHT,     [&] {
+            if (m_caretIndex < static_cast<int>(m_text.size())) {
+                clearSelRange();
+                m_caretIndex++;
+            }
+        }},
+        { ARA_KEY_HOME,     [&] {
+            clearSelRange();
+            m_caretIndex = 0;
+        }},
+        { ARA_KEY_END,     [&] {
+            clearSelRange();
+            m_caretIndex = static_cast<int>(m_text.size());
+        }}
+    };
 
-    else if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
-        clearSelRange();
-        m_caretIndex--;
-    } else if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
-        clearSelRange();
-        m_caretIndex++;
-    } else if (data.key == ARA_KEY_HOME) {
-        clearSelRange();
-        m_caretIndex = 0;
-    } else if (data.key == ARA_KEY_END) {
-        clearSelRange();
-        m_caretIndex = static_cast<int>(m_text.size());
+    if (keyMap.contains(data.key)) {
+        keyMap[data.key]();
     }
 }
 
 void UIEdit::moveCaret(const hidData& data, bool& updateValue) {
-    if (data.key == ARA_KEY_BACKSPACE && m_caretIndex > 0 && !m_text.empty()) {
-        eraseContent(m_caretIndex -1, m_caretIndex);
-        --m_caretIndex;
-        updateValue = true;
-    } else if (data.key == ARA_KEY_DELETE && (m_caretIndex < static_cast<int>(m_text.size()))) {
-        m_text.erase(m_caretIndex, 1);
-        reqUpdtGlyphs(true);
-        updateValue = true;
-    } else if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
-        --m_caretIndex;
-        if (hasOpt(single_line) && m_lineOverflowOffset.first >= m_caretIndex) {
-            calcLeftLineOffset();
-        }
-    } else if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
-        ++m_caretIndex;
-        if (hasOpt(single_line)) {
-            calcRightLineOffset();
-        }
-    } else if (data.key == ARA_KEY_HOME) {
-        m_caretIndex = 0;
-    } else if (data.key == ARA_KEY_END) {
-        m_caretIndex = static_cast<int>(m_text.size());
+    unordered_map<int, function<void()>> keyMap {
+        { ARA_KEY_BACKSPACE, [&]  {
+            if (m_caretIndex > 0 && !m_text.empty()) {
+                eraseContent(m_caretIndex -1, m_caretIndex);
+                --m_caretIndex;
+                updateValue = true;
+            }
+        }},
+        { ARA_KEY_DELETE,    [&] {
+            if (m_caretIndex < static_cast<int>(m_text.size())) {
+                m_text.erase(m_caretIndex, 1);
+                reqUpdtGlyphs(true);
+                updateValue = true;
+            }
+        }},
+        { ARA_KEY_LEFT,      [&] {
+            if (m_caretIndex > 0) {
+                --m_caretIndex;
+                if (hasOpt(single_line) && m_lineOverflowOffset.first >= m_caretIndex) {
+                    calcLeftLineOffset();
+                }
+            }
+        }},
+        { ARA_KEY_RIGHT,     [&] {
+            if (m_caretIndex < static_cast<int>(m_text.size())) {
+                ++m_caretIndex;
+                if (hasOpt(single_line)) {
+                    calcRightLineOffset();
+                }
+            }
+        }},
+        { ARA_KEY_HOME,      [&] {
+            m_caretIndex = 0;
+            if (hasOpt(single_line) && m_lineOverflowOffset.first >= 0) {
+                calcLeftLineOffset();
+            }
+        }},
+        { ARA_KEY_END,       [&] {
+            m_caretIndex = static_cast<int>(m_text.size());
+            if (const auto line = m_fontDGV.getFontLines()[0];
+                hasOpt(single_line) && line.maxCharIdx < static_cast<int>(m_text.size())) {
+                calcRightLineOffset();
+            }
+        }}
+    };
+
+    if (keyMap.contains(data.key)) {
+        keyMap[data.key]();
     }
 }
 

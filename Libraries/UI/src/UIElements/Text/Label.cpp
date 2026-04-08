@@ -50,7 +50,7 @@ void Label::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::text]         = [this] { m_text = ""; };
     m_setStyleFunc[state::none][styleInit::textAlign]    = [this] { m_tAlignX = align::center; };
     m_setStyleFunc[state::none][styleInit::textValign]   = [this] { m_tAlignY = valign::center; };
-    m_setStyleFunc[state::none][styleInit::labelOptions] = [this] { m_tOpt = 0; };
+    m_setStyleFunc[state::none][styleInit::labelOptions] = [this] { m_tOpt = m_initOptions; };
 }
 
 void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass) {
@@ -466,6 +466,7 @@ void Label::clearDs() {
 
 unsigned long Label::setOpt(const unsigned long f) {
     m_tOpt |= f;
+    m_initOptions = m_tOpt;
     m_glyphsPrepared = false;
     return m_tOpt;
 }

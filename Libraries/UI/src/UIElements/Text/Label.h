@@ -118,7 +118,6 @@ public:
         }
     }
 
-
 protected:
     void setEditPixSpace(float width, float height, bool set_flag = true);
 
@@ -136,6 +135,7 @@ protected:
     GLuint          m_texUnitArrayIndex = 0;
 
     unsigned  m_tOpt = 0;                 // options
+    unsigned  m_initOptions = 0;                 // options for in syleDefaults
     glm::vec2 m_tPos{0.f}, m_tSize{0.f};  // pixel space, offset and size
     glm::vec2 m_tSep{0.f};                // additional font pixel character separation (default=0,0)
     align     m_tAlignX = align::center;
