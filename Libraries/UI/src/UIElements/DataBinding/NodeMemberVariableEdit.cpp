@@ -16,6 +16,24 @@ NodeMemberVariableEdit::NodeMemberVariableEdit() {
     setName(getTypeName<NodeMemberVariableEdit>());
 }
 
+NodeMemberVariableEdit::NodeMemberVariableEdit(const EditPar& par) {
+    setTypeName<NodeMemberVariableEdit>();
+    setName(getTypeName<NodeMemberVariableEdit>());
+
+    UINodeStyle::addStyleClass(par.style);
+    setMemberVar(*par.memberVar);
+    setLabelText(par.labelText);
+    setSpacing(par.spacing);
+    setLineHeight(par.lineHeight);
+    setLabelWidth(par.labelWidth);
+    setEditAlign(par.editAlign);
+    setY(par.yOffs);
+    if (par.options.has_value()) {
+        m_options = par.options.value();
+        setEditAlign(m_options->arrange);
+    }
+}
+
 void NodeMemberVariableEdit::init() {
     setHeight(m_lineHeight);
 

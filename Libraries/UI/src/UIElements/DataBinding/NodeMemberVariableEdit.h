@@ -12,7 +12,20 @@ namespace ara {
 
 class NodeMemberVariableEdit : public Div {
 public:
+    struct EditPar {
+        std::string style{};
+        memberVar* memberVar{};
+        std::string labelText;
+        glm::ivec2 spacing{};
+        int32_t lineHeight{};
+        int32_t labelWidth{};
+        arrange editAlign{};
+        int32_t yOffs{};
+        std::optional<VariableEditOption<>*> options{};
+    };
+
     NodeMemberVariableEdit();
+    explicit NodeMemberVariableEdit(const EditPar& initData);
 
     void init() override;
 
@@ -36,6 +49,19 @@ public:
         edit.setFontSize(22);
         edit.setUseWheel(true);
 
+        if (m_options && m_options->min) {
+            edit.setMin(m_options->min);
+        }
+        if (m_options && m_options->max) {
+            edit.setMax(m_options->max);
+        }
+        if (m_options && m_options->step) {
+            edit.setStep(m_options->step);
+        }
+        if (m_options && m_options->step) {
+            edit.setPrecision(m_options->precision);
+        }
+
         if constexpr (std::is_same_v<T, std::string>) {
             edit.setText(std::any_cast<std::string>(val));
         } else {
@@ -49,6 +75,14 @@ public:
                     anyVal = str;
                 } else {
                     anyVal = std::any(edit.getValue<T>());
+                    if (m_options && m_options->syncEdits && idx > -1) {
+                        for (int i=0; i<m_arrayEdit.size(); ++i) {
+                            if (i != idx) {
+                                m_arrayEdit[i]->setValue(edit.getValue<T>());
+                                m_memVar->set(anyVal, i);
+                            }
+                        }
+                    }
                 }
                 m_memVar->set(anyVal, idx);
             }
@@ -117,6 +151,7 @@ protected:
     std::string             m_text;
     const memberVar*        m_memVar = nullptr;
     arrange                 m_editAlign{};
+    VariableEditOption<>*   m_options = nullptr;
 };
 
 }

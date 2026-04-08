@@ -21,19 +21,25 @@ void NodeEdit::rebuild() {
         clearChildren();
 
         int32_t y=0;
+        m_variableEdits.clear();
         for (auto &[key, memVar]: m_node->getMemberVariables()) {
             if (std::ranges::find(m_excludeKeys, key) != m_excludeKeys.end()) {
                 continue;
             }
-            auto& nmve = push<NodeMemberVariableEdit>({ .style = getStyleClass() });
-            nmve.setMemberVar(memVar);
-            nmve.setLabelText(key);
-            nmve.setSpacing(m_spacing);
-            nmve.setLineHeight(m_lineHeight);
-            nmve.setLabelWidth(m_labelWidth);
-            nmve.setEditAlign(m_alignPerKey.contains(key) ? m_alignPerKey[key] : m_editAlign);
-            nmve.setY(y * (m_lineHeight + m_spacing.y));
-            y += nmve.getUnitHeight();
+
+            m_variableEdits[key] = &push<NodeMemberVariableEdit>(NodeMemberVariableEdit::EditPar{
+                .style = getStyleClass(),
+                .memberVar = &memVar,
+                .labelText = key,
+                .spacing = m_spacing,
+                .lineHeight = m_lineHeight,
+                .labelWidth = m_labelWidth,
+                .editAlign = m_editAlign,
+                .yOffs = y * (m_lineHeight + m_spacing.y),
+                .options = m_optPerKey.contains(key) ? std::make_optional(&m_optPerKey[key]) : std::nullopt,
+            });
+
+            y += m_variableEdits[key]->getUnitHeight();
         }
     }
 }

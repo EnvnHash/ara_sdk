@@ -65,6 +65,16 @@ using Number = std::tuple<int32_t, float, double>;
 class UINode;
 class Node;
 
+template <typename T=float>
+struct VariableEditOption {
+    arrange arrange{};
+    T min{};
+    T max{};
+    T step{};
+    int32_t precision=3;
+    bool syncEdits = false;
+};
+
 class ObjPosIt {
 public:
     std::list<std::shared_ptr<Node>>::iterator              it;

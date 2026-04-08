@@ -349,7 +349,7 @@ public:
     static const auto&  getClassKeys() { return m_classKeys; }
     static void         clearClassKeys() { m_classKeys.clear(); }
     const auto&         getNodeValueType() const { return m_nodeValueType; }
-    const auto&         getMemberVariables() const { return m_memberVars; }
+    auto&               getMemberVariables()  { return m_memberVars; }
 
     std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>>&   changeCb() { return m_changeCb; }
 
