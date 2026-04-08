@@ -39,7 +39,7 @@ void WindowBase::iterateGlCallbacks() {
     for (auto objIt = s_openGlCbs.begin(); objIt != s_openGlCbs.end();) {
         // iterate all cbs of assign to this Object ptr
         for (auto cbIt = objIt->second.begin(); cbIt != objIt->second.end();) {
-            if ((cbIt->second)()) {
+            if (cbIt->second()) {
                 cbIt = objIt->second.erase(cbIt);
             } else {
                 ++cbIt;
@@ -76,7 +76,7 @@ void WindowBase::procHid() {
         val.clear();
     }
 
-    for (auto &[key, evt] : s_hidEvents) {
+    for (auto &evt : s_hidEvents | views::values) {
         if (evt) {
             evt();
             evt = nullptr;
@@ -101,7 +101,7 @@ void WindowBase::procChangeWin() {
 }
 
 void WindowBase::addGlCb(void *cbName, const std::string &fName, std::function<bool()> func) {
-    bool gotLock = s_drawMtx.try_lock();
+    const bool gotLock = s_drawMtx.try_lock();
     if (!s_openGlCbs.contains(cbName)) {
         s_openGlCbs[cbName] = std::unordered_map<std::string, std::function<bool()>>();
     }
@@ -112,8 +112,8 @@ void WindowBase::addGlCb(void *cbName, const std::string &fName, std::function<b
 }
 
 bool WindowBase::hasCb(void *cbName, const std::string &fName) {
-    bool gotLock = s_drawMtx.try_lock();
-    bool ret     = (s_openGlCbs.contains(cbName) && s_openGlCbs[cbName].contains(fName));
+    const bool gotLock = s_drawMtx.try_lock();
+    const bool ret     = (s_openGlCbs.contains(cbName) && s_openGlCbs[cbName].contains(fName));
     if (gotLock) {
         s_drawMtx.unlock();
     }
@@ -121,9 +121,8 @@ bool WindowBase::hasCb(void *cbName, const std::string &fName) {
 }
 
 void WindowBase::eraseGlCb(void *cbName, const std::string &fName) {
-    bool gotLock = s_drawMtx.try_lock();
-    auto it      = s_openGlCbs.find(cbName);
-    if (it != s_openGlCbs.end() && s_openGlCbs[cbName].contains(fName)) {
+    const bool gotLock = s_drawMtx.try_lock();
+    if (const auto it = s_openGlCbs.find(cbName); it != s_openGlCbs.end() && s_openGlCbs[cbName].contains(fName)) {
         s_openGlCbs[cbName].erase(fName);
     }
     if (gotLock) {
@@ -132,9 +131,8 @@ void WindowBase::eraseGlCb(void *cbName, const std::string &fName) {
 }
 
 void WindowBase::eraseGlCb(void *cbName) {
-    bool gotLock = s_drawMtx.try_lock();
-    auto it      = s_openGlCbs.find(cbName);
-    if (it != s_openGlCbs.end()) {
+    const bool gotLock = s_drawMtx.try_lock();
+    if (const auto it = s_openGlCbs.find(cbName); it != s_openGlCbs.end()) {
         s_openGlCbs.erase(cbName);
     }
     if (gotLock) {
@@ -143,7 +141,7 @@ void WindowBase::eraseGlCb(void *cbName) {
 }
 
 void WindowBase::clearGlCbQueue() {
-    bool gotLock = s_drawMtx.try_lock();
+    const bool gotLock = s_drawMtx.try_lock();
     s_openGlCbs.clear();
     if (gotLock) {
         s_drawMtx.unlock();

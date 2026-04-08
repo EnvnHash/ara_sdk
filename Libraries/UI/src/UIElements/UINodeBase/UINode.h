@@ -99,7 +99,7 @@ public:
             }
         }, arg.size);
 
-        std::array<std::function<void()>, 17> funcMap {
+        const std::array<std::function<void()>, 17> funcMap {
             [&arg, &node] { node.setColor(arg.fgColor.value()); },
             [&arg, &node] { node.setBackgroundColor(arg.bgColor.value()); },
             [&arg, &node] { node.setName(arg.name.value()); },
@@ -130,6 +130,13 @@ public:
         return nc;
     }
 
+    void remove(Node* node) override {
+        Node::remove(node);
+        if (!m_drawImmediate && root()) {
+            dynamic_cast<UINode*>(root())->reqTreeChanged(true);
+        }
+    }
+
     // utility function for connecting to properties. stores a local callback function add passes it as to the property
     // which will store a reference to it as a weak pointer. on dtor() the referring pointer is freed and by
     // weak_ptr.lock() checking its weak_ptr reference inside the Property is deleted implicitly
@@ -149,7 +156,7 @@ public:
 
     // utility method to also immediately execute the function
     template <typename T>
-    void execAndBind(Property<T>& prop, std::function<void(std::any)> f) {
+    void execAndBind(Property<T>& prop, const std::function<void(std::any)> f) {
         onChanged<T>(prop, f);
         f(prop());
     }
@@ -162,7 +169,7 @@ public:
 
     // utility method to also immediately execute the function
     template <typename T>
-    void execAndBind(ListProperty<T>& prop, std::function<void(std::any)> f) {
+    void execAndBind(ListProperty<T>& prop, const std::function<void(std::any)> f) {
         onChanged<T>(prop, f);
         f(prop());
     }

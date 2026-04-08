@@ -295,7 +295,7 @@ public:
     void                setValue(const nodeValue& val);
     void                pop();
     void                remove(Node&);
-    void                remove(Node*);
+    virtual void        remove(Node*);
     void                removeChangeCb(cbType, void *ptr);
     std::deque<Node*>   findChild(const std::string& name);
     void                clearChildren();
