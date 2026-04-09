@@ -79,7 +79,7 @@ public:
 
     template <typename T, typename... Args>
     requires (sizeof...(Args) != 1 || (!std::is_same_v<Args, UINodePars> && ...))
-    T& push(Args&& ... args) {
+    T& push(const Args& ... args) {
         return static_cast<T&>(Node::push(std::make_shared<T>(args...)));
     }
 
@@ -87,15 +87,15 @@ public:
     T& push(const UINodePars& arg) {
         auto& node = Node::push(std::make_shared<T>());
 
-        std::visit([&node](auto&& arg) {
-            if (arg.x != 0 || arg.y != 0) {
-                node.setPos(arg);
+        std::visit([&node](auto&& argument) {
+            if (argument.x != 0 || argument.y != 0) {
+                node.setPos(argument);
             }
         }, arg.pos);
 
-        std::visit([&node](auto&& arg) {
-            if (arg.x != 0 || arg.y != 0) {
-                node.setSize(arg);
+        std::visit([&node](auto&& argument) {
+            if (argument.x != 0 || argument.y != 0) {
+                node.setSize(argument);
             }
         }, arg.size);
 
@@ -137,7 +137,7 @@ public:
     void remove(Node* node) override {
         Node::remove(node);
         if (!m_drawImmediate && root()) {
-            dynamic_cast<UINode*>(root())->reqTreeChanged(true);
+            dynamic_cast<UINode*>(root())->reqTreeChanged();
         }
     }
 
@@ -216,7 +216,7 @@ public:
     void                setId(const uint32_t val) { m_objIdMin = val; m_objIdMax = val; }
     void                setMinId(const uint32_t val) { m_objIdMin = val; }
     void                setMaxId(const uint32_t val) { m_objIdMax = val; }
-    void                reqTreeChanged(bool val) { m_reqTreeChanged = true; }
+    void                reqTreeChanged() { m_reqTreeChanged = true; }
     virtual void        setParent(UINode* parent) { m_parent = parent; }
     virtual void        setRefDraw(bool v) { m_referenceDrawing = true; }
     void                setName(std::string name) { m_name = std::move(name); }
@@ -254,7 +254,7 @@ public:
     UINode*             getNodeById(uint32_t searchID) const;
     virtual float       getValue() { return 0.f; }
 
-    [[nodiscard]] bool containsObjectId(const uint32_t id) const { return (id >= m_objIdMin && id <= m_objIdMax); }
+    [[nodiscard]] bool containsObjectId(const uint32_t id) const { return id >= m_objIdMin && id <= m_objIdMax; }
 
     virtual uint32_t getSubNodeCount();
     virtual void     getSubNodeCountIt(UINode* node, uint32_t* count);

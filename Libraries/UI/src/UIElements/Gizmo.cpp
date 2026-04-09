@@ -125,13 +125,13 @@ void Gizmo::init() {
     m_crossColor.resize(12);
     m_crossAux0.resize(12);
 
-    float bVal = 0.28f;
     for (int j = 0; j < 3; j++) {
         for (int i = 0; i < 2; i++) {
-            float cVal = i == 0 ? 0.92f : 0.70f;
-            float dir  = i == 0 ? 1.f : -1.f;
+            const float cVal = i == 0 ? 0.92f : 0.70f;
+            const float dir  = i == 0 ? 1.f : -1.f;
             for (int k = 0; k < 2; k++) {
-                int ind = (j * 2 + i) * 2 + k;
+                constexpr float bVal = 0.28f;
+                const int ind = (j * 2 + i) * 2 + k;
 
                 m_crossColor[ind] = vec4{j == 1 ? cVal : bVal, j == 2 ? cVal : bVal, j == 0 ? cVal : bVal, 1.f};
                 m_crossPos[ind]   = k == 0
@@ -203,7 +203,7 @@ void Gizmo::init() {
         getWinPos();
 
         // transform mouse pos into gizmo space
-        vec2 gsPos = opi.pos - m_winRelPos;
+        const auto gsPos = opi.pos - m_winRelPos;
 
         std::list<GizmoAxisLabel*> inBounds;
 
@@ -265,7 +265,7 @@ void Gizmo::cbUpdt(TrackBallCam* cam, TbModData& data, bool mapByMouseRot) {
                                              vec3(inverse(cam->getModelMatr()) * vec4(0.f, 0.f, -1.f, 0.f)));
                 cam->setLookAtBlendSrcUpVec(vec3(inverse(cam->getModelMatr()) * vec4(0.f, 1.f, 0.f, 0.f)));
 
-                float d = distance(cam->getLookAtBlendSrcCamPos(), cam->getSnapAxisRotCenter());
+                const float d = distance(cam->getLookAtBlendSrcCamPos(), cam->getSnapAxisRotCenter());
                 cam->setLookAtBlendDstPos(cam->getSnapAxisRotCenter() + m_cam.getLookAtBlendDstCamPos() * d);
                 cam->setLookAtBlendDstLookAt(cam->getLookAtBlendDstCamPos() - m_cam.getLookAtBlendDstCamPos());
                 cam->setLookAtBlendDstUpVec(&m_cam.getLookAtBlendDstUpVec());
@@ -426,8 +426,7 @@ bool Gizmo::drawToFbo(const uint32_t& objId) {
     // first pass cpu only, update matrices
     if (m_camChanged && m_gizmoSN->getChildren() && !m_gizmoSN->getChildren()->empty()) {
         for (const auto& it : *m_gizmoSN->getChildren()) {
-            auto gixAx = dynamic_cast<SNGizmoRotAxisLetter*>(it);
-            if (gixAx && gixAx->m_gizVao) {
+            if (const auto gixAx = dynamic_cast<SNGizmoRotAxisLetter*>(it); gixAx && gixAx->m_gizVao) {
                 m_pvm = m_cam.getMVP() * gixAx->getRotMat();
 
                 for (int i = 0; i < 2; i++) {
@@ -517,7 +516,7 @@ bool Gizmo::drawToFbo(const uint32_t& objId) {
 
     // clear buffer 0
     if (m_bkColor) {
-        m_fbo[0]->clearToColor(m_bkColor->rgba[0], m_bkColor->rgba[1], m_bkColor->rgba[1], 0.f, 0);
+        m_fbo[0]->clearToColor(m_bkColor->m_rgba[0], m_bkColor->m_rgba[1], m_bkColor->m_rgba[1], 0.f, 0);
     } else {
         m_fbo[0]->clearToColor(0.235f, 0.235f, 0.235f, 0.f, 0);
     }
@@ -645,8 +644,7 @@ void Gizmo::mouseUp(hidData& data) {
         }
     }
 
-    m_cam.mouseUpLeft(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
-                static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
+    m_cam.mouseUpLeft(data.mousePosNodeRel.x / getSize().x, data.mousePosNodeRel.y / getSize().y);
 
     if (getWindow()) {
         getWindow()->setMouseCursorVisible(true);
@@ -696,8 +694,7 @@ void Gizmo::mouseDownRight(hidData& data) {
         getWindow()->setMouseCursorVisible(true);
     }
 
-    m_cam.mouseDownRight(static_cast<float>(data.mousePosNodeRel.x) / getSize().x,
-                         static_cast<float>(data.mousePosNodeRel.y) / getSize().y);
+    m_cam.mouseDownRight(data.mousePosNodeRel.x / getSize().x, data.mousePosNodeRel.y / getSize().y);
     data.consumed = true;
     m_rightPressed = true;
 }
@@ -749,7 +746,7 @@ void Gizmo::mouseDown(hidData& data) {
     m_leftPressed  = true;
 }
 
-void Gizmo::excludeLabelsFromStyles(bool val) {
+void Gizmo::excludeLabelsFromStyles(const bool val) const {
     for (const auto& lbl : m_axisLabels) {
         lbl->excludeFromStyles(val);
     }

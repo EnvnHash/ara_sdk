@@ -18,7 +18,7 @@ UINode::UINode() {
     setTypeName<UINode>();
     setName(getTypeName<UINode>());
     setOnChangeCb(cbType::postAddChild, this, [this](const std::optional<Node*> node) {
-        reqTreeChanged(true);
+        reqTreeChanged();
         if (node.has_value() && node.value()) {
             initChild(dynamic_cast<UINode &>(*node.value()), this);
         }
@@ -577,7 +577,7 @@ void UINode::reqUpdtTree() const {
     if (!m_drawImmediate && m_sharedRes && m_sharedRes->win) {
         if (const auto win = static_cast<UIWindow*>(m_sharedRes->win);
             win->getRootNode() && win->getRootNode()->getRoot()) {
-            win->getRootNode()->getRoot()->reqTreeChanged(true);
+            win->getRootNode()->getRoot()->reqTreeChanged();
         }
     }
 }

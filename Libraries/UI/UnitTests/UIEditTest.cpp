@@ -40,7 +40,7 @@ UIEdit& addStringEdit(const UIApplication& app) {
     return ed;
 }
 
-std::string getSelAllCopyOutput(const UIApplication &app, UIEdit* ed) {
+std::string getSelAllCopyOutput(const UIApplication &app) {
     std::string value;
 #ifdef ARA_USE_CLIP
     const auto mainWin = app.getMainWindow();
@@ -62,9 +62,9 @@ std::string getSelAllCopyOutput(const UIApplication &app, UIEdit* ed) {
     return value;
 }
 
-void clickEditField(const UIApplication& app) {
+void clickEditField(const UIApplication& app, int32_t xPos) {
     const auto mainWin = app.getMainWindow();
-    mainWin->onMouseDownLeft(195, 22, false, false, false);
+    mainWin->onMouseDownLeft(xPos, 22, false, false, false);
     mainWin->onMouseUpLeft();
 
     app.getWinBase()->draw(0, 0, 0);
@@ -94,22 +94,28 @@ TEST(UITest, UIEditFloatBackspaceTest) {
     UIEdit* ed = nullptr;
     appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
-
-        const auto mainWin = app.getMainWindow();
-        mainWin->onMouseDownLeft(122, 22, false, false, false);
-        mainWin->onMouseUpLeft();
-
-        app.getWinBase()->draw(0, 0, 0);
-        mainWin->swap();
-
-        mainWin->onKeyDown(ARA_KEY_BACKSPACE, false, false, false);
-        mainWin->onKeyUp(ARA_KEY_BACKSPACE, false, false, false);
+        clickEditField(app, 122);
+        clickArrowKey(ARA_KEY_BACKSPACE, app);
+        clickArrowKey(ARA_KEY_ENTER, app);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_backspace_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
-        const auto str = getSelAllCopyOutput(app, ed);
+        const auto str = getSelAllCopyOutput(app);
         EXPECT_EQ(str, "1.340");
         EXPECT_EQ(ed->getValue(), 1.34f);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditFloatBackspaceTest2) {
+    registerDefaultUITypes();
+
+    appBody([&](const UIApplication &app) {
+        addFloatEdit(app);
+        clickEditField(app, 122);
+        clickArrowKey(ARA_KEY_BACKSPACE, app);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_backspace_test2.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 100);
 }
 
@@ -120,20 +126,14 @@ TEST(UITest, UIEditFloatDelTest) {
     appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
 
-        const auto mainWin = app.getMainWindow();
-        mainWin->onMouseDownLeft(114, 22, false, false, false);
-        mainWin->onMouseUpLeft();
-
-        app.getWinBase()->draw(0, 0, 0);
-        mainWin->swap();
-
-        mainWin->onKeyDown(ARA_KEY_DELETE, false, false, false);
-        mainWin->onKeyUp(ARA_KEY_DELETE, false, false, false);
+        clickEditField(app, 114);
+        clickArrowKey(ARA_KEY_DELETE, app);
+        clickArrowKey(ARA_KEY_ENTER, app);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_del_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
 
-        const auto str = getSelAllCopyOutput(app, ed);
+        const auto str = getSelAllCopyOutput(app);
         EXPECT_EQ(str, "1.240");
         EXPECT_EQ(ed->getValue(), 1.24f);
     }, 300, 100);
@@ -154,7 +154,7 @@ TEST(UITest, UIEditFloatInsertTest) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_insert_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
 
-        const auto str = getSelAllCopyOutput(app, ed);
+        const auto str = getSelAllCopyOutput(app);
         EXPECT_EQ(str, "1.2734");
         EXPECT_EQ(ed->getValue(), 1.2734f);
     }, 300, 100);
@@ -175,7 +175,7 @@ TEST(UITest, UIEditFloatWheelTest) {
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_wheel_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
-        const auto str = getSelAllCopyOutput(app, ed);
+        const auto str = getSelAllCopyOutput(app);
         EXPECT_EQ(str, "1.334");
         EXPECT_EQ(ed->getValue(), 1.334f);
     }, 300, 100);
@@ -186,7 +186,7 @@ TEST(UITest, UIEditOverflowTest) {
 
     appBody([&](const UIApplication &app) {
         addStringEdit(app);
-        clickEditField(app);
+        clickEditField(app, 195);
         clickArrowKey(ARA_KEY_RIGHT, app);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test.png",
@@ -199,7 +199,7 @@ TEST(UITest, UIEditOverflowTestMoveCursoToEnd) {
 
     appBody([&](const UIApplication &app) {
         addStringEdit(app);
-        clickEditField(app);
+        clickEditField(app, 195);
         for (int i = 0; i < 56; ++i) {
             clickArrowKey(ARA_KEY_RIGHT, app);
         }
@@ -214,7 +214,7 @@ TEST(UITest, UIEditOverflowTestMoveCursoToEndAndBack) {
 
     appBody([&](const UIApplication &app) {
         addStringEdit(app);
-        clickEditField(app);
+        clickEditField(app, 195);
         for (int i = 0; i < 56; ++i) {
             clickArrowKey(ARA_KEY_RIGHT, app);
         }
@@ -232,7 +232,7 @@ TEST(UITest, UIEditOverflowTestEndKeyTest) {
 
     appBody([&](const UIApplication &app) {
         addStringEdit(app);
-        clickEditField(app);
+        clickEditField(app, 195);
         clickArrowKey(ARA_KEY_END, app);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test2.png",
@@ -245,7 +245,7 @@ TEST(UITest, UIEditOverflowTestEndAndHomeKey) {
 
     appBody([&](const UIApplication &app) {
         addStringEdit(app);
-        clickEditField(app);
+        clickEditField(app, 195);
         clickArrowKey(ARA_KEY_END, app);
         clickArrowKey(ARA_KEY_HOME, app);
     }, [&](const UIApplication &app) {

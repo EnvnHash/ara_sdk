@@ -28,20 +28,28 @@ public:
     static bool isClass(const ResNode *snode);
     bool        onSourceResUpdate(bool deleted, ResNode *unode) override;
 
+    void setRgbFromIntParams(float *rgba, int count) const;
+    void setRgbFromFloatParams(float *rgba, int count) const;
     static bool hexColor2rgba(float *rgba, const char *str);  // rgba=float[4] in [0..1]
     static bool hsla2rgba(float *rgba, float h, float s, float l, float a);  // rgba=float[4] in [0..1], h in [0..359],
                                      // s and l in [0..1], a in [0..1]
-    static unsigned hex2dec(int ch) {
-        return (ch >= '0' && ch <= '9')   ? ch - '0'
-               : (ch >= 'A' && ch <= 'F') ? ch - 'A' + 10
-               : (ch >= 'a' && ch <= 'f') ? ch - 'a' + 10
-                                          : 0;
+    static unsigned hex2dec(const int ch) {
+        if (ch >= '0' && ch <= '9') {
+            return static_cast<unsigned>(ch - '0');
+        }
+        if (ch >= 'A' && ch <= 'F') {
+            return static_cast<unsigned>(ch - 'A' + 10);
+        }
+        if (ch >= 'a' && ch <= 'f') {
+            return static_cast<unsigned>(ch - 'a' + 10);
+        }
+        return 0;
     }
 
-    float                                 *getColor4fv() { return rgba; }
-    [[nodiscard]] glm::vec4                getColorVec4() const { return glm::make_vec4(rgba); }
+    float                                 *getColor4fv() { return m_rgba; }
+    [[nodiscard]] glm::vec4                getColorVec4() const { return glm::make_vec4(m_rgba); }
     inline static std::vector<std::string> colorFunc = {"rgb", "rgbf", "rgba", "rgbaf", "hsl", "hsla"};
-    float                                  rgba[4]{};
+    float                                  m_rgba[4]{};
 };
 
 }  // namespace ara

@@ -1493,7 +1493,7 @@ void UIWindow::stopRenderLoop() {
 
 void UIWindow::setResChanged(bool val) {
     m_resChanged = val;
-    m_uiRoot.reqTreeChanged(true);
+    m_uiRoot.reqTreeChanged();
 }
 
 void UIWindow::addGlCb(void* cbName, const std::string& fName, const std::function<bool()>& func) {

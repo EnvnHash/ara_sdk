@@ -43,7 +43,7 @@ public:
     void mouseUpRight(hidData& data) override;
     void mouseDown(hidData& data) override;
     void mouseMove(hidData& data) override;
-    void excludeLabelsFromStyles(bool val);
+    void excludeLabelsFromStyles(bool val) const;
 
     void keyDown(hidData& data) override {
         m_cam.keyDown(data.key, data.shiftPressed, data.altPressed, data.ctrlPressed);

@@ -148,6 +148,7 @@ public:
     bool isName(const std::string &str) const { return m_name == str; }
     bool isFunc(const std::string &str) const { return m_func == str; }
 
+    const auto& getFunc() { return m_func; }
     std::string getPar(const int index, const std::string &def = {}) {
         return m_par.getPar(index, def);
     }  // Gets the token value for the current m_Par

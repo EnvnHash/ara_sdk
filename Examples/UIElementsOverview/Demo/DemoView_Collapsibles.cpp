@@ -22,7 +22,7 @@ void DemoView_Collapsibles::init() {
         .fontHeight = 20,
     });
 
-    m_combo = &push<ComboBox>(UINodePars{
+    auto pars = UINodePars{
         .pos = ivec2{0,80},
         .size = ivec2 {200, 40},
         .fgColor = vec4{ 1.f, 1.f, 1.f, 1.f },
@@ -31,7 +31,8 @@ void DemoView_Collapsibles::init() {
         .borderRadius = 5,
         .borderColor = m_sharedRes->colors->at(uiColors::blue),
         .padding = vec4{ 5, 5, 5,5 },
-    });
+    };
+    m_combo = &push<ComboBox>(pars);
     m_combo->setMenuName("ComboBox");
     m_combo->setFontType("regular");
 
@@ -56,16 +57,9 @@ void DemoView_Collapsibles::init() {
     std::string str = R"({"children":[{"children":[{"name":"sub1_1_1","uuid":"1"}],"name":"sub1_1","uuid":"0"},{"children":[{"name":"sub1_2_1","uuid":"3"},{"name":"sub1_2_2","uuid":"4"}],"name":"sub1_2","uuid":"2"}],"name":"root","uuid":"10"})";
     m_node.loadFromString(str);
 
-    auto& tree = push<TreeCollapsible>(UINodePars{
-        .pos = ivec2{250,80},
-        .size = ivec2 {200, 160},
-        .fgColor = vec4{ 1.f, 1.f, 1.f, 1.f },
-        .bgColor = vec4{ .1f, .1f, .1f, 1.f },
-        .borderWidth = 2,
-        .borderRadius = 5,
-        .borderColor = m_sharedRes->colors->at(uiColors::blue),
-        .padding = vec4{ 5, 5, 5,5 },
-    });
+    pars.pos = ivec2{250,80};
+    pars.size = ivec2 {200, 160};
+    auto& tree = push<TreeCollapsible>(pars);
 
     tree.setNode(&m_node);
 

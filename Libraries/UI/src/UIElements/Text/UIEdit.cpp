@@ -261,7 +261,7 @@ void UIEdit::keyDown(hidData& data) {
 
     bool updateValue = false;
     if (!getSelRange(m_charSelection)) {
-        moveCaret(data, updateValue);
+        moveCaret(data);
     } else {
         keyModifySelection(data, updateValue);
     }
@@ -321,20 +321,18 @@ void UIEdit::keyModifySelection(const hidData& data, bool& updateValue) {
     }
 }
 
-void UIEdit::moveCaret(const hidData& data, bool& updateValue) {
+void UIEdit::moveCaret(const hidData& data) {
     unordered_map<int, function<void()>> keyMap {
         { ARA_KEY_BACKSPACE, [&]  {
             if (m_caretIndex > 0 && !m_text.empty()) {
                 eraseContent(m_caretIndex -1, m_caretIndex);
                 --m_caretIndex;
-                updateValue = true;
             }
         }},
         { ARA_KEY_DELETE,    [&] {
             if (m_caretIndex < static_cast<int>(m_text.size())) {
                 m_text.erase(m_caretIndex, 1);
                 reqUpdtGlyphs(true);
-                updateValue = true;
             }
         }},
         { ARA_KEY_LEFT,      [&] {
@@ -490,11 +488,12 @@ void UIEdit::onChar(hidData& data) {
 }
 
 void UIEdit::onLostFocus() {
-    // in case a value was changed but neither tab nor enter pressed and the
-    // focus was lost be sure the actual value gets treated as entered
+    // in case a value was changed but neither tab nor enter pressed and the focus was lost, be sure the actual value
+    // gets treated as entered
     for (auto &snd: m_onEnterCb | views::values) {
         snd(m_text);
     }
+    updateValFromText(m_text);
     UINode::onLostFocus();
 }
 
@@ -634,10 +633,8 @@ int UIEdit::insertChar(const int ch, int position, const bool call_cb) {
     }
     auto tempStr = std::to_string(ch);
 
-    if (ivec2 cpi; getSelRange(cpi)
-                   && !((hasOpt(num_int) && !isValidIntInput(tempStr))
-                        || (hasOpt(num_fp) && !isValidFloatInput(tempStr)))
-    ) {
+    if (ivec2 cpi; getSelRange(cpi) && !((hasOpt(num_int) && !isValidIntInput(tempStr))
+                                            || (hasOpt(num_fp) && !isValidFloatInput(tempStr)))) {
         eraseContent(cpi[0], cpi[1]);
         position = cpi[0];
         clearSelRange();

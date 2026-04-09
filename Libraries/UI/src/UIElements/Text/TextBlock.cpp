@@ -550,7 +550,7 @@ void TextBlock::clearSelRange() {
 }
 
 bool TextBlock::eraseContent(int loIndex, int highIndex) {
-    const int len = static_cast<int>(m_text.size());
+    const auto len = static_cast<int>(m_text.size());
 
     if (len <= 0) {
         return false;
