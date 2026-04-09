@@ -421,10 +421,10 @@ protected:
     static void serializeSingleClassValue(nlohmann::json&, std::vector<std::string>::iterator) {}
 
     template <typename T, typename... Args>
-    void serializeSingleClassValue(nlohmann::json& j, std::vector<std::string>::iterator name, T&& arg, Args&&... args) {
-        j[*name] = arg;
-        addMemberVar(name, arg);
-        serializeSingleClassValue(j, ++name, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
+    void serializeSingleClassValue(nlohmann::json& j, std::vector<std::string>::iterator nm, T&& arg, Args&&... args) {
+        j[*nm] = arg;
+        addMemberVar(nm, arg);
+        serializeSingleClassValue(j, ++nm, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
     }
 
     template <typename... Args>
@@ -437,9 +437,9 @@ protected:
     static void createSingleProp(std::vector<std::string>::iterator) {}
 
     template <typename NodeValueType, typename... Args>
-    void createSingleProp( std::vector<std::string>::iterator name, NodeValueType&& arg, Args&&... args) {
-        addMemberVar(name, arg);
-        createSingleProp(++name, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
+    void createSingleProp( std::vector<std::string>::iterator nm, NodeValueType&& arg, Args&&... args) {
+        addMemberVar(nm, arg);
+        createSingleProp(++nm, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
     }
 
     template <typename... Args>
@@ -453,12 +453,12 @@ protected:
     static void deserializeSingleClassValue(const nlohmann::json&, std::vector<std::string>::iterator) {}
 
     template <typename T, typename... Args>
-    void deserializeSingleClassValue(const nlohmann::json& j, std::vector<std::string>::iterator name, T&& arg, Args&&... args) {
-        if (j.contains(*name) && !j[*name].is_null()) {
-            j.at(*name).get_to(arg);
+    void deserializeSingleClassValue(const nlohmann::json& j, std::vector<std::string>::iterator nm, T&& arg, Args&&... args) {
+        if (j.contains(*nm) && !j[*nm].is_null()) {
+            j.at(*nm).get_to(arg);
         }
-        addMemberVar(name, arg);
-        deserializeSingleClassValue(j, ++name, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
+        addMemberVar(nm, arg);
+        deserializeSingleClassValue(j, ++nm, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
     }
 
     template <typename... Args>

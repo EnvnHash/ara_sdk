@@ -167,6 +167,12 @@ protected:
     void procTab();
     void procShiftPlusArrowSelect(const hidData& data);
     void moveCaret(const hidData& data);
+    void moveCaretBackspace();
+    void moveCaretDel();
+    void moveCaretLeft();
+    void moveCaretRight();
+    void moveCaretHome();
+    void moveCaretEnd();
     void keyModifySelection(const hidData& data, bool& updateValue);
     bool validateNumInputToString(int ch);
     void calcLeftLineOffset();
