@@ -155,14 +155,20 @@ void UIApplication::openInfoDiag(const InfoDiagParams& params) {
         }
 
         // create an info dialog window center above the main Window
-        m_infoDiag = addWindow<InfoDialog>(UIWindowParams{.size = params.size, .shift = params.pos });
+        m_infoDiag = addWindow<InfoDialog>(UIWindowParams{
+            .size = params.size,
+            .shift = params.pos,
+            .minStayTime = params.minStayTime,
+            .autoCloseAfter = params.autoCloseAfter,
+        });
+
         m_infoDiag->setApplicationHandle(this);
         m_infoDiag->setModal(params.isModal);
         m_infoDiag->setInfoMsg(params.msg);
         m_infoDiag->setConfirmCb(params.onConfirm);
         m_infoDiag->setCloseCb(params.onClose);
         m_infoDiag->setCancelCb(params.onCancel);
-        m_infoDiag->setMinStayTime(static_cast<int>(params.minStayTime));
+
         m_infoDiag->setRemoveCb([this] {
             m_glbase.runOnMainThread([this] {
                 if (m_infoDiag) {
