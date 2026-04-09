@@ -14,7 +14,7 @@ class NodeMemberVariableEdit : public Div {
 public:
     struct EditPar {
         std::string style{};
-        memberVar* memberVar{};
+        memberVar* memVar{};
         std::string labelText;
         glm::ivec2 spacing{};
         int32_t lineHeight{};

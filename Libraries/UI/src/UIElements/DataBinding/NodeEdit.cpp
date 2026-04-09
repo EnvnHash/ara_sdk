@@ -29,7 +29,7 @@ void NodeEdit::rebuild() {
 
             m_variableEdits[key] = &push<NodeMemberVariableEdit>(NodeMemberVariableEdit::EditPar{
                 .style = getStyleClass(),
-                .memberVar = &memVar,
+                .memVar = &memVar,
                 .labelText = key,
                 .spacing = m_spacing,
                 .lineHeight = m_lineHeight,

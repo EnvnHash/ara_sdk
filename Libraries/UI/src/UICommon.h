@@ -67,7 +67,7 @@ class Node;
 
 template <typename T=float>
 struct VariableEditOption {
-    arrange arrange{};
+    arrange arr{};
     T min{};
     T max{};
     T step{};
