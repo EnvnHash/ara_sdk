@@ -78,8 +78,12 @@ public:
 class DemoView_ScrollViewList : public DemoView {
 public:
     DemoView_ScrollViewList();
-    virtual void                    init();
-    ScrollView*			            ui_SV=nullptr;
+    void                init() override;
+    void                addStringList();
+    void                addVectorInt();
+    void                addPropertyList();
+    void                addCustomUIList();
+
     List<std::list<std::string>>*   m_list=nullptr;
     ListProperty<std::string>       m_data3;
 };

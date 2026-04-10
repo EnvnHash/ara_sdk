@@ -21,12 +21,6 @@ public:
     }
 };
 
-template<typename T>
-concept AllowedContainer = requires(T t) {
-    { t.begin() } -> std::same_as<decltype(t.end())>;
-    { t.size() } -> std::integral;
-};
-
 template <typename T>
 class ListItem : public ListItemBase {
 public:
@@ -45,7 +39,7 @@ public:
         m_idx = idx;
         if constexpr (std::is_floating_point_v<T> || std::is_integral_v<T>) {
             setText(std::to_string(data));
-        } else {
+        } else if constexpr (std::is_same_v<T, std::string>) {
             setText(data);
         }
     }
@@ -54,7 +48,7 @@ public:
     int    m_idx = 0;
 };
 
-template <typename T>
+template <typename T, typename L=ListItem<T>>
 class ListBase : public ScrollView {
 public:
     ListBase() {
@@ -109,8 +103,8 @@ public:
 
     virtual void rebuild() = 0;
 
-    template <AllowedContainer C>
-    void rebuild(const C& items, std::vector<ListItem<T>*>& uiItems) {
+    template <typename  C>
+    void rebuild(const C& items, std::vector<L*>& uiItems) {
         if (!m_table) {
             return;
         }
@@ -124,7 +118,7 @@ public:
         uiItems.clear();
         int i = 0;
         for (auto li = items.begin(); li != items.end(); ++li) {
-            uiItems.emplace_back(m_table->setCell<ListItem<T>>(i, 0));
+            uiItems.emplace_back(m_table->setCell<L>(i, 0));
             if (!uiItems.back()) {
                 continue;
             }
@@ -139,11 +133,11 @@ public:
         }
     }
 
-    void setRowHeight(float val) {
+    void setRowHeight(const float val) {
         m_rowHeight = val;
     }
 
-    void setSpacing(float spX, float spY) {
+    void setSpacing(const float spX, const float spY) {
         m_space.x = spX;
         m_space.y = spY;
     }
@@ -159,17 +153,17 @@ protected:
     std::function<void(const T&, int, hidData& data)>   m_clickCb;
 };
 
-template <AllowedContainer C>
-class List : public ListBase<typename C::value_type> {
+template <typename C, typename L=ListItem<typename C::value_type>>
+class List : public ListBase<typename C::value_type, L> {
 public:
     using T = typename C::value_type;
 
     void rebuild() override {
-        ListBase<T>::rebuild(m_items, m_uiItems);
+        ListBase<T, L>::rebuild(m_items, m_uiItems);
         UINode::setDrawFlag();
     }
 
-    void set(C& data, bool doRebuild = true) {
+    void set(C& data, const bool doRebuild = true) {
         m_items = data;
         if (doRebuild) {
             rebuild();
@@ -177,8 +171,8 @@ public:
     }
 
 protected:
-    C                                                   m_items;
-    std::vector<ListItem<T>*>                           m_uiItems;
+    C               m_items;
+    std::vector<L*> m_uiItems;
 };
 
 template <typename T>
