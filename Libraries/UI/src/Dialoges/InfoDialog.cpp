@@ -21,6 +21,8 @@ namespace ara {
 InfoDialog::InfoDialog(const UIWindowParams& params) : UIWindow(params) {
     setEnableWindowResizeHandles(false);
     setEnableMenuBar(false);
+    setMinStayTime(params.minStayTime);
+    setAutoClose(params.autoCloseAfter);
 
     auto& base = getRootNode()->push<Div>();
     base.addStyleClass("infoDiag");
@@ -48,29 +50,41 @@ InfoDialog::InfoDialog(const UIWindowParams& params) : UIWindow(params) {
     m_cancelButton->addStyleClass("infoDiag.cancelButt");
     m_cancelButton->setVisibility(false);
     m_cancelButton->addMouseClickCb([this](hidData& data) {
-        m_glbase->runOnMainThread([this] {
-            close(m_cancelCb);
-            return true;
-        });
+        closeAsync();
     });
 
-    // save creation Time
-    m_creationTime = std::chrono::system_clock::now();
+    addGlobalMouseDownLeftCb(this, [this](hidData&) {
+        if (m_diagType == infoDiagType::info){
+            closeAsync();
+        }
+    });
+
+    m_creationTime = system_clock::now();
+    setAutoClose();
 }
 
-void InfoDialog::open(bool isModal) {
+void InfoDialog::open(const bool isModal) {
     setModal(isModal);
-    m_creationTime = std::chrono::system_clock::now();
+    m_creationTime = system_clock::now();
+    setAutoClose();
+
 #ifdef ARA_USE_GLFW
     GLFWWindow::setFloating(isModal);
 #endif
     UIWindow::open();
 }
 
+void InfoDialog::closeAsync() {
+    m_glbase->runOnMainThread([this] {
+        close(m_cancelCb);
+        return true;
+    });
+}
+
 void InfoDialog::close(const std::function<bool()>& cb) {
     // check how long the window has been open
-    auto openTime = duration_cast<milliseconds>(system_clock::now() - m_creationTime);
-    if (openTime.count() > m_minStayTime) {
+    if (auto openTime = duration_cast<milliseconds>(system_clock::now() - m_creationTime);
+        openTime.count() > m_minStayTime) {
         addCloseEvent(cb);
     } else {
         std::thread([this, cb, openTime] {
@@ -90,7 +104,9 @@ void InfoDialog::addCloseEvent(const std::function<bool()> &cb) {
     hide();  // immediately hide the window, so the user knows his interaction was received
 
     if (m_diagType == infoDiagType::info || m_diagType == infoDiagType::warning || m_diagType == infoDiagType::error) {
-        if (m_closeCb) m_closeCb();
+        if (m_closeCb) {
+            m_closeCb();
+        }
         if (cb) {
             closeAndRemove = cb();
         }
@@ -108,7 +124,16 @@ void InfoDialog::addCloseEvent(const std::function<bool()> &cb) {
     }
 }
 
-void InfoDialog::setType(infoDiagType tp) {
+void InfoDialog::setAutoClose() {
+    if (m_autoCloseTime > 0) {
+        std::thread([this] {
+            std::this_thread::sleep_for(milliseconds(m_autoCloseTime));
+            closeAsync();
+        }).detach();
+    }
+}
+
+void InfoDialog::setType(const infoDiagType tp) {
     m_diagType = tp;
     if (!m_msgLabel) return;
     m_msgLabel->clearStyles();

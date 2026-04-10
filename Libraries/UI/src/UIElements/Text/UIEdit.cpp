@@ -323,51 +323,63 @@ void UIEdit::keyModifySelection(const hidData& data, bool& updateValue) {
 
 void UIEdit::moveCaret(const hidData& data) {
     unordered_map<int, function<void()>> keyMap {
-        { ARA_KEY_BACKSPACE, [&]  {
-            if (m_caretIndex > 0 && !m_text.empty()) {
-                eraseContent(m_caretIndex -1, m_caretIndex);
-                --m_caretIndex;
-            }
-        }},
-        { ARA_KEY_DELETE,    [&] {
-            if (m_caretIndex < static_cast<int>(m_text.size())) {
-                m_text.erase(m_caretIndex, 1);
-                reqUpdtGlyphs(true);
-            }
-        }},
-        { ARA_KEY_LEFT,      [&] {
-            if (m_caretIndex > 0) {
-                --m_caretIndex;
-                if (m_needsOverflowHandling && m_lineOverflowOffset.first >= m_caretIndex) {
-                    calcLeftLineOffset();
-                }
-            }
-        }},
-        { ARA_KEY_RIGHT,     [&] {
-            if (m_caretIndex < static_cast<int>(m_text.size())) {
-                ++m_caretIndex;
-                if (m_needsOverflowHandling) {
-                    calcRightLineOffset();
-                }
-            }
-        }},
-        { ARA_KEY_HOME,      [&] {
-            m_caretIndex = 0;
-            if (hasOpt(single_line) && m_lineOverflowOffset.first >= 0) {
-                calcLeftLineOffset();
-            }
-        }},
-        { ARA_KEY_END,       [&] {
-            m_caretIndex = static_cast<int>(m_text.size());
-            if (const auto line = m_fontDGV.getFontLines()[0];
-                hasOpt(single_line) && line.maxCharIdx < static_cast<int>(m_text.size())) {
-                calcRightLineOffset();
-            }
-        }}
+        { ARA_KEY_BACKSPACE, [&] { moveCaretBackspace(); }},
+        { ARA_KEY_DELETE,    [&] { moveCaretDel(); }},
+        { ARA_KEY_LEFT,      [&] { moveCaretLeft(); }},
+        { ARA_KEY_RIGHT,     [&] { moveCaretRight(); }},
+        { ARA_KEY_HOME,      [&] { moveCaretHome(); }},
+        { ARA_KEY_END,       [&] { moveCaretEnd(); }}
     };
 
     if (keyMap.contains(data.key)) {
         keyMap[data.key]();
+    }
+}
+
+void UIEdit::moveCaretBackspace() {
+    if (m_caretIndex > 0 && !m_text.empty()) {
+        eraseContent(m_caretIndex -1, m_caretIndex);
+        --m_caretIndex;
+    }
+}
+
+void UIEdit::moveCaretDel() {
+    if (m_caretIndex < static_cast<int>(m_text.size())) {
+        m_text.erase(m_caretIndex, 1);
+        reqUpdtGlyphs(true);
+    }
+}
+
+void UIEdit::moveCaretLeft() {
+    if (m_caretIndex > 0) {
+        --m_caretIndex;
+        if (m_needsOverflowHandling && m_lineOverflowOffset.first >= m_caretIndex) {
+            calcLeftLineOffset();
+        }
+    }
+}
+
+void UIEdit::moveCaretRight() {
+    if (m_caretIndex < static_cast<int>(m_text.size())) {
+        ++m_caretIndex;
+        if (m_needsOverflowHandling) {
+            calcRightLineOffset();
+        }
+    }
+}
+
+void UIEdit::moveCaretHome() {
+    m_caretIndex = 0;
+    if (hasOpt(single_line) && m_lineOverflowOffset.first >= 0) {
+        calcLeftLineOffset();
+    }
+}
+
+void UIEdit::moveCaretEnd() {
+    m_caretIndex = static_cast<int>(m_text.size());
+    if (const auto line = m_fontDGV.getFontLines()[0];
+        hasOpt(single_line) && line.maxCharIdx < static_cast<int>(m_text.size())) {
+        calcRightLineOffset();
     }
 }
 

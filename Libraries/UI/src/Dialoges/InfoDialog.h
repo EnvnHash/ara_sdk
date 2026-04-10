@@ -18,11 +18,14 @@ public:
 
     void open(bool isModal);
     void close(const std::function<bool()>& cb = nullptr);
+    void closeAsync();
     void addCloseEvent(const std::function<bool()>& cb);
     void setType(infoDiagType tp);
+    void setAutoClose();
 
     void setInfoMsg(const std::string& msg);
-    void setMinStayTime(int ms) { m_minStayTime = ms; }
+    void setMinStayTime(const int ms) { m_minStayTime = ms; }
+    void setAutoClose(const int ms) { m_autoCloseTime = ms; }
     void setConfirmCb(const std::function<bool()>& f) { m_confirmCb = f; }
     void setCloseCb(const std::function<void()>& f) { m_closeCb = f; }
     void setCancelCb(const std::function<bool()>& f) { m_cancelCb = f; }
@@ -36,6 +39,7 @@ private:
     Button                                            *m_cancelButton = nullptr;
     std::string                                        m_infoMsg;
     long                                               m_minStayTime = 500;
+    int32_t                                            m_autoCloseTime = -1;
     infoDiagType                                       m_diagType    = infoDiagType::info;
     std::chrono::time_point<std::chrono::system_clock> m_creationTime;
     std::function<bool()>                              m_confirmCb;

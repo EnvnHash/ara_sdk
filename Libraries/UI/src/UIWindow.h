@@ -31,13 +31,15 @@ struct UIWindowParams {
     glm::ivec2 size{};
     glm::ivec2 sizeReal{}; // only for JNI
     glm::ivec2 shift{};
-    bool osDecoration=  false;
+    bool osDecoration = false;
     bool transparentFB = false;
     bool floating = false;
     bool initToCurrentCtx = false;
     bool multisample = true;
     void* extWinHandle = nullptr;
     bool scaleToMonitor = false;
+    long minStayTime = 0;
+    int32_t autoCloseAfter = -1;
     std::function<void(UINode&)> initCb;
 };
 
@@ -48,6 +50,7 @@ struct InfoDiagParams {
     std::string msg;
     long minStayTime = 500;
     bool isModal = true;
+    int32_t autoCloseAfter = -1;
     std::function<bool()> onConfirm;
     std::function<void()> onClose;
     std::function<bool()> onCancel;
@@ -82,11 +85,11 @@ public:
     std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC>& allowedSuffix) const;
     std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const;
 #elif defined(__linux__) && !defined(__ANDROID__)
-    std::string OpenFileDialog(std::vector<const char*>& allowedSuffix) {
+    static std::string openFileDialog(std::vector<const char*>& allowedSuffix) {
         return OpenFileDialog(allowedSuffix);
     }
 
-    std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const {
+    static std::string saveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
         return SaveFileDialog(fileTypes);
     }
 #elif __APPLE__
@@ -162,9 +165,9 @@ public:
     void addGlobalKeyUpCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalKeyUpCb(void* ptr);
 
-    void setAltPressed(bool val) { m_hidData.altPressed = val; }
-    void setCtrlPressed(bool val) { m_hidData.ctrlPressed = val; }
-    void setShiftPressed(bool val) { m_hidData.shiftPressed = val; }
+    void setAltPressed(const bool val) { m_hidData.altPressed = val; }
+    void setCtrlPressed(const bool val) { m_hidData.ctrlPressed = val; }
+    void setShiftPressed(const bool val) { m_hidData.shiftPressed = val; }
     void setEnableMenuBar(bool val);
     void setEnableWindowResizeHandles(bool val);
     void setEnableMinMaxButtons(bool val) const;
@@ -173,14 +176,14 @@ public:
     auto        getShaderCollector() { return &s_shCol; }
     static auto getShaderProto(uint ind, std::string& name) { return nullptr; };
     auto        getRootNode() { return (m_menuBarEnabled && m_contentRoot) ? m_contentRoot : &m_uiRoot; };
-    auto        getMenuBar() { return m_menuBarEnabled ? m_menuBar : nullptr; };
+    auto        getMenuBar() const { return m_menuBarEnabled ? m_menuBar : nullptr; };
     auto&       getColors() { return m_colors; };
-    auto&       getColor(uiColors colName) { return m_colors[colName]; };
-    auto        getApplicationHandle() { return m_appHandle; };
-    auto        getPixelRatio() { return s_devicePixelRatio; };
+    auto&       getColor(const uiColors colName) { return m_colors[colName]; };
+    auto        getApplicationHandle() const { return m_appHandle; };
+    auto        getPixelRatio() const { return s_devicePixelRatio; };
     auto        isCursorVisible() const { return m_cursorVisible; };
     auto        getSharedRes() { return &m_sharedRes; }
-    auto        getLastHoverFound() { return m_lastHoverFound; }
+    auto        getLastHoverFound() const { return m_lastHoverFound; }
     void        setLastHoverFound(UINode* node) { m_lastHoverFound = node; }
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
@@ -215,8 +218,8 @@ public:
     glm::ivec2   getPosition() const { return m_winHandle ? m_winHandle->getPosition() : glm::ivec2{0}; }
     unsigned int getWidth() const { return m_winHandle ? m_winHandle->getWidth() : 0; }
     unsigned int getHeight() const { return m_winHandle ? m_winHandle->getHeight() : 0; }
-    void         setPosition(int x, int y) const { m_winHandle->setPosition(x, y); }
-    void         setSize(int width, int height) const { m_winHandle->setSize(width, height); }
+    void         setPosition(const int x, const int y) const { m_winHandle->setPosition(x, y); }
+    void         setSize(const int width, const int height) const { m_winHandle->setSize(width, height); }
 #endif
     virtual void setBlockHid(bool val);
     virtual void setModal(bool val);
@@ -224,7 +227,7 @@ public:
     virtual void setMouseCursorVisible(bool val);
 
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    void swap() { m_winHandle->swap(); }
+    void swap() const { m_winHandle->swap(); }
     void addKeyCb(const std::function<void(int, int, int, int)>& f) const { m_winHandle->addKeyCb(f); }
     void setCharCb(const std::function<void(int)>& f) const { m_winHandle->setCharCb(f); }
     void setMouseButtonCb(const std::function<void(int, int, int)>& f) const { m_winHandle->setMouseButtonCb(f); }
@@ -238,11 +241,11 @@ public:
     void setCloseCb(const std::function<void()>& f) const { m_winHandle->setCloseCb(f); }
     void setWindowRefreshCb(const std::function<void()>& f) const { m_winHandle->setWindowRefreshCb(f); }
 #endif
-    void setBlockDraw(bool val) { m_blockDraw = val; }
+    void setBlockDraw(const bool val) { m_blockDraw = val; }
     bool isBlockDraw() const { return m_blockDraw; }
     void setApplicationHandle(UIApplication* ptr) { m_appHandle = ptr; }
     void setToMainWindow() { m_isMainWindow = true; }
-    void setWindowMinSize(int32_t x, int32_t y) { m_minWinSize.x = x; m_minWinSize.y = y; }
+    void setWindowMinSize(const int32_t x, const int32_t y) { m_minWinSize.x = x; m_minWinSize.y = y; }
     void setCloseFunc(const std::function<void(UIWindow*)>& f) { m_closeFunc = f; }
     std::function<void(UIWindow*)>& getCloseFunc() { return m_closeFunc; }
 
@@ -275,11 +278,11 @@ public:
     auto    usingSelfManagedCtx() const { return !m_selfManagedCtx; }
     auto    usingMultiSample() const { return m_multisample; }
 
-    void showObjMap(bool val) { m_showObjMap = val; }
+    void showObjMap(const bool val) { m_showObjMap = val; }
     void resetDraggingNode() { m_draggingNode = nullptr; }
-    void blockWindowResizeCb(bool val) { m_blockWindowResizeCb = val; }
+    void blockWindowResizeCb(const bool val) { m_blockWindowResizeCb = val; }
     void setExtGetWinOffs(std::function<glm::vec2()> f) { m_extGetWinOffs = std::move(f); }
-    void forceDpiScale(float val) { m_forceDpiScale = val; }
+    void forceDpiScale(const float val) { m_forceDpiScale = val; }
     void setInputFocusNode(UINode* node, bool procLostFocus = true);
     void addGlCb(void* cbName, const std::string& fName, const std::function<bool()>& func);
     void removeGlCbs(void* cbName) { WindowBase::eraseGlCb(cbName); }

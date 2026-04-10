@@ -82,6 +82,7 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
         { tpi::tp_ivec2, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<ivec2>(2); }},
         { tpi::tp_ivec3, [] (NodeMemberVariableEdit* ctx)  { ctx->createArrayEdit<ivec3>(3); }},
         { tpi::tp_ivec4, [] (NodeMemberVariableEdit* ctx) { ctx->createArrayEdit<ivec4>(4); }},
+        { tpi::none, [] (NodeMemberVariableEdit* ctx) { LOGE << "NodeMemberVariableEdit::setEditValFromMemberVar Error: tpi is none"; }},
     };
 
     createMap[m_memVar->typeIndex](this);
