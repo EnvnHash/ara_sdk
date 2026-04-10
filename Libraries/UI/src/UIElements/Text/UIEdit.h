@@ -14,12 +14,16 @@ public:
     void blockEdit(bool val);
 
     Font* updateDGV(bool* checkFontTexture) override;
+    void calculateOffset();
 
     void loadStyleDefaults() override;
     void init() override;
     bool draw(uint32_t& objId) override;
     bool drawIndirect(uint32_t& objId) override;
     void drawCaret(bool forceCaretVaoUpdt = true);
+    void drawCaretIndirect(bool updtTree, bool forceCaretVaoUpdt) const;
+    void drawCaretSelectedState(bool& updtTree);
+    void setCaretRespectAlignment(glm::vec2& tCaretPos);
 
     void updateValFromText(const std::string& txt, bool updateText=true);
     void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;

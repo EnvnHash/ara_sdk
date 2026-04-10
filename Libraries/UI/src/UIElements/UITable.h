@@ -36,22 +36,22 @@ public:
     virtual int getRowCount() { return m_cells(0).getCount(); }
     virtual int getColumnCount() { return m_cells(1).getCount(); }
 
-    virtual void setSpacing(float px, float py) {
+    virtual void setSpacing(const float px, const float py) {
         m_spacing.x = px;
         m_spacing.y = py;
     }  // Table cell padding
 
-    virtual void setTLMargin(float dx, float dy) {
+    virtual void setTLMargin(const float dx, const float dy) {
         m_margin[0].x = dx;
         m_margin[0].y = dy;
     }  // Table Top-Left margins
 
-    virtual void setBRMargin(float dx, float dy) {
+    virtual void setBRMargin(const float dx, const float dy) {
         m_margin[1].x = dx;
         m_margin[1].y = dy;
     }  // Table Bottom-Right margins
 
-    virtual void setMargins(float dx, float dy) {
+    virtual void setMargins(const float dx, const float dy) {
         setTLMargin(dx, dy);
         setBRMargin(dx, dy);
     }  // Table margins
@@ -77,8 +77,8 @@ public:
     }
     virtual void setColor(glm::vec4& col) {
         m_color = col;
-        for (const auto& it : m_cells) {
-            it.ui_node->setBackgroundColor(getColor());
+        for (const auto& [ui_node, content] : m_cells) {
+            ui_node->setBackgroundColor(getColor());
         }
     }
     virtual void setRowHeight(int32_t idx, int32_t heightInPix);
@@ -90,26 +90,24 @@ public:
     void mouseOut(hidData& data) override;
 
     virtual bool insertRow(int at, int count, float size, bool percent = false, bool fixed = false,
-                           float min_pix_size = -1,
-                           float max_pix_size = -1);  // at: -1 means at the end (append)
+                            float minPixSize = -1, float maxPixSize = -1);  // at: -1 means at the end (append)
     virtual bool insertColumn(int at, int count, float size, bool percent = false, bool fixed = false,
-                              float min_pix_size = -1, float max_pix_size = -1);
+                              float minPixSize = -1, float maxPixSize = -1);
     virtual void initNewCellNode();
 
     virtual Table& getTable() { return m_cells; }
-
     virtual int geoUpdate();  // returns number of cells
-
-    virtual bool setDynamicWidth(bool on_off) { return m_cells(1).setDynamicSize(on_off); }
+    virtual bool setDynamicWidth(const bool onOff) { return m_cells(1).setDynamicSize(onOff); }
     virtual bool getDynamicWidth() { return m_cells(1).getDynamicSize(); }
-    virtual bool setDynamicHeight(bool on_off) { return m_cells(0).setDynamicSize(on_off); }
+    virtual bool setDynamicHeight(const bool onOff) { return m_cells(0).setDynamicSize(onOff); }
     virtual bool getDynamicHeight() { return m_cells(0).getDynamicSize(); }
-    virtual Table_rc getRow(int idx) { return (m_cells(0).getCount() > idx ? m_cells(0).get(idx) : Table_rc{}); }
+    virtual Table_rc getRow(const int idx) { return m_cells(0).getCount() > idx ? m_cells(0).get(idx) : Table_rc{}; }
     virtual CellTable<e_cell>& getCells() { return m_cells; }
 
     /** add a new UINode to the Table */
     template <typename T>
-    T* setCell(int row, int column, std::shared_ptr<T> node = nullptr) {
+    requires std::derived_from<T, UINode>
+    T* setCell(const int row, const int column, std::shared_ptr<T> node = nullptr) {
         if (int idx; (idx = m_cells.rowColumnToIndex(row, column, true)) >= 0) {
             T* newNode;
             if (node) {
@@ -118,6 +116,7 @@ public:
                 newNode = &m_cells[idx].ui_node->push<T>();
             }
 
+            newNode->addStyleClass( getStyleClass()+".cell" );
             m_cells[idx].content = newNode;
             geoUpdate();
             return newNode;

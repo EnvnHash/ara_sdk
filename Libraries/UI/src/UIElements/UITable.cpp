@@ -35,7 +35,7 @@ UITable::UITable(const UITableParameters& par) {
 
     bool updateCells = false;
     const std::array<std::function<void()>, 8> funcMap {
-            [&] { auto c = par.fgColor.value(); UITable::setColor(c.r, c.g, c.b, c.a); },
+            [&] { const auto c = par.fgColor.value(); UITable::setColor(c.r, c.g, c.b, c.a); },
             [&] { UITable::setBackgroundColor(par.bgColor.value()); },
             [&] { setAlignX(par.alignX.value()); },
             [&] { setAlignY(par.alignY.value()); },
@@ -117,7 +117,7 @@ void UITable::setRowHeight(const int32_t idx, const int32_t heightInPix) {
 UINode* UITable::setCell(const int row, const int column, const vector<shared_ptr<UINode> >::iterator& nodeIt) {
     if (int idx; (idx = m_cells.rowColumnToIndex(row, column, true)) >= 0) {
         // get the cell's ui_node
-        auto cell = m_cells[idx].ui_node;
+        const auto cell = m_cells[idx].ui_node;
 
         // move from another parent to the cell
         cell->children().insert(cell->children().end(), std::make_move_iterator(nodeIt),
@@ -198,24 +198,24 @@ void UITable::mouseUp(hidData& data) {
 }
 
 bool UITable::insertRow(const int at, const int count, const float size, const bool percent, const bool fixed,
-    const float min_pix_size, const float max_pix_size) {
+    const float minPixSize, const float maxPixSize) {
     const Table_rc tb{size,
                  size <= 0 ? dTableType::Undef
                  : percent ? dTableType::Percent
                            : dTableType::Pix,
-                 fixed, {min_pix_size, max_pix_size}};
+                 fixed, {minPixSize, maxPixSize}};
     m_cells(0).ins(at, count, tb);
     initNewCellNode();
     return true;
 }
 
-bool UITable::insertColumn(const int at, const int count, const float size, const bool percent, bool fixed, float min_pix_size,
-                           float max_pix_size) {
-    Table_rc tb{size,
+bool UITable::insertColumn(const int at, const int count, const float size, const bool percent, const bool fixed,
+                           const float minPixSize, const float maxPixSize) {
+    const Table_rc tb{size,
                  size <= 0 ? dTableType::Undef
                  : percent ? dTableType::Percent
                            : dTableType::Pix,
-                 fixed, {min_pix_size, max_pix_size}};
+                 fixed, {minPixSize, maxPixSize}};
     m_cells(1).ins(at, count, tb);
     initNewCellNode();
     return true;
@@ -223,17 +223,16 @@ bool UITable::insertColumn(const int at, const int count, const float size, cons
 
 void UITable::initNewCellNode() {
     m_cells.updateCells();
-
-    for (auto & m_Cell : m_cells) {
-        if (!m_Cell.ui_node) {
-            m_Cell.ui_node = &push<Div>();
-            m_Cell.ui_node->setName("TableCell");
-            m_Cell.ui_node->setBackgroundColor(getColor());
+    for (auto & [ui_node, content] : m_cells) {
+        if (!ui_node) {
+            ui_node = &push<Div>();
+            ui_node->setName("TableCell");
+            ui_node->setBackgroundColor(getColor());
         }
     }
 }
 
-bool UITable::clearCell(int row, int column, bool updateGeo) {
+bool UITable::clearCell(const int row, const int column, const bool updateGeo) {
     int idx;
     if ((idx = m_cells.rowColumnToIndex(row, column, true)) < 0) {
         return false;
@@ -252,7 +251,7 @@ bool UITable::clearCell(int row, int column, bool updateGeo) {
     return true;
 }
 
-bool UITable::removeRow(int row) {
+bool UITable::removeRow(const int row) {
     if (m_cells(0).getCount() > row) {
         // iterate through all cells of this row and remove all content
         vector<vector<e_cell>::iterator> cellsToDelete;
@@ -285,11 +284,11 @@ bool UITable::removeRow(int row) {
 }
 
 void UITable::clearCells() {
-    for (auto& it : m_cells) {
-        it.content = nullptr;
-        if (it.ui_node) {
-            it.ui_node->clearChildren();
-            remove(it.ui_node);
+    for (auto& [ui_node, content] : m_cells) {
+        content = nullptr;
+        if (ui_node) {
+            ui_node->clearChildren();
+            remove(ui_node);
         }
     }
 
@@ -297,7 +296,7 @@ void UITable::clearCells() {
     geoUpdate();
 }
 
-void UITable::setFixedCellSize(bool val) {
+void UITable::setFixedCellSize(const bool val) {
     for (int i=0; i<2; ++i) {
         for (auto& rc : m_cells(1).V()) {
             rc.fixed = val;

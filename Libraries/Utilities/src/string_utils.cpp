@@ -53,7 +53,7 @@ std::vector<std::string> splitByNewline(const std::string &s) {
     return elems;
 }
 
-std::vector<std::string> split(const std::string &s, char delim) {
+std::vector<std::string> split(const std::string &s, const char delim) {
     std::vector<std::string> elems;
     std::stringstream        ss(s);
     std::string              item;
@@ -79,12 +79,35 @@ std::vector<std::string> split(const std::string &s, const std::string& delim) {
 }
 
 bool is_number(const std::string &s) {
-    return !s.empty() && std::find_if(s.begin(), s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+    return !s.empty() && std::ranges::find_if(s, [](const unsigned char c) { return !std::isdigit(c); }) == s.end();
 }
 
 std::string str_toupper(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::toupper(c); });
+    std::ranges::transform(s, s.begin(), [](const unsigned char c) { return std::toupper(c); });
     return s;
+}
+
+bool isNumericLikeName(const std::string_view name) {
+    if (name.find("px") != std::string_view::npos) {
+        return true;
+    }
+
+    if (name.find('%') != std::string_view::npos) {
+        return true;
+    }
+
+    bool hasDigit = false;
+    bool hasLetter = false;
+
+    for (const unsigned char ch : name) {
+        if (std::isdigit(ch)) {
+            hasDigit = true;
+        } else if (std::isalpha(ch)) {
+            hasLetter = true;
+        }
+    }
+
+    return hasDigit && !hasLetter;
 }
 
 #ifdef _WIN32

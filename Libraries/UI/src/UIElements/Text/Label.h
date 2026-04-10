@@ -16,7 +16,7 @@ struct LabelPars {
     std::string style{};
     ara::align align = align::left; // gcc fails without the namespace specification
     ara::valign valign = valign::top;
-    glm::vec4 color{};
+    glm::vec4 color{ 1.f, 1.f, 1.f, 1.f };
     glm::vec4 bgColor{};
     uint32_t borderWidth{};
     uint32_t borderRadius{};

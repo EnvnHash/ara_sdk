@@ -130,11 +130,11 @@ bool SrcFile::process(ResNode *root) {
                                         continue;
                                     }
 
-                                    if (e[0] != ':' && e[0] == '}' && !e[0]) {
-                                        node->add(std::make_unique<ResNode>(name, &*line, m_glBase));
-                                    } else if (e[0] != ':' && e[0] != '}' && e[0] != '{' && ranges::find(m_typeIndicators, name) == m_typeIndicators.end()) {
-                                        auto newNode = node->add(std::make_unique<ResNode>(name, &*line, m_glBase));
-                                        newNode->setIsReference();
+                                    if (e[0] != ':' || e[0] == '}' || !e[0]) {
+                                        const auto newNode = node->add(std::make_unique<ResNode>(name, &*line, m_glBase));
+                                        if (ranges::find(m_typeIndicators, name) == m_typeIndicators.end() && !isNumericLikeName(name)) {
+                                            newNode->setIsReference();
+                                        }
                                     }
                                 }
                             }

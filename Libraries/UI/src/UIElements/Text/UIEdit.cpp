@@ -85,36 +85,7 @@ void UIEdit::drawCaret(const bool forceCaretVaoUpdt) {
     bool updtTree = false;
 
     if (m_state == state::selected) {
-        if (!m_caret->isVisible()) {
-            m_caret->setVisibility(true);
-            m_caret->setSize(static_cast<int>(m_caretWidth / getParentContentScale().x),
-                            static_cast<int>(m_riFont->getPixHeight()));
-            m_caret->setBackgroundColor(m_caretColor);
-            updtTree = true;
-        }
-
-        auto tCaretPos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
-        tCaretPos = tCaretPos /*+ m_offset*/ + m_alignOffset;
-        tCaretPos.x += m_lineOverflowOffset.second;
-
-        // if there is no text, set the caret corresponding to the text format
-        if (m_text.empty() && m_tAlignX == align::right) {
-            tCaretPos.x = getContentSize().x;
-        }
-        if (m_text.empty() && m_tAlignX == align::center) {
-            tCaretPos.x = getContentSize().x * 0.5f;
-        }
-
-        vec2 posLimit{};
-        for (int i = 0; i < 2; i++) {
-            posLimit[i] = m_size[i] - (m_padding[i + 2] + static_cast<float>(m_borderWidth *2));
-        }
-
-        if (!all(glm::equal(m_caret->getPos(), tCaretPos))) {
-            m_caret->setPos(static_cast<int>(std::min(tCaretPos.x, posLimit.x)),
-                            static_cast<int>(std::min(tCaretPos.y, posLimit.y)));
-        }
-
+        drawCaretSelectedState(updtTree);
     } else {
         if (m_caret->isVisible()) {
             m_caret->setVisibility(false);
@@ -123,13 +94,52 @@ void UIEdit::drawCaret(const bool forceCaretVaoUpdt) {
     }
 
     if (!m_drawImmediate) {
-        m_caret->updateDrawData();
-        if (forceCaretVaoUpdt) {
-            m_caret->pushVaoUpdtOffsets();
-        }
-        if (updtTree) {
-            reqUpdtTree();
-        }
+        drawCaretIndirect(updtTree, forceCaretVaoUpdt);
+    }
+}
+
+void UIEdit::drawCaretIndirect(const bool updtTree, const bool forceCaretVaoUpdt) const {
+    m_caret->updateDrawData();
+    if (forceCaretVaoUpdt) {
+        m_caret->pushVaoUpdtOffsets();
+    }
+    if (updtTree) {
+        reqUpdtTree();
+    }
+}
+
+void UIEdit::drawCaretSelectedState(bool& updtTree) {
+    if (!m_caret->isVisible()) {
+        m_caret->setVisibility(true);
+        m_caret->setSize(static_cast<int>(m_caretWidth / getParentContentScale().x),
+                        static_cast<int>(m_riFont->getPixHeight()));
+        m_caret->setBackgroundColor(m_caretColor);
+        updtTree = true;
+    }
+
+    auto tCaretPos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
+    tCaretPos = tCaretPos + m_alignOffset;
+    tCaretPos.x += m_lineOverflowOffset.second;
+    setCaretRespectAlignment(tCaretPos);
+
+    vec2 posLimit{};
+    for (int i = 0; i < 2; i++) {
+        posLimit[i] = m_size[i] - (m_padding[i + 2] + static_cast<float>(m_borderWidth *2));
+    }
+
+    if (!all(glm::equal(m_caret->getPos(), tCaretPos))) {
+        m_caret->setPos(static_cast<int>(std::min(tCaretPos.x, posLimit.x)),
+                        static_cast<int>(std::min(tCaretPos.y, posLimit.y)));
+    }
+}
+
+void UIEdit::setCaretRespectAlignment(vec2& tCaretPos) {
+    // if there is no text, set the caret corresponding to the text format
+    if (m_text.empty() && m_tAlignX == align::right) {
+        tCaretPos.x = getContentSize().x;
+    }
+    if (m_text.empty() && m_tAlignX == align::center) {
+        tCaretPos.x = getContentSize().x * 0.5f;
     }
 }
 
@@ -147,8 +157,6 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
     m_riFont     = font;
     m_renderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
 
-    const vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
-
     if (!hasOpt(manual_space)) {
         m_tSize = m_tContSize;
     }
@@ -159,7 +167,17 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
     // process input text, break up in lines
     m_needsOverflowHandling = m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
 
-    // Calculate offset
+    calculateOffset();
+
+    if (m_text.empty()) {
+        m_offset = getContentOffset();
+    }
+    return m_riFont;
+}
+
+void UIEdit::calculateOffset() {
+    const vec4 mask{m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
+
     if (int lineIndex; (lineIndex = m_fontDGV.getLineIndexByCharIndex(m_caretIndex)) >= 0) {
         const auto cpos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
         const float pa = m_riFont->getPixAscent();
@@ -185,11 +203,6 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
             m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.getFontLines(lineIndex).getYSelRange(1) - mask.w));
         }
     }
-
-    if (m_text.empty()) {
-        m_offset = getContentOffset();
-    }
-    return m_riFont;
 }
 
 void UIEdit::updateFontGeo() {
@@ -434,60 +447,59 @@ void UIEdit::procTab() {
 }
 
 void UIEdit::procShiftPlusArrowSelect(const hidData& data) {
-    if (data.key == ARA_KEY_LEFT && m_caretIndex > 0) {
-        if (!getSelRange(m_charSelection)) {
-            m_caretRange[0] = m_caretIndex;
-        }
-        --m_caretIndex;
-        m_caretRange[1] = m_caretIndex;
+    auto finishUpdate = [this] {
         drawCaret();
         if (!m_drawImmediate) {
             prepareSelBgVao();
             reqUpdtTree();
         }
+    };
 
-        return;
-    }
-
-    if (data.key == ARA_KEY_RIGHT && m_caretIndex < static_cast<int>(m_text.size())) {
+    auto ensureSelectionStart = [this] {
         if (!getSelRange(m_charSelection)) {
             m_caretRange[0] = m_caretIndex;
         }
-        ++m_caretIndex;
-        m_caretRange[1] = m_caretIndex;
-        drawCaret();
-        if (!m_drawImmediate) {
-            prepareSelBgVao();
-            reqUpdtTree();
-        }
-        return;
-    }
+    };
 
-    if (data.key == ARA_KEY_HOME) {
-        if (!getSelRange(m_charSelection)) {
-            m_caretRange[0] = m_caretIndex;
-        }
-        m_caretIndex    = 0;
-        m_caretRange[1] = m_caretIndex;
-        drawCaret();
-        if (!m_drawImmediate) {
-            prepareSelBgVao();
-            reqUpdtTree();
-        }
-        return;
-    }
+    const std::unordered_map<int, std::function<bool()>> handlers {
+        { ARA_KEY_LEFT, [this, &ensureSelectionStart, &finishUpdate] {
+            if (m_caretIndex <= 0) {
+                return false;
+            }
+            ensureSelectionStart();
+            --m_caretIndex;
+            m_caretRange[1] = m_caretIndex;
+            finishUpdate();
+            return true;
+        }},
+        { ARA_KEY_RIGHT, [this, &ensureSelectionStart, &finishUpdate] {
+            if (m_caretIndex >= static_cast<int>(m_text.size())) {
+                return false;
+            }
+            ensureSelectionStart();
+            ++m_caretIndex;
+            m_caretRange[1] = m_caretIndex;
+            finishUpdate();
+            return true;
+        }},
+        { ARA_KEY_HOME, [this, &ensureSelectionStart, &finishUpdate] {
+            ensureSelectionStart();
+            m_caretIndex    = 0;
+            m_caretRange[1] = m_caretIndex;
+            finishUpdate();
+            return true;
+        }},
+        { ARA_KEY_END, [this, &ensureSelectionStart, &finishUpdate] {
+            ensureSelectionStart();
+            m_caretIndex    = static_cast<int>(m_text.size());
+            m_caretRange[1] = m_caretIndex;
+            finishUpdate();
+            return true;
+        }},
+    };
 
-    if (data.key == ARA_KEY_END) {
-        if (!getSelRange(m_charSelection)) {
-            m_caretRange[0] = m_caretIndex;
-        }
-        m_caretIndex = m_caretIndex = static_cast<int>(m_text.size());
-        m_caretRange[1]             = m_caretIndex;
-        drawCaret();
-        if (!m_drawImmediate) {
-            prepareSelBgVao();
-            reqUpdtTree();
-        }
+    if (const auto it = handlers.find(data.key); it != handlers.end()) {
+        it->second();
     }
 }
 
