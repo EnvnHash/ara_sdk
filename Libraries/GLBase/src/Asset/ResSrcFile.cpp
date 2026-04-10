@@ -65,13 +65,14 @@ bool SrcFile::process(ResNode *root) {
         return false;
     }
 
-    int                            rpar = 0;
-    int                            parp = 0;
-    string                         name;
-    string                         parname;
-    string                         funcname;
-    ParVec                         parv;
-    ResNode                       *node = root;
+    int         rpar = 0;
+    int         parp = 0;
+    string      name;
+    string      parname;
+    string      funcname;
+    ParVec      parv;
+    ResNode     *node = root;
+
     auto line = m_line.begin();
 
     while (line < m_line.end()) {
@@ -88,11 +89,11 @@ bool SrcFile::process(ResNode *root) {
                     }
 
                     if (e[0]) {
-                        parv.push_back(name);  // this avoids adding empty pars when next line
+                        parv.emplace_back(name);  // this avoids adding empty pars when next line
                     }
 
                     if (e[0] == ')') {
-                        node->add(std::make_unique<ResNode>(parname, &(*line), m_glbase))->setFunc(funcname, parv);
+                        node->add(std::make_unique<ResNode>(parname, &(*line), m_glBase))->setFunc(funcname, parv);
                         rpar = 0;
                         parp = 0;
                         ++e;
@@ -111,20 +112,29 @@ bool SrcFile::process(ResNode *root) {
 
                         if (e[0] == ',') {  // special case - has a comma right after the '(',
                                             // this should be done a better way, but run by now
-                            parv.push_back("");
+                            parv.emplace_back("");
                         }
                     } else {
                         if (parp) {
-                            node->add(std::make_unique<ResNode>(parname, &(*line), m_glbase))->setValue(name);
+                            node->add(std::make_unique<ResNode>(parname, &*line, m_glBase))->setValue(name);
                             parp = 0;
                         } else {
                             if (e[0] == '{') {
-                                node = node->add(std::make_unique<ResNode>(name, &(*line), m_glbase));  // adding a group
+                                node = node->add(std::make_unique<ResNode>(name, &*line, m_glBase));  // adding a group
                                 ++e;
                             } else {
                                 if (!name.empty()) {
-                                    if (e[0] != ':' || e[0] == '}' || !e[0]) {
-                                        node->add(std::make_unique<ResNode>(name, &(*line), m_glbase));
+                                    if (name == "#" ) {
+                                        ++line;
+                                        e = line->str.c_str();
+                                        continue;
+                                    }
+
+                                    if (e[0] != ':' && e[0] == '}' && !e[0]) {
+                                        node->add(std::make_unique<ResNode>(name, &*line, m_glBase));
+                                    } else if (e[0] != ':' && e[0] != '}' && e[0] != '{' && ranges::find(m_typeIndicators, name) == m_typeIndicators.end()) {
+                                        auto newNode = node->add(std::make_unique<ResNode>(name, &*line, m_glBase));
+                                        newNode->setIsReference();
                                     }
                                 }
                             }

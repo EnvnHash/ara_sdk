@@ -102,7 +102,7 @@ void UINodeStyle::updateStyleColor(ResNode* node, const state st, const std::str
 void UINodeStyle::updateStylePixel(ResNode* node, const state st, const std::string& findNode, const styleInit si, const std::function<void(int)>& f) {
     if (const auto resNode = node->findNumericNode(findNode); get<ResNode*>(resNode) && get<unitType>(resNode) == unitType::Pixels) {
         auto val = stoi(get<string>(resNode));
-        m_setStyleFunc[st][si] = [val, f]() { f(val); };
+        m_setStyleFunc[st][si] = [val, f] { f(val); };
     }
 }
 
@@ -157,7 +157,7 @@ void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styl
 
     if (const auto vis = node->findNode("visible")) {
         bool val                               = vis->getRawValue() == "true";
-        m_setStyleFunc[st][styleInit::visible] = [this, val, st]() { setVisibility(val, st); };
+        m_setStyleFunc[st][styleInit::visible] = [this, val, st] { setVisibility(val, st); };
     }
 }
 
@@ -177,7 +177,7 @@ void UINodeStyle::updateStyle() {
     loadStyleDefaults();
 
     for (auto& it : m_styleTree) {
-        const auto resNode = (getCustomDefName() == it) ? m_customStyleNode.get() : m_sharedRes->res->findNode(it);
+        const auto resNode = getCustomDefName() == it ? m_customStyleNode.get() : m_sharedRes->res->findNode(it);
         if (!resNode) {
             continue;
         }
@@ -187,7 +187,7 @@ void UINodeStyle::updateStyle() {
 
         // if there are subdefinitions and the corresponding flags are set,
         // return those definitions
-        if (!resNode->m_node.empty()) {
+        if (!resNode->m_children.empty()) {
             ResNode* auxResNode = nullptr;
             if ((auxResNode = resNode->findNode("selected"))) {
                 updateStyleIt(auxResNode, state::selected, it);

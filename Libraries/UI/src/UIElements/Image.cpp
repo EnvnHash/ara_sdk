@@ -86,8 +86,10 @@ void Image::updateStyleIt(ResNode* node, const state st, const std::string& styl
         }
     } else {
         if (const auto inode = node->findNode<ResNode>("image")) {
-            std::string name                     = inode->getRawValue();
-            m_setStyleFunc[st][styleInit::image] = [name, this]() { setImgBase(m_sharedRes->res->img(name)); };
+            auto nm = inode->getRawValue();
+            m_setStyleFunc[st][styleInit::image] = [nm, this] {
+                setImgBase(m_sharedRes->res->img(nm));
+            };
         }
     }
 
@@ -119,26 +121,14 @@ void Image::setImgFlag(ResNode* node, const state st) {
 
 void Image::setImgAlign(ResNode* node, const state st) {
     unsigned a[2] = {1, 1};
-    for (auto p = node->splitNodeValue("img-align"); std::string& par : p) {
-        if (par == "left") {
-            a[0] = 0;
-        }
-        if (par == "center") {
-            a[0] = 1;
-        }
-        if (par == "right") {
-            a[0] = 2;
-        }
+    unordered_map<string, unsigned> valMap {
+         {"left", 0}, {"center", 1}, {"right", 2},
+         {"top", 0}, {"vcenter", 1}, {"bottom", 2}
+    };
 
-        if (par == "top") {
-            a[1] = 0;
-        }
-        if (par == "vcenter") {
-            a[1] = 1;
-        }
-        if (par == "bottom") {
-            a[1] = 2;
-        }
+    for (auto p = node->splitNodeValue("img-align"); std::string& par : p) {
+        a[0] = valMap[par];
+        a[1] = valMap[par];
     }
 
     m_setStyleFunc[st][styleInit::imgAlign] = [a, this] {
@@ -148,9 +138,9 @@ void Image::setImgAlign(ResNode* node, const state st) {
 }
 
 void Image::setImgScale(ResNode* node, const state st) {
-    auto scale                             = node->value<float>("img-scale", 1.f);
+    auto scale                              = node->value<float>("img-scale", 1.f);
     m_imgScale                              = scale;
-    m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() { m_imgScale = scale; };
+    m_setStyleFunc[st][styleInit::imgScale] = [scale, this] { m_imgScale = scale; };
 }
 
 void Image::setImg(const std::string& file, const int mipMapLevel) {
@@ -163,7 +153,7 @@ void Image::setImg(const std::string& file, const int mipMapLevel) {
 
 uint32_t Image::setImgFlags(uint32_t flags) {
     m_imgFlags                                  = flags;
-    m_setStyleFunc[m_state][styleInit::imgFlag] = [flags, this]() { m_imgFlags = flags; };
+    m_setStyleFunc[m_state][styleInit::imgFlag] = [flags, this] { m_imgFlags = flags; };
 
     for (auto &[str, fl] : m_imgFlagStrMap) {
         if (flags & toType(fl)) {
@@ -275,23 +265,23 @@ void Image::updateDrawData() {
                 v = it * (m_size - static_cast<float>(m_borderWidth) * 2.f);
             } else {
                 v  = it * m_nSize;
-                uv = vec2(v.x - (m_imgAlign[0] == 1   ? (m_nSize.x * 0.5f - ts.x * 0.5f)
+                uv = vec2(v.x - (m_imgAlign[0] == 1 ? (m_nSize.x * 0.5f - ts.x * 0.5f)
                                  : m_imgAlign[0] == 2 ? m_nSize.x - ts.x
                                                       : 0.f),
-                          v.y - (m_imgAlign[1] == 1   ? (m_nSize.y * 0.5f - ts.y * 0.5f)
+                          v.y - (m_imgAlign[1] == 1 ? (m_nSize.y * 0.5f - ts.y * 0.5f)
                                  : m_imgAlign[1] == 2 ? m_nSize.y - ts.y
                                                       : 0.f)) / ts;
 
-                uv.x = ((m_imgFlags & 4) != 0) ? 1.f - uv.x : uv.x;
-                uv.y = ((m_imgFlags & 8) != 0) ? 1.f - uv.y : uv.y;
+                uv.x = (m_imgFlags & 4) != 0 ? 1.f - uv.x : uv.x;
+                uv.y = (m_imgFlags & 8) != 0 ? 1.f - uv.y : uv.y;
 
                 tuv = m_secSize.x <= 0 ? uv : (vec2(m_secPos) + vec2(m_secSize) * uv) / vec2(m_texSize);
 
                 // no-aspect ratio
                 if ((m_imgFlags & 32) != 0) {
                     uv = tuv = it;
-                    tuv.x    = ((m_imgFlags & 4) != 0) ? 1.f - tuv.x : tuv.x;
-                    tuv.y    = ((m_imgFlags & 8) != 0) ? 1.f - tuv.y : tuv.y;
+                    tuv.x    = (m_imgFlags & 4) != 0 ? 1.f - tuv.x : tuv.x;
+                    tuv.y    = (m_imgFlags & 8) != 0 ? 1.f - tuv.y : tuv.y;
                 }
             }
 
@@ -570,7 +560,7 @@ bool Image::setTexId(const GLuint inTexId, const int width, const int height, co
     m_texAspect      = static_cast<float>(width) / static_cast<float>(height);
     m_loaded         = true;
 
-    if (m_fixAspect != -1.f && (getAspect() != m_texAspect)) {
+    if (m_fixAspect != -1.f && getAspect() != m_texAspect) {
         setFixAspect(m_texAspect);
     }
 

@@ -59,7 +59,7 @@ bool AssetManager::load(const string &path) {
 
             // get fonts
             if (const auto fontsNode = findNode("fonts")) {
-                for (const auto &f : fontsNode->m_node) {
+                for (const auto &f : fontsNode->m_children) {
                     m_fontLUT.insert({f->getName(), e_font_lut{f->getRawValue(), 20}});
                 }
             }

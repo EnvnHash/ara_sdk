@@ -21,7 +21,7 @@ namespace ara {
 
 class SrcFile {
 public:
-    explicit SrcFile(GLBase *glbase) : m_glbase(glbase) {}
+    explicit SrcFile(GLBase *glBase) : m_glBase(glBase) {}
     virtual ~SrcFile() = default;
 
     bool process(ResNode *root, std::vector<uint8_t> &vp);
@@ -29,7 +29,7 @@ public:
     std::vector<SrcLine> m_line;
 
 private:
-    static void                skipNewline(std::vector<uint8_t>::iterator& it, std::vector<uint8_t> &vp);
+    static void         skipNewline(std::vector<uint8_t>::iterator& it, std::vector<uint8_t> &vp);
     bool                extractLines(std::vector<uint8_t> &vp);
     bool                process(ResNode *root);
     static const char*  readStr(std::string &dest, const char *e, std::vector<SrcLine>::iterator &line,
@@ -38,12 +38,14 @@ private:
                                 const std::vector<SrcLine>::iterator &src_end);
     static bool         error(SrcLine &line, const std::string& msg);
 
-    GLBase* m_glbase = nullptr;
+    GLBase* m_glBase = nullptr;
 
 public:
     static const char * clearSpaces(const char *e);
     static const char * processRawText(std::string &dest, const char *e, std::vector<SrcLine>::iterator &line,
                                        const std::vector<SrcLine>::iterator &src_end);
+
+    std::list<std::string> m_typeIndicators { "img", "frame", "bold", "italic" };
 };
 
 }  // namespace ara

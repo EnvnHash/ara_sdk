@@ -104,13 +104,11 @@ class DemoView_Resources : public DemoView {
 public:
     DemoView_Resources();
     void                init() override;
-    bool                draw(uint32_t& objId) override;
-    void                drawColors(ResNode* node, int& it);
 
 private:
     Image*              m_img=nullptr;
-    FontList   	fontList;
-    Shaders*       m_glyphShader=nullptr;
+    FontList   	        fontList;
+    Shaders*            m_glyphShader=nullptr;
 };
 
 class DemoView_ZoomView : public DemoView {
@@ -128,7 +126,7 @@ public:
 
     TypoGlyphMap*	tfont=nullptr;
 private:
-    Shaders*       m_glyphShader=nullptr;
+    Shaders* m_glyphShader=nullptr;
 };
 
 #ifndef __ANDROID__

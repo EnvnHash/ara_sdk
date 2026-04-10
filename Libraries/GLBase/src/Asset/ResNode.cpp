@@ -30,7 +30,7 @@ bool SrcLine::isEmpty() {
 
 bool SrcLine::isComment() const {
     const char *e = SrcFile::clearSpaces(str.c_str());
-    return (e[0] == '#');
+    return e[0] == '#';
 }
 
 ResNode::ResNode(std::string name, const SrcLine *line, GLBase *glBase) {
@@ -42,7 +42,7 @@ ResNode::ResNode(std::string name, const SrcLine *line, GLBase *glBase) {
 string ResNode::getPath() {
     string            str;
     vector<ResNode *> nl;
-    _r_getPath(nl);
+    rGetPath(nl);
     const int n = static_cast<int>(nl.size());
     for (int i = n - 2; i >= 0; i--) {
         str += nl[i]->m_name;
@@ -54,9 +54,9 @@ string ResNode::getPath() {
     return str;
 }
 
-bool ResNode::_r_getPath(vector<ResNode *> &nl) {
+bool ResNode::rGetPath(vector<ResNode *> &nl) {
     nl.push_back(this);
-    return !getParent() || getParent()->_r_getPath(nl);
+    return !getParent() || getParent()->rGetPath(nl);
 }
 
 void ResNode::logtree(const int level) {
@@ -67,7 +67,7 @@ void ResNode::logtree(const int level) {
         }
     }
 
-    for (const auto &node : m_node) {
+    for (const auto &node : m_children) {
         node->logtree(level + 1);
     }
 }
@@ -76,8 +76,8 @@ ResNode *ResNode::add(Ptr node) {
     if (!node) {
         return nullptr;
     }
-    m_node.emplace_back(std::move(node));
-    const auto rnode = m_node.back().get();
+    m_children.emplace_back(std::move(node));
+    const auto rnode = m_children.back().get();
     rnode->setParent(this);
     return rnode;
 }
@@ -89,7 +89,7 @@ ResNode *ResNode::setParent(ResNode *parent) {
 }
 
 ResNode *ResNode::getFlag(const string &flagName) const {
-    for (const auto &node : m_node) {
+    for (const auto &node : m_children) {
         if (node->isFlag(flagName)) {
             return node.get();
         }
@@ -99,7 +99,7 @@ ResNode *ResNode::getFlag(const string &flagName) const {
 
 void ResNode::process() {
     onProcess();
-    for (const auto &node : m_node) {
+    for (const auto &node : m_children) {
         node->process();
     }
 }
@@ -109,9 +109,26 @@ bool ResNode::load() {
 
     try {
         onLoad();
-        for (const auto &node : m_node) {
-            node->load();
+
+        for (auto nodeIt = m_children.begin(); nodeIt != m_children.end(); ++nodeIt) {
+            auto& node = *nodeIt->get();
+            node.load();
+
+            // resolve a bare reference like `chtest.sample-image`
+            if (!node.getName().empty() && node.isReference()) {
+                if (const auto ref = getRoot()->findNode(node.getName()); ref && ref != this && m_parent) {
+                    for (const auto &child : ref->m_children) {
+                        if (findNode(child->m_name) != nullptr) {
+                            continue;
+                        }
+                        m_children.insert(m_children.begin(), clone(child.get()));
+                        m_children.front().get()->setParent(this);
+                    }
+                    nodeIt = --m_children.end();
+                }
+            }
         }
+
         return true;
     } catch (std::runtime_error &err) {
         LOGE << err.what() << endl;
@@ -126,7 +143,7 @@ bool ResNode::grabNode(ResNode *from) {
     srcLineIndex = from->srcLineIndex;
     setAssetManager(from->getAssetManager());
 
-    for (Ptr &node : from->m_node) {
+    for (Ptr &node : from->m_children) {
         add(std::move(node));
     }
 
@@ -154,20 +171,20 @@ ResNode::Ptr ResNode::choose() {
 }
 
 ResNode::Ptr ResNode::preprocess(const int level) {
-    const int   n = static_cast<int>(m_node.size());
+    const int   n = static_cast<int>(m_children.size());
     Ptr         pret;
 
     for (int i = 0; i < n; i++) {
-        if (const auto node = m_node[i].get(); (pret = node->choose()) != nullptr) {
+        if (const auto node = m_children[i].get(); (pret = node->choose()) != nullptr) {
             const auto newNode = pret.get();
             newNode->setParent(this);
             newNode->grabNode(node);
 
-            m_node[i] = std::move(pret);  // previous node gets deleted here
+            m_children[i] = std::move(pret);  // previous node gets deleted here
         }
     }
 
-    for (const auto &nd : m_node) {
+    for (const auto &nd : m_children) {
         nd->preprocess(level + 1);
     }
 
@@ -188,8 +205,10 @@ ResNode *ResNode::findNode(const string &path) {
         tok.emplace_back(s);
     }
 
-    ResNode *r            = findNode(tok, 0);
-    m_findNodeCache[path] = r;
+    const auto r = findNode(tok, 0);
+    if (r != nullptr) {
+        m_findNodeCache[path] = r;
+    }
 
     return r;
 }
@@ -235,8 +254,8 @@ tuple<ResNode*, unitType, std::string> ResNode::findNumericNode(const string &pa
 }
 
 ResNode *ResNode::getByName(const string &name) const {
-    if (!m_node.empty()) {
-        for (const auto &node : m_node) {
+    if (!m_children.empty()) {
+        for (const auto &node : m_children) {
             if (node->isName(name)) {
                 return node.get();
             }
@@ -267,7 +286,7 @@ ResNode *ResNode::findNodeFromNode(const string &path, ResNode *rnode) {
 // ---------------------------------------------------[ VALUES ]--------------------------------------------------------
 
 string ResNode::getValue(const string &name, string def) const {
-    for (const auto &node : m_node) {
+    for (const auto &node : m_children) {
         if (node->isName(name)) {
             return node->m_value;
         }
@@ -325,7 +344,7 @@ ParVec ResNode::splitNodeValue(const string &valueName, const char sep) const {
 
 bool ResNode::generateReport(std::vector<e_repitem> &ritem, const int level) {
     ritem.emplace_back(e_repitem{this, level, getPath()});
-    for (const auto &node : m_node) {
+    for (const auto &node : m_children) {
         node->generateReport(ritem, level + 1);
     }
     return true;
@@ -369,4 +388,22 @@ bool ResNode::copy(ResNode *unode) {
     }
     return true;
 }
+
+std::unique_ptr<ResNode> ResNode::clone(const ResNode *unode) {
+    auto out = std::make_unique<ResNode>(m_name, m_glbase);
+
+    out->m_name = unode->m_name;
+    out->m_value = unode->m_value;
+    out->m_func = unode->m_func;
+    out->m_par = unode->m_par;
+    out->srcLineIndex = unode->srcLineIndex;
+    out->setAssetManager(m_assetManager);
+
+    for (const auto& child : unode->m_children) {
+        out->add(clone(child.get()));
+    }
+
+    return out;
+}
+
 }  // namespace ara
