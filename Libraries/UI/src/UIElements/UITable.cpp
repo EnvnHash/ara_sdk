@@ -198,27 +198,26 @@ void UITable::mouseUp(hidData& data) {
 }
 
 bool UITable::insertRow(const int at, const int count, const float size, const bool percent, const bool fixed,
-    const float minPixSize, const float maxPixSize) {
-    const Table_rc tb{size,
-                 size <= 0 ? dTableType::Undef
-                 : percent ? dTableType::Percent
-                           : dTableType::Pix,
-                 fixed, {minPixSize, maxPixSize}};
-    m_cells(0).ins(at, count, tb);
-    initNewCellNode();
+                        const float minPixSize, const float maxPixSize) {
+    insertColumnOrRow(at, count, size, percent, fixed, minPixSize, maxPixSize, 0);
     return true;
 }
 
 bool UITable::insertColumn(const int at, const int count, const float size, const bool percent, const bool fixed,
                            const float minPixSize, const float maxPixSize) {
+    insertColumnOrRow(at, count, size, percent, fixed, minPixSize, maxPixSize, 1);
+    return true;
+}
+
+void UITable::insertColumnOrRow(const int at, const int count, const float size, const bool percent, const bool fixed,
+                                const float minPixSize, const float maxPixSize, const int32_t idx) {
     const Table_rc tb{size,
                  size <= 0 ? dTableType::Undef
                  : percent ? dTableType::Percent
                            : dTableType::Pix,
                  fixed, {minPixSize, maxPixSize}};
-    m_cells(1).ins(at, count, tb);
+    m_cells(idx).ins(at, count, tb);
     initNewCellNode();
-    return true;
 }
 
 void UITable::initNewCellNode() {

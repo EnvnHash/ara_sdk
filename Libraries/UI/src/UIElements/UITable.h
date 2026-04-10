@@ -93,6 +93,8 @@ public:
                             float minPixSize = -1, float maxPixSize = -1);  // at: -1 means at the end (append)
     virtual bool insertColumn(int at, int count, float size, bool percent = false, bool fixed = false,
                               float minPixSize = -1, float maxPixSize = -1);
+    virtual void insertColumnOrRow(int at, int count, float size, bool percent, bool fixed, float minPixSize,
+                                    float maxPixSize, int32_t idx);
     virtual void initNewCellNode();
 
     virtual Table& getTable() { return m_cells; }
