@@ -427,8 +427,21 @@ bool ResNode::copy(ResNode *unode) {
     return true;
 }
 
-template std::unique_ptr<ResNode> ResNode::clone<ResNode>(ResNode *unode);
-template std::unique_ptr<AssetFont> ResNode::clone<AssetFont>(ResNode *unode);
-template std::unique_ptr<AssetColor> ResNode::clone<AssetColor>(ResNode *unode);
+std::unique_ptr<ResNode> ResNode::clone(const ResNode *unode) {
+    auto out = std::make_unique<ResNode>(m_name, m_glbase);
+
+    out->m_name = unode->m_name;
+    out->m_value = unode->m_value;
+    out->m_func = unode->m_func;
+    out->m_par = unode->m_par;
+    out->srcLineIndex = unode->srcLineIndex;
+    out->setAssetManager(m_assetManager);
+
+    for (const auto& child : unode->m_children) {
+        out->add(clone(child.get()));
+    }
+
+    return out;
+}
 
 }  // namespace ara

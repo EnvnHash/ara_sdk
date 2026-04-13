@@ -810,7 +810,7 @@ UINode::~UINode() {
         }
 
         if (m_sharedRes->win) {
-            auto win = static_cast<UIWindow*>(m_sharedRes->win);
+            const auto win = static_cast<UIWindow*>(m_sharedRes->win);
             win->removeGlCbs(this);  // remove all callbacks issued by this Node
             win->onNodeRemove(this);
         }

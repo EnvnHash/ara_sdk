@@ -12,7 +12,7 @@ using namespace glm;
 
 namespace ara::UiUnitTest::ButtonTests{
 
-Button& setupTestButton(UIApplication& app, Property<bool>* prop=nullptr) {
+Button& setupTestButton(const UIApplication& app, Property<bool>* prop=nullptr) {
     auto rootNode = app.getMainWindow()->getRootNode();
     auto& button = rootNode->push<Button>(UINodePars{
         .size = ivec2{200, 100},
@@ -27,7 +27,7 @@ Button& setupTestButton(UIApplication& app, Property<bool>* prop=nullptr) {
     button.setFontSize(30);
     button.setText("HelloBut");
     button.setTextAlign(align::center, valign::center);
-    button.setBackgroundColor(glm::vec4{0.4f, 0.4, 0.8f, 1.f}, state::selected);
+    button.setBackgroundColor(vec4{0.4f, 0.4, 0.8f, 1.f}, state::selected);
 
     if (prop) {
         button.setIsToggle(true);
@@ -37,7 +37,7 @@ Button& setupTestButton(UIApplication& app, Property<bool>* prop=nullptr) {
     return button;
 }
 
-Button& setupAndDrawButton(UIApplication& app, Property<bool>* prop=nullptr) {
+Button& setupAndDrawButton(const UIApplication& app, Property<bool>* prop=nullptr) {
     auto& but = setupTestButton(app, prop);
     app.getWinBase()->draw(0, 0, 0);
     app.getMainWindow()->swap();
@@ -45,9 +45,9 @@ Button& setupAndDrawButton(UIApplication& app, Property<bool>* prop=nullptr) {
 }
 
 TEST(UITest, ButtonTests) {
-    appBody([&](UIApplication& app){
+    appBody([&](const UIApplication& app){
         setupTestButton(app);
-    }, [&](UIApplication& app){
+    }, [&](const UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "butt_test.png",
                                   app.getWinBase()->getWidth(),
                                   app.getWinBase()->getHeight(),
@@ -58,7 +58,7 @@ TEST(UITest, ButtonTests) {
 TEST(UITest, ButtonClickTests) {
     bool flag = false;
 
-    appBody([&](UIApplication& app){
+    appBody([&](const UIApplication& app){
         setupTestButton(app).setClickedCb([&]{
             flag = true;
         });
@@ -68,7 +68,7 @@ TEST(UITest, ButtonClickTests) {
 
         app.getMainWindow()->onMouseDownLeft(100, 50, false, false, false);
         app.getMainWindow()->onMouseUpLeft();
-    }, [&](UIApplication& app){
+    }, [&](const UIApplication& app){
         ASSERT_TRUE(flag);
         compareFrameBufferToImage(filesystem::current_path() / "butt_test.png",
                                   app.getWinBase()->getWidth(),
@@ -82,7 +82,7 @@ TEST(UITest, ButtonPropertyTests) {
     appBody([&](UIApplication& app){
         setupAndDrawButton(app, &prop);
         prop = true;
-    }, [&](UIApplication& app){
+    }, [&](const UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "butt_test_selected.png",
                                   app.getWinBase()->getWidth(),
                                   app.getWinBase()->getHeight(), 1);
@@ -100,7 +100,7 @@ TEST(UITest, ButtonPropertyOnChangedTests) {
 
         app.getWinBase()->draw(0, 0, 0);
         app.getMainWindow()->swap();
-    }, [&](UIApplication& app){
+    }, [&](const UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "butt_test_selected.png",
                                   app.getWinBase()->getWidth(),
                                   app.getWinBase()->getHeight(), 1);

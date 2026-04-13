@@ -137,6 +137,7 @@ public:
 
     virtual void onProcess() { }
     bool load();  // if any node fails to load will stop and return false
+    void insertChild(const ResNode * fromNode, ResNode* toNode);
     virtual bool onLoad() { return true; }
     virtual bool onResourceChange(bool deleted, const std::string &res_fpath) { return true; };  // Called if a loadresource source has changed and used by this node
     virtual bool onSourceResUpdate(bool deleted, ResNode *unode) { return true; }  // Called when the source resource file has changed, this function will
