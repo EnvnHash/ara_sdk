@@ -34,7 +34,7 @@ public:
     void setOptPerKey(const std::unordered_map<std::string, VariableEditOption<>>& a) { m_optPerKey = a; }
 
     auto& getVariableEdits() { return m_variableEdits; }
-
+    auto& getStandardExcludes() { return m_stdExcludeKeys; }
 private:
     Label*      m_label = nullptr;
     Node*       m_node = nullptr;
@@ -43,7 +43,8 @@ private:
     int32_t     m_labelWidth = 180;
     arrange     m_editAlign{};
 
-    std::vector<std::string>                                    m_excludeKeys;
+    std::vector<std::string>                                    m_stdExcludeKeys { "name", "uuid", "typeName" };
+    std::vector<std::string>                                    m_excludeKeys { m_stdExcludeKeys };
     std::unordered_map<std::string, VariableEditOption<>>       m_optPerKey;
     std::unordered_map<std::string, NodeMemberVariableEdit*>    m_variableEdits;
 };

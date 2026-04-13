@@ -97,8 +97,10 @@ Font* Label::updateDGV(bool* checkFontTexture) {
         // so the VAO draw data needs to be updated (updateIndDrawData)
         m_fontLayerTexChanged = true;
 
-        // in case num of layers or texId has changed, the DrawManager needs to updated it's fontTex data
-        m_updateDrawSetFontData = m_riFont->getLayerTexId() != m_glFontPar.texId || m_riFont->getLayerTexNrLayers() != m_glFontPar.nrLayers;
+        if (m_riFont) {
+            // in case num of layers or texId has changed, the DrawManager needs to updated it's fontTex data
+            m_updateDrawSetFontData = m_riFont->getLayerTexId() != m_glFontPar.texId || m_riFont->getLayerTexNrLayers() != m_glFontPar.nrLayers;
+        }
         getSharedRes()->reqRedraw();
     });
 

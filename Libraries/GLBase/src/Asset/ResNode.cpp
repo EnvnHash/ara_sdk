@@ -117,13 +117,7 @@ bool ResNode::load() {
             // resolve a bare reference like `chtest.sample-image`
             if (!node.getName().empty() && node.isReference()) {
                 if (const auto ref = getRoot()->findNode(node.getName()); ref && ref != this && m_parent) {
-                    for (const auto &child : ref->m_children) {
-                        if (findNode(child->m_name) != nullptr) {
-                            continue;
-                        }
-                        m_children.insert(m_children.begin(), clone(child.get()));
-                        m_children.front().get()->setParent(this);
-                    }
+                    insertChild(ref, this);
                     nodeIt = --m_children.end();
                 }
             }
@@ -133,6 +127,16 @@ bool ResNode::load() {
     } catch (std::runtime_error &err) {
         LOGE << err.what() << endl;
         return false;
+    }
+}
+
+void ResNode::insertChild(const ResNode * fromNode, ResNode* toNode) {
+    for (const auto &child : fromNode->m_children) {
+        if (toNode->findNode(child->m_name) != nullptr) {
+            continue;
+        }
+        toNode->m_children.insert(toNode->m_children.begin(), clone(child.get()));
+        toNode->m_children.front().get()->setParent(toNode);
     }
 }
 

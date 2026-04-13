@@ -124,7 +124,11 @@ public:
             }
             uiItems.back()->addStyleClass(getStyleClass() + ".item");
             uiItems.back()->setData(*li, i);
-            uiItems.back()->addMouseClickCb([this, i, li](hidData& data) {
+            uiItems.back()->addMouseClickCb([this, i, li, &uiItems](hidData& data) {
+                for (auto it : uiItems) {
+                    dynamic_cast<UINode*>(it)->setSelected(false, true);
+                }
+                dynamic_cast<UINode*>(uiItems[i])->setSelected(true, true);
                 if (m_clickCb){
                     m_clickCb(*li, i, data);
                 }

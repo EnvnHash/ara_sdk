@@ -473,7 +473,9 @@ protected:
         using Container = std::decay_t<NodeValueType>;
         constexpr auto tpIndex = getTpi<Container>();
         m_memberVars.emplace(*name, memberVar{
-            .get = [&]{ return arg; },
+            .get = [&] {
+                return arg;
+            },
             .set = [&] (std::any& val, const size_t idx) {
                 callChangeCbs(cbType::preChange);
                 if constexpr (is_index_assignable<Container>::value || is_glm_vec_v<Container>) {
