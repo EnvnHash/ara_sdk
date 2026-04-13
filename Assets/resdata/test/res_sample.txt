@@ -8,7 +8,7 @@ demo_style {
 	height:20%
 	font {font:"regular" size:50}
 	text-color:colors.tone_1
-	bkcolor:colors.blue
+	bgcolor:colors.blue
 	border-color:rgb(180,180,180)
 	border-radius:10
 	border-width:10
@@ -17,7 +17,7 @@ demo_style {
 	# and is used when the mouse is hovering over the element
 	highLighted {
 		text-color:colors.white
-		bkcolor:colors.black
+		bgcolor:colors.black
 		border-color:rgba(255,280,255,80)
 		text:"highlighted"
 		font {font:"bold" size:50}
@@ -46,7 +46,7 @@ chtest {
 
 	sample-image {
 		padding:10
-		bkcolor:rgb(140,100,200)
+		bgcolor:rgb(140,100,200)
 
 		image:sampletex
 		img-scale:0.2 		# works only in when img-flag is set to "scale"
@@ -61,13 +61,13 @@ infoDiag {
 	border-width:1
 	text-align:left
 	border-color:rgb(110,110,110)
-	bkcolor:rgb(30,30,30)
+	bgcolor:rgb(30,30,30)
 
 	message {
 
 		border-width:1px
 		border-radius:4px
-		bkcolor:colors.background
+		bgcolor:colors.background
 		font {font:"regular" size:21}
 		text-color:rgb(255,255,255)
 
@@ -85,7 +85,7 @@ infoDiag {
 	}
 
 	okButt {
-		bkcolor:rgb(92, 92, 92)
+		bgcolor:rgb(92, 92, 92)
 		align:center
 		v-align:bottom
 		y: -20px
@@ -97,7 +97,7 @@ infoDiag {
 	}
 
 	cancelButt {
-		bkcolor:rgb(92, 92, 92)
+		bgcolor:rgb(92, 92, 92)
 		align:center
 		v-align:bottom
 		y:-20px

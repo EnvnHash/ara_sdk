@@ -28,6 +28,7 @@ public:
     explicit NodeMemberVariableEdit(const EditPar& initData);
 
     void init() override;
+    void createCheckBox(bool val);
 
     template<typename T>
     UIEdit* createSingleEdit(T val, const int32_t& width, const int32_t& idx=-1) {
@@ -39,11 +40,11 @@ public:
         auto& edit = push<UIEdit>(UINodePars{
             .pos = glm::ivec2{ m_labelWidth + m_spacing.x + offset.x, offset.y },
             .size = { glm::ivec2{ width, m_lineHeight } },
-            .bgColor = glm::vec4{.15f, .15f, .15f, 1.f},
+            .bgColor = m_stdBgColor,
             .style = getStyleClass()+".edit",
-            .borderWidth = 2,
-            .borderRadius = 4,
-            .borderColor = glm::vec4{.3f, .3f, .3f, 1.f},
+            .borderWidth = m_stdBorderWidth,
+            .borderRadius = m_stdBorderRadius,
+            .borderColor = m_stdBorderColor,
             .padding = glm::vec4{2.f, 2.f, 2.f, 2.f},
         });
         edit.setFontSize(22);
@@ -144,6 +145,10 @@ protected:
     std::vector<UIEdit*>    m_arrayEdit;
     int32_t                 m_labelWidth = 180;
     int32_t                 m_lineHeight = 22;
+    int32_t                 m_stdBorderWidth = 2;
+    int32_t                 m_stdBorderRadius = 4;
+    glm::vec4               m_stdBorderColor = glm::vec4{.3f, .3f, .3f, 1.f};
+    glm::vec4               m_stdBgColor = glm::vec4{.15f, .15f, .15f, 1.f};
     glm::ivec2              m_spacing = { 3, 3 };
     int32_t                 m_yOffs = 0;
     size_t                  m_numEditsPerRow = 4;

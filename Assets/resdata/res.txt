@@ -108,7 +108,7 @@ propertySlider {
 		height:80%
 		v-align:center
 		text-valign:center
-		bkcolor:rgba(255,255,255,30)
+		bgcolor:rgba(255,255,255,30)
 	}
 }
 
@@ -134,13 +134,13 @@ infoDiag {
 	border-width:1
 	text-align:left
 	border-color:rgb(110,110,110)
-	bkcolor:colors.darkBackground
+	bgcolor:colors.darkBackground
 
 	message {
 		
 		border-width:1px
 		border-radius:4px
-		bkcolor:colors.background
+		bgcolor:colors.background
 		font {font:"regular" size:21}
 		text-color:colors.white
 
@@ -158,7 +158,7 @@ infoDiag {
 	}
 
 	okButt {
-		bkcolor:colors.lightBackground
+		bgcolor:colors.lightBackground
 		align:center
 		v-align:bottom
 		y: -20px
@@ -170,7 +170,7 @@ infoDiag {
 	}
 	
 	cancelButt {
-		bkcolor:colors.lightBackground
+		bgcolor:colors.lightBackground
 		align:center
 		v-align:bottom
 		y:-20px
@@ -216,7 +216,7 @@ styles {
 	    x: 0
 	    y: 100
 		padding:10,10,10,10
-		bkcolor:rgb(140,100,200)
+		bgcolor:rgb(140,100,200)
 		border-width:2
 		border-radius:15
 		border-color:rgb(120,200,100)
@@ -226,7 +226,7 @@ styles {
 	    width: 90%
 	    height: 90%
 		padding:0,0,0,0
-		bkcolor:hsl(240,100,50)
+		bgcolor:hsl(240,100,50)
 		border-width:3
 	}
 }
@@ -238,7 +238,7 @@ text_test {
     width: 450
     height: 30px
     y: 50
-	bkcolor:hsla(40,30,50, 0.5) 
+	bgcolor:hsla(40,30,50, 0.5)
 	text-color:hsla(190,100,50, 1.0) 
 	font {font:"Fonts/verdana.ttf" size:14}
 	#font {font:"Fonts/Code New Roman.otf" size:24}
@@ -343,7 +343,7 @@ chtest {
 	
 	sample-image {
 		padding:10
-		bkcolor:rgb(140,100,200)
+		bgcolor:rgb(140,100,200)
 	    x: 500
 	    y: 50
         width: 720
@@ -366,7 +366,7 @@ chtest {
 		height:100px
 		x:0px
 		y:320px
-		bkcolor:colors.lightBackground
+		bgcolor:colors.lightBackground
 		
 		image:imageButText
 		imageOnState:imageButTextSel
@@ -383,14 +383,61 @@ defTest {
 	y:200px
 	width:defaults.projNodeWidth
 	height:200px
-	bkcolor:rgb(255,0,0)
+	bgcolor:rgb(255,0,0)
 }
 
 defTest2 {
-	bkcolor:rgb(0,0,255)
+	bgcolor:rgb(0,0,255)
 }
  
 demos {
+    dataBinding {
+        nodeEditHeadl {
+            y:50px
+            width: 300px
+            height: 20px
+            font {font:"Fonts/verdana.ttf" size:22}
+            text: "NodeEdit"
+            text-align: left
+        }
+
+        nodeEdit {
+            y:80px
+            width: 300px
+
+            variable {
+                label {
+                    font {font:"Fonts/verdana.ttf" size:18}
+                }
+
+                checkbox {
+                    selected {
+                        bgcolor : colors.blue
+                    }
+                }
+
+                edit {
+                    font {font:"Fonts/verdana.ttf" size:17}
+                }
+            }
+        }
+
+        propHeadl {
+            y:420px
+            width: 300px
+            height: 20px
+            font {font:"Fonts/verdana.ttf" size:22}
+            text: "Property Slider"
+            text-align: left
+        }
+
+        propSlider {
+            y:455px
+            width: 300px
+            height: 20px
+        }
+    }
+
 	edit {
 		ed-sl-label {
 			width:150px
@@ -421,13 +468,13 @@ demos {
 			y:90px
 			
 			color:hsla(220,10,90,1)
-			bkcolor:hsla(120,10,10,1)
+			bgcolor:hsla(120,10,10,1)
 		
 			selected {
 				border-width:0
 				border-radius:0
 				border-color:rgb(0,160,0)
-				bkcolor:hsla(120,20,30,1)
+				bgcolor:hsla(120,20,30,1)
 			}
 			
 			padding:2
@@ -450,7 +497,7 @@ demos {
 			y:130px
 			
 			color:hsla(220,10,90,1)
-			bkcolor:hsla(20,50,20,1)
+			bgcolor:hsla(20,50,20,1)
 
 			padding:2
 			
@@ -466,7 +513,7 @@ demos {
 			height:300px
 			
 			color:hsla(220,10,90,1)
-			bkcolor:hsla(220,10,20,1)
+			bgcolor:hsla(220,10,20,1)
 		
 			border-width:2
 			border-radius:0
@@ -486,7 +533,7 @@ demos {
 			width:500px
 			height:200px
 
-			bkcolor:hsla(220,10,20,1)
+			bgcolor:hsla(220,10,20,1)
 			padding:5
 
 			font {font:"Fonts/verdana.ttf" size:18}
@@ -506,7 +553,7 @@ demos {
 			height:60px
 			
 			color:hsla(220,10,90,1)
-			bkcolor:hsla(220,10,20,1)
+			bgcolor:hsla(220,10,20,1)
 		
 			border-width:2
 			border-color:hsla(20,80,50,1)
@@ -542,7 +589,7 @@ but_style_test {
 	width:100px
 	height:50px
 	
-	bkcolor:rgb(200,0,0)
+	bgcolor:rgb(200,0,0)
 	
 	text:"e"
 	
@@ -561,17 +608,17 @@ test_corner {
 	border-radius:20
 	border-width:1
 	border-color:rgb(0,255,0)
-	bkcolor:colors.red
+	bgcolor:colors.red
 }
 
 selected_test {
 	width:50px
 	height:50px
 	x:200px
-	bkcolor:rgb(0,0,255)
+	bgcolor:rgb(0,0,255)
 
 	selected {
-		bkcolor:rgb(0,255,255)
+		bgcolor:rgb(0,255,255)
 	}
 }
 
@@ -580,11 +627,11 @@ mainWndCtrl {
 }
 
 list_demo {
-    bkcolor: colors.black
+    bgcolor: colors.black
 
     item {
         padding: 10
-        bkcolor: rgb(40,40,60)
+        bgcolor: rgb(40,40,60)
         color: rgb(255, 255, 255)
         text-color: rgb(255, 255, 255)
     	font {font:"Fonts/verdana.ttf" size:18}

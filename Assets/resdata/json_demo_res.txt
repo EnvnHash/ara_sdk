@@ -86,7 +86,7 @@ propertySlider {
 		height:80%
 		v-align:center
 		text-valign:center
-		bkcolor:rgba(255,255,255,30)
+		bgcolor:rgba(255,255,255,30)
 	}
 }
 
@@ -112,13 +112,13 @@ infoDiag {
 	border-width:1
 	text-align:left
 	border-color:rgb(110,110,110)
-	bkcolor:colors.darkBackground
+	bgcolor:colors.darkBackground
 
 	message {
 
 		border-width:1px
 		border-radius:4px
-		bkcolor:colors.background
+		bgcolor:colors.background
 		font {font:"regular" size:21}
 		text-color:colors.white
 
@@ -136,7 +136,7 @@ infoDiag {
 	}
 
 	okButt {
-		bkcolor:colors.lightBackground
+		bgcolor:colors.lightBackground
 		align:center
 		v-align:bottom
 		y: -20px
@@ -148,7 +148,7 @@ infoDiag {
 	}
 
 	cancelButt {
-		bkcolor:colors.lightBackground
+		bgcolor:colors.lightBackground
 		align:center
 		v-align:bottom
 		y:-20px

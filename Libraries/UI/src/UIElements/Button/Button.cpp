@@ -22,7 +22,7 @@ Button::Button(const LabelPars &initData) : Label(initData) {
 }
 
 Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::string& text,
-               pair<align, valign> align, const std::string& font_type, int font_height)
+               pair<align, valign> align, const std::string& fontType, int fontHeight)
     : Label(LabelPars{
           .pos = static_cast<glm::ivec2>(pos),
           .size = static_cast<glm::ivec2>(size),
@@ -31,7 +31,7 @@ Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::s
           .text = text,
           .textAlignX = align.first,
           .textAlignY = align.second,
-          .fontType = font_type,
+          .fontType = fontType,
           .fontHeight=0
       }), m_typoColor({0.f, 0.f, 0.f, 1.f}) {
     setName(getTypeName<Button>());
@@ -48,7 +48,7 @@ void Button::mouseMove(hidData& data) {
     data.actIcon  = ui_MouseIcon;
     data.consumed = true;
 
-    if (!m_mouseIsIn && !m_show_alt_text) {
+    if (!m_mouseIsIn && !m_showAltText) {
         m_mouseInTime = std::chrono::system_clock::now();
     }
 
@@ -61,7 +61,7 @@ void Button::mouseMove(hidData& data) {
 
 void Button::mouseOut(hidData& data) {
     m_mouseIsIn     = false;
-    m_show_alt_text = false;
+    m_showAltText = false;
     UINode::mouseOut(data);
 }
 

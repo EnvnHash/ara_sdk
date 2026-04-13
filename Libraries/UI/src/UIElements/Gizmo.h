@@ -78,7 +78,7 @@ protected:
     VAO         *m_crossVao = nullptr;
     FBO         *m_sceneFbo = nullptr;
     UISharedRes  m_auxSharedRes;
-    AssetColor  *m_bkColor = nullptr;
+    AssetColor  *m_bgcolor = nullptr;
     sceneData    m_sd;
 
     UINode                        m_auxUIRoot;

@@ -118,7 +118,7 @@ void UIEdit::drawCaretSelectedState(bool& updtTree) {
     }
 
     auto tCaretPos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
-    tCaretPos = tCaretPos + m_alignOffset;
+    tCaretPos = tCaretPos + m_offset + m_alignOffset;
     tCaretPos.x += m_lineOverflowOffset.second;
     setCaretRespectAlignment(tCaretPos);
 

@@ -6,6 +6,8 @@
 #include "UIElements/Text/Label.h"
 #include "UIElements/DataBinding/NodeMemberVariableEdit.h"
 
+#include "UIElements/Button/Button.h"
+
 using namespace std;
 using namespace glm;
 
@@ -70,6 +72,7 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
 
     auto stdWidth = -m_labelWidth - m_spacing.x;
     static std::unordered_map<tpi, std::function<void(NodeMemberVariableEdit* ctx)>> createMap = {
+        { tpi::tp_bool, [] (NodeMemberVariableEdit* ctx) { ctx->createCheckBox(std::any_cast<bool>(ctx->getMemVar()->get())); }},
         { tpi::tp_float, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<float>(std::any_cast<float>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_int32, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<int32_t>(std::any_cast<int32_t>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_string, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<std::string>( std::any_cast<std::string>(ctx->getMemVar()->get()), stdWidth); }},
@@ -85,7 +88,32 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
         { tpi::none, [] (NodeMemberVariableEdit* ctx) { LOGE << "NodeMemberVariableEdit::setEditValFromMemberVar Error: tpi is none"; }},
     };
 
-    createMap[m_memVar->typeIndex](this);
+    if (createMap.contains(m_memVar->typeIndex)) {
+        createMap[m_memVar->typeIndex](this);
+    } else {
+        LOGE << "NodeMemberVariableEdit::setEditValFromMemberVar Error: tpi not found";
+    }
+}
+
+void NodeMemberVariableEdit::createCheckBox(bool val) {
+    auto& butt = push<Button>(UINodePars{
+        .pos = ivec2{ m_labelWidth + m_spacing.x, 0 },
+        .size = { ivec2{ m_lineHeight, m_lineHeight } },
+        .bgColor = m_stdBgColor,
+        .style = getStyleClass()+".checkbox",
+        .borderWidth = m_stdBorderWidth,
+        .borderRadius = m_stdBorderRadius,
+        .borderColor = m_stdBorderColor,
+    });
+
+    butt.setIsToggle(true);
+    butt.toggle(val);
+    butt.setToggleCb([&](bool newVal) {
+        if (m_memVar) {
+            std::any anyVal = newVal;
+            m_memVar->set(anyVal, 0);
+        }
+    });
 }
 
 void NodeMemberVariableEdit::setLabelText(const std::string& text) {

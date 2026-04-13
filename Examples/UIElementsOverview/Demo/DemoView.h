@@ -10,6 +10,7 @@
 #include <UIElements/Text/Label.h>
 #include <UIElements/UITable.h>
 
+#include "DataBindingTestNode.h"
 #include "Transitions/Carrousel.h"
 
 namespace ara {
@@ -22,26 +23,50 @@ private:
     glm::vec4                   m_textcolor=glm::vec4{1.f};
 };
 
-class DemoView_Spinner : public DemoView {
+class DemoView_Carrousel : public DemoView {
 public:
-    DemoView_Spinner();
+    DemoView_Carrousel();
     void                init() override;
+    void                addCarrousel(CarrouselMode cm, int yOffs);
 };
 
-class DemoView_Table : public DemoView {
+class DemoView_Collapsibles : public DemoView {
 public:
-    DemoView_Table();
+    DemoView_Collapsibles();
     void                init() override;
-    UITable*			ui_Table=nullptr;
-    glm::vec4           m_textColor{1.f};
+private:
+    ComboBox*           m_combo = nullptr;
+    Node                m_node;
 };
 
-class DemoView_Table_2 : public DemoView {
+class DemoView_DataBinding : public DemoView {
 public:
-    DemoView_Table_2();
+    DemoView_DataBinding();
     void                init() override;
-    UITable*		ui_Table=nullptr;
+    void                setupNodeEdit();
+    void                setupPropertyEdit();
+private:
+    Property<float>     m_prop {0.f, 0.f, 1.f, 0.1f};   // create a property {default-value, min, max, step}
+    DataBindingTestNode m_node;
 };
+
+class DemoView_Edit : public DemoView {
+public:
+    DemoView_Edit();
+    void                init() override;
+
+    TypoGlyphMap*	tfont=nullptr;
+private:
+    Shaders* m_glyphShader=nullptr;
+};
+
+#ifndef __ANDROID__
+class DemoView_FloatingMenu : public DemoView {
+public:
+    DemoView_FloatingMenu();
+    void                init() override;
+};
+#endif
 
 class DemoView_ScrollView : public DemoView {
 public:
@@ -88,20 +113,25 @@ public:
     ListProperty<std::string>       m_data3;
 };
 
-class DemoView_Collapsibles : public DemoView {
+class DemoView_Spinner : public DemoView {
 public:
-    DemoView_Collapsibles();
+    DemoView_Spinner();
     void                init() override;
-private:
-    ComboBox*           m_combo = nullptr;
-    Node                m_node;
 };
 
-class DemoView_Carrousel : public DemoView {
+class DemoView_Table : public DemoView {
 public:
-    DemoView_Carrousel();
+    DemoView_Table();
     void                init() override;
-    void                addCarrousel(CarrouselMode cm, int yOffs);
+    UITable*			ui_Table=nullptr;
+    glm::vec4           m_textColor{1.f};
+};
+
+class DemoView_Table_2 : public DemoView {
+public:
+    DemoView_Table_2();
+    void                init() override;
+    UITable*		ui_Table=nullptr;
 };
 
 class DemoView_Resources : public DemoView {
@@ -119,26 +149,6 @@ class DemoView_ZoomView : public DemoView {
 public:
     DemoView_ZoomView();
     void                init() override;
-
-private:
 };
 
-class DemoView_Edit : public DemoView {
-public:
-    DemoView_Edit();
-    void                init() override;
-
-    TypoGlyphMap*	tfont=nullptr;
-private:
-    Shaders* m_glyphShader=nullptr;
-};
-
-#ifndef __ANDROID__
-class DemoView_FloatingMenu : public DemoView {
-public:
-    DemoView_FloatingMenu();
-    virtual void                init();
-private:
-};
-#endif
 }

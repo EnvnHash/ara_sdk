@@ -22,7 +22,7 @@ void UINodeStyle::loadStyleDefaults() {
     m_setStyleFunc[state::none][styleInit::align]     = [this] { setAlignX(align::left); };
     m_setStyleFunc[state::none][styleInit::valign]    = [this] { setAlignY(valign::top); };
     m_setStyleFunc[state::none][styleInit::color]     = [this] { setColor(0.f, 0.f, 0.f, 0.f); };
-    m_setStyleFunc[state::none][styleInit::bkcolor]   = [this] { setBackgroundColor(0.f, 0.f, 0.f, 0.f); };
+    m_setStyleFunc[state::none][styleInit::bgcolor]   = [this] { setBackgroundColor(0.f, 0.f, 0.f, 0.f); };
     m_setStyleFunc[state::none][styleInit::brdColor]  = [this] { setBorderColor(0.f, 0.f, 0.f, 0.f); };
     m_setStyleFunc[state::none][styleInit::brdWidth]  = [this] { setBorderWidth(0); };
     m_setStyleFunc[state::none][styleInit::brdRadius] = [this] { setBorderRadius(0); };
@@ -113,7 +113,7 @@ void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styl
     updateStylePixAndPercent(node, st, "height", styleInit::height, [this, st]<typename T>(T val){ setHeight(val, st); });
 
     updateStyleColor(node, st, "color", styleInit::color, [this, st](const vec4& col) { setColor(col.r, col.g, col.b, col.a, st); });
-    updateStyleColor(node, st, "bkcolor", styleInit::bkcolor, [this, st](const vec4& col) { setBackgroundColor(col.r, col.g, col.b, col.a, st); });
+    updateStyleColor(node, st, "bgcolor", styleInit::bgcolor, [this, st](const vec4& col) { setBackgroundColor(col.r, col.g, col.b, col.a, st); });
     updateStyleColor(node, st, "border-color", styleInit::brdColor, [this, st](const vec4& col) { setBorderColor(col.r, col.g, col.b, col.a, st); });
 
     updateStylePixel(node, st, "border-width", styleInit::brdWidth, [this, st](const int32_t val){ setBorderWidth(val, st); });
@@ -342,7 +342,7 @@ void UINodeStyle::setBackgroundColor(const vec4& col, const state st) {
         m_bgColor          = col;
         m_drawParamChanged = true;
     }
-    setStyleInitCol("bkcolor", col, st);
+    setStyleInitCol("bgcolor", col, st);
 }
 
 void UINodeStyle::setAlpha(const float val) {

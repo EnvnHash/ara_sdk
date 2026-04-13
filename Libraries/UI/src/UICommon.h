@@ -29,7 +29,7 @@ enum class styleInit : int32_t {
     align,
     valign,
     color,
-    bkcolor,
+    bgcolor,
     brdColor,
     brdWidth,
     brdRadius,

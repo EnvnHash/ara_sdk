@@ -21,22 +21,23 @@ void UITestApp::init(std::function<void(UINode&)>) {
         });
         tabView.setPadding(10.f);
 
-        tabView.addTab<DemoView_Table>("Table");
-        tabView.addTab<DemoView_Table_2>("Table 2");
-        tabView.addTab<DemoView_Spinner>("Spinner");
+        /*tabView.addTab<DemoView_Carrousel>("Carrousel");
+        tabView.addTab<DemoView_Collapsibles>("Collapsibles");*/
+        tabView.addTab<DemoView_DataBinding>("Data Binding");
+/*        tabView.addTab<DemoView_Edit>("Edit");
+#ifndef __ANDROID__
+        tabView.addTab<DemoView_FloatingMenu>("Floating Menu");
+#endif
         tabView.addTab<DemoView_ScrollView>("Scroll View");
         tabView.addTab<DemoView_ScrollView_2>("Scroll View 2");
         tabView.addTab<DemoView_ScrollView_3>("Scroll View 3");
         tabView.addTab<DemoView_ScrollViewList>("Scroll View List");
-        tabView.addTab<DemoView_Collapsibles>("Collapsibles");
-        tabView.addTab<DemoView_Carrousel>("Carrousel");
+        tabView.addTab<DemoView_Spinner>("Spinner");
+        tabView.addTab<DemoView_Table>("Table");
+        tabView.addTab<DemoView_Table_2>("Table 2");
         tabView.addTab<DemoView_Resources>("Resources");
         tabView.addTab<DemoView_ZoomView>("ZoomView");
-#ifndef __ANDROID__
-        tabView.addTab<DemoView_FloatingMenu>("Floating Menu");
-#endif
-        tabView.addTab<DemoView_Edit>("Edit");
-
+*/
         tabView.setActivateTab(0);
     });
 }

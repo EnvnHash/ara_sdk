@@ -39,7 +39,7 @@ void Gizmo::init() {
 
     // get backgroundcolor
     if (getSharedRes()->res) {
-        m_bkColor = getSharedRes()->res->findNode<AssetColor>(getStyleClass() + ".bkcolor");
+        m_bgcolor = getSharedRes()->res->findNode<AssetColor>(getStyleClass() + ".bgcolor");
     }
 
     // get width height from stylesheets
@@ -515,8 +515,8 @@ bool Gizmo::drawToFbo(const uint32_t& objId) {
     m_fbo[0]->bind(false);
 
     // clear buffer 0
-    if (m_bkColor) {
-        m_fbo[0]->clearToColor(m_bkColor->m_rgba[0], m_bkColor->m_rgba[1], m_bkColor->m_rgba[1], 0.f, 0);
+    if (m_bgcolor) {
+        m_fbo[0]->clearToColor(m_bgcolor->m_rgba[0], m_bgcolor->m_rgba[1], m_bgcolor->m_rgba[1], 0.f, 0);
     } else {
         m_fbo[0]->clearToColor(0.235f, 0.235f, 0.235f, 0.f, 0);
     }

@@ -26,7 +26,7 @@ Carrousel* addCarrousel(UIApplication& app, CarrouselMode cm, int32_t spacing, i
         caru.showArrows(true);
     }
 
-    std::array bkColor { vec4{1.f, 0.f, 0.f, 1.f}, vec4{0.1f, 0.9f, 0.f, 1.f}, vec4{0.1f, 0.2f, 0.8f, 1.f},
+    std::array bgcolor { vec4{1.f, 0.f, 0.f, 1.f}, vec4{0.1f, 0.9f, 0.f, 1.f}, vec4{0.1f, 0.2f, 0.8f, 1.f},
                          vec4{0.7f, 0.3f, 0.2f, 1.f}, vec4{0.6f, 0.4f, 0.3f, 1.f} };
     vec4 col = vec4{0.f, 0.f, 0.f, 1.f};
     std::array<int32_t, 5> slideWidth { 100, 160, 80, 200, 120 };
@@ -40,7 +40,7 @@ Carrousel* addCarrousel(UIApplication& app, CarrouselMode cm, int32_t spacing, i
         auto& lbl = slide->push<Label>();
         lbl.setFont("regular", 80, align::center, valign::center, col);
         lbl.setText(std::to_string(i));
-        lbl.setBackgroundColor(bkColor[i]);
+        lbl.setBackgroundColor(bgcolor[i]);
     }
     return &caru;
 }

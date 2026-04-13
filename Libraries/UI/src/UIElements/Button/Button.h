@@ -9,7 +9,7 @@ public:
     Button();
     explicit Button(const LabelPars& initData);
     Button(glm::vec2 pos, glm::vec2 size, glm::vec4 text_color, glm::vec4 bg_color, const std::string& text,
-           std::pair<align, valign> align, const std::string& font_type, int font_height);
+           std::pair<align, valign> align, const std::string& fontType, int fontHeight);
     ~Button() override = default;
 
     bool draw(uint32_t& objId) override;
@@ -22,28 +22,28 @@ public:
 
     virtual void setProp(Property<bool> &prop);
 
-    [[maybe_unused]] void setAltText(const char *alt_text) { m_alt_text = std::string(alt_text); }
-    [[maybe_unused]] void setAltTextFontSize(uint32_t fontSize) { m_altTextFontSize = fontSize; }
+    [[maybe_unused]] void setAltText(const char *alt_text) { m_altText = std::string(alt_text); }
+    [[maybe_unused]] void setAltTextFontSize(const uint32_t fontSize) { m_altTextFontSize = fontSize; }
     [[maybe_unused]] void setAltTextFontType(const std::string& fontType) { m_altTextFontType = fontType; }
     [[maybe_unused]] void setToggleCb(const std::function<void(bool)>& cbFunc) { m_toggleCbFunc = cbFunc; }
     void setClickedCb(const std::function<void()>& cbFunc) { m_clickedFunc = cbFunc; }
-    void setIsToggle(bool val) { m_isToggle = val; }
+    void setIsToggle(const bool val) { m_isToggle = val; }
 
-    bool m_mouseIsIn     = false;
-    bool m_isToggle      = false;
-    bool m_show_alt_text = false;
+    bool m_mouseIsIn   = false;
+    bool m_isToggle    = false;
+    bool m_showAltText = false;
 
     std::chrono::time_point<std::chrono::system_clock> m_mouseInTime;
 
     uint32_t    m_altTextFontSize = 22;
     glm::vec2   m_textWidth{};
-    glm::vec4   m_alt_text_offs{};
-    glm::mat4   m_alt_text_mat{};
+    glm::vec4   m_altTextOffs{};
+    glm::mat4   m_altTextMat{};
     glm::vec4   m_typoColor{0.f, 0.f, 0.f, 1.f};
 
     std::function<void(bool)> m_toggleCbFunc;
     std::function<void()>     m_clickedFunc;
-    std::string               m_alt_text;
+    std::string               m_altText;
     std::string               m_altTextFontType;
 
     Shaders        *m_stdCol       = nullptr;
