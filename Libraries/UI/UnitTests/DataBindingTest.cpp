@@ -10,39 +10,6 @@ using namespace std;
 
 namespace ara::UiUnitTest::DataBindingTests {
 
-template <typename T>
-class TestNode : public Node {
-public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_testValue)
-    TestNode() { setTypeName<TestNode>(); }
-    T m_testValue{};
-};
-
-template <typename T>
-class TestNode2 : public Node {
-public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_testVal, m_testVal2)
-    TestNode2() { setTypeName<TestNode2>(); }
-        T m_testVal{};
-        T m_testVal2{};
-};
-
-template <typename T>
-auto& addNodeEdit(const UIApplication &app, T& node, const arrange ar = arrange::horizontal, const optional<unordered_map<string, VariableEditOption<>>> alignMap = std::nullopt) {
-    auto& ne = app.getRootNode()->push<NodeEdit>();
-    ne.setEditAlign(ar);
-    if (alignMap.has_value()) {
-        ne.setOptPerKey(alignMap.value());
-    }
-    ne.setLineHeight(22);
-    ne.setSpacing({10, 10});
-    ne.setLabelWidth(100);
-    ne.setNode(node);
-
-    app.getWinBase()->draw(0, 0, 0);
-    app.getMainWindow()->swap();
-    return ne;
-}
 
 TEST(UITest, NodeEditBasicTest) {
     TestNode<int32_t> testNode;

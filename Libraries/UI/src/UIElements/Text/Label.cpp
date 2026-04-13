@@ -70,8 +70,12 @@ void Label::updateStyleIt(ResNode* node, state st, const std::string& styleClass
         auto        size = f->value<int32_t>("size", 0);
         std::string font = f->getValue("font");
 
-        m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size] { setFontSize(size); };
-        m_setStyleFunc[st][styleInit::fontFontFamily] = [this, font] { setFontType(font); };
+        m_setStyleFunc[st][styleInit::fontFontSize]   = [this, size] {
+            setFontSize(size);
+        };
+        m_setStyleFunc[st][styleInit::fontFontFamily] = [this, font] {
+            setFontType(font);
+        };
     }
 }
 

@@ -39,6 +39,8 @@ public:
 
 class ResNode {
 public:
+    enum class ResNodeType : int32_t { standard = 0, font, color };
+
     struct e_error {
         int         lineIndex;  // starting from 0
         std::string errorString;
@@ -73,6 +75,10 @@ public:
     std::string getPath();
     bool        rGetPath(std::vector<ResNode *> &nl);
     ResNode*    findNode(const std::string &path);  // Finds a node in the tree, in the form of "node.child.child"
+
+
+    template <typename T>
+    std::unique_ptr<T> clone(ResNode *unode);
 
     template <typename T>
     T *findNode(const std::string &path) {
@@ -208,6 +214,7 @@ public:
     std::vector<Ptr>    m_children;
 
 protected:
+    ResNodeType         m_type = ResNodeType::standard;
     std::string         m_name;
     std::string         m_value;
     bool                m_isReference = false;

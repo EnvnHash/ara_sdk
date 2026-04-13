@@ -1,0 +1,22 @@
+fonts {
+    "regular":"Fonts/verdana.ttf"
+}
+
+node_edit {
+    width: 180px
+
+    variable {
+        label {
+            font {font:"regular" size:18}
+        }
+
+        edit {
+            border-color:rgb(255,0,0)
+            font {font:"regular" size:14}
+        }
+    }
+}
+
+reference_node {
+    node_edit
+}

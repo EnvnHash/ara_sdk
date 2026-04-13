@@ -19,7 +19,9 @@ using namespace std;
 
 namespace ara {
 
-AssetColor::AssetColor(string name, GLBase *glBase) : ResNode(std::move(name), glBase) {}
+AssetColor::AssetColor(string name, GLBase *glBase) : ResNode(std::move(name), glBase) {
+    m_type = ResNodeType::color;
+}
 
 void AssetColor::onProcess() {
     if (hasFunc()) {
@@ -76,7 +78,7 @@ bool AssetColor::isClass(const ResNode *snode) {
 }
 
 bool AssetColor::onSourceResUpdate(bool deleted, ResNode *unode) {
-    auto *c = dynamic_cast<AssetColor *>(unode);
+    const auto c = dynamic_cast<AssetColor *>(unode);
     for (int i=0; i < 4; i++) {
         m_rgba[i] = c->m_rgba[i];
     }

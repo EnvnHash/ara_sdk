@@ -107,7 +107,7 @@ Font *AssetManager::font(void* context, const string& path, const float pixRatio
     auto f    = getGLFont(context, string("Fonts/verdana.ttf"), 20, pixRatio);
 
     if (font != nullptr) {
-        if (Font *faux; (faux = getGLFont(context, font->m_FontPath, font->m_Size, pixRatio)) != nullptr) {
+        if (Font *faux; (faux = getGLFont(context, font->m_fontPath, font->m_size, pixRatio)) != nullptr) {
             f = faux;
         }
     }

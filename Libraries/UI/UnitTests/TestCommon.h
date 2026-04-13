@@ -8,6 +8,7 @@
 #include <UIApplication.h>
 #include <Utils/Texture.h>
 #include <WindowManagement/GLWindow.h>
+#include <UIElements/DataBinding/NodeEdit.h>
 
 #include "threadpool/BS_thread_pool.hpp"
 
@@ -31,10 +32,11 @@ static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
                     const std::function<void(ara::UIApplication&)>& verifyFunc,
                     const int width=1280, const int height=720,
                     const std::function<void(ara::UIApplication&)>& postInitFunc=nullptr,
-                    const bool enableMenuAndResizeHandles=false) { // width and height are in hardware pixels (non-scaled)
+                    const bool enableMenuAndResizeHandles=false,
+                    const std::string& resFile="res.txt") { // width and height are in hardware pixels (non-scaled)
     ara::UIApplication app;
     stdAppSetup(app, width, height, enableMenuAndResizeHandles);
-
+    app.setResFile(resFile);
     app.initSingleThreaded([&]{
         app.getMainWindow()->getWinHandle()->setIsInited(true);
         app.getMainWindow()->getWinHandle()->setIsRunning(true);
@@ -208,4 +210,45 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
 
     // check outside edges for back color
     checkVals(data, win, checkPixels);
+}
+
+
+template <typename T>
+class TestNode : public ara::Node {
+public:
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_testValue)
+    TestNode() { setTypeName<TestNode>(); }
+    T m_testValue{};
+};
+
+template <typename T>
+class TestNode2 : public ara::Node {
+public:
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_testVal, m_testVal2)
+    TestNode2() { setTypeName<TestNode2>(); }
+    T m_testVal{};
+    T m_testVal2{};
+};
+
+
+template <typename T>
+auto& addNodeEdit(const ara::UIApplication &app, T& node, const ara::arrange ar = ara::arrange::horizontal,
+    const std::optional<std::unordered_map<std::string, ara::VariableEditOption<>>> alignMap = std::nullopt,
+    std::optional<std::string> style = std::nullopt) {
+    auto& ne = app.getRootNode()->push<ara::NodeEdit>();
+    ne.setEditAlign(ar);
+    if (alignMap.has_value()) {
+        ne.setOptPerKey(alignMap.value());
+    }
+    if (style) {
+        ne.addStyleClass(style.value());
+    }
+    ne.setLineHeight(22);
+    ne.setSpacing({10, 10});
+    ne.setLabelWidth(100);
+    ne.setNode(node);
+
+    app.getWinBase()->draw(0, 0, 0);
+    app.getMainWindow()->swap();
+    return ne;
 }

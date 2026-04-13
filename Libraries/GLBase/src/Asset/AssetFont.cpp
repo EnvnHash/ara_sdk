@@ -21,24 +21,24 @@ using namespace std;
 namespace ara {
 
 void AssetFont::onProcess() {
-    if ((m_Size = value<int32_t>("size", 0)) <= 0) {
-        throw runtime_error("ResFont::OnProcess Error: Invalid size ("+std::to_string(m_Size)+")");
+    if ((m_size = value<int32_t>("size", 0)) <= 0) {
+        throw runtime_error("ResFont::OnProcess Error: Invalid size ("+std::to_string(m_size)+")");
     }
 
     if (getFlag("bold")) {
-        m_Flags |= bold;
+        m_flags |= bold;
     }
 
     if (getFlag("italic")) {
-        m_Flags |= italic;
+        m_flags |= italic;
     }
 
-    m_FontPath = getValue("font");
-    if (m_FontPath.empty()) {
-        m_FontPath = getValue("src");
+    m_fontPath = getValue("font");
+    if (m_fontPath.empty()) {
+        m_fontPath = getValue("src");
     }
 
-    if (m_FontPath.empty()) {
+    if (m_fontPath.empty()) {
         throw runtime_error("ResFont::OnProcess Error: No font path");
     }
 }

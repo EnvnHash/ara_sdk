@@ -23,11 +23,11 @@ class ParVec : public std::vector<std::string> {
 public:
     ~ParVec() = default;
 
-    [[nodiscard]] bool validIndex(size_t index) const {
+    [[nodiscard]] bool validIndex(const size_t index) const {
         return index < size();
     }
 
-    std::string getPar(size_t index, const std::string &def = {}) {
+    std::string getPar(const size_t index, const std::string &def = {}) {
         return validIndex(index) ? at(index) : def;
     }
 
@@ -43,7 +43,7 @@ public:
         }
     }
 
-    [[nodiscard]] float getFloatPar(size_t index, float def) const {
+    [[nodiscard]] float getFloatPar(const size_t index, const float def) const {
         if (!validIndex(index)) {
             return def;
         }
@@ -59,15 +59,15 @@ public:
         return static_cast<int>(size());
     }
 
-    std::string operator()(size_t index) {
+    std::string operator()(const size_t index) {
         return !validIndex(index) ? std::string{} : at(index);
     }
 
-    std::string s(size_t index) {
+    std::string s(const size_t index) {
         return !validIndex(index) ? std::string{} : at(index);
     }
 
-    [[nodiscard]] int i(size_t index, int def = 0) const {
+    [[nodiscard]] int i(const size_t index, const int def = 0) const {
         if (!validIndex(index)) {
             return def;
         }
@@ -79,7 +79,7 @@ public:
         }
     }
 
-    [[nodiscard]] float f(size_t index, float def = 0.f) const {
+    [[nodiscard]] float f(const size_t index, const float def = 0.f) const {
         if (!validIndex(index)) {
             return def;
         }

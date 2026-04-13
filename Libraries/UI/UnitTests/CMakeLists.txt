@@ -25,6 +25,7 @@ file(GLOB UI_UT_SRC
     SerializeLabelTest.cpp
     SerializeTestCreateAndRemove.cpp
     SetXSetY.cpp
+    StylesTest.cpp
     TabTest.cpp
     TextBlockTest.cpp
     UIEditTest.cpp

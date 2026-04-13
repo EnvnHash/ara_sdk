@@ -26,18 +26,20 @@ class AssetFont : public ResNode {
 public:
     enum { none = 0, bold = 1, italic = 2 };
 
-    int         m_Size  = 0;
-    unsigned    m_Flags = none;
-    std::string m_FontPath;
+    int         m_size  = 0;
+    unsigned    m_flags = none;
+    std::string m_fontPath;
 
-    AssetFont(std::string name, GLBase *glbase) : ResNode(name, glbase) {}
+    AssetFont(const std::string &name, GLBase *glbase) : ResNode(name, glbase) {
+        m_type = ResNodeType::font;
+    }
 
     void onProcess() override;
     bool onResourceChange(bool deleted, const std::string &res_fpath) override;
 
     bool        onLoad() override { return true; }
     bool        isOK() override { return true; }
-    static bool isClass(ResNode *snode) { return snode->getFlag("font") != nullptr; }
+    static bool isClass(const ResNode *snode) { return snode->getFlag("font") != nullptr; }
 };
 
 }  // namespace ara
