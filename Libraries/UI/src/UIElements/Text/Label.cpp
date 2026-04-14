@@ -381,7 +381,7 @@ void Label::updateIndDrawData(const bool checkFontTex) {
     }
 
     // check if the layerTexture containing this font was already collected, if not append it (must happen before Glyph
-    // updating in order to have the correct texUnit value set to the vao data)
+    // updating to have the correct texUnit value set to the vao data)
     if (m_riFont && (checkFontTex || m_updateDrawSetFontData)) {
         m_texUnitArrayIndex = m_drawMan->pushFont(m_riFont);
         m_glFontPar.texId = m_riFont->getLayerTexId();
@@ -392,8 +392,6 @@ void Label::updateIndDrawData(const bool checkFontTex) {
         m_updateDrawSetFontData = false;
     }
 
-    auto ld = m_lblDB.vaoData.begin();
-
     getWinPos();
     vec4 scLabelIndDraw{0.f};
     for (int i = 0; i < 2; i++) {
@@ -401,55 +399,62 @@ void Label::updateIndDrawData(const bool checkFontTex) {
         scLabelIndDraw[i + 2] = m_size[i] - std::max(m_winRelPos[i] + m_size[i] - (m_scIndDraw[i] + m_scIndDraw[i + 2]), 0.f) - m_borderWidth *2;
     }
 
+    auto ld = m_lblDB.vaoData.begin();
     for (auto& g : m_fontDGV.getGlyphs()) {
         if (!g.glyphPtr) {
             continue;
         }
+        updateIndDrawDataGlyph(g, ld, scLabelIndDraw);
+    }
+}
 
-        for (const auto& v : stdQuadVertices) {
-            if (ld == m_lblDB.vaoData.end()) {
-                break;
-            }
-
-            tuv = m_bo + g.pos + v * g.size;
-
-            ld->aux1.x = tuv.x;
-            ld->aux1.y = tuv.y;
-            ld->aux1.z = 0.f;
-            ld->aux1.w = 1.f;
-
-            ld->pos         = m_modMvp * ld->aux1;
-            ld->texCoord    = g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize;
-            ld->color       = g.color ? *g.color : m_color;
-            ld->aux2.x      = static_cast<float>(m_texUnitArrayIndex);
-            ld->aux2.y      = static_cast<float>(m_glFontPar.layerId);
-            ld->aux2.z      = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
-            ld->aux2.w      = m_zPos;
-            ld->aux3.x      = 1.f;  // type indicator (1=Label)
-            ld->aux3.w      = m_absoluteAlpha;
-
-            ++ld;
+void Label::updateIndDrawDataGlyph(const Fontdglyph& g, std::vector<DivVaoData>::iterator& ld, vec4& scLabelIndDraw) {
+    for (const auto& v : stdQuadVertices) {
+        if (ld == m_lblDB.vaoData.end()) {
+            break;
         }
 
-        ld -= 4;  // reset iterator to quad beginning
-        auto uvSize      = (ld + 3)->texCoord - ld->texCoord;
-        auto charSizePix = g.size / getWindow()->getPixelRatio();
+        tuv = m_bo + g.pos + v * g.size;
 
-        int i = 0;
-        for (const auto& v : stdQuadVertices) {
-            if (ld == m_lblDB.vaoData.end()) {
-                break;
-            }
+        ld->aux1.x = tuv.x;
+        ld->aux1.y = tuv.y;
+        ld->aux1.z = 0.f;
+        ld->aux1.w = 1.f;
 
-            limitDrawVaoToBounds(ld, charSizePix, m_uvDiff, scLabelIndDraw, m_viewPort);  // scissoring, calculates m_uvDiff
+        ld->pos         = m_modMvp * ld->aux1;
+        ld->texCoord    = g.glyphPtr->srcpixpos + v * g.glyphPtr->srcpixsize;
+        ld->color       = g.color ? *g.color : m_color;
+        ld->aux2.x      = static_cast<float>(m_texUnitArrayIndex);
+        ld->aux2.y      = static_cast<float>(m_glFontPar.layerId);
+        ld->aux2.z      = m_excludeFromObjMap ? 0.f : static_cast<float>(m_objIdMin);
+        ld->aux2.w      = m_zPos;
+        ld->aux3.x      = 1.f;  // type indicator (1=Label)
+        ld->aux3.w      = m_absoluteAlpha;
 
-            if (m_uvDiff.x != 0.f || m_uvDiff.y != 0.f) {
-                limitTexCoordsToBounds(&ld->texCoord[0], i, uvSize, m_uvDiff);
-            }
+        ++ld;
+    }
 
-            ++ld;
-            ++i;
+    ld -= 4;  // reset iterator to quad beginning
+    checkDrawLimits(g, ld, scLabelIndDraw);
+}
+
+void Label::checkDrawLimits(const Fontdglyph& g, std::vector<DivVaoData>::iterator& ld, vec4& scLabelIndDraw) {
+    auto charSizePix = g.size / getWindow()->getPixelRatio();
+    const auto uvSize = (ld + 3)->texCoord - ld->texCoord;
+    int i = 0;
+    for (const auto& v : stdQuadVertices) {
+        if (ld == m_lblDB.vaoData.end()) {
+            break;
         }
+
+        limitDrawVaoToBounds(ld, charSizePix, m_uvDiff, scLabelIndDraw, m_viewPort);  // scissoring, calculates m_uvDiff
+
+        if (m_uvDiff.x != 0.f || m_uvDiff.y != 0.f) {
+            limitTexCoordsToBounds(&ld->texCoord[0], i, uvSize, m_uvDiff);
+        }
+
+        ++ld;
+        ++i;
     }
 }
 

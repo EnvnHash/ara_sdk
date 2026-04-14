@@ -60,6 +60,8 @@ public:
     virtual void    updateFontGeo();
     void            updateDrawData() override;
     void            updateIndDrawData(bool checkFontTex = false);
+    void            updateIndDrawDataGlyph(const Fontdglyph& g, std::vector<DivVaoData>::iterator& ld, glm::vec4& scLabelIndDraw);
+    void            checkDrawLimits(const Fontdglyph& g, std::vector<DivVaoData>::iterator& ld, glm::vec4& scLabelIndDraw);
     void            pushVaoUpdtOffsets() override;
     virtual void    prepareVao(bool checkFontTex = false);
     virtual void    reqUpdtGlyphs(bool updateTree);
