@@ -17,6 +17,7 @@
 #include <DataModel/Node.h>
 
 using json = nlohmann::json;
+using namespace std;
 
 namespace ara {
 
@@ -26,7 +27,7 @@ public:
 
     TestClass() {
         setTypeName<TestClass>();
-        m_changeCb[cbType::postChange].emplace(this, [this](Node* node, const std::string& varName) {
+        m_changeCb[cbType::postChange].emplace(this, [this](Node*, const std::string&) {
             m_changeCalled++;
         });
     }

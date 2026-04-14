@@ -134,7 +134,7 @@ public:
             LOGE << "Node::insertChild failed, child empty!";
         } else {
             auto it = m_children.insert(std::next(m_children.begin(), position), std::move(child));
-            signalChange(cbType::postAddChild, std::make_optional(it->get()));
+            signalChange(cbType::postAddChild, it->get());
             return static_cast<T&>(*it->get());
         }
         return push<T>(child);
@@ -157,7 +157,7 @@ public:
             if (r != m_children.end()
                 && static_cast<int>(std::distance(m_children.begin(), r) +1) <= static_cast<int>(m_children.size())) {
                 const auto it = m_children.insert(std::next(r, 1), std::move(child));
-                signalChange(cbType::postAddChild, std::make_optional(it->get()));
+                signalChange(cbType::postAddChild, it->get());
                 return dynamic_cast<T&>(*it->get());
             }
         }
@@ -175,7 +175,7 @@ public:
 
             if (r != m_children.end()) {
                 const auto it = m_children.insert(r, std::move(child));
-                signalChange(cbType::postAddChild, std::make_optional(it->get()));
+                signalChange(cbType::postAddChild, it->get());
                 return dynamic_cast<T&>(*it->get());
             }
         }
