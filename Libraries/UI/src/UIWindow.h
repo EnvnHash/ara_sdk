@@ -85,7 +85,7 @@ public:
     std::string openFileDialog(const std::vector<std::pair<std::string, std::string>>& allowedSuffix) const;
     std::string saveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const;
 #elif defined(__linux__) && !defined(__ANDROID__)
-    static std::string openFileDialog(const const std::vector<std::pair<std::string, std::string>>&& allowedSuffix) {
+    static std::string openFileDialog(const std::vector<std::pair<std::string, std::string>>& allowedSuffix) {
         return osOpenFileDialog(allowedSuffix);
     }
     static std::string saveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {

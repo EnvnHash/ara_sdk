@@ -127,10 +127,10 @@ std::string osOpenFileDialog(const vector<pair<string, string>> &allowedSuffix) 
     gtk_init(nullptr, nullptr);
     GtkWidget *dialog = gtk_file_chooser_dialog_new("Open file", nullptr, GTK_FILE_CHOOSER_ACTION_OPEN, "Cancel",
                                                     GTK_RESPONSE_CANCEL, "Open", GTK_RESPONSE_OK, NULL);
-    for (auto &[name, ftyp] : allowedSuffix) {
+    for (const auto &ftyp: allowedSuffix | views::values) {
         GtkFileFilter *filter = gtk_file_filter_new();  // filter 1
-        gtk_file_filter_set_name(filter, ftyp);
-        gtk_file_filter_add_pattern(filter, ftyp);
+        gtk_file_filter_set_name(filter, ftyp.c_str());
+        gtk_file_filter_add_pattern(filter, ftyp.c_str());
         gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
     }
 
