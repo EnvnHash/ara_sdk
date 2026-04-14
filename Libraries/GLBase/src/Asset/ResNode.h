@@ -76,6 +76,11 @@ public:
     bool        rGetPath(std::vector<ResNode *> &nl);
     ResNode*    findNode(const std::string &path);  // Finds a node in the tree, in the form of "node.child.child"
 
+    template<class T>
+    void copyTypedFields(ResNode *from, T *to);
+
+    template<class T>
+    void cloneChild(ResNode *from, T *to);
 
     template <typename T>
     std::unique_ptr<T> clone(ResNode *unode);
@@ -137,6 +142,7 @@ public:
 
     virtual void onProcess() { }
     bool load();  // if any node fails to load will stop and return false
+    void resolveReference(ResNode& node);
     void insertChild(const ResNode * fromNode, ResNode* toNode);
     virtual bool onLoad() { return true; }
     virtual bool onResourceChange(bool deleted, const std::string &res_fpath) { return true; };  // Called if a loadresource source has changed and used by this node
@@ -206,7 +212,6 @@ public:
     bool                        isReference() const { return m_isReference; }
     bool                        isEqual(const ResNode *unode) const;
     bool                        copy(ResNode *unode);
-    std::unique_ptr<ResNode>    clone(const ResNode *unode);
 
     ErrorList           errList;
     int                 srcLineIndex = -1;

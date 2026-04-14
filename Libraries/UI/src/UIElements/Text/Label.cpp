@@ -83,7 +83,7 @@ vec4 Label::calculateMask() const {
     return {m_offset.x, m_offset.y, m_offset.x + m_tContSize.x, m_offset.y + m_tContSize.y};
 }
 
-Font* Label::updateDGV(bool* checkFontTexture) {
+Font* Label::checkAndGetFont() {
     if (!getSharedRes() || !getSharedRes()->res) {
         return nullptr;
     }
@@ -93,8 +93,14 @@ Font* Label::updateDGV(bool* checkFontTexture) {
         LOGE << "[ERROR] UIEdit::UpdateDGV() / Cannot get font for " << m_fontType << "   size=" << m_fontSize;
         return nullptr;
     }
+    return font;
+}
 
-    m_riFont = font;
+Font* Label::updateDGV(bool* checkFontTexture) {
+    m_riFont = checkAndGetFont();
+    if (!m_riFont) {
+        return nullptr;
+    }
 
     m_riFont->setFontTexChangedCb(this, [this] {
         // this is called when the font related 3D texture got a different texId, num of Layers or layerid,

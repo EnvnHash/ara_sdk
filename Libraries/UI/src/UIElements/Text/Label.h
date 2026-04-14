@@ -122,6 +122,7 @@ protected:
     void setEditPixSpace(float width, float height, bool set_flag = true);
 
     [[nodiscard]] glm::vec4 calculateMask() const;
+    Font* checkAndGetFont();
 
     int32_t m_fontSize = 17;
 

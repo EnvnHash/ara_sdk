@@ -105,6 +105,38 @@ void ResNode::process() {
 }
 
 template <typename T>
+void ResNode::copyTypedFields(ResNode *from, T *to) {
+    if constexpr (std::is_same_v<T, AssetFont>) {
+        if (const auto fontNode = dynamic_cast<AssetFont*>(from)) {
+            to->m_fontPath = fontNode->m_fontPath;
+            to->m_size = fontNode->m_size;
+            to->m_flags = fontNode->m_flags;
+        }
+    } else if constexpr (std::is_same_v<T, AssetColor>) {
+        if (const auto colorNode = dynamic_cast<AssetColor*>(from)) {
+            for (int i = 0; i < 4; ++i) {
+                to->m_rgba[i] = colorNode->m_rgba[i];
+            }
+        }
+    }
+}
+
+template <typename T>
+void ResNode::cloneChild(ResNode* from, T *to) {
+    switch (from->m_type) {
+        case ResNodeType::font:
+            to->add(clone<AssetFont>(from));
+            break;
+        case ResNodeType::color:
+            to->add(clone<AssetColor>(from));
+            break;
+        default:
+            to->add(clone<ResNode>(from));
+            break;
+    }
+}
+
+template <typename T>
 std::unique_ptr<T> ResNode::clone(ResNode *unode) {
     auto out = std::make_unique<T>(m_name, m_glbase);
 
@@ -115,28 +147,10 @@ std::unique_ptr<T> ResNode::clone(ResNode *unode) {
     out->srcLineIndex = unode->srcLineIndex;
     out->setAssetManager(m_assetManager);
 
-    if constexpr (std::is_same_v<T, AssetFont>) {
-        if (const auto fontNode = dynamic_cast<AssetFont*>(unode)) {
-            out->m_fontPath = fontNode->m_fontPath;
-            out->m_size = fontNode->m_size;
-            out->m_flags = fontNode->m_flags;
-        }
-    } else if constexpr (std::is_same_v<T, AssetColor>) {
-        if (const auto colorNode = dynamic_cast<AssetColor*>(unode)) {
-            for (int i=0; i < 4; i++) {
-                out->m_rgba[i] = colorNode->m_rgba[i];
-            }
-        }
-    }
+    copyTypedFields(unode, out.get());
 
     for (const auto& child : unode->m_children) {
-        if (child->m_type == ResNodeType::font) {
-            out->add(clone<AssetFont>(child.get()));
-        } else if (child->m_type == ResNodeType::color) {
-            out->add(clone<AssetColor>(child.get()));
-        } else {
-            out->add(clone<ResNode>(child.get()));
-        }
+        cloneChild(child.get(), out.get());
     }
 
     return out;
@@ -152,18 +166,9 @@ bool ResNode::load() {
             auto& node = *nodeIt->get();
             node.load();
 
-            // resolve a bare reference like `chtest.sample-image`
             if (!node.getName().empty() && node.isReference()) {
-                if (const auto ref = getRoot()->findNode(node.getName()); ref && ref != this && m_parent) {
-                    for (const auto &child : ref->m_children) {
-                        if (findNode(child->m_name) != nullptr) {
-                            continue;
-                        }
-                        m_children.insert(m_children.begin(), clone<ResNode>(child.get()));
-                        m_children.front().get()->setParent(this);
-                    }
-                    nodeIt = --m_children.end();
-                }
+                resolveReference(node);
+                nodeIt = --m_children.end();
             }
         }
 
@@ -171,6 +176,18 @@ bool ResNode::load() {
     } catch (std::runtime_error &err) {
         LOGE << err.what() << endl;
         return false;
+    }
+}
+
+void ResNode::resolveReference(ResNode& node) {
+    if (const auto ref = getRoot()->findNode(node.getName()); ref && ref != this && m_parent) {
+        for (const auto &child : ref->m_children) {
+            if (findNode(child->m_name) != nullptr) {
+                continue;
+            }
+            m_children.insert(m_children.begin(), clone<ResNode>(child.get()));
+            m_children.front().get()->setParent(this);
+        }
     }
 }
 
@@ -425,23 +442,6 @@ bool ResNode::copy(ResNode *unode) {
         m_par.emplace_back(s);
     }
     return true;
-}
-
-std::unique_ptr<ResNode> ResNode::clone(const ResNode *unode) {
-    auto out = std::make_unique<ResNode>(m_name, m_glbase);
-
-    out->m_name = unode->m_name;
-    out->m_value = unode->m_value;
-    out->m_func = unode->m_func;
-    out->m_par = unode->m_par;
-    out->srcLineIndex = unode->srcLineIndex;
-    out->setAssetManager(m_assetManager);
-
-    for (const auto& child : unode->m_children) {
-        out->add(clone(child.get()));
-    }
-
-    return out;
 }
 
 }  // namespace ara

@@ -144,17 +144,11 @@ void UIEdit::setCaretRespectAlignment(vec2& tCaretPos) {
 }
 
 Font *UIEdit::updateDGV(bool *checkFontTexture) {
-    if (!m_sharedRes || !m_sharedRes->res) {
+    m_riFont     = m_riFont = checkAndGetFont();
+    if (!m_riFont) {
         return nullptr;
     }
 
-    const auto font = getSharedRes()->res->getGLFont(getSharedRes()->winHandle, m_fontType, m_fontSize, getPixRatio());
-    if (!font) {
-        LOGE << "[ERROR] UIEdit::UpdateDGV() / Cannot get font for " << m_fontType << "   size=" << m_fontSize;
-        return nullptr;
-    }
-
-    m_riFont     = font;
     m_renderText = hasOpt(pass) ? string(m_text.size(), '*') : m_text;
 
     if (!hasOpt(manual_space)) {
