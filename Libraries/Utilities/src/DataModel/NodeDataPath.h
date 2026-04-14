@@ -22,12 +22,12 @@ namespace ara::node {
 
 class DataPath {
 public:
-    static void setDataPath(const std::string& p) {
+    static void setDataPath(const std::filesystem::path& p) {
         m_dataPath = p;
     }
 
 protected:
-    static inline std::string   m_dataPath;
+    static inline std::filesystem::path   m_dataPath;
 };
 
 }
