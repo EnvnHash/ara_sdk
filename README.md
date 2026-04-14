@@ -7,6 +7,8 @@ Cross-platform application framework for 2D User Interfaces (similar to QT) and 
 
 ![Ara Snapshot](Documentation/images/ara_snapshot.png)
 
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/aa5108c2110240e8b6db466e91a4f2b9)](https://app.codacy.com/gh/EnvnHash/ara_sdk/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
 ## Building
 
 ### Linux, MacOS and Windows
