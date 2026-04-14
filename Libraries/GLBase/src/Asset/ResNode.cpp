@@ -179,7 +179,7 @@ bool ResNode::load() {
     }
 }
 
-void ResNode::resolveReference(ResNode& node) {
+void ResNode::resolveReference(const ResNode& node) {
     if (const auto ref = getRoot()->findNode(node.getName()); ref && ref != this && m_parent) {
         for (const auto &child : ref->m_children) {
             if (findNode(child->m_name) != nullptr) {

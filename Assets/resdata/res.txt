@@ -423,7 +423,7 @@ demos {
         }
 
         propHeadl {
-            y:420px
+            y:450px
             width: 300px
             height: 20px
             font {font:"Fonts/verdana.ttf" size:22}
@@ -432,7 +432,7 @@ demos {
         }
 
         propSlider {
-            y:455px
+            y:480px
             width: 300px
             height: 20px
         }

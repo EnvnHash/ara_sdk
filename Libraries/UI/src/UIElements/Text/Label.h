@@ -18,8 +18,8 @@ struct LabelPars {
     ara::valign valign = valign::top;
     glm::vec4 color{ 1.f, 1.f, 1.f, 1.f };
     glm::vec4 bgColor{};
-    uint32_t borderWidth{};
-    uint32_t borderRadius{};
+    int32_t borderWidth{};
+    int32_t borderRadius{};
     glm::vec4 borderColor{};
     const std::string& text;
     ara::align textAlignX{};
@@ -87,11 +87,7 @@ public:
     void setProp(Property<T> &prop) {
         onChanged<T>(prop, [this](const std::any& val) {
             if (getSharedRes()) {
-                // is this really necessary as glcallback??? basically nothing gl-ish is happening on setText
-                static_cast<UIWindow *>(getSharedRes()->win)->addGlCb(this, "chgTxt", [this, val] {
-                    setText(std::any_cast<T>(val).string());
-                    return true;
-                });
+                setText(std::any_cast<T>(val).string());
             }
         });
         setText(typeid(T) == typeid(std::string) ? prop() : prop().string());
@@ -142,7 +138,7 @@ protected:
     bool      m_updateDrawSetFontData = false;
     unsigned  m_tOpt = 0;
     unsigned  m_initOptions = 0;                        /// options for in syleDefaults
-    glm::vec2 m_tPos{0.f}, m_tSize{0.f};    /// pixel space, offset and size
+    glm::vec2 m_tPos{0.f}, m_tSize{0.f};            /// pixel space, offset and size
     glm::vec2 m_tSep{0.f};                        /// additional font pixel character separation (default=0,0)
     align     m_tAlignX = align::center;
     valign    m_tAlignY = valign::center;

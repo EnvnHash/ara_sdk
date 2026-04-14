@@ -85,7 +85,7 @@ public:
     std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC>& allowedSuffix) const;
     std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const;
 #elif defined(__linux__) && !defined(__ANDROID__)
-    static std::string openFileDialog(std::vector<const char*>& allowedSuffix) {
+    static std::string openFileDialog(const std::vector<const char*>& allowedSuffix) {
         return OpenFileDialog(allowedSuffix);
     }
 

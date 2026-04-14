@@ -335,9 +335,6 @@ public:
     static void         startWatchThread();
     static void         watchThreadIterate();
     static void         stopWatchThread();
-
-    std::deque<std::function<void(std::optional<Node*>)>> collectCallbacks(cbType cbType, bool withChildrenOnly);
-
     auto&               mutex() { return m_mtx; }
     auto&               children() const { return const_cast<std::list<std::shared_ptr<Node>>&>(m_children); }
     Node*               parent() const { return m_parent; }
@@ -350,6 +347,8 @@ public:
     static void         clearClassKeys() { m_classKeys.clear(); }
     const auto&         getNodeValueType() const { return m_nodeValueType; }
     auto&               getMemberVariables()  { return m_memberVars; }
+
+    std::deque<std::function<void(std::optional<Node*>)>> collectCallbacks(cbType cbType, bool withChildrenOnly);
 
     std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>>&   changeCb() { return m_changeCb; }
 
@@ -493,9 +492,9 @@ protected:
     template <typename T>
     void serializeByType(const pushToType& nv, nlohmann::json& j) {
         static std::unordered_map<pushToType, std::function<void(Node*, nlohmann::json&)>> serializeFuncs {
-            { pushToType::array,     [] (Node* ctx, nlohmann::json& j) { j.emplace_back(ctx->value<T>()); }},
-            { pushToType::object,    [] (Node* ctx, nlohmann::json& j) { j[ctx->key()] = ctx->value<T>(); }},
-            { pushToType::undefined, [] (Node* ctx, nlohmann::json& j) { j[ctx->key()] = ctx->value<T>(); }},
+            { pushToType::array,     [] (Node* ctx, nlohmann::json& js) { js.emplace_back(ctx->value<T>()); }},
+            { pushToType::object,    [] (Node* ctx, nlohmann::json& js) { js[ctx->key()] = ctx->value<T>(); }},
+            { pushToType::undefined, [] (Node* ctx, nlohmann::json& js) { js[ctx->key()] = ctx->value<T>(); }},
         };
         serializeFuncs[nv](this, j);
     }

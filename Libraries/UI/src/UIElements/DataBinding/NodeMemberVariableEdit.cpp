@@ -76,6 +76,7 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
         { tpi::tp_float, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<float>(std::any_cast<float>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_int32, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<int32_t>(std::any_cast<int32_t>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_string, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createSingleEdit<std::string>( std::any_cast<std::string>(ctx->getMemVar()->get()), stdWidth); }},
+        { tpi::tp_path, [stdWidth] (NodeMemberVariableEdit* ctx) { ctx->createPathEdit( std::any_cast<std::filesystem::path>(ctx->getMemVar()->get()), stdWidth); }},
         { tpi::tp_vector_float, [] (NodeMemberVariableEdit* ctx) { ctx->createVector<vector<float>>(); }},
         { tpi::tp_vector_int32, [] (NodeMemberVariableEdit* ctx) { ctx->createVector<vector<int32_t>>(); }},
         { tpi::tp_vector_string, [] (NodeMemberVariableEdit* ctx) { ctx->createVector<vector<std::string>>(); }},
@@ -95,7 +96,7 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
     }
 }
 
-void NodeMemberVariableEdit::createCheckBox(bool val) {
+void NodeMemberVariableEdit::createCheckBox(const bool val) {
     auto& butt = push<Button>(UINodePars{
         .pos = ivec2{ m_labelWidth + m_spacing.x, 0 },
         .size = { ivec2{ m_lineHeight, m_lineHeight } },
@@ -112,6 +113,42 @@ void NodeMemberVariableEdit::createCheckBox(bool val) {
         if (m_memVar) {
             std::any anyVal = newVal;
             m_memVar->set(anyVal, 0);
+        }
+    });
+}
+
+void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, const int32_t stdWidth) {
+    m_pathLabel = &push<Label>(LabelPars{
+        .pos = ivec2{ m_labelWidth + m_spacing.x, 0 },
+        .size = { ivec2{ stdWidth - m_stdBrowseButtWidth - m_spacing.x, m_lineHeight } },
+        .style = getStyleClass()+".path",
+        .bgColor = m_stdBgColor,
+        .borderWidth = m_stdBorderWidth,
+        .borderRadius = m_stdBorderRadius,
+        .borderColor = m_stdBorderColor,
+        .text = val.string(),
+    });
+    m_pathLabel->setOpt(Label::single_line | Label::front_ellipsis);
+
+    auto& butt = push<Button>(LabelPars{
+        .size = { ivec2{ m_stdBrowseButtWidth, m_lineHeight } },
+        .style = getStyleClass()+".browseButton",
+        .align = align::right,
+        .bgColor = m_stdButtBgColor,
+        .borderWidth = m_stdBorderWidth,
+        .borderRadius = m_stdBorderRadius,
+        .borderColor = m_stdBorderColor,
+        .text = "Browse"
+    });
+
+    butt.setBackgroundColor(0.4f, 0.4f, 0.4f, 1.f, state::highlighted);
+    butt.setClickedCb([&] {
+        if (m_memVar) {
+            if (const auto fn = OpenFileDialog({ "*" }); !fn.empty()) {
+                std::any anyVal = std::filesystem::path(fn);
+                m_memVar->set(anyVal, 0);
+                m_pathLabel->setText(fn);
+            }
         }
     });
 }

@@ -31,8 +31,8 @@ std::string OpenFileDialog(const std::vector<COMDLG_FILTERSPEC>& allowedSuffix, 
 std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes, HWND owner);
 #elif defined(__linux__) && !defined(__ANDROID__)
 
-std::string OpenFileDialog(std::vector<const char *> &allowedSuffix);
-std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes);
+std::string OpenFileDialog(const std::vector<const char *> &allowedSuffix);
+std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>> &fileTypes);
 
 #elif __APPLE__
 std::string OpenFileDialog(std::vector<const char*>& allowedSuffix);

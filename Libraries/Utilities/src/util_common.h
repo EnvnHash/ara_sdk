@@ -55,6 +55,7 @@ enum class restCallType : int32_t { post = 0, get, downloadBuffer, downloadFile 
 enum class tpi : int32_t {
     tp_string = 0,
     tp_char,
+    tp_path,
     tp_int8,
     tp_uint8,
     tp_int16,
@@ -93,22 +94,23 @@ constexpr bool is_glm_vec_v =
 
 template <typename T>
 struct tpi_of_scalar {
-    static constexpr tpi value = tpi::none;
+    static constexpr auto value = tpi::none;
 };
 
-template <> struct tpi_of_scalar<std::string> { static constexpr tpi value = tpi::tp_string; };
-template <> struct tpi_of_scalar<char>        { static constexpr tpi value = tpi::tp_char; };
-template <> struct tpi_of_scalar<int8_t>      { static constexpr tpi value = tpi::tp_int8; };
-template <> struct tpi_of_scalar<uint8_t>     { static constexpr tpi value = tpi::tp_uint8; };
-template <> struct tpi_of_scalar<int16_t>     { static constexpr tpi value = tpi::tp_int16; };
-template <> struct tpi_of_scalar<uint16_t>    { static constexpr tpi value = tpi::tp_uint16; };
-template <> struct tpi_of_scalar<int32_t>     { static constexpr tpi value = tpi::tp_int32; };
-template <> struct tpi_of_scalar<uint32_t>    { static constexpr tpi value = tpi::tp_uint32; };
-template <> struct tpi_of_scalar<int64_t>     { static constexpr tpi value = tpi::tp_int64; };
-template <> struct tpi_of_scalar<uint64_t>    { static constexpr tpi value = tpi::tp_uint64; };
-template <> struct tpi_of_scalar<float>       { static constexpr tpi value = tpi::tp_float; };
-template <> struct tpi_of_scalar<double>      { static constexpr tpi value = tpi::tp_double; };
-template <> struct tpi_of_scalar<bool>        { static constexpr tpi value = tpi::tp_bool; };
+template <> struct tpi_of_scalar<std::string>           { static constexpr auto value = tpi::tp_string; };
+template <> struct tpi_of_scalar<std::filesystem::path> { static constexpr auto value = tpi::tp_path; };
+template <> struct tpi_of_scalar<char>                  { static constexpr auto value = tpi::tp_char; };
+template <> struct tpi_of_scalar<int8_t>                { static constexpr auto value = tpi::tp_int8; };
+template <> struct tpi_of_scalar<uint8_t>               { static constexpr auto value = tpi::tp_uint8; };
+template <> struct tpi_of_scalar<int16_t>               { static constexpr auto value = tpi::tp_int16; };
+template <> struct tpi_of_scalar<uint16_t>              { static constexpr auto value = tpi::tp_uint16; };
+template <> struct tpi_of_scalar<int32_t>               { static constexpr auto value = tpi::tp_int32; };
+template <> struct tpi_of_scalar<uint32_t>              { static constexpr auto value = tpi::tp_uint32; };
+template <> struct tpi_of_scalar<int64_t>               { static constexpr auto value = tpi::tp_int64; };
+template <> struct tpi_of_scalar<uint64_t>              { static constexpr auto value = tpi::tp_uint64; };
+template <> struct tpi_of_scalar<float>                 { static constexpr auto value = tpi::tp_float; };
+template <> struct tpi_of_scalar<double>                { static constexpr auto value = tpi::tp_double; };
+template <> struct tpi_of_scalar<bool>                  { static constexpr auto value = tpi::tp_bool; };
 
 template <typename T>
 constexpr tpi tpiOfScalar() {
@@ -119,7 +121,8 @@ template <typename T>
 constexpr bool is_supported_container_element_v =
     std::is_same_v<T, int32_t> ||
     std::is_same_v<T, float>   ||
-    std::is_same_v<T, std::string>;
+    std::is_same_v<T, std::string> ||
+    std::is_same_v<T, std::filesystem::path>;
 
 template <typename T>
 constexpr tpi glmTpiOf() {
@@ -149,6 +152,8 @@ constexpr tpi getTpi() {
 
     if constexpr (std::is_same_v<Decayed, std::string>) {
         return tpiOfScalar<Decayed>();
+    } else if constexpr (std::is_same_v<Decayed, std::filesystem::path>) {
+        return tpiOfScalar<Decayed>();
     } else if constexpr (!std::is_class_v<T>) {
         return tpiOfScalar<Decayed>();
     } else if constexpr (is_glm_vec_v<Decayed>) {
@@ -175,8 +180,9 @@ concept PropertyType = std::is_same_v<T, std::string> || std::is_integral_v<T> |
 
 template<class T>
 constexpr bool isSupportedNodeValue_v =
-    std::is_same_v<T, bool>           ||
+    std::is_same_v<T, bool>          ||
     std::is_same_v<T, std::string>   ||
+    std::is_same_v<T, std::filesystem::path>   ||
     std::is_integral_v<T>            ||
     std::is_floating_point_v<T>      ||
     is_glm_vec_v<T>;
@@ -202,9 +208,8 @@ static std::string generateUUID() {
     auto hex = [](const int n) -> char {
         if (n < 10){
             return static_cast<char>('0' + n);
-        } else {
-            return static_cast<char>('A' + (n - 10));
         }
+        return static_cast<char>('A' + (n - 10));
     };
     std::stringstream ss;
     // Generate the UUID format: 8-4-4-4-12 hexadecimal digits
@@ -219,7 +224,7 @@ static std::string generateUUID() {
 }
 
 static float getRandF(const float min, const float max) {
-    static std::random_device rd;          // Obtain a random number from hardware
+    static std::random_device rd;          // Get a random number from hardware
     static std::mt19937 gen(rd());       // Seed the generator
     std::uniform_real_distribution<> dis(min, max); // Define the range
     return static_cast<float>(dis(gen));
@@ -292,7 +297,7 @@ namespace glm_json {
     concept GlmVec = requires(Vec v) {
         typename Vec::value_type;
         { v[0] } -> std::convertible_to<typename Vec::value_type>;
-    } && (Vec::length() == N);
+    } && Vec::length() == N;
 
     template <typename Vec>
     requires requires { Vec::length(); }

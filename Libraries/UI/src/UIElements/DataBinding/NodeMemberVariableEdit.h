@@ -29,6 +29,7 @@ public:
 
     void init() override;
     void createCheckBox(bool val);
+    void createPathEdit(const std::filesystem::path &val, int32_t stdWidth);
 
     template<typename T>
     UIEdit* createSingleEdit(T val, const int32_t& width, const int32_t& idx=-1) {
@@ -106,7 +107,7 @@ public:
     }
 
     template<typename T>
-    void setElementWidths(T val, state st) {
+    void setElementWidths(T val, state) {
         if (m_label) {
             m_label->setWidth(val);
         }
@@ -141,14 +142,17 @@ public:
 
 protected:
     Label*                  m_label = nullptr;
+    Label*                  m_pathLabel = nullptr;
     UIEdit*                 m_edit = nullptr;
     std::vector<UIEdit*>    m_arrayEdit;
     int32_t                 m_labelWidth = 180;
     int32_t                 m_lineHeight = 22;
     int32_t                 m_stdBorderWidth = 2;
     int32_t                 m_stdBorderRadius = 4;
+    int32_t                 m_stdBrowseButtWidth = 60;
     glm::vec4               m_stdBorderColor = glm::vec4{.3f, .3f, .3f, 1.f};
     glm::vec4               m_stdBgColor = glm::vec4{.15f, .15f, .15f, 1.f};
+    glm::vec4               m_stdButtBgColor = glm::vec4{.25f, .25f, .25f, 1.f};
     glm::ivec2              m_spacing = { 3, 3 };
     int32_t                 m_yOffs = 0;
     size_t                  m_numEditsPerRow = 4;

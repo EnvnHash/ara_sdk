@@ -47,6 +47,7 @@ void DemoView_DataBinding::setupNodeEdit() {
         LOG << "float var: " << m_node.m_floatVal;
         LOG << "int var: " << m_node.m_intVal;
         LOG << "string var: " << m_node.m_stringVal;
+        LOG << "path var: " << m_node.m_pathVal;
         LOG << "float vector: " << m_node.m_vectorFloat[0] << ", " << m_node.m_vectorFloat[1] << ", " << m_node.m_vectorFloat[2];
         LOG << "int vector: " << m_node.m_vectorInt[0] << ", " << m_node.m_vectorInt[1] << ", " << m_node.m_vectorInt[2];
         LOG << "glm::vec4: " << glm::to_string(m_node.m_vec4);
