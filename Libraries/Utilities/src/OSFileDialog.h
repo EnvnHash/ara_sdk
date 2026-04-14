@@ -27,16 +27,16 @@
 
 namespace ara {
 #ifdef _WIN32
-std::string OpenFileDialog(const std::vector<COMDLG_FILTERSPEC>& allowedSuffix, HWND owner);
-std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes, HWND owner);
+std::string osOpenFileDialog(const std::vector<std::pair<std::string, std::string>>& allowedSuffix, HWND owner = nullptr);
+std::string osSaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes, HWND owner = nullptr);
+std::vector<COMDLG_FILTERSPEC> convertToFilterSpec(const std::vector<std::pair<std::string, std::string>>& fileTypes,
+    std::vector<std::pair<std::wstring, std::wstring>>& wFileTypes);
 #elif defined(__linux__) && !defined(__ANDROID__)
-
-std::string OpenFileDialog(const std::vector<const char *> &allowedSuffix);
-std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>> &fileTypes);
-
+std::string osOpenFileDialog(const std::vector<std::pair<std::string, std::string>>& allowedSuffix);
+std::string osSaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes);
 #elif __APPLE__
-std::string OpenFileDialog(std::vector<const char*>& allowedSuffix);
-std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes);
+std::string osOpenFileDialog(const std::vector<std::pair<std::string, std::string>>& allowedSuffix);
+std::string osSaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes);
 #endif
 
 }  // namespace ara

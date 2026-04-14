@@ -81,7 +81,7 @@ std::tuple<FREE_IMAGE_FORMAT, FIMEMORY*> LoadPrepare(void* ptr, const size_t siz
         return {};
     }
 
-    auto mem = FreeImage_OpenMemory(static_cast<BYTE*>(ptr), size);
+    auto mem = FreeImage_OpenMemory(static_cast<BYTE*>(ptr), static_cast<DWORD>(size));
     if (mem == nullptr) {
         LOGE << "Failed to create memory object";
         return {};

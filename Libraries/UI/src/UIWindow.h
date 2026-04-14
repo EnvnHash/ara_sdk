@@ -82,22 +82,21 @@ public:
     void getActualMonitorMaxArea(int win_xpos, int win_ypos);
 
 #ifdef _WIN32
-    std::string OpenFileDialog(std::vector<COMDLG_FILTERSPEC>& allowedSuffix) const;
-    std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const;
+    std::string openFileDialog(const std::vector<std::pair<std::string, std::string>>& allowedSuffix) const;
+    std::string saveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const;
 #elif defined(__linux__) && !defined(__ANDROID__)
-    static std::string openFileDialog(const std::vector<const char*>& allowedSuffix) {
-        return OpenFileDialog(allowedSuffix);
+    static std::string openFileDialog(const const std::vector<std::pair<std::string, std::string>>&& allowedSuffix) {
+        return osOpenFileDialog(allowedSuffix);
     }
-
     static std::string saveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
-        return SaveFileDialog(fileTypes);
+        return osSaveFileDialog(fileTypes);
     }
 #elif __APPLE__
-    std::string OpenFileDialog(std::vector<const char*>& allowedSuffix) {
-        return OpenFileDialog(allowedSuffix);
+    std::string openFileDialog(const std::vector<std::pair<std::string, std::string>>& allowedSuffix) {
+        return osOpenFileDialog(allowedSuffix);
     }
-    std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes) const {
-        return SaveFileDialog(fileTypes);
+    std::string saveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes) const {
+        return osSaveFileDialog(fileTypes);
     }
 #endif
 

@@ -150,10 +150,10 @@ void UIWindow::initUIWindow(const UIWindowParams& par) {
     initHidCallbacks();
 
     // double check if the requested size was accepted
-    m_virtSize.x       = m_winHandle->getWidth();
-    m_virtSize.y       = m_winHandle->getHeight();
-    m_realSize.x       = m_winHandle->getWidthReal();
-    m_realSize.y       = m_winHandle->getHeightReal();
+    m_virtSize.x       = static_cast<int32_t>(m_winHandle->getWidth());
+    m_virtSize.y       = static_cast<int32_t>(m_winHandle->getHeight());
+    m_realSize.x       = static_cast<int32_t>(m_winHandle->getWidthReal());
+    m_realSize.y       = static_cast<int32_t>(m_winHandle->getHeightReal());
     s_devicePixelRatio = m_winHandle->getContentScale().x;
 #endif
 }
@@ -842,7 +842,7 @@ void UIWindow::onKeyDown(const int key, const bool shiftPressed, const bool ctrl
     }
 }
 
-void UIWindow::onKeyUp(const int key, const bool shiftReleased, const bool ctrlReleased, bool altReleased) {
+void UIWindow::onKeyUp(const int key, const bool shiftReleased, const bool ctrlReleased, const bool altReleased) {
     if (shiftReleased) {
         m_hidData.shiftPressed = false;
     }
@@ -931,12 +931,12 @@ void UIWindow::fillHidData(const hidEvent evt, const float xPos, const float yPo
     m_hidData.getScreenMousePos(s_devicePixelRatio);
 }
 
-void UIWindow::onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
+void UIWindow::onMouseDownLeft(const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
     fillHidData(hidEvent::MouseDownLeft, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
 
     // check if double click
     auto   now  = chrono::system_clock::now();
-    double diff = chrono::duration<double, std::milli>(now - m_lastLeftMouseDown).count();
+    double diff = chrono::duration<double, milli>(now - m_lastLeftMouseDown).count();
 
     m_hidData.isDoubleClick = glm::length(m_lastClickedPos - vec2{xPos, yPos}) < 7.f && (diff < 500.f);
     m_lastLeftMouseDown     = now;
@@ -949,7 +949,7 @@ void UIWindow::onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool c
     }
 
     m_draggingNodeTree.clear();
-    ranges::copy(m_opi.localTree, std::back_inserter(m_draggingNodeTree));
+    ranges::copy(m_opi.localTree, back_inserter(m_draggingNodeTree));
 
     // iterate mouse click through UINode - Tree
     m_hidData.reset();
@@ -1020,7 +1020,7 @@ void UIWindow::onMouseUpLeft() {
     m_draggingNode                             = nullptr;
 }
 
-void UIWindow::onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
+void UIWindow::onMouseDownRight(const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
     // ignore mouseDownRight, when in dragging mode
     if (m_hidData.dragging) {
         return;
@@ -1034,7 +1034,7 @@ void UIWindow::onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool 
     }
 
     m_draggingNodeTree.clear();
-    ranges::copy(m_opi.localTree, std::back_inserter(m_draggingNodeTree));
+    ranges::copy(m_opi.localTree, back_inserter(m_draggingNodeTree));
 
     // iterate mouse click through UINode - Tree
     m_hidData.reset();
@@ -1068,7 +1068,7 @@ void UIWindow::onMouseUpRight() {
     m_draggingNode                              = nullptr;
 }
 
-void UIWindow::onMouseMove(float xpos, float ypos, ushort _mode) {
+void UIWindow::onMouseMove(const float xpos, const float ypos, ushort _mode) {
     fillHidData(hidEvent::MouseMove, xpos, ypos, m_hidData.shiftPressed, m_hidData.ctrlPressed, m_hidData.altPressed);
 
     auto foundNode = m_opi.foundNode;
@@ -1147,7 +1147,7 @@ void UIWindow::onScale(float fact, float focusX, float focusY) {
 }
 
 // input always in virtual pixels
-void UIWindow::onSetViewport(int x, int y, const int width, int height) {
+void UIWindow::onSetViewport(int x, int y, const int width, const int height) {
     bool clearFonts = false;
 
 #ifdef ARA_USE_GLFW
@@ -1221,7 +1221,7 @@ void UIWindow::onNodeRemove(UINode *node) {
 }
 
 int32_t UIWindow::getObjAtPos(vec2& pos, const hidEvent evt) {
-    m_opi.it             = std::next(m_uiRoot.children().end(), -1); // take the last element of the tree
+    m_opi.it             = next(m_uiRoot.children().end(), -1); // take the last element of the tree
     m_opi.list           = &m_uiRoot.children();
     m_opi.pos            = pos;
     m_opi.foundNode      = nullptr;
@@ -1293,10 +1293,10 @@ void UIWindow::setInputFocusNode(UINode *node, bool procLostFocus) {
     }
 }
 
-void UIWindow::setAppIcon(std::string &path) {
+void UIWindow::setAppIcon(string &path) {
 #if defined(ARA_USE_GLFW) && defined(ARA_USE_FREEIMAGE)
     // set app icon
-    std::vector<uint8_t> vp;
+    vector<uint8_t> vp;
     m_glbase->getAssetManager()->loadResource(nullptr, vp, "app_icon_placeholder.png");
     if (vp.empty()) {
         return;
@@ -1311,7 +1311,7 @@ void UIWindow::setAppIcon(std::string &path) {
     logo.pixels = static_cast<uint8_t *>(bitmap->data) + logo.width * 8;
 
     // convert to bgra
-    std::array<uint8_t, 4> t{};
+    array<uint8_t, 4> t{};
     for (int y = 0; y < (logo.height); y++) {
         for (int x = 0; x < logo.width; x++) {
             int nrChan = 4;
@@ -1322,7 +1322,7 @@ void UIWindow::setAppIcon(std::string &path) {
             t[2] = logo.pixels[idx + 0];
             t[3] = logo.pixels[idx + 3];
 
-            std::copy_n(&t[0], nrChan, &logo.pixels[idx]);
+            copy_n(&t[0], nrChan, &logo.pixels[idx]);
         }
     }
 
@@ -1347,7 +1347,7 @@ void UIWindow::setMouseCursorVisible(bool val) {
 #endif
 }
 
-void UIWindow::addGlobalWinPosCb(void* ptr, const std::function<void(int, int)>& f) {
+void UIWindow::addGlobalWinPosCb(void* ptr, const function<void(int, int)>& f) {
     m_globalWinPosCb[ptr] = f;
 }
 
@@ -1360,7 +1360,7 @@ void UIWindow::removeGlobalWinPosCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalSetViewportCb(void* ptr, const std::function<void(int, int, int, int)>& f) {
+void UIWindow::addGlobalSetViewportCb(void* ptr, const function<void(int, int, int, int)>& f) {
     m_globalSetViewportCb[ptr] = f;
 }
 
@@ -1373,7 +1373,7 @@ void UIWindow::removeGlobalSetViewportCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalMouseDownLeftCb(void* ptr, const std::function<void(hidData&)>& f) {
+void UIWindow::addGlobalMouseDownLeftCb(void* ptr, const function<void(hidData&)>& f) {
     m_globalMouseDownLeftCb[ptr] = f;
 }
 
@@ -1386,7 +1386,7 @@ void UIWindow::removeGlobalMouseDownLeftCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalMouseUpLeftCb(void* ptr, const std::function<void(hidData&)>& f) {
+void UIWindow::addGlobalMouseUpLeftCb(void* ptr, const function<void(hidData&)>& f) {
     m_globalMouseUpLeftCb[ptr] = f;
 }
 
@@ -1399,7 +1399,7 @@ void UIWindow::removeGlobalMouseUpLeftCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalMouseDownRightCb(void* ptr, const std::function<void(hidData&)>& f) {
+void UIWindow::addGlobalMouseDownRightCb(void* ptr, const function<void(hidData&)>& f) {
     m_globalMouseDownRightCb[ptr] = f;
 }
 
@@ -1412,7 +1412,7 @@ void UIWindow::removeGlobalMouseDownRightCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalMouseMoveCb(void* ptr, const std::function<void(hidData&)>& f) {
+void UIWindow::addGlobalMouseMoveCb(void* ptr, const function<void(hidData&)>& f) {
     m_globalMouseMoveCb[ptr] = f;
 }
 
@@ -1425,7 +1425,7 @@ void UIWindow::removeGlobalMouseMoveCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalKeyDownCb(void* ptr, const std::function<void(hidData&)>& f) {
+void UIWindow::addGlobalKeyDownCb(void* ptr, const function<void(hidData&)>& f) {
     m_globalKeyDownCb[ptr] = f;
 }
 
@@ -1438,7 +1438,7 @@ void UIWindow::removeGlobalKeyDownCb(void* ptr) {
     }
 }
 
-void UIWindow::addGlobalKeyUpCb(void* ptr, const std::function<void(hidData&)>& f) {
+void UIWindow::addGlobalKeyUpCb(void* ptr, const function<void(hidData&)>& f) {
     m_globalKeyUpCb[ptr] = f;
 }
 
@@ -1496,7 +1496,7 @@ void UIWindow::setResChanged(bool val) {
     m_uiRoot.reqTreeChanged();
 }
 
-void UIWindow::addGlCb(void* cbName, const std::string& fName, const std::function<bool()>& func) {
+void UIWindow::addGlCb(void* cbName, const string& fName, const function<bool()>& func) {
     WindowBase::addGlCb(cbName, fName, func);
     update();
     m_sharedRes.requestRedraw = true;
@@ -1505,12 +1505,12 @@ void UIWindow::addGlCb(void* cbName, const std::string& fName, const std::functi
 // wrapping up the util filedialog, since in combination with MFC this causes
 // issues which have to be addressed
 #ifdef _WIN32
-std::string UIWindow::OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuffix) const {
+string UIWindow::openFileDialog(const vector<pair<string, string>>& allowedSuffix) const {
 #ifdef _WIN32
 #ifdef ARA_USE_GLFW
-    HWND owner = getWinHandle()->getHwndHandle();
+    auto owner = getWinHandle()->getHwndHandle();
 #else
-    HWND owner = (HWND)getWinHandle();
+    auto owner = static_cast<HWND>(getWinHandle());
 #endif
 #endif
 
@@ -1522,15 +1522,14 @@ std::string UIWindow::OpenFileDialog(std::vector<COMDLG_FILTERSPEC> &allowedSuff
                                        // hid commandos, which reach after the dialog closes
     setBlockDraw(true);
 #endif
-    std::string out;
-   // std::string out = OpenFileDialog(allowedSuffix, owner);
+    string out = osOpenFileDialog(allowedSuffix, owner);
 #if defined(_WIN32) && !defined(ARA_USE_GLFW)
     setBlockDraw(false);
 #endif
     return out;
 }
 
-std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) const {
+string UIWindow::saveFileDialog(const vector<pair<string, string>>& fileTypes) const {
 #ifdef _WIN32
 #ifdef ARA_USE_GLFW
     HWND owner = getWinHandle()->getHwndHandle();
@@ -1547,8 +1546,7 @@ std::string UIWindow::SaveFileDialog(const std::vector<std::pair<std::string, st
     setBlockDraw(true);
 #endif
 
-    std::string out;
-//   std::string out = SaveFileDialog(std::move(fileTypes), owner);
+   string out = osSaveFileDialog(fileTypes, owner);
 
 #if defined(_WIN32) && !defined(ARA_USE_GLFW)
     setBlockDraw(false);

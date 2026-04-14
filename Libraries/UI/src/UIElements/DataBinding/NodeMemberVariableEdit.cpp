@@ -144,7 +144,7 @@ void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, co
     butt.setBackgroundColor(0.4f, 0.4f, 0.4f, 1.f, state::highlighted);
     butt.setClickedCb([&] {
         if (m_memVar) {
-            if (const auto fn = OpenFileDialog({ "*" }); !fn.empty()) {
+            if (const auto fn = getWindow()->openFileDialog({{ "All Files", "*" }}); !fn.empty()) {
                 std::any anyVal = std::filesystem::path(fn);
                 m_memVar->set(anyVal, 0);
                 m_pathLabel->setText(fn);
@@ -197,7 +197,7 @@ int32_t NodeMemberVariableEdit::getUnitHeight() const {
     }
 
     if (m_editAlign == arrange::horizontal) {
-        return std::ceil( static_cast<float>(nrEdits) /  static_cast<float>(m_numEditsPerRow) );
+        return static_cast<int32_t>(std::ceil( static_cast<float>(nrEdits) /  static_cast<float>(m_numEditsPerRow) ));
     }
 
     return static_cast<int32_t>(nrEdits);

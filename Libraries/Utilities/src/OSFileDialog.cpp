@@ -15,15 +15,31 @@
 //
 
 #include "OSFileDialog.h"
-
 #include <string_utils.h>
+
+using namespace std;
 
 namespace ara {
 #ifdef _WIN32
-std::string OpenFileDialog(const std::vector<COMDLG_FILTERSPEC> &allowedSuffix, HWND owner) {
+vector<COMDLG_FILTERSPEC> convertToFilterSpec(const vector<pair<string, string>>& fileTypes, vector<pair<wstring, wstring>>& wFileTypes) {
+    wFileTypes.clear();
+    for (auto &[fst, snd] : fileTypes) {
+        wFileTypes.emplace_back(wstring(   fst.begin(), fst.end()),
+                                wstring(snd.begin(), snd.end()));
+    }
+
+    vector<COMDLG_FILTERSPEC> aFileTypes;
+    for (auto &[fst, snd] : wFileTypes) {
+        aFileTypes.emplace_back(COMDLG_FILTERSPEC{fst.c_str(), snd.c_str()});
+    }
+    return aFileTypes;
+}
+
+std::string osOpenFileDialog(const vector<pair<string, string>> &fileTypes, HWND owner) {
     std::string outFileName;
-    HRESULT     hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-    if (SUCCEEDED(hr)) {
+    vector<pair<wstring, wstring>> wFileTypes;
+    const auto aFileTypes = convertToFilterSpec(fileTypes, wFileTypes);
+    if (auto hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE); SUCCEEDED(hr)) {
         IFileOpenDialog *pFileOpen;
 
         // Create the FileOpenDialog object.
@@ -31,8 +47,11 @@ std::string OpenFileDialog(const std::vector<COMDLG_FILTERSPEC> &allowedSuffix, 
                               reinterpret_cast<void **>(&pFileOpen));
 
         if (SUCCEEDED(hr)) {
-            pFileOpen->SetFileTypes(static_cast<UINT>(allowedSuffix.size()), &allowedSuffix[0]);
+            pFileOpen->SetFileTypes(static_cast<UINT>(aFileTypes.size()), &aFileTypes[0]);
             // Show the Open dialog box.
+            if (!owner) {
+                owner = GetActiveWindow(); // or GetForegroundWindow()
+            }
             hr = pFileOpen->Show(owner);
 
             // Get the file name from the dialog box.
@@ -54,26 +73,11 @@ std::string OpenFileDialog(const std::vector<COMDLG_FILTERSPEC> &allowedSuffix, 
     return outFileName;
 }
 
-std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> fileTypes, HWND owner) {
+std::string osSaveFileDialog(const vector<pair<string, string>>& fileTypes, HWND owner) {
     std::string outFileName;
-    HRESULT     hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-
-    std::vector<COMDLG_FILTERSPEC> aFileTypes;
-    // aFileTypes.push_back( { L"All files", L"*.*" } );
-
-    // convert string to wstring
-    std::vector<std::pair<std::wstring, std::wstring>> wFileTypes;
-    wFileTypes.reserve(fileTypes.size());
-    for (auto &ftyp : fileTypes) {
-        wFileTypes.emplace_back(std::wstring(ftyp.first.begin(), ftyp.first.end()),
-                                std::wstring(ftyp.second.begin(), ftyp.second.end()));
-    }
-
-    aFileTypes.reserve(wFileTypes.size());
-    for (auto &ftyp : wFileTypes) {
-        aFileTypes.emplace_back(COMDLG_FILTERSPEC{ftyp.first.c_str(), ftyp.second.c_str()});
-    }
-
+    auto hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+    vector<pair<wstring, wstring>> wFileTypes;
+    const auto aFileTypes = convertToFilterSpec(fileTypes, wFileTypes);
     if (SUCCEEDED(hr)) {
         IFileSaveDialog *pFileSave;
 
@@ -86,6 +90,9 @@ std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> file
             pFileSave->SetDefaultExtension(L".xml");
 
             // Show the Open dialog box.
+            if (!owner) {
+                owner = GetActiveWindow(); // or GetForegroundWindow()
+            }
             hr = pFileSave->Show(owner);
 
             // Get the file name from the dialog box.
@@ -115,12 +122,12 @@ std::string SaveFileDialog(std::vector<std::pair<std::string, std::string>> file
 
 #elif defined(__linux__) && !defined(__ANDROID__)
 
-std::string OpenFileDialog(const std::vector<const char *> &allowedSuffix) {
+std::string osOpenFileDialog(const vector<pair<string, string>> &allowedSuffix) {
     std::string    outFileName;
     gtk_init(nullptr, nullptr);
     GtkWidget *dialog = gtk_file_chooser_dialog_new("Open file", nullptr, GTK_FILE_CHOOSER_ACTION_OPEN, "Cancel",
                                                     GTK_RESPONSE_CANCEL, "Open", GTK_RESPONSE_OK, NULL);
-    for (auto &ftyp : allowedSuffix) {
+    for (auto &[name, ftyp] : allowedSuffix) {
         GtkFileFilter *filter = gtk_file_filter_new();  // filter 1
         gtk_file_filter_set_name(filter, ftyp);
         gtk_file_filter_add_pattern(filter, ftyp);
@@ -142,7 +149,7 @@ std::string OpenFileDialog(const std::vector<const char *> &allowedSuffix) {
     return outFileName;
 }
 
-std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>> &fileTypes) {
+std::string osSaveFileDialog(const std::vector<std::pair<std::string, std::string>> &fileTypes) {
     std::string    outFileName;
     gtk_init(nullptr, nullptr);
     GtkWidget *dialog = gtk_file_chooser_dialog_new("Save file", nullptr, GTK_FILE_CHOOSER_ACTION_SAVE, "Cancel",
@@ -171,13 +178,12 @@ std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>
 }
 
 #elif __APPLE__
-
-std::string OpenFileDialog(std::vector<const char*>& allowedSuffix) {
+std::string osOpenFileDialog(const std::vector<std::pair<std::string, std::string>>& allowedSuffix) {
     std::string outFileName;
     return outFileName;
 }
 
-std::string SaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
+std::string osSaveFileDialog(const std::vector<std::pair<std::string, std::string>>& fileTypes) {
     std::string outFileName;
     return outFileName;
 }

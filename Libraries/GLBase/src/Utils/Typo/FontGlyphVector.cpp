@@ -320,7 +320,7 @@ bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, con
         }
 
         if (par.pos.x > size.x && par.maxCharIdx == -1) {
-            par.maxCharIdx = std::distance(par.text.begin(), par.textIt);
+            par.maxCharIdx = static_cast<int32_t>( std::distance(par.text.begin(), par.textIt) );
             hasOverflowText = true;
         }
         par.lch = par.charAsCodepoint;
