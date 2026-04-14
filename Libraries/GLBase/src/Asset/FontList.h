@@ -38,7 +38,7 @@ public:
 
     void  setGlbase(GLBase *glbase) { m_glbase = glbase; }
     [[nodiscard]] int   getCount() const { return static_cast<int>(m_fontList.size()); }
-    [[nodiscard]] Font *get(int index) const { return (index < 0 || index >= getCount()) ? nullptr : m_fontList[index].get(); }
+    [[nodiscard]] Font *get(const int index) const { return index < 0 || index >= getCount() ? nullptr : m_fontList[index].get(); }
     void clear() {
         if (!m_fontList.empty()) {
             m_fontList.clear();

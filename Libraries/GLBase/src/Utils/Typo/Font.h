@@ -40,12 +40,12 @@ public:
                     glm::vec2 maskPos, glm::vec2 maskSize) const;
 
     int write(glm::mat4 *mvp, Shaders *shader, GLuint vao, float *tcolor, float x, float y, const std::string &str);
-    int writeFormat(glm::mat4 *mvp, Shaders *shader, GLuint vao, float *tcolor, float x, float y, char *f, ...);
 
-    void setOversampling(int32_t val) { m_overSampling = static_cast<float>(val); }
+    void setOversampling(const int32_t val) { m_overSampling = static_cast<float>(val); }
     void setFontType(std::string fontType) { m_fontType = std::move(fontType); }
     void setTexLayer(const GlFontPar& par);
     void setFontTexChangedCb(void* id, const std::function<void()>& f) { m_layerTexChangedCb[id] = f; }
+    void removeFontTexChangedCb(void* id) { std::erase_if(m_layerTexChangedCb, [id](auto& it) { return it.first == id; }); }
 
     [[nodiscard]] bool      isFontType(const std::string &fontType, int size, float pixRatio) const;
     [[nodiscard]] bool      isOK() const { return !m_glyphs.empty(); }
@@ -70,7 +70,6 @@ public:
     const std::string&      getFontType() const { return m_fontType; }
     auto&                   getMtx() { return m_mtx; }
     Fontglyph*              getGlyph(int cp);
-    //GLuint                  getTexUnit(void* id) { return m_assignedTexUnit.contains(id) ? m_assignedTexUnit[id] : 0; }
 
 private:
     std::vector<Fontglyph>  m_glyphs;
@@ -92,7 +91,6 @@ private:
     float                   m_overSampling         = 2.f;
     std::mutex              m_mtx;
 
-    //std::unordered_map<void*, GLuint> m_assignedTexUnit{};
     std::unordered_map<void*, std::function<void()>> m_layerTexChangedCb;
 
     // temporary local variables, made member variables for performance reasons

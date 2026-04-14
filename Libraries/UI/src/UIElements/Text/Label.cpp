@@ -555,4 +555,10 @@ vec2& Label::getTextBoundSize() {
     return m_textBounds;
 }
 
+Label::~Label() {
+    if (m_riFont) {
+        m_riFont->removeFontTexChangedCb(this);
+    }
+}
+
 }  // namespace ara

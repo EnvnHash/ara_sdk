@@ -44,7 +44,7 @@ public:
 
     Label();
     explicit Label(const LabelPars& initData);
-    ~Label() override = default;
+    ~Label() override;
 
     [[nodiscard]] unsigned long getOpt() const { return m_tOpt; }
     [[nodiscard]] bool          hasOpt(const unsigned long f) const { return m_tOpt & f; }
@@ -87,7 +87,7 @@ public:
     void setProp(Property<T> &prop) {
         onChanged<T>(prop, [this](const std::any& val) {
             if (getSharedRes()) {
-                // is this really necessary as glcallback??? basically nothing gl-ish  is happening on setText
+                // is this really necessary as glcallback??? basically nothing gl-ish is happening on setText
                 static_cast<UIWindow *>(getSharedRes()->win)->addGlCb(this, "chgTxt", [this, val] {
                     setText(std::any_cast<T>(val).string());
                     return true;
@@ -97,6 +97,7 @@ public:
         setText(typeid(T) == typeid(std::string) ? prop() : prop().string());
     }
 
+protected:
     template <typename T>
     void updtStyleSingleValue(ResNode* node, const styleInit& si, const state st, const T& defVal, T& dest) {
         if (const auto& key = m_styleInitToString[si]; node->hasValue(key)) {
@@ -120,7 +121,6 @@ public:
         }
     }
 
-protected:
     void setEditPixSpace(float width, float height, bool set_flag = true);
 
     [[nodiscard]] glm::vec4 calculateMask() const;
@@ -137,22 +137,21 @@ protected:
     GlFontPar       m_glFontPar{};
     GLuint          m_texUnitArrayIndex = 0;
 
-    unsigned  m_tOpt = 0;                 // options
-    unsigned  m_initOptions = 0;                 // options for in syleDefaults
-    glm::vec2 m_tPos{0.f}, m_tSize{0.f};  // pixel space, offset and size
-    glm::vec2 m_tSep{0.f};                // additional font pixel character separation (default=0,0)
+    bool      m_glyphsPrepared = false;
+    bool      m_fontLayerTexChanged = false;
+    bool      m_updateDrawSetFontData = false;
+    unsigned  m_tOpt = 0;
+    unsigned  m_initOptions = 0;                        /// options for in syleDefaults
+    glm::vec2 m_tPos{0.f}, m_tSize{0.f};    /// pixel space, offset and size
+    glm::vec2 m_tSep{0.f};                        /// additional font pixel character separation (default=0,0)
     align     m_tAlignX = align::center;
     valign    m_tAlignY = valign::center;
     glm::vec2 m_offset{0.f};
     glm::vec2 m_alignOffset{0.f};
-    float     m_tabSize      = 50.f;  // Tab size in pixels
-    float     m_adaptScaling = 1.f;   // matrix scaling when using adaptive flag
+    float     m_tabSize      = 50.f;                    /// Tab size in pixels
+    float     m_adaptScaling = 1.f;                     /// matrix scaling when using adaptive flag
 
-    std::pair<int32_t, float> m_lineOverflowOffset{};   // when single_line opt is activated and the text overflows, defines how much to shift, to move visible range
-
-    bool      m_glyphsPrepared = false;
-    bool      m_fontLayerTexChanged = false;
-    bool      m_updateDrawSetFontData = false;
+    std::pair<int32_t, float> m_lineOverflowOffset{};   /// when single_line opt is activated and the text overflows, defines how much to shift, to move visible range
 
     std::string m_text;
 

@@ -135,33 +135,42 @@ public:
 
     ResNode *getFlag(const std::string &flagName) const;  // Returns the pointer to the flag
 
-    bool hasFunc() const { return !m_func.empty(); }  // Does this have a function
-    Ptr  preprocess(int level = 0);
-    Ptr  choose();
-    void process();
-
-    virtual void onProcess() { }
-    bool load();  // if any node fails to load will stop and return false
-    void resolveReference(ResNode& node);
-    void insertChild(const ResNode * fromNode, ResNode* toNode);
-    virtual bool onLoad() { return true; }
-    virtual bool onResourceChange(bool deleted, const std::string &res_fpath) { return true; };  // Called if a loadresource source has changed and used by this node
-    virtual bool onSourceResUpdate(bool deleted, ResNode *unode) { return true; }  // Called when the source resource file has changed, this function will
+    bool                hasFunc() const { return !m_func.empty(); }  // Does this have a function
+    Ptr                 preprocess(int level = 0);
+    Ptr                 choose();
+    void                process();
+    virtual void        onProcess() { }
+    bool                load();  // if any node fails to load will stop and return false
+    void                resolveReference(ResNode& node);
+    void                insertChild(const ResNode * fromNode, ResNode* toNode);
+    virtual bool        onLoad() { return true; }
+    virtual bool        onResourceChange(bool deleted, const std::string &res_fpath) { return true; };  // Called if a loadresource source has changed and used by this node
+    virtual bool        onSourceResUpdate(bool deleted, ResNode *unode) { return true; }  // Called when the source resource file has changed, this function will
        // be called even if no data has changed, use unode to compare the parameters
-    virtual bool isOK() { return true; }
-
-    bool grabNode(ResNode *from);  // Copies and transfers the from node to this
-    bool isName(const std::string &str) const { return m_name == str; }
-    bool isFunc(const std::string &str) const { return m_func == str; }
-
-    const auto&     getFunc() { return m_func; }
-    std::string     getPar(const int index, const std::string &def = {}) { return m_par.getPar(index, def); }  // Gets the token value for the current m_Par
-    int             getIntPar(const int index, const int def = 0) const { return m_par.getIntPar(index, def); }
-    float           getFloatPar(const int index, const float def = 0) const { return m_par.getFloatPar(index, def); }
-    int             getParCount() const { return m_par.getParCount(); }
-    bool            hasValue(const std::string &path) const { return getByName(path) != nullptr; }
-    std::string     getValue(const std::string &name, std::string def = {}) const;  // Returns the value of a
-    std::string     getName() const { return m_name; }
+    virtual bool        isOK() { return true; }
+    bool                grabNode(ResNode *from);  // Copies and transfers the from node to this
+    bool                isName(const std::string &str) const { return m_name == str; }
+    bool                isFunc(const std::string &str) const { return m_func == str; }
+    const auto&         getFunc() { return m_func; }
+    std::string         getPar(const int index, const std::string &def = {}) { return m_par.getPar(index, def); }  // Gets the token value for the current m_Par
+    int                 getIntPar(const int index, const int def = 0) const { return m_par.getIntPar(index, def); }
+    float               getFloatPar(const int index, const float def = 0) const { return m_par.getFloatPar(index, def); }
+    int                 getParCount() const { return m_par.getParCount(); }
+    bool                hasValue(const std::string &path) const { return getByName(path) != nullptr; }
+    std::string         getValue(const std::string &name, std::string def = {}) const;  // Returns the value of a
+    std::string         getName() const { return m_name; }
+    std::vector<float>  valuefv(const std::string &path, int floatCount = 0, float def = 0);
+    bool                isInPixels(const std::string &name) const;
+    bool                isInPercent(const std::string &name) const;
+    ParVec              splitValue(char sep = ',') const;  // Splits in tokens the m_value for this node
+    ParVec              splitNodeValue(const std::string &valueName, char sep = ',') const;  // Splits in tokens the m_value for a node with name value_name
+    bool                generateReport(std::vector<e_repitem> &ritem, int level = 0);
+    void                setAssetManager(AssetManager *inst) { m_assetManager = inst; }
+    AssetManager*       getAssetManager() const { return m_assetManager; }
+    std::string         getRawValue() const { return m_value; }
+    bool                isReference() const { return m_isReference; }
+    bool                isEqual(const ResNode *unode) const;
+    bool                copy(ResNode *unode);
 
     template<CoordinateType32Signed T>
     T value(const std::string &name, T def) {
@@ -200,19 +209,6 @@ public:
         return true;
     }
 
-    std::vector<float>          valuefv(const std::string &path, int floatCount = 0, float def = 0);
-    bool                        isInPixels(const std::string &name) const;
-    bool                        isInPercent(const std::string &name) const;
-    ParVec                      splitValue(char sep = ',') const;  // Splits in tokens the m_value for this node
-    ParVec                      splitNodeValue(const std::string &valueName, char sep = ',') const;  // Splits in tokens the m_value for a node with name value_name
-    bool                        generateReport(std::vector<e_repitem> &ritem, int level = 0);
-    void                        setAssetManager(AssetManager *inst) { m_assetManager = inst; }
-    AssetManager*               getAssetManager() const { return m_assetManager; }
-    std::string                 getRawValue() const { return m_value; }
-    bool                        isReference() const { return m_isReference; }
-    bool                        isEqual(const ResNode *unode) const;
-    bool                        copy(ResNode *unode);
-
     ErrorList           errList;
     int                 srcLineIndex = -1;
     std::string         m_func;
@@ -220,16 +216,15 @@ public:
     std::vector<Ptr>    m_children;
 
 protected:
+    ResNode *setParent(ResNode *parent);
+
     ResNodeType         m_type = ResNodeType::standard;
     std::string         m_name;
     std::string         m_value;
     bool                m_isReference = false;
-
-    ResNode *setParent(ResNode *parent);
-
-    AssetManager    *m_assetManager = nullptr;
-    ResNode         *m_parent   = nullptr;
-    GLBase          *m_glbase   = nullptr;
+    AssetManager        *m_assetManager = nullptr;
+    ResNode             *m_parent   = nullptr;
+    GLBase              *m_glbase   = nullptr;
 
     std::unordered_map<std::string, ResNode *> m_findNodeCache;
 };
