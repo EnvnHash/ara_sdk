@@ -176,7 +176,7 @@ int32_t NodeMemberVariableEdit::getUnitHeight() const {
         return 1;
     }
 
-    int32_t nrEdits = 1;
+    size_t nrEdits = 1;
     if (tpi::tp_bool < m_memVar->typeIndex && m_memVar->typeIndex < tpi::tp_ivec2) {
         unordered_map<tpi, std::function<size_t()>> vecSizeMap {
             { tpi::tp_vector_float, [this] { return std::any_cast<vector<float>>(m_memVar->get()).size(); } },
@@ -200,7 +200,7 @@ int32_t NodeMemberVariableEdit::getUnitHeight() const {
         return std::ceil( static_cast<float>(nrEdits) /  static_cast<float>(m_numEditsPerRow) );
     }
 
-    return nrEdits;
+    return static_cast<int32_t>(nrEdits);
 }
 
 }

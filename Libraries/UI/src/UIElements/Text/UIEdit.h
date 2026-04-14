@@ -42,7 +42,7 @@ public:
     void setUseWheel(const bool val) { m_useWheel = val; }
     void setCaretColor(glm::vec4 c, state st = state::m_state) ;
     void setCaretColor(float r, float g, float b, float a, state st = state::m_state) ;
-    void setCaretWidth(const int w) { m_caretWidth = w; }
+    void setCaretWidth(const int w) { m_caretWidth = static_cast<float>(w); }
     void setPropItem(Item* item) override;
 
     void incValue(float amt, cfState cf);
