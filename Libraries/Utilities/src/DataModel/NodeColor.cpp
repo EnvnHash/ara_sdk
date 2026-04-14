@@ -16,11 +16,13 @@
 
 #include "NodeColor.h"
 
+using namespace std;
+
 namespace ara::node {
 
 Color::Color() {
     setTypeName<Color>();
-    m_changeCb[cbType::postChange][this] = [this] (std::optional<Node*>) {
+    m_changeCb[cbType::postChange][this] = [this] (Node*, const string&) {
         m_rgba[3] = 1.f;
 
         if (m_format == "rgb") {
@@ -88,9 +90,9 @@ bool Color::hexColor2rgba(float *rgba, const char *str) {
 }
 
 bool Color::hsla2rgba(float *rgba, float h, float s, float l, float a) {
-    float C = (1 - fabsf(2 * l - 1)) * s;
-    float X = C * (1 - fabsf(fmodf(h / 60.f, 2) - 1));
-    float m = l - C / 2.f;
+    const float C = (1 - fabsf(2 * l - 1)) * s;
+    const float X = C * (1 - fabsf(fmodf(h / 60.f, 2) - 1));
+    const float m = l - C / 2.f;
 
     if (h >= 0 && h < 60) {
         rgba[0] = C;

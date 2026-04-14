@@ -627,8 +627,8 @@ void Image::reload() {
         return;
     }
     loadImg();
-    if (getParent()) {
-        getParent()->reqTreeChanged();
+    if (getRoot()) {
+        getRoot()->reqTreeChanged();
     }
     getWindow()->update();
 }

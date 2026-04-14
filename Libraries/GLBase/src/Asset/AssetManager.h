@@ -61,7 +61,7 @@ public:
 
     template<CoordinateType32Signed T>
     T value(const std::string &path, T def) {
-        auto s = getValue(path);
+        const auto s = getValue(path);
         if (!s.has_value()) {
             return def;
         }

@@ -10,6 +10,7 @@ using namespace glm;
 using namespace std;
 
 namespace ara {
+
 UIPolygon::UIPolygon() : m_ctrlPointSizePix(17) {
     setTypeName<UIPolygon>();
     setName(getTypeName<UIPolygon>());
@@ -25,7 +26,7 @@ UIPolygon::UIPolygon() : m_ctrlPointSizePix(17) {
 
     m_ident = mat4(1.f);
 
-    setOnChangeCb(cbType::postChange, this, [this](std::optional<Node*>) { onResize(); });
+    setOnChangeCb(cbType::postChange, this, [this](Node*, const string&) { onResize(); });
 }
 
 void UIPolygon::init() {

@@ -161,6 +161,8 @@ protected:
     const memberVar*        m_memVar = nullptr;
     arrange                 m_editAlign{};
     VariableEditOption<>*   m_options = nullptr;
+
+    std::vector<std::pair<std::string, std::string>> m_stdSuffixes = {{ "All Files", "*" } };
 };
 
 }

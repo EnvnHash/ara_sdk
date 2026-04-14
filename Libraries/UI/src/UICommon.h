@@ -73,6 +73,7 @@ struct VariableEditOption {
     T step{};
     int32_t precision=3;
     bool syncEdits = false;
+    std::vector<std::pair<std::string, std::string>> allowSuffixes;
 };
 
 class ObjPosIt {

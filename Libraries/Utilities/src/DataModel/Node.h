@@ -82,7 +82,7 @@ public:
         if (!m_undoBuf.empty()) {
             saveState();
         }
-        signalChange(cbType::preAddChild, std::nullopt);
+        signalChange(cbType::preAddChild, this);
     }
 
     template <class T>
@@ -101,7 +101,7 @@ public:
                 m_mtx.unlock();
             }
         }
-        signalChange(cbType::postAddChild, std::make_optional<Node*>(m_children.back().get()));
+        signalChange(cbType::postAddChild, m_children.back().get());
         return static_cast<T&>(*m_children.back().get());
     }
 
@@ -114,7 +114,7 @@ public:
         if (unlock) {
             m_mtx.unlock();
         }
-        signalChange(cbType::postAddChild, std::make_optional<Node*>(m_children.back().get()));
+        signalChange(cbType::postAddChild, m_children.back().get());
         return static_cast<T&>(*m_children.back().get());
     }
 
@@ -192,13 +192,13 @@ public:
 
     template <class T>
     void setTypeName() {
-        signalChange(cbType::preChange, std::nullopt);
+        signalChange(cbType::preChange, this);
         const bool unlock = m_mtx.try_lock();
         setTypeName(ara::getTypeName<T>());
         if (unlock) {
             m_mtx.unlock();
         }
-        signalChange(cbType::postChange, std::nullopt);
+        signalChange(cbType::postChange, this);
     }
 
     Node* findParentByType(const std::string& typeStr) {
@@ -323,7 +323,7 @@ public:
     void                saveState();
     void                undo();
     void                redo();
-    void                signalChange(cbType cbType, std::optional<Node*> node);
+    void                signalChange(cbType cbType, Node* node);
     static bool         iterateChildren(Node& node, const std::function<void(Node&)>& f);
     bool                iterateChildren(const std::function<void(Node&)>& f) const;
     Node*               root();
@@ -348,9 +348,9 @@ public:
     const auto&         getNodeValueType() const { return m_nodeValueType; }
     auto&               getMemberVariables()  { return m_memberVars; }
 
-    std::deque<std::function<void(std::optional<Node*>)>> collectCallbacks(cbType cbType, bool withChildrenOnly);
+    std::deque<std::function<void(Node*, const std::string&)>> collectCallbacks(cbType cbType, bool withChildrenOnly);
 
-    std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>>&   changeCb() { return m_changeCb; }
+    std::unordered_map<cbType, std::unordered_map<void*, std::function<void(Node*, const std::string&)>>>&   changeCb() { return m_changeCb; }
 
     void setName(const std::string& name)           { changeVal([&]{ m_name = name; }); }
     void setUuid(const std::string& uuid)           { m_uuid = uuid; }
@@ -360,7 +360,7 @@ public:
     void setKey(const std::string& key)             { m_key = key; }
     void setNodeValueType(const nodeValueType& t)   { m_nodeValueType = t; }
 
-    void setOnChangeCb(const cbType cbType, void *ptr, std::function<void(std::optional<Node*>)> func) {
+    void setOnChangeCb(const cbType cbType, void *ptr, std::function<void(Node*, const std::string&)> func) {
         m_changeCb[cbType][ptr] = std::move(func);
     }
 
@@ -374,9 +374,9 @@ public:
         return valueJson;
     }
 
-    void callChangeCbs(const cbType cbType) {
+    void callChangeCbs(const cbType cbType, const std::string& varName) {
         for (auto &cb: m_changeCb[cbType] | std::views::values) {
-            cb(std::nullopt);
+            cb(this, varName);
         }
     }
 
@@ -422,7 +422,7 @@ protected:
     template <typename T, typename... Args>
     void serializeSingleClassValue(nlohmann::json& j, std::vector<std::string>::iterator nm, T&& arg, Args&&... args) {
         j[*nm] = arg;
-        addMemberVar(nm, arg);
+        addMemberVar(*nm, arg);
         serializeSingleClassValue(j, ++nm, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
     }
 
@@ -437,7 +437,7 @@ protected:
 
     template <typename NodeValueType, typename... Args>
     void createSingleProp( std::vector<std::string>::iterator nm, NodeValueType&& arg, Args&&... args) {
-        addMemberVar(nm, arg);
+        addMemberVar(*nm, arg);
         createSingleProp(++nm, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
     }
 
@@ -456,7 +456,7 @@ protected:
         if (j.contains(*nm) && !j[*nm].is_null()) {
             j.at(*nm).get_to(arg);
         }
-        addMemberVar(nm, arg);
+        addMemberVar(*nm, arg);
         deserializeSingleClassValue(j, ++nm, std::forward<Args>(args)...);  // Recursively call for the rest of the arguments
     }
 
@@ -468,22 +468,22 @@ protected:
     }
 
     template <typename NodeValueType>
-    void addMemberVar(const std::vector<std::string>::iterator name, NodeValueType&& arg) {
+    void addMemberVar(const std::string& name, NodeValueType&& arg) {
         using Container = std::decay_t<NodeValueType>;
         constexpr auto tpIndex = getTpi<Container>();
-        m_memberVars.emplace(*name, memberVar{
+        m_memberVars.emplace(name, memberVar{
             .get = [&] {
                 return arg;
             },
-            .set = [&] (std::any& val, const size_t idx) {
-                callChangeCbs(cbType::preChange);
+            .set = [&, name] (std::any& val, const size_t idx) {
+                callChangeCbs(cbType::preChange, name);
                 if constexpr (is_index_assignable<Container>::value || is_glm_vec_v<Container>) {
                     using Elem = typename Container::value_type;
                     arg[static_cast<int32_t>(idx)] = std::any_cast<Elem>(val);
                 } else {
                     arg = std::any_cast<Container>(val);
                 }
-                callChangeCbs(cbType::postChange);
+                callChangeCbs(cbType::postChange, name);
             },
             .typeIndex = tpIndex,
         });
@@ -531,7 +531,7 @@ protected:
     static inline std::unordered_map<std::string, std::pair<std::vector<std::string>, bool>> m_classKeys;
     static inline std::filesystem::file_time_type   m_initFt{};
 
-    std::unordered_map<cbType, std::unordered_map<void*, std::function<void(std::optional<Node*>)>>> m_changeCb {
+    std::unordered_map<cbType, std::unordered_map<void*, std::function<void(Node*, const std::string&)>>> m_changeCb {
         { cbType::preChange, {}},
         { cbType::postChange, {}},
         { cbType::preAddChild, {}},

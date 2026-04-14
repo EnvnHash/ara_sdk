@@ -28,6 +28,7 @@ public:
 
     void load(bool fromAssets, bool skipNonClass=false) override;
     void setWatch(bool val) override;
+    void setImgPath(const std::filesystem::path& p) { m_imgPath = p; }
 
     const std::filesystem::path&    imgPath() { return m_imgPath; }
     int                             getMipMap() const { return m_mipMaps; }

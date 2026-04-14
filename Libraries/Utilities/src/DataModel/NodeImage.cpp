@@ -20,13 +20,13 @@ using fs = std::filesystem::path;
 
 namespace ara::node {
 
-Image::Image() : Node() {
-    ara::Node::setTypeName<Image>();
+Image::Image() {
+    setTypeName<Image>();
 }
 
 void Image::load(bool fromAssets, bool skipNonClass) { // called when the image was changed on disk
     for (const auto &cb: m_changeCb[cbType::postChange] | std::views::values) {
-        cb(std::nullopt);
+        cb(this, "");
     }
 }
 

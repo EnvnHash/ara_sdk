@@ -26,7 +26,7 @@ public:
 
     TestClass() {
         setTypeName<TestClass>();
-        m_changeCb[cbType::postChange].emplace(this, [this](std::optional<Node*>) {
+        m_changeCb[cbType::postChange].emplace(this, [this](Node* node, const std::string& varName) {
             m_changeCalled++;
         });
     }
@@ -240,11 +240,11 @@ TEST(Functional_Node, SignalAddChild) {
     bool postCalled = false;
 
     Node nd1;
-    nd1.setOnChangeCb(Node::cbType::preAddChild, nullptr, [&](std::optional<Node*>) {
+    nd1.setOnChangeCb(Node::cbType::preAddChild, nullptr, [&](Node*, const string&) {
         EXPECT_EQ(nd1.children().size(), 0);
         preCalled = true;
     });
-    nd1.setOnChangeCb(Node::cbType::postAddChild, nullptr, [&] (std::optional<Node*>){
+    nd1.setOnChangeCb(Node::cbType::postAddChild, nullptr, [&] (Node*, const string&){
         EXPECT_EQ(nd1.children().size(), 1);
         postCalled = true;
     });
@@ -261,11 +261,11 @@ TEST(Functional_Node, SignalRemoveChild) {
     Node nd1;
     nd1.push<Node>();
 
-    nd1.setOnChangeCb(Node::cbType::preRemoveChild, nullptr, [&] (std::optional<Node*>){
+    nd1.setOnChangeCb(Node::cbType::preRemoveChild, nullptr, [&] (Node*, const string&){
         EXPECT_EQ(nd1.children().size(), 1);
         preCalled = true;
     });
-    nd1.setOnChangeCb(Node::cbType::postRemoveChild, nullptr, [&] (std::optional<Node*>){
+    nd1.setOnChangeCb(Node::cbType::postRemoveChild, nullptr, [&] (Node*, const string&){
         EXPECT_EQ(nd1.children().size(), 0);
         postCalled = true;
     });
@@ -299,19 +299,19 @@ TEST(Functional_Node, SignalRemoveChildNested) {
     auto& child = nd1.push<Node>();
     child.push<Node>();
 
-    nd1.setOnChangeCb(Node::cbType::preRemoveChild, nullptr, [&] (std::optional<Node*>){
+    nd1.setOnChangeCb(Node::cbType::preRemoveChild, nullptr, [&] (Node*, const string&){
         EXPECT_EQ(nd1.children().size(), 1);
         preCalled = true;
     });
-    nd1.setOnChangeCb(Node::cbType::postRemoveChild, nullptr, [&] (std::optional<Node*>){
+    nd1.setOnChangeCb(Node::cbType::postRemoveChild, nullptr, [&] (Node*, const string&){
         EXPECT_EQ(nd1.children().size(), 0);
         postCalled = true;
     });
-    child.setOnChangeCb(Node::cbType::preRemoveChild, nullptr, [&] (std::optional<Node*>){
+    child.setOnChangeCb(Node::cbType::preRemoveChild, nullptr, [&] (Node*, const string&){
         EXPECT_EQ(child.children().size(), 1);
         nestedPreCalled = true;
     });
-    child.setOnChangeCb(Node::cbType::postRemoveChild, nullptr, [&](std::optional<Node*>) {
+    child.setOnChangeCb(Node::cbType::postRemoveChild, nullptr, [&](Node*, const string&) {
         nestedPostCalled = true;
     });
 
@@ -713,7 +713,7 @@ TEST(Functional_Node, Parse_Update_SwappedNode) {
     EXPECT_EQ(std::next(node.children().begin(), 2)->get()->name(), "Child3");
 
     bool triggered = false;
-    node.children().front()->setOnChangeCb(Node::cbType::preChange, nullptr, [&](std::optional<Node*>){ triggered = true; });
+    node.children().front()->setOnChangeCb(Node::cbType::preChange, nullptr, [&](Node*, const string&){ triggered = true; });
 
     const std::string s2 = R"({
         "children":[

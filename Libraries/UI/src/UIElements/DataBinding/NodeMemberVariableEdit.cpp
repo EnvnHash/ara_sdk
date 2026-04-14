@@ -144,7 +144,8 @@ void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, co
     butt.setBackgroundColor(0.4f, 0.4f, 0.4f, 1.f, state::highlighted);
     butt.setClickedCb([&] {
         if (m_memVar) {
-            if (const auto fn = getWindow()->openFileDialog({{ "All Files", "*" }}); !fn.empty()) {
+            const auto& suffixes = !m_options->allowSuffixes.empty() ? m_options->allowSuffixes : m_stdSuffixes;
+            if (const auto fn = getWindow()->openFileDialog(suffixes); !fn.empty()) {
                 std::any anyVal = std::filesystem::path(fn);
                 m_memVar->set(anyVal, 0);
                 m_pathLabel->setText(fn);

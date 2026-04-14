@@ -73,7 +73,7 @@ public:
             m_children.emplace_back(ptr);
             setDefault(m_children.back());
         }
-        signalChange(cbType::postAddChild, std::make_optional(m_children.back().get()));
+        signalChange(cbType::postAddChild, m_children.back().get());
         return dynamic_cast<T&>(*m_children.back().get());
     }
 
@@ -109,7 +109,7 @@ public:
             [&arg, &node] { node.setBorderWidth(arg.borderWidth.value()); },
             [&arg, &node] { node.setBorderRadius(arg.borderRadius.value()); },
             [&arg, &node] { node.setBorderColor(arg.borderColor.value()); },
-            [&arg, &node] { auto p = arg.padding.value(); node.setPadding(glm::vec4{p.x, p.y, p.z, p.w}); },
+            [&arg, &node] { const auto p = arg.padding.value(); node.setPadding(glm::vec4{p.x, p.y, p.z, p.w}); },
             [&arg, &node] { node.setVisibility(arg.visible.value()); },
             [&arg, &node] { node.excludeFromObjMap(arg.excludeFromObjMap.value()); },
             [&arg, &node] { node.excludeFromParentViewTrans(arg.excludeFromParentViewTrans.value()); },

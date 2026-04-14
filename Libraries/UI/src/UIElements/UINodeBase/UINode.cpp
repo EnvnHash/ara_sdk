@@ -17,14 +17,14 @@ namespace ara {
 UINode::UINode() {
     setTypeName<UINode>();
     setName(getTypeName<UINode>());
-    setOnChangeCb(cbType::postAddChild, this, [this](const std::optional<Node*> node) {
+    setOnChangeCb(cbType::postAddChild, this, [this](Node* node, const string&) {
         reqTreeChanged();
-        if (node.has_value() && node.value()) {
-            initChild(dynamic_cast<UINode &>(*node.value()), this);
+        if (node) {
+            initChild(dynamic_cast<UINode &>(*node), this);
         }
     });
 
-    setOnChangeCb(cbType::preRemoveChild, this, [this](std::optional<Node*> node) {
+    setOnChangeCb(cbType::preRemoveChild, this, [this](Node*, const string&) {
         removeFocus();
         m_reqTreeChanged = true;
     });
@@ -208,6 +208,10 @@ void UINode::drawIt(scissorStack& ss, uint32_t& objId, const bool treeChanged, b
             }
         }
 
+        if (m_name == "placeholder_1") {
+            LOG << "placeholder_1 m_drawParamChanged: " << m_drawParamChanged;
+        }
+
         if (m_objIdMin != objId && (m_drawImmediate || (!m_drawImmediate && treeChanged))) {
             m_objIdMin = m_objIdMax = objId;
             m_drawParamChanged      = true;
@@ -217,6 +221,7 @@ void UINode::drawIt(scissorStack& ss, uint32_t& objId, const bool treeChanged, b
         if (m_inited && m_geoChanged) {
             updateMatrix();
         }
+
 
         // if the node is being drawn indirectly, check if the DivData needs to be updated
         if (m_drawParamChanged) {
@@ -411,7 +416,7 @@ void UINode::updateMatrix() {
         m_drawParamChanged = true;
     }
 
-    signalChange(cbType::postChange, std::nullopt);
+    signalChange(cbType::postChange, this);
 }
 
 void UINode::getParentViewport() {
@@ -708,7 +713,7 @@ void UINode::setSharedRes(UISharedRes* shared) {
         m_drawMan   = shared->drawMan;
     }
 
-    setOnChangeCb(cbType::postChange, this, [this](std::optional<Node*>) { onResize(); });
+    setOnChangeCb(cbType::postChange, this, [this](Node*, const string&) { onResize(); });
 }
 
 std::filesystem::path UINode::dataPath() const {

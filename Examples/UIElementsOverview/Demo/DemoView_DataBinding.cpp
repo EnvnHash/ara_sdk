@@ -41,7 +41,7 @@ void DemoView_DataBinding::setupNodeEdit() {
     });
     ne.setNode(m_node);
 
-    m_node.setOnChangeCb(cbType::postChange, this, [this](std::optional<Node*>) {
+    m_node.setOnChangeCb(cbType::postChange, this, [this](Node*, const string&) {
         LOG << std::endl;
         LOG << "bool var: " << m_node.m_boolVal;
         LOG << "float var: " << m_node.m_floatVal;

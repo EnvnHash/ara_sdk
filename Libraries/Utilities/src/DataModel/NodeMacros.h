@@ -37,7 +37,7 @@ std::vector<std::string> serializeClassValues(nlohmann::json& j) override {     
 }                                                                                                                       \
                                                                                                                         \
 std::vector<std::string> deserializeClassValues(const nlohmann::json& j) override {                                     \
-    callChangeCbs(cbType::preChange);                                                                                   \
+    callChangeCbs(cbType::preChange, "");                                                                               \
     baseClassName::deserializeClassValues(j);                                                                           \
     auto argNames = splitAndDeserializeClassValues(j, std::string(#__VA_ARGS__), __VA_ARGS__);                          \
     checkClassKeyEntry(m_typeName, argNames);                                                                           \
@@ -57,7 +57,7 @@ virtual std::vector<std::string> serializeClassValues(nlohmann::json& j) {      
 }                                                                                                                       \
                                                                                                                         \
 virtual std::vector<std::string> deserializeClassValues(const nlohmann::json& j) {                                      \
-    callChangeCbs(cbType::preChange);                                                                                   \
+    callChangeCbs(cbType::preChange, "");                                                                               \
     auto argNames = splitAndDeserializeClassValues(j, std::string(#__VA_ARGS__), __VA_ARGS__);                          \
     checkClassKeyEntry(m_typeName, argNames);                                                                           \
     return argNames;                                                                                                    \

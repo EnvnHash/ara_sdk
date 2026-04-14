@@ -87,6 +87,11 @@ std::string str_toupper(std::string s) {
     return s;
 }
 
+std::string str_tolower(std::string s) {
+    std::ranges::transform(s, s.begin(), [](const unsigned char c) { return std::tolower(c); });
+    return s;
+}
+
 bool isNumericLikeName(const std::string_view name) {
     if (name.find("px") != std::string_view::npos) {
         return true;

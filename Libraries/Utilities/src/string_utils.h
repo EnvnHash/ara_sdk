@@ -30,6 +30,7 @@ std::vector<std::string> split(const std::string &s, const std::string& delim);
 std::vector<std::string> split(const std::string &s, char delim);
 bool is_number(const std::string &s);
 std::string str_toupper(std::string s);
+std::string str_tolower(std::string s);
 bool isNumericLikeName(std::string_view name);
 
 #ifdef _WIN32

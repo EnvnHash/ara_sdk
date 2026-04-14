@@ -64,14 +64,14 @@ void Node::pop() {
         const auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
         const auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
         for (auto &it : preRemoveCbs) {
-            it(std::nullopt);
+            it(this, "");
         }
         {
             unique_lock l(m_mtx);
             m_children.pop_back();
         }
         for (auto &it : postRemoveCbs) {
-            it(std::nullopt);
+            it(this, "");
         }
     }
 }
@@ -92,14 +92,14 @@ void Node::remove(Node* node) {
             const auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
             const auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
             for (auto &it : preRemoveCbs) {
-                it(std::nullopt);
+                it(this, "");
             }
             {
                 unique_lock l(m_mtx);
                 m_children.erase(res);
             }
             for (auto &it : postRemoveCbs) {
-                it(std::nullopt);
+                it(this, "");
             }
         }
     }
@@ -113,14 +113,14 @@ void Node::clearChildren() {
     const auto preRemoveCbs = collectCallbacks(cbType::preRemoveChild, true);
     const auto postRemoveCbs = collectCallbacks(cbType::postRemoveChild, true);
     for (auto &it : preRemoveCbs) {
-        it(std::nullopt);
+        it(this, "");
     }
     {
         unique_lock l(m_mtx);
         children().clear();
     }
     for (auto &it : postRemoveCbs) {
-        it(std::nullopt);
+        it(this, "");
     }
 }
 
@@ -144,9 +144,9 @@ void Node::removeChangeCb(const cbType cbType, void *ptr) {
     }
 }
 
-void Node::signalChange(const cbType cbType, const std::optional<Node*> node) {
+void Node::signalChange(const cbType cbType, Node* node) {
     for (auto &val: m_changeCb[cbType] | views::values) {
-        val(node);
+        val(node, "");
     }
 }
 
@@ -222,7 +222,7 @@ void Node::deserialize(const json& j, const bool skipClassEntries, std::optional
     if (!skipClassEntries && serializeClassValues() != getValues(j)) {
         deserializeClassValues(j);
         for (const auto &func: m_changeCb[cbType::postChange] | views::values) {
-            func(std::nullopt);
+            func(this, "");
         }
     }
 
@@ -474,8 +474,8 @@ bool Node::iterateChildren(const function<void(Node&)>& f) const {
     return true;
 }
 
-deque<function<void(std::optional<Node*>)>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
-    deque<function<void(std::optional<Node*>)>> list;
+deque<function<void(Node*, const string&)>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
+    deque<function<void(Node*, const string&)>> list;
     if  (!withChildrenOnly || !m_children.empty()) {
         for (auto &val: m_changeCb[cbType] | views::values) {
             list.emplace_back(val);
@@ -512,13 +512,13 @@ void Node::changeVal(const function<void()>& f) {
     }
 
     for (auto &val: m_changeCb[cbType::preChange] | views::values) {
-        val(std::nullopt);
+        val(this, "");
     }
 
     { unique_lock l(m_mtx); f(); }
 
     for (auto &val: m_changeCb[cbType::postChange] | views::values) {
-        val(std::nullopt);
+        val(this, "");
     }
 }
 
