@@ -29,12 +29,12 @@ public:
     void load(bool fromAssets, bool skipNonClass=false) override;
     void setWatch(bool val) override;
 
-    const std::string&  imgPath() { return m_imgPath; }
-    int                 getMipMap() const { return m_mipMaps; }
+    const std::filesystem::path&    imgPath() { return m_imgPath; }
+    int                             getMipMap() const { return m_mipMaps; }
 
 protected:
-    std::string m_imgPath;
-    int         m_mipMaps = 1;
+    std::filesystem::path   m_imgPath;
+    int                     m_mipMaps = 1;
 };
 
 }

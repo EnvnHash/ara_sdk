@@ -139,7 +139,6 @@ void ResNode::cloneChild(ResNode* from, T *to) {
 template <typename T>
 std::unique_ptr<T> ResNode::clone(ResNode *unode) {
     auto out = std::make_unique<T>(m_name, m_glbase);
-
     out->m_name = unode->m_name;
     out->m_value = unode->m_value;
     out->m_func = unode->m_func;
@@ -152,16 +151,13 @@ std::unique_ptr<T> ResNode::clone(ResNode *unode) {
     for (const auto& child : unode->m_children) {
         cloneChild(child.get(), out.get());
     }
-
     return out;
 }
 
 bool ResNode::load() {
     m_findNodeCache.clear();
-
     try {
         onLoad();
-
         for (auto nodeIt = m_children.begin(); nodeIt != m_children.end(); ++nodeIt) {
             auto& node = *nodeIt->get();
             node.load();
@@ -171,7 +167,6 @@ bool ResNode::load() {
                 nodeIt = --m_children.end();
             }
         }
-
         return true;
     } catch (std::runtime_error &err) {
         LOGE << err.what() << endl;
@@ -182,10 +177,16 @@ bool ResNode::load() {
 void ResNode::resolveReference(const ResNode& node) {
     if (const auto ref = getRoot()->findNode(node.getName()); ref && ref != this && m_parent) {
         for (const auto &child : ref->m_children) {
-            if (findNode(child->m_name) != nullptr) {
+            if (ranges::find_if(m_children, [&child](auto& it) { return it->m_name == child->m_name; }) != m_children.end()) {
                 continue;
             }
-            m_children.insert(m_children.begin(), clone<ResNode>(child.get()));
+            if (child->m_type == ResNodeType::font) {
+                m_children.insert(m_children.begin(), clone<AssetFont>(child.get()));
+            } else if (child->m_type == ResNodeType::color) {
+                m_children.insert(m_children.begin(), clone<AssetColor>(child.get()));
+            } else {
+                m_children.insert(m_children.begin(), clone<ResNode>(child.get()));
+            }
             m_children.front().get()->setParent(this);
         }
     }

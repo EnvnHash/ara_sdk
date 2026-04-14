@@ -2,12 +2,17 @@ fonts {
     "regular":"Fonts/verdana.ttf"
 }
 
+variableDef {
+    text-align: left
+    font {font:"regular" size:18}
+}
+
 node_edit {
     width: 180px
 
     variable {
         label {
-            font {font:"regular" size:18}
+            variableDef
         }
 
         edit {
