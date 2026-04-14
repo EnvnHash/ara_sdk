@@ -208,10 +208,6 @@ void UINode::drawIt(scissorStack& ss, uint32_t& objId, const bool treeChanged, b
             }
         }
 
-        if (m_name == "placeholder_1") {
-            LOG << "placeholder_1 m_drawParamChanged: " << m_drawParamChanged;
-        }
-
         if (m_objIdMin != objId && (m_drawImmediate || (!m_drawImmediate && treeChanged))) {
             m_objIdMin = m_objIdMax = objId;
             m_drawParamChanged      = true;
