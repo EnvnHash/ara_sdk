@@ -87,12 +87,8 @@ public:
     virtual void startRenderLoop();
 
     // Info dialogues
-    virtual void openInfoDiag(const InfoDiagParams& params);
-    virtual void openInfoDiag(infoDiagType tp, const std::string& msg, const std::function<bool()>& onConfirm);
-    virtual void showInfo(const std::string& msg, long minStayTime = 500, int width = 250, int height = 100,
-                          bool isModal = true, std::function<void()> onClose = nullptr,
-                          std::function<void()> onInfoOpen = nullptr);
-    virtual void showCancel(std::string msg, long minStayTime, int width, int height, bool isModal, std::function<bool()> cancelCb);
+    virtual void openDialog(const InfoDiagParams& params);
+    virtual void openDialogCentered(InfoDiagParams&& params);
     virtual void closeInfoDiag();
 
     UIWindow* getInfoDiag() const { return m_infoDiag; }
@@ -116,7 +112,7 @@ public:
     auto        getUIWindows() { return &m_uiWindows; }
     auto        getDataModel() const { return m_dataModel; }
 
-    void stop();            /// for single threaded mode
+    virtual void stop();    /// for single threaded mode
     virtual void exit();    /// exit the application, must be called from the main thread in multi-thread setups
 
 protected:

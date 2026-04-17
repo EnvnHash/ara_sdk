@@ -20,7 +20,7 @@ using namespace std;
 
 namespace ara {
 
-void WindowBase::init(const glm::ivec2& pos, const glm::ivec2& size) {
+void WindowBase::init(const ivec2& pos, const ivec2& size) {
     s_mousePos                  = ivec2{};
     s_mouse_down_right_init_pos = ivec2{};
 
@@ -30,7 +30,7 @@ void WindowBase::init(const glm::ivec2& pos, const glm::ivec2& size) {
     s_windowViewport.w = static_cast<float>(size.y);
 
     s_viewPort = vec4(pos, static_cast<float>(size.x) * s_devicePixelRatio, static_cast<float>(size.y) * s_devicePixelRatio);
-    s_orthoMat = glm::ortho(0.f, static_cast<float>(size.x), static_cast<float>(size.y), 0.f);
+    s_orthoMat = ortho(0.f, static_cast<float>(size.x), static_cast<float>(size.y), 0.f);
 }
 
 // process opengl callbacks from another thread and delete them afterward if they returned true
@@ -91,7 +91,7 @@ void WindowBase::procChangeWin() {
         return;
     }
 
-    unique_lock<mutex> lock(s_changeWinMtx);
+    unique_lock lock(s_changeWinMtx);
     for (auto &val: s_changeWinEvents | views::values) {
         if (val) {
             val();

@@ -304,21 +304,11 @@ void UIWindow::menuBarCloseFunc() {
     if (m_closeFunc) {
         m_closeFunc(this);
     } else if (m_appHandle && m_isMainWindow) {
-        // this is called from GL HID queue
-        ivec2 diagPos{0, 0};
-        ivec2 diagSize{500, 150};
-        if (m_winHandle) {
-            diagPos.x = (m_winHandle->getSize().x - diagSize.x) / 2 + m_winHandle->getPosition().x;
-            diagPos.y = (m_winHandle->getSize().y - diagSize.y) / 2 + m_winHandle->getPosition().y;
-        }
-
-        m_appHandle->openInfoDiag((InfoDiagParams{
-            .pos = diagPos,
-            .size = diagSize,
+        m_appHandle->openDialogCentered((InfoDiagParams{
             .tp = infoDiagType::confirm,
+            .size = ivec2{500, 150},
             .msg = "Do you really want to quit?",
             .minStayTime =  0,
-            .isModal = true,
             .onConfirm = [this] {
                 m_winHandle->hide();
                 m_appHandle->exit();
@@ -421,8 +411,8 @@ bool UIWindow::draw(double time, double dt, int ctxNr) {
         w.wait();
     }
 
-    // for window manipulating commands (close, maximize, restore, size, position or minimized) a different event queue
-    // must be used in order to avoid double mutex locking with HID events
+    // for window-manipulating commands (close, maximize, restore, size, position or minimized) a different event queue
+    // must be used to avoid double mutex locking with HID events
     WindowBase::procChangeWin();
 
     // process hid events, received in the WinBase HID callbacks this function passes down HID events to the UINodes and
@@ -586,10 +576,10 @@ void UIWindow::getActualMonitorMaxArea(const int win_xpos, const int win_ypos) {
 /** HID callbacks called from the glfw event loop */
 void UIWindow::key_callback(const int key, int scancode, const int action, const int mods) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    int  outKey  = key;
-    bool isAlt   = (key == ARA_KEY_LEFT_ALT) || (key == ARA_KEY_RIGHT_ALT);
-    bool isCtrl  = (key == ARA_KEY_LEFT_CONTROL) || (key == ARA_KEY_RIGHT_CONTROL);
-    bool isShift = (key == ARA_KEY_LEFT_SHIFT) || (key == ARA_KEY_RIGHT_SHIFT);
+    int  outKey         = key;
+    const bool isAlt    = (key == ARA_KEY_LEFT_ALT) || (key == ARA_KEY_RIGHT_ALT);
+    const bool isCtrl   = (key == ARA_KEY_LEFT_CONTROL) || (key == ARA_KEY_RIGHT_CONTROL);
+    const bool isShift  = (key == ARA_KEY_LEFT_SHIFT) || (key == ARA_KEY_RIGHT_SHIFT);
 
     // convert special keys, ...QT and GLFW use different key codes
     static unordered_map<int, int> specialKeys = {
@@ -708,8 +698,8 @@ void UIWindow::mouseBut_callback(const int button, const int action, const int m
 #endif
 }
 
-void UIWindow::scroll_callback(double xoffset, double yoffset) {
-    WindowBase::osWheel(static_cast<float>(yoffset));  // degree
+void UIWindow::scroll_callback(double, double yOffset) {
+    WindowBase::osWheel(static_cast<float>(yOffset));  // degree
     iterate();
 }
 
@@ -747,7 +737,7 @@ void UIWindow::window_maximize_callback(int maximized) {
     iterate();
 }
 
-void UIWindow::window_minimize_callback(int iconified) {
+void UIWindow::window_minimize_callback(const int iconified) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     WindowBase::osMinimize([this, iconified] {
         // if the window is modal, be sure that the main window is also
@@ -1135,7 +1125,7 @@ void UIWindow::onWheel(const float deg) {
     m_procSteps[Draw].active = true;
 }
 
-void UIWindow::onScale(float fact, float focusX, float focusY) {
+void UIWindow::onScale(const float fact, float focusX, float focusY) {
     m_hidData.objId = getObjAtPos(m_hidData.mousePos, hidEvent::MouseWheel);
     m_hidData.scaleFact = fact;
     m_hidData.reset();
@@ -1147,7 +1137,7 @@ void UIWindow::onScale(float fact, float focusX, float focusY) {
 }
 
 // input always in virtual pixels
-void UIWindow::onSetViewport(int x, int y, const int width, const int height) {
+void UIWindow::onSetViewport(const int x, const int y, const int width, const int height) {
     bool clearFonts = false;
 
 #ifdef ARA_USE_GLFW
@@ -1269,7 +1259,7 @@ void UIWindow::setModal(const bool val) {
 #endif
 }
 
-void UIWindow::setBlockHid(bool val) {
+void UIWindow::setBlockHid(const bool val) {
     m_blockHID = val;
 
     // block all but the menu bar
@@ -1280,7 +1270,7 @@ void UIWindow::setBlockHid(bool val) {
     }
 }
 
-void UIWindow::setInputFocusNode(UINode *node, bool procLostFocus) {
+void UIWindow::setInputFocusNode(UINode *node, const bool procLostFocus) {
     if (m_inputFocusNode && procLostFocus) {
         m_inputFocusNode->onLostFocus();
         m_inputFocusNode->setInputFocus(false);
@@ -1314,8 +1304,8 @@ void UIWindow::setAppIcon(string &path) {
     array<uint8_t, 4> t{};
     for (int y = 0; y < (logo.height); y++) {
         for (int x = 0; x < logo.width; x++) {
-            int nrChan = 4;
-            int idx = ((y * logo.width) + x) * nrChan;
+            constexpr int nrChan = 4;
+            const int idx = ((y * logo.width) + x) * nrChan;
 
             t[0] = logo.pixels[idx + 2];
             t[1] = logo.pixels[idx + 1];

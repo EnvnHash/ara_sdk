@@ -44,13 +44,15 @@ struct UIWindowParams {
 };
 
 struct InfoDiagParams {
-    glm::ivec2 pos{};
-    glm::ivec2 size{};
     infoDiagType tp{};
+    glm::ivec2 pos{};
+    glm::ivec2 size{ 200, 100 };
     std::string msg;
     long minStayTime = 500;
     bool isModal = true;
     int32_t autoCloseAfter = -1;
+    UIWindow* win = nullptr;
+    std::function<bool()> onInfoOpen;
     std::function<bool()> onConfirm;
     std::function<void()> onClose;
     std::function<bool()> onCancel;
@@ -105,7 +107,7 @@ public:
     virtual void char_callback(unsigned int codepoint);
     virtual void cursor_callback(double xpos, double ypos);
     virtual void mouseBut_callback(int button, int action, int mods);
-    virtual void scroll_callback(double xoffset, double yoffset);
+    virtual void scroll_callback(double xOffset, double yOffset);
     virtual void window_pos_callback(int xpos, int ypos);
     virtual void window_focus_callback(int focused);
     virtual void window_maximize_callback(int maximized);

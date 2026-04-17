@@ -47,7 +47,7 @@ void UIApplication::mainWinDefaultSetup() {
     m_mainWindow->setEnableMenuBar(m_menuBarEnabled);
 }
 
-void UIApplication::init(std::function<void(UINode&)> initCb) {
+void UIApplication::init(function<void(UINode&)> initCb) {
     m_mainWindow = addWindow(UIWindowParams{
         .size           = m_winSize,
         .shift          = {100, 100},
@@ -69,7 +69,7 @@ void UIApplication::init(std::function<void(UINode&)> initCb) {
     m_inited = true;
 }
 
-void UIApplication::initSingleThreaded(const std::function<void()>& initCb) {
+void UIApplication::initSingleThreaded(const function<void()>& initCb) {
     m_threadedWindowRendering = false;
 
     m_mainWindow = addWindow(UIWindowParams{
@@ -93,15 +93,15 @@ void UIApplication::initSingleThreaded(const std::function<void()>& initCb) {
     m_inited = true;
 }
 
-void UIApplication::startSingleUiThread(const std::function<void()>& initCb) {
-    m_guiThread = std::thread([this, &initCb] {
+void UIApplication::startSingleUiThread(const function<void()>& initCb) {
+    m_guiThread = thread([this, &initCb] {
         initThread(initCb);
     });
     m_guiThread.detach();
     m_initSema.wait(0);
 }
 
-void UIApplication::initThread(const std::function<void()>& initCb) {
+void UIApplication::initThread(const function<void()>& initCb) {
     m_mainWindow->makeCurrent();
     m_run = true;
 
@@ -143,7 +143,7 @@ void UIApplication::startRenderLoop() {
     startThreadedRendering();
 }
 
-void UIApplication::openInfoDiag(const InfoDiagParams& params) {
+void UIApplication::openDialog(const InfoDiagParams& params) {
     m_glbase.runOnMainThread([this, params] {
         // check if another info dialog is open, if this is the case, close it
         if (m_infoDiag) {
@@ -198,63 +198,20 @@ void UIApplication::openInfoDiag(const InfoDiagParams& params) {
     });
 }
 
-void UIApplication::showInfo(const std::string& msg, const long minStayTime, int width, int height, const bool isModal,
-                             std::function<void()> onClose, std::function<void()> onInfoOpen) {
-    m_infoDiagCreatedCb = std::move(onInfoOpen);
-
-    ivec2 diagPos{0, 0};
-    if (!m_uiWindows.empty()) {
-        diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - width) / 2 + m_uiWindows.front()->getPosition().x;
-        diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - height) / 2 + m_uiWindows.front()->getPosition().y;
+void UIApplication::openDialogCentered(InfoDiagParams&& params) {
+    if (params.tp == infoDiagType::info) {
+        m_infoDiagCreatedCb = std::move(params.onInfoOpen);
     }
 
-    openInfoDiag(InfoDiagParams{
-        .pos = diagPos,
-        .size = {width, height},
-        .tp = infoDiagType::info,
-        .msg = msg,
-        .minStayTime =  minStayTime,
-        .isModal = isModal,
-        .onClose = std::move(onClose)
-    });
-}
-
-void UIApplication::showCancel(std::string msg, const long minStayTime, int width, int height, const bool isModal,
-                               std::function<bool()> cancelCb) {
-    ivec2 diagPos{0, 0};
-    if (!m_uiWindows.empty()) {
-        diagPos.x = (static_cast<int32_t>(m_uiWindows.front()->getWidth()) - width) / 2 + m_uiWindows.front()->getPosition().x;
-        diagPos.y = (static_cast<int32_t>(m_uiWindows.front()->getHeight()) - height) / 2 + m_uiWindows.front()->getPosition().y;
+    const auto openOnWin = params.win  ? params.win : !m_uiWindows.empty() ? m_uiWindows.front().get() : nullptr;
+    if (!openOnWin) {
+        return;
     }
 
-    openInfoDiag(InfoDiagParams{
-        .pos = diagPos,
-        .size = {width, height},
-        .tp = infoDiagType::cancel,
-        .msg = std::move(msg),
-        .minStayTime =  minStayTime,
-        .isModal = isModal,
-        .onCancel = std::move(cancelCb)
-    });
-}
+    params.pos = (openOnWin->getSize() - params.size) / 2 + openOnWin->getPosition();
+    params.pos = static_cast<vec2>(params.pos) / m_mainWindow->getWinHandle()->getContentScale();
 
-void UIApplication::openInfoDiag(infoDiagType tp, const std::string& msg, const std::function<bool()>& onConfirm) {
-    ivec2 diagPos{0, 0};
-    constexpr ivec2 diagSize{750, 150};
-
-    if (!m_uiWindows.empty()) {
-        diagPos = (m_uiWindows.front()->getSize() - diagSize) / 2 + m_uiWindows.front()->getPosition();
-    }
-
-    openInfoDiag(InfoDiagParams{
-        .pos = diagPos,
-        .size = diagSize,
-        .tp = infoDiagType::cancel,
-        .msg = msg,
-        .minStayTime =  500,
-        .isModal = true,
-        .onConfirm = onConfirm
-    });
+    openDialog(params);
 }
 
 void UIApplication::setActiveModalWin(UIWindow *win) {
@@ -275,8 +232,8 @@ void UIApplication::startEventLoop() const {
 #endif
 }
 
-std::filesystem::path UIApplication::dataPath() {
-    return m_mainWindow ? m_mainWindow->getSharedRes()->dataPath : std::filesystem::current_path();
+filesystem::path UIApplication::dataPath() {
+    return m_mainWindow ? m_mainWindow->getSharedRes()->dataPath : filesystem::current_path();
 }
 
 void UIApplication::closeInfoDiag() {
