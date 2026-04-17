@@ -36,6 +36,14 @@ UINode* UINode::getNode(const std::string& name) {
     return fn;
 }
 
+void UINode::swapChildren(UINode* node1, UINode* node2) {
+    const auto nodeIt1 = ranges::find_if(m_children, [node1](auto& child) { return child.get() == node1; });
+    const auto nodeIt2 = ranges::find_if(m_children, [node2](auto& child) { return child.get() == node2; });
+    std::iter_swap(nodeIt1, nodeIt2 );
+    dynamic_cast<UINode*>(nodeIt1->get())->setGeoChanged(true);
+    dynamic_cast<UINode*>(nodeIt2->get())->setGeoChanged(true);
+}
+
 void UINode::moveChildTo(const int position, UINode* node) {
     if (!node->getParent()) {
         return;

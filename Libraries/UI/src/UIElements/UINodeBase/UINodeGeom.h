@@ -218,6 +218,8 @@ public:
     virtual void setContentRotation(float angle, float ax, float ay, float az);
     void         setContentTransCentered(const bool val) { m_contTransMatCentered = val; }
 
+    virtual void setGeoChanged(bool val) { m_geoChanged = val; }
+
     static bool contains(UINodeGeom* outer, UINodeGeom* node);
 
     /** return the x and y position, as it was set with setX/setY/setPos before,
