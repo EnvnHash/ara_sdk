@@ -183,6 +183,7 @@ public:
         m_onValChangedCb[&prop] = nullptr;
     }
 
+    virtual void swapChildren(UINode* node1, UINode* node2);
     virtual void moveChildTo(int32_t position, UINode*);
     virtual void removeGLResources() {}
 
