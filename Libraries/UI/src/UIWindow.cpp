@@ -619,8 +619,8 @@ void UIWindow::key_callback(const int key, int scancode, const int action, const
 #else
             // this is called from GL HID queue
             m_appHandle->openDialogCentered(InfoDiagParams{
-                .size = ivec2 {500, 150},
                 .tp = infoDiagType::confirm,
+                .size = ivec2 {500, 150},
                 .msg = "Do you really want to quit?",
                 .minStayTime =  0,
                 .isModal = true,
