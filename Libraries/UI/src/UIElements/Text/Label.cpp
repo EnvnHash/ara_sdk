@@ -108,13 +108,14 @@ Font* Label::updateDGV(bool* checkFontTexture) {
     }
 
     m_riFont->setFontTexChangedCb(this, [this] {
-        // this is called when the font related 3D texture got a different texId, num of Layers or layerid,
+        // this is called when the font-related 3D texture got a different texId, num of Layers or layer-id,
         // so the VAO draw data needs to be updated (updateIndDrawData)
         m_fontLayerTexChanged = true;
 
         if (m_riFont) {
-            // in case num of layers or texId has changed, the DrawManager needs to updated it's fontTex data
-            m_updateDrawSetFontData = m_riFont->getLayerTexId() != m_glFontPar.texId || m_riFont->getLayerTexNrLayers() != m_glFontPar.nrLayers;
+            // in case num of layers or texId has changed, the DrawManager needs to update it's fontTex data
+            m_updateDrawSetFontData = m_riFont->getLayerTexId() != m_glFontPar.texId ||
+                                      m_riFont->getLayerTexNrLayers() != m_glFontPar.nrLayers;
         }
         getSharedRes()->reqRedraw();
     });
@@ -163,7 +164,6 @@ Font* Label::updateDGV(bool* checkFontTexture) {
                                   hasOpt(end_ellipsis) ? m_text.substr(0, i) + "..."
                                                        : "..." + m_text.substr(i, m_fontDGV.getGlyphs().size() - 1),
                                   false);
-
                 m_textBounds = m_fontDGV.getPixSize();
             }
         } else if (hasOpt(adaptive)) {
@@ -241,7 +241,6 @@ bool Label::checkGlyphsPrepared(bool checkFontTex) {
         }
 
         prepareVao(checkFontTex || m_fontLayerTexChanged);
-
         m_glyphsPrepared = true;
         return true;
     }
@@ -314,6 +313,8 @@ void Label::updateMatrix() {
     if ((!m_geoChanged || m_updating) && !m_fontLayerTexChanged) {
         return;
     }
+
+    m_glyphsPrepared = !(!m_glyphsPrepared || m_geoChanged); // when geometry changed, font geometry must also be updated
 
     Div::updateMatrix();
 
