@@ -32,4 +32,16 @@ TEST(UITest, StylesTest_NodeReference) {
     }, 400, 200, nullptr, false, "test_res.txt");
 }
 
+TEST(UITest, StylesTest_NestedReferences) {
+    appBody([&](const UIApplication &app) {
+        const auto root = app.getRootNode();
+        auto& parentNode = root->push<Div>({ .style = "parent_node" });
+        auto& childNode = parentNode.push<Div>({ .style = "parent_node.child_node" });
+        childNode.push<Div>({ .style = "parent_node.child_node.subchild_node" });
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "styles_test_nested.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 400, 200, nullptr, false, "test_res.txt");
+}
+
 }

@@ -1,7 +1,6 @@
 fonts {
     "regular":"Fonts/verdana.ttf"
 }
-
 variableDef {
     text-align: left
     font {font:"regular" size:18}
@@ -24,4 +23,24 @@ node_edit {
 
 reference_node {
     node_edit
+}
+
+ref_node {
+    bgcolor:rgb(255,0,0)
+}
+
+ref2_node {
+    bgcolor:rgb(0,255,0)
+}
+
+parent_node {
+    bgcolor:rgb(255,255,0)
+    child_node {
+       ref_node
+       width: 200px
+       subchild_node {
+           ref2_node
+           width: 100px
+       }
+    }
 }

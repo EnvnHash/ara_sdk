@@ -159,12 +159,12 @@ bool ResNode::load() {
     try {
         onLoad();
         for (auto nodeIt = m_children.begin(); nodeIt != m_children.end(); ++nodeIt) {
-            auto& node = *nodeIt->get();
+            auto& node = **nodeIt;
             node.load();
-
             if (!node.getName().empty() && node.isReference()) {
+                auto tempName = node.getName();
                 resolveReference(node);
-                nodeIt = --m_children.end();
+                nodeIt = ranges::find_if(m_children, [&tempName](auto& it){ return it->getName() == tempName; });
             }
         }
         return true;

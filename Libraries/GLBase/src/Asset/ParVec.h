@@ -31,7 +31,7 @@ public:
         return validIndex(index) ? at(index) : def;
     }
 
-    [[nodiscard]] int getIntPar(size_t index, int def) const {
+    [[nodiscard]] int getIntPar(const size_t index, const int def) const {
         if (!validIndex(index)) {
             return def;
         }
