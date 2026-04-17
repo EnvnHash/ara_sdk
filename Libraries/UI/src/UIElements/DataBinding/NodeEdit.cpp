@@ -18,10 +18,8 @@ NodeEdit::NodeEdit() {
 
 void NodeEdit::rebuild() {
     if (m_node) {
-        clearChildren();
-
+        reset();
         int32_t y=0;
-        m_variableEdits.clear();
         for (auto &[key, memVar]: m_node->getMemberVariables()) {
             if (std::ranges::find(m_excludeKeys, key) != m_excludeKeys.end()) {
                 continue;
@@ -42,6 +40,11 @@ void NodeEdit::rebuild() {
             y += m_variableEdits[key]->getUnitHeight();
         }
     }
+}
+
+void NodeEdit::reset() {
+    clearChildren();
+    m_variableEdits.clear();
 }
 
 void NodeEdit::exclude(const std::vector<std::string>& excludeKeys) {

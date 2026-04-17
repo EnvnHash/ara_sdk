@@ -93,6 +93,11 @@ Font* Label::checkAndGetFont() {
         LOGE << "[ERROR] UIEdit::UpdateDGV() / Cannot get font for " << m_fontType << "   size=" << m_fontSize;
         return nullptr;
     }
+
+    if (font != m_riFont && m_riFont) {
+        m_riFont->removeFontTexChangedCb(this);
+    }
+
     return font;
 }
 
@@ -128,7 +133,7 @@ Font* Label::updateDGV(bool* checkFontTexture) {
         if ((hasOpt(front_ellipsis) || hasOpt(end_ellipsis)) && hasOpt(single_line)) {
             bs = m_fontDGV.getPixSize();
 
-            if (bs.x > m_tContSize.x) { // if the bounds of the renderer font are bigger than the content size
+            if (bs.x > m_tContSize.x) { // if the bounds of the renderer font are bigger than the content size,
                 // estimate the bounds of the rendered ellipsis in pixels at the actual font size
                 faux.process(m_riFont, m_tSize, m_tSep, m_tAlignX, "...", false);
 
@@ -315,7 +320,7 @@ void Label::updateMatrix() {
     m_updating       = true;  // prevent updateMatrix feedback
     m_tContSize      = getContentSize();
     m_offset         = getContentOffset();
-    m_glyphsPrepared = false;
+
     checkGlyphsPrepared();
     m_updating = false;
 }

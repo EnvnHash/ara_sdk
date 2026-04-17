@@ -618,14 +618,9 @@ void UIWindow::key_callback(const int key, int scancode, const int action, const
                 true);  // since we are on the main thread here, force pushing to the queue
 #else
             // this is called from GL HID queue
-            ivec2 diagPos{0};
-            ivec2 diagSize{500, 150};
-            diagPos.x = (getWidth() - diagSize.x) / 2 + getPosition().x;
-            diagPos.y = (getHeight() - diagSize.y) / 2 + getPosition().y;
-
-            m_appHandle->openInfoDiag(InfoDiagParams{
+            m_appHandle->openDialogCentered(InfoDiagParams{
                 .pos = diagPos,
-                .size = diagSize,
+                .size = ivec2 {500, 150},
                 .tp = infoDiagType::confirm,
                 .msg = "Do you really want to quit?",
                 .minStayTime =  0,

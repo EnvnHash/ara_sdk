@@ -15,7 +15,7 @@ public:
     NodeEdit();
     void rebuild();
     void exclude(const std::vector<std::string>& excludeKeys);
-
+    void reset();
     auto getBoundNode() const { return m_node; }
 
     void setNode(Node& node) {
