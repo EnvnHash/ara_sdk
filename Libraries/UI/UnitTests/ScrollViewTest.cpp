@@ -51,23 +51,22 @@ UITable* addNestedTable(ScrollView* scrollView) {
 }
 
 void addLabels(UITable* nt) {
-    int i;
-    vec4 color_bg(.1f,.2f,.3f,1.f);
-    vec4 color_text(1.f);
+    constexpr vec4 color_bg(.1f,.2f,.3f,1.f);
+    constexpr vec4 color_text(1.f);
 
-    for (i = 0; i < 20; i++) {
+    for (int i = 0; i < 20; i++) {
         std::stringstream ss;
         ss << std::setw(2) << std::setfill('0') << i;
 
         nt->insertRow(-1, 1, 100, false, false);						// fixed row
-        auto l = nt->setCell<Label>(i, 0);
+        const auto l = nt->setCell<Label>(i, 0);
         l->setFont("regular", 22,  align::center, valign::center, color_text);
         l->setBackgroundColor(color_bg);
         l->setText(ss.str());
     }
 }
 
-ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
+ScrollView* addScrollView(UINode* rootNode, const int nrSubElements ) {
     auto& scrollView = rootNode->push<ScrollView>(UINodePars{
         .size = vec2{0.7f, 0.7f},
         .bgColor = vec4{0.f, 0.f, 0.5f, 1.f},
@@ -75,8 +74,8 @@ ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
         .valign = valign::center,
     });
 
-    int chHeight = 40;
     for (int i = 0; i < nrSubElements; i++) {
+        constexpr int chHeight = 40;
         scrollView.push<Div>({
             .pos = ivec2{10, (chHeight +10) * i },
             .size = ivec2{30, chHeight},
@@ -88,27 +87,27 @@ ScrollView* addScrollView(UINode* rootNode, int nrSubElements ) {
 }
 
 TEST(UITest, ScrollViewTestNoScrollbar) {
-    appBody([&](UIApplication& app){
+    appBody([&](const UIApplication& app){
         const auto rootNode = app.getMainWindow()->getRootNode();
         addScrollView(rootNode, 5);
-    }, [&](UIApplication& app){
+    }, [&](const UIApplication& app){
          compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 600, 400);
 }
 
 TEST(UITest, ScrollViewTestScrollbarVisible) {
-    appBody([&](UIApplication& app){
+    appBody([&](const UIApplication& app){
         const auto rootNode = app.getMainWindow()->getRootNode();
         addScrollView(rootNode, 10);
-    }, [&](UIApplication& app){
+    }, [&](const UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref2.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 600, 400);
 }
 
 TEST(UITest, ScrollViewTestScrollBarMoved) {
-    appBody([&](UIApplication& app){
+    appBody([&](const UIApplication& app){
         const auto mainWin = app.getMainWindow();
         const auto rootNode = mainWin->getRootNode();
         addScrollView(rootNode, 10);
@@ -122,29 +121,29 @@ TEST(UITest, ScrollViewTestScrollBarMoved) {
         mainWin->onMouseMove(500, 200, 0);
         mainWin->onMouseUpLeft();
 
-    }, [&](UIApplication& app){
+    }, [&](const UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_test_ref3.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 600, 400);
 }
 
 TEST(UITest, ScrollViewIntable) {
-    appBody([&](UIApplication& app){
-        auto mainWin = app.getMainWindow();
-        auto rootNode = mainWin->getRootNode();
-        auto taux = addTable(rootNode);
+    appBody([&](const UIApplication& app){
+        const auto mainWin = app.getMainWindow();
+        const auto rootNode = mainWin->getRootNode();
+        const auto taux = addTable(rootNode);
 
-        auto ui_SV =  taux->setCell<ScrollView>(1, 1);
+        const auto ui_SV =  taux->setCell<ScrollView>(1, 1);
         ui_SV->setBackgroundColor(.1f, .1f, .1f, 1.f);
 
-        auto nt = addNestedTable(ui_SV);
+        const auto nt = addNestedTable(ui_SV);
         nt->setDynamicWidth(true);
         nt->setDynamicHeight(true);
 
         addLabels(nt);
 
-    }, [&](UIApplication& app){
-        auto mainWin = app.getMainWindow();
+    }, [&](const UIApplication& app){
+        const auto mainWin = app.getMainWindow();
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_in_table.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
 
