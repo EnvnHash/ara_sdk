@@ -10,11 +10,15 @@
 
 namespace ara {
 
+class Button;
+
 class NodeMemberVariableEdit : public Div {
 public:
     struct EditPar {
         std::string style{};
         memberVar* memVar{};
+        const std::string& memVarName{};
+        Node* node{};
         std::string labelText;
         glm::ivec2 spacing{};
         int32_t lineHeight{};
@@ -25,7 +29,7 @@ public:
     };
 
     NodeMemberVariableEdit();
-    explicit NodeMemberVariableEdit(const EditPar& initData);
+    explicit NodeMemberVariableEdit(const EditPar& par);
 
     void init() override;
     void createCheckBox(bool val);
@@ -51,6 +55,13 @@ public:
         edit.setFontSize(22);
         edit.setUseWheel(true);
 
+        setUIEditValues(edit, val);
+        setTwoWayBinding<T>(edit, idx);
+        return &edit;
+    }
+
+    template<typename T>
+    void setUIEditValues(UIEdit& edit, T val) {
         if (m_options && m_options->min) {
             edit.setMin(m_options->min);
         }
@@ -63,15 +74,22 @@ public:
         if (m_options && m_options->step) {
             edit.setPrecision(m_options->precision);
         }
+        setSingleEditValue(edit, val);
+    }
 
+    template <typename T>
+    void setSingleEditValue(UIEdit& edit, T val) {
         if constexpr (std::is_same_v<T, std::string>) {
             edit.setText(std::any_cast<std::string>(val));
         } else {
             edit.setValue(std::any_cast<T>(val));
         }
+    }
 
+    template <typename T>
+    void setTwoWayBinding(UIEdit& edit, const int32_t& idx) {
         edit.addEnterCb([&, idx](const std::string &str) {
-            if (m_memVar) {
+            if (m_memVar && !m_blockMemVarSet) {
                 std::any anyVal;
                 if constexpr (std::is_same_v<T, std::string>) {
                     anyVal = str;
@@ -88,9 +106,17 @@ public:
                 }
                 m_memVar->set(anyVal, idx);
             }
+            m_blockMemVarSet = false;
         }, this);
 
-        return &edit;
+        // two-way binding
+        m_node->setOnChangeCb(cbType::postChange, this, [this, &edit](Node*, const std::string& varName) {
+            if (const auto actVal = std::any_cast<T>(m_memVar->get());
+                varName == m_memVarName && edit.value<T>() != actVal) {
+                m_blockMemVarSet = true;
+                setSingleEditValue(edit, actVal);
+            }
+        });
     }
 
     template<typename T>
@@ -130,7 +156,6 @@ public:
     void setSpacing(const glm::ivec2& s) { m_spacing = s; }
     void setLabelWidth(const int32_t& w) { m_labelWidth = w; }
     void setLineHeight(const int32_t& h) { m_lineHeight = h; }
-    void setMemberVar(const memberVar& v) { m_memVar = &v; }
     void setNumEditsPerRow(const int32_t& v) { m_numEditsPerRow = v; }
     void setEditAlign(const arrange& a) { m_editAlign = a; }
 
@@ -139,9 +164,16 @@ public:
     auto getLabel() const { return m_label; }
     auto getEdit() const { return m_edit; }
     auto getMemVar() const { return m_memVar; }
+    auto getPathLabel()  { return m_pathLabel; }
+    auto getCheckBox()  { return m_checkBoxButt; }
+    auto getLabel()  { return m_label; }
+    auto getEdit()  { return m_edit; }
+    auto getBrowseButt()  { return m_browseButt; }
 
 protected:
     Label*                  m_label = nullptr;
+    Button*                 m_checkBoxButt = nullptr;
+    Button*                 m_browseButt = nullptr;
     Label*                  m_pathLabel = nullptr;
     UIEdit*                 m_edit = nullptr;
     std::vector<UIEdit*>    m_arrayEdit;
@@ -159,6 +191,9 @@ protected:
     glm::ivec2              m_custPos {};
     std::string             m_text;
     const memberVar*        m_memVar = nullptr;
+    Node*                   m_node = nullptr;
+    std::string             m_memVarName{};
+    bool                    m_blockMemVarSet = false;
     arrange                 m_editAlign{};
     VariableEditOption<>*   m_options = nullptr;
 

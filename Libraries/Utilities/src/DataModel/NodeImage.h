@@ -28,7 +28,12 @@ public:
 
     void load(bool fromAssets, bool skipNonClass=false) override;
     void setWatch(bool val) override;
-    void setImgPath(const std::filesystem::path& p) { m_imgPath = p; }
+    void setImgPath(const std::filesystem::path& p) {
+        if (p != m_imgPath) {
+            m_imgPath = p;
+            callChangeCbs(cbType::postChange, "imgPath");
+        }
+    }
 
     const std::filesystem::path&    imgPath() { return m_imgPath; }
     int                             getMipMap() const { return m_mipMaps; }

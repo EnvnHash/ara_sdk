@@ -5,7 +5,6 @@
 #include "UIElements/Div.h"
 #include "UIElements/Text/Label.h"
 #include "UIElements/DataBinding/NodeMemberVariableEdit.h"
-
 #include "UIElements/Button/Button.h"
 
 using namespace std;
@@ -23,7 +22,9 @@ NodeMemberVariableEdit::NodeMemberVariableEdit(const EditPar& par) {
     setName(getTypeName<NodeMemberVariableEdit>());
 
     UINodeStyle::addStyleClass(par.style);
-    setMemberVar(*par.memVar);
+    m_memVar = par.memVar;
+    m_memVarName = par.memVarName;
+    m_node = par.node;
     setLabelText(par.labelText);
     setSpacing(par.spacing);
     setLineHeight(par.lineHeight);
@@ -61,10 +62,6 @@ void NodeMemberVariableEdit::init() {
 void NodeMemberVariableEdit::setEditValFromMemberVar() {
     if (!m_memVar) return;
 
-    if (m_edit) {
-        remove(m_edit);
-    }
-
     for (const auto& it : m_arrayEdit) {
         remove(it);
     }
@@ -97,7 +94,11 @@ void NodeMemberVariableEdit::setEditValFromMemberVar() {
 }
 
 void NodeMemberVariableEdit::createCheckBox(const bool val) {
-    auto& butt = push<Button>(UINodePars{
+    if (m_checkBoxButt) {
+        remove(m_checkBoxButt);
+    }
+
+    m_checkBoxButt = &push<Button>(UINodePars{
         .pos = ivec2{ m_labelWidth + m_spacing.x, 0 },
         .size = { ivec2{ m_lineHeight, m_lineHeight } },
         .bgColor = m_stdBgColor,
@@ -107,17 +108,31 @@ void NodeMemberVariableEdit::createCheckBox(const bool val) {
         .borderColor = m_stdBorderColor,
     });
 
-    butt.setIsToggle(true);
-    butt.toggle(val);
-    butt.setToggleCb([&](bool newVal) {
-        if (m_memVar) {
+    m_checkBoxButt->setIsToggle(true);
+    m_checkBoxButt->toggle(val);
+    m_checkBoxButt->setToggleCb([&](bool newVal) {
+        if (m_memVar && !m_blockMemVarSet) {
             std::any anyVal = newVal;
             m_memVar->set(anyVal, 0);
+        }
+        m_blockMemVarSet = false;
+    });
+
+    // two-way binding
+    m_node->setOnChangeCb(cbType::postChange, this, [this](Node*, const string& varName) {
+        if (const auto actVal = std::any_cast<bool>(m_memVar->get());
+            varName == m_memVarName && (*m_checkBoxButt->m_prop)() != actVal) {
+            m_blockMemVarSet = true;
+            m_checkBoxButt->toggle(actVal);
         }
     });
 }
 
 void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, const int32_t stdWidth) {
+    if (m_pathLabel) {
+        remove(m_pathLabel);
+    }
+
     m_pathLabel = &push<Label>(LabelPars{
         .pos = ivec2{ m_labelWidth + m_spacing.x, 0 },
         .size = { ivec2{ stdWidth - m_stdBrowseButtWidth - m_spacing.x, m_lineHeight } },
@@ -130,7 +145,19 @@ void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, co
     });
     m_pathLabel->setOpt(Label::single_line | Label::front_ellipsis);
 
-    auto& butt = push<Button>(LabelPars{
+    // two way binding
+    m_node->setOnChangeCb(cbType::postChange, this, [this](Node*, const string& varName) {
+        if (const auto actVal = std::any_cast<filesystem::path>(m_memVar->get());
+            varName == m_memVarName && m_pathLabel->getText() != actVal.string()) {
+            m_pathLabel->setText(actVal.string());
+        }
+    });
+
+    if (m_browseButt) {
+        remove(m_browseButt);
+    }
+
+    m_browseButt = &push<Button>(LabelPars{
         .size = { ivec2{ m_stdBrowseButtWidth, m_lineHeight } },
         .style = getStyleClass()+".browseButton",
         .align = align::right,
@@ -141,14 +168,13 @@ void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, co
         .text = "Browse"
     });
 
-    butt.setBackgroundColor(0.4f, 0.4f, 0.4f, 1.f, state::highlighted);
-    butt.setClickedCb([&] {
+    m_browseButt->setBackgroundColor(0.4f, 0.4f, 0.4f, 1.f, state::highlighted);
+    m_browseButt->setClickedCb([&] {
         if (m_memVar) {
             const auto& suffixes = !m_options->allowSuffixes.empty() ? m_options->allowSuffixes : m_stdSuffixes;
             if (const auto fn = getWindow()->openFileDialog(suffixes); !fn.empty()) {
                 std::any anyVal = std::filesystem::path(fn);
                 m_memVar->set(anyVal, 0);
-                m_pathLabel->setText(fn);
             }
         }
     });
