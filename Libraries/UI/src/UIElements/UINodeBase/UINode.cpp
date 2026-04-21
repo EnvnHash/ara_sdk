@@ -587,6 +587,7 @@ void UINode::reqUpdtTree() const {
         if (const auto win = static_cast<UIWindow*>(m_sharedRes->win);
             win->getRootNode() && win->getRootNode()->getRoot()) {
             win->getRootNode()->getRoot()->reqTreeChanged();
+            win->getSharedRes()->reqRedraw();
         }
     }
 }

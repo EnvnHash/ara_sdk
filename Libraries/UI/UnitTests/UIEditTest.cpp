@@ -62,7 +62,7 @@ std::string getSelAllCopyOutput(const UIApplication &app) {
     return value;
 }
 
-void clickEditField(const UIApplication& app, int32_t xPos) {
+void clickEditField(const UIApplication& app, const int32_t xPos) {
     const auto mainWin = app.getMainWindow();
     mainWin->onMouseDownLeft(xPos, 22, false, false, false);
     mainWin->onMouseUpLeft();
@@ -251,6 +251,21 @@ TEST(UITest, UIEditOverflowTestEndAndHomeKey) {
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test3.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditTextResetTest) {
+    registerDefaultUITypes();
+    UIEdit* ed;
+    appBody([&](const UIApplication &app) {
+        ed = &addStringEdit(app);
+        app.getWinBase()->draw(0, 0, 0);
+        app.getMainWindow()->swap();
+        ed->setText("");
+    }, [&](const UIApplication &app) {
+        EXPECT_EQ(ed->getText(), "");
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_reset_text.png",
+                          app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 100);
 }
 

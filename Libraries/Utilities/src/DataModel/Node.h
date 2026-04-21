@@ -290,7 +290,9 @@ public:
     }
 
     template <class T>
-    T value() { return std::get<T>(m_nodeValue); }
+    T value() {
+        return std::get<T>(m_nodeValue);
+    }
 
     void                setValue(const nodeValue& val);
     void                pop();

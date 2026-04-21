@@ -79,7 +79,7 @@ void FontGlyphVector::reset(const Font *font) {
 }
 
 Fontdglyph FontGlyphVector::findByCharIndex(const int idx) const {
-    auto r = std::ranges::find_if(m_glyphs, [idx](auto& glyph) { return glyph.characterIdx == idx; });
+    const auto r = std::ranges::find_if(m_glyphs, [idx](auto& glyph) { return glyph.characterIdx == idx; });
     return r != m_glyphs.end() ? *r : Fontdglyph();
 }
 
@@ -280,7 +280,7 @@ int FontGlyphVector::jumpToEndOfLine(const int caret_index) const {
 
 bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, const align textAlignX,
                               const std::string &str, const bool wordWrap) {
-    if (!font || size.x == 0.f || size.y == 0.f || str.empty()) {
+    if (!font || size.x == 0.f || size.y == 0.f) {
         return {};
     }
 

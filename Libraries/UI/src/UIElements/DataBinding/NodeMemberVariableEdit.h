@@ -86,7 +86,7 @@ public:
         }
     }
 
-    template <typename T>
+    template <typename  T>
     void setTwoWayBinding(UIEdit& edit, const int32_t& idx) {
         edit.addEnterCb([&, idx](const std::string &str) {
             if (m_memVar && !m_blockMemVarSet) {
@@ -111,10 +111,24 @@ public:
 
         // two-way binding
         m_node->setOnChangeCb(cbType::postChange, this, [this, &edit](Node*, const std::string& varName) {
-            if (const auto actVal = std::any_cast<T>(m_memVar->get());
-                varName == m_memVarName && edit.value<T>() != actVal) {
-                m_blockMemVarSet = true;
-                setSingleEditValue(edit, actVal);
+            if (varName == m_memVarName) {
+                const auto actVal = std::any_cast<T>(m_memVar->get());
+                if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>) {
+                    if (actVal != edit.getValue<T>()) {
+                        m_blockMemVarSet = true;
+                        setSingleEditValue(edit, actVal);
+                    }
+                } else if constexpr (std::is_same_v<T, std::string>) {
+                    if (actVal != edit.getText()) {
+                        m_blockMemVarSet = true;
+                        setSingleEditValue(edit, actVal);
+                    }
+                } else if constexpr (std::is_same_v<T, std::filesystem::path>) {
+                    if (actVal.string() != edit.getText()) {
+                        m_blockMemVarSet = true;
+                        setSingleEditValue(edit, actVal);
+                    }
+                }
             }
         });
     }

@@ -234,7 +234,7 @@ public:
 template <typename T>
 auto& addNodeEdit(const ara::UIApplication &app, T& node, const ara::arrange ar = ara::arrange::horizontal,
     const std::optional<std::unordered_map<std::string, ara::VariableEditOption<>>> alignMap = std::nullopt,
-    std::optional<std::string> style = std::nullopt) {
+    const std::optional<std::string> style = std::nullopt) {
     auto& ne = app.getRootNode()->push<ara::NodeEdit>();
     ne.setEditAlign(ar);
     if (alignMap.has_value()) {
