@@ -35,7 +35,7 @@ public:
     void createCheckBox(bool val);
     void createPathEdit(const std::filesystem::path &val, int32_t stdWidth);
 
-    template<typename T>
+    template<typename T, typename Container=T>
     UIEdit* createSingleEdit(T val, const int32_t& width, const int32_t& idx=-1) {
         const glm::ivec2 offset = {
             m_editAlign == arrange::horizontal ? (idx >= 0 ? idx * width : 0) : 0,
@@ -56,7 +56,7 @@ public:
         edit.setUseWheel(true);
 
         setUIEditValues(edit, val);
-        setTwoWayBinding<T>(edit, idx);
+        setTwoWayBinding<T, Container>(edit, idx);
         return &edit;
     }
 
@@ -86,7 +86,7 @@ public:
         }
     }
 
-    template <typename  T>
+    template <typename T, typename Container=T>
     void setTwoWayBinding(UIEdit& edit, const int32_t& idx) {
         edit.addEnterCb([&, idx](const std::string &str) {
             if (m_memVar && !m_blockMemVarSet) {
@@ -110,24 +110,44 @@ public:
         }, this);
 
         // two-way binding
-        m_node->setOnChangeCb(cbType::postChange, this, [this, &edit](Node*, const std::string& varName) {
+        m_node->setOnChangeCb(cbType::postChange, this, [this, &edit, idx](Node*, const std::string& varName) {
             if (varName == m_memVarName) {
-                const auto actVal = std::any_cast<T>(m_memVar->get());
-                if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>) {
-                    if (actVal != edit.getValue<T>()) {
-                        m_blockMemVarSet = true;
-                        setSingleEditValue(edit, actVal);
+                m_blockMemVarSet = true;
+
+                try {
+                    if constexpr (is_glm_vec_v<Container>) {
+                       if (const auto actVal = std::any_cast<Container>(m_memVar->get());
+                           actVal[idx] != edit.getValue<T>()) {
+                           setSingleEditValue(edit, actVal[idx]);
+                       }
+                    } else if constexpr (std::is_integral_v<T> || std::is_floating_point_v<T>) {
+                        if (tpi::tp_vector_int32 <= m_memVar->typeIndex && m_memVar->typeIndex < tpi::tp_vector_string) {
+                            if (const auto actVal = std::any_cast<std::vector<T>>(m_memVar->get());
+                                actVal[idx] != edit.getValue<T>()) {
+                                setSingleEditValue(edit, actVal[idx]);
+                            }
+                        } else {
+                            if (const auto actVal = std::any_cast<T>(m_memVar->get()); actVal != edit.getValue<T>()) {
+                                setSingleEditValue(edit, actVal);
+                            }
+                        }
+                    } else if constexpr (std::is_same_v<Container, std::vector<std::string>>) {
+                        if (const auto actVal = std::any_cast<Container>(m_memVar->get());
+                            actVal[idx] != edit.getText()) {
+                            setSingleEditValue(edit, actVal[idx]);
+                        }
+                    } else if constexpr (std::is_same_v<T, std::string>) {
+                        if (const auto actVal = std::any_cast<T>(m_memVar->get()); actVal != edit.getText()) {
+                            setSingleEditValue(edit, actVal);
+                        }
+                    } else if constexpr (std::is_same_v<T, std::filesystem::path>) {
+                        if (const auto actVal = std::any_cast<T>(m_memVar->get()); actVal.string() != edit.getText()) {
+                            setSingleEditValue(edit, actVal);
+                        }
                     }
-                } else if constexpr (std::is_same_v<T, std::string>) {
-                    if (actVal != edit.getText()) {
-                        m_blockMemVarSet = true;
-                        setSingleEditValue(edit, actVal);
-                    }
-                } else if constexpr (std::is_same_v<T, std::filesystem::path>) {
-                    if (actVal.string() != edit.getText()) {
-                        m_blockMemVarSet = true;
-                        setSingleEditValue(edit, actVal);
-                    }
+
+                } catch (std::bad_any_cast& e) {
+                    LOGE << "NodeMemberVariableEdit::setTwoWayBinding node->setOnChangeCb casting Error: " << e.what();
                 }
             }
         });
@@ -141,8 +161,9 @@ public:
     template<typename T>
     void createArrayEdit(const size_t sz) {
         auto vec = std::any_cast<T>(m_memVar->get());
+        using D = typename decltype(vec)::value_type;
         for (auto i=0; i<sz; ++i) {
-            m_arrayEdit.emplace_back(createSingleEdit(vec[i], getEditWidth(sz), i));
+            m_arrayEdit.emplace_back(createSingleEdit<D, T>(vec[i], getEditWidth(sz), i));
         }
     }
 

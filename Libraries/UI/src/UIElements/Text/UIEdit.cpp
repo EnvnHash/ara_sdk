@@ -557,14 +557,13 @@ void UIEdit::incValue(const float amt, const cfState cf) {
 
     if (hasOpt(num_int)) {
         incValue<int32_t>(mAmt);
-        for (auto &cb: m_onEnterCb | views::values) {
-            cb(m_text);
-        }
-
     } else if (hasOpt(num_fp)) {
         incValue<float>(mAmt);
-        for (auto &snd: m_onEnterCb | views::values) {
-            snd(m_text);
+    }
+
+    if (hasOpt(num_int) || hasOpt(num_fp)) {
+        for (auto &cb: m_onEnterCb | views::values) {
+            cb(m_text);
         }
     }
 }
