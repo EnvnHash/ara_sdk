@@ -164,6 +164,13 @@ void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styl
 void UINodeStyle::updateStyle() {
     m_styleChanged     = false;
     m_styleClassInited = true;
+    m_updateStyleScope = true;
+
+    if (m_reqRebuildCustomStyle) {
+        rebuildCustomStyle();
+    }
+
+    m_reqRebuildCustomStyle = false;
 
     if (m_excludeFromStyles){
         return;
@@ -185,24 +192,16 @@ void UINodeStyle::updateStyle() {
         // get styles for state::none
         updateStyleIt(resNode, state::none, it);
 
-        // if there are subdefinitions and the corresponding flags are set,
-        // return those definitions
+        // if there are subdefinitions and the corresponding flags are set, return those definitions
         if (!resNode->m_children.empty()) {
             ResNode* auxResNode = nullptr;
-            if ((auxResNode = resNode->findNode("selected"))) {
-                updateStyleIt(auxResNode, state::selected, it);
-            }
-            if ((auxResNode = resNode->findNode("highlighted"))) {
-                updateStyleIt(auxResNode, state::highlighted, it);
-            }
-            if ((auxResNode = resNode->findNode("disabled"))) {
-                updateStyleIt(auxResNode, state::disabled, it);
-            }
-            if ((auxResNode = resNode->findNode("disabledSelected"))) {
-                updateStyleIt(auxResNode, state::disabledSelected, it);
-            }
-            if ((auxResNode = resNode->findNode("disabledHighlighted"))) {
-                updateStyleIt(auxResNode, state::disabledHighlighted, it);
+            for (unordered_map<string, state> stateList = { {"selected", state::selected}, {"highlighted", state::highlighted},
+                {"disabled", state::disabled}, {"disabledSelected", state::disabledSelected},
+                {"disabledHighlighted", state::disabledHighlighted}};
+                 const auto& [key, st] : stateList) {
+                if ((auxResNode = resNode->findNode(key))) {
+                    updateStyleIt(auxResNode, st, it);
+                }
             }
         }
     }
@@ -241,6 +240,7 @@ void UINodeStyle::updateStyle() {
     // causes m_drawParamChanged = true, which causes updateDrawData()
 
     setChanged(true);  // recursive true
+    m_updateStyleScope = false;
 }
 
 void UINodeStyle::addStyleClass(const std::string& styleClass) {
@@ -298,6 +298,7 @@ ResNode* UINodeStyle::getStyleResNode() const {
 
 void UINodeStyle::setStyleInitVal(const std::string& name, const std::string& val, const state st) {
     m_styleCustDefs[st == state::m_state ? m_state : st][name] = val;
+    m_reqRebuildCustomStyle = !m_updateStyleScope;
 }
 
 void UINodeStyle::setStyleInitCol(const std::string& propName, const vec4& col, const state st) {

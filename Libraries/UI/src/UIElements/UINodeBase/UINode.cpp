@@ -338,7 +338,7 @@ void UINode::checkInit() {
 }
 
 void UINode::checkStyles() {
-    if (m_inited && getWindow() && (getWindow()->resChanged() || m_styleChanged || !m_styleClassInited)) {
+    if (m_inited && getWindow() && (getWindow()->resChanged() || m_styleChanged || !m_styleClassInited || m_reqRebuildCustomStyle)) {
         updateStyle();
         m_drawParamChanged = true;
 
