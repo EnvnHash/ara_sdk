@@ -366,6 +366,12 @@ public:
         m_changeCb[cbType][ptr] = std::move(func);
     }
 
+    void removeOnChangeCb(const cbType cbType, void *ptr) {
+        if (m_changeCb[cbType].contains(ptr)) {
+            m_changeCb[cbType].erase(ptr);
+        }
+    }
+
     static nlohmann::json getValues(const nlohmann::json& j) {
         nlohmann::json valueJson;
         for (const auto& [key, value] : j.items()) {
