@@ -64,7 +64,7 @@ void ScrollView::init() {
     });
 
     // little div to cover the corner in case both scrollbars are showing
-    m_corner = &push<Div>({
+    m_corner = &UINode::push<Div>({
         .size = ivec2{m_scrollBarSize, m_scrollBarSize},
         .bgColor = m_sharedRes->colors->at(uiColors::background),
         .name = "UIScrollBarCorner",
