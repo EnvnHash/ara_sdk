@@ -86,7 +86,7 @@ void JsonEditor::onEnter(const std::string &str) {
 void JsonEditor::updateStyleIt(ResNode* node, const state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
-    if (m_nodeValueType == nodeValueType::root) {
+    if (m_nodeValueType == nodeValueType::root || m_nodeValueType == nodeValueType::undefined) {
         m_lineHeight = getLineHeight(node);
         int32_t yOffsCntr = 0;
         setLineOffset(this, yOffsCntr, m_lineHeight);
@@ -210,9 +210,8 @@ void JsonEditor::setYOffs(const JsonEditor* parent, int32_t& yOffsCntr, const in
         }
 
         m_yOffs = yOffsCntr++;
-
         m_treeDepth = static_cast<int32_t>(getTreeDepth());
-        m_custPos.x = (m_treeDepth - parent->getDepth()) * m_xIdent;
+        m_custPos.x = m_treeDepth != -1 ? (m_treeDepth - parent->getDepth()) * m_xIdent : 0;
         m_custPos.y = (m_ySpacing + lineHeight) * (m_yOffs - parent->getYOffs());
         setPos(m_custPos);
     }
