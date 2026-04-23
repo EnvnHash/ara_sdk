@@ -86,7 +86,7 @@ void JsonEditor::onEnter(const std::string &str) {
 void JsonEditor::updateStyleIt(ResNode* node, const state st, const std::string& styleClass) {
     UINode::updateStyleIt(node, st, styleClass);
 
-    if (m_nodeValueType == nodeValueType::root || m_nodeValueType == nodeValueType::undefined) {
+    if (m_nodeValueType == nodeValueType::root) {
         m_lineHeight = getLineHeight(node);
         int32_t yOffsCntr = 0;
         setLineOffset(this, yOffsCntr, m_lineHeight);
@@ -131,6 +131,7 @@ void JsonEditor::addExpandButt() {
 }
 
 void JsonEditor::loadFile(const filesystem::path& p) {
+    m_nodeValueType = nodeValueType::root;
     addGlCb("JsonEditorRebuild", [p, this] {
         clearChildren();
         load(p, true);
