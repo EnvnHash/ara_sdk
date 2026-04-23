@@ -298,7 +298,7 @@ ResNode* UINodeStyle::getStyleResNode() const {
 
 void UINodeStyle::setStyleInitVal(const std::string& name, const std::string& val, const state st) {
     m_styleCustDefs[st == state::m_state ? m_state : st][name] = val;
-    m_reqRebuildCustomStyle = !m_updateStyleScope;
+    m_reqRebuildCustomStyle = getSharedRes() && !getSharedRes()->updatingMatrices && !m_updateStyleScope;
 }
 
 void UINodeStyle::setStyleInitCol(const std::string& propName, const vec4& col, const state st) {

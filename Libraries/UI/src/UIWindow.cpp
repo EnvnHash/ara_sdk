@@ -77,7 +77,7 @@ void UIWindow::init(const UIWindowParams& par) {
         m_minWinSize = ivec2{300, 300};
         m_sharedRes  = UISharedRes{static_cast<void *>(this), &s_shCol, m_winHandle,m_objSel.get(),
             m_quad.get(), m_normQuad.get(), getOrthoMat(), m_dataFolder, &m_procSteps, this,
-            false, &m_colors, ivec2{60, 30}, m_stdPadding, &m_minWinSize,
+            false, false, &m_colors, ivec2{60, 30}, m_stdPadding, &m_minWinSize,
             m_glbase->getAssetManager(), &m_nullVao, m_drawMan, m_glbase};
 
         initUI(par);
@@ -183,7 +183,7 @@ void UIWindow::initHidCallbacks() {
     // when aiming for modular c++ style window architectures
     m_winHandle->addKeyCb([this](int p1, int p2, int p3, int p4) { key_callback(p1, p2, p3, p4); });
     m_winHandle->setCharCb([this](unsigned int p1) { char_callback(p1); });
-    m_winHandle->setMouseButtonCb([this](int button, int action, int mods) { mouseBut_callback(button, action, mods); });
+    m_winHandle->setMouseButtonCb([this](int button, int action, const int mods) { mouseBut_callback(button, action, mods); });
     m_winHandle->setMouseCursorCb([this](double x, double y) { cursor_callback(x, y); });
     m_winHandle->setWindowSizeCb([this](int w, int h) { window_size_callback(w, h); });
     m_winHandle->setScrollCb([this](double xOffs, double yOffs) { scroll_callback(xOffs, yOffs); });
@@ -429,12 +429,12 @@ bool UIWindow::draw(double time, double dt, int ctxNr) {
         s_isDrawing = true;
 
         // process all steps that have the first and second bool set to true
-        for (auto &val: m_procSteps | views::values) {
-            if (val.active) {
-                if (val.func) {
-                    val.func();
+        for (auto & [active, func] : m_procSteps | views::values) {
+            if (active) {
+                if (func) {
+                    func();
                 }
-                val.active = false;
+                active = false;
             }
         }
 
@@ -692,7 +692,7 @@ void UIWindow::mouseBut_callback(const int button, const int action, const int m
 #endif
 }
 
-void UIWindow::scroll_callback(double, double yOffset) {
+void UIWindow::scroll_callback(double, const double yOffset) {
     WindowBase::osWheel(static_cast<float>(yOffset));  // degree
     iterate();
 }
@@ -852,7 +852,7 @@ void UIWindow::onKeyUp(const int key, const bool shiftReleased, const bool ctrlR
     }
 }
 
-void UIWindow::onChar(unsigned int codepoint) {
+void UIWindow::onChar(const unsigned int codepoint) {
     hidData data;
     data.procSteps = &m_procSteps;
     data.codepoint = codepoint;
@@ -919,8 +919,8 @@ void UIWindow::onMouseDownLeft(const float xPos, const float yPos, const bool sh
     fillHidData(hidEvent::MouseDownLeft, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
 
     // check if double click
-    auto   now  = chrono::system_clock::now();
-    double diff = chrono::duration<double, milli>(now - m_lastLeftMouseDown).count();
+    const auto   now  = chrono::system_clock::now();
+    const double diff = chrono::duration<double, milli>(now - m_lastLeftMouseDown).count();
 
     m_hidData.isDoubleClick = glm::length(m_lastClickedPos - vec2{xPos, yPos}) < 7.f && (diff < 500.f);
     m_lastLeftMouseDown     = now;
@@ -1052,8 +1052,8 @@ void UIWindow::onMouseUpRight() {
     m_draggingNode                              = nullptr;
 }
 
-void UIWindow::onMouseMove(const float xpos, const float ypos, ushort _mode) {
-    fillHidData(hidEvent::MouseMove, xpos, ypos, m_hidData.shiftPressed, m_hidData.ctrlPressed, m_hidData.altPressed);
+void UIWindow::onMouseMove(const float xPos, const float yPos, ushort _mode) {
+    fillHidData(hidEvent::MouseMove, xPos, yPos, m_hidData.shiftPressed, m_hidData.ctrlPressed, m_hidData.altPressed);
 
     auto foundNode = m_opi.foundNode;
     m_hidData.reset();
@@ -1296,7 +1296,7 @@ void UIWindow::setAppIcon(string &path) {
 
     // convert to bgra
     array<uint8_t, 4> t{};
-    for (int y = 0; y < (logo.height); y++) {
+    for (int y = 0; y < logo.height; y++) {
         for (int x = 0; x < logo.width; x++) {
             constexpr int nrChan = 4;
             const int idx = ((y * logo.width) + x) * nrChan;

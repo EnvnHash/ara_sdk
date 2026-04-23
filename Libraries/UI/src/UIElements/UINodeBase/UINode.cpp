@@ -175,7 +175,9 @@ void UINode::drawAsRoot(uint32_t& objId) {
     m_scissorStack.stack.emplace_back(0, 0, m_viewPort.z * getPixRatio(), m_viewPort.w * getPixRatio());
 
     // first update all matrices and calculate the children's bounding boxes
+    getSharedRes()->updatingMatrices = true;
     updtMatrIt(&m_scissorStack);
+    getSharedRes()->updatingMatrices = false;
 
     // scissor stack must be in hardware pixel coordinates, 0|0 is bottom left
     glScissor(0, 0, static_cast<GLsizei>(m_viewPort.z * getPixRatio()), static_cast<GLsizei>(m_viewPort.w * getPixRatio()));
@@ -718,7 +720,9 @@ void UINode::setSharedRes(UISharedRes* shared) {
         m_drawMan   = shared->drawMan;
     }
 
-    setOnChangeCb(cbType::postChange, this, [this](Node*, const string&) { onResize(); });
+    setOnChangeCb(cbType::postChange, this, [this](Node*, const string&) {
+        onResize();
+    });
 }
 
 std::filesystem::path UINode::dataPath() const {
@@ -732,6 +736,14 @@ WindowManager* UINode::getWinMan() const {
 UIApplication* UINode::getApp() const {
     return (m_sharedRes && m_sharedRes->win) ? static_cast<UIWindow*>(m_sharedRes->win)->getApplicationHandle()
                                              : nullptr;
+}
+
+void UINode::execOnGl(const std::string& identifier, const std::function<bool()>& f) {
+    if (const auto ctx = GLBase::getGLCtx(); ctx.ctx) {
+        f();
+    } else if (m_sharedRes) {
+        static_cast<UIWindow *>(m_sharedRes->win)->addGlCb(this, identifier, f);
+    }
 }
 
 void UINode::addGlCb(const std::string& identifier, const std::function<bool()>& f) {

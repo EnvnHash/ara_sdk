@@ -26,7 +26,7 @@ void ScrollView::init() {
     if (getStyleResNode() && getStyleResNode()->has("padding")) {
         auto pv = getStyleResNode()->splitNodeValue("padding");
         if (pv.size() == 1 && !is_number(pv[0])) {
-            if (auto n = getStyleResNode()->getRoot()->findNode(pv[0])) {
+            if (const auto n = getStyleResNode()->getRoot()->findNode(pv[0])) {
                 pv = n->splitValue(',');
             }
         }
@@ -102,30 +102,30 @@ void ScrollView::updtMatrIt(scissorStack* ss) {
                                               // right/bottom x,y => vec4(x,y,z,w)
 
     // if the children bound box is either wider or higher than the node's size, activate the scrollbars
-    m_needV = !m_blockVerScroll && m_size.y < (m_bb.w - m_bb.y + m_origPadding.y + m_origPadding.w);
-    m_needH = !m_blockHorScroll && m_size.x < (m_bb.z - m_bb.x + m_origPadding.x + m_origPadding.z);
+    const bool needV = !m_blockVerScroll && m_size.y < (m_bb.w - m_bb.y + m_origPadding.y + m_origPadding.w);
+    const bool needH = !m_blockHorScroll && m_size.x < (m_bb.z - m_bb.x + m_origPadding.x + m_origPadding.z);
 
-    if (m_HSB && m_HSB->isVisible() != m_needH) {
-        m_HSB->setVisibility(m_needH);
+    if (m_HSB && m_HSB->isVisible() != needH) {
+        m_HSB->setVisibility(needH);
     }
 
-    if (m_VSB && m_VSB->isVisible() != m_needV) {
-        m_VSB->setVisibility(m_needV);
+    if (m_VSB && m_VSB->isVisible() != needV) {
+        m_VSB->setVisibility(needV);
     }
 
-    if (m_corner && m_corner->isVisible() != (m_needH && m_needV)) {
-        m_corner->setVisibility(m_needH && m_needV);
+    if (m_corner && m_corner->isVisible() != (needH && needV)) {
+        m_corner->setVisibility(needH && needV);
     }
 
-    // to have the scroll view keep it's size independent of the scrollbars visibility, we apply a right-/bottom-padding
+    // to have the scroll view keep its size, independent of the scrollbars visibility, a right-/bottom-padding is applied
     // by the size of the scrollbar to have the content area representing the visible part. This keeps the following
     // calculations simple
-    m_newPadd = vec2(m_needV ? static_cast<float>(m_scrollBarSize) + m_origPadding.z : m_origPadding.z,
-                     m_needH ? static_cast<float>(m_scrollBarSize) + m_origPadding.w : m_origPadding.w);
+    auto newPadd = vec2(needV ? static_cast<float>(m_scrollBarSize) + m_origPadding.z : m_origPadding.z,
+                        needH ? static_cast<float>(m_scrollBarSize) + m_origPadding.w : m_origPadding.w);
 
     // check if we need to update the matrices
-    if (m_newPadd.x != m_padding.z || m_newPadd.y != m_padding.w) {
-        if (m_needH && m_needV) {
+    if (newPadd.x != m_padding.z || newPadd.y != m_padding.w) {
+        if (needH && needV) {
             if (m_HSB) {
                 m_HSB->setWidth(-m_scrollBarSize);
             }
@@ -141,7 +141,7 @@ void ScrollView::updtMatrIt(scissorStack* ss) {
             }
         }
 
-        UINode::setPadding(m_origPadding.x, m_origPadding.y, m_newPadd.x, m_newPadd.y);
+        UINode::setPadding(m_origPadding.x, m_origPadding.y, newPadd.x, newPadd.y);
 
         // padding has changed, children's matrices must be updated again
         setChanged(true);  // mark as changed recursively
@@ -201,7 +201,7 @@ void ScrollView::setViewport(float x, float y, float width, float height) {
     }
 }
 
-glm::vec2 ScrollView::getBBSize() {
+vec2 ScrollView::getBBSize() {
     m_bbSize.x = m_childBoundBox.z - m_childBoundBox.x + m_padding.x + m_padding.z;
     m_bbSize.y = m_childBoundBox.w - m_childBoundBox.y + m_padding.y + m_padding.w;
     return m_bbSize;

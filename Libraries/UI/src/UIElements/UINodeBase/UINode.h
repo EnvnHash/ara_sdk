@@ -264,6 +264,7 @@ public:
 
     virtual void dump();
 
+    void execOnGl(const std::string& identifier, const std::function<bool()>& f);
     virtual void addGlCb(const std::string&, const std::function<bool()>& f);
     virtual void eraseCb(const std::string&);
     virtual bool hasCb(const std::string&);
@@ -283,7 +284,7 @@ public:
 
     static void limitDrawVaoToBounds(const std::vector<DivVaoData>::iterator& dIt, glm::vec2& size, glm::vec2& uvDiff,
                                      glm::vec4& scIndDraw, glm::vec4& vp);
-    static void limitTexCoordsToBounds(float* tc, int32_t stdQuadVertInd, const glm::vec2& tvSize, const glm::vec2& uvSize);
+    static void limitTexCoordsToBounds(float* tc, int32_t stdQuadVertInd, const glm::vec2& tvSize, const glm::vec2& uvDiff);
 
     // generic iteration function for calculations on parts of the node-tree
     static void itrNodes(const std::shared_ptr<UINode>& node, void* result,

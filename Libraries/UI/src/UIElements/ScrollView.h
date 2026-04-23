@@ -39,13 +39,13 @@ public:
         UINode::setPadding(val);
     }
 
-    void setPadding(float left, float top, float right, float bottom, state st = state::m_state) override {
+    void setPadding(const float left, const float top, const float right, const float bottom, state st = state::m_state) override {
         setPadding(glm::vec4{left, top, right, bottom});
     }
 
-    void blockVertScroll(bool val) { m_blockVerScroll = val; }
-    void blockHorScroll(bool val) { m_blockHorScroll = val; }
-    void setAdaptContentTrans(bool val) { m_adaptContentTrans = val; }
+    void blockVertScroll(const bool val) { m_blockVerScroll = val; }
+    void blockHorScroll(const bool val) { m_blockHorScroll = val; }
+    void setAdaptContentTrans(const bool val) { m_adaptContentTrans = val; }
 
     template <typename T, typename... Args>
     requires (sizeof...(Args) != 1 || (!std::is_same_v<Args, UINodePars> && ...))
@@ -71,7 +71,6 @@ protected:
     glm::vec2   m_bbSize{0.f};
     glm::vec2   m_maxOffs{0.f};
     glm::vec2   m_offs{0.f};
-    glm::vec2   m_newPadd{0.f};
     glm::vec2   m_newOffs{0.f};
     glm::vec2   m_dragInitOffs{0.f};
 
@@ -80,8 +79,6 @@ protected:
     bool    m_blockVerScroll    = false;
     bool    m_blockHorScroll    = false;
     bool    m_adaptContentTrans = false;
-    bool    m_needH             = false;
-    bool    m_needV             = false;
 };
 
 }  // namespace ara

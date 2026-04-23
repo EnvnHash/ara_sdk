@@ -35,6 +35,7 @@ public:
     std::map<winProcStep, ProcStep>*                           procSteps     = nullptr;
     WindowBase*                                                scene         = nullptr;
     bool                                                       requestRedraw = false;
+    bool                                                       updatingMatrices = false;
     std::unordered_map<uiColors, glm::vec4>*                   colors;
     glm::ivec2                                                 gridSize;
     float                                                      padding;

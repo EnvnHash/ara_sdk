@@ -132,7 +132,7 @@ void JsonEditor::addExpandButt() {
 
 void JsonEditor::loadFile(const filesystem::path& p) {
     m_nodeValueType = nodeValueType::root;
-    addGlCb("JsonEditorRebuild", [p, this] {
+    execOnGl("JsonEditorRebuild", [p, this] {
         clearChildren();
         load(p, true);
         setExpanded(true);
