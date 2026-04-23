@@ -28,10 +28,12 @@ public:
 
     void load(bool fromAssets, bool skipNonClass=false) override;
     void setWatch(bool val) override;
-    void setImgPath(const std::filesystem::path& p) {
+    void setImgPath(const std::filesystem::path& p, bool processCallbacks = true) {
         if (p != m_imgPath) {
             m_imgPath = p;
-            callChangeCbs(cbType::postChange, "imgPath");
+            if (processCallbacks) {
+                callChangeCbs(cbType::postChange, "imgPath");
+            }
         }
     }
 
