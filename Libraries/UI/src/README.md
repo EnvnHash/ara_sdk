@@ -152,14 +152,12 @@ The UI graph is simple standard node structure with parent-child relations.
 
 ![Styles](../../../Documentation/images/uisdk_design-Styles.jpg)
 
-To take into account:
-
-- UINode may have different positions, size, etc when selected, highlighted, etc
-- when styles are edited via the styles.txt, default values are needed, in case a parameter is not set or deleted
-- style parsing and updating of UINodes must be done in a well-defined order
-- a C++ programmer may want to just setPosition, or setSize and will expect that after this command the corresponding values are updated
-- style definitions must be inheritable in order to provide better control and keep text files small
-- at the moment, default styles are managed by lambda functions which are overwritten, when a setPosition, or setSize command is issued
+- AraSdk provides the possibility to set and edit most parameters of a UINode through a text file with a json like formatting
+- style-editing is applied in immediately after saving during runtime
+- style definitions are inheritable. Definitions like color, fonts, positions and sizes can be also used as a variable be given them a name and referring to it by that name anywhere later in the styles text file. 
+- internally, styles are managed as lambda functions which are overwritten, when a setPosition, or setSize command is issued
+- any modification of UINode parameters during runtime is written into an internal set of style definition that is always applied before the external style text file
+- in this sense it is not possible to overwrite a parameter set in a style file during runtime. 
 
 #### Style parsing
 

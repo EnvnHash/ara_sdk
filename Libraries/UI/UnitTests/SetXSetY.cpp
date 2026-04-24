@@ -22,7 +22,7 @@ TEST(UITest, SetXSetY)
     // implicitly creates a window and runs the lambda before calling the draw function for the first time
     app.initSingleThreaded([&](){
         // get the root node of the UI scenegraph
-        auto rootNode = app.getRootNode();
+        const auto rootNode = app.getRootNode();
 
         // create a Div (simplest Element)
         auto& div = rootNode->push<Div>();
@@ -33,7 +33,7 @@ TEST(UITest, SetXSetY)
         div.setPos(posX, posY);
         div.setSize(width, height);
 
-        vec4 col = { 1.f, 0.f, 0.f, 1.f };
+        constexpr vec4 col = { 1.f, 0.f, 0.f, 1.f };
         div.setBackgroundColor(col);
 
         EXPECT_EQ( postGLError(), GL_NO_ERROR); // be sure that there is no opengl error
@@ -44,7 +44,7 @@ TEST(UITest, SetXSetY)
         // but since we want to do our checks, and keep things simple - that is doing everything
         // right here - we do it explicitly
         app.getWinBase()->draw(0, 0, 0);
-        auto mainWin = app.getMainWindow()->getWinHandle();
+        const auto mainWin = app.getMainWindow()->getWinHandle();
         mainWin->swap();
 
         checkQuad(mainWin, { posX, posY }, { width, height }, col, {});

@@ -11,8 +11,8 @@ using namespace glm;
 namespace ara::UiUnitTest::AlignTest {
 
 void drawQuadAndCheck(align ax, valign ay) {
-    ivec2 size = { 200, 100 };
-    vec4 col = { 1.f, 0.f, 0.f, 1.f };
+    constexpr ivec2 size = { 200, 100 };
+    constexpr vec4 col = { 1.f, 0.f, 0.f, 1.f };
     appBody([&](UIApplication& app){
         auto& div = app.getMainWindow()->getRootNode()->push<Div>();
         div.setSize(size.x, size.y);
@@ -20,7 +20,7 @@ void drawQuadAndCheck(align ax, valign ay) {
         div.setAlign(ax, ay);
     },
     [&](UIApplication& app){
-        auto mainWin = app.getWinBase()->getWinHandle();
+        const auto mainWin = app.getWinBase()->getWinHandle();
         checkQuad(mainWin,
           { ax == align::left ? 0 : ax == align::center ? (mainWin->getWidth()/2 - size.x/2) : mainWin->getWidth() -size.x,
             ay == valign::top ? 0 : ay == valign::center ? (mainWin->getHeight()/2 - size.y/2) : mainWin->getHeight() -size.y },
@@ -53,7 +53,7 @@ TEST(UITest, AlignCenter) {
 TEST(UITest, BorderRadiusOutOfBoundsLimit) {
     ivec2 size = { 200, 200 };
     vec4 col = { 1.f, 0.f, 0.f, 1.f };
-    appBody([&](UIApplication& app){
+    appBody([&](const UIApplication& app){
         auto win = app.getMainWindow();
         auto& div = win->getRootNode()->push<Div>();
         div.setPos(-100, 100);
@@ -63,7 +63,7 @@ TEST(UITest, BorderRadiusOutOfBoundsLimit) {
         div.setBorderRadius(40);
         div.setBorderWidth(20);
         div.setBorderColor(0.f, 0.5f, 1.f, 1.f);
-    }, [&](UIApplication& app){
+    }, [&](const UIApplication& app){
         auto mainWin = app.getWinBase();
         compareFrameBufferToImage(filesystem::current_path() / "border_radius_oob.png",
                                   mainWin->getWidth(),

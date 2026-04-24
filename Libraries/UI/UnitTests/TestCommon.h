@@ -20,6 +20,11 @@ static void drawAndSwap(const ara::UIApplication& app) {
     app.getMainWindow()->swap();
 }
 
+static void iterate(const ara::UIApplication& app) {
+    app.getWinBase()->draw(0, 0, 0);
+    app.getMainWindow()->swap();
+}
+
 static void stdAppSetup(ara::UIApplication& app, const int width, const int height, bool enableMenuAndResizeHandles=false) {
     app.setWinWidth(width);
     app.setWinHeight(height);
