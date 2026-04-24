@@ -26,8 +26,6 @@ void ScrollBar::init() {
 void ScrollBar::updateMatrix() {
     UINode::updateMatrix();
 
-    m_updateStyleScope = true; // avoid m_reqRebuildCustomStyle feedback loop
-
     // calculate DragArea
 
     // get the scroll view
@@ -66,8 +64,6 @@ void ScrollBar::updateMatrix() {
     } else {
         m_dragArea->setY(static_cast<int>(-m_scrollOffset.y / m_maxScrollOffset.y * m_maxScrollBarDragWay.y));
     }
-
-    m_updateStyleScope = false;
 }
 
 void ScrollBar::mouseDown(hidData& data) {
@@ -77,7 +73,7 @@ void ScrollBar::mouseDown(hidData& data) {
 
     if (m_dragArea) {
         // offset the scrollbar by its size
-        auto sv = dynamic_cast<ScrollView *>(getParent());
+        const auto sv = dynamic_cast<ScrollView *>(getParent());
 
         // was the click on the negative or positive side
         float isPositiveSide;

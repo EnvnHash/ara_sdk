@@ -254,6 +254,7 @@ public:
     UINode*             getNode(const std::string& name);
     UINode*             getNodeById(uint32_t searchID) const;
     virtual float       getValue() { return 0.f; }
+    auto                getReqRebuildCustomStyle() const { return m_reqRebuildCustomStyle; }
 
     [[nodiscard]] bool containsObjectId(const uint32_t id) const { return id >= m_objIdMin && id <= m_objIdMax; }
 

@@ -90,7 +90,8 @@ protected:
     bool m_drawParamChanged         = false;
     bool m_visible                  = true;
     bool m_reqRebuildCustomStyle    = false;
-    bool m_updateStyleScope         = false;
+
+    std::mutex m_updateStyleScope;
 
     float m_alpha           = 1.f; /// relative alpha of this node
     float m_absoluteAlpha   = 1.f; /// "flat" absolute alpha, top-down multiplied values

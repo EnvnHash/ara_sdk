@@ -161,4 +161,42 @@ TEST(UITest, ScrollViewIntable) {
     }, 1280, 720);
 }
 
+TEST(UITest, ScrollViewInfiniteUIMatrItLoopCheck) {
+    constexpr auto checkPadding = vec4{10.f, 10.f, 26.f, 26.f};
+    ScrollView* scrollView = nullptr;
+    appBody([&](const UIApplication& app){
+        const auto rootNode = app.getRootNode();
+        scrollView = &rootNode->push<ScrollView>(UINodePars{
+            .size = vec2{0.9f, 0.9f},
+            .bgColor = vec4{0.f, 0.f, 0.5f, 1.f},
+            .align = align::center,
+            .valign = valign::center,
+            .padding = vec4{10.f, 10.f, 10.f, 10.f},
+        });
+
+        iterate(app);
+
+        for (int i = 0; i < 4; i++) {
+            EXPECT_EQ(scrollView->getPadding()[i], 10.f);
+        }
+
+        scrollView->push<Div>({
+            .size = ivec2{500,500},
+            .bgColor = vec4{1.f, 0.f, 0.f, 1.f},
+        });
+
+        iterate(app);
+
+        for (int i = 0; i < 4; i++) {
+            EXPECT_EQ(scrollView->getPadding()[i], checkPadding[i]);
+        }
+    }, [&](const UIApplication& app){
+        // if feedback loop error, padding will be different on each iteration and reqRebuildCustomStyle will be set
+        EXPECT_FALSE(scrollView->getReqRebuildCustomStyle());
+        for (int i = 0; i < 4; i++) {
+            EXPECT_EQ(scrollView->getPadding()[i], checkPadding[i]);
+        }
+    }, 400, 400);
+}
+
 }

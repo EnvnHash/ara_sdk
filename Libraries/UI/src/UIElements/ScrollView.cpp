@@ -120,11 +120,11 @@ void ScrollView::updtMatrIt(scissorStack* ss) {
     // to have the scroll view keep its size, independent of the scrollbars visibility, a right-/bottom-padding is applied
     // by the size of the scrollbar to have the content area representing the visible part. This keeps the following
     // calculations simple
-    auto newPadd = vec2(needV ? static_cast<float>(m_scrollBarSize) + m_origPadding.z : m_origPadding.z,
-                        needH ? static_cast<float>(m_scrollBarSize) + m_origPadding.w : m_origPadding.w);
+    const auto newPadding = vec2(needV ? static_cast<float>(m_scrollBarSize) + m_origPadding.z : m_origPadding.z,
+                                 needH ? static_cast<float>(m_scrollBarSize) + m_origPadding.w : m_origPadding.w);
 
     // check if we need to update the matrices
-    if (newPadd.x != m_padding.z || newPadd.y != m_padding.w) {
+    if (newPadding.x != m_padding.z || newPadding.y != m_padding.w) {
         if (needH && needV) {
             if (m_HSB) {
                 m_HSB->setWidth(-m_scrollBarSize);
@@ -141,7 +141,7 @@ void ScrollView::updtMatrIt(scissorStack* ss) {
             }
         }
 
-        UINode::setPadding(m_origPadding.x, m_origPadding.y, newPadd.x, newPadd.y);
+        UINode::setPadding(m_origPadding.x, m_origPadding.y, newPadding.x, newPadding.y);
 
         // padding has changed, children's matrices must be updated again
         setChanged(true);  // mark as changed recursively

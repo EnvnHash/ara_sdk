@@ -149,7 +149,7 @@ void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styl
         }
 
         vec4 pd{pv.f(0), pv.f(1, pv.f(0)), pv.f(2, pv.f(0)), pv.f(3, pv.f(0))};
-        m_setStyleFunc[st][styleInit::padding] = [this, st, pd]() {
+        m_setStyleFunc[st][styleInit::padding] = [this, st, pd] {
             setPadding(pd.x, pd.y, pd.z, pd.w, st);
         };  // this will avoid exceptions if padding value has less than 4 values,
         // default is first value, so one can make it padding:10 for example and will become 10,10,10,10
@@ -164,12 +164,9 @@ void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styl
 void UINodeStyle::updateStyle() {
     m_styleChanged     = false;
     m_styleClassInited = true;
-    m_updateStyleScope = true;
-
     if (m_reqRebuildCustomStyle) {
         rebuildCustomStyle();
     }
-
     m_reqRebuildCustomStyle = false;
 
     if (m_excludeFromStyles){
@@ -236,11 +233,7 @@ void UINodeStyle::updateStyle() {
         }
     }
 
-    // updateDrawData(); // updateStyle is only called in updateMatrIt which
-    // causes m_drawParamChanged = true, which causes updateDrawData()
-
     setChanged(true);  // recursive true
-    m_updateStyleScope = false;
 }
 
 void UINodeStyle::addStyleClass(const std::string& styleClass) {
@@ -280,12 +273,12 @@ void UINodeStyle::clearStyles() {
 void UINodeStyle::applyStyle() {
     if (!m_excludeFromStyles) {
         // call all style definitions for the highlighted state if there are any
+        unique_lock l(m_updateStyleScope);
         for (const auto &val: m_setStyleFunc[m_state] | views::values) {
             val();
         }
 
         m_drawParamChanged = true;
-
         if (!m_setStyleFunc[m_state].empty()) {
             m_sharedRes->requestRedraw = true;
         }
@@ -297,8 +290,11 @@ ResNode* UINodeStyle::getStyleResNode() const {
 }
 
 void UINodeStyle::setStyleInitVal(const std::string& name, const std::string& val, const state st) {
-    m_styleCustDefs[st == state::m_state ? m_state : st][name] = val;
-    m_reqRebuildCustomStyle = getSharedRes() && !getSharedRes()->updatingMatrices && !m_updateStyleScope;
+    if (m_updateStyleScope.try_lock()) {
+        m_styleCustDefs[st == state::m_state ? m_state : st][name] = val;
+    m_reqRebuildCustomStyle = getSharedRes() && !getSharedRes()->updatingMatrices;
+        m_updateStyleScope.unlock();
+    }
 }
 
 void UINodeStyle::setStyleInitCol(const std::string& propName, const vec4& col, const state st) {

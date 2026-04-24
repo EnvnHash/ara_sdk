@@ -344,7 +344,7 @@ void UINode::checkStyles() {
         updateStyle();
         m_drawParamChanged = true;
 
-        // in case the window was resize before the res.txt was changed, the styledefaults loaded will still in respect
+        // in case the window was resize before the res.txt was changed, the style defaults loaded will still in respect
         // of the initial window size, so if this is called from a res update "rescale" the window
         // TODO: default styles should be updated on resize
         if (m_sharedRes && m_sharedRes->win) {
@@ -370,7 +370,7 @@ void UINode::immediateScissoring(scissorStack* ss) {
 }
 
 void UINode::checkScissoring(scissorStack* ss) {
-    // push a viewport to the scissor stack if the Node has the scissorchildren flag set std::round() because straight
+    // push a viewport to the scissor stack if the Node has the scissor-children flag set std::round() because straight
     // forward casting to int will produce wrong results...
     if (ss && m_scissorChildren && m_sc.z != 0.f && m_sc.w != 0.f) {
         // here we get the top left corner, but glScissor needs lower left corner scissor area can't exceed actual scissor bounds

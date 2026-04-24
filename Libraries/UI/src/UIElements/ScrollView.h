@@ -36,11 +36,11 @@ public:
         } else {
             m_origPadding = val;
         }
-        UINode::setPadding(val);
+        UINode::setPadding(val, st);
     }
 
-    void setPadding(const float left, const float top, const float right, const float bottom, state st = state::m_state) override {
-        setPadding(glm::vec4{left, top, right, bottom});
+    void setPadding(const float left, const float top, const float right, const float bottom, const state st = state::m_state) override {
+        setPadding(glm::vec4{left, top, right, bottom}, st);
     }
 
     void blockVertScroll(const bool val) { m_blockVerScroll = val; }

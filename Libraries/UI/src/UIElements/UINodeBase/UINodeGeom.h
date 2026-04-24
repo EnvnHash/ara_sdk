@@ -218,7 +218,7 @@ public:
     virtual void setContentRotation(float angle, float ax, float ay, float az);
     void         setContentTransCentered(const bool val) { m_contTransMatCentered = val; }
 
-    virtual void setGeoChanged(bool val) { m_geoChanged = val; }
+    virtual void setGeoChanged(const bool val) { m_geoChanged = val; }
 
     static bool contains(UINodeGeom* outer, UINodeGeom* node);
 
@@ -333,7 +333,7 @@ public:
                 m_childBoundBox.w - m_childBoundBox.y + getPadding().y + getPadding().w};
     }
 
-    void load(const std::filesystem::path& filePath, bool skipNonClass = false) override {
+    void load(const std::filesystem::path& filePath, const bool skipNonClass = false) override {
         Node::load(filePath, skipNonClass);
         setChanged(true);
     }
