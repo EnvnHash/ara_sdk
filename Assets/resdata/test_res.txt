@@ -1,6 +1,7 @@
 fonts {
     "regular":"Fonts/verdana.ttf"
 }
+
 variableDef {
     text-align: left
     font {font:"regular" size:18}
@@ -52,5 +53,23 @@ parent_node {
            ref2_node
            width: 100px
        }
+    }
+}
+
+testButton {
+    x: 10px
+    y: 10px
+    bgcolor: rgb(40,40,40)
+    border-width:1px
+    border-color:rgb(180,180,180)
+    width: 170px;
+    height: 20px;
+    font {font:"regular" size:14}
+    text: "Click Me"
+    highlighted {
+        bgcolor: rgb(100,100,255)
+    }
+    selected {
+        bgcolor: rgb(255,150,150)
     }
 }

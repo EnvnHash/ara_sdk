@@ -9,6 +9,7 @@
 #include <Utils/Texture.h>
 #include <WindowManagement/GLWindow.h>
 #include <UIElements/DataBinding/NodeEdit.h>
+#include <UIElements/Button/Button.h>
 
 #include "threadpool/BS_thread_pool.hpp"
 
@@ -217,6 +218,30 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
     checkVals(data, win, checkPixels);
 }
 
+static ara::Button& setupTestButton(const ara::UIApplication& app, ara::Property<bool>* prop=nullptr) {
+    const auto rootNode = app.getMainWindow()->getRootNode();
+    auto& button = rootNode->push<ara::Button>(ara::UINodePars{
+        .size = glm::ivec2{200, 100},
+        .fgColor = glm::vec4{0.f, 0.f, 1.f, 1.f},
+        .bgColor = glm::vec4{0.2f, 0.2f, 0.2f, 1.f},
+        .borderWidth = 1,
+        .borderRadius = 25,
+        .borderColor = glm::vec4{1.f, 0.f, 0.f, 1.f},
+        .padding = glm::vec4{20.f, 0.f, 0.f, 0.f}
+    });
+
+    button.setFontSize(30);
+    button.setText("HelloBut");
+    button.setTextAlign(ara::align::center, ara::valign::center);
+    button.setBackgroundColor(glm::vec4{0.4f, 0.4, 0.8f, 1.f}, ara::state::selected);
+
+    if (prop) {
+        button.setIsToggle(true);
+        button.setProp(*prop);
+    }
+
+    return button;
+}
 
 template <typename T>
 class TestNode : public ara::Node {
@@ -234,7 +259,6 @@ public:
     T m_testVal{};
     T m_testVal2{};
 };
-
 
 template <typename T>
 auto& addNodeEdit(const ara::UIApplication &app, T& node, const ara::arrange ar = ara::arrange::horizontal,
@@ -256,4 +280,9 @@ auto& addNodeEdit(const ara::UIApplication &app, T& node, const ara::arrange ar 
     app.getWinBase()->draw(0, 0, 0);
     app.getMainWindow()->swap();
     return ne;
+}
+
+static void simulateMouseClick (const ara::UIApplication& app, int32_t xPos, int32_t yPos) {
+    app.getMainWindow()->onMouseDownLeft(xPos, yPos, false, false, false);
+    app.getMainWindow()->onMouseUpLeft();
 }

@@ -61,4 +61,50 @@ TEST(UITest, StylesTest_WriteRuntimeChangeToDefaultStyle) {
     }, 400, 200, nullptr, false, "test_res.txt");
 }
 
+TEST(UITest, StylesTest_Button) {
+    appBody([&](const UIApplication &app) {
+        app.getRootNode()->push<Button>({ .style = "testButton" });
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "styles_testButton.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 400, 200, nullptr, false, "test_res.txt");
+}
+
+TEST(UITest, StylesTest_ButtonHover) {
+    appBody([&](const UIApplication &app) {
+        app.getRootNode()->push<Button>({ .name = "testButton", .style = "testButton" });
+        iterate(app);
+        app.getMainWindow()->onMouseMove(80, 20, 0);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "styles_testButtonHover.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 400, 200, nullptr, false, "test_res.txt");
+}
+
+TEST(UITest, StylesTest_ButtonSelected) {
+    appBody([&](const UIApplication &app) {
+        auto& butt = app.getRootNode()->push<Button>({ .name = "testButton", .style = "testButton" });
+        butt.setIsToggle(true);
+        iterate(app);
+        simulateMouseClick(app, 100, 20);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "styles_testButtonSelected.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 400, 200, nullptr, false, "test_res.txt");
+}
+
+TEST(UITest, StylesTest_ButtonSelectedDeselect) {
+    appBody([&](const UIApplication &app) {
+        auto& butt = app.getRootNode()->push<Button>({ .name = "testButton", .style = "testButton" });
+        butt.setIsToggle(true);
+        iterate(app);
+        simulateMouseClick(app, 100, 20);
+        iterate(app);
+        simulateMouseClick(app, 100, 20);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "styles_testButton.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 400, 200, nullptr, false, "test_res.txt");
+}
+
 }

@@ -12,31 +12,6 @@ using namespace glm;
 
 namespace ara::UiUnitTest::ButtonTests{
 
-Button& setupTestButton(const UIApplication& app, Property<bool>* prop=nullptr) {
-    auto rootNode = app.getMainWindow()->getRootNode();
-    auto& button = rootNode->push<Button>(UINodePars{
-        .size = ivec2{200, 100},
-        .fgColor = vec4{0.f, 0.f, 1.f, 1.f},
-        .bgColor = vec4{0.2f, 0.2f, 0.2f, 1.f},
-        .borderWidth = 1,
-        .borderRadius = 25,
-        .borderColor = vec4{1.f, 0.f, 0.f, 1.f},
-        .padding = vec4{20.f, 0.f, 0.f, 0.f}
-    });
-
-    button.setFontSize(30);
-    button.setText("HelloBut");
-    button.setTextAlign(align::center, valign::center);
-    button.setBackgroundColor(vec4{0.4f, 0.4, 0.8f, 1.f}, state::selected);
-
-    if (prop) {
-        button.setIsToggle(true);
-        button.setProp(*prop);
-    }
-
-    return button;
-}
-
 Button& setupAndDrawButton(const UIApplication& app, Property<bool>* prop=nullptr) {
     auto& but = setupTestButton(app, prop);
     app.getWinBase()->draw(0, 0, 0);
@@ -44,7 +19,7 @@ Button& setupAndDrawButton(const UIApplication& app, Property<bool>* prop=nullpt
     return but;
 }
 
-TEST(UITest, ButtonTests) {
+TEST(UITest, BasicButtonTest) {
     appBody([&](const UIApplication& app){
         setupTestButton(app);
     }, [&](const UIApplication& app){
@@ -55,19 +30,15 @@ TEST(UITest, ButtonTests) {
     }, 800, 400);
 }
 
-TEST(UITest, ButtonClickTests) {
+TEST(UITest, ButtonClickTest) {
     bool flag = false;
-
     appBody([&](const UIApplication& app){
         setupTestButton(app).setClickedCb([&]{
             flag = true;
         });
 
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
-
-        app.getMainWindow()->onMouseDownLeft(100, 50, false, false, false);
-        app.getMainWindow()->onMouseUpLeft();
+        iterate(app);
+        simulateMouseClick(app, 100, 50);
     }, [&](const UIApplication& app){
         ASSERT_TRUE(flag);
         compareFrameBufferToImage(filesystem::current_path() / "butt_test.png",
@@ -76,10 +47,9 @@ TEST(UITest, ButtonClickTests) {
     }, 800, 400);
 }
 
-TEST(UITest, ButtonPropertyTests) {
-    Property<bool> prop = false;
-
-    appBody([&](UIApplication& app){
+TEST(UITest, ButtonPropertyTest) {
+    Property prop = false;
+    appBody([&](const UIApplication& app){
         setupAndDrawButton(app, &prop);
         prop = true;
     }, [&](const UIApplication& app){
@@ -90,16 +60,43 @@ TEST(UITest, ButtonPropertyTests) {
     }, 800, 400);
 }
 
-TEST(UITest, ButtonPropertyOnChangedTests) {
-    Property<bool> prop = false;
+TEST(UITest, ButtonPropertySelectDeselectTest) {
+    Property prop = false;
+    appBody([&](const UIApplication& app){
+        setupAndDrawButton(app, &prop);
+        iterate(app);
+        simulateMouseClick(app, 100, 50);
+        iterate(app);
+        simulateMouseClick(app, 100, 50);
+    }, [&](const UIApplication& app){
+        compareFrameBufferToImage(filesystem::current_path() / "butt_test.png",
+                                  app.getWinBase()->getWidth(),
+                                  app.getWinBase()->getHeight(), 1);
+        ASSERT_FALSE(prop());
+    }, 800, 400);
+}
 
-    appBody([&](UIApplication& app){
+TEST(UITest, ButtonSelectDeselectTest) {
+    appBody([&](const UIApplication& app){
+        setupAndDrawButton(app);
+        iterate(app);
+        simulateMouseClick(app, 100, 50);
+        iterate(app);
+        simulateMouseClick(app, 100, 50);
+    }, [&](const UIApplication& app){
+        compareFrameBufferToImage(filesystem::current_path() / "butt_test.png",
+                                  app.getWinBase()->getWidth(),
+                                  app.getWinBase()->getHeight(), 1);
+    }, 800, 400);
+}
+
+TEST(UITest, ButtonPropertyOnChangedTest) {
+    Property prop = false;
+    appBody([&](const UIApplication& app){
         setupAndDrawButton(app, &prop);
         app.getMainWindow()->onMouseDownLeft(100, 50, false, false, false);
         app.getMainWindow()->onMouseUpLeft();
-
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
     }, [&](const UIApplication& app){
         compareFrameBufferToImage(filesystem::current_path() / "butt_test_selected.png",
                                   app.getWinBase()->getWidth(),
