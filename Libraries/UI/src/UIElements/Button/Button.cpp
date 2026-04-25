@@ -21,11 +21,11 @@ Button::Button(const LabelPars &initData) : Label(initData) {
     setScissorChildren(true);
 }
 
-Button::Button(vec2 pos, vec2 size, vec4 text_color, vec4 bg_color, const std::string& text,
-               pair<align, valign> align, const std::string& fontType, int fontHeight)
+Button::Button(const vec2 pos, const vec2 size, const vec4 text_color, const vec4 bg_color, const std::string& text,
+               const pair<align, valign> align, const std::string& fontType, int fontHeight)
     : Label(LabelPars{
-          .pos = static_cast<glm::ivec2>(pos),
-          .size = static_cast<glm::ivec2>(size),
+          .pos = static_cast<ivec2>(pos),
+          .size = static_cast<ivec2>(size),
           .color = text_color,
           .bgColor = bg_color,
           .text = text,
@@ -86,16 +86,10 @@ void Button::click(hidData& data) {
         m_clickedFunc();
     }
 
-    // force a mouseOut
-    if (getWindow() && getWindow()->getLastHoverFound()) {
-        getWindow()->getLastHoverFound()->mouseOut(data);
-        getWindow()->setLastHoverFound(nullptr);
-    }
-
     setDrawFlag();
 }
 
-void Button::toggle(bool val) {
+void Button::toggle(const bool val) {
     if (!m_isToggle) {
         return;
     }
@@ -116,8 +110,7 @@ void Button::toggle(bool val) {
 void Button::setProp(Property<bool>& prop) {
     m_prop = &prop;
     onChanged<bool>(prop, [this](const std::any &val) {
-        bool v = std::any_cast<bool>(val);
-        if (v != (m_state == state::selected)) {
+        if (const bool v = std::any_cast<bool>(val); v != (m_state == state::selected)) {
             toggle(v);
             setDrawFlag();
         }

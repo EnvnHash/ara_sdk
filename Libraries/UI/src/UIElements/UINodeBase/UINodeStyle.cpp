@@ -143,7 +143,7 @@ void UINodeStyle::updateStyleIt(ResNode* node, state st, const std::string& styl
 
         // in case this is a reference iterate again
         if (pv.size() == 1 && !is_number(pv[0])) {
-            if (auto n = node->getRoot()->findNode(pv[0])) {
+            if (const auto n = node->getRoot()->findNode(pv[0])) {
                 pv = n->splitValue(',');
             }
         }
@@ -409,7 +409,7 @@ void UINodeStyle::setVisibility(const bool val, const state st) {
     setStyleInitVal("visible", val ? "true" : "false", st);
 }
 
-void  UINodeStyle::setState(const state st) {
+void UINodeStyle::setState(const state st) {
     if (m_state != st) {
         m_lastState = m_state;
     }

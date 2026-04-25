@@ -120,10 +120,12 @@ void NodeMemberVariableEdit::createCheckBox(const bool val) {
 
     // two-way binding
     m_node->setOnChangeCb(cbType::postChange, this, [this](Node*, const string& varName) {
-        if (const auto actVal = std::any_cast<bool>(m_memVar->get());
-            varName == m_memVarName && (*m_checkBoxButt->m_prop)() != actVal) {
-            m_blockMemVarSet = true;
-            m_checkBoxButt->toggle(actVal);
+        if (varName == m_memVarName) {
+            if (const auto actVal = std::any_cast<bool>(m_memVar->get());
+                (*m_checkBoxButt->m_prop)() != actVal) {
+                m_blockMemVarSet = true;
+                m_checkBoxButt->toggle(actVal);
+            }
         }
     });
 }
@@ -147,9 +149,12 @@ void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, co
 
     // two way binding
     m_node->setOnChangeCb(cbType::postChange, this, [this](Node*, const string& varName) {
-        if (const auto actVal = std::any_cast<filesystem::path>(m_memVar->get());
-            varName == m_memVarName && m_pathLabel->getText() != actVal.string()) {
-            m_pathLabel->setText(actVal.string());
+        if (varName == m_memVarName) {
+            auto v = std::any_cast<filesystem::path>(m_memVar->get());
+            if (const auto actVal = std::any_cast<filesystem::path>(m_memVar->get());
+                m_pathLabel->getText() != actVal.string()) {
+                m_pathLabel->setText(actVal.string());
+            }
         }
     });
 

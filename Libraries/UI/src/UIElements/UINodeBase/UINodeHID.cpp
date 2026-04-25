@@ -48,7 +48,7 @@ void UINodeHID::hidIt(hidData& data, hidEvent evt, std::list<UINode*>::iterator 
 
     // process callbacks
     for (const auto&[func, active] : node->getMouseHidCb(evt)) {
-        if (!active || (active && (data.hit || evt == hidEvent::MouseDrag))) {
+        if (!active || data.hit || evt == hidEvent::MouseDrag) {
             func(data);
             if (data.breakCbIt) {
                 return;
@@ -90,10 +90,9 @@ void UINodeHID::mouseIn(hidData& data) {
         return;
     }
 
-    if (!m_excludeFromStyles) {
+    if (!m_excludeFromStyles && m_state != state::selected) {
         // set state only in case there are style definitions for it. If this is
         // not the case, we assume that this Node should ignore this state
-        // setState(state::highlighted, true);
         if (!m_setStyleFunc[state::highlighted].empty()) {
             setState(state::highlighted);
         }
@@ -119,8 +118,8 @@ void UINodeHID::mouseOut(hidData& data) {
         return;
     }
 
-    state lastState  = m_lastState;
-    bool  changeBack = !m_setStyleFunc[state::highlighted].empty() && m_state != state::selected;
+    const state lastState  = m_lastState;
+    const bool  changeBack = !m_setStyleFunc[state::highlighted].empty() && m_state != state::selected && lastState != state::selected;
 
     // if the last state has no highlighted style definitions, the state didn't
     // change, so no need to change it back
@@ -137,8 +136,8 @@ void UINodeHID::mouseOut(hidData& data) {
         m_sharedRes->requestRedraw = true;
     }
 
-    for (const auto& it : m_mouseOutCb) {
-        it.second(data);
+    for (const auto& val : m_mouseOutCb | views::values) {
+        val(data);
     }
 }
 
