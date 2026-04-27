@@ -194,11 +194,12 @@ void UINodeHID::onGotFocus() {
 }
 
 bool UINodeHID::removeFocus() {
-    if (getWindow() && getWindow()->getInputFocusNode())
-        if (dynamic_cast<UINodeHID*>(getWindow()->getInputFocusNode()) == this) {
-            this->onLostFocus();
-            return true;
-        }
+    if (getWindow()
+        && getWindow()->getInputFocusNode()
+        && dynamic_cast<UINodeHID*>(getWindow()->getInputFocusNode()) == this) {
+        this->onLostFocus();
+        return true;
+    }
     return false;
 }
 
