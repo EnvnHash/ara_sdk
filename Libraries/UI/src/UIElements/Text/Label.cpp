@@ -265,7 +265,7 @@ void Label::updateFontGeo() {
     }
 
     // take the matrix of the helper content Div, since this will use the Label's content transformation
-    m_bo.x      = m_offset[0] + m_alignOffset.x;
+    m_bo.x      = m_offset[0] + m_alignOffset.x + (hasOpt(single_line) ? m_lineOverflowOffset.second : 0);
     m_bo.y      = m_offset[1] + m_riFont->getPixAscent() + m_alignOffset.y;
     m_mask      = calculateMask();
     m_modMvp    = m_mvp;

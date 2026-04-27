@@ -112,14 +112,15 @@ void UIEdit::drawCaretSelectedState(bool& updtTree) {
     if (!m_caret->isVisible()) {
         m_caret->setVisibility(true);
         m_caret->setSize(static_cast<int>(m_caretWidth / getParentContentScale().x),
-                        static_cast<int>(m_riFont->getPixHeight()));
+                        static_cast<int>(m_riFont->getPixAscentHwp()));
         m_caret->setBackgroundColor(m_caretColor);
         updtTree = true;
     }
 
-    auto tCaretPos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first;
-    tCaretPos = tCaretPos + m_offset + m_alignOffset;
-    tCaretPos.x += m_lineOverflowOffset.second;
+    auto tCaretPos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first + m_bo;
+    tCaretPos.x -= m_borderWidth;
+    tCaretPos.y -= m_borderWidth + m_riFont->getPixAscentHwp() + m_riFont->getPixDescentHwp();
+
     setCaretRespectAlignment(tCaretPos);
 
     vec2 posLimit{};
@@ -127,7 +128,7 @@ void UIEdit::drawCaretSelectedState(bool& updtTree) {
         posLimit[i] = m_size[i] - (m_padding[i + 2] + static_cast<float>(m_borderWidth *2));
     }
 
-    if (!all(glm::equal(m_caret->getPos(), tCaretPos))) {
+    if (!all(glm::equal(ivec2(m_caret->getPos()), ivec2(tCaretPos)))) {
         m_caret->setPos(static_cast<int>(std::min(tCaretPos.x, posLimit.x)),
                         static_cast<int>(std::min(tCaretPos.y, posLimit.y)));
     }
@@ -197,35 +198,6 @@ void UIEdit::calculateOffset() {
             m_offset.y = std::max(m_offset.y, -(pa + m_fontDGV.getFontLines(lineIndex).getYSelRange(1) - mask.w));
         }
     }
-}
-
-void UIEdit::updateFontGeo() {
-    if (!m_riFont) {
-        return;
-    }
-
-    memset(&m_alignOffset[0], 0, 8);
-
-    if (m_tAlignY == valign::bottom) {
-        m_bs            = m_fontDGV.getPixSize();
-        m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
-        m_alignOffset.y = m_tContSize.y - m_bs.y;
-    } else if (m_tAlignY == valign::center) {
-        m_bs            = m_fontDGV.getPixSize();
-        m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
-        m_alignOffset.y = m_tContSize.y * 0.5f - m_bs.y * 0.5f;
-    }
-
-    // take the matrix of the helper content Div, since this will use the
-    // Label's content transformation
-    m_bo.x = m_offset.x + m_alignOffset.x + m_lineOverflowOffset.second;
-    m_bo.y = m_offset.y + m_riFont->getPixAscent() + m_alignOffset.y;
-    m_mask = calculateMask();
-    m_modMvp = m_mvp;
-
-    m_mask *= m_riFont->getPixRatio();
-    m_bo *= m_riFont->getPixRatio();
-    m_modMvp = m_modMvp * scale(vec3{1.f / getPixRatio(), 1.f / getPixRatio(), 1.f});
 }
 
 void UIEdit::keyDown(hidData& data) {
@@ -385,7 +357,9 @@ void UIEdit::moveCaretHome() {
 void UIEdit::moveCaretEnd() {
     m_caretIndex = static_cast<int>(m_text.size());
     if (const auto line = m_fontDGV.getFontLines()[0];
-        hasOpt(single_line) && line.maxCharIdx < static_cast<int>(m_text.size())) {
+        hasOpt(single_line)
+        && line.maxCharIdx != -1
+        && line.maxCharIdx < static_cast<int>(m_text.size())) {
         calcRightLineOffset();
     }
 }

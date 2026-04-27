@@ -18,6 +18,7 @@
 #include "Utils/Typo/UtfIterator.h"
 
 using namespace glm;
+using namespace std;
 
 namespace ara {
 
@@ -148,7 +149,7 @@ int FontGlyphVector::getCharIndexByPixPos(float pix_x, const float pix_y, const 
     }
 
     if (hwPix_x >= m_bb[2]) {
-        return m_vline[lineIndex].ptr[1]->characterIdx;
+        return m_vline[lineIndex].ptr[1]->characterIdx + 1;
     }
 
     if (hwPix_x < e[0].pos.x) {
@@ -173,20 +174,20 @@ int FontGlyphVector::getCharIndexByPixPos(float pix_x, const float pix_y, const 
     return m_vline[lineIndex].ptr[1]->characterIdx;
 }
 
-std::pair<vec2, vec2> FontGlyphVector::getCaretPosAndSize(const int caret_index) const {
-    std::pair<vec2, vec2> outPair {};
+pair<vec2, vec2> FontGlyphVector::getCaretPosAndSize(const int caretIndex) const {
+    pair<vec2, vec2> outPair {};
     const auto numChars = static_cast<int>(size());
     if (!numChars) {
         return outPair;
     }
 
-    auto [charAsCodepoint, pos, size, glyphPtr, color, characterIdx, pixRatio] = findByCharIndex(caret_index);
+    auto [charAsCodepoint, pos, size, glyphPtr, color, characterIdx, pixRatio] = findByCharIndex(caretIndex);
     outPair.second = size;
     if (glyphPtr) {
         outPair.second.x = glyphPtr->xadv;
     }
 
-    if (caret_index < numChars) {
+    if (caretIndex < numChars) {
         if (charAsCodepoint > 0) {
             outPair.first.x = pos.x;
             outPair.first.y = pos.y + size.y;
@@ -195,12 +196,12 @@ std::pair<vec2, vec2> FontGlyphVector::getCaretPosAndSize(const int caret_index)
         outPair.first = m_glyphs[numChars - 1].pos + m_glyphs[numChars - 1].size;
     }
 
-    if (caret_index < 0) {
+    if (caretIndex < 0) {
         outPair.first.y = m_vline[0].y;
-    } else if (caret_index > static_cast<int>(m_glyphs.size() -1)) {
+    } else if (caretIndex > static_cast<int>(m_glyphs.size() -1)) {
         outPair.first.y = m_vline[m_vline.size() - 1].y;
     } else {
-        if (const auto lineIndex = getLineIndexByCharIndex(caret_index); lineIndex < 0) {
+        if (const auto lineIndex = getLineIndexByCharIndex(caretIndex); lineIndex < 0) {
             outPair.first.y = m_vline[0].y;
         } else {
             outPair.first.y = m_vline[lineIndex].y;
@@ -213,25 +214,25 @@ std::pair<vec2, vec2> FontGlyphVector::getCaretPosAndSize(const int caret_index)
 
 int FontGlyphVector::jumpToLine(const int caret_index, const int line_delta) {
     int ci   = caret_index;
-    const int lidx = getLineIndexByCharIndex(ci) + line_delta;
+    const int lineIndex = getLineIndexByCharIndex(ci) + line_delta;
 
-    if (lidx < 0 || lidx >= static_cast<int>(m_vline.size())) {
+    if (lineIndex < 0 || lineIndex >= static_cast<int>(m_vline.size())) {
         return ci;
     }
 
     m_tCaretPos = getCaretPosAndSize(ci).first;
-    const auto ve = m_vline[lidx].ptr[0];
+    const auto ve = m_vline[lineIndex].ptr[0];
 
-    if (ve == nullptr || !m_vline[lidx].ptr[1]) {
+    if (ve == nullptr || !m_vline[lineIndex].ptr[1]) {
         return ci;
     }
 
     if (m_tCaretPos.x <= m_bb.x) {
-        return m_vline[lidx].ptr[0]->characterIdx;
+        return m_vline[lineIndex].ptr[0]->characterIdx;
     }
 
     if (m_tCaretPos.x >= m_bb.z) {
-        return m_vline[lidx].ptr[1]->characterIdx;
+        return m_vline[lineIndex].ptr[1]->characterIdx;
     }
 
     if (m_tCaretPos.x < ve[0].pos.x) {
@@ -241,7 +242,7 @@ int FontGlyphVector::jumpToLine(const int caret_index, const int line_delta) {
     ci = ve[0].characterIdx;
     float dist, mdist = 1e10;
 
-    while (ve < m_vline[lidx].ptr[1]) {
+    while (ve < m_vline[lineIndex].ptr[1]) {
         if ((dist = fabsf(ve[0].pos.x - m_tCaretPos.x)) < mdist) {
             ci    = ve[0].characterIdx;
             mdist = dist;
@@ -252,30 +253,30 @@ int FontGlyphVector::jumpToLine(const int caret_index, const int line_delta) {
 }
 
 int FontGlyphVector::jumpToBeginOfLine(const int caret_index) const {
-    const auto lidx = getLineIndexByCharIndex(caret_index);
+    const auto lineIndex = getLineIndexByCharIndex(caret_index);
 
-    if (lidx < 0 || lidx >= static_cast<int>(m_vline.size())) {
+    if (lineIndex < 0 || lineIndex >= static_cast<int>(m_vline.size())) {
         return caret_index;
     }
 
-    if (m_vline[lidx].ptr[0] == nullptr) {
+    if (m_vline[lineIndex].ptr[0] == nullptr) {
         return caret_index;
     }
 
-    return m_vline[lidx].ptr[0]->characterIdx;
+    return m_vline[lineIndex].ptr[0]->characterIdx;
 }
 
 int FontGlyphVector::jumpToEndOfLine(const int caret_index) const {
-    const auto lidx = getLineIndexByCharIndex(caret_index);
-    if (lidx < 0 || lidx >= static_cast<int>(m_vline.size())) {
+    const auto lineIndex = getLineIndexByCharIndex(caret_index);
+    if (lineIndex < 0 || lineIndex >= static_cast<int>(m_vline.size())) {
         return caret_index;
     }
 
-    if (m_vline[lidx].ptr[1] == nullptr) {
+    if (m_vline[lineIndex].ptr[1] == nullptr) {
         return caret_index;
     }
 
-    return m_vline[lidx].ptr[1]->characterIdx;
+    return m_vline[lineIndex].ptr[1]->characterIdx;
 }
 
 bool FontGlyphVector::process(Font *font, const vec2 &size, const vec2 &sep, const align textAlignX,
@@ -471,7 +472,6 @@ void FontGlyphVector::procChar(procPar& par, Font* font, const bool word_wrap) {
 
 /**  y and width are in hw pixels */
 Fontline *FontGlyphVector::addLine(const procPar& par, const bool eol, const int lineEndOffs) {
-
     const auto p_begin = par.linep[0];
     const auto p_end = par.linep[1] + lineEndOffs;
     const float y = par.pos.y;

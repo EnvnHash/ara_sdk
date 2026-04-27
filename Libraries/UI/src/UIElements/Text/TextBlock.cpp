@@ -232,35 +232,6 @@ Font *TextBlock::updateDGV(bool *checkFontTexture) {
     return m_riFont;
 }
 
-void TextBlock::updateFontGeo() {
-    if (!m_riFont) {
-        return;
-    }
-
-    memset(&m_alignOffset[0], 0, 8);
-
-    if (m_tAlignY == valign::bottom) {
-        m_bs            = m_fontDGV.getPixSize();
-        m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
-        m_alignOffset.y = m_tContSize.y - m_bs.y;
-    } else if (m_tAlignY == valign::center) {
-        m_bs            = m_fontDGV.getPixSize();
-        m_bs.y          = std::max<float>(m_bs.y, m_riFont->getPixAscent());
-        m_alignOffset.y = m_tContSize.y * 0.5f - m_bs.y * 0.5f;
-    }
-
-    // take the matrix of the helper content Div, since this will use the
-    // Label's content transformation
-    m_bo.x = m_offset.x + m_alignOffset.x;
-    m_bo.y = m_offset.y + m_riFont->getPixAscent() + m_alignOffset.y;
-    m_mask = calculateMask();
-    std::copy_n(&m_mvp[0][0], 16, &m_modMvp[0][0]);
-
-    m_mask *= m_riFont->getPixRatio();
-    m_bo *= m_riFont->getPixRatio();
-    m_modMvp = m_modMvp * scale(vec3{1.f / getPixRatio(), 1.f / getPixRatio(), 1.f});
-}
-
 void TextBlock::prepareSelBgVao() {
     int lineCntr = 0;
     list<pair<vec2, vec2>> lines;  // Left/Top,  Right/Bottom
@@ -386,7 +357,9 @@ void TextBlock::mouseDrag(hidData& data) {
 
 void TextBlock::mouseDown(hidData& data) {
     vec2 p = data.mousePosNodeRel / getParentContentScale() - m_alignOffset;
-    p.x -= m_lineOverflowOffset.second;
+    if (hasOpt(single_line)) {
+        p.x -= m_lineOverflowOffset.second;
+    }
 
     if (const int caretPos = getCaretByPixPos(p.x, p.y); caretPos >= 0) {
         m_caretIndex    = caretPos;

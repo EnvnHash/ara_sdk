@@ -38,7 +38,6 @@ public:
     void prepareSelBgVao();
 
     void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
-    void updateFontGeo() override;
     void clearDs() override;
 
     virtual void    setText(const std::string &str);

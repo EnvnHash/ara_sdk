@@ -26,10 +26,9 @@ struct AtlasPar {
 };
 struct Fontglyph {
     int                         charAsCodepoint = 0;
-    std::array<glm::vec2, 2>    ppos{};    // font atlas bounding box coordinates in pixel for this glyph
-    std::array<glm::vec2, 2>    off{};  // packed Font atlases: left, top, right, bottom baseline offset
-                                        // for standard Font atlases left, top, [invalid], bottom baseline offset
-    float          xadv  = 0.f;     // horizontal advance
+    std::array<glm::vec2, 2>    ppos{};     /// font atlas bounding box coordinates in pixel for this glyph
+    std::array<glm::vec2, 2>    off{};      /// packed Font atlases: left, top, right, bottom baseline offset, for standard Font atlases left, top, [invalid], bottom baseline offset
+    float          xadv  = 0.f;             /// horizontal advance
     glm::vec2      outpixsize{0.f};
     glm::vec2      srcpixpos{0.f};
     glm::vec2      srcpixsize{0.f};
@@ -118,7 +117,7 @@ public:
     [[nodiscard]] int           getLineIndexByCharIndex(int ch_index) const;  // returns -1 if not found
     int                         getCharIndexByPixPos(float pix_x, float pix_y, float off_x, float off_y, int &off_bound);  // off_bound==-1 : before, off_bound=1 beyond
 
-    [[nodiscard]] std::pair<glm::vec2, glm::vec2> getCaretPosAndSize(int caret_index) const;
+    [[nodiscard]] std::pair<glm::vec2, glm::vec2> getCaretPosAndSize(int caretIndex) const;
 
     int                 jumpToLine(int caret_index, int line_delta);// returns new caret position, on error returns caret_index
     [[nodiscard]] int   jumpToBeginOfLine(int caret_index) const;         // returns new caret position, on error returns caret_index

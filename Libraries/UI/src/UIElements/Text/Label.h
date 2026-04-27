@@ -78,7 +78,7 @@ public:
     void setText(const std::string &val, state st = state::m_state);
     void setFontSize(int fontSize, state st = state::m_state);
     void setFontType(std::string fontType, state st = state::m_state);
-    void setGeoChanged(bool val) override { UINode::setGeoChanged(val); m_glyphsPrepared = false; }
+    void setGeoChanged(const bool val) override { UINode::setGeoChanged(val); m_glyphsPrepared = false; }
 
     glm::vec2 &getTextBoundSize();
     const std::string& getText() { return m_text; }

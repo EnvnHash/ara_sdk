@@ -10,7 +10,7 @@ using namespace std;
 
 namespace ara {
 
-ImageButton::ImageButton() : Div(), m_fontSize(22) {
+ImageButton::ImageButton() : m_fontSize(22) {
     setTypeName<ImageButton>();
     setName(getTypeName<ImageButton>());
     setFocusAllowed(false);
@@ -20,7 +20,7 @@ ImageButton::ImageButton() : Div(), m_fontSize(22) {
     m_tex[0] = &push<Image>();
 }
 
-ImageButton::ImageButton(const std::string& file) : Div() {
+ImageButton::ImageButton(const std::string& file) {
     setTypeName<ImageButton>();
     setName(getTypeName<ImageButton>());
     setFocusAllowed(false);
@@ -130,7 +130,7 @@ void ImageButton::updateStyleIt(ResNode *node, const state st, const std::string
                 m_ibl.clear();
                 m_procIbl = true;
             }
-            while ((m_tex.size() - 1) < i) {
+            while (m_tex.size() - 1 < i) {
                 m_tex.emplace_back(&push<Image>());
                 m_tex.back()->excludeFromObjMap(true);
                 m_tex.back()->setVisibility(false);
@@ -174,7 +174,7 @@ void ImageButton::updateStyleIt(ResNode *node, const state st, const std::string
             }
         }
 
-        m_setStyleFunc[st][styleInit::imgFlag] = [iflags, this]() {
+        m_setStyleFunc[st][styleInit::imgFlag] = [iflags, this] {
             for (const auto it : getValidTex()) {
                 it->m_imgFlags = iflags;
             }
@@ -205,7 +205,7 @@ void ImageButton::updateStyleIt(ResNode *node, const state st, const std::string
     }
 
     if (node->hasValue("img-scale")) {
-        auto scale                             = node->value<float>("img-scale", 1.f);
+        auto scale = node->value<float>("img-scale", 1.f);
         m_setStyleFunc[st][styleInit::imgScale] = [scale, this]() {
             for (const auto it : getValidTex()) {
                 it->m_imgScale = scale;
@@ -214,7 +214,7 @@ void ImageButton::updateStyleIt(ResNode *node, const state st, const std::string
     }
 
     if (AssetColor *color; (color = node->findNode<AssetColor>("color")) != nullptr) {
-        auto col                             = color->getColorVec4();
+        auto col = color->getColorVec4();
         m_setStyleFunc[st][styleInit::color] = [this, col]() {
             for (const auto it : getValidTex()) {
                 it->setColor(col.r, col.g, col.b, col.a);

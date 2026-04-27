@@ -292,7 +292,7 @@ ResNode* UINodeStyle::getStyleResNode() const {
 void UINodeStyle::setStyleInitVal(const std::string& name, const std::string& val, const state st) {
     if (m_updateStyleScope.try_lock()) {
         m_styleCustDefs[st == state::m_state ? m_state : st][name] = val;
-    m_reqRebuildCustomStyle = getSharedRes() && !getSharedRes()->updatingMatrices;
+        m_reqRebuildCustomStyle = getSharedRes() && !getSharedRes()->updatingMatrices;
         m_updateStyleScope.unlock();
     }
 }

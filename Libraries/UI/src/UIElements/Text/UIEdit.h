@@ -27,7 +27,6 @@ public:
 
     void updateValFromText(const std::string& txt, bool updateText=true);
     void updateStyleIt(ResNode* node, state st, const std::string& styleClass) override;
-    void updateFontGeo() override;
 
     void setTextDist(const std::string& str);
     void setTextDist(const std::filesystem::path& p);
