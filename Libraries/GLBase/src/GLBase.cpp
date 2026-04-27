@@ -223,12 +223,16 @@ void GLBase::startContinousCheck() {
             checkResourceChanges();
             for (size_t i=0; i<16; ++i) {
                 this_thread::sleep_for(chrono::milliseconds(50));
+                if (stopToken.stop_requested()) {
+                    break;
+                }
             }
         }
 
         clearGlCbQueue();
         m_resUpdtExited.notify();
     });
+
     m_resUpdt.detach();
 #endif
 }
@@ -258,7 +262,7 @@ void GLBase::checkResourceChanges() const {
 /// <summary>
 /// init standard resources in existing context
 /// </summary>
-void GLBase::destroy(bool terminateGLFW) {
+void GLBase::destroy(const bool terminateGLFW) {
     if (!m_inited) {
         return;
     }
@@ -278,7 +282,7 @@ void GLBase::destroy(bool terminateGLFW) {
     m_shaderCollector.clear();
     glDeleteVertexArrays(1, &m_nullVao);
 
-    if (auto source = m_resUpdt.get_stop_source(); source.stop_possible()) {
+    if (const auto source = m_resUpdt.get_stop_source(); source.stop_possible()) {
         source.request_stop();
         m_resUpdtExited.wait();
     }
@@ -508,7 +512,7 @@ void GLBase::shareCtx() const {
     }
 }
 
-void GLBase::addEvtCb(const std::function<bool()> &func, const bool forcePush) {
+void GLBase::addEvtCb(const std::function<bool()> &func, const bool forcePush) const {
 #ifdef __ANDROID__
     func();
 #else

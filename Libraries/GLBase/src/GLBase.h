@@ -79,7 +79,7 @@ public:
     void initAppMsg(const char *fontFile, int fontHeight, int screenWidth, int screenHeight);
     void startGlCallbackProcLoop();
     void stopProcCallbackLoop();
-    void addEvtCb(const std::function<bool()> &func, bool forcePush = false);
+    void addEvtCb(const std::function<bool()> &func, bool forcePush = false) const;
     void addGlCb(const std::function<bool()> &func, Conditional *sema = nullptr);
     void glCallbackLoop();
     void iterateGlCallback();

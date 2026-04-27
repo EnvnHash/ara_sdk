@@ -179,48 +179,48 @@ int GLFWWindow::init(const glWinPar &gp) {
     if (gp.hidInput && !gp.hidExtern) {
         glfwSetWindowUserPointer(m_window, this);
 
-        auto keyCb = [](GLFWwindow *w, int key, int scancode, int action, int mods) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onKey(key, scancode, action, mods);
+        auto keyCb = [](GLFWwindow *wn, const int key, const int scancode, const int action, const int mods) {
+            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn))->onKey(key, scancode, action, mods);
         };
         glfwSetKeyCallback(m_window, keyCb);
 
-        auto charCb = [](GLFWwindow *w, unsigned int codepoint) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onChar(codepoint);
+        auto charCb = [](GLFWwindow *wn, const unsigned int codepoint) {
+            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn))->onChar(codepoint);
         };
         glfwSetCharCallback(m_window, charCb);
 
-        auto mouseButCb = [](GLFWwindow *w, const int button, const int action, const int mods) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onMouseButton(button, action, mods);
+        auto mouseButCb = [](GLFWwindow *wn, const int button, const int action, const int mods) {
+            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn))->onMouseButton(button, action, mods);
         };
         glfwSetMouseButtonCallback(m_window, mouseButCb);
 
-        auto scrollCb = [](GLFWwindow *w, const double xpos, const double ypos) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onScroll(xpos, ypos);
+        auto scrollCb = [](GLFWwindow *wn, const double xpos, const double ypos) {
+            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn))->onScroll(xpos, ypos);
         };
         glfwSetScrollCallback(m_window, scrollCb);
 
-        auto windowCloseCb = [](GLFWwindow *w) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowClose();
+        auto windowCloseCb = [](GLFWwindow *wn) {
+            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn))->onWindowClose();
         };
         glfwSetWindowCloseCallback(m_window, windowCloseCb);
 
-        auto windowMaxCb = [](GLFWwindow *w, const int flag) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowMaximize(flag);
+        auto windowMaxCb = [](GLFWwindow *wn, const int flag) {
+            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn))->onWindowMaximize(flag);
         };
         glfwSetWindowMaximizeCallback(m_window, windowMaxCb);
 
-        auto windowIconifyCb = [](GLFWwindow *w, const int flag) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowIconify(flag);
+        auto windowIconifyCb = [](GLFWwindow *wn, const int flag) {
+            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn))->onWindowIconify(flag);
         };
         glfwSetWindowIconifyCallback(m_window, windowIconifyCb);
 
-        auto windowFocusCb = [](GLFWwindow *w, const int flag) {
-            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w))->onWindowFocus(flag);
+        auto windowFocusCb = [](GLFWwindow *wn, const int flag) {
+            static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn))->onWindowFocus(flag);
         };
         glfwSetWindowFocusCallback(m_window, windowFocusCb);
 
-        auto windowSizeCb = [](GLFWwindow *w, const int width, const int height) {
-            auto const win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
+        auto windowSizeCb = [](GLFWwindow *wn, const int width, const int height) {
+            auto const win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn));
 #if defined(_WIN32) || defined(__linux__)
             win->onWindowSize(static_cast<int>(static_cast<float>(width) / win->getContentScale().x),
                               static_cast<int>(static_cast<float>(height) / win->getContentScale().y));
@@ -230,8 +230,8 @@ int GLFWWindow::init(const glWinPar &gp) {
         };
         glfwSetWindowSizeCallback(m_window, windowSizeCb);
 
-        auto mouseCursorCb = [](GLFWwindow *w, const double xpos, const double ypos) {
-            auto const win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(w));
+        auto mouseCursorCb = [](GLFWwindow *wn, const double xpos, const double ypos) {
+            auto const win = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(wn));
 #if defined(_WIN32) || defined(__linux__)
             win->onMouseCursor(xpos / static_cast<double>(win->getContentScale().x), ypos / static_cast<double>(win->getContentScale().y));
 #else
@@ -403,7 +403,7 @@ void GLFWWindow::runLoop(const std::function<bool(double, double, int)>& f, cons
     cleanUp(terminateGLFW, destroyWinOnExit);
 }
 
-void GLFWWindow::cleanUp(bool terminateGLFW, bool destroyWinOnExit) {
+void GLFWWindow::cleanUp(const bool terminateGLFW, const bool destroyWinOnExit) {
     m_run = false;
 
     if (m_onCloseCb) {
@@ -447,7 +447,7 @@ void GLFWWindow::stopDrawThread() {
     }
 }
 
-void GLFWWindow::onWindowSize(int width, int height) {
+void GLFWWindow::onWindowSize(const int width, const int height) {
     // when moving the window very fast between m_monitors
     // on Windows, resize calls are sent from the OS
     // be sure that the window doesn't change it's size if this is not desired

@@ -21,7 +21,7 @@
 namespace ara {
 class StopWatch {
 public:
-    StopWatch() : dt(0.0), showDecTime(2000.0) {}
+    StopWatch() : showDecTime(2000.0) {}
     ~StopWatch() = default;
 
     void setStart() {
@@ -40,7 +40,7 @@ public:
         startSet = false;
     }
 
-    void print(const char *pre, bool direct = false) {
+    void print(const char *pre, const bool direct = false) {
         if ((dt != 0.0 &&
              (std::chrono::duration<double, std::milli>(std::chrono::system_clock::now() - lastPrintTime).count() >=
               showDecTime)) ||
@@ -51,7 +51,7 @@ public:
     }
 
     [[nodiscard]] double getDt() const { return dt; }
-    void   setMed(double val) { med = val; }
+    void   setMed(const double val) { med = val; }
 
     std::chrono::time_point<std::chrono::system_clock> start;
     std::chrono::time_point<std::chrono::system_clock> end;
