@@ -91,7 +91,7 @@ public:
     void callOnPreChange(const T &i) {
         // call the onChange callbacks (m_valChgChecking and m_valPreChange)
         for (auto it = m_valPreChecking.begin(); it != m_valPreChecking.end();)
-            if (auto p = it->lock()) {
+            if (const auto p = it->lock()) {
                 p->operator()(std::any(i));
                 ++it;
             } else {
@@ -113,8 +113,8 @@ public:
                 it = m_valPostChecking.erase(it);
             }
 
-        for (auto &it: m_valPostChange) {
-            it.second();
+        for (auto &cb : m_valPostChange | std::views::values) {
+            cb();
         }
     }
 
@@ -157,20 +157,22 @@ public:
     }
 
     void removeOnPreChange(void *ptr) {
-        if (ptr) {
-            auto it = m_valPreChange.find(ptr);
-            if (it != m_valPreChange.end()) {
-                m_valPreChange.erase(it);
-            }
+        if (!ptr) {
+            return;
+        }
+
+        if (const auto it = m_valPreChange.find(ptr); it != m_valPreChange.end()) {
+            m_valPreChange.erase(it);
         }
     }
 
     void removeOnPostChange(void *ptr) {
-        if (ptr) {
-            auto it = m_valPostChange.find(ptr);
-            if (it != m_valPostChange.end()) {
-                m_valPostChange.erase(it);
-            }
+        if (!ptr) {
+            return;
+        }
+
+        if (const auto it = m_valPostChange.find(ptr); it != m_valPostChange.end()) {
+            m_valPostChange.erase(it);
         }
     }
 

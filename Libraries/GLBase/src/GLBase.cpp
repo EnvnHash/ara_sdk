@@ -282,8 +282,8 @@ void GLBase::destroy(const bool terminateGLFW) {
     m_shaderCollector.clear();
     glDeleteVertexArrays(1, &m_nullVao);
 
-    if (const auto source = m_resUpdt.get_stop_source(); source.stop_possible()) {
-        source.request_stop();
+    if (auto source = m_resUpdt.get_stop_source(); source.stop_possible()) {
+        auto r = source.request_stop();
         m_resUpdtExited.wait();
     }
 
