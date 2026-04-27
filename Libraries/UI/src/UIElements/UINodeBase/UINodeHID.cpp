@@ -133,7 +133,7 @@ void UINodeHID::procMouseHover(hidData& data, const bool switchBackStyle, const 
     }
 }
 
-void UINodeHID::addMouseHidCb(hidEvent evt, const std::function<void(hidData&)>& func, bool onHit) {
+void UINodeHID::addMouseHidCb(const hidEvent evt, const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[evt].emplace_back(std::make_pair(func, onHit));
 }
 
@@ -169,15 +169,15 @@ void UINodeHID::addScaleGestCb(const std::function<void(hidData &)> &func, bool 
     m_mouseHidCb[hidEvent::ScaleGest].emplace_back(std::make_pair(func, onHit));
 }
 
-void UINodeHID::clearMouseCb(hidEvent evt) {
+void UINodeHID::clearMouseCb(const hidEvent evt) {
     m_mouseHidCb[evt].clear();
 }
 
-void UINodeHID::addMouseInCb(std::function<void(hidData&)> func, state st) {
+void UINodeHID::addMouseInCb(std::function<void(hidData&)> func, const state st) {
     m_mouseInCb[st] = std::move(func);
 }
 
-void UINodeHID::addMouseOutCb(std::function<void(hidData&)> func, state st) {
+void UINodeHID::addMouseOutCb(std::function<void(hidData&)> func, const state st) {
     m_mouseOutCb[st] = std::move(func);
 }
 
@@ -203,7 +203,7 @@ bool UINodeHID::removeFocus() {
     return false;
 }
 
-void UINodeHID::setHIDBlocked(bool val) {
+void UINodeHID::setHIDBlocked(const bool val) {
     m_blockHID = val;
 }
 
