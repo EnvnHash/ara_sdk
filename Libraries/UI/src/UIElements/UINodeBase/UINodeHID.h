@@ -55,6 +55,7 @@ public:
     // mouseIn and mouseOut are called directly without tree iteration
     virtual void mouseIn(hidData& data);
     virtual void mouseOut(hidData& data);
+    virtual void procMouseHover(hidData& data, bool switchBackStyle, const std::unordered_map<state, std::function<void(hidData&)>>& cb);
 
     // keyboard HID methods which are called during local tree iteration (root -> this node)
     virtual void keyDown(hidData& data) {}

@@ -86,57 +86,49 @@ void UINodeHID::onCharIt(hidData& data) {
 }
 
 void UINodeHID::mouseIn(hidData& data) {
+    procMouseHover(data, false, m_mouseInCb);
+}
+
+void UINodeHID::mouseOut(hidData& data) {
+    procMouseHover(data, true, m_mouseOutCb);
+}
+
+void UINodeHID::procMouseHover(hidData& data, const bool switchBackStyle, const std::unordered_map<state, std::function<void(hidData&)>>& cb) {
     if (m_state == state::disabled || m_state == state::disabledSelected || m_state == state::disabledHighlighted) {
         return;
     }
 
-    if (!m_excludeFromStyles && m_state != state::selected) {
+    bool changeBack = false;
+    const state lastState  = m_lastState;
+
+    if (switchBackStyle) {
+        changeBack = !m_setStyleFunc[state::highlighted].empty() && m_state != state::selected && lastState != state::selected;
+
+        // if the last state has no highlighted style definitions, the state didn't change, so no need to change it back
+        if (changeBack) {
+            setState(m_lastState);
+        }
+    }
+
+    // change styles back to the last state if necessary
+    if (!m_excludeFromStyles && (switchBackStyle ? changeBack : m_state != state::selected)) {
         // set state only in case there are style definitions for it. If this is
         // not the case, we assume that this Node should ignore this state
-        if (!m_setStyleFunc[state::highlighted].empty()) {
+        if (!switchBackStyle && !m_setStyleFunc[state::highlighted].empty()) {
             setState(state::highlighted);
         }
 
-        // call all style definitions for the highlighted state if there are any
         unique_lock l(m_updateStyleScope);
-        for (const auto &val: m_setStyleFunc[state::highlighted] | views::values) {
-            val();
+        for (const auto& it : m_setStyleFunc[switchBackStyle ? lastState : state::highlighted] | views::values) {
+            it();
         }
 
-        if (!m_setStyleFunc[state::highlighted].empty()) {
+        if (!switchBackStyle || !m_setStyleFunc[state::highlighted].empty()) {
             m_sharedRes->requestRedraw = true;
         }
     }
 
-    for (const auto& it : m_mouseInCb | views::values) {
-        it(data);
-    }
-}
-
-void UINodeHID::mouseOut(hidData& data) {
-    if (m_state == state::disabled || m_state == state::disabledSelected || m_state == state::disabledHighlighted) {
-        return;
-    }
-
-    const state lastState  = m_lastState;
-    const bool  changeBack = !m_setStyleFunc[state::highlighted].empty() && m_state != state::selected && lastState != state::selected;
-
-    // if the last state has no highlighted style definitions, the state didn't
-    // change, so no need to change it back
-    if (changeBack) {
-        setState(m_lastState);
-    }
-
-    // change styles back to the last state if necessary
-    if (!m_excludeFromStyles && changeBack) {
-        unique_lock l(m_updateStyleScope);
-        for (const auto& it : m_setStyleFunc[lastState] | views::values) {
-            it();
-        }
-        m_sharedRes->requestRedraw = true;
-    }
-
-    for (const auto& val : m_mouseOutCb | views::values) {
+    for (const auto& val : cb | views::values) {
         val(data);
     }
 }
