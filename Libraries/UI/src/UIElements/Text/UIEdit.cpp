@@ -220,6 +220,10 @@ void UIEdit::keyDown(hidData& data) {
         return;
     }
 
+    if (data.key == ARA_KEY_V && data.ctrlPressed) {
+        pasteText();
+    }
+
     if (data.key == ARA_KEY_TAB) {
         procTab();
     }
@@ -298,6 +302,31 @@ void UIEdit::keyModifySelection(const hidData& data, bool& updateValue) {
     if (keyMap.contains(data.key)) {
         keyMap[data.key]();
     }
+}
+
+void UIEdit::pasteText() {
+#ifdef ARA_USE_CLIP
+    string clipText;
+    clip::get_text(clipText);
+
+    if (clipText.empty()) {
+        return;
+    }
+
+    if (ivec2 selRange; getSelRange(selRange)) {
+        eraseContent(selRange[0], selRange[1]);
+        m_caretIndex = selRange[0];
+        clearSelRange();
+    }
+
+    for (const auto ch : clipText) {
+        m_caretIndex = insertChar(static_cast<int>(ch), m_caretIndex, true);
+    }
+
+    reqUpdtGlyphs(true);
+    drawCaret();
+    setDrawFlag();
+#endif
 }
 
 void UIEdit::moveCaret(const hidData& data) {

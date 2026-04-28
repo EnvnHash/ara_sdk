@@ -14,8 +14,7 @@ namespace ara::UiUnitTest::ButtonTests{
 
 Button& setupAndDrawButton(const UIApplication& app, Property<bool>* prop=nullptr) {
     auto& but = setupTestButton(app, prop);
-    app.getWinBase()->draw(0, 0, 0);
-    app.getMainWindow()->swap();
+    iterate(app);
     return but;
 }
 

@@ -52,8 +52,7 @@ TEST(UITest, CollapsibleTreeExp1Test) {
         mainWin->onMouseDownLeft(32, 25, false, false, false);
         mainWin->onMouseUpLeft();
 
-        app.getWinBase()->draw(0, 0, 0);
-        mainWin->swap();
+        iterate(app);
         compareFrameBufferToImage(filesystem::current_path() / "collapse_list_exp1_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 250, 200);

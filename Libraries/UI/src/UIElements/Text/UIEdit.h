@@ -166,6 +166,7 @@ protected:
     void mouseUp(hidData& data) override;
     void globalMouseDown(hidData& data) override;
 
+    void pasteText();
     void procEnterAndReturn();
     void procTab();
     void procShiftPlusArrowSelect(const hidData& data);

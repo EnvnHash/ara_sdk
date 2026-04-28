@@ -122,7 +122,7 @@ void NodeMemberVariableEdit::createCheckBox(const bool val) {
     m_node->setOnChangeCb(cbType::postChange, this, [this](Node*, const string& varName) {
         if (varName == m_memVarName) {
             if (const auto actVal = std::any_cast<bool>(m_memVar->get());
-                (*m_checkBoxButt->m_prop)() != actVal) {
+                m_checkBoxButt && m_checkBoxButt->m_prop && (*m_checkBoxButt->m_prop)() != actVal) {
                 m_blockMemVarSet = true;
                 m_checkBoxButt->toggle(actVal);
             }

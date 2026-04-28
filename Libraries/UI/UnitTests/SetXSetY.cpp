@@ -43,10 +43,9 @@ TEST(UITest, SetXSetY)
         // manually draw - it would be done automatically after this function exits
         // but since we want to do our checks, and keep things simple - that is doing everything
         // right here - we do it explicitly
-        app.getWinBase()->draw(0, 0, 0);
-        const auto mainWin = app.getMainWindow()->getWinHandle();
-        mainWin->swap();
+        iterate(app);
 
+        const auto mainWin = app.getMainWindow()->getWinHandle();
         checkQuad(mainWin, { posX, posY }, { width, height }, col, {});
         app.setRunFlag(false);
     });

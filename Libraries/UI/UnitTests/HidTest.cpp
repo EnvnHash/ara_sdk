@@ -113,8 +113,7 @@ static void simulateAndCheckClick(UIApplication& app, HidNode* div, std::unorder
                                   glm::vec2 pos, bool expectedValue) {
     const auto mainWin = app.getMainWindow();
     simulateClickLeftRight(mainWin, div, pos, expectedValue);
-    app.getWinBase()->draw(0, 0, 0);
-    mainWin->swap();
+    iterate(app);
 
     checkCbCalled(cb, expectedValue);
 }

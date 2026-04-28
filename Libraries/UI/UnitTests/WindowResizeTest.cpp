@@ -16,8 +16,7 @@ void setMouseTo(const UIApplication &app, const ivec2 pos) {
     const auto mainWin = app.getMainWindow();
     mainWin->onMouseMove(static_cast<float>(pos.x), static_cast<float>(pos.y), 0); // should set dragStart on WindowResizeArea
     glfwSetCursorPos(static_cast<GLFWwindow*>(mainWin->getWinHandle()->getWin()), pos.x, pos.y);
-    app.getWinBase()->draw(0, 0, 0);
-    app.getMainWindow()->swap();
+    iterate(app);
 }
 
 void runScaling(const ivec2& initMp, const ivec2& moveTo, const ivec2& resultingWinSize) {

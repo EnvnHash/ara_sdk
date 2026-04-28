@@ -86,7 +86,7 @@ TEST(UITest, ZoomViewAddContentTest) {
 TEST(UITest, ZoomViewBasicTest) {
     appBody([&](UIApplication& app){
         auto& zv = addTestDivs(app);
-        drawAndSwap(app);
+        iterate(app);
         zv.setZoom(200.f);
     }, [&](UIApplication& app){
         checkZoomedQuad(app);
@@ -98,7 +98,7 @@ TEST(UITest, ZoomViewWheelTest) {
         addTestDivs(app);
     }, [&](UIApplication& app){
         app.getWinBase()->getWinHandle()->onScroll(0, 10);
-        drawAndSwap(app);
+        iterate(app);
         checkZoomedQuad(app);
     }, winSize.x, winSize.y);
 }
@@ -142,7 +142,7 @@ TEST(UITest, ZoomViewImageButtonZoomedClickTest) {
     appBody([&](UIApplication& app){
         addImageButton(app, imgButtonStdPos, quadSize[0]);
         zoomToCenter(app);
-        drawAndSwap(app);
+        iterate(app);
         app.getMainWindow()->onMouseDownLeft(75, 75, false, false, false);
         app.getMainWindow()->onMouseUpLeft();
     }, [&](UIApplication& app){
@@ -160,7 +160,7 @@ TEST(UITest, ZoomViewImageButtonZoomedUncenteredClickTest) {
         mainWin->onMouseMove(static_cast<float>(winSize.x - 20), 20, 0);
 
         app.getWinBase()->getWinHandle()->onScroll(0, 3);
-        drawAndSwap(app);
+        iterate(app);
         mainWin->onMouseDownLeft(91, 260, false, false, false);
         mainWin->onMouseUpLeft();
     }, [&](UIApplication& app){

@@ -36,12 +36,12 @@ namespace ara::UiUnitTest::ComboBoxTest {
     }
 
     void openMenu(UIApplication& app) {
-        drawAndSwap(app);
+        iterate(app);
         app.getMainWindow()->onMouseDownLeft(175, 65, false, false, false);
     }
 
     void hoverOverFirstEntry(UIApplication& app) {
-        drawAndSwap(app);
+        iterate(app);
         app.getMainWindow()->onMouseMove(64, 95, 0);
     }
 
@@ -72,7 +72,7 @@ namespace ara::UiUnitTest::ComboBoxTest {
             addCombo(app, entryOne);
             openMenu(app);
             hoverOverFirstEntry(app);
-            drawAndSwap(app);
+            iterate(app);
         }, [&](UIApplication& app){
               compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref3.png",
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
@@ -87,7 +87,7 @@ namespace ara::UiUnitTest::ComboBoxTest {
             openMenu(app);
             hoverOverFirstEntry(app);
 
-            drawAndSwap(app);
+            iterate(app);
             mainWin->onMouseDownLeft(64, 95, false, false, false);
             mainWin->onMouseUpLeft();
 

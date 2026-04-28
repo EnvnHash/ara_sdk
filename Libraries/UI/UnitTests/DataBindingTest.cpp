@@ -50,8 +50,7 @@ TEST(UITest, NodeEditChangeStringTest) {
         for (const auto &ch : testString) {
             mainWin->onChar(ch);
         }
-        mainWin->onKeyDown(ARA_KEY_ENTER, false, false, false);
-        mainWin->onKeyUp(ARA_KEY_ENTER, false, false, false);
+        simulateKeyPress(ARA_KEY_ENTER, app);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "data_binding_change_string.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
@@ -92,8 +91,7 @@ TEST(UITest, NodeEditChangeGlmIvec3Test) {
     appBody([&](const UIApplication &app) {
         addNodeEdit(app, testNode);
 
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
 
         const auto mainWin = app.getMainWindow();
         mainWin->onMouseMove(158, 12, 0);
@@ -121,8 +119,7 @@ TEST(UITest, NodeEditChangeGlmVec3Test) {
     appBody([&](const UIApplication &app) {
         addNodeEdit(app, testNode);
 
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
 
         const auto mainWin = app.getMainWindow();
         mainWin->onMouseMove(158, 12, 0);

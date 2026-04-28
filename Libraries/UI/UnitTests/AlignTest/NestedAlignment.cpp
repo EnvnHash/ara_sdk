@@ -94,8 +94,7 @@ TEST(UITest, NestedAlignment)
         // manually draw - it would be done automatically after this function exits
         // but since we want to do our checks, and keep things simple - that is doing everything
         // right here - we do it explicitly
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
 
         // ----------------------------------------------------------------------------------
 

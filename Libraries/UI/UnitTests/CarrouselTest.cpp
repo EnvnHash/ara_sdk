@@ -53,12 +53,12 @@ Carrousel* addCarrousel(const UIApplication& app, const CarrouselMode cm, const 
 static void simulateClickLeft(UIApplication& app, /*ImageButton* butt,*/ const vec2& pos, bool expVal) {
     const auto mainWin = app.getMainWindow();
     mainWin->onMouseDownLeft(pos.x, pos.y, false, false, false);
-    drawAndSwap(app);
+    iterate(app);
 
     mainWin->onMouseUpLeft();
 
     for (int i=0;i<35;++i) {
-        drawAndSwap(app);
+        iterate(app);
     }
 }
 
@@ -67,12 +67,12 @@ void swipeLeft(const UIApplication& app, const float initXPos) {
 
     for (int i=0;i<20;++i) {
         app.getMainWindow()->onMouseMove(initXPos - static_cast<float>(i) *10, 50, false);
-        drawAndSwap(app);
+        iterate(app);
     }
 
     app.getMainWindow()->onMouseUpLeft();
     for (int i=0;i<35;++i) {
-        drawAndSwap(app);
+        iterate(app);
     }
 }
 
@@ -104,7 +104,6 @@ TEST(UITest, CarrouselFitOneTestWithSpacingAndPadding) {
 }
 
 TEST(UITest, CarrouselFitOneRotateTest) {
-    bool entryOne = false;
     appBody([&](const UIApplication& app){
         const auto carrousel = addCarrousel(app, CarrouselMode::fitOneSlideOnScreen, 0, 0);
         carrousel->show(1, false);

@@ -112,8 +112,7 @@ TEST(UITest, ImageReloadTest) {
     appBody([&](const UIApplication &app) {
         img = addImage(app, "test_img.jpg", {200,200}, {0.f, 0.f, 0.f, 0.f});
 
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
 
         compareFrameBufferToImage(filesystem::current_path() / "image_single.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
@@ -121,8 +120,7 @@ TEST(UITest, ImageReloadTest) {
         img->setImg(( std::filesystem::path("test") / "test-tex.png").string());
         img->reload();
 
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "image_reloaded.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);

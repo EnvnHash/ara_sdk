@@ -64,8 +64,7 @@ TEST(UITest, TabViewTest) {
         mainWin->onMouseDownLeft(290, 30, false, false, false);
         mainWin->onMouseUpLeft();
 
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
 
         compareFrameBufferToImage(filesystem::current_path() / "tab_view_test_ref2.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
@@ -79,8 +78,7 @@ TEST(UITest, TabViewTest) {
         mainWin->onMouseDownLeft(490, 30, false, false, false);
         mainWin->onMouseUpLeft();
 
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
 
         compareFrameBufferToImage(filesystem::current_path() / "tab_view_test_ref3.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);

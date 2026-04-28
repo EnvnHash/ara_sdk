@@ -16,11 +16,6 @@
 static inline BS::thread_pool g_thread_pool;
 static inline glm::vec2       contentScale{1.f, 1.f};
 
-static void drawAndSwap(const ara::UIApplication& app) {
-    app.getWinBase()->draw(0, 0, 0);
-    app.getMainWindow()->swap();
-}
-
 static void iterate(const ara::UIApplication& app) {
     app.getWinBase()->draw(0, 0, 0);
     app.getMainWindow()->swap();
@@ -93,8 +88,7 @@ static void appRestartGL(const std::function<void(ara::UIApplication&)>& drawFun
             });
 
             app.getMainWindow()->getProcSteps()->at(ara::Draw).active = true;
-            app.getWinBase()->draw(0, 0, 0);
-            app.getMainWindow()->swap();
+            iterate(app);
 
             verifyFunc(app);
             app.setRunFlag(false);
@@ -262,8 +256,8 @@ public:
 
 template <typename T>
 auto& addNodeEdit(const ara::UIApplication &app, T& node, const ara::arrange ar = ara::arrange::horizontal,
-    const std::optional<std::unordered_map<std::string, ara::VariableEditOption<>>> alignMap = std::nullopt,
-    const std::optional<std::string> style = std::nullopt) {
+    const std::optional<std::unordered_map<std::string, ara::VariableEditOption<>>>& alignMap = std::nullopt,
+    const std::optional<std::string>& style = std::nullopt) {
     auto& ne = app.getRootNode()->push<ara::NodeEdit>();
     ne.setEditAlign(ar);
     if (alignMap.has_value()) {
@@ -277,12 +271,17 @@ auto& addNodeEdit(const ara::UIApplication &app, T& node, const ara::arrange ar 
     ne.setLabelWidth(100);
     ne.setNode(node);
 
-    app.getWinBase()->draw(0, 0, 0);
-    app.getMainWindow()->swap();
+    iterate(app);
     return ne;
 }
 
 static void simulateMouseClick (const ara::UIApplication& app, const int32_t xPos, const int32_t yPos) {
-    app.getMainWindow()->onMouseDownLeft(xPos, yPos, false, false, false);
+    app.getMainWindow()->onMouseDownLeft(static_cast<float>(xPos), static_cast<float>(yPos), false, false, false);
     app.getMainWindow()->onMouseUpLeft();
+}
+
+static void simulateKeyPress(const int key, const ara::UIApplication& app) {
+    const auto mainWin = app.getMainWindow();
+    mainWin->onKeyDown(key, false, false, false);
+    mainWin->onKeyUp(key, false, false, false);
 }

@@ -112,8 +112,7 @@ TEST(UITest, ScrollViewTestScrollBarMoved) {
         const auto rootNode = mainWin->getRootNode();
         addScrollView(rootNode, 10);
 
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
 
         // simulate dragging
         mainWin->onMouseDownLeft(500, 150, false, false, false);
@@ -153,8 +152,7 @@ TEST(UITest, ScrollViewIntable) {
         mainWin->onMouseMove(1215, 473, 0);
         mainWin->onMouseUpLeft();
 
-        app.getWinBase()->draw(0, 0, 0);
-        app.getMainWindow()->swap();
+        iterate(app);
 
         compareFrameBufferToImage(filesystem::current_path() / "scrollview_in_table_moved.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
