@@ -434,22 +434,31 @@ void UIEdit::moveCaretLine(const bool down) {
 }
 
 void UIEdit::calcLeftLineOffset() {
-    m_lineOverflowOffset.first -= m_lineOverflowOffset.first - m_caretIndex;
+    m_offset.x = getContentOffset().x;
+    m_lineOverflowOffset.first = m_caretIndex;
+    //    m_lineOverflowOffset.first -= m_lineOverflowOffset.first - m_caretIndex;
+
     m_lineOverflowOffset.second = 0;
-    for (int i=0; i<m_lineOverflowOffset.first; ++i) {
+    for (int i = 0; i < m_lineOverflowOffset.first; ++i) {
         m_lineOverflowOffset.second -= m_fontDGV.getCaretPosAndSize(i).second.x;
     }
+
     reqUpdtGlyphs(true);
 }
 
 void UIEdit::calcRightLineOffset() {
-    if (const auto line = m_fontDGV.getFontLines()[0];
-        line.maxCharIdx < m_caretIndex) {
+    m_offset.x = getContentOffset().x;
+
+    if (const auto line = m_fontDGV.getFontLines()[0]; line.maxCharIdx < m_caretIndex) {
         m_lineOverflowOffset.first = m_caretIndex - line.maxCharIdx;
         m_lineOverflowOffset.second = 0;
-        for (int i=line.maxCharIdx+1; i<std::min(static_cast<int32_t>(m_fontDGV.getGlyphs().size()), m_caretIndex+1); ++i) {
+
+        for (int i = line.maxCharIdx + 1;
+             i < std::min(static_cast<int32_t>(m_fontDGV.getGlyphs().size()), m_caretIndex + 1);
+             ++i) {
             m_lineOverflowOffset.second -= m_fontDGV.getCaretPosAndSize(i).second.x;
         }
+
         reqUpdtGlyphs(true);
     }
 }

@@ -157,10 +157,8 @@ TEST(UITest, UIEditFloatWheelTest) {
     appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
         ed->setUseWheel(true);
-
+        simulateMouseClick(app, 122, 22);
         const auto mainWin = app.getMainWindow();
-        mainWin->onMouseDownLeft(122, 22, false, false, false);
-        mainWin->onMouseUpLeft();
         mainWin->onWheel(1.f);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_wheel_test.png",
@@ -172,7 +170,6 @@ TEST(UITest, UIEditFloatWheelTest) {
 }
 
 TEST(UITest, UIEditOverflowTest) {
-
     appBody([&](const UIApplication &app) {
         addStringEdit(app);
         clickEditField(app, 195);
@@ -235,6 +232,23 @@ TEST(UITest, UIEditOverflowTestEndAndHomeKey) {
         simulateKeyPress(ARA_KEY_HOME, app);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test3.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditOverflowRepeatedHomeEnd) {
+    UIEdit* ed = nullptr;
+    appBody([&](const UIApplication &app) {
+        ed = &addStringEdit(app);
+        clickEditField(app, 105);
+        simulateKeyPress(ARA_KEY_HOME, app);
+        for (int i=0; i<20; i++) {
+            simulateKeyPress(ARA_KEY_END, app);
+            simulateKeyPress(ARA_KEY_HOME, app);
+            iterate(app);
+        }
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_overflow_test_front_end.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 100);
 }
@@ -344,7 +358,6 @@ TEST(UITest, UIEditMultiLineMoveCursorDown) {
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 100);
 }
-
 
 TEST(UITest, UIEditStringCopyPaste) {
     UIEdit* edit2=nullptr;
