@@ -10,7 +10,6 @@ using namespace std;
 
 namespace ara::UiUnitTest::DataBindingTests {
 
-
 TEST(UITest, NodeEditBasicTest) {
     TestNode<int32_t> testNode;
 

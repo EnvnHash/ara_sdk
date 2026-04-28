@@ -15,7 +15,9 @@ using namespace glm;
 
 namespace ara::UiUnitTest::UIEditTest {
 
-UIEdit& pushEdit(const UIApplication& app, int32_t width=200) {
+static inline string testText = "This is a line of text to test the label, long enough to see the ellipsis at the end.";
+
+UIEdit& pushEdit(const UIApplication& app, const int32_t width=200) {
     return app.getRootNode()->push<UIEdit>(UINodePars {
         .pos = ivec2{10,10},
         .size = ivec2{width,28},
@@ -36,8 +38,21 @@ UIEdit& addStringEdit(const UIApplication& app) {
     ed.setBorderWidth(1);
     ed.setBorderColor(1.f, 1.f, 1.f, 1.f);
     ed.setTextAlignX(align::left);
-    ed.setText("This is a line of text to test the label, long enough to see the ellipsis at the end.");
+    ed.setText(testText);
     return ed;
+}
+
+UIEdit& addLongStringEdit(const UIApplication& app) {
+    auto& edit = addStringEdit(app);
+    edit.setFontSize(13);
+    edit.setSize(280, 80);
+    edit.removeOpt(UIEdit::single_line);
+    string longText = "";
+    for (int i=0; i<3; ++i) {
+        longText += testText;
+    }
+    edit.setText(longText);
+    return edit;
 }
 
 std::string getSelAllCopyOutput(const UIApplication &app) {
@@ -62,13 +77,11 @@ std::string getSelAllCopyOutput(const UIApplication &app) {
     return value;
 }
 
-void clickEditField(const UIApplication& app, const int32_t xPos) {
+void clickEditField(const UIApplication& app, const int32_t xPos, const int32_t yPos=22) {
     const auto mainWin = app.getMainWindow();
-    mainWin->onMouseDownLeft(xPos, 22, false, false, false);
+    mainWin->onMouseDownLeft(xPos, yPos, false, false, false);
     mainWin->onMouseUpLeft();
-
-    app.getWinBase()->draw(0, 0, 0);
-    app.getMainWindow()->swap();
+    iterate(app);
 }
 
 void clickArrowKey(const int key, const UIApplication& app) {
@@ -121,18 +134,15 @@ TEST(UITest, UIEditFloatBackspaceTest2) {
 
 TEST(UITest, UIEditFloatDelTest) {
     registerDefaultUITypes();
-
     UIEdit* ed = nullptr;
     appBody([&](const UIApplication &app) {
         ed = &addFloatEdit(app);
-
         clickEditField(app, 114);
         clickArrowKey(ARA_KEY_DELETE, app);
         clickArrowKey(ARA_KEY_ENTER, app);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_del_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
-
         const auto str = getSelAllCopyOutput(app);
         EXPECT_EQ(str, "1.240");
         EXPECT_EQ(ed->getValue(), 1.24f);
@@ -268,5 +278,73 @@ TEST(UITest, UIEditTextResetTest) {
                           app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 100);
 }
+
+TEST(UITest, UIEditSingleLineClickEndTest) {
+    registerDefaultUITypes();
+    appBody([&](const UIApplication &app) {
+        auto& ed = addStringEdit(app);
+        ed.setText("short Text");
+        clickEditField(app, 100);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_string_click_end.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditSingleLineKeyEndTest) {
+    registerDefaultUITypes();
+    appBody([&](const UIApplication &app) {
+        auto& ed = addStringEdit(app);
+        ed.setText("short Text");
+        clickEditField(app, 20);
+        clickArrowKey(ARA_KEY_END, app);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_string_click_end.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditMultiSetCursorCenterTest) {
+    registerDefaultUITypes();
+    appBody([&](const UIApplication &app) {
+        addLongStringEdit(app);
+        clickEditField(app, 150, 50);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_string_multiline_select.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditMultiSetCursorCenterAndArrowRightTest) {
+    registerDefaultUITypes();
+    appBody([&](const UIApplication &app) {
+        addLongStringEdit(app);
+        clickEditField(app, 150, 50);
+        for (int i=0;i<4;i++) {
+            clickArrowKey(ARA_KEY_RIGHT, app);
+        }
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_string_multiline_select_move.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditMultiSetCursorArrowRightAndRecenterTest) {
+    registerDefaultUITypes();
+    appBody([&](const UIApplication &app) {
+        addLongStringEdit(app);
+        clickEditField(app, 150, 50);
+        for (int i=0;i<4;i++) {
+            clickArrowKey(ARA_KEY_RIGHT, app);
+        }
+        iterate(app);
+        clickEditField(app, 50, 50);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_string_multiline_reselect.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+
 
 }

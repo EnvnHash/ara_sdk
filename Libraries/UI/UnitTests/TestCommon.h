@@ -26,7 +26,7 @@ static void iterate(const ara::UIApplication& app) {
     app.getMainWindow()->swap();
 }
 
-static void stdAppSetup(ara::UIApplication& app, const int width, const int height, bool enableMenuAndResizeHandles=false) {
+static void stdAppSetup(ara::UIApplication& app, const int width, const int height, const bool enableMenuAndResizeHandles=false) {
     app.setWinWidth(width);
     app.setWinHeight(height);
     app.setEnableMenuBar(enableMenuAndResizeHandles);
@@ -202,7 +202,7 @@ static void checkQuad(ara::GLWindow* win, const glm::ivec2& virtPos, const glm::
     for (auto i=0; i<edges.size(); ++i) {
         checkPixels.emplace_back(checkPix{edges[i], col});
         for (auto j=0; j<2; ++j) {
-            if (auto p = edges[i] + edgeOffsets[i][j]; p.x > 0 && p.y > 0 && p.x < static_cast<float>(win->getWidthReal()) && p.y < static_cast<float>(win->getHeightReal())) {
+            if (const auto p = edges[i] + edgeOffsets[i][j]; p.x > 0 && p.y > 0 && p.x < static_cast<float>(win->getWidthReal()) && p.y < static_cast<float>(win->getHeightReal())) {
                 checkPixels.emplace_back(checkPix{p, backCol});
             }
         }
@@ -282,7 +282,7 @@ auto& addNodeEdit(const ara::UIApplication &app, T& node, const ara::arrange ar 
     return ne;
 }
 
-static void simulateMouseClick (const ara::UIApplication& app, int32_t xPos, int32_t yPos) {
+static void simulateMouseClick (const ara::UIApplication& app, const int32_t xPos, const int32_t yPos) {
     app.getMainWindow()->onMouseDownLeft(xPos, yPos, false, false, false);
     app.getMainWindow()->onMouseUpLeft();
 }

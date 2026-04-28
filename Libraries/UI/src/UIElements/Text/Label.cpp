@@ -543,6 +543,7 @@ void Label::setText(const std::string &val, const state st) {
 void Label::setFontSize(const int fontSize, const state st) {
     if (st == state::m_state || st == m_state) {
         m_fontSize       = fontSize;
+        setStyleInitVal("font", "font{font:\""+m_fontType+"\" size:"+std::to_string(m_fontSize)+"}", st);
         m_glyphsPrepared = false;
     }
 }
@@ -550,6 +551,7 @@ void Label::setFontSize(const int fontSize, const state st) {
 void Label::setFontType(std::string fontType, const state st) {
     if (st == state::m_state || st == m_state) {
         m_fontType       = std::move(fontType);
+        setStyleInitVal("font", "font{font:\""+m_fontType+"\" size:"+std::to_string(m_fontSize)+"}", st);
         m_glyphsPrepared = false;
     }
 }

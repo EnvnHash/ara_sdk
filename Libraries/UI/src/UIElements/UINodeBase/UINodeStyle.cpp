@@ -56,6 +56,8 @@ void UINodeStyle::rebuildCustomStyle() {
             for (const auto&[name, val] : defs) {
                 if (name == "text") {
                     m_custDefStyleSheet += "\t" + name + ":\"" + val + "\"\n";
+                } else if (name == "font") {
+                    m_custDefStyleSheet += "\t" + val + "\n";
                 } else {
                     m_custDefStyleSheet += "\t" + name + ":" + val + "\n";
                 }
