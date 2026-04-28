@@ -305,7 +305,7 @@ namespace glm_json {
         constexpr std::size_t N = Vec::length();
         j = nlohmann::json::array();
 
-        for (std::size_t i = 0; i < N; ++i) {
+        for (int i = 0; i < N; ++i) {
             j.emplace_back(v[i]);
         }
     }
@@ -319,7 +319,7 @@ namespace glm_json {
             throw std::runtime_error("Invalid JSON array size for glm vector");
         }
 
-        for (std::size_t i = 0; i < N; ++i) {
+        for (int i = 0; i < N; ++i) {
             v[i] = j.at(i).get<typename Vec::value_type>();
         }
     }

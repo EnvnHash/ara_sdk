@@ -241,8 +241,13 @@ bool lock::impl::is_convertible(format f) const {
   if (f == image_format()) {
     return (IsClipboardFormatAvailable(CF_DIB) ? true : false);
   }
-  if (IsClipboardFormatAvailable(f))
+#ifdef _WIN32
+  if (IsClipboardFormatAvailable(static_cast<UINT>(f))) {
+#else
+  if (IsClipboardFormatAvailable(f)) {
+#endif
     return true;
+  }
   return false;
 }
 
@@ -251,13 +256,13 @@ bool lock::impl::set_data(format f, const char *buf, size_t len) {
 
   if (f == text_format()) {
     if (len > 0) {
-      int reqsize = MultiByteToWideChar(CP_UTF8, 0, buf, len, nullptr, 0);
+      int reqsize = MultiByteToWideChar(CP_UTF8, 0, buf, static_cast<int>(len), nullptr, 0);
       if (reqsize > 0) {
         ++reqsize;
 
         Hglobal hglobal(sizeof(WCHAR) * reqsize);
         LPWSTR  lpstr = static_cast<LPWSTR>(GlobalLock(hglobal));
-        MultiByteToWideChar(CP_UTF8, 0, buf, len, lpstr, reqsize);
+        MultiByteToWideChar(CP_UTF8, 0, buf, static_cast<int>(len), lpstr, reqsize);
         GlobalUnlock(hglobal);
 
         result = (SetClipboardData(CF_UNICODETEXT, hglobal)) ? true : false;
@@ -273,7 +278,12 @@ bool lock::impl::set_data(format f, const char *buf, size_t len) {
         *((CustomSizeT *)dst) = len;
         memcpy(dst + sizeof(CustomSizeT), buf, len);
         GlobalUnlock(hglobal);
+#ifdef _WIN32
+        result = (SetClipboardData(static_cast<UINT>(f), hglobal) ? true : false);
+#else
         result = (SetClipboardData(f, hglobal) ? true : false);
+#endif
+
         if (result)
           hglobal.release();
       }
@@ -302,7 +312,7 @@ bool lock::impl::get_data(format f, char *buf, size_t len) const {
 
           assert(reqsize <= len);
           if (reqsize <= len) {
-            WideCharToMultiByte(CP_UTF8, 0, lpstr, -1, buf, reqsize, nullptr, nullptr);
+            WideCharToMultiByte(CP_UTF8, 0, lpstr, -1, buf, static_cast<int>(reqsize), nullptr, nullptr);
             result = true;
           }
           GlobalUnlock(hglobal);
@@ -321,8 +331,13 @@ bool lock::impl::get_data(format f, char *buf, size_t len) const {
       }
     }
   } else {
+#ifdef _WIN32
+    if (IsClipboardFormatAvailable(static_cast<UINT>(f))) {
+      HGLOBAL hglobal = GetClipboardData(static_cast<UINT>(f));
+#else
     if (IsClipboardFormatAvailable(f)) {
       HGLOBAL hglobal = GetClipboardData(f);
+#endif
       if (hglobal) {
         const SIZE_T total_size = GlobalSize(hglobal);
         auto         ptr        = (const uint8_t *)GlobalLock(hglobal);
@@ -375,8 +390,13 @@ size_t lock::impl::get_data_length(format f) const {
       }
     }
   } else if (f != empty_format()) {
+#ifdef _WIN32
+    if (IsClipboardFormatAvailable(static_cast<UINT>(f))) {
+      HGLOBAL hglobal = GetClipboardData(static_cast<UINT>(f));
+#else
     if (IsClipboardFormatAvailable(f)) {
       HGLOBAL hglobal = GetClipboardData(f);
+#endif
       if (hglobal) {
         const SIZE_T total_size = GlobalSize(hglobal);
         auto         ptr        = (const uint8_t *)GlobalLock(hglobal);
@@ -516,7 +536,11 @@ bool lock::impl::get_image(image &output_img) const {
     if (png_handle) {
       size_t   png_size = GlobalSize(png_handle);
       uint8_t *png_data = (uint8_t *)GlobalLock(png_handle);
+#ifdef _WIN32
+      bool     result   = win::read_png(png_data, static_cast<int>(png_size), &output_img, nullptr);
+#else
       bool     result   = win::read_png(png_data, png_size, &output_img, nullptr);
+#endif
       GlobalUnlock(png_handle);
       if (result)
         return true;
@@ -611,7 +635,11 @@ bool lock::impl::get_image_spec(image_spec &spec) const {
     if (png_handle) {
       size_t   png_size = GlobalSize(png_handle);
       uint8_t *png_data = (uint8_t *)GlobalLock(png_handle);
+#ifdef _WIN32
+      bool     result   = win::read_png(png_data, static_cast<UINT>(png_size), nullptr, &spec);
+#else
       bool     result   = win::read_png(png_data, png_size, nullptr, &spec);
+#endif
       GlobalUnlock(png_handle);
       if (result)
         return true;
@@ -626,9 +654,15 @@ bool lock::impl::get_image_spec(image_spec &spec) const {
 }
 
 format register_format(const std::string &name) {
-  int                reqsize = 1 + MultiByteToWideChar(CP_UTF8, 0, name.c_str(), name.size(), NULL, 0);
-  std::vector<WCHAR> buf(reqsize);
-  MultiByteToWideChar(CP_UTF8, 0, name.c_str(), name.size(), &buf[0], reqsize);
+#ifdef _WIN32
+  int                reqsize = 1 + MultiByteToWideChar(CP_UTF8, 0, name.c_str(), static_cast<int>(name.size()), NULL, 0);
+    std::vector<WCHAR> buf(reqsize);
+    MultiByteToWideChar(CP_UTF8, 0, name.c_str(), static_cast<int>(name.size()), &buf[0], reqsize);
+#else
+    int                reqsize = 1 + MultiByteToWideChar(CP_UTF8, 0, name.c_str(), name.size(), NULL, 0);
+    std::vector<WCHAR> buf(reqsize);
+    MultiByteToWideChar(CP_UTF8, 0, name.c_str(), name.size(), &buf[0], reqsize);
+#endif
 
   // From MSDN, registered clipboard formats are identified by values
   // in the range 0xC000 through 0xFFFF.

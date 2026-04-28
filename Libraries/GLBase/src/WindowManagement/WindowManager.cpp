@@ -425,7 +425,7 @@ void WindowManager::globalMouseCursorCb(GLContext ctx, double xpos, double ypos)
     callWinAndGlobalHidCb(ctx, winCb::CursorPos, xpos, ypos);
 
     // save last mouse Pos
-    auto winMan = getThis(ctx);
+    const auto winMan = getThis(ctx);
     if (!winMan) {
         return;
     }
