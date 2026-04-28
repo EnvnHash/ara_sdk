@@ -149,7 +149,7 @@ int FontGlyphVector::getCharIndexByPixPos(float pix_x, const float pix_y, const 
     }
 
     if (hwPix_x >= m_bb[2]) {
-        return m_vline[lineIndex].ptr[1]->characterIdx + 1;
+        return m_vline[lineIndex].ptr[1]->characterIdx + (m_vline.size() > 1 ? 0 : 1);
     }
 
     if (hwPix_x < e[0].pos.x) {

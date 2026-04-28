@@ -313,6 +313,16 @@ TEST(UITest, UIEditMultiSetCursorArrowRightAndRecenterTest) {
     }, 300, 100);
 }
 
+TEST(UITest, UIEditMultiLineSetCursorToEnd) {
+    appBody([&](const UIApplication &app) {
+        addLongStringEdit(app);
+        clickEditField(app, 282, 50);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_string_multiline_select_end.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
 TEST(UITest, UIEditStringCopyPaste) {
     UIEdit* edit2=nullptr;
     appBody([&](const UIApplication &app) {
