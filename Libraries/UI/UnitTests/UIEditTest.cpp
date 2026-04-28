@@ -323,6 +323,29 @@ TEST(UITest, UIEditMultiLineSetCursorToEnd) {
     }, 300, 100);
 }
 
+TEST(UITest, UIEditMultiLineMoveCursorUp) {
+    appBody([&](const UIApplication &app) {
+        addLongStringEdit(app);
+        clickEditField(app, 150, 50);
+        simulateKeyPress(ARA_KEY_UP, app);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_string_multiline_moev_cursor_up.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditMultiLineMoveCursorDown) {
+    appBody([&](const UIApplication &app) {
+        addLongStringEdit(app);
+        clickEditField(app, 150, 50);
+        simulateKeyPress(ARA_KEY_DOWN, app);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_string_multiline_moev_cursor_down.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+
 TEST(UITest, UIEditStringCopyPaste) {
     UIEdit* edit2=nullptr;
     appBody([&](const UIApplication &app) {

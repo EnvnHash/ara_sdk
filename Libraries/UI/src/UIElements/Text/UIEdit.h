@@ -177,6 +177,7 @@ protected:
     void moveCaretRight();
     void moveCaretHome();
     void moveCaretEnd();
+    void moveCaretLine(bool down);
     void keyModifySelection(const hidData& data, bool& updateValue);
     bool validateNumInputToString(int ch);
     void calcLeftLineOffset();

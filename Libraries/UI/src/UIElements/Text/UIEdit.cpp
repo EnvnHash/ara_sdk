@@ -331,12 +331,14 @@ void UIEdit::pasteText() {
 
 void UIEdit::moveCaret(const hidData& data) {
     unordered_map<int, function<void()>> keyMap {
-        { ARA_KEY_BACKSPACE, [&] { moveCaretBackspace(); }},
-        { ARA_KEY_DELETE,    [&] { moveCaretDel(); }},
-        { ARA_KEY_LEFT,      [&] { moveCaretLeft(); }},
-        { ARA_KEY_RIGHT,     [&] { moveCaretRight(); }},
-        { ARA_KEY_HOME,      [&] { moveCaretHome(); }},
-        { ARA_KEY_END,       [&] { moveCaretEnd(); }}
+        { ARA_KEY_BACKSPACE,    [&] { moveCaretBackspace(); }},
+        { ARA_KEY_DELETE,       [&] { moveCaretDel(); }},
+        { ARA_KEY_LEFT,         [&] { moveCaretLeft(); }},
+        { ARA_KEY_RIGHT,        [&] { moveCaretRight(); }},
+        { ARA_KEY_HOME,         [&] { moveCaretHome(); }},
+        { ARA_KEY_END,          [&] { moveCaretEnd(); }},
+        { ARA_KEY_UP,           [&] { moveCaretLine(false); }},
+        { ARA_KEY_DOWN,         [&] { moveCaretLine(true); }}
     };
 
     if (keyMap.contains(data.key)) {
@@ -391,6 +393,44 @@ void UIEdit::moveCaretEnd() {
         && line.maxCharIdx < static_cast<int>(m_text.size())) {
         calcRightLineOffset();
     }
+}
+
+void UIEdit::moveCaretLine(const bool down) {
+    if (hasOpt(single_line)) {
+        return;
+    }
+
+    const auto& lines = m_fontDGV.getFontLines();
+    const auto lineIndex = m_fontDGV.getLineIndexByCharIndex(m_caretIndex);
+    const auto targetLineIndex = lineIndex + (down ? 1 : -1);
+    if (lineIndex < 0 || targetLineIndex < 0 || targetLineIndex >= static_cast<int>(lines.size())) {
+        return;
+    }
+
+    const auto targetX = m_fontDGV.getCaretPosAndSize(m_caretIndex).first.x;
+    const auto& targetLine = lines[targetLineIndex];
+    if (!targetLine.ptr[0] || !targetLine.ptr[1]) {
+        return;
+    }
+
+    int newCaretIndex = targetLine.ptr[0]->characterIdx;
+    float minDist = std::numeric_limits<float>::max();
+
+    for (auto glyph = targetLine.ptr[0]; glyph <= targetLine.ptr[1]; ++glyph) {
+        const auto glyphX = glyph->pos.x / glyph->pixRatio;
+        if (const auto dist = std::abs(glyphX - targetX); dist < minDist) {
+            minDist = dist;
+            newCaretIndex = glyph->characterIdx;
+        }
+
+        const auto glyphEndX = (glyph->pos.x + glyph->size.x) / glyph->pixRatio;
+        if (const auto endDist = std::abs(glyphEndX - targetX); endDist < minDist) {
+            minDist = endDist;
+            newCaretIndex = glyph->characterIdx + 1;
+        }
+    }
+
+    m_caretIndex = std::clamp(newCaretIndex, targetLine.characterIdx[0], targetLine.characterIdx[1]);
 }
 
 void UIEdit::calcLeftLineOffset() {
