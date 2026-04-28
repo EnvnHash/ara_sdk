@@ -68,6 +68,7 @@ public:
     void            clearDs() override;
     void            loadStyleDefaults() override;
     void            updateStyleIt(ResNode *node, state st, const std::string& styleClass) override;
+    void            removeGLResources() override;
 
     void setFont(const std::string& fontType, uint32_t fontSize, align ax, valign ay, glm::vec4 fontColor, state st = state::m_state);
     void setColor(float r, float g, float b, float a, state st = state::m_state) override;

@@ -14,12 +14,7 @@
 //
 
 #include "GLBase.h"
-
-#include <string_utils.h>
-#include <Utils/Texture.h>
 #include <Utils/TextureCollector.h>
-
-#include "GeoPrimitives/Quad.h"
 #include "Asset/AssetManager.h"
 #include "Utils/Typo/TypoGlyphMap.h"
 #include "WindowManagement/GLWindow.h"
@@ -184,11 +179,11 @@ void GLBase::initResources() {
         }
         m_assetManager = make_unique<AssetManager>(m_resRootPath, "res_comp", this);
         if (m_assetManager->load(m_resFile)) {
-            LOG << "[OK] GLBase Resource file " << m_resRootPath + "/" + m_resFile << " loaded. "
+                LOG << "[OK] GLBase Resource file " << m_resRootPath + "/" + m_resFile << " loaded. "
               << (AssetManager::usingComp() ? " Used compiled binary asset file" : "");
         } else {
-            for (ResNode::e_error &err : m_assetManager->getRoot()->errList) {
-                LOGE << "Line " << err.lineIndex + 1 << " err:" << err.errorString;
+            for (auto &[lineIndex, errorString] : m_assetManager->getRoot()->errList) {
+                LOGE << "Line " << lineIndex + 1 << " err:" << errorString;
             }
         }
 
@@ -214,8 +209,10 @@ void GLBase::initResources() {
 void GLBase::startContinousCheck() {
 #ifndef __ANDROID__
     m_updtResCb.emplace_back([this] {
-        m_assetManager->callResSourceChange();
-        m_assetManager->callForChangesInFolderFiles();
+        if (m_assetManager) {
+            m_assetManager->callResSourceChange();
+            m_assetManager->callForChangesInFolderFiles();
+        }
     });
 
     m_resUpdt = std::jthread([this] (const std::stop_token& stopToken){
@@ -308,7 +305,7 @@ void GLBase::destroy(const bool terminateGLFW) {
 /// create an individual context with local basic resources
 /// </summary>
 #ifdef ARA_USE_GLFW
-unique_ptr<GLWindow> GLBase::createOpenGLCtx(bool initGLFW) {
+unique_ptr<GLWindow> GLBase::createOpenGLCtx(const bool initGLFW) {
     auto     gwin = make_unique<GLWindow>();
     glWinPar gp;
     gp.createHidden = true;
@@ -583,7 +580,7 @@ void GLBase::switchCtx(GLNativeCtxHnd &ctx) {
 #endif
 }
 
-void GLBase::initAppMsg(const char *fontFile, int fontHeight, int screenWidth, int screenHeight) {
+void GLBase::initAppMsg(const char *fontFile, const int fontHeight, int screenWidth, int screenHeight) {
     m_typoGlyphMap = make_unique<TypoGlyphMap>(screenWidth, screenHeight);
     m_typoGlyphMap->loadFont(fontFile, &m_shaderCollector);
     m_typoFontHeight = fontHeight;
@@ -637,7 +634,7 @@ int32_t GLBase::maxNrAttachments() {
     return m_caps.max_nr_attachments;
 }
 
-void GLBase::setAppMsgStaticInfoNumLines(size_t count) {
+void GLBase::setAppMsgStaticInfoNumLines(const size_t count) {
     m_appMsgStaticNumLines = count;
     m_appMsgStatic.resize(count);
 }

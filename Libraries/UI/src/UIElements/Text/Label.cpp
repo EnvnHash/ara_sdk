@@ -563,6 +563,11 @@ vec2& Label::getTextBoundSize() {
     return m_textBounds;
 }
 
+void Label::removeGLResources() {
+    UINode::removeGLResources();
+    m_riFont = nullptr;
+}
+
 Label::~Label() {
     if (m_riFont) {
         m_riFont->removeFontTexChangedCb(this);

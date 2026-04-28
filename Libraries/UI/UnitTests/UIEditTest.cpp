@@ -169,6 +169,25 @@ TEST(UITest, UIEditFloatWheelTest) {
     }, 300, 100);
 }
 
+TEST(UITest, UIEditFloatWheelTest2) {
+    UIEdit* ed = nullptr;
+    appBody([&](const UIApplication &app) {
+        ed = &addFloatEdit(app);
+        ed->setUseWheel(true);
+        ed->setWidth(30);
+        iterate(app);
+        const auto mainWin = app.getMainWindow();
+        mainWin->onMouseMove(32, 22, 0);
+        for (int i = 0; i < 5; ++i) {
+            mainWin->onWheel(1.f);
+            iterate(app);
+        }
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_wheel_test2.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
 TEST(UITest, UIEditOverflowTest) {
     appBody([&](const UIApplication &app) {
         addStringEdit(app);
@@ -409,8 +428,6 @@ TEST(UITest, UIEditStringCopyInsertPaste) {
         const auto mainWin = app.getMainWindow();
         mainWin->onKeyDown(ARA_KEY_V, false, true, false);
     }, [&](const UIApplication &app) {
-        Texture::saveFrontBuffer(filesystem::current_path() / "uiedit_copy_insert_paste_test.png", FIF_PNG,
-                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 4);
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_copy_insert_paste_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 100);

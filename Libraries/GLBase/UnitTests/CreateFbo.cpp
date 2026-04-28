@@ -1,8 +1,6 @@
 #include "GLBaseUnitTestCommon.h"
-#include <GeoPrimitives/Quad.h>
 #include <Utils/FBO.h>
 #include <Utils/Typo/TypoGlyphMap.h>
-#include <Asset/AssetManager.h>
 
 using namespace std;
 using namespace std::chrono;

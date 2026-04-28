@@ -162,11 +162,9 @@ Font *UIEdit::updateDGV(bool *checkFontTexture) {
     // process input text, break up in lines
     m_needsOverflowHandling = m_fontDGV.process(m_riFont, m_tSize, m_tSep, m_tAlignX, m_renderText, !hasOpt(single_line));
 
+    m_offset = getContentOffset();
     calculateOffset();
 
-    if (m_text.empty()) {
-        m_offset = getContentOffset();
-    }
     return m_riFont;
 }
 
@@ -434,15 +432,11 @@ void UIEdit::moveCaretLine(const bool down) {
 }
 
 void UIEdit::calcLeftLineOffset() {
-    m_offset.x = getContentOffset().x;
     m_lineOverflowOffset.first = m_caretIndex;
-    //    m_lineOverflowOffset.first -= m_lineOverflowOffset.first - m_caretIndex;
-
     m_lineOverflowOffset.second = 0;
     for (int i = 0; i < m_lineOverflowOffset.first; ++i) {
         m_lineOverflowOffset.second -= m_fontDGV.getCaretPosAndSize(i).second.x;
     }
-
     reqUpdtGlyphs(true);
 }
 
@@ -598,6 +592,10 @@ void UIEdit::mouseWheel(hidData& data) {
         incValue(data.degrees, data.shiftPressed  ? cfState::coarse
                                                   : data.ctrlPressed ? cfState::fine
                                                                      : cfState::normal);
+        if (hasOpt(single_line) && m_needsOverflowHandling) {
+            m_lineOverflowOffset = {};
+            calcRightLineOffset();
+        }
     }
 
     setDrawFlag();
