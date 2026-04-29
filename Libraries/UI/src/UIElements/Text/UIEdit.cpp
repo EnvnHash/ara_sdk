@@ -230,8 +230,10 @@ void UIEdit::keyDown(hidData& data) {
     if (hasOpt(num_int) || hasOpt(num_fp)) {
         if (data.key == ARA_KEY_UP) {
             incValue(1.f, data.shiftPressed ? cfState::coarse : data.ctrlPressed ? cfState::fine : cfState::normal);
+            getSharedRes()->reqRedraw();
         } else if (data.key == ARA_KEY_DOWN) {
             incValue(-1.f, data.shiftPressed ? cfState::coarse : data.ctrlPressed ? cfState::fine : cfState::normal);
+            getSharedRes()->reqRedraw();
         }
     }
 
@@ -598,7 +600,7 @@ void UIEdit::mouseWheel(hidData& data) {
         }
     }
 
-    setDrawFlag();
+    getSharedRes()->reqRedraw();
     data.consumed = m_useWheel;
 }
 

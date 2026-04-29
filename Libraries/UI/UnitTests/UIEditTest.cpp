@@ -169,6 +169,89 @@ TEST(UITest, UIEditFloatWheelTest) {
     }, 300, 100);
 }
 
+TEST(UITest, UIEditFloatWheelPlusCtrlTest) {
+    UIEdit* ed = nullptr;
+    appBody([&](const UIApplication &app) {
+        ed = &addFloatEdit(app);
+        ed->setUseWheel(true);
+        iterate(app);
+        const auto mainWin = app.getMainWindow();
+        mainWin->onMouseMove(122, 22, 0);
+        iterate(app);
+        mainWin->onKeyDown(0, false, true, false);
+        mainWin->onWheel(1.f);
+        mainWin->onKeyUp(0, false, true, false);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_wheel_ctrl_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        const auto str = getSelAllCopyOutput(app);
+        EXPECT_EQ(str, "1.244");
+        EXPECT_EQ(ed->getValue(), 1.244f);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditFloatWheelPlusShiftTest) {
+    UIEdit* ed = nullptr;
+    appBody([&](const UIApplication &app) {
+        ed = &addFloatEdit(app);
+        ed->setUseWheel(true);
+        iterate(app);
+        const auto mainWin = app.getMainWindow();
+        mainWin->onMouseMove(122, 22, 0);
+        iterate(app);
+
+        mainWin->onKeyDown(0, true, false, false);
+        mainWin->onWheel(1.f);
+        mainWin->onKeyUp(0, true, false, false);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_wheel_shift_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        const auto str = getSelAllCopyOutput(app);
+        EXPECT_EQ(str, "2.234");
+        EXPECT_EQ(ed->getValue(), 2.234f);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditFloatKeyUpPlusCtrlTest) {
+    UIEdit* ed = nullptr;
+    appBody([&](const UIApplication &app) {
+        ed = &addFloatEdit(app);
+        ed->setUseWheel(true);
+        iterate(app);
+        simulateMouseClick(app, 122, 22);
+        iterate(app);
+        const auto mainWin = app.getMainWindow();
+        mainWin->onKeyDown(ARA_KEY_UP, false, true, false);
+        mainWin->onKeyUp(ARA_KEY_UP, false, true, false);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_keyup_ctrl_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        const auto str = getSelAllCopyOutput(app);
+        EXPECT_EQ(str, "1.244");
+        EXPECT_EQ(ed->getValue(), 1.244f);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditFloatKeyUpPlusShiftTest) {
+    UIEdit* ed = nullptr;
+    appBody([&](const UIApplication &app) {
+        ed = &addFloatEdit(app);
+        ed->setUseWheel(true);
+        iterate(app);
+        simulateMouseClick(app, 122, 22);
+        iterate(app);
+        const auto mainWin = app.getMainWindow();
+        mainWin->onKeyDown(ARA_KEY_UP, true, false, false);
+        mainWin->onKeyUp(ARA_KEY_UP, true, false, false);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_float_keyup_shift_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+        const auto str = getSelAllCopyOutput(app);
+        EXPECT_EQ(str, "2.234");
+        EXPECT_EQ(ed->getValue(), 2.234f);
+    }, 300, 100);
+}
+
 TEST(UITest, UIEditFloatWheelTest2) {
     UIEdit* ed = nullptr;
     appBody([&](const UIApplication &app) {
