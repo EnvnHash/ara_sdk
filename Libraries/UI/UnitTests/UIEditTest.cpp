@@ -516,7 +516,7 @@ TEST(UITest, UIEditStringCopyInsertPaste) {
     }, 300, 100);
 }
 
-TEST(UITest, UIEditStringCutAndPase) {
+TEST(UITest, UIEditStringCutAndPaste) {
     UIEdit* edit;
     appBody([&](const UIApplication &app) {
         edit = &addStringEdit(app);
@@ -535,6 +535,30 @@ TEST(UITest, UIEditStringCutAndPase) {
     }, [&](const UIApplication &app) {
         EXPECT_EQ(edit->getText(), "Bing Dideldi Bang");
         compareFrameBufferToImage(filesystem::current_path() / "uiedit_cut_and_paste_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
+TEST(UITest, UIEditMultiLineCutAndPasteOnSelection) {
+    UIEdit* edit;
+    appBody([&](const UIApplication &app) {
+        edit = &addLongStringEdit(app);
+        iterate(app);
+        const auto mainWin = app.getMainWindow();
+        mainWin->onMouseDownLeft(67, 37, false, false, false);
+        mainWin->onMouseMove(101, 50, 0);
+        mainWin->onMouseUpLeft();
+        iterate(app);
+        simulateKeyPress(ARA_KEY_X, app, false, true, false);
+        iterate(app);
+        mainWin->onMouseDownLeft(38, 56, false, false, false);
+        mainWin->onMouseMove(239, 57, 0);
+        mainWin->onMouseUpLeft();
+        iterate(app);
+        simulateKeyPress(ARA_KEY_V, app, false, true, false);
+    }, [&](const UIApplication &app) {
+        EXPECT_EQ(edit->getText(), "This is a line of text to test the label, long enough to see the long enough to see the ellipsis at the end. ellipsis at the end.This is a line of text to test the label,long enough to see the ellipsis at the end.");
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_string_multiline_cut_and_paste_on.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 100);
 }
