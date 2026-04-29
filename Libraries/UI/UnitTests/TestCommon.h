@@ -280,8 +280,8 @@ static void simulateMouseClick (const ara::UIApplication& app, const int32_t xPo
     app.getMainWindow()->onMouseUpLeft();
 }
 
-static void simulateKeyPress(const int key, const ara::UIApplication& app) {
+static void simulateKeyPress(const int key, const ara::UIApplication& app, const bool shiftPressed=false, const bool ctrlPressed=false, const bool altPressed=false) {
     const auto mainWin = app.getMainWindow();
-    mainWin->onKeyDown(key, false, false, false);
-    mainWin->onKeyUp(key, false, false, false);
+    mainWin->onKeyDown(key, shiftPressed, ctrlPressed, altPressed);
+    mainWin->onKeyUp(key, shiftPressed, ctrlPressed, altPressed);
 }

@@ -516,4 +516,27 @@ TEST(UITest, UIEditStringCopyInsertPaste) {
     }, 300, 100);
 }
 
+TEST(UITest, UIEditStringCutAndPase) {
+    UIEdit* edit;
+    appBody([&](const UIApplication &app) {
+        edit = &addStringEdit(app);
+        edit->setText("Bing Bang Dideldi");
+        iterate(app);
+        const auto mainWin = app.getMainWindow();
+        mainWin->onMouseDownLeft(46, 25, false, false, false);
+        mainWin->onMouseMove(89, 21, 0);
+        mainWin->onMouseUpLeft();
+        iterate(app);
+        simulateKeyPress(ARA_KEY_X, app, false, true, false);
+        iterate(app);
+        EXPECT_EQ(edit->getText(), "Bing Dideldi");
+        simulateMouseClick(app, 106, 21);
+        simulateKeyPress(ARA_KEY_V, app, false, true, false);
+    }, [&](const UIApplication &app) {
+        EXPECT_EQ(edit->getText(), "Bing Dideldi Bang");
+        compareFrameBufferToImage(filesystem::current_path() / "uiedit_cut_and_paste_test.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 100);
+}
+
 }
