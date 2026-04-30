@@ -163,7 +163,7 @@ public:
     auto                getGlInitedSema() { return &m_glInitedSema; }
     virtual void*       getWin() { return nullptr; }
     virtual void*       getDisp() { return nullptr; }
-    glm::ivec2          getLastMousePos() const { return {m_lastCursorPosX, m_lastCursorPosY}; };
+    virtual glm::ivec2          getLastMousePos() const { return {m_lastCursorPosX, m_lastCursorPosY}; };
     virtual glm::ivec4& getWorkArea() { return m_workArea; }
     auto&               getContentScale() { return m_contentScale; }
     auto                isInited() const { return m_initSignaled; }

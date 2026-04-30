@@ -60,9 +60,9 @@ public:
     void initNonFullScreen(const glWinPar &gp);
 
     /**
-     * @param f the drawing function which will be executed or every iteration
+     * @param f the drawing function that will be executed or every iteration
      * @param eventBased choose whether the loop should run freely or stop and wait for the m_iterate signal
-     * @param terminateGLFW shall GLFW be terminated when the loop exits? in case of multiple window it probably shouldn't
+     * @param terminateGLFW shall GLFW be terminated when the loop exits? in case of multiple windows it probably shouldn't
      * @param destroyWinOnExit destroy window on exit
      */
     void    runLoop(const std::function<bool(double, double, int)>& f, bool eventBased = false, bool terminateGLFW = true,
@@ -98,7 +98,7 @@ public:
 #else
         glfwMaximizeWindow(m_window);
 #endif
-    }  /// must be called from main thread
+    }  /// must be called from the main thread
 
     void restore() override {
 #ifdef __APPLE__
@@ -137,7 +137,7 @@ public:
     int           getFocus() const { return glfwGetWindowAttrib(m_window, GLFW_FOCUSED); }
     void*         getNativeCtx() override { return m_nativeHandle; }
     /// return virtual pixels
-    glm::ivec2    getLastMousePos() const;
+    glm::ivec2    getLastMousePos() const override;
     glm::ivec2    getAbsMousePos() const;
 #ifdef _WIN32
     HWND  getHwndHandle() const { return m_hwndHandle; }
@@ -149,8 +149,8 @@ public:
     bool        getRequestClose() const override { return m_requestClose; }
     auto&       getOnCloseCb() { return m_onCloseCb; }
 
-    void requestOpen(bool val) override { m_requestOpen = val; }
-    void requestClose(bool val) override { m_requestClose = val; }
+    void requestOpen(const bool val) override { m_requestOpen = val; }
+    void requestClose(const bool val) override { m_requestClose = val; }
 
     static glm::vec2 getDpi();
 
@@ -158,11 +158,11 @@ public:
     void setSize(int inWidth, int inHeight);
     /// input in virtual pixels
     void setPosition(int posx, int posy);
-    void setVSync(bool set) override { glfwSwapInterval(set); }
-    void setBlockResizing(bool val) { m_blockResizing = val; }
-    void setBlockMouseIconSwitch(bool val) { m_blockMouseIconSwitch = val; }
+    void setVSync(const bool set) override { glfwSwapInterval(set); }
+    void setBlockResizing(const bool val) { m_blockResizing = val; }
+    void setBlockMouseIconSwitch(const bool val) { m_blockMouseIconSwitch = val; }
 
-    void setMouseCursor(WinMouseIcon iconTyp) const {
+    void setMouseCursor(const WinMouseIcon iconTyp) const {
         if (!m_blockMouseIconSwitch) {
             glfwSetCursor(m_window, m_mouseCursors[toType(iconTyp)]);
         }
