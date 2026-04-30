@@ -43,7 +43,8 @@ void Resizable::initHandles() {
         ivec2{-m_handleSize/2, -m_handleSize/2}, ivec2{m_handleSize/2, -m_handleSize/2},
         ivec2{m_handleSize/2, m_handleSize/2}, ivec2{-m_handleSize/2, m_handleSize/2},
         ivec2{0, -m_handleSize * 0.35f}, ivec2{m_handleSize * 0.35f, 0},
-        ivec2{0, m_handleSize * 0.35f}, ivec2{-m_handleSize * 0.35f, 0}
+        ivec2{0, m_handleSize * 0.35f}, ivec2{-m_handleSize * 0.35f, 0},
+        ivec2{0, 0}
     };
 
     array sizes {
@@ -51,12 +52,13 @@ void Resizable::initHandles() {
         ivec2{m_handleSize, m_handleSize}, ivec2{m_handleSize, m_handleSize},
         ivec2{m_handleSize*2, m_handleSize * 0.7f}, ivec2{m_handleSize * 0.7f, m_handleSize*2},
         ivec2{m_handleSize*2, m_handleSize * 0.7f}, ivec2{m_handleSize * 0.7f, m_handleSize*2},
+        ivec2{m_handleSize*2, m_handleSize*2}
     };
 
     array aligns {  align::left, align::right, align::right, align::left,
-                    align::center, align::right, align::center, align::left };
+                    align::center, align::right, align::center, align::left, align::center };
     array vAligns { valign::top, valign::top, valign::bottom, valign::bottom,
-                    valign::top, valign::center, valign::bottom, valign::center };
+                    valign::top, valign::center, valign::bottom, valign::center, valign::center };
 
     for (int32_t i=0; i<m_handles.size(); ++i) {
         m_handles[i] = &push<ResizableHandle>(UINodePars{
@@ -69,6 +71,10 @@ void Resizable::initHandles() {
             .borderColor = vec4{1.f, 1.f, 1.f, 1.f}
         });
         m_handles[i]->setCorner(static_cast<Corner>(i));
+        m_handles[i]->setResizeImage(this);
+        if (i == static_cast<int32_t>(Corner::center)) {
+            m_handles[i]->setAlpha(0.f);
+        }
         m_handles[i]->setResizeImage(this);
     }
 }
@@ -109,6 +115,8 @@ void Resizable::resizeFromCorner(const Corner corner, const vec2& movedPix) {
     } else if (corner == Corner::left) {
         setPos(getLeftDragX(movedPix.x), static_cast<int32_t>(m_dragStartPos.y));
         setSize(max(m_minSize, ivec2(m_dragStartSize.x - movedPix.x, m_dragStartSize.y)));
+    } else if (corner == Corner::center) {
+        setPos(ivec2(m_dragStartPos + movedPix));
     }
 
     if (getSharedRes()) {

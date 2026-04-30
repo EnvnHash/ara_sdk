@@ -21,6 +21,7 @@ public:
         right,
         bottom,
         left,
+        center,
         size
     };
 

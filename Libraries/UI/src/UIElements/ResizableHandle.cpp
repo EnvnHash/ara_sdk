@@ -26,11 +26,18 @@ void ResizableHandle::mouseIn(hidData& data) {
         getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::vresize);
     } else if (m_corner == Corner::left || m_corner == Corner::right) {
         getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::hresize);
+    } else if (m_corner == Corner::center) {
+        setAlpha(1.f);
+        getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::move);
+        getSharedRes()->reqRedraw();
     }
 }
 
 void ResizableHandle::mouseOut(hidData& data) {
     getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::arrow);
+    if (m_corner == Corner::center) {
+        setAlpha(0.f);
+    }
 }
 
 void ResizableHandle::mouseDown(hidData& data) {
