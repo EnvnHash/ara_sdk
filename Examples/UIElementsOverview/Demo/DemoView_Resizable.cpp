@@ -14,7 +14,7 @@ DemoView_Resizable::DemoView_Resizable() : DemoView("Resizable Demo",vec4(.15f,.
 }
 
 void DemoView_Resizable::init() {
-    push<Resizable>({
+    auto& resizable = push<Resizable>({
         .pos = ivec2{0,50},
         .size = vec2{0.5f, 0.5f},
         .align = align::center,
@@ -22,4 +22,8 @@ void DemoView_Resizable::init() {
         .borderWidth = 1,
         .borderColor = vec4{1.f, 1.f, 1.f, 1.f,},
     });
+
+    auto& img = resizable.push<Image>();
+    img.setImg("test/test_img.jpg", 1);
+    img.setImgFlags(imgFlags::fill);
 }

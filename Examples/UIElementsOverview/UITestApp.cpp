@@ -28,6 +28,8 @@ void UITestApp::init(std::function<void(UINode&)>) {
 #ifndef __ANDROID__
         tabView.addTab<DemoView_FloatingMenu>("Floating Menu");
 #endif
+        tabView.addTab<DemoView_Resources>("Resources");
+        tabView.addTab<DemoView_Resizable>("Resizable");
         tabView.addTab<DemoView_ScrollView>("Scroll View");
         tabView.addTab<DemoView_ScrollView_2>("Scroll View 2");
         tabView.addTab<DemoView_ScrollView_3>("Scroll View 3");
@@ -35,7 +37,6 @@ void UITestApp::init(std::function<void(UINode&)>) {
         tabView.addTab<DemoView_Spinner>("Spinner");
         tabView.addTab<DemoView_Table>("Table");
         tabView.addTab<DemoView_Table_2>("Table 2");
-        tabView.addTab<DemoView_Resources>("Resources");
         tabView.addTab<DemoView_ZoomView>("ZoomView");
 
         tabView.setActivateTab(0);
