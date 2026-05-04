@@ -60,7 +60,7 @@ TEST(UITest, ResizableMoveAllHandlesTest) {
     constexpr ivec2 startSize{200, 150};
     constexpr ivec2 moveDelta{50, 50};
 
-    const auto getAlignOffset = [](const align alignX, const valign alignY, const ivec2& size) {
+    const auto getAlignOffset = [&](const align alignX, const valign alignY, const ivec2& size) {
         ivec2 offset{};
 
         switch (alignX) {
