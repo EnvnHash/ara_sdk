@@ -30,6 +30,7 @@ public:
     void mouseIn(hidData& data) override;
     void mouseOut(hidData& data) override;
     void mouseDown(hidData& data) override;
+    void mouseDrag(hidData& data) override;
     void mouseUp(hidData& data) override;
 
     void setResizeImage(Resizable* resizeImage) { m_resizeImage = resizeImage; }
