@@ -9,7 +9,7 @@ using namespace std;
 
 DemoView_Resources::DemoView_Resources() : DemoView("Resources Demo",glm::vec4(.15f,.15f,.15f,1.f)) {
     setName(getTypeName<DemoView_Resources>());
-    addStyleClass("chtest");
+    UINodeStyle::addStyleClass("chtest");
 }
 
 void DemoView_Resources::init() {

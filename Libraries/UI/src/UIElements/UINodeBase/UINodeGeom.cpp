@@ -35,7 +35,7 @@ bool UINodeGeom::contains(UINodeGeom* outer, UINodeGeom* node) {
 
 void UINodeGeom::updateContentTransMat() {
     if (m_limitContentTrans) {
-        auto overflow = getContentTransOverflow(m_contentTransMatTransl.x, m_contentTransMatTransl.y);
+        const auto overflow = getContentTransOverflow(m_contentTransMatTransl.x, m_contentTransMatTransl.y);
         m_contentTransMatTransl.x += overflow.x;
         m_contentTransMatTransl.y += overflow.y;
     }
@@ -48,7 +48,7 @@ void UINodeGeom::updateContentTransMat() {
     m_nodePosMat[3][0] = m_pos.x;
     m_nodePosMat[3][1] = m_pos.y;
 
-    // apply the windows orthographic matrix, this matrix will be used for rendering
+    // apply the window orthographic matrix, this matrix will be used for rendering
     if (m_orthoMat) {
         // this is expensive
         m_mvp   = *m_orthoMat * m_parentMatLocCpy * m_nodePosMat;
@@ -56,7 +56,7 @@ void UINodeGeom::updateContentTransMat() {
     }
 }
 
-void UINodeGeom::calcContentTransMat(mat4& mat, const vec3& trans) {
+void UINodeGeom::calcContentTransMat(mat4& mat, const vec3& trans) const {
     if (m_contTransMatCentered) {
         // for scaling, center the content to the origin, scale and move back to the initial position
         mat = m_contRot;
@@ -81,12 +81,12 @@ void UINodeGeom::calcContentTransMat(mat4& mat, const vec3& trans) {
 }
 
 void UINodeGeom::calcNormMat() {
-    std::array<glm::vec4, 2> p{
+    const std::array p{
         *m_parentMat * vec4(m_pos.x, m_pos.y, 0.f, 1.f),
         *m_parentMat * vec4(m_pos.x + m_size.x, m_pos.y + m_size.y, 0.f, 1.f)
     };
 
-    std::array<glm::vec2, 2> pN{};
+    std::array<vec2, 2> pN{};
     for (int i = 0; i < 2; i++) {
         pN[i]   = vec2(p[i]) / vec2(m_viewPort.z, m_viewPort.w);
         pN[i].y = 1.f - pN[i].y;
@@ -97,7 +97,7 @@ void UINodeGeom::calcNormMat() {
     m_normMat = translate(vec3(pN[1] + (pN[0] - pN[1]) * 0.5f, 0.f)) * scale(vec3(abs(pN[1] - pN[0]) * 0.5f, 1.f));
 }
 
-void UINodeGeom::setAlignX(align type, state st) {
+void UINodeGeom::setAlignX(const align type, const state st) {
     if (st == state::m_state || st == m_state) {
         m_alignX = type;
         m_pivX   = (type == align::left ? pivotX::left : (type == align::right ? pivotX::right : pivotX::center));
@@ -106,7 +106,7 @@ void UINodeGeom::setAlignX(align type, state st) {
     setStyleInitVal("align", type == align::left ? "left" : (type == align::right ? "right" : "center"), st);
 }
 
-void UINodeGeom::setAlignY(valign type, state st) {
+void UINodeGeom::setAlignY(const valign type, const state st) {
     if (st == state::m_state || st == m_state) {
         m_alignY = type;
         m_pivY   = (type == valign::top ? pivotY::top : (type == valign::bottom ? pivotY::bottom : pivotY::center));
@@ -115,28 +115,28 @@ void UINodeGeom::setAlignY(valign type, state st) {
     setStyleInitVal("v-align", type == valign::top ? "top" : (type == valign::bottom ? "bottom" : "center"), st);
 }
 
-void UINodeGeom::setAlign(align alignX, valign alignY, state st) {
+void UINodeGeom::setAlign(const align alignX, const valign alignY, const state st) {
     setAlignX(alignX, st);
     setAlignY(alignY, st);
 }
 
-void UINodeGeom::setPivotX(pivotX pX) {
+void UINodeGeom::setPivotX(const pivotX pX) {
     m_pivX       = pX;
     m_geoChanged = true;
 }
 
-void UINodeGeom::setPivotY(pivotY pY) {
+void UINodeGeom::setPivotY(const pivotY pY) {
     m_pivY       = pY;
     m_geoChanged = true;
 }
 
-void UINodeGeom::setPivot(pivotX pX, pivotY pY) {
+void UINodeGeom::setPivot(const pivotX pX, const pivotY pY) {
     m_pivX       = pX;
     m_pivY       = pY;
     m_geoChanged = true;
 }
 
-void UINodeGeom::setBorderWidth(uint32_t val, state st) {
+void UINodeGeom::setBorderWidth(const uint32_t val, const state st) {
     if (st == state::m_state || st == m_state) {
         m_borderWidth = val;
         m_geoChanged  = true;
@@ -144,7 +144,7 @@ void UINodeGeom::setBorderWidth(uint32_t val, state st) {
     setStyleInitVal("border-width", std::to_string(val), st);
 }
 
-void UINodeGeom::setBorderRadius(uint32_t val, state st) {
+void UINodeGeom::setBorderRadius(const uint32_t val, const state st) {
     if (st == state::m_state || st == m_state) {
         m_borderRadius = val;
         m_geoChanged   = true;
@@ -152,12 +152,12 @@ void UINodeGeom::setBorderRadius(uint32_t val, state st) {
     setStyleInitVal("border-radius", std::to_string(val), st);
 }
 
-void UINodeGeom::setFixAspect(float val) {
+void UINodeGeom::setFixAspect(const float val) {
     m_fixAspect = val;
     setChanged(true);
 }
 
-void UINodeGeom::setViewport(float x, float y, float width, float height) {
+void UINodeGeom::setViewport(const float x, const float y, const float width, const float height) {
     m_viewPort.x = x;
     m_viewPort.y = y;
     m_viewPort.z = width;
@@ -165,7 +165,7 @@ void UINodeGeom::setViewport(float x, float y, float width, float height) {
     m_geoChanged = true;
 }
 
-void UINodeGeom::setContentTransScale(float x, float y) {
+void UINodeGeom::setContentTransScale(const float x, const float y) {
     setChanged(true);  // force children to update
     m_contentTransScale.x          = x;
     m_contentTransScale.y          = y;
@@ -176,15 +176,15 @@ void UINodeGeom::setContentTransScale(float x, float y) {
     updateContentTransMat();
 }
 
-void UINodeGeom::setContentTransTransl(float x, float y) {
+void UINodeGeom::setContentTransTransl(const float x, const float y) {
     m_contentTransMatTransl.x = x;
     m_contentTransMatTransl.y = y;
     setChanged(true);  // force children to update
 }
 
-vec2 UINodeGeom::getContentTransOverflow(float x, float y) {
+vec2 UINodeGeom::getContentTransOverflow(const float x, const float y) {
     vec2 overflow{};
-    std::array<vec4, 2> quadCorners {
+    const std::array quadCorners {
         vec4{ 0.f, 0.f, 0.f, 1.f },
         vec4{ m_size.x, m_size.y, 0.f, 1.f },
     };
@@ -209,7 +209,7 @@ vec2 UINodeGeom::getContentTransOverflow(float x, float y) {
     return overflow;
 }
 
-void UINodeGeom::setContentRotation(float angle, float ax, float ay, float az) {
+void UINodeGeom::setContentRotation(const float angle, const float ax, const float ay, const float az) {
     setChanged(true);  // force children to update
 
     m_contentTransRotate.w = angle;
@@ -229,24 +229,24 @@ void UINodeGeom::setSharedRes(UISharedRes* shared) {
 }
 
 /** \brief scale the content of this View. On zoom the actual visible center stays the same **/
-void UINodeGeom::setZoomNormMat(float val) {
+void UINodeGeom::setZoomNormMat(const float val) {
     setContentTransScale(val, val);
     setChanged(true);
 }
 
 /** \brief scale the content of this View, center onto actual mouse coordinates (must be in window relative pixels) **/
-void UINodeGeom::setZoomWithCenter(float val, vec2& actMousePos) {
+void UINodeGeom::setZoomWithCenter(const float val, vec2& actMousePos) {
     // convert absolut window relative mousePos to node relative mouse pos
-    auto t_vec2 = vec2(inverse(m_contentTransMatRel) * vec4(actMousePos - getWinPos(), 0.f, 1.f));
+    const auto t_vec2 = vec2(inverse(m_contentTransMatRel) * vec4(actMousePos - getWinPos(), 0.f, 1.f));
 
     setContentTransScale(val, val);
     updateContentTransMat();
 
-    auto newAbsMousePos = vec2(m_contentTransMatRel * vec4(t_vec2, 0.f, 1.f)) + getWinPos();
+    const auto newAbsMousePos = vec2(m_contentTransMatRel * vec4(t_vec2, 0.f, 1.f)) + getWinPos();
     auto newMouseOffs   = newAbsMousePos - actMousePos;
     newMouseOffs /= vec2(m_contentTransScale);
 
-    bool lastContTransMode = m_contTransMatCentered;
+    const bool lastContTransMode = m_contTransMatCentered;
     m_contTransMatCentered = false;
 
     setContentTransTransl(m_contentTransMatTransl.x - newMouseOffs.x, m_contentTransMatTransl.y - newMouseOffs.y);
@@ -268,6 +268,11 @@ void UINodeGeom::checkUpdateMatrix() {
 vec2& UINodeGeom::getPos() {
     checkUpdateMatrix();
     return m_pos;
+}
+
+vec2& UINodeGeom::getAlignedPos() {
+    checkUpdateMatrix();
+    return m_preAlignPos;
 }
 
 vec2& UINodeGeom::getSize() {
@@ -300,7 +305,7 @@ vec2 UINodeGeom::getNodeRelSize() {
 vec4 UINodeGeom::getNodeViewportGL() {
     getWinPos();
 
-    auto uiWin = reinterpret_cast<UIWindow*>(getSharedRes()->win);
+    const auto uiWin = static_cast<UIWindow*>(getSharedRes()->win);
     std::array qc{glm::vec4{0.f, 0.f, 0.f, 1.f}, glm::vec4{m_size.x, m_size.y, 0.f, 1.f}};
     for (auto & i : qc) {
         i = m_mvp * i;
@@ -365,14 +370,14 @@ vec2& UINodeGeom::getParentContentScale() {
     return m_parentContScale;
 }
 
-mat4* UINodeGeom::getContentMat(bool excludedFromParentContentTrans, bool excludedFromPadding) {
+mat4* UINodeGeom::getContentMat(const bool excludedFromParentContentTrans, const bool excludedFromPadding) {
     return excludedFromPadding ? (!excludedFromParentContentTrans ? &m_nodeTransMat : &m_nodeMat)
                                : (!excludedFromParentContentTrans ? &m_contentTransMat : &m_contentMat);
 }
 
-mat4* UINodeGeom::getFlatContentMat(bool excludedFromParentContentTrans, bool excludedFromPadding) {
-    auto mat = excludedFromPadding ? (!excludedFromParentContentTrans ? &m_nodeTransMat : &m_nodeMat)
-                                   : (!excludedFromParentContentTrans ? &m_contentTransMat : &m_contentMat);
+mat4* UINodeGeom::getFlatContentMat(const bool excludedFromParentContentTrans, const bool excludedFromPadding) {
+    const auto mat = excludedFromPadding ? (!excludedFromParentContentTrans ? &m_nodeTransMat : &m_nodeMat)
+                                        : (!excludedFromParentContentTrans ? &m_contentTransMat : &m_contentMat);
 
     // don't use the dynamic m_parentMat ptr since here it doesn't contain the information of all other parentMats use
     // instead the local copy, which is safe to do, since this is only called after this node's updateMatrix()
@@ -384,8 +389,8 @@ vec2& UINodeGeom::getParentNodeRelPos() {
     checkUpdateMatrix();
     // calculate the node's position relative to the parent node's upper left corner in pixels
     if (getParent()) {
-        auto parent           = dynamic_cast<UINodeGeom*>(getParent());
-        auto wp              = getWinPos();
+        const auto parent         = dynamic_cast<UINodeGeom*>(getParent());
+        const auto wp        = getWinPos();
         m_parentNodeRelPos.x = wp.x - parent->getWinPos().x;
         m_parentNodeRelPos.y = wp.y - parent->getWinPos().y;
     }
@@ -493,7 +498,7 @@ bool UINodeGeom::isInBounds(vec2& pos) {
     getWinPos();
     getWinRelSize();
 
-    auto contentTransform = m_parentMatLocCpy * m_nodePosMat;
+    const auto contentTransform = m_parentMatLocCpy * m_nodePosMat;
     auto absChildBbLT = contentTransform * vec4{ m_childBoundBox.x, m_childBoundBox.y, 0.f, 1.f };
     auto absChildBbRB = contentTransform * vec4{ m_childBoundBox.z, m_childBoundBox.w, 0.f, 1.f };
 
@@ -516,7 +521,7 @@ bool UINodeGeom::isOutOfParentBounds() {
     if (!getParent() || m_skipBoundCheck) {
         return false;
     }
-    auto parent = dynamic_cast<UINodeGeom*>(getParent());
+    const auto parent = dynamic_cast<UINodeGeom*>(getParent());
     return glm::any(greaterThan(m_parentNodeRelPos, parent->m_size)) ||
            glm::any(lessThan(m_parentNodeRelPos + m_size, {}));
 }

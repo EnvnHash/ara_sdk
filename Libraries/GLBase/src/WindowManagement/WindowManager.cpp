@@ -264,17 +264,17 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
     if (gp.hidInput) {
         // bind window HID callbacks to globalCallbacks by adding them to the
         // callback maps
-        m_winHidCbMap[winCb::Key][win->getCtx()]      = [win](int p1, int p2, int p3, int p4) { win->onKey(p1, p2, p3, p4); };
-        m_winHidCbMap[winCb::Char][win->getCtx()]     = std::function([win](unsigned int p1) { win->onChar(p1); });
-        m_winHidCbMap[winCb::MouseButton][win->getCtx()] = [win](int button, int action, int mods) { win->onMouseButton(button, action, mods); };
+        m_winHidCbMap[winCb::Key][win->getCtx()]      = [win](const int p1, const int p2, const int p3, const int p4) { win->onKey(p1, p2, p3, p4); };
+        m_winHidCbMap[winCb::Char][win->getCtx()]     = std::function([win](const unsigned int p1) { win->onChar(p1); });
+        m_winHidCbMap[winCb::MouseButton][win->getCtx()] = [win](const int button, const int action, const int mods) { win->onMouseButton(button, action, mods); };
         m_winHidCbMap[winCb::WindowClose][win->getCtx()]     = [win] { win->onWindowClose(); };
-        m_winHidCbMap[winCb::WindowMaximize][win->getCtx()] = std::function([win](int maximized) { win->onWindowMaximize(maximized); });
-        m_winHidCbMap[winCb::WindowIconify][win->getCtx()]  = std::function([win](int iconified) { win->onWindowIconify(iconified); });
-        m_winHidCbMap[winCb::WindowFocus][win->getCtx()]     = std::function([win](int focused) { win->onWindowFocus(focused); });
+        m_winHidCbMap[winCb::WindowMaximize][win->getCtx()] = std::function([win](const int maximized) { win->onWindowMaximize(maximized); });
+        m_winHidCbMap[winCb::WindowIconify][win->getCtx()]  = std::function([win](const int iconified) { win->onWindowIconify(iconified); });
+        m_winHidCbMap[winCb::WindowFocus][win->getCtx()]     = std::function([win](const int focused) { win->onWindowFocus(focused); });
         m_winHidCbMap[winCb::WindowRefresh][win->getCtx()]   = [win] { win->onWindowRefresh(); };
-        m_winHidCbMap[winCb::Scroll][win->getCtx()]       = std::function([win](double xOffs, double yOffs) { win->onScroll(xOffs, yOffs); });
+        m_winHidCbMap[winCb::Scroll][win->getCtx()]       = std::function([win](const double xOffs, const double yOffs) { win->onScroll(xOffs, yOffs); });
 
-        m_winHidCbMap[winCb::CursorPos][win->getCtx()] = std::function([win](double x, double y) {
+        m_winHidCbMap[winCb::CursorPos][win->getCtx()] = std::function([win](const double x, const double y) {
 #if defined(_WIN32) || defined(__linux__)
             win->onMouseCursor(x / win->getContentScale().x, y / win->getContentScale().y);
 #else
@@ -290,7 +290,7 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
 #endif
         });
 
-        m_winHidCbMap[winCb::WindowPos][win->getCtx()] = std::function([win](int posX, int posY) {
+        m_winHidCbMap[winCb::WindowPos][win->getCtx()] = std::function([win](const int posX, const int posY) {
 #ifdef _WIN32
             win->onWindowPos(static_cast<int>(static_cast<float>(posX) / win->getContentScale().x),
                              static_cast<int>(static_cast<float>(posY) / win->getContentScale().x));
@@ -328,14 +328,13 @@ GLWindow *WindowManager::addWin(const glWinPar& gp) {
     return win;
 }
 
-void WindowManager::removeWin(GLWindow *win, bool terminateGLFW) {
+void WindowManager::removeWin(GLWindow *win, const bool terminateGLFW) {
     if (!win) {
         return;
     }
     // remove window callbacks
-    for (auto& [cbTp, map] : m_winHidCbMap) {
-        auto kcIt = map.find(win->getCtx());
-        if (kcIt != map.end()) {
+    for (auto &map: m_winHidCbMap | views::values) {
+        if (auto kcIt = map.find(win->getCtx()); kcIt != map.end()) {
             map.erase(kcIt);
         }
     }
@@ -344,21 +343,21 @@ void WindowManager::removeWin(GLWindow *win, bool terminateGLFW) {
         m_shareCtx = nullptr;
     }
 
-    auto wIt = ranges::find_if(m_windows, [win](const auto &w) { return w.get() == win; });
-
-    if (wIt != m_windows.end()) {
+    if (const auto wIt = ranges::find_if(m_windows, [win](const auto &w) {
+        return w.get() == win;
+    }); wIt != m_windows.end()) {
         win->destroy(terminateGLFW);
         m_windows.erase(wIt);
     }
 }
 
-void WindowManager::open(unsigned int nr) const {
+void WindowManager::open(const unsigned int nr) const {
     if (m_windows.size() > nr) {
         m_windows[nr]->open();
     }
 }
 
-void WindowManager::hide(unsigned int nr) const {
+void WindowManager::hide(const unsigned int nr) const {
     if (m_windows.size() > nr) {
         m_windows[nr]->hide();
     }
@@ -372,7 +371,7 @@ void WindowManager::closeAll() {
 }
 
 void WindowManager::destroyAll() {
-    for (auto &it : m_windows) {
+    for (const auto &it : m_windows) {
         it->destroy(false);
     }
     m_windows.clear();
@@ -383,11 +382,11 @@ void WindowManager::addEvtLoopCb(const std::function<bool()> &f) {
     m_custEventQueue.emplace_back(f);
 }
 
-void WindowManager::addGlobalHidCb(winCb tp, void* ptr, const winCtxHidCb& f) {
+void WindowManager::addGlobalHidCb(const winCb tp, void* ptr, const winCtxHidCb& f) {
     m_globalWinHidCpMap[tp].insert_or_assign(ptr, f);
 }
 
-void WindowManager::removeGlobalHidCb(winCb tp, void *ptr) {
+void WindowManager::removeGlobalHidCb(const winCb tp, void *ptr) {
     if (const auto it = m_globalWinHidCpMap[tp].find(ptr); it != m_globalWinHidCpMap[tp].end()) {
         m_globalWinHidCpMap[tp].erase(it);
     }
@@ -395,7 +394,7 @@ void WindowManager::removeGlobalHidCb(winCb tp, void *ptr) {
 
 // Note: all global...Cb are called on the main thread (same as startEventLoop())
 void WindowManager::globalKeyCb(GLContext ctx, int key, int scancode, int action, int mods) {
-    // on asus GL503V debian linux with spanish keyboard layout, arrow left right are different keycodes glfw doesn't
+    // on asus GL503V debian linux with Spanish keyboard layout, arrow left right is different keycodes glfw doesn't
     // seem to know them...
     if (key == 263) {
         key = 18;
@@ -485,7 +484,7 @@ void WindowManager::globalWindowRefreshCb(GLContext ctx) {
     callWinAndGlobalHidCb(ctx, winCb::WindowRefresh);
 }
 
-void WindowManager::setSwapInterval(unsigned int winNr, bool swapInterval) const {
+void WindowManager::setSwapInterval(const unsigned int winNr, const bool swapInterval) const {
     if (static_cast<unsigned int>(m_windows.size()) >= winNr) {
         m_windows[winNr]->setVSync(swapInterval);
     }
@@ -527,14 +526,14 @@ std::vector<std::pair<int, int>> WindowManager::getMonitorOffsets() {
     return m_dispOffsets;
 }
 
-[[maybe_unused]] GLFWvidmode const &WindowManager::getDispMode(unsigned int idx) const {
+[[maybe_unused]] GLFWvidmode const &WindowManager::getDispMode(const unsigned int idx) const {
     if (m_dispModes.size() > idx) {
         return m_dispModes[idx];
     }
     return m_defaultDispMode;
 }
 
-GLFWcursor *WindowManager::createMouseCursor(const std::string &file, float xHot, float yHot) const {
+GLFWcursor *WindowManager::createMouseCursor(const std::string &file, const float xHot, const float yHot) const {
     Texture   tex(m_glbase);
 
 #ifdef ARA_USE_FREEIMAGE
@@ -544,7 +543,20 @@ GLFWcursor *WindowManager::createMouseCursor(const std::string &file, float xHot
         return nullptr;
     }
 
-    const auto bitmap = FreeImage::Load(vp);
+    auto bitmap = FreeImage::Load(vp);
+    if (!bitmap) {
+        return nullptr;
+    }
+
+#ifdef __linux__
+    if (constexpr int cursorSize = 24; FreeImage_GetWidth(bitmap) != cursorSize || FreeImage_GetHeight(bitmap) != cursorSize) {
+        if (const auto resizedBitmap = FreeImage_Rescale(bitmap, cursorSize, cursorSize, FILTER_BICUBIC)) {
+            FreeImage_Unload(bitmap);
+            bitmap = resizedBitmap;
+        }
+    }
+#endif
+
     GLFWimage image;
     image.pixels    = FreeImage::GetBits(bitmap);
     const auto sz = FreeImage::GetSizeFromBitmap(bitmap);
@@ -552,8 +564,8 @@ GLFWcursor *WindowManager::createMouseCursor(const std::string &file, float xHot
     image.height    = static_cast<int>(sz[1]);
 
     const auto c = glfwCreateCursor(&image,
-                              static_cast<int>(static_cast<float>(image.width) * xHot),
-                              static_cast<int>(static_cast<float>(image.height) * yHot));
+                                                static_cast<int>(static_cast<float>(image.width) * xHot),
+                                                static_cast<int>(static_cast<float>(image.height) * yHot));
     FreeImage_Unload(bitmap);
     return c;
 #endif
@@ -565,23 +577,20 @@ void ara::WindowManager::loadMouseCursors() {
     // but compact in use, we try once to load those image by standard names and
     // folders, if they are not there, they have to be loaded by explicitly
     // calling the method above
-    string mouseCursoIconAsc  = "Icons/mouse_cursor_asc.png";
-    string mouseCursoIconDesc = "Icons/mouse_cursor_desc.png";
-
-    m_diagResizeAscCursor  = createMouseCursor(mouseCursoIconAsc, 0.5f, 0.5f);
-    m_diagResizeDescCursor = createMouseCursor(mouseCursoIconDesc, 0.5f, 0.5f);
+    m_diagResizeAscCursor  = createMouseCursor("Icons/mouse_cursor_asc.png", 0.5f, 0.5f);
+    m_diagResizeDescCursor = createMouseCursor("Icons/mouse_cursor_desc.png", 0.5f, 0.5f);
 }
 
 #endif
 
-unsigned int WindowManager::getMonitorWidth(unsigned int winNr) const {
+unsigned int WindowManager::getMonitorWidth(const unsigned int winNr) const {
     if (static_cast<unsigned int>(m_windows.size()) >= winNr - 1) {
         return m_windows[winNr]->getMonitorWidth();
     }
     return 0;
 }
 
-unsigned int WindowManager::getMonitorHeight(unsigned int winNr) const {
+unsigned int WindowManager::getMonitorHeight(const unsigned int winNr) const {
     if (static_cast<unsigned int>(m_windows.size()) >= winNr - 1) {
         return m_windows[winNr]->getMonitorHeight();
     }

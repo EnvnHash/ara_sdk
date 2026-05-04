@@ -1062,12 +1062,13 @@ void UIWindow::onMouseMove(const float xPos, const float yPos, ushort _mode) {
     }
 
     m_hidData.newNode = static_cast<void *>(foundNode);
+    m_hidData.movedPix = m_hidData.mousePos - m_mouseDownPos;
 
     for (auto &it : m_globalMouseMoveCb | views::values) {
         it(m_hidData);
     }
 
-    // if the mouse moved to another UiNode, advice the old node of this event
+    // if the mouse moved to another UiNode, advise the old node of this event
     if (m_lastHoverFound && m_lastHoverFound != foundNode && !m_hidData.dragging && !m_lastHoverFound->isHIDBlocked()) {
         m_lastHoverFound->mouseOut(m_hidData);  // mouse out has to be processed before mouse in !!!
     }
@@ -1079,7 +1080,6 @@ void UIWindow::onMouseMove(const float xPos, const float yPos, ushort _mode) {
 
     m_lastHoverFound = foundNode;
 
-    m_hidData.movedPix = m_hidData.mousePos - m_mouseDownPos;
     bool isValidDrag = length(m_hidData.movedPix) > 4.f * s_devicePixelRatio;
 
     if ((m_hidData.mousePressed || m_hidData.mouseRightPressed) && !m_draggingNodeTree.empty() &&

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+
 #include "Table.h"
 #include "Button/Button.h"
 
@@ -30,6 +32,7 @@ public:
     virtual void setTabButBgColSelected(const glm::vec4 col) { m_tabButtBgColSel = col; }
     virtual void setTabButBgColDeSelected(const glm::vec4 col) { m_tabButtBgColDeSel = col; }
     void         setTabSwitchCb(const std::function<void(size_t)>& f) { m_switchTabCb = f; }
+    void         setTabsPerRow(int32_t tabsPerRow);
 
     template <class T>
     T* addTab(const std::string& title) {
@@ -39,13 +42,6 @@ public:
 
     template <class T>
     T* addTab(const std::string& title, const UINodePars& nodePars) {
-        // be sure there is one row in the table
-        if (!m_tab(0).getCount()) {
-            m_tab(0).add(1);
-        }
-
-        m_tab(1).add(1);
-
         auto& pushedNode = m_contentArea->push<T>(nodePars);
         pushedNode.setVisibility(m_tab.empty());
         auto& tab = addTabLabelButton(title);
@@ -54,6 +50,7 @@ public:
         // create a Tab Object, with the title, the content node and the Tab-Button
         m_tab.emplace_back(e_tab{title, &pushedNode, &tab, &underline, m_tab.empty()});
 
+        updateTabTableTopology();
         arrangeTabs();
         m_geoChanged = true;
         return &pushedNode;
@@ -62,10 +59,12 @@ public:
 protected:
     CellTable<e_tab> m_tab;
 
-    int m_TabHeight = 40;  // marco.g: again, this should be a value that we get from a global resource
+    int m_TabHeight = 40;
+    int32_t m_tabsPerRow = 10;
     unsigned int m_selectedTab = 0;
 
     void arrangeTabs();
+    void updateTabTableTopology();
     bool m_preventArrangeFdbk = false;
 
     Div* m_tabArea     = nullptr;

@@ -20,6 +20,7 @@ Resizable::Resizable() {
     setTypeName<Resizable>();
     setFocusAllowed(true);
     setScissorChildren(false);
+    setSnapToHwPix(true);;
 }
 
 void Resizable::init() {
@@ -39,19 +40,20 @@ void Resizable::init() {
 }
 
 void Resizable::initHandles() {
+    const auto handleSize = static_cast<float>(m_handleSize);
     array positions {
         ivec2{-m_handleSize/2, -m_handleSize/2}, ivec2{m_handleSize/2, -m_handleSize/2},
         ivec2{m_handleSize/2, m_handleSize/2}, ivec2{-m_handleSize/2, m_handleSize/2},
-        ivec2{0, -m_handleSize * 0.35f}, ivec2{m_handleSize * 0.35f, 0},
-        ivec2{0, m_handleSize * 0.35f}, ivec2{-m_handleSize * 0.35f, 0},
+        ivec2{0, -handleSize * 0.35f}, ivec2{handleSize * 0.35f, 0},
+        ivec2{0, handleSize * 0.35f}, ivec2{-handleSize * 0.35f, 0},
         ivec2{0, 0}
     };
 
     array sizes {
         ivec2{m_handleSize, m_handleSize}, ivec2{m_handleSize, m_handleSize},
         ivec2{m_handleSize, m_handleSize}, ivec2{m_handleSize, m_handleSize},
-        ivec2{m_handleSize*2, m_handleSize * 0.7f}, ivec2{m_handleSize * 0.7f, m_handleSize*2},
-        ivec2{m_handleSize*2, m_handleSize * 0.7f}, ivec2{m_handleSize * 0.7f, m_handleSize*2},
+        ivec2{m_handleSize*2, handleSize * 0.7f}, ivec2{handleSize * 0.7f, m_handleSize*2},
+        ivec2{m_handleSize*2, handleSize * 0.7f}, ivec2{handleSize * 0.7f, m_handleSize*2},
         ivec2{m_handleSize*2, m_handleSize*2}
     };
 
@@ -64,7 +66,7 @@ void Resizable::initHandles() {
         m_handles[i] = &push<ResizableHandle>(UINodePars{
             .pos = positions[i],
             .size = sizes[i],
-            .bgColor = vec4{0.4f, 0.4f, 0.4f, 0.9f},
+            .bgColor = vec4{0.4f, 0.4f, 0.4f, 1.f},
             .align = aligns[i],
             .valign = vAligns[i],
             .borderWidth = 1.f,
@@ -72,17 +74,17 @@ void Resizable::initHandles() {
         });
         m_handles[i]->setCorner(static_cast<Corner>(i));
         m_handles[i]->setResizeImage(this);
+        m_handles[i]->setSnapToHwPix(true);
         if (i == static_cast<int32_t>(Corner::center)) {
             m_handles[i]->setAlpha(0.f);
         }
-        m_handles[i]->setResizeImage(this);
     }
 
     setFixedAspect(m_fixedAspect);
 }
 
 void Resizable::setResizeStart(const Corner corner) {
-    m_dragStartPos = getPos();
+    m_dragStartPos = getAlignedPos();
     m_dragStartSize = getSize();
     m_dragStartAspect = m_dragStartSize.x / m_dragStartSize.y;
     m_dragCorner = corner;
@@ -106,8 +108,8 @@ void Resizable::resizeFromCorner(const Corner corner, const vec2& movedPix) {
         newSize.x = newSize.y * m_dragStartAspect;
     }
 
-    setPos(getNewPos(corner, movedPix, newSize));
     setSize(newSize);
+    setPos(getNewPos(corner, movedPix, newSize));
 
     if (getSharedRes()) {
         getSharedRes()->reqRedraw();
@@ -117,7 +119,7 @@ void Resizable::resizeFromCorner(const Corner corner, const vec2& movedPix) {
 ivec2 Resizable::getNewSize(const Corner corner, const vec2& movedPix) const {
     static unordered_map<Corner, function<ivec2(const dragPar&)>> funcMap{
         {Corner::bottomRight, [](const dragPar& dp) {
-            return max(dp.minSize, ivec2(dp.dragStartSize + dp.movedPix));
+            return max(dp.minSize, ivec2((dp.dragStartSize + dp.movedPix)));
         }}, {Corner::topLeft, [](const dragPar& dp) {
             return max(dp.minSize, ivec2(dp.dragStartSize - dp.movedPix));
         }}, {Corner::bottomLeft, [](const dragPar& dp) {
@@ -144,28 +146,56 @@ ivec2 Resizable::getNewSize(const Corner corner, const vec2& movedPix) const {
 ivec2 Resizable::getNewPos(const Corner corner, const vec2& movedPix, const vec2& newSize) const {
     static unordered_map<Corner, function<ivec2(const dragPar&)>> funcMap{
         {Corner::bottomRight, [](const dragPar& dp) {
-            return dp.dragStartPos;
+            return ivec2{ getNewXPosRightHandle(dp), getNewYPosBottomHandle(dp) };
         }}, {Corner::topLeft, [](const dragPar& dp) {
-            return dp.dragStartPos - dp.newSize + dp.dragStartSize;
+            return ivec2{getNewXPosLeftHandle(dp), getNewYPosTopHandle(dp) };
         }}, {Corner::bottomLeft, [](const dragPar& dp) {
-            return ivec2{ dp.dragStartPos.x - dp.newSize.x + dp.dragStartSize.x, dp.dragStartPos.y };
+            return ivec2{ getNewXPosLeftHandle(dp), getNewYPosBottomHandle(dp) };
         }}, {Corner::topRight, [](const dragPar& dp) {
-            return ivec2{ dp.dragStartPos.x, dp.dragStartPos.y - dp.newSize.y + dp.dragStartSize.y };
+            return ivec2{ getNewXPosRightHandle(dp), getNewYPosTopHandle(dp) };
         }}, {Corner::top, [](const dragPar& dp) {
-            return ivec2{ dp.dragStartPos.x, dp.dragStartPos.y - dp.newSize.y + dp.dragStartSize.y };
+            return ivec2{ getNewXPosCenterHandle(dp), getNewYPosTopHandle(dp) };
         }}, {Corner::bottom, [](const dragPar& dp) {
-            return ivec2{ dp.dragStartPos.x - dp.newSize.x + dp.dragStartSize.x, dp.dragStartPos.y };
+            return ivec2{ getNewXPosCenterHandle(dp), getNewYPosBottomHandle(dp) };
         }}, {Corner::right, [](const dragPar& dp) {
-            return dp.dragStartPos;
+            return ivec2{ getNewXPosRightHandle(dp), getNewYPosCenterHandle(dp) };
         }}, {Corner::left, [](const dragPar& dp) {
-            return ivec2{ dp.dragStartPos.x - dp.newSize.x + dp.dragStartSize.x, dp.dragStartPos.y };
+            return ivec2{ getNewXPosLeftHandle(dp), getNewYPosCenterHandle(dp) };
         }}, {Corner::center, [](const dragPar& dp) {
             return dp.dragStartPos + dp.movedPix;
         }}
     };
 
-    const dragPar dp{movedPix, m_minSize, m_dragStartPos, m_dragStartSize, newSize};
+    const dragPar dp{movedPix, m_minSize, m_dragStartPos, m_dragStartSize, newSize, m_alignX, m_alignY };
     return funcMap[corner](dp);
+}
+
+int32_t Resizable::getNewXPosCenterHandle(const dragPar& dp) {
+    return dp.dragStartPos.x;
+}
+
+int32_t Resizable::getNewXPosLeftHandle(const dragPar& dp) {
+    const float pivotFac = dp.alignX == align::right ? 1.f : dp.alignX == align::center ? 0.5f : 0.f;
+    return static_cast<int32_t>(std::round(dp.dragStartPos.x + (1.f - pivotFac) * (dp.dragStartSize.x - dp.newSize.x)));
+}
+
+int32_t Resizable::getNewXPosRightHandle(const dragPar& dp) {
+    const float pivotFac = dp.alignX == align::right ? 1.f : dp.alignX == align::center ? 0.5f : 0.f;
+    return static_cast<int32_t>(std::round(dp.dragStartPos.x + pivotFac * (dp.newSize.x - dp.dragStartSize.x)));
+}
+
+int32_t Resizable::getNewYPosCenterHandle(const dragPar& dp) {
+    return dp.dragStartPos.y;
+}
+
+int32_t Resizable::getNewYPosTopHandle(const dragPar& dp) {
+    const float pivotFac = dp.alignY == valign::bottom ? 1.f : dp.alignY == valign::center ? 0.5f : 0.f;
+    return static_cast<int32_t>(std::round(dp.dragStartPos.y + (1.f - pivotFac) * (dp.dragStartSize.y - dp.newSize.y)));
+}
+
+int32_t Resizable::getNewYPosBottomHandle(const dragPar& dp) {
+    const float pivotFac = dp.alignY == valign::bottom ? 1.f : dp.alignY == valign::center ? 0.5f : 0.f;
+    return static_cast<int32_t>(std::round(dp.dragStartPos.y + pivotFac * (dp.newSize.y - dp.dragStartSize.y)));
 }
 
 int32_t Resizable::getTopDragY(const dragPar& dp) {

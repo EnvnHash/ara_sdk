@@ -546,11 +546,11 @@ void GLFWWindow::setSize(const int width, const int height) {
 }
 
 /// input in virtual pixels
-void GLFWWindow::setPosition(int posx, int posy) {
-    m_posVirt.x = static_cast<float>(posx);
-    m_posVirt.y = static_cast<float>(posy);
-    m_posReal.x = static_cast<float>(posx) * m_contentScale.x;
-    m_posReal.y = static_cast<float>(posy) * m_contentScale.y;
+void GLFWWindow::setPosition(int posX, int posY) {
+    m_posVirt.x = static_cast<float>(posX);
+    m_posVirt.y = static_cast<float>(posY);
+    m_posReal.x = static_cast<float>(posX) * m_contentScale.x;
+    m_posReal.y = static_cast<float>(posY) * m_contentScale.y;
 #ifdef __APPLE__
     glfwSetWindowPos(m_window, m_posVirt.x, m_posVirt.y);
 #else

@@ -9,16 +9,18 @@ include_directories(${ara_sdk_INCLUDE_DIRS})
 file(GLOB UI_UT_SRC
     UIMatTests/GetPixelPosition_Absolute.cpp
     UIMatTests/GetPixelPosition_ParentRelative.cpp
-    AlignTest.cpp
+        AlignTest/AlignTest.cpp
     ButtonTests.cpp
     CarrouselTest.cpp
     ComboBoxTest.cpp
     CollapsibleTreeTest.cpp
     DataBindingTest.cpp
+    DivTest.cpp
     LabelTest.cpp
-    ReloadGLContextTest.cpp
     HidTest.cpp
     ImageTest.cpp
+    ReloadGLContextTest.cpp
+    ResizableTest.cpp
     ScrollViewTest.cpp
     SerializeBasicTest.cpp
     SerializeImageTest.cpp

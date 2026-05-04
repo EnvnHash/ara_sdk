@@ -68,6 +68,12 @@ public:
 };
 #endif
 
+class DemoView_Resizable : public DemoView {
+public:
+    DemoView_Resizable();
+    void init() override;
+};
+
 class DemoView_ScrollView : public DemoView {
 public:
     DemoView_ScrollView();

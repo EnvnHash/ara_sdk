@@ -161,9 +161,9 @@ public:
         setSizeComp(size.y, coordComp::y, st);
     }
 
-    /** implicitly sets pivot to same value  */
+    /** implicitly sets pivot to the same value  */
     void setAlignX(align type, state st = state::m_state);
-    /** implicitly sets pivot to same value  */
+    /** implicitly sets pivot to the same value  */
     void setAlignY(valign type, state st = state::m_state);
     void setAlign(align alignX, valign alignY, state st = state::m_state);
 
@@ -171,10 +171,10 @@ public:
     void setPivotX(pivotX pX);
     /** explicitly set pivot y. Must be set AFTER setAlign */
     void setPivotY(pivotY pY);
-    /** explicitly set pivot point. Must be set AFTER setAlign */
+    /** explicitly set the pivot point. Must be set AFTER setAlign */
     void setPivot(pivotX pX, pivotY pY);
 
-    /** padding is the in the parent, the children read it from the parent's value when calculating their matrices */
+    /** padding is in the parent, the children read it from the parent's value when calculating their matrices */
     template<typename T>
     requires std::is_same_v<T, glm::vec4> || std::is_same_v<T, float>
     void setPadding(const T& val, const state st = state::m_state) {
@@ -204,12 +204,12 @@ public:
     void setBorderWidth(uint32_t val, state st = state::m_state);
     void setBorderRadius(uint32_t val, state st = state::m_state);
 
-    /** in pixels. origin is bottom, left (as opengl requests this coordinates) */
+    /** in pixels. the origin is bottom, left (as opengl requests these coordinates) */
     virtual void setViewport(float x, float y, float width, float height);
     virtual void setViewport(glm::vec4* viewport) { m_viewPort = *viewport; }
 
     virtual void setZoomNormMat(float val);
-    virtual void setZoomWithCenter(float val, glm::vec2& center);
+    virtual void setZoomWithCenter(float val, glm::vec2& actMousePos);
 
     /** relative float values */
     virtual void setContentTransScale(float x, float y);
@@ -217,7 +217,7 @@ public:
     virtual void setContentTransTransl(float x, float y);
     virtual void setContentRotation(float angle, float ax, float ay, float az);
     void         setContentTransCentered(const bool val) { m_contTransMatCentered = val; }
-
+    void         setSnapToHwPix(const bool val) { m_snapToHwPix = val; }
     virtual void setGeoChanged(const bool val) { m_geoChanged = val; }
 
     static bool contains(UINodeGeom* outer, UINodeGeom* node);
@@ -231,11 +231,13 @@ public:
     virtual glm::vec2& getParentNodeRelPos();
     /** return the x and y position relative to the parent's content's upper left corner in pixels */
     glm::vec2& getPos();
+    /** return the x and y position in pixels, respecting the UINodes alignment */
+    glm::vec2& getAlignedPos();
 
     [[nodiscard]] float     getZPos() const { return m_zPos; }
     /** return the node's content's x and y position relative to the window's upper left corner in pixels */
     virtual glm::vec2& getContWinPos();
-    /** return the size of the node, (including padding and border) */
+    /** return the size of the node (including padding and border) */
     glm::vec2& getSize();
     /** return the size of the node, including padding, border and all parents contenttransformations */
     virtual glm::vec2& getWinRelSize();
@@ -307,7 +309,7 @@ public:
     virtual void        setSharedRes(UISharedRes* shared);
 
     void                updateContentTransMat();
-    void                calcContentTransMat(glm::mat4& mat, const glm::vec3& trans);
+    void                calcContentTransMat(glm::mat4& mat, const glm::vec3& trans) const;
 
     void                excludeFromPadding(const bool val) { m_excludeFromPadding = val; }
     [[nodiscard]] bool  isExcludedFromPadding() const { return m_excludeFromPadding; }
@@ -363,6 +365,7 @@ protected:
     bool m_oob                              = false;
     bool m_updating                         = false;
     bool m_limitContentTrans                = false;
+    bool m_snapToHwPix                      = false;
 
     int32_t m_posXInt   = 0;
     int32_t m_posYInt   = 0;
@@ -418,6 +421,8 @@ protected:
 
     /** the position relative to the parent's (transformed) content's top left corner in pixels */
     glm::vec2 m_pos{};
+    /** the position as set initially before alignment calculations */
+    glm::vec2 m_preAlignPos{};
     /** the position relative to the parent's node's top left corner in pixels
      * (ignoring border and padding) */
     glm::vec2 m_parentNodeRelPos{};

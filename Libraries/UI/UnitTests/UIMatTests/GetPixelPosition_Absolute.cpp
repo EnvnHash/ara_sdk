@@ -24,7 +24,7 @@ TEST(UITest, GetPixelPosition_Absolute) {
     // implicitly creates a window and runs the lambda before calling the draw function for the first time
     app.initSingleThreaded([&](){
         // get the root node of the UI scenegraph
-        auto rootNode = app.getRootNode();
+        const auto rootNode = app.getRootNode();
 
         // create a Div, standard alignment is top, left (align::left, valign::top, with Pivot: pivotX::left, PX_TOP
         ivec2 div0_pos(20, 20);
@@ -39,14 +39,14 @@ TEST(UITest, GetPixelPosition_Absolute) {
         vec2 div2_pos(0.3f, 0.2f);
         auto& div2 = div0.push<Div>({ .pos = div2_pos, .size = glm::vec2{0.2f, 0.2f}, .bgColor = fgColor });
 
-        // by calling draw, the UINode tree gets iterated and all matrices are calculated
+        // by calling draw, the UINode tree gets iterated, and all matrices are calculated
         // alternatively there is a function to explicitly iterate the node tree and ONLY calculate matrices
         rootNode->updateMatrix();
 
         // ----------------------------------------------------------------------------------
 
         // read back the x and y position in relation to its parent.
-        // if alignment von align::left, valign::top, this is in relation to the window top left corner
+        // if alignment on align::left, valign::top, this is in relation to the window top left corner
         ASSERT_EQ(div0.getWinPos().x, div0_pos.x);
         ASSERT_EQ(div0.getWinPos().y, div0_pos.y);
 

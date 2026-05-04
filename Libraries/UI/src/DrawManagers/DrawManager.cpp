@@ -87,7 +87,7 @@ void DrawManager::update() {
 }
 
 Shaders *DrawManager::getShader(DrawSet &ds) {
-    std::string shaderName = "DrawManager_" + std::to_string(ds.fontTex.size()) + "_" + std::to_string(ds.textures.size());
+    const std::string shaderName = "DrawManager_" + std::to_string(ds.fontTex.size()) + "_" + std::to_string(ds.textures.size());
 
     m_shdr = m_shCol->get(shaderName);
     if (m_shdr) {
@@ -159,7 +159,7 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
             float r     = length(cc);                               \n
             float angle = atan(cc.y, cc.x);                         \n
 
-            // since borderRadius pixels translate to different normalized values for x and y we have to calculate a
+            // since borderRadius pixels translate to different normalized values for x and y, we have to calculate a
             // normalized radius and scale it by borderWidth
             vec2 rr = vec2(cos(angle), sin(angle)); \n
             vec2 bw = vin.aux1.xy / (validBr ? vin.aux1.zw : vec2(1.0)); \n  // borderWidth in corner area coordinates (ignored if borderRadius == 0)
@@ -178,7 +178,7 @@ Shaders *DrawManager::getShader(DrawSet &ds) {
                 return vec4(
                     vin.color.rgb,
                     vin.color.a *
-                        texture(fontTex[li], vec3(vin.tex_coord, vin.aux2.y / fontTexNrLayers[li] + 0.5 / fontTexNrLayers[li])).r); \n  // needs "half pixel offset" same as 2d tex access
+                        texture(fontTex[li], vec3(vin.tex_coord, vin.aux2.y / fontTexNrLayers[li] + 0.5 / fontTexNrLayers[li])).r); \n  // needs "half-pixel offset" same as 2d tex access
         }\n);
     }
 
@@ -373,14 +373,14 @@ float DrawManager::pushTexture(const GLuint texId) {
 
 float DrawManager::pushTexture(DrawSet &ds, const GLuint texId) {
     // check if the maximum number of parallel texture units is used. if this is the case, create a new draw set
-    if (size_t newTexSize = ds.textures.size() + static_cast<size_t>(!ds.textures.contains(texId));
+    if (const size_t newTexSize = ds.textures.size() + static_cast<size_t>(!ds.textures.contains(texId));
         newTexSize + ds.textures.size() > static_cast<size_t>(m_glbase->maxTexUnits())) {
         m_drawSets.emplace_back();
     }
 
     // in case this is a new texId or the nrLayers has changed
     if (!ds.textures.contains(texId)) {
-        ds.textures[texId] = static_cast<int>(ds.textures.size());  // associate a texUnit to this new texId
+        ds.textures[texId] = static_cast<int>(ds.textures.size());  // associate a texUnit with this new texId
     }
 
     return static_cast<float>(ds.textures[texId]);
@@ -395,7 +395,7 @@ void DrawManager::popTexture(DrawSet &ds, const GLuint texId) {
 void DrawManager::replaceTexture(DrawSet &ds, GLuint texUnit, const GLuint texId) {
     std::erase_if(ds.textures, [&](auto& it) { return it.second == texUnit; });
     ds.textures.erase(texId);
-    ds.textures[texId] = texUnit;  // associate a texUnit to this new texId
+    ds.textures[texId] = texUnit;  // associate a texUnit with this new texId
 }
 
 void DrawManager::pushFunc(const std::function<void()>& f) {
@@ -407,7 +407,7 @@ void DrawManager::pushFunc(const std::function<void()>& f) {
 void DrawManager::clear() {
     // remove shaders if necessary
     if (m_shCol) {
-        for (const auto &ds : m_drawSets  | std::views::filter([](auto& ds) { return ds.shdr; }) ) {
+        for (const auto &ds : m_drawSets  | std::views::filter([](auto& drawSet) { return drawSet.shdr; }) ) {
             m_shCol->deleteShader(ds.shdr);
         }
     }

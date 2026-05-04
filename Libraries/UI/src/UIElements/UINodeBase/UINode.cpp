@@ -405,6 +405,11 @@ void UINode::updateMatrix() {
     // store the size of this node (including its padding and border)
     m_size = m_work_size;
 
+    if (m_snapToHwPix) {
+        m_size = round(m_size);
+        m_pos = round(m_pos);
+    }
+
     // parent relative content matrix for the node's children
     m_nodeMat[3][0] = m_pos.x + static_cast<float>(m_borderWidth);
     m_nodeMat[3][1] = m_pos.y + static_cast<float>(m_borderWidth);
@@ -494,6 +499,8 @@ void UINode::setPositionAndSize() {
             m_work_size.y = m_init_size.x / m_fixAspect;
         }
     }
+
+    m_preAlignPos = m_pos;
 }
 
 void UINode::setAlignment() {

@@ -17,6 +17,8 @@ public:
         const glm::vec2& dragStartPos{};
         const glm::vec2& dragStartSize{};
         const glm::vec2& newSize{};
+        const align alignX{};
+        const valign alignY{};
     };
 
     Resizable();
@@ -32,10 +34,17 @@ private:
     void resizeFromCorner(ResizableHandle::Corner corner, const glm::vec2& movedPix);
     glm::ivec2 getNewSize(ResizableHandle::Corner corner, const glm::vec2& movedPix) const;
     glm::ivec2 getNewPos(ResizableHandle::Corner corner, const glm::vec2& movedPix, const glm::vec2& newSize) const;
+
+    static int32_t getNewXPosCenterHandle(const dragPar& dp);
+    static int32_t getNewXPosLeftHandle(const dragPar& dp);
+    static int32_t getNewXPosRightHandle(const dragPar& dp);
+    static int32_t getNewYPosCenterHandle(const dragPar& dp);
+    static int32_t getNewYPosTopHandle(const dragPar& dp);
+    static int32_t getNewYPosBottomHandle(const dragPar& dp);
     static int32_t getTopDragY(const dragPar& dp);
     static int32_t getLeftDragX(const dragPar& dp);
 
-    ResizableHandle::Corner m_dragCorner = ResizableHandle::Corner::bottomRight;
+    ResizableHandle::Corner m_dragCorner{};
     glm::vec2               m_dragStartMouseParentRel{};
     glm::vec2               m_dragStartPos{};
     glm::vec2               m_dragStartSize{};
@@ -46,7 +55,6 @@ private:
     bool                    m_fixedAspect = false;
 
     std::array<ResizableHandle*, static_cast<int>(ResizableHandle::Corner::size)> m_handles{};
-
 };
 
 } // namespace hfc

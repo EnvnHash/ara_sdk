@@ -1,8 +1,6 @@
 #include "TabView.h"
 #include "UIApplication.h"
 
-
-
 using namespace glm;
 using namespace std;
 
@@ -28,13 +26,18 @@ TabView::TabView() {
 }
 
 Button& TabView::addTabLabelButton(const std::string& title) {
-    auto& tab = m_tabArea->push<Button>({ .style = getStyleClass()+".button"});
-    tab.setBackgroundColor(m_tabButtBgColDeSel);
-    tab.setFont("regular", 17, align::left, valign::center, textcolor);
+    auto& tab = m_tabArea->push<Button>(LabelPars{
+        .style = getStyleClass()+".button",
+        .color = m_sharedRes->colors->at(uiColors::white),
+        .bgColor = m_tabButtBgColDeSel,
+        .text = title,
+        .textAlignX = align::center,
+        .textAlignY = valign::center,
+        .fontType = "regular",
+        .fontHeight = 17,
+    });
+
     tab.setPadding(5.f, 0.f, 5.f, 0.f);
-    tab.setText(title);
-    tab.setTextAlignX(align::center);
-    tab.setTextAlignY(valign::center);
     tab.addMouseClickCb([this](const hidData& data) {
         const auto ret = ranges::find_if(m_tabArea->children(), [&data](auto& item){
             return std::dynamic_pointer_cast<UINode>(item)->getId() == data.objId;
@@ -49,11 +52,14 @@ Button& TabView::addTabLabelButton(const std::string& title) {
 }
 
 Div& TabView::addTabUnderline(Button& tab)  {
-    auto& underline = tab.push<Div>({ .style = getStyleClass()+".button"});
+    auto& underline = tab.push<Div>({
+        .bgColor = m_sharedRes->colors->at(uiColors::blue),
+        .style = getStyleClass()+".button",
+        .align = align::center,
+        .valign = valign::bottom,
+    });
     underline.setName("underline");
     underline.setHeight(1);
-    underline.setAlign(align::center, valign::bottom);
-    underline.setBackgroundColor(m_sharedRes->colors->at(uiColors::blue));
     underline.excludeFromPadding(true);
     underline.excludeFromObjMap(true);
     return underline;
@@ -73,21 +79,53 @@ void TabView::clearTabs() {
     m_tab.reset();
     m_contentArea->clearChildren();
     m_tabArea->clearChildren();
+    updateTabTableTopology();
+}
+
+void TabView::setTabsPerRow(const int32_t tabsPerRow) {
+    m_tabsPerRow = std::max(1, tabsPerRow);
+    updateTabTableTopology();
+    arrangeTabs();
+    setDrawFlag();
+    if (getSharedRes()) {
+        getSharedRes()->reqRedraw();
+    }
+}
+
+void TabView::updateTabTableTopology() {
+    const auto tabCount = static_cast<int32_t>(m_tab.size());
+    const auto tabsPerRow = std::max(1, m_tabsPerRow);
+    const auto columnCount = tabCount > 0 ? std::min(tabCount, tabsPerRow) : 0;
+    const auto rowCount = tabCount > 0 ? (tabCount + tabsPerRow - 1) / tabsPerRow : 0;
+
+    m_tab(0).del(0, -1);
+    m_tab(1).del(0, -1);
+
+    if (rowCount > 0) {
+        m_tab(0).add(rowCount);
+    }
+
+    if (columnCount > 0) {
+        m_tab(1).add(columnCount);
+    }
+
+    const auto tabAreaHeight = rowCount > 0 ? rowCount * m_TabHeight : m_TabHeight;
+    m_tabArea->setHeight(tabAreaHeight);
+    m_contentArea->setHeight(-tabAreaHeight);
 }
 
 void TabView::arrangeTabs() {
-    m_tab.updateGeo(m_tabArea->getSize().x, m_tabArea->getSize().y, 0, 0, 0, 0, 5, 0);
+    updateTabTableTopology();
+    m_tab.updateGeo(m_tabArea->getSize().x, m_tabArea->getSize().y, 0, 0, 0, 0, 5, 5);
 
     int            i = 0;
     Table_CellGeo cg;
 
     for (auto&[title, ui_Node, tab, underline, selected] : m_tab) {
-        if (m_tab.getCellGeo(cg, i++)) {
-            if (cg.pixSize[0] > 0) {
-                tab->setPos(static_cast<int>(cg.pixPos[0]), static_cast<int>(cg.pixPos[1]));
-                tab->setSize(static_cast<int>(cg.pixSize[0]), static_cast<int>(cg.pixSize[1]));
-                tab->setBackgroundColor(selected ? m_tabButtBgColSel : m_tabButtBgColDeSel);
-            }
+        if (m_tab.getCellGeo(cg, i++) && cg.pixSize[0] > 0) {
+            tab->setPos(static_cast<int>(cg.pixPos[0]), static_cast<int>(cg.pixPos[1]));
+            tab->setSize(static_cast<int>(cg.pixSize[0]), static_cast<int>(cg.pixSize[1]));
+            tab->setBackgroundColor(selected ? m_tabButtBgColSel : m_tabButtBgColDeSel);
         }
     }
 

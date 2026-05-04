@@ -2,7 +2,7 @@
 // Created by sven on 11/15/20.
 //
 
-#include "TestCommon.h"
+#include "../TestCommon.h"
 #include <UIElements/Div.h>
 
 using namespace std;
@@ -10,7 +10,7 @@ using namespace glm;
 
 namespace ara::UiUnitTest::AlignTest {
 
-void drawQuadAndCheck(align ax, valign ay) {
+void drawQuadAndCheck(const align ax, const valign ay) {
     constexpr ivec2 size = { 200, 100 };
     constexpr vec4 col = { 1.f, 0.f, 0.f, 1.f };
     appBody([&](UIApplication& app){
@@ -51,10 +51,10 @@ TEST(UITest, AlignCenter) {
 }
 
 TEST(UITest, BorderRadiusOutOfBoundsLimit) {
-    ivec2 size = { 200, 200 };
-    vec4 col = { 1.f, 0.f, 0.f, 1.f };
+    constexpr ivec2 size = { 200, 200 };
+    constexpr vec4 col = { 1.f, 0.f, 0.f, 1.f };
     appBody([&](const UIApplication& app){
-        auto win = app.getMainWindow();
+        const auto win = app.getMainWindow();
         auto& div = win->getRootNode()->push<Div>();
         div.setPos(-100, 100);
         div.setSize(size.x, size.y);
@@ -64,7 +64,7 @@ TEST(UITest, BorderRadiusOutOfBoundsLimit) {
         div.setBorderWidth(20);
         div.setBorderColor(0.f, 0.5f, 1.f, 1.f);
     }, [&](const UIApplication& app){
-        auto mainWin = app.getWinBase();
+        const auto mainWin = app.getWinBase();
         compareFrameBufferToImage(filesystem::current_path() / "border_radius_oob.png",
                                   mainWin->getWidth(),
                                   mainWin->getHeight(),

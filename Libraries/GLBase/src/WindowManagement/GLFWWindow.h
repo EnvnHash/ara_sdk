@@ -118,24 +118,26 @@ public:
 
     // GLFWcursor* createMouseCursor(const char* file, float xHot, float yHot);
     void          setMouseCursorIcon(GLFWcursor *icon, WinMouseIcon tp) { m_mouseCursors[toType(tp)] = icon; }
-    bool          isOpen() const override { return m_isOpen; }
-    bool          isMinimized() const { return glfwGetWindowAttrib(m_window, GLFW_ICONIFIED); }
-    bool          isMaximized() const { return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED); }
-    bool          isHidBlocked() const { return m_hidBlocked; }
-    int           getMonitorId() const { return useMonitor; }
-    unsigned int  getMonitorWidth() const { return m_monWidth; }
-    unsigned int  getMonitorHeight() const { return m_monHeight; }
-    void         *getWin() override { return m_window; }
-    GLFWwindow   *getCtx() const { return m_window; }
-    GLFWmonitor **getMonitors() const { return m_monitors; }
-    GLFWmonitor  *getMonitor(const int i) const { return m_monitors[i]; }
-    int           getNrMonitors() const { return m_count; }
-    uint32_t      getPosX() const override { return static_cast<int>(m_posVirt.x); }      /// in virtual pixels
-    uint32_t      getPosY() const override { return static_cast<int>(m_posVirt.y); }      /// in virtual pixels
-    int           getPosXReal() const { return static_cast<int>(m_posReal.x); }  /// in real pixels
-    int           getPosYReal() const { return static_cast<int>(m_posReal.y); }  /// in real pixels
-    int           getFocus() const { return glfwGetWindowAttrib(m_window, GLFW_FOCUSED); }
+
+    [[nodiscard]] bool          isOpen() const override { return m_isOpen; }
+    [[nodiscard]] bool          isMinimized() const { return glfwGetWindowAttrib(m_window, GLFW_ICONIFIED); }
+    [[nodiscard]] bool          isMaximized() const { return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED); }
+    [[nodiscard]] bool          isHidBlocked() const { return m_hidBlocked; }
+    [[nodiscard]] int           getMonitorId() const { return useMonitor; }
+    [[nodiscard]] unsigned int  getMonitorWidth() const { return m_monWidth; }
+    [[nodiscard]] unsigned int  getMonitorHeight() const { return m_monHeight; }
+    [[nodiscard]] GLFWwindow   *getCtx() const { return m_window; }
+    [[nodiscard]] GLFWmonitor **getMonitors() const { return m_monitors; }
+    [[nodiscard]] GLFWmonitor  *getMonitor(const int i) const { return m_monitors[i]; }
+    [[nodiscard]] int           getNrMonitors() const { return m_count; }
+    [[nodiscard]] uint32_t      getPosX() const override { return static_cast<int>(m_posVirt.x); }      /// in virtual pixels
+    [[nodiscard]] uint32_t      getPosY() const override { return static_cast<int>(m_posVirt.y); }      /// in virtual pixels
+    [[nodiscard]] int           getPosXReal() const { return static_cast<int>(m_posReal.x); }  /// in real pixels
+    [[nodiscard]] int           getPosYReal() const { return static_cast<int>(m_posReal.y); }  /// in real pixels
+    [[nodiscard]] int           getFocus() const { return glfwGetWindowAttrib(m_window, GLFW_FOCUSED); }
+
     void*         getNativeCtx() override { return m_nativeHandle; }
+    void         *getWin() override { return m_window; }
     /// return virtual pixels
     glm::ivec2    getLastMousePos() const override;
     glm::ivec2    getAbsMousePos() const;
@@ -157,7 +159,7 @@ public:
     /// input in virtual pixels
     void setSize(int inWidth, int inHeight);
     /// input in virtual pixels
-    void setPosition(int posx, int posy);
+    void setPosition(int posX, int posY);
     void setVSync(const bool set) override { glfwSwapInterval(set); }
     void setBlockResizing(const bool val) { m_blockResizing = val; }
     void setBlockMouseIconSwitch(const bool val) { m_blockMouseIconSwitch = val; }
