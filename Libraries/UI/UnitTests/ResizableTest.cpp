@@ -55,81 +55,137 @@ TEST(UITest, ResizableBasicTest) {
 
 TEST(UITest, ResizableMoveAllHandlesTest) {
     Resizable* resizable = nullptr;
-    constexpr ivec2 startPos{100, 75};
+    constexpr ivec2 parentSize{400, 300};
+    constexpr ivec2 startVisualPos{100, 75};
     constexpr ivec2 startSize{200, 150};
     constexpr ivec2 moveDelta{50, 50};
 
+    const auto getAlignOffset = [](const align alignX, const valign alignY, const ivec2& size) {
+        ivec2 offset{};
+
+        switch (alignX) {
+            case align::right:
+                offset.x = parentSize.x - size.x;
+                break;
+            case align::center:
+                offset.x = parentSize.x / 2 - size.x / 2;
+                break;
+            default:
+                break;
+        }
+
+        switch (alignY) {
+            case valign::bottom:
+                offset.y = parentSize.y - size.y;
+                break;
+            case valign::center:
+                offset.y = parentSize.y / 2 - size.y / 2;
+                break;
+            default:
+                break;
+        }
+
+        return offset;
+    };
+
+    const auto getAlignedPos = [&](const ivec2& visualPos, const ivec2& size, const pair<align, valign>& ap) {
+        return visualPos - getAlignOffset(ap.first, ap.second, size);
+    };
+
+    array<pair<align, valign>, 9> alignPair = {
+        pair{align::left, valign::top}, {align::center, valign::top}, {align::right, valign::top},
+        pair{align::left, valign::center}, {align::center, valign::center}, {align::right, valign::center},
+        pair{align::left, valign::bottom}, {align::center, valign::bottom}, {align::right, valign::bottom}
+    };
+
     appBody([&](const UIApplication& app){
-        resizable = &addResizable(*app.getMainWindow()->getRootNode(), startPos, startSize);
+        resizable = &addResizable(*app.getMainWindow()->getRootNode(), startVisualPos, startSize);
     }, [&](const UIApplication& app){
         ASSERT_NE(resizable, nullptr);
 
-        const array testCases{
-            ResizableDragTestCase{
-                .corner = ResizableHandle::Corner::topLeft,
-                .mouseDownPos = startPos,
-                .expectedPos = startPos + moveDelta,
-                .expectedSize = startSize - moveDelta
-            },
-            ResizableDragTestCase{
-                .corner = ResizableHandle::Corner::topRight,
-                .mouseDownPos = startPos + ivec2{startSize.x, 0},
-                .expectedPos = startPos + ivec2{0, moveDelta.y},
-                .expectedSize = startSize + ivec2{moveDelta.x, -moveDelta.y}
-            },
-            ResizableDragTestCase{
-                .corner = ResizableHandle::Corner::bottomRight,
-                .mouseDownPos = startPos + startSize,
-                .expectedPos = startPos,
-                .expectedSize = startSize + moveDelta
-            },
-            ResizableDragTestCase{
-                .corner = ResizableHandle::Corner::bottomLeft,
-                .mouseDownPos = startPos + ivec2{0, startSize.y},
-                .expectedPos = startPos + ivec2{moveDelta.x, 0},
-                .expectedSize = startSize + ivec2{-moveDelta.x, moveDelta.y}
-            },
-            ResizableDragTestCase{
-                .corner = ResizableHandle::Corner::top,
-                .mouseDownPos = startPos + ivec2{startSize.x / 2, 0},
-                .expectedPos = startPos + ivec2{0, moveDelta.y},
-                .expectedSize = startSize + ivec2{0, -moveDelta.y}
-            },
-            ResizableDragTestCase{
-                .corner = ResizableHandle::Corner::right,
-                .mouseDownPos = startPos + ivec2{startSize.x, startSize.y / 2},
-                .expectedPos = startPos,
-                .expectedSize = startSize + ivec2{moveDelta.x, 0}
-            },
-            ResizableDragTestCase{
-                .corner = ResizableHandle::Corner::bottom,
-                .mouseDownPos = startPos + ivec2{startSize.x / 2, startSize.y},
-                .expectedPos = startPos,
-                .expectedSize = startSize + ivec2{0, moveDelta.y}
-            },
-            ResizableDragTestCase{
-                .corner = ResizableHandle::Corner::left,
-                .mouseDownPos = startPos + ivec2{0, startSize.y / 2},
-                .expectedPos = startPos + ivec2{moveDelta.x, 0},
-                .expectedSize = startSize + ivec2{-moveDelta.x, 0}
-            },
-            ResizableDragTestCase{
-                .corner = ResizableHandle::Corner::center,
-                .mouseDownPos = startPos + startSize / 2,
-                .expectedPos = startPos + moveDelta,
-                .expectedSize = startSize
-            }
-        };
+        for (const auto& ap : alignPair) {
+            const auto startAlignedPos = getAlignedPos(startVisualPos, startSize, ap);
 
-        for (const auto& testCase : testCases) {
-            SCOPED_TRACE(static_cast<int32_t>(testCase.corner));
-            resizable->setPos(startPos);
-            resizable->setSize(startSize);
-            dragResizableHandle(app, testCase.mouseDownPos, moveDelta);
-            EXPECT_EQ(ivec2(resizable->getPos()), testCase.expectedPos);
-            EXPECT_EQ(ivec2(resizable->getSize()), testCase.expectedSize);
+            const array testCases{
+                ResizableDragTestCase{
+                    .corner = ResizableHandle::Corner::topLeft,
+                    .mouseDownPos = startVisualPos,
+                    .expectedPos = getAlignedPos(startVisualPos + moveDelta, startSize - moveDelta, ap),
+                    .expectedSize = startSize - moveDelta
+                },
+                ResizableDragTestCase{
+                    .corner = ResizableHandle::Corner::topRight,
+                    .mouseDownPos = startVisualPos + ivec2{startSize.x, 0},
+                    .expectedPos = getAlignedPos(startVisualPos + ivec2{0, moveDelta.y},
+                                                 startSize + ivec2{moveDelta.x, -moveDelta.y}, ap),
+                    .expectedSize = startSize + ivec2{moveDelta.x, -moveDelta.y}
+                },
+                ResizableDragTestCase{
+                    .corner = ResizableHandle::Corner::bottomRight,
+                    .mouseDownPos = startVisualPos + startSize,
+                    .expectedPos = getAlignedPos(startVisualPos, startSize + moveDelta, ap),
+                    .expectedSize = startSize + moveDelta
+                },
+                ResizableDragTestCase{
+                    .corner = ResizableHandle::Corner::bottomLeft,
+                    .mouseDownPos = startVisualPos + ivec2{0, startSize.y},
+                    .expectedPos = getAlignedPos(startVisualPos + ivec2{moveDelta.x, 0},
+                                                 startSize + ivec2{-moveDelta.x, moveDelta.y}, ap),
+                    .expectedSize = startSize + ivec2{-moveDelta.x, moveDelta.y}
+                },
+                ResizableDragTestCase{
+                    .corner = ResizableHandle::Corner::top,
+                    .mouseDownPos = startVisualPos + ivec2{startSize.x / 2, 0},
+                    .expectedPos = getAlignedPos(startVisualPos + ivec2{0, moveDelta.y},
+                                                 startSize + ivec2{0, -moveDelta.y}, ap),
+                    .expectedSize = startSize + ivec2{0, -moveDelta.y}
+                },
+                ResizableDragTestCase{
+                    .corner = ResizableHandle::Corner::right,
+                    .mouseDownPos = startVisualPos + ivec2{startSize.x, startSize.y / 2},
+                    .expectedPos = getAlignedPos(startVisualPos, startSize + ivec2{moveDelta.x, 0}, ap),
+                    .expectedSize = startSize + ivec2{moveDelta.x, 0}
+                },
+                ResizableDragTestCase{
+                    .corner = ResizableHandle::Corner::bottom,
+                    .mouseDownPos = startVisualPos + ivec2{startSize.x / 2, startSize.y},
+                    .expectedPos = getAlignedPos(startVisualPos, startSize + ivec2{0, moveDelta.y}, ap),
+                    .expectedSize = startSize + ivec2{0, moveDelta.y}
+                },
+                ResizableDragTestCase{
+                    .corner = ResizableHandle::Corner::left,
+                    .mouseDownPos = startVisualPos + ivec2{0, startSize.y / 2},
+                    .expectedPos = getAlignedPos(startVisualPos + ivec2{moveDelta.x, 0},
+                                                 startSize + ivec2{-moveDelta.x, 0}, ap),
+                    .expectedSize = startSize + ivec2{-moveDelta.x, 0}
+                },
+                ResizableDragTestCase{
+                    .corner = ResizableHandle::Corner::center,
+                    .mouseDownPos = startVisualPos + startSize / 2,
+                    .expectedPos = getAlignedPos(startVisualPos + moveDelta, startSize, ap),
+                    .expectedSize = startSize
+                }
+            };
+
+            for (const auto& testCase : testCases) {
+                SCOPED_TRACE(static_cast<int32_t>(ap.first));
+                SCOPED_TRACE(static_cast<int32_t>(ap.second));
+                SCOPED_TRACE(static_cast<int32_t>(testCase.corner));
+
+                resizable->setAlignX(ap.first);
+                resizable->setAlignY(ap.second);
+                resizable->setPos(startAlignedPos);
+                resizable->setSize(startSize);
+                iterate(app);
+
+                EXPECT_EQ(ivec2(resizable->getPos()), startVisualPos);
+
+                dragResizableHandle(app, testCase.mouseDownPos, moveDelta);
+                EXPECT_EQ(ivec2(resizable->getAlignedPos()), testCase.expectedPos);
+                EXPECT_EQ(ivec2(resizable->getSize()), testCase.expectedSize);
+            }
         }
-    }, 400, 300);
+    }, parentSize.x, parentSize.y);
 }
 
 
