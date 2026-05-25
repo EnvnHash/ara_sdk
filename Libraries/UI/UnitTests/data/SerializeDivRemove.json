@@ -41,7 +41,7 @@
                 0.0,
                 0.0
             ],
-            "excludeFromPadding": false,
+            "excludeFromPaddingAndBorder": false,
             "excludeFromParentContentTrans": false,
             "excludeFromParentScissoring": false,
             "excludeFromStyles": false,
@@ -104,7 +104,7 @@
                 0.0,
                 0.0
             ],
-            "excludeFromPadding": false,
+            "excludeFromPaddingAndBorder": false,
             "excludeFromParentContentTrans": false,
             "excludeFromParentScissoring": false,
             "excludeFromStyles": false,
@@ -167,7 +167,7 @@
                 0.0,
                 0.0
             ],
-            "excludeFromPadding": false,
+            "excludeFromPaddingAndBorder": false,
             "excludeFromParentContentTrans": false,
             "excludeFromParentScissoring": false,
             "excludeFromStyles": false,
@@ -230,7 +230,7 @@
                 0.0,
                 0.0
             ],
-            "excludeFromPadding": false,
+            "excludeFromPaddingAndBorder": false,
             "excludeFromParentContentTrans": false,
             "excludeFromParentScissoring": false,
             "excludeFromStyles": false,
@@ -276,7 +276,7 @@
         0.0,
         0.0
     ],
-    "excludeFromPadding": false,
+    "excludeFromPaddingAndBorder": false,
     "excludeFromParentContentTrans": false,
     "excludeFromParentScissoring": false,
     "excludeFromStyles": false,

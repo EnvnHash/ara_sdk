@@ -38,7 +38,7 @@ void TextBlock::init() {
 
     m_caret = &push<Div>();
     m_caret->setVisibility(false);
-    m_caret->excludeFromPadding(true);
+    m_caret->excludeFromParentPaddingAndBorder(true);
 
     static_cast<UIWindow *>(m_sharedRes->win)->addGlobalMouseDownLeftCb(this, [this](hidData& data) {
         globalMouseDown(data);

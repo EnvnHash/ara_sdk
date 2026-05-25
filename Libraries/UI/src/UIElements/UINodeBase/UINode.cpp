@@ -410,12 +410,13 @@ void UINode::updateMatrix() {
         m_pos = round(m_pos);
     }
 
-    // parent relative content matrix for the node's children
-    m_nodeMat[3][0] = m_pos.x + static_cast<float>(m_borderWidth);
-    m_nodeMat[3][1] = m_pos.y + static_cast<float>(m_borderWidth);
+    // parent relative node matrix (node's outer borders)
+    m_nodeMat[3][0] = m_pos.x;
+    m_nodeMat[3][1] = m_pos.y;
 
-    m_contentMat[3][0] = m_nodeMat[3][0] + m_padding.x;
-    m_contentMat[3][1] = m_nodeMat[3][1] + m_padding.y;
+    // parent relative node matrix (node's inner borders)
+    m_contentMat[3][0] = m_nodeMat[3][0] + m_padding.x + static_cast<float>(m_borderWidth);
+    m_contentMat[3][1] = m_nodeMat[3][1] + m_padding.y + static_cast<float>(m_borderWidth);
 
     // calculate the content transformation matrix
     updateContentTransMat();
@@ -433,13 +434,13 @@ void UINode::updateMatrix() {
 void UINode::getParentViewport() {
     if (m_parent) {
         // create a local copy of the parent's matrix
-        m_parentMat       = m_parent->getFlatContentMat(m_excludeFromParentContentTrans, m_excludeFromPadding);
+        m_parentMat       = m_parent->getFlatContentMat(m_excludeFromParentContentTrans, m_excludeFromPaddingAndBorder);
         m_parentMatLocCpy = *m_parentMat;
 
         m_parentContScale.x = (*m_parentMat)[0][0];
         m_parentContScale.y = (*m_parentMat)[1][1];
 
-        if (m_excludeFromPadding) {
+        if (m_excludeFromPaddingAndBorder) {
             // TODO: check if the parent's content translation, is respected here
             m_parentContVp = m_parent->getNodeViewport();
         } else {

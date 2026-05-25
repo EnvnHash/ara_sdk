@@ -20,7 +20,7 @@ Resizable::Resizable() {
     setTypeName<Resizable>();
     setFocusAllowed(true);
     setScissorChildren(false);
-    setSnapToHwPix(true);;
+    setSnapToHwPix(true);
 }
 
 void Resizable::init() {
@@ -74,6 +74,7 @@ void Resizable::initHandles() {
         });
         m_handles[i]->setCorner(static_cast<Corner>(i));
         m_handles[i]->setResizeImage(this);
+        m_handles[i]->excludeFromParentPaddingAndBorder(true);
         m_handles[i]->setSnapToHwPix(true);
         if (i == static_cast<int32_t>(Corner::center)) {
             m_handles[i]->setAlpha(0.f);

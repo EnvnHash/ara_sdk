@@ -26,7 +26,7 @@ class UINode;
 
 class UINodeGeom  : public Node {
 public:
-    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_excludeFromPadding, m_excludeFromParentContentTrans, m_skipBoundCheck, m_excludeFromParentScissoring, m_scissorChildren, m_limitContentTrans, m_posXInt, m_posYInt, m_posXFloat, m_posYFloat, m_widthInt, m_widthFloat, m_heightInt, m_heightFloat, m_widthType, m_heightType, m_zPos, m_alignX, m_alignY, m_pivX, m_pivY, m_fixAspect, m_borderRadius, m_borderWidth, m_padding, m_viewPort)
+    ARA_NODE_ADD_SERIALIZE_FUNCTIONS(Node, m_excludeFromPaddingAndBorder, m_excludeFromParentContentTrans, m_skipBoundCheck, m_excludeFromParentScissoring, m_scissorChildren, m_limitContentTrans, m_posXInt, m_posYInt, m_posXFloat, m_posYFloat, m_widthInt, m_widthFloat, m_heightInt, m_heightFloat, m_widthType, m_heightType, m_zPos, m_alignX, m_alignY, m_pivX, m_pivY, m_fixAspect, m_borderRadius, m_borderWidth, m_padding, m_viewPort)
 
     UINodeGeom();
     ~UINodeGeom() override = default;
@@ -302,8 +302,8 @@ public:
     [[nodiscard]] float getFixAspect() const { return m_fixAspect; }
     [[nodiscard]] float getPixRatio() const;
 
-    virtual glm::mat4*  getContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPadding = false);
-    virtual glm::mat4*  getFlatContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPadding = false);
+    virtual glm::mat4*  getContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPaddingAndBorder = false);
+    virtual glm::mat4*  getFlatContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPaddingAndBorder = false);
 
     UISharedRes*        getSharedRes() const { return m_sharedRes; }
     virtual void        setSharedRes(UISharedRes* shared);
@@ -311,9 +311,9 @@ public:
     void                updateContentTransMat();
     void                calcContentTransMat(glm::mat4& mat, const glm::vec3& trans) const;
 
-    void                excludeFromPadding(const bool val) { m_excludeFromPadding = val; }
-    [[nodiscard]] bool  isExcludedFromPadding() const { return m_excludeFromPadding; }
-    void                excludeFromParentViewTrans(const bool val) { m_excludeFromParentContentTrans = val; }
+    void                excludeFromParentPaddingAndBorder(const bool val) { m_excludeFromPaddingAndBorder = val; }
+    [[nodiscard]] bool  isExcludedFromPaddingAndBorder() const { return m_excludeFromPaddingAndBorder; }
+    void                excludeFromParentContentTrans(const bool val) { m_excludeFromParentContentTrans = val; }
     [[nodiscard]] bool  isExcludedFromParentContentTrans() const { return m_excludeFromParentContentTrans; }
     void                excludeFromOutOfBorderCheck(const bool val) { m_skipBoundCheck = val; }
     void                excludeFromScissoring(const bool val) { m_excludeFromParentScissoring = val; }
@@ -355,7 +355,7 @@ protected:
     /** if false, offset and scaling is done relative to 0|0 top left origin, if
     * true relative to the center of the UINode **/
     bool m_contTransMatCentered                 = false;
-    bool m_excludeFromPadding                   = false;
+    bool m_excludeFromPaddingAndBorder          = false;
     bool m_scissorChildren                      = false;
     bool m_hasContRot                           = false;
     bool m_geoChanged                           = true;

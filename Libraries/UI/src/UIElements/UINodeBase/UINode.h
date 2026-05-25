@@ -112,9 +112,9 @@ public:
             [&arg, &node] { const auto p = arg.padding.value(); node.setPadding(glm::vec4{p.x, p.y, p.z, p.w}); },
             [&arg, &node] { node.setVisibility(arg.visible.value()); },
             [&arg, &node] { node.excludeFromObjMap(arg.excludeFromObjMap.value()); },
-            [&arg, &node] { node.excludeFromParentViewTrans(arg.excludeFromParentViewTrans.value()); },
+            [&arg, &node] { node.excludeFromParentContentTrans(arg.excludeFromParentViewTrans.value()); },
             [&arg, &node] { node.excludeFromScissoring(arg.excludeFromScissoring.value()); },
-            [&arg, &node] { node.excludeFromPadding(arg.excludeFromPadding.value()); },
+            [&arg, &node] { node.excludeFromParentPaddingAndBorder(arg.excludeFromPadding.value()); },
             [&arg, &node] { node.excludeFromOutOfBorderCheck(arg.excludeFromOutOfBorderCheck.value()); },
             [&arg, &node] { node.setPath(arg.filePath.value()); }
         };

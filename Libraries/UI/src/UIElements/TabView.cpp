@@ -60,7 +60,7 @@ Div& TabView::addTabUnderline(Button& tab)  {
     });
     underline.setName("underline");
     underline.setHeight(1);
-    underline.excludeFromPadding(true);
+    underline.excludeFromParentPaddingAndBorder(true);
     underline.excludeFromObjMap(true);
     return underline;
 }

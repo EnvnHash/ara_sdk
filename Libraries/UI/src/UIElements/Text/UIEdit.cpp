@@ -37,7 +37,7 @@ void UIEdit::init() {
 
     m_caret = &push<Div>();
     m_caret->setVisibility(false);
-    m_caret->excludeFromPadding(true);
+    m_caret->excludeFromParentPaddingAndBorder(true);
     m_caret->excludeFromObjMap(true);
 
     static_cast<UIWindow *>(m_sharedRes->win)->addGlobalMouseDownLeftCb(this, [this](hidData& data) {
@@ -118,14 +118,13 @@ void UIEdit::drawCaretSelectedState(bool& updtTree) {
     }
 
     auto tCaretPos = m_fontDGV.getCaretPosAndSize(m_caretIndex).first + m_bo;
-    tCaretPos.x -= m_borderWidth;
-    tCaretPos.y -= m_borderWidth + m_riFont->getPixAscentHwp() + m_riFont->getPixDescentHwp();
+    tCaretPos.y -= m_riFont->getPixAscentHwp() + m_riFont->getPixDescentHwp();
 
     setCaretRespectAlignment(tCaretPos);
 
     vec2 posLimit{};
     for (int i = 0; i < 2; i++) {
-        posLimit[i] = m_size[i] - (m_padding[i + 2] + static_cast<float>(m_borderWidth *2));
+        posLimit[i] = m_size[i] - (m_padding[i + 2] + static_cast<float>(m_borderWidth));
     }
 
     if (!all(glm::equal(ivec2(m_caret->getPos()), ivec2(tCaretPos)))) {

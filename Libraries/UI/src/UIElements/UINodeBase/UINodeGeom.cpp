@@ -48,21 +48,16 @@ void UINodeGeom::updateContentTransMat() {
     m_nodePosMat[3][0] = m_pos.x;
     m_nodePosMat[3][1] = m_pos.y;
 
+    if (m_excludeSizeFromParentContentTrans) {
+        const auto size = m_size;
+        m_size /= m_parentContScale;
+        m_nodePosMat[3][0] += (size.x - m_size.x) * 0.5f;
+        m_nodePosMat[3][1] += (size.y - m_size.y) * 0.5f;
+    }
+
     // apply the window orthographic matrix, this matrix will be used for rendering
     if (m_orthoMat) {
-        if (m_excludeSizeFromParentContentTrans) {
-            auto nodePosOnlyMat = m_identMat;
-            const auto parentTransPos = m_parentMatLocCpy * vec4(m_pos, 0.f, 1.f);
-
-            nodePosOnlyMat[3][0] = m_snapToHwPix ? std::round(parentTransPos.x) : parentTransPos.x;
-            nodePosOnlyMat[3][1] = m_snapToHwPix ? std::round(parentTransPos.y) : parentTransPos.y;
-            nodePosOnlyMat[3][2] = m_snapToHwPix ? std::round(parentTransPos.z) : parentTransPos.z;
-
-            m_mvp = *m_orthoMat * nodePosOnlyMat;
-        } else {
-            m_mvp   = *m_orthoMat * m_parentMatLocCpy * m_nodePosMat; // this is expensive
-        }
-
+        m_mvp   = *m_orthoMat * m_parentMatLocCpy * m_nodePosMat; // this is expensive
         m_mvpHw = m_mvp * scale(vec3{1.f / getPixRatio(), 1.f / getPixRatio(), 1.f});
     }
 }
@@ -381,13 +376,13 @@ vec2& UINodeGeom::getParentContentScale() {
     return m_parentContScale;
 }
 
-mat4* UINodeGeom::getContentMat(const bool excludedFromParentContentTrans, const bool excludedFromPadding) {
-    return excludedFromPadding ? (!excludedFromParentContentTrans ? &m_nodeTransMat : &m_nodeMat)
+mat4* UINodeGeom::getContentMat(const bool excludedFromParentContentTrans, const bool excludedFromPaddingAndBorder) {
+    return excludedFromPaddingAndBorder ? (!excludedFromParentContentTrans ? &m_nodeTransMat : &m_nodeMat)
                                : (!excludedFromParentContentTrans ? &m_contentTransMat : &m_contentMat);
 }
 
-mat4* UINodeGeom::getFlatContentMat(const bool excludedFromParentContentTrans, const bool excludedFromPadding) {
-    const auto mat = excludedFromPadding ? (!excludedFromParentContentTrans ? &m_nodeTransMat : &m_nodeMat)
+mat4* UINodeGeom::getFlatContentMat(const bool excludedFromParentContentTrans, const bool excludedFromPaddingAndBorder) {
+    const auto mat = excludedFromPaddingAndBorder ? (!excludedFromParentContentTrans ? &m_nodeTransMat : &m_nodeMat)
                                         : (!excludedFromParentContentTrans ? &m_contentTransMat : &m_contentMat);
 
     // don't use the dynamic m_parentMat ptr since here it doesn't contain the information of all other parentMats use
@@ -465,7 +460,7 @@ vec2& UINodeGeom::getBorderWidthRel() {
     checkUpdateMatrix();
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
-            m_borderWidthRel[i] = static_cast<float>(m_borderWidth) / m_size[i] / (m_excludeSizeFromParentContentTrans ? 1.f : m_parentContScale[i]);
+            m_borderWidthRel[i] = static_cast<float>(m_borderWidth) / m_size[i] / m_parentContScale[i]; // borderWidth is zoom independent
         } else {
             m_borderWidthRel[i] = 0.f;
         }

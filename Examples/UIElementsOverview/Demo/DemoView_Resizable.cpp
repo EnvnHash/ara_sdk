@@ -4,6 +4,7 @@
 
 #include "DemoView.h"
 #include "UIElements/Resizable.h"
+#include "UIElements/ZoomView.h"
 
 using namespace ara;
 using namespace glm;
@@ -14,13 +15,17 @@ DemoView_Resizable::DemoView_Resizable() : DemoView("Resizable Demo",vec4(.15f,.
 }
 
 void DemoView_Resizable::init() {
-    auto& resizable = push<Resizable>({
+    auto& zv = push<ZoomView>({
+        .size = vec2{1.f, 1.f},
+    });
+
+    auto& resizable = zv.push<Resizable>({
         .pos = ivec2{0,50},
         .size = vec2{0.5f, 0.5f},
         .align = align::center,
         .valign = valign::center,
         .borderWidth = 1,
-        .borderColor = vec4{1.f, 1.f, 1.f, 1.f,},
+        .borderColor = vec4{1.f, 1.f, 1.f, 1.f}
     });
 
     auto& img = resizable.push<Image>();
