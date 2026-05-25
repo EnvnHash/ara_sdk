@@ -15,6 +15,7 @@ namespace ara {
 ResizableHandle::ResizableHandle() {
     setName(ara::getTypeName<ResizableHandle>());
     setTypeName<ResizableHandle>();
+    excludeSizeFromParentContentTrans(true);
 }
 
 void ResizableHandle::mouseIn(hidData& data) {

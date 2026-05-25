@@ -317,6 +317,7 @@ public:
     [[nodiscard]] bool  isExcludedFromParentContentTrans() const { return m_excludeFromParentContentTrans; }
     void                excludeFromOutOfBorderCheck(const bool val) { m_skipBoundCheck = val; }
     void                excludeFromScissoring(const bool val) { m_excludeFromParentScissoring = val; }
+    void                excludeSizeFromParentContentTrans(const bool val) { m_excludeSizeFromParentContentTrans = val; }
     [[nodiscard]] bool  isExcludedFromScissoring() const { return m_excludeFromParentScissoring; }
     void                limitContentTrans(const bool val) { m_limitContentTrans = val; }
     [[nodiscard]] bool  changed() const { return m_geoChanged; }
@@ -353,19 +354,20 @@ protected:
 
     /** if false, offset and scaling is done relative to 0|0 top left origin, if
     * true relative to the center of the UINode **/
-    bool m_contTransMatCentered             = false;
-    bool m_excludeFromPadding               = false;
-    bool m_scissorChildren                  = false;
-    bool m_hasContRot                       = false;
-    bool m_geoChanged                       = true;
-    bool m_excludeFromParentScissoring      = false;
-    bool m_excludeFromParentContentTrans    = false;
-    bool m_isOutOfParentBounds              = false;
-    bool m_skipBoundCheck                   = false;
-    bool m_oob                              = false;
-    bool m_updating                         = false;
-    bool m_limitContentTrans                = false;
-    bool m_snapToHwPix                      = false;
+    bool m_contTransMatCentered                 = false;
+    bool m_excludeFromPadding                   = false;
+    bool m_scissorChildren                      = false;
+    bool m_hasContRot                           = false;
+    bool m_geoChanged                           = true;
+    bool m_excludeFromParentScissoring          = false;
+    bool m_excludeFromParentContentTrans        = false;
+    bool m_excludeSizeFromParentContentTrans    = false;
+    bool m_isOutOfParentBounds                  = false;
+    bool m_skipBoundCheck                       = false;
+    bool m_oob                                  = false;
+    bool m_updating                             = false;
+    bool m_limitContentTrans                    = false;
+    bool m_snapToHwPix                          = false;
 
     int32_t m_posXInt   = 0;
     int32_t m_posYInt   = 0;
