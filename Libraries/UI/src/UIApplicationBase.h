@@ -46,6 +46,8 @@ public:
 
     void setWinWidth(int w) { m_winSize.x = w; }
     void setWinHeight(int g) { m_winSize.y = g; }
+    void setWinPosX(int32_t x) { m_winPos.x = x; }
+    void setWinPosY(int32_t y) { m_winPos.y = y; }
     void setWinSize(const glm::ivec2& s) { m_winSize = s; }
     void setWinSizeReal(const glm::ivec2& s) { m_winSizeReal = s; }
     void setRunFlag(const bool val) { m_run = val; }
@@ -69,6 +71,7 @@ protected:
     Conditional m_initSema;
     UIWindow*   m_mainWindow = nullptr;
     Conditional m_iterate;
+    glm::ivec2  m_winPos = { 100, 100 };
     glm::ivec2  m_winSize = { 1440, 900 };
     glm::ivec2  m_winSizeReal = { 1440, 900 };
 

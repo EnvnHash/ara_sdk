@@ -241,14 +241,21 @@ void UINodeGeom::setZoomNormMat(const float val) {
 }
 
 /** \brief scale the content of this View, center onto actual mouse coordinates (must be in window relative pixels) **/
-void UINodeGeom::setZoomWithCenter(const float val, vec2& actMousePos) {
+    void UINodeGeom::setZoomWithCenter(const float val, vec2& actMousePos) {
+    if (epsilonEqual(val, m_contentTransScale.x, 0.0001f)
+        && epsilonEqual(val, m_contentTransScale.y, 0.0001f)) {
+        return;
+    }
+
+    const vec2 winPos = getWinPos();
+
     // convert absolut window relative mousePos to node relative mouse pos
-    const auto t_vec2 = vec2(inverse(m_contentTransMatRel) * vec4(actMousePos - getWinPos(), 0.f, 1.f));
+    const auto t_vec2 = vec2(inverse(m_contentTransMatRel) * vec4(actMousePos - winPos, 0.f, 1.f));
 
     setContentTransScale(val, val);
     updateContentTransMat();
 
-    const auto newAbsMousePos = vec2(m_contentTransMatRel * vec4(t_vec2, 0.f, 1.f)) + getWinPos();
+    const auto newAbsMousePos = vec2(m_contentTransMatRel * vec4(t_vec2, 0.f, 1.f)) + winPos;
     auto newMouseOffs   = newAbsMousePos - actMousePos;
     newMouseOffs /= vec2(m_contentTransScale);
 

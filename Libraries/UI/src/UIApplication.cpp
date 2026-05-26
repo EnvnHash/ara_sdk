@@ -50,7 +50,7 @@ void UIApplication::mainWinDefaultSetup() {
 void UIApplication::init(function<void(UINode&)> initCb) {
     m_mainWindow = addWindow(UIWindowParams{
         .size           = m_winSize,
-        .shift          = {100, 100},
+        .shift          = m_winPos,
         .osDecoration   = m_osWinDecoration,
         .transparentFB  = false,
         .multisample    = m_multisample,
@@ -74,7 +74,7 @@ void UIApplication::initSingleThreaded(const function<void()>& initCb) {
 
     m_mainWindow = addWindow(UIWindowParams{
         .size           = m_winSize,
-        .shift          = {100, 100},
+        .shift          = m_winPos,
         .osDecoration   = m_osWinDecoration,
         .transparentFB  = false,
         .multisample    = m_multisample,

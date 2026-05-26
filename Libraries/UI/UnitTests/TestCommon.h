@@ -21,9 +21,12 @@ static void iterate(const ara::UIApplication& app) {
     app.getMainWindow()->swap();
 }
 
-static void stdAppSetup(ara::UIApplication& app, const int width, const int height, const bool enableMenuAndResizeHandles=false) {
+static void stdAppSetup(ara::UIApplication& app, const int width, const int height, const int winPosX, const int winPosY,
+                        const bool enableMenuAndResizeHandles=false) {
     app.setWinWidth(width);
     app.setWinHeight(height);
+    app.setWinPosX(winPosX);
+    app.setWinPosY(winPosY);
     app.setEnableMenuBar(enableMenuAndResizeHandles);
     app.setEnableWindowResizeHandles(enableMenuAndResizeHandles);
     app.setScaleToMonitor(false);
@@ -34,9 +37,10 @@ static void appBody(const std::function<void(ara::UIApplication&)>& drawFunc,
                     const int width=1280, const int height=720,
                     const std::function<void(ara::UIApplication&)>& postInitFunc=nullptr,
                     const bool enableMenuAndResizeHandles=false,
-                    const std::string& resFile="res.txt") { // width and height are in hardware pixels (non-scaled)
+                    const std::string& resFile="res.txt",
+                    const int winPosX=0, const int winPosY=0) { // width and height are in hardware pixels (non-scaled)
     ara::UIApplication app;
-    stdAppSetup(app, width, height, enableMenuAndResizeHandles);
+    stdAppSetup(app, width, height, winPosX, winPosY, enableMenuAndResizeHandles);
     app.setResFile(resFile);
     app.initSingleThreaded([&]{
         app.getMainWindow()->getWinHandle()->setIsInited(true);
