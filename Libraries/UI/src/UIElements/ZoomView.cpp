@@ -48,6 +48,9 @@ void ZoomView::init() {
 
 void ZoomView::setZoomPropChangeCb() {
     onChanged<float>(m_zoomProp, [this](const std::any& val) {
+        if (m_blockZoomPropCb) {
+            return;
+        }
         if (m_workingArea && m_zoomUseWheel) {
             m_workingArea->setZoomWithCenter(std::any_cast<float>(val) * 0.01f, getWindow()->getActMousePos());
         } else if (m_workingArea) {
@@ -215,8 +218,9 @@ void ZoomView::scaleAndCenterContent() {
     const auto workingAreaCenter = workingAreaSize * 0.5f;
     const auto translation = workingAreaCenter - childBBCenter;
 
-    m_zoomUseWheel = false;
-    m_zoomProp() = zoom * 100.f; // set without calling change callbacks
+    m_blockZoomPropCb = true;
+    m_zoomProp = zoom * 100.f; // set without calling change callbacks
+    m_blockZoomPropCb = false;
 
     m_workingArea->limitContentTrans(false);
     m_workingArea->setContentTransTransl(translation.x, translation.y);

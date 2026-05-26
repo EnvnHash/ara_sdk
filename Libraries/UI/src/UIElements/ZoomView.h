@@ -85,6 +85,7 @@ private:
     bool  m_showSlider      = true;
     bool  m_showResetButton = true;
     bool  m_centerAndScaleOnReset = false;
+    bool  m_blockZoomPropCb = false;
 
     std::function<void()>            m_updtCb;
     std::function<void(UINode*)>     m_initContFunc;

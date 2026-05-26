@@ -241,7 +241,7 @@ TEST(UITest, ZoomViewMultiDivResetTest) {
     }, [&](const UIApplication& app){
         const auto mainWin = app.getWinBase()->getWinHandle();
         checkQuad(mainWin, ivec2{15, 15}, ivec2{175, 175}, quadCol[0], {});
-        checkQuad(mainWin, ivec2{175, 175}, ivec2{88, 88}, quadCol[1], {});
+        checkQuad(mainWin, ivec2{497, 497}, ivec2{88, 88}, quadCol[1], {});
     }, winSize.x, winSize.y, nullptr, false, "res.txt",100,100);
 }
 
