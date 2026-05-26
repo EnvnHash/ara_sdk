@@ -319,7 +319,7 @@ vec4 UINodeGeom::getNodeViewportGL() {
     getWinPos();
 
     const auto uiWin = static_cast<UIWindow*>(getSharedRes()->win);
-    std::array qc{glm::vec4{0.f, 0.f, 0.f, 1.f}, glm::vec4{m_size.x, m_size.y, 0.f, 1.f}};
+    std::array qc{vec4{0.f, 0.f, 0.f, 1.f}, vec4{m_size.x, m_size.y, 0.f, 1.f}};
     for (auto & i : qc) {
         i = m_mvp * i;
         for (auto j=0; j<2; ++j) {
@@ -467,7 +467,7 @@ vec2& UINodeGeom::getBorderWidthRel() {
     checkUpdateMatrix();
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
-            m_borderWidthRel[i] = static_cast<float>(m_borderWidth) / m_size[i] / (m_staticBorderSize ? m_parentContScale[i] : 1.f); // borderWidth is zoom independent
+            m_borderWidthRel[i] = static_cast<float>(m_borderWidth) / m_size[i] / (m_staticBorderSize ? m_parentContScale[i] : 1.f);
         } else {
             m_borderWidthRel[i] = 0.f;
         }

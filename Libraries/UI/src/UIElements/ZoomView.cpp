@@ -127,6 +127,7 @@ void ZoomView::addResetButton() {
         .borderColor = vec4{0.8f, 0.8f, 0.8f, 1.f},
     });
     m_resetZoom->setText("Reset");
+    m_resetZoom->setSnapToHwPix(true);
 
     m_resetZoom->setClickedCb([this] {
         resetZoom();

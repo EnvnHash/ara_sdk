@@ -20,6 +20,7 @@ PropSlider::PropSlider() {
     m_label->setTextAlign(align::center, valign::center);
     m_label->setFontSize(20);
     m_label->setBorderWidth(1);
+    m_label->setSnapToHwPix(true);
     m_label->setBorderColor(1.f, 1.f, 1.f, 0.5f);
 
     m_slider = &push<Slider>();
@@ -33,6 +34,7 @@ PropSlider::PropSlider() {
     m_edit->setBorderWidth(1);
     m_edit->setBorderColor(1.f, 1.f, 1.f, 0.5f);
     m_edit->setWidth(0.15f);
+    m_edit->setSnapToHwPix(true);
     m_edit->setUseWheel(true);
     m_edit->setOnLostFocusCb([this] {
         if (m_onLostFocusCb) {
