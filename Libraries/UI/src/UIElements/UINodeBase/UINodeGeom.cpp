@@ -460,7 +460,7 @@ vec2& UINodeGeom::getBorderWidthRel() {
     checkUpdateMatrix();
     for (int i = 0; i < 2; i++) {
         if (m_size[i] != 0.f && m_parentContScale[i] != 0.f) {
-            m_borderWidthRel[i] = static_cast<float>(m_borderWidth) / m_size[i] / m_parentContScale[i]; // borderWidth is zoom independent
+            m_borderWidthRel[i] = static_cast<float>(m_borderWidth) / m_size[i] / (m_staticBorderSize ? m_parentContScale[i] : 1.f); // borderWidth is zoom independent
         } else {
             m_borderWidthRel[i] = 0.f;
         }

@@ -44,7 +44,7 @@ TEST(UITest, DivBorderOnePixFloatTest) {
         });
         div.setSnapToHwPix(true);
     }, [&](const UIApplication& app){
-        compareFrameBufferToImage(filesystem::current_path() / "Div_border_test_2.png",
+        compareFrameBufferToImage(filesystem::current_path() / "Div_border_test_4.png",
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 200, 200);
 }

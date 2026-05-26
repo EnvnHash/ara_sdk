@@ -318,6 +318,7 @@ public:
     void                excludeFromOutOfBorderCheck(const bool val) { m_skipBoundCheck = val; }
     void                excludeFromScissoring(const bool val) { m_excludeFromParentScissoring = val; }
     void                excludeSizeFromParentContentTrans(const bool val) { m_excludeSizeFromParentContentTrans = val; }
+    void                setStaticBorderSize(const bool val) { m_staticBorderSize = val; }
     [[nodiscard]] bool  isExcludedFromScissoring() const { return m_excludeFromParentScissoring; }
     void                limitContentTrans(const bool val) { m_limitContentTrans = val; }
     [[nodiscard]] bool  changed() const { return m_geoChanged; }
@@ -362,6 +363,7 @@ protected:
     bool m_excludeFromParentScissoring          = false;
     bool m_excludeFromParentContentTrans        = false;
     bool m_excludeSizeFromParentContentTrans    = false;
+    bool m_staticBorderSize                     = true; /// when set, border stays same on zooming (parentContentTrans)
     bool m_isOutOfParentBounds                  = false;
     bool m_skipBoundCheck                       = false;
     bool m_oob                                  = false;

@@ -406,8 +406,8 @@ void UINode::updateMatrix() {
     m_size = m_work_size;
 
     if (m_snapToHwPix) {
-        m_size = round(m_size);
-        m_pos = round(m_pos);
+        m_size = floor(m_size);
+        m_pos = floor(m_pos);
     }
 
     // parent relative node matrix (node's outer borders)
@@ -415,8 +415,16 @@ void UINode::updateMatrix() {
     m_nodeMat[3][1] = m_pos.y;
 
     // parent relative node matrix (node's inner borders)
-    m_contentMat[3][0] = m_nodeMat[3][0] + m_padding.x + static_cast<float>(m_borderWidth);
-    m_contentMat[3][1] = m_nodeMat[3][1] + m_padding.y + static_cast<float>(m_borderWidth);
+    const auto bw = static_cast<float>(m_borderWidth);
+    const auto bo = m_staticBorderSize ? vec2(bw * (vec2(1.f) - m_parentContScale) / m_parentContScale) : vec2(0.f);
+
+    m_contentMat[3][0] = m_nodeMat[3][0] + m_padding.x + bw + bo.x;
+    m_contentMat[3][1] = m_nodeMat[3][1] + m_padding.y + bw + bo.y;
+
+    if (m_staticBorderSize) {
+        m_contentMat[0][0] = (-2.f * bo.x + m_size.x) / m_size.x;
+        m_contentMat[1][1] = (-2.f * bo.y + m_size.y) / m_size.y;
+    }
 
     // calculate the content transformation matrix
     updateContentTransMat();
