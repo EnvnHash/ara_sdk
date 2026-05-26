@@ -98,8 +98,10 @@ void Resizable::setResizeEnd() {
 
 void Resizable::setFixedAspect(const bool& val) {
     m_fixedAspect = val;
-    for (auto& it : { Corner::left, Corner::right, Corner::top, Corner::bottom }) {
-        m_handles[static_cast<int32_t>(it)]->setVisibility(!val);
+    if (m_inited) {
+        for (auto& it : { Corner::left, Corner::right, Corner::top, Corner::bottom }) {
+            m_handles[static_cast<int32_t>(it)]->setVisibility(!val);
+        }
     }
 }
 
