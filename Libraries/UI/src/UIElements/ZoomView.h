@@ -41,11 +41,12 @@ public:
     void resetZoom();
     void keepContentWithinBoundaries(bool val);
     void scaleAndCenterContent();
+    void checkWorkAreaSize() const;
 
     void initContent(std::function<void(UINode*)> f) { m_initContFunc = std::move(f); }
     void addChangeCb(const std::function<void()>& f) { m_onChangedCb.emplace_back(f); }
-    void showSlider(const bool val) { m_showSlider = val; }
-    void showResetButton(const bool val) { m_showResetButton = val; }
+    void showSlider(const bool val) { m_showSlider = val; checkWorkAreaSize(); }
+    void showResetButton(const bool val) { m_showResetButton = val; checkWorkAreaSize(); }
     void setZoomRange(const float mi, const float ma) { m_zoomProp.setMinMax(mi, ma); }
     void setZoom(const float val) { m_zoomProp = val; }
     void setCenterAndScaleOnReset(const bool val) { m_centerAndScaleOnReset = val; }

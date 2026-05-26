@@ -36,6 +36,7 @@ void ZoomView::init() {
     if (m_showSlider) {
         addZoomSlider();
     }
+
     if (m_showResetButton) {
         addResetButton();
     }
@@ -68,9 +69,7 @@ void ZoomView::addWorkingArea() {
     }
 
     m_workingArea = &UINode::push<Div>({ .name = "ZoomViewWorkingArea"});
-    if (m_showSlider || m_showResetButton) {
-        m_workingArea->setHeight(-m_bottMenHeight);
-    }
+    checkWorkAreaSize();
     m_workingArea->setZoomNormMat(m_zoomProp() * 0.01f);
     m_workingArea->setContentTransCentered(true);
     m_workingArea->setCanReceiveDrag(true);
@@ -185,7 +184,7 @@ void ZoomView::scaleGest(hidData& data) {
     }
 }
 
-void ZoomView::keepContentWithinBoundaries(bool val) {
+void ZoomView::keepContentWithinBoundaries(const bool val) {
     checkForWorkingArea();
     m_workingArea->limitContentTrans(val);
 }
@@ -203,6 +202,14 @@ void ZoomView::scaleAndCenterContent() {
     const auto diff = m_workingArea->getWinRelSize() - childBBSize;
     m_workingArea->setContentTransTransl(diff.x * 0.5f, diff.y * 0.5f);
     m_workingArea->setContentTransScale(m_zoomProp() * 0.01f, m_zoomProp() * 0.01f);
+}
+
+void ZoomView::checkWorkAreaSize() const {
+    if (m_showSlider || m_showResetButton) {
+        m_workingArea->setHeight(-m_bottMenHeight);
+    } else {
+        m_workingArea->setHeight(1.f);
+    }
 }
 
 }  // namespace ara
