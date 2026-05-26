@@ -202,11 +202,24 @@ void ZoomView::scaleAndCenterContent() {
 
     const auto bb = m_content->getChildrenBoundBox();
     const auto childBBSize = vec2(bb[2] - bb[0], bb[3] - bb[1]);
-    m_zoomProp = std::min(m_workingArea->getWinRelSize().x / childBBSize.x,
-                        m_workingArea->getWinRelSize().y / childBBSize.y) * m_centerAndScaleMargin * 100.f;
+    if (childBBSize.x <= 0.f || childBBSize.y <= 0.f) {
+        return;
+    }
 
-    const auto diff = m_workingArea->getWinRelSize() - childBBSize;
-    m_workingArea->setContentTransTransl(diff.x * 0.5f, diff.y * 0.5f);
+    const auto workingAreaSize = m_workingArea->getWinRelSize();
+
+    const auto zoom = std::min(workingAreaSize.x / childBBSize.x,
+                               workingAreaSize.y / childBBSize.y) * m_centerAndScaleMargin;
+
+    const auto childBBCenter = vec2{bb.x, bb.y} + childBBSize * 0.5f;
+    const auto workingAreaCenter = workingAreaSize * 0.5f;
+    const auto translation = workingAreaCenter - childBBCenter;
+
+    m_zoomUseWheel = false;
+    m_zoomProp() = zoom * 100.f; // set without calling change callbacks
+
+    m_workingArea->limitContentTrans(false);
+    m_workingArea->setContentTransTransl(translation.x, translation.y);
     m_workingArea->setContentTransScale(m_zoomProp() * 0.01f, m_zoomProp() * 0.01f);
 }
 

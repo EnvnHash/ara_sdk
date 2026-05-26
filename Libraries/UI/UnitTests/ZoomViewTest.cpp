@@ -213,4 +213,60 @@ TEST(UITest, ZoomViewAddContentAligned) {
     }, winSize.x, winSize.y);
 }
 
+TEST(UITest, ZoomViewResetTest) {
+    appBody([&](const UIApplication& app){
+        auto& zv = addZoomView(app, false);
+        zv.setCenterAndScaleOnReset(true);
+        zv.push<Div>({
+            .pos = ivec2{ 30, 30 },
+            .size = quadSize[0],
+            .bgColor = quadCol[0],
+            .align = align::left,
+            .valign = valign::top
+        });
+        iterate(app);
+        zv.resetZoom();
+    }, [&](const UIApplication& app){
+        const auto mainWin = app.getWinBase()->getWinHandle();
+        checkQuad(mainWin, ivec2{15, 15}, ivec2{570, 570}, quadCol[0], {});
+    }, winSize.x, winSize.y, nullptr, false, "res.txt",100,100);
+}
+
+TEST(UITest, ZoomViewMultiDivResetTest) {
+    appBody([&](const UIApplication& app){
+        auto& zv = addTestDivs(app, false);
+        zv.setCenterAndScaleOnReset(true);
+        iterate(app);
+        zv.resetZoom();
+    }, [&](const UIApplication& app){
+        const auto mainWin = app.getWinBase()->getWinHandle();
+        checkQuad(mainWin, ivec2{15, 15}, ivec2{175, 175}, quadCol[0], {});
+        checkQuad(mainWin, ivec2{175, 175}, ivec2{88, 88}, quadCol[1], {});
+    }, winSize.x, winSize.y, nullptr, false, "res.txt",100,100);
+}
+
+TEST(UITest, ZoomViewMultiDivCenterAlignedResetTest) {
+    appBody([&](const UIApplication& app){
+        auto& zv = addZoomView(app, false);
+        zv.setCenterAndScaleOnReset(true);
+        std::array qp { ivec2{-50, -80}, ivec2{ 100, 200} };
+
+        for (int i=0; i<2; ++i) {
+            zv.push<Div>({
+                .pos = qp[i],
+                .size = quadSize[i],
+                .bgColor = quadCol[i],
+                .align = align::center,
+                .valign = valign::center
+            });
+        }
+        iterate(app);
+        zv.resetZoom();
+    }, [&](const UIApplication& app){
+        const auto mainWin = app.getWinBase()->getWinHandle();
+        checkQuad(mainWin, ivec2{119, 15}, ivec2{161, 161}, quadCol[0], {});
+        checkQuad(mainWin, ivec2{400, 505}, ivec2{81, 80}, quadCol[1], {});
+    }, winSize.x, winSize.y, nullptr, false, "res.txt",100,100);
+}
+
 }

@@ -321,6 +321,7 @@ public:
     void                setStaticBorderSize(const bool val) { m_staticBorderSize = val; }
     [[nodiscard]] bool  isExcludedFromScissoring() const { return m_excludeFromParentScissoring; }
     void                limitContentTrans(const bool val) { m_limitContentTrans = val; }
+    [[nodiscard]] bool  getLimitContentTrans() const { return m_limitContentTrans; }
     [[nodiscard]] bool  changed() const { return m_geoChanged; }
 
     // Bounding Box
