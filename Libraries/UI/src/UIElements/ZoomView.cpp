@@ -68,7 +68,10 @@ void ZoomView::addWorkingArea() {
         return;
     }
 
-    m_workingArea = &UINode::push<Div>({ .name = "ZoomViewWorkingArea"});
+    m_workingArea = &UINode::push<Div>({
+        .name = "ZoomViewWorkingArea",
+        .style = getStyleClass()+".workingArea"
+    });
     checkWorkAreaSize();
     m_workingArea->setZoomNormMat(m_zoomProp() * 0.01f);
     m_workingArea->setContentTransCentered(true);
@@ -77,7 +80,10 @@ void ZoomView::addWorkingArea() {
         dragContent(data);
     }, true);
 
-    m_content = &m_workingArea->push<Div>({ .name = "ZoomViewContent" });
+    m_content = &m_workingArea->push<Div>({
+        .name = "ZoomViewContent",
+        .style = getStyleClass()+".content"
+    });
 }
 
 void ZoomView::dragContent(hidData& data) const {
