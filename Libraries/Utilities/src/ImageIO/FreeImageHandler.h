@@ -54,6 +54,8 @@ uint8_t                 GetNumChannels(FIBITMAP* bitmap);
 FIBITMAP*               ConvertTo32Bits(FIBITMAP* bitmap);
 void                    Save(const std::string& filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf);
 void                    vFlip(std::vector<uint8_t>& input, uint32_t width, uint32_t height, uint32_t bpp);
+void                    CropAndScale(const std::string& path, const glm::vec2& cropStart, const glm::vec2& cropEnd,
+                                     const glm::vec2& destSize, const std::string& destPath); /// cropStart is in pix relative to the srcImage size
 
 static uint8_t*         GetBits(FIBITMAP* bitmap) { return FreeImage_GetBits(bitmap); }
 static void             Unload(FIBITMAP* bitmap) { FreeImage_Unload(bitmap); }

@@ -201,6 +201,65 @@ void vFlip(std::vector<uint8_t>& input, const uint32_t width, const uint32_t hei
     FreeImage_Unload(bitmap);
 }
 
+void CropAndScale(const std::string& path, const glm::vec2& cropStart, const glm::vec2& cropEnd,
+                  const glm::vec2& destSize, const std::string& destPath) {
+    FREE_IMAGE_FORMAT fmt{};
+    auto* src = Load(path, &fmt);
+    if (!src) {
+        LOGE << "CropAndScale could not load: " << path;
+        return;
+    }
+
+    auto* src32 = ConvertTo32Bits(src);
+    if (!src32) {
+        Unload(src);
+        LOGE << "CropAndScale failed to load/convert: " << path;
+        return;
+    }
+
+    const glm::vec2 srcSize{
+        static_cast<float>(FreeImage_GetWidth(src32)),
+        static_cast<float>(FreeImage_GetHeight(src32))
+    };
+
+    auto clampCoord = [](const float v, const float maxVal) {
+        return std::clamp(static_cast<int32_t>(std::round(v)), 0, static_cast<int32_t>(maxVal));
+    };
+
+    const int32_t left = clampCoord(cropStart.x, srcSize.x);
+    const int32_t top = clampCoord(cropStart.y, srcSize.y);
+    const int32_t right = clampCoord(cropEnd.x, srcSize.x);
+    const int32_t bottom = clampCoord(cropEnd.y, srcSize.y);
+
+    if (right <= left || bottom <= top) {
+        LOGE << "SceneBackgroundEditor::cropImage invalid crop rect";
+        Unload(src); Unload(src32);
+        return;
+    }
+
+    auto* cropped = FreeImage_Copy(src32, left, top, right, bottom);
+
+    auto* scaled = cropped
+        ? FreeImage_Rescale(
+            cropped,
+            static_cast<int32_t>(std::round(destSize.x)),
+            static_cast<int32_t>(std::round(destSize.y)),
+            FILTER_LANCZOS3
+        )
+        : nullptr;
+
+    if (scaled) {
+        if (!FreeImage_Save(FIF_PNG, scaled, destPath.c_str())) {
+            LOGE << "SceneBackgroundEditor::cropImage failed to save: " << destPath;
+        }
+    } else {
+        LOGE << "SceneBackgroundEditor::cropImage crop/rescale failed";
+    }
+
+    Unload(scaled);
+    Unload(src);
+    Unload(src32);
+}
 }
 
 #endif
