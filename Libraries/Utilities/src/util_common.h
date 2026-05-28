@@ -337,6 +337,25 @@ inline std::filesystem::path createDataFolderInHome(const std::string& folderNam
     return homeDirectory;
 }
 
+inline std::string sanitizeFileName(const std::string& fn) {
+    std::string out;
+    out.reserve(fn.size());
+
+    for (const unsigned char c : fn) {
+        if (std::isalnum(c)) {
+            out += static_cast<char>(std::tolower(c));
+        } else if (c == '-' || c == '_' || c == ' ') {
+            out += static_cast<char>(c);
+        }
+    }
+
+    if (out.empty()) {
+        return "unnamed";
+    }
+
+    return out;
+}
+
 }  // namespace ara
 
 namespace glm {
