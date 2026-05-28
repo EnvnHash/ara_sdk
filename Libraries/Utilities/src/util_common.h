@@ -294,14 +294,15 @@ static std::string formatFileTime(const std::filesystem::file_time_type& time) {
 }
 
 inline std::filesystem::path getUserHomeDirectory() {
+#ifdef _WIN32
     if (const char* home = std::getenv("HOME")) {
         return {home};
     }
-
+#else
     if (const passwd* pwd = getpwuid(getuid())) {
         return {pwd->pw_dir};
     }
-
+#endif
     return {};
 }
 
