@@ -48,6 +48,11 @@
 #include <jni.h>
 #endif
 
+#ifdef __linux__
+#include <pwd.h>
+#include <unistd.h>
+#endif
+
 namespace ara {
 
 enum class restCallType : int32_t { post = 0, get, downloadBuffer, downloadFile };
@@ -286,6 +291,49 @@ static std::string formatFileTime(const std::filesystem::file_time_type& time) {
     std::stringstream ss;
     ss << std::format("{}", time);
     return ss.str();
+}
+
+inline std::filesystem::path getUserHomeDirectory() {
+    if (const char* home = std::getenv("HOME")) {
+        return {home};
+    }
+
+    if (const passwd* pwd = getpwuid(getuid())) {
+        return {pwd->pw_dir};
+    }
+
+    return {};
+}
+
+inline std::filesystem::path createDataFolderInHome(const std::string& folderName) {
+    std::filesystem::path homeDirectory;
+    std::error_code ec;
+#ifdef _WIN32
+    const char* homeDirName = "USERPROFILE";
+#else
+    const auto homeDirName = "HOME";
+#endif
+    const auto sanitizedHomeDir = std::getenv(homeDirName)
+                            ? std::filesystem::path(std::getenv(homeDirName))
+                            : std::filesystem::current_path();
+#if defined(__linux__) || defined(__APPLE__)
+    homeDirectory = (sanitizedHomeDir / std::filesystem::path("."+folderName)).string();
+#else
+    homeDirectory = (sanitizedHomeDir / std::filesystem::path(folderName)).string();
+#endif
+
+    if (std::filesystem::exists(homeDirectory)) {
+        return homeDirectory;
+    }
+
+    if (!std::filesystem::create_directory(homeDirectory, ec)) {
+        if (0 != ec.value()) {  // already exist
+            LOGE << "could not create directory " << homeDirectory << ". Reason: " << ec.message();
+            throw std::system_error(ec);
+        }
+    }
+
+    return homeDirectory;
 }
 
 }  // namespace ara

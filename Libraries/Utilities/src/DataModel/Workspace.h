@@ -56,7 +56,7 @@ public:
     std::string               getCWD() const { return m_cwd.string(); }
     std::string               homeDirectory() { return m_homeDirectory; }
     std::list<RecentProject> &getRecentItems() { return m_recentProjects; }
-    Project *                 getActiveProject() { return m_activeProject ? m_activeProject.get() : nullptr; }
+    Project *                 getActiveProject() const { return m_activeProject ? m_activeProject.get() : nullptr; }
 
     std::unique_ptr<Project> m_activeProject;
     static Workspace        *m_inst;

@@ -42,25 +42,7 @@ void Workspace::init() {
         createNewSettings(m_settingsFile);
     }
 
-    // create the standard folder for projects in the users Documents Folder
-    std::error_code ec;
-#ifdef _WIN32
-    const char* homeDirName = "USERPROFILE";
-#else
-    const char* homeDirName = "HOME";
-#endif
-    auto sanitizedHomeDir = std::getenv(homeDirName)
-                            ? std::filesystem::path(std::getenv(homeDirName))
-                            : std::filesystem::current_path();
-    m_homeDirectory = (sanitizedHomeDir / std::filesystem::path("Documents") / std::filesystem::path(m_appName)).string();
-
-    if (!std::filesystem::create_directory(m_homeDirectory, ec)) {
-        if (0 != ec.value())  // already exist
-        {
-            LOGE << "could not create directory " << m_homeDirectory << ". Reason: " << ec.message();
-            throw std::system_error(ec);
-        }
-    }
+    createDataFolderInHome(m_appName);
 }
 
 void Workspace::load(const fs::path& filename) {
