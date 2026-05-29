@@ -205,11 +205,10 @@ void Image::updateDrawData() {
     Div::updateDrawData();
 
     if (m_useTexId) {
-        m_secPos = {0,0};
-        m_secSize.x = m_extTexWidth;
-        m_secSize.y = m_extTexHeight;
-        m_texSize.x = m_extTexWidth;
-        m_texSize.y = m_extTexHeight;
+        m_secSize.x = m_secSize.x == 0 ? m_extTexWidth : m_secSize.x;
+        m_secSize.y = m_secSize.y == 0 ? m_extTexHeight : m_secSize.y;
+        m_texSize.x = m_texSize.x == 0 ? m_extTexWidth : m_texSize.x;
+        m_texSize.y = m_texSize.y == 0 ? m_extTexHeight : m_texSize.y;
     } else if (m_imgBase) {
         for (int i=0; i<2; ++i) {
             m_secPos[i] = m_imgBase->getVerPos(m_sectIndex)[i];
