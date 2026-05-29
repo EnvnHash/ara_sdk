@@ -298,7 +298,7 @@ inline std::filesystem::path getUserHomeDirectory() {
     if (const char* home = std::getenv("HOME")) {
         return {home};
     }
-#else
+#elif __linux__
     if (const passwd* pwd = getpwuid(getuid())) {
         return {pwd->pw_dir};
     }
