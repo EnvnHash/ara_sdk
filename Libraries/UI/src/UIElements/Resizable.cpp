@@ -77,9 +77,7 @@ void Resizable::initHandles() {
         m_handles[i]->setResizeImage(this);
         m_handles[i]->excludeFromParentPaddingAndBorder(true);
         m_handles[i]->setSnapToHwPix(true);
-        if (i == static_cast<int32_t>(Corner::center)) {
-            m_handles[i]->setAlpha(0.f);
-        }
+        m_handles[i]->setVisibility(m_handleVisibility);
     }
 
     setFixedAspect(m_fixedAspect);
@@ -104,6 +102,15 @@ void Resizable::setFixedAspect(const bool& val) {
             m_handles[static_cast<int32_t>(it)]->setVisibility(!val);
         }
     }
+}
+
+void Resizable::setHandleVisibility(const bool val) {
+    for (const auto& it: m_handles) {
+        if (it) {
+            it->setVisibility(val);
+        }
+    }
+    m_handleVisibility = val;
 }
 
 void Resizable::resizeFromCorner(const Corner corner, const vec2& movedPix) {
@@ -210,6 +217,11 @@ int32_t Resizable::getTopDragY(const dragPar& dp) {
 int32_t Resizable::getLeftDragX(const dragPar& dp) {
     return std::min(static_cast<int32_t>(dp.dragStartPos.x + dp.movedPix.x),
                             static_cast<int32_t>(dp.dragStartPos.x + dp.dragStartSize.x) - dp.minSize.x);
+}
+
+Resizable::~Resizable() {
+    getWindow()->removeGlobalMouseMoveCb(this);
+    getWindow()->removeGlobalMouseUpLeftCb(this);
 }
 
 }

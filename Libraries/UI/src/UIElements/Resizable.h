@@ -22,12 +22,14 @@ public:
     };
 
     Resizable();
+    ~Resizable() override;
 
     void init() override;
     void initHandles();
     void setResizeStart(ResizableHandle::Corner corner);
     void setResizeEnd();
     void setFixedAspect(const bool& val);
+    void setHandleVisibility(bool val);
     void setMinSize(const glm::vec2& size) { m_minSize = size; }
 
 private:
@@ -53,6 +55,7 @@ private:
     int32_t                 m_handleSize = 12;
     bool                    m_dragging = false;
     bool                    m_fixedAspect = false;
+    bool                    m_handleVisibility = true;
 
     std::array<ResizableHandle*, static_cast<int>(ResizableHandle::Corner::size)> m_handles{};
 };
