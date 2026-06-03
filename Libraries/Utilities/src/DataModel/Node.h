@@ -66,7 +66,7 @@ class Node : public std::enable_shared_from_this<Node> {
 public:
     ARA_NODE_ADD_VIRTUAL_SERIALIZE_FUNCTIONS(m_name, m_typeName, m_uuid)
 
-    enum class cbType : int { preChange=0, postChange, preAddChild, postAddChild, preRemoveChild, postRemoveChild, Size };
+    enum class cbType : int { preChange=0, postChange, preAddChild, postAddChild, preRemoveChild, postRemoveChild, undo, Size };
     enum class pushToType : int { undefined=0, array, object };
 
     struct memberVar {
@@ -545,8 +545,9 @@ protected:
         { cbType::preAddChild, {}},
         { cbType::postAddChild, {}},
         { cbType::preRemoveChild, {}},
-        { cbType::postRemoveChild, {}} };
-
+        { cbType::postRemoveChild, {}},
+        { cbType::undo, {}}
+    };
 };
 
 }

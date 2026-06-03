@@ -439,6 +439,10 @@ void Node::undo() {
     m_undoing = true;
     deserialize(json::from_bson(*m_undoBufIt));
     m_undoing = false;
+
+    for (auto &it : collectCallbacks(cbType::undo, true)) {
+        it(this, "");
+    }
 }
 
 void Node::redo() {
@@ -476,12 +480,6 @@ bool Node::iterateChildren(const function<void(Node&)>& f) const {
 
 deque<function<void(Node*, const string&)>> Node::collectCallbacks(cbType cbType, bool withChildrenOnly) {
     deque<function<void(Node*, const string&)>> list;
-    if  (!withChildrenOnly || !m_children.empty()) {
-        for (auto &val: m_changeCb[cbType] | views::values) {
-            list.emplace_back(val);
-        }
-    }
-
     iterateChildren(*this, [&withChildrenOnly, &list, &cbType](Node& node) {
         if  (!withChildrenOnly || !node.children().empty()) {
             for (auto &val: node.changeCb()[cbType] | views::values) {
