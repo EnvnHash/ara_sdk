@@ -220,8 +220,10 @@ int32_t Resizable::getLeftDragX(const dragPar& dp) {
 }
 
 Resizable::~Resizable() {
-    getWindow()->removeGlobalMouseMoveCb(this);
-    getWindow()->removeGlobalMouseUpLeftCb(this);
+    if (getWindow()) {
+        getWindow()->removeGlobalMouseMoveCb(this);
+        getWindow()->removeGlobalMouseUpLeftCb(this);
+    }
 }
 
 }

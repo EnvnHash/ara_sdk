@@ -98,16 +98,24 @@ void FBO::fromTexMan(const Texture *texMan) {
         m_nrAttachments = 1;
         m_mipMapLevels  = static_cast<int>(texMan->getMipMapLevels());
         m_nrSamples     = 1;
-        m_wrapMode      = ara::Texture::getWrapMode();
+        m_wrapMode      = Texture::getWrapMode();
         m_magFilterType = texMan->getMagnificationFilter();
         m_minFilterType = texMan->getMinificationFilter();
 
         m_quad = make_unique<Quad>(QuadInitParams{});
 
         // get standard shaders for clearing the FBO
-        m_colShader     = m_shCol->getStdCol();
-        m_clearShader   = m_shCol->getStdClear(m_layered, static_cast<int>(m_tex_depth));
-        m_toAlphaShader = m_shCol->getStdTex();
+        if (!m_shCol && m_glbase) {
+            m_shCol = &m_glbase->shaderCollector();
+        } else {
+            LOGE << "FBO::fromTexMan Warning, No shader collector present on FBO";
+        }
+
+        if (m_shCol) {
+            m_colShader     = m_shCol->getStdCol();
+            m_clearShader   = m_shCol->getStdClear(m_layered, static_cast<int>(m_tex_depth));
+            m_toAlphaShader = m_shCol->getStdTex();
+        }
 
         glGenFramebuffers(1, &m_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -625,13 +633,13 @@ void FBO::attachTextures(bool doCheckFbo) const {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FBO::assignTex(int attachmentNr, GLuint tex) const {
+void FBO::assignTex(const int attachmentNr, const GLuint tex) const {
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachmentNr, m_target, tex, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FBO::bind(bool saveStates) {
+void FBO::bind(const bool saveStates) {
     if (saveStates) {
         getActStates();
         glGetIntegerv(GL_VIEWPORT, &m_csVp[0]);

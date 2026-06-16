@@ -19,6 +19,7 @@ file(GLOB UI_UT_SRC
     LabelTest.cpp
     HidTest.cpp
     ImageTest.cpp
+    PaintImageTest.cpp
     ReloadGLContextTest.cpp
     ResizableTest.cpp
     ScrollViewTest.cpp

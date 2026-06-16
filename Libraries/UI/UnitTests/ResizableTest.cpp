@@ -46,9 +46,9 @@ Resizable& addResizable(UINode& rootNode, const ivec2& pos, const ivec2& size, c
 
 TEST(UITest, ResizableBasicTest) {
     appBody([&](const UIApplication& app){
-        addResizable(*app.getMainWindow()->getRootNode(), {}, {200, 150});
+        addResizable(*app.getMainWindow()->getRootNode(), {}, {200, 150}, align::center, valign::center);
     }, [&](const UIApplication& app){
-        compareFrameBufferToImage(filesystem::current_path() / "Resizable_basic_test.png",
+        compareFrameBufferToImage(filesystem::current_path() / "resizeable_basic_test.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
     }, 400, 300);
 }
