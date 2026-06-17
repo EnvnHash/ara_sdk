@@ -116,6 +116,7 @@ public:
     glm::ivec2                           getSize();
     glm::ivec2                           getPosition();
 
+    static GLFWcursor* createCircularMouseCursor(int radius, const glm::vec4& col);
     // GLFWcursor* createMouseCursor(const char* file, float xHot, float yHot);
     void          setMouseCursorIcon(GLFWcursor *icon, WinMouseIcon tp) { m_mouseCursors[toType(tp)] = icon; }
 
@@ -145,11 +146,11 @@ public:
     HWND  getHwndHandle() const { return m_hwndHandle; }
     HGLRC getHglrcHandle() const { return m_wglHandle; }
 #endif
-    auto        getIterateSema() { return &m_iterate; }
-    auto        getBlockResizing() const { return m_blockResizing; }
-    bool        getRequestOpen() const override { return m_requestOpen; }
-    bool        getRequestClose() const override { return m_requestClose; }
-    auto&       getOnCloseCb() { return m_onCloseCb; }
+    auto                getIterateSema() { return &m_iterate; }
+    [[nodiscard]] auto  getBlockResizing() const { return m_blockResizing; }
+    [[nodiscard]] bool  getRequestOpen() const override { return m_requestOpen; }
+    [[nodiscard]] bool  getRequestClose() const override { return m_requestClose; }
+    auto&               getOnCloseCb() { return m_onCloseCb; }
 
     void requestOpen(const bool val) override { m_requestOpen = val; }
     void requestClose(const bool val) override { m_requestClose = val; }

@@ -68,6 +68,15 @@ public:
 };
 #endif
 
+class DemoView_MouseCursor : public DemoView {
+public:
+    DemoView_MouseCursor();
+    void init() override;
+    void mouseIn(hidData &data) override;
+    void mouseOut(hidData &data) override;
+    GLFWcursor* m_cursor{};
+};
+
 class DemoView_Resizable : public DemoView {
 public:
     DemoView_Resizable();

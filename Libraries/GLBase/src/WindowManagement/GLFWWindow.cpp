@@ -162,11 +162,6 @@ int GLFWWindow::init(const glWinPar &gp) {
         }
     }
 
-    // init cursors
-    for (auto cursor : m_mouseCursors) {
-        cursor = nullptr;
-    }
-
     // create std cursors
     m_mouseCursors[toType(WinMouseIcon::arrow)]     = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
     m_mouseCursors[toType(WinMouseIcon::hresize)]   = glfwCreateStandardCursor(GLFW_HRESIZE_CURSOR);
@@ -284,7 +279,7 @@ void GLFWWindow::initFullScreen(const glWinPar &gp) {
             LOG << "current video mode: width: " << mode->width << " height: " <<  mode->height << "  refreshRate: " << mode->refreshRate;
         }
     } else {
-        if (gp.debug) {
+        if (gp.debug && useThisMode) {
             LOG << "set video mode: width: " << useThisMode->width << " height: " << useThisMode->height << " refreshRate: " << useThisMode->refreshRate;
         }
     }
@@ -517,6 +512,42 @@ void GLFWWindow::focus() const {
     }
 }
 
+GLFWcursor* GLFWWindow::createCircularMouseCursor(const int radius, const vec4& col) {
+    if (radius <= 0) {
+        return nullptr;
+    }
+
+    const int diameter = radius * 2 + 1;
+    std::vector<uint8_t> pixels(static_cast<size_t>(diameter * diameter * 4), 0);
+
+    constexpr int outlineThickness = 1;
+    const int     radiusSq         = radius * radius;
+    const int     innerRadius      = radius - outlineThickness;
+    const int     innerRadiusSq    = innerRadius > 0 ? innerRadius * innerRadius : 0;
+
+    for (int y = 0; y < diameter; ++y) {
+        for (int x = 0; x < diameter; ++x) {
+            const int dx = x - radius;
+            const int dy = y - radius;
+
+            if (const auto distSq = dx * dx + dy * dy; distSq <= radiusSq && distSq >= innerRadiusSq) {
+                const size_t idx = static_cast<size_t>((y * diameter + x) * 4);
+                pixels[idx]      = col.r * 255;
+                pixels[idx + 1]  = col.g * 255;
+                pixels[idx + 2]  = col.b * 255;
+                pixels[idx + 3]  = col.a * 255;
+            }
+        }
+    }
+
+    GLFWimage image{};
+    image.width  = diameter;
+    image.height = diameter;
+    image.pixels = pixels.data();
+
+    return glfwCreateCursor(&image, radius, radius);
+}
+
 void GLFWWindow::removeMouseCursors() {
     if (m_window) {
         for (const auto it : m_mouseCursors | std::views::filter([](const auto item){ return item != nullptr; })) {
@@ -561,10 +592,10 @@ void GLFWWindow::setPosition(int posX, int posY) {
 
 vec2 GLFWWindow::getDpi() {
 #ifdef __linux__
-    auto   dpy = glfwGetX11Display();
+    const auto   dpy = glfwGetX11Display();
     auto   scr = 0;
-    double dDisplayDPI_H = static_cast<double>(DisplayWidth(dpy, scr)) / (static_cast<double>(DisplayWidthMM(dpy, scr)) / 25.4);
-    double dDisplayDPI_V = static_cast<double>(DisplayHeight(dpy, scr)) / (static_cast<double>(DisplayHeightMM(dpy, scr)) / 25.4);
+    const double dDisplayDPI_H = static_cast<double>(DisplayWidth(dpy, scr)) / (static_cast<double>(DisplayWidthMM(dpy, scr)) / 25.4);
+    const double dDisplayDPI_V = static_cast<double>(DisplayHeight(dpy, scr)) / (static_cast<double>(DisplayHeightMM(dpy, scr)) / 25.4);
     return vec2{dDisplayDPI_H, dDisplayDPI_V};
 #else
     return vec2{92.f, 92.f};
