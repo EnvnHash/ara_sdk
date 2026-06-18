@@ -1055,7 +1055,7 @@ void UIWindow::onMouseUpRight() {
 void UIWindow::onMouseMove(const float xPos, const float yPos, ushort _mode) {
     fillHidData(hidEvent::MouseMove, xPos, yPos, m_hidData.shiftPressed, m_hidData.ctrlPressed, m_hidData.altPressed);
 
-    auto foundNode = m_opi.foundNode;
+    const auto foundNode = m_opi.foundNode;
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()){
         UINode::hidIt(m_hidData, hidEvent::MouseMove, m_opi.localTree.begin(), m_opi.localTree);
@@ -1069,22 +1069,28 @@ void UIWindow::onMouseMove(const float xPos, const float yPos, ushort _mode) {
     }
 
     // if the mouse moved to another UiNode, advise the old node of this event
-    if (m_lastHoverFound && m_lastHoverFound != foundNode && !m_hidData.dragging && !m_lastHoverFound->isHIDBlocked()) {
+    if (m_lastHoverFound
+        && m_lastHoverFound != foundNode
+        && !m_hidData.dragging
+        && !m_lastHoverFound->isHIDBlocked()
+        && !m_lastHoverFound->isInBounds(m_hidData.mousePos)) {
         m_lastHoverFound->mouseOut(m_hidData);  // mouse out has to be processed before mouse in !!!
     }
 
-    if (foundNode && (!m_lastHoverFound || m_lastHoverFound != foundNode) && !m_hidData.dragging &&
-        !foundNode->isHIDBlocked()) {
+    if (foundNode
+        && (!m_lastHoverFound || (m_lastHoverFound != foundNode && !foundNode->isInBounds(m_lastMousePos)))
+        && !m_hidData.dragging
+        && !foundNode->isHIDBlocked()) {
         foundNode->mouseIn(m_hidData);
     }
 
     m_lastHoverFound = foundNode;
 
-    bool isValidDrag = length(m_hidData.movedPix) > 4.f * s_devicePixelRatio;
-
-    if ((m_hidData.mousePressed || m_hidData.mouseRightPressed) && !m_draggingNodeTree.empty() &&
-        (!m_hidData.dragStart || isValidDrag)) {
-        // since a minimum distance is used for validating drag gestures, movedPix has to be corrected in order
+    if (const bool isValidDrag = length(m_hidData.movedPix) > 4.f * s_devicePixelRatio;
+        (m_hidData.mousePressed || m_hidData.mouseRightPressed)
+        && !m_draggingNodeTree.empty()
+        && (!m_hidData.dragStart || isValidDrag)) {
+        // since a minimum distance is used for validating drag gestures, movedPix has to be corrected
         // to avoid jumps
         if (m_hidData.dragStart && isValidDrag) {
             m_mouseDownPos       = m_hidData.mousePos;
@@ -1105,6 +1111,8 @@ void UIWindow::onMouseMove(const float xPos, const float yPos, ushort _mode) {
             m_hidData.dragging  = false;
         }
     }
+
+    m_lastMousePos = vec2{xPos, yPos};
 }
 
 void UIWindow::onWheel(const float deg) {

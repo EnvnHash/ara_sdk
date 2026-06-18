@@ -335,6 +335,7 @@ protected:
     glm::ivec2 m_minWinSize = {300, 300};
     glm::vec2  m_mouseDownPos{};
     glm::vec2  m_lastClickedPos = glm::vec2{};
+    glm::vec2  m_lastMousePos = glm::vec2{};
     glm::ivec2 m_realSize{};
     glm::ivec2 m_virtSize{};
 
