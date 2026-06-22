@@ -32,10 +32,11 @@ public:
         return m_content->push<T>(arg);
     }
 
-    [[nodiscard]] UINode* getWorkingArea() const { return m_workingArea; }
-    [[nodiscard]] UINode* getContent() const { return m_content; }
+    [[nodiscard]] UINode* getWorkingArea() const    { return m_workingArea; }
+    [[nodiscard]] UINode* getContent() const        { return m_content; }
     [[nodiscard]] float   getInitZoomPropVal() const { return m_initZoomPropVal; }
-    [[nodiscard]] Property<float>& getZoomProp() { return m_zoomProp; }
+    [[nodiscard]] Property<float>& getZoomProp()    { return m_zoomProp; }
+    float getZoomFact()                             { return m_zoomProp() * 0.01f; }
 
     void hideContent() const;
     void resetZoom();
@@ -43,13 +44,14 @@ public:
     void scaleAndCenterContent();
     void checkWorkAreaSize() const;
 
-    void initContent(std::function<void(UINode*)> f) { m_initContFunc = std::move(f); }
-    void addChangeCb(const std::function<void()>& f) { m_onChangedCb.emplace_back(f); }
-    void showSlider(const bool val) { m_showSlider = val; checkWorkAreaSize(); }
-    void showResetButton(const bool val) { m_showResetButton = val; checkWorkAreaSize(); }
-    void setZoomRange(const float mi, const float ma) { m_zoomProp.setMinMax(mi, ma); }
-    void setZoom(const float val) { m_zoomProp = val; }
-    void setCenterAndScaleOnReset(const bool val) { m_centerAndScaleOnReset = val; }
+    void initContent(std::function<void(UINode*)> f)        { m_initContFunc = std::move(f); }
+    void addChangeCb(const std::function<void()>& f)        { m_onChangedCb.emplace_back(f); }
+    void showSlider(const bool val)                         { m_showSlider = val; checkWorkAreaSize(); }
+    void showResetButton(const bool val)                    { m_showResetButton = val; checkWorkAreaSize(); }
+    void setZoomRange(const float mi, const float ma)       { m_zoomProp.setMinMax(mi, ma); }
+    void setZoom(const float val)                           { m_zoomProp = val; }
+    void setCenterAndScaleOnReset(const bool val)           { m_centerAndScaleOnReset = val; }
+    void setOnZoomChanged(const std::function<void()>& f)   { m_zoomProp.onPostChange(f, this); }
 
 private:
     void setZoomPropChangeCb();
