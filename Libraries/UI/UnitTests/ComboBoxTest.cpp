@@ -13,8 +13,8 @@ using namespace std;
 using namespace glm;
 
 namespace ara::UiUnitTest::ComboBoxTest {
-    void addCombo(UIApplication& app, bool& flag) {
-        auto rootNode = app.getMainWindow()->getRootNode();
+    ComboBox& addCombo(const UIApplication& app, bool& flag) {
+        const auto rootNode = app.getMainWindow()->getRootNode();
         auto& combo = rootNode->push<ComboBox>(UINodePars{
             .pos = ivec2{0,50},
             .size = ivec2{200,40},
@@ -33,21 +33,23 @@ namespace ara::UiUnitTest::ComboBoxTest {
         combo.addEntry("Entry 2", [&]{ LOG << " entry two "; });
         combo.addEntry("Entry 3", [&]{ LOG << " entry three "; });
         combo.addEntry("Entry 4", [&]{ LOG << " entry four "; });
+        return combo;
     }
 
-    void openMenu(UIApplication& app) {
+    void openMenu(const UIApplication& app) {
         iterate(app);
         app.getMainWindow()->onMouseDownLeft(175, 65, false, false, false);
+        app.getMainWindow()->onMouseUpLeft();
     }
 
-    void hoverOverFirstEntry(UIApplication& app) {
+    void hoverOverFirstEntry(const UIApplication& app) {
         iterate(app);
         app.getMainWindow()->onMouseMove(64, 95, 0);
     }
 
     TEST(UITest, ComboBoxTest) {
         bool entryOne = false;
-        appBody([&](UIApplication& app){
+        appBody([&](const UIApplication& app){
             addCombo(app, entryOne);
         }, [&](UIApplication& app){
             //compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref.png",
@@ -57,10 +59,10 @@ namespace ara::UiUnitTest::ComboBoxTest {
 
     TEST(UITest, ComboBoxTestClicked) {
         bool entryOne = false;
-        appBody([&](UIApplication& app){
+        appBody([&](const UIApplication& app){
             addCombo(app, entryOne);
             openMenu(app);
-        }, [&](UIApplication& app){
+        }, [&](const UIApplication& app){
             compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref2.png",
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
         }, 600, 400);
@@ -68,21 +70,71 @@ namespace ara::UiUnitTest::ComboBoxTest {
 
     TEST(UITest, ComboBoxTestListHover) {
         bool entryOne = false;
-        appBody([&](UIApplication& app){
+        appBody([&](const UIApplication& app){
             addCombo(app, entryOne);
             openMenu(app);
             hoverOverFirstEntry(app);
             iterate(app);
-        }, [&](UIApplication& app){
+        }, [&](const UIApplication& app){
               compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref3.png",
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
         }, 600, 400);
     }
 
+    TEST(UITest, ComboBoxTestMouseInOut) {
+        bool entryOne = false;
+        array<int32_t, 4> mouseInCntr{};
+        array<int32_t, 4> mouseOutCntr{};
+
+        appBody([&](const UIApplication& app){
+            auto& combo = addCombo(app, entryOne);
+            openMenu(app);
+            const auto entr1 = combo.getEntry("Entry 1");
+            entr1->addMouseInCb([&](hidData& d) { mouseInCntr[0]++; });
+            entr1->addMouseOutCb([&](hidData& d) { mouseOutCntr[0]++; });
+
+            hoverOverFirstEntry(app);
+            iterate(app);
+            app.getMainWindow()->onMouseMove(10, 10, 0);
+        }, [&](const UIApplication& app){
+              EXPECT_EQ(mouseInCntr[0], 1);
+              EXPECT_EQ(mouseOutCntr[0], 1);
+        }, 600, 400);
+    }
+
+    TEST(UITest, ComboBoxTestMouseInOut2) {
+        bool entryOne = false;
+        array<int32_t, 4> mouseInCntr{};
+        array<int32_t, 4> mouseOutCntr{};
+
+        appBody([&](const UIApplication& app){
+            auto& combo = addCombo(app, entryOne);
+            openMenu(app);
+            const auto entr1 = combo.getEntry("Entry 1");
+            entr1->addMouseInCb([&](hidData&) { mouseInCntr[0]++; });
+            entr1->addMouseOutCb([&](hidData&) { mouseOutCntr[0]++; });
+
+            const auto entr2 = combo.getEntry("Entry 2");
+            entr2->addMouseInCb([&](hidData&) { mouseInCntr[1]++; });
+            entr2->addMouseOutCb([&](hidData&) { mouseOutCntr[1]++; });
+
+            hoverOverFirstEntry(app);
+            iterate(app);
+            app.getMainWindow()->onMouseMove(64, 95, 0);
+            iterate(app);
+            app.getMainWindow()->onMouseMove(64, 125, 0);
+            iterate(app);
+            app.getMainWindow()->onMouseMove(64, 220, 0);
+        }, [&](const UIApplication& app){
+            EXPECT_EQ(mouseInCntr[0], 1); EXPECT_EQ(mouseOutCntr[0], 1);
+            EXPECT_EQ(mouseInCntr[1], 1); EXPECT_EQ(mouseOutCntr[1], 1);
+        }, 600, 400);
+    }
+
     TEST(UITest, ComboBoxTestListClicked) {
         bool entryOne = false;
-        appBody([&](UIApplication& app){
-            auto mainWin = app.getMainWindow();
+        appBody([&](const UIApplication& app){
+            const auto mainWin = app.getMainWindow();
             addCombo(app, entryOne);
             openMenu(app);
             hoverOverFirstEntry(app);
@@ -91,7 +143,7 @@ namespace ara::UiUnitTest::ComboBoxTest {
             mainWin->onMouseDownLeft(64, 95, false, false, false);
             mainWin->onMouseUpLeft();
 
-        }, [&](UIApplication& app){
+        }, [&](const UIApplication& app){
              compareFrameBufferToImage(filesystem::current_path() / "combo_test_ref.png",
                                       app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 1);
 

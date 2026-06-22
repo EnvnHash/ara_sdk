@@ -76,7 +76,7 @@ TEST(UITest, PaintImagePos2) {
         img.setBrush(brush);
 
         iterate(app);
-        simulateMouseClick(app, 250, 250);
+        simulateMouseClick(app, 249, 249);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "brush_hardness_pos2.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);

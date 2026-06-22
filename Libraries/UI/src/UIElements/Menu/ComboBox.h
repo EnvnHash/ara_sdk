@@ -21,7 +21,7 @@ public:
 
     void clearEntries() { m_entries.clear(); }
     void setSelectedEntryName(const std::string& str) { setMenuName(str); }
-    void setMaxListEntries(int count) { m_maxListEntries = count; }
+    void setMaxListEntries(const int count) { m_maxListEntries = count; }
 
 private:
     int    m_maxListEntries = 100;

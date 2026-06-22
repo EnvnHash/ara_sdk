@@ -22,10 +22,11 @@ public:
         m_entries.emplace_back(name, f);
     }
 
+    Button* getEntry(const std::string& name);
     virtual void setMenuName(const std::string& str);
 
 protected:
-    /** called when the DropDown Menu is opened. It's not needed and not necessary to call this from outside */
+    /** Called when the DropDown Menu is opened. It's unnecessary to call this from outside */
     virtual void rebuildEntryList();
 
     Button*                                                  m_menuEntryButt = nullptr;

@@ -576,4 +576,43 @@ TEST(UITest, HidNestedDivMouseInTest) {
     });
 }
 
+TEST(UITest, HidDivMouseInOutTest2) {
+    HidNode* container = nullptr;
+    HidNode* div = nullptr;
+    HidNode* div2 = nullptr;
+
+    appBody([&](const UIApplication& app) {
+        container = addDiv(app);
+        container->setPos(0,0);
+        container->setSize(1.f, 1.f);
+
+        div = &container->push<HidNode>({
+            .pos = glm::ivec2(20, 10),
+            .size = glm::ivec2(200, 30),
+            .name = "div1"
+        });
+
+        div2 = &container->push<HidNode>({
+            .pos = glm::ivec2(20, 50),
+            .size = glm::ivec2(200, 30),
+            .name = "div2"
+        });
+
+        const auto mainWin = app.getMainWindow();
+        mainWin->onMouseMove(0, 0, 0);
+        iterate(app);
+        mainWin->onMouseMove(40, 25, 0);
+        iterate(app);
+        mainWin->onMouseMove(40, 65, 0);
+        iterate(app);
+        mainWin->onMouseMove(40, 105, 0);
+    }, [&](const UIApplication& app) {
+        EXPECT_EQ(div->m_mouseIn, 1);
+        EXPECT_EQ(div->m_mouseOut, 1);
+        EXPECT_EQ(div2->m_mouseIn, 1);
+        EXPECT_EQ(div2->m_mouseOut, 1);
+    });
+}
+
+
 }

@@ -46,7 +46,7 @@ void DropDownMenu::init() {
     m_listEntryHeight = m_sharedRes->gridSize.y;
 
     // global MouseDown callbacks for closing the DropDownMenu
-    auto uiWin = getWindow();
+    const auto uiWin = getWindow();
 
     // be sure the callback exits only once
     uiWin->removeGlobalMouseDownLeftCb(this);
@@ -62,21 +62,21 @@ void DropDownMenu::init() {
             return;
         }
 
-        const auto uiWin = getWindow();
-        if (!uiWin) {
+        const auto uiWindow = getWindow();
+        if (!uiWindow) {
             return;
         }
 
         int x, y;
         getAbsMousePos(x, y);
 
-        if (x < uiWin->getPosition().x || x > (uiWin->getPosition().x + uiWin->getSize().x) ||
-            y < uiWin->getPosition().y || y > (uiWin->getPosition().y + uiWin->getSize().y)) {
-            uiWin->addGlCb(this, "closeDDM", [this]() {
+        if (x < uiWindow->getPosition().x || x > uiWindow->getPosition().x + uiWindow->getSize().x ||
+            y < uiWindow->getPosition().y || y > uiWindow->getPosition().y + uiWindow->getSize().y) {
+            uiWindow->addGlCb(this, "closeDDM", [this]() {
                 close();
                 return true;
             });
-            uiWin->update();  // force the gl thread to iterate
+            uiWindow->update();  // force the gl thread to iterate
             m_closing = true;
         }
     });
@@ -163,27 +163,29 @@ void DropDownMenu::rebuildEntryList() {
 
     int i = 0;
     for (const auto& entry : m_entries) {
-        auto& butt = m_entryList->push<Button>({ .style = getStyleClass() + ".list.button" });
+        auto& butt = m_entryList->push<Button>({
+            .bgColor = vec4(0.f,0.f,0.f,0.f),
+            .name = "Button_" + entry.first,
+            .style = getStyleClass() + ".list.button",
+            .align = align::left,
+            .valign = valign::top,
+            .borderWidth = 0,
+        });
         m_entryButts.emplace_back(&butt);  // maintain a separate list of entry button since m_entries
-                                       // may contain other elements
+                                            // may contain other elements
 
-        // default
-        butt.setName("Button_" + entry.first);
         butt.setText(entry.first);
         butt.setTextAlignX(align::left);
         butt.setColor(m_sharedRes->colors->at(uiColors::font));
         butt.setSize(1.f, m_listEntryHeight);
         butt.setPos(0, m_listEntryHeight * i);
-        butt.setBorderWidth(0);
-        butt.setBackgroundColor(0.f, 0.f, 0.f, 0.f);
         butt.setFont("regular", 18, align::left, valign::center, butt.getSharedRes()->colors->at(uiColors::font));
         butt.setPadding(m_sharedRes->padding);
-        butt.setAlign(align::left, valign::top);
 
         butt.setClickedCb([this, entry] {
             entry.second();
             // push to window gl callbacks which are processed after next
-            // iteration in order to have the mouseUp still find this node
+            // iteration to have the mouseUp still find this node
             if (getWindow()) {
                 getWindow()->addGlCb(this, "close", [this] {
                     close();
@@ -213,6 +215,11 @@ void DropDownMenu::setMenuName(const std::string& str) {
     if (getWindow()) {
         getWindow()->update();
     }
+}
+
+Button* DropDownMenu::getEntry(const std::string& name) {
+    const auto ret = std::ranges::find_if(m_entryButts, [&](Button* but){ return name == but->getText(); });
+    return ret != m_entryButts.end() ? *ret : nullptr;
 }
 
 }  // namespace ara

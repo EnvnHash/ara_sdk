@@ -527,7 +527,7 @@ bool UINodeGeom::isInBounds(vec2& pos) {
         objItLT = glm::max(objItLT, vec2{m_scIndDraw.x, m_scIndDraw.y});
     }
 
-    return all(greaterThanEqual(pos, objItLT)) && all(lessThanEqual(pos, objItRB));
+    return all(greaterThanEqual(pos, objItLT)) && all(lessThan(pos, objItRB));
 }
 
 bool UINodeGeom::isOutOfParentBounds() {

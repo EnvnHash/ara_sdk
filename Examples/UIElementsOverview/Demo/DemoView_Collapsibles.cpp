@@ -53,8 +53,8 @@ void DemoView_Collapsibles::init() {
         .fontHeight = 20,
     });
 
-    // Tree View, must use the ara sdk Node class or a derivative
-    std::string str = R"({"children":[{"children":[{"name":"sub1_1_1","uuid":"1"}],"name":"sub1_1","uuid":"0"},{"children":[{"name":"sub1_2_1","uuid":"3"},{"name":"sub1_2_2","uuid":"4"}],"name":"sub1_2","uuid":"2"}],"name":"root","uuid":"10"})";
+    // Tree View must use the ara sdk Node class or a derivative
+    const std::string str = R"({"children":[{"children":[{"name":"sub1_1_1","uuid":"1"}],"name":"sub1_1","uuid":"0"},{"children":[{"name":"sub1_2_1","uuid":"3"},{"name":"sub1_2_2","uuid":"4"}],"name":"sub1_2","uuid":"2"}],"name":"root","uuid":"10"})";
     m_node.loadFromString(str);
 
     pars.pos = ivec2{250,80};
