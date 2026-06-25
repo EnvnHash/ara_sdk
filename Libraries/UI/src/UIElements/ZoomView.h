@@ -32,10 +32,11 @@ public:
         return m_content->push<T>(arg);
     }
 
-    [[nodiscard]] UINode* getWorkingArea() const { return m_workingArea; }
-    [[nodiscard]] UINode* getContent() const { return m_content; }
+    [[nodiscard]] UINode* getWorkingArea() const    { return m_workingArea; }
+    [[nodiscard]] UINode* getContent() const        { return m_content; }
     [[nodiscard]] float   getInitZoomPropVal() const { return m_initZoomPropVal; }
-    [[nodiscard]] Property<float>& getZoomProp() { return m_zoomProp; }
+    [[nodiscard]] Property<float>& getZoomProp()    { return m_zoomProp; }
+    float getZoomFact()                             { return m_zoomProp() * 0.01f; }
 
     void hideContent() const;
     void resetZoom();
