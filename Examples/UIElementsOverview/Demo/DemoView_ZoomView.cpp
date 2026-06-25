@@ -22,6 +22,7 @@ void DemoView_ZoomView::init() {
     zv.setBorderWidth(1);
     zv.setZoomRange(100.f, 600.f);
     zv.keepContentWithinBoundaries(true);
+    //zv.setDragButton(mouseButt::middle);
 
     auto& img = zv.push<Image>();
     img.setImg("test/test_img.jpg", 1);

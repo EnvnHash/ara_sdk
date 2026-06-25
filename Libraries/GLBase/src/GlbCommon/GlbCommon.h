@@ -116,7 +116,7 @@ enum class align : int { center = 0, left, right, justify, justify_ex };
 enum class valign : int { center = 0, top, bottom };
 enum class MouseIcon : int { arrow = 0, move, scale, rotate, ibeam, hresize, vresize, count };
 enum class WinMouseIcon : int { arrow = 0, hresize, vresize, lbtrResize, ltbrResize, crossHair, move, rotate, scale, count };
-enum class mouseButt : int { left = 0, middle, right };
+enum class mouseButt : int { left = 0, middle, right, size };
 enum class mouseDragType : int { none = 0, translating, rotating, rolling, zooming, snapToAxis };
 
 static std::map<std::string, MouseIcon> stringToMouseIcon = {
@@ -132,7 +132,7 @@ enum class extrapolM : int { Mirror = 0, Circle };
 enum class interpolM : int { Bilinear = 0, CatmullRomCentri, Bezier };
 enum class maskType : int { Vector = 0, Bitmap, Count };
 enum class cfState : int { fine = 0, normal, coarse };
-enum class hidEvent : int { KeyDown = 0, KeyUp, onChar, MouseDownLeft, MouseDownLeftNoDrag, MouseUpLeft, MouseDownRight, MouseUpRight, MouseMove, MouseDrag, MouseWheel, OnResize, SetViewport, ScaleGest, ScaleBegin, ScaleEnd, Size }; // order matters, events will be processed in this order
+enum class hidEvent : int { KeyDown = 0, KeyUp, onChar, MouseDownLeft, MouseDownLeftNoDrag, MouseUpLeft, MouseDownMiddle, MouseUpMiddle, MouseDownRight, MouseUpRight, MouseMove, MouseDrag, MouseWheel, OnResize, SetViewport, ScaleGest, ScaleBegin, ScaleEnd, Size }; // order matters, events will be processed in this order
 
 enum class cpEditMode : int32_t {
     L2Move = 0,
@@ -242,12 +242,12 @@ public:
     bool altPressed        = false;
     bool ctrlPressed       = false;
     bool shiftPressed      = false;
-    bool mousePressed      = false;
-    bool mouseRightPressed = false;
     bool isDoubleClick     = false;
     bool hit               = false;
     bool consumed          = false;
     bool breakCbIt         = false;
+
+    std::unordered_map<mouseButt, bool> mousePressed = { {mouseButt::left, false}, {mouseButt::middle, false}, {mouseButt::right, false} };
 
     std::map<winProcStep, ProcStep>* procSteps = nullptr;
     void*                            newNode   = nullptr;  // used in WindowResizeAreas for avoiding
@@ -273,7 +273,7 @@ public:
         consumed  = false;
         breakCbIt = false;
     }
-    void getScreenMousePos(float devicePixelRatio) {
+    void getScreenMousePos(const float devicePixelRatio) {
         mouse::getAbsMousePos(screenMousePos.x, screenMousePos.y);
         screenMousePos = static_cast<glm::ivec2>(static_cast<glm::vec2>(screenMousePos) / devicePixelRatio);
     }

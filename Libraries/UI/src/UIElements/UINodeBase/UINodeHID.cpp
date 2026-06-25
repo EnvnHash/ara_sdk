@@ -34,6 +34,8 @@ void UINodeHID::hidIt(hidData& data, const hidEvent evt, std::list<UINode*>::ite
     static std::unordered_map<hidEvent, std::function<void(hidData&, UINode*)> > evtMap = {
         { hidEvent::MouseDownLeft, [](hidData& d, UINode* n) { n->mouseDown(d); } },
         { hidEvent::MouseUpLeft, [](hidData& d, UINode* n) { n->mouseUp(d); } },
+        { hidEvent::MouseDownMiddle, [](hidData& d, UINode* n) { n->mouseDownMiddle(d); } },
+        { hidEvent::MouseUpMiddle, [](hidData& d, UINode* n) { n->mouseUpMiddle(d); } },
         { hidEvent::MouseDownRight, [](hidData& d, UINode* n) { n->mouseDownRight(d); } },
         { hidEvent::MouseUpRight, [](hidData& d, UINode* n) { n->mouseUpRight(d); } },
         { hidEvent::MouseMove, [](hidData& d, UINode* n) { n->mouseMove(d); } },
@@ -140,12 +142,20 @@ void UINodeHID::addMouseClickCb(const std::function<void(hidData&)>& func, bool 
     m_mouseHidCb[hidEvent::MouseDownLeft].emplace_back(std::make_pair(func, onHit));
 }
 
+void UINodeHID::addMouseClickMiddleCb(const std::function<void(hidData&)>& func, bool onHit) {
+    m_mouseHidCb[hidEvent::MouseDownMiddle].emplace_back(std::make_pair(func, onHit));
+}
+
 void UINodeHID::addMouseClickRightCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseDownRight].emplace_back(std::make_pair(func, onHit));
 }
 
 void UINodeHID::addMouseUpCb(const std::function<void(hidData&)>& func, bool onHit) {
     m_mouseHidCb[hidEvent::MouseUpLeft].emplace_back(std::make_pair(func, onHit));
+}
+
+void UINodeHID::addMouseUpMiddleCb(const std::function<void(hidData&)>& func, bool onHit) {
+    m_mouseHidCb[hidEvent::MouseUpRight].emplace_back(std::make_pair(func, onHit));
 }
 
 void UINodeHID::addMouseUpRightCb(const std::function<void(hidData&)>& func, bool onHit) {

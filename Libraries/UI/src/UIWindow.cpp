@@ -127,12 +127,13 @@ void UIWindow::initUIWindow(const UIWindowParams& par) {
                 .shift = par.shift,
                 .size = par.size,
                 .scaleToMonitor = par.scaleToMonitor,
-                .shareCont = static_cast<void *>(m_glbase->getGlfwHnd()),
+                .shareCont = static_cast<void*>(m_glbase->getGlfwHnd()),
                 .transparentFramebuffer = par.transparentFB,
                 .extWinHandle = par.extWinHandle,
                 .glbase = par.glbase,
                 .contScale = { par.glbase->m_androidDensity, par.glbase->m_androidDensity }
         });
+
         if (!m_winHandle) {
             LOGE << "UIWindow::initUIWindow Error: Couldn't create new Window";
             return;
@@ -149,7 +150,7 @@ void UIWindow::initUIWindow(const UIWindowParams& par) {
     m_winHandle->setDrawFunc([this](const double time, const double dt, const int ctxNr) { return draw(time, dt, ctxNr); });
     initHidCallbacks();
 
-    // double check if the requested size was accepted
+    // double-check if the requested size was accepted
     m_virtSize.x       = static_cast<int32_t>(m_winHandle->getWidth());
     m_virtSize.y       = static_cast<int32_t>(m_winHandle->getHeight());
     m_realSize.x       = static_cast<int32_t>(m_winHandle->getWidthReal());
@@ -181,16 +182,16 @@ void UIWindow::initToCurrentCtx() {
 void UIWindow::initHidCallbacks() {
     // set hid callbacks. This must be done this way, as GlFW expects static c-style callbacks, which is not possible
     // when aiming for modular c++ style window architectures
-    m_winHandle->addKeyCb([this](int p1, int p2, int p3, int p4) { key_callback(p1, p2, p3, p4); });
-    m_winHandle->setCharCb([this](unsigned int p1) { char_callback(p1); });
-    m_winHandle->setMouseButtonCb([this](int button, int action, const int mods) { mouseBut_callback(button, action, mods); });
-    m_winHandle->setMouseCursorCb([this](double x, double y) { cursor_callback(x, y); });
-    m_winHandle->setWindowSizeCb([this](int w, int h) { window_size_callback(w, h); });
-    m_winHandle->setScrollCb([this](double xOffs, double yOffs) { scroll_callback(xOffs, yOffs); });
-    m_winHandle->setWindowPosCb([this](int posX, int posY) { window_pos_callback(posX, posY); });
-    m_winHandle->setWindowMaximizeCb([this](int maximized) { window_maximize_callback(maximized); });
-    m_winHandle->setWindowFocusCb([this](int focused) { window_focus_callback(focused); });
-    m_winHandle->setWindowIconfifyCb([this](int iconified) { window_minimize_callback(iconified); });
+    m_winHandle->addKeyCb([this](const int p1, const int p2, const int p3, const int p4) { key_callback(p1, p2, p3, p4); });
+    m_winHandle->setCharCb([this](const unsigned int p1) { char_callback(p1); });
+    m_winHandle->setMouseButtonCb([this](const int button, const int action, const int mods) { mouseBut_callback(button, action, mods); });
+    m_winHandle->setMouseCursorCb([this](const double x, const double y) { cursor_callback(x, y); });
+    m_winHandle->setWindowSizeCb([this](const int w, const int h) { window_size_callback(w, h); });
+    m_winHandle->setScrollCb([this](const double xOffs, const double yOffs) { scroll_callback(xOffs, yOffs); });
+    m_winHandle->setWindowPosCb([this](const int posX, const int posY) { window_pos_callback(posX, posY); });
+    m_winHandle->setWindowMaximizeCb([this](const int maximized) { window_maximize_callback(maximized); });
+    m_winHandle->setWindowFocusCb([this](const int focused) { window_focus_callback(focused); });
+    m_winHandle->setWindowIconfifyCb([this](const int iconified) { window_minimize_callback(iconified); });
     m_winHandle->setCloseCb([this] { window_close_callback(); });
     m_winHandle->setWindowRefreshCb([this] { window_refresh_callback(); });
 }
@@ -209,9 +210,9 @@ void UIWindow::initColors() {
 
 void UIWindow::initGLResources() {
     // create the FBO to draw the SceneGraph and it's object map
-    GLenum target = m_multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
-    int numSamples = m_multisample ? 2 : 1;
-    m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, static_cast<int>(m_realSize.x), static_cast<int>(m_realSize.y), 1,
+    const GLenum target = m_multisample ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
+    const int numSamples = m_multisample ? 2 : 1;
+    m_sceneFbo = make_unique<FBO>(FboInitParams{m_glbase, m_realSize.x, m_realSize.y, 1,
                                                 GL_RGBA8, target, true, 1, 1, numSamples, GL_CLAMP_TO_EDGE, false});
 
     s_shCol.setShaderHeader(m_glbase->getShaderHeader());
@@ -304,7 +305,7 @@ void UIWindow::menuBarCloseFunc() {
     if (m_closeFunc) {
         m_closeFunc(this);
     } else if (m_appHandle && m_isMainWindow) {
-        m_appHandle->openDialogCentered((InfoDiagParams{
+        m_appHandle->openDialogCentered(InfoDiagParams{
             .tp = infoDiagType::confirm,
             .size = ivec2{500, 150},
             .msg = "Do you really want to quit?",
@@ -314,7 +315,7 @@ void UIWindow::menuBarCloseFunc() {
                 m_appHandle->exit();
                 return false;  // don't close the window, stop after immediately after this point
             }
-        }));
+        });
     }
 }
 
@@ -563,8 +564,8 @@ void UIWindow::getActualMonitorMaxArea(const int win_xpos, const int win_ypos) {
         glfwGetMonitorPos(monitors[i], &vxpos, &vypos);
 
         // check if the window top left corner lies within this monitor
-        if (win_xpos > vxpos && win_xpos < (vxpos + mode->width) && win_ypos > vypos &&
-            win_ypos < (vypos + mode->height)) {
+        if (win_xpos > vxpos && win_xpos < vxpos + mode->width && win_ypos > vypos &&
+            win_ypos < vypos + mode->height) {
             int ma_xpos, ma_ypos, ma_width, ma_height;
             glfwGetMonitorWorkarea(monitors[i], &ma_xpos, &ma_ypos, &ma_width, &ma_height);
             setMonitorMaxArea(ma_xpos, ma_ypos, ma_width, ma_height);
@@ -577,9 +578,9 @@ void UIWindow::getActualMonitorMaxArea(const int win_xpos, const int win_ypos) {
 void UIWindow::key_callback(const int key, int scancode, const int action, const int mods) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     int  outKey         = key;
-    const bool isAlt    = (key == ARA_KEY_LEFT_ALT) || (key == ARA_KEY_RIGHT_ALT);
-    const bool isCtrl   = (key == ARA_KEY_LEFT_CONTROL) || (key == ARA_KEY_RIGHT_CONTROL);
-    const bool isShift  = (key == ARA_KEY_LEFT_SHIFT) || (key == ARA_KEY_RIGHT_SHIFT);
+    const bool isAlt    = key == ARA_KEY_LEFT_ALT || key == ARA_KEY_RIGHT_ALT;
+    const bool isCtrl   = key == ARA_KEY_LEFT_CONTROL || key == ARA_KEY_RIGHT_CONTROL;
+    const bool isShift  = key == ARA_KEY_LEFT_SHIFT || key == ARA_KEY_RIGHT_SHIFT;
 
     // convert special keys, ...QT and GLFW use different key codes
     static unordered_map<int, int> specialKeys = {
@@ -600,7 +601,7 @@ void UIWindow::key_callback(const int key, int scancode, const int action, const
 
     if (action == ARA_RELEASE) {
         WindowBase::osKeyUp(outKey, mods & ARA_MOD_SHIFT || isShift, mods & ARA_MOD_CONTROL || isCtrl,
-                            (mods & ARA_MOD_ALT) || isAlt);
+                            mods & ARA_MOD_ALT || isAlt);
     }
 
     if ((key == ARA_KEY_ESCAPE || (key == ARA_KEY_F4 && mods & ARA_MOD_ALT)) && action == ARA_PRESS) {
@@ -677,6 +678,15 @@ void UIWindow::mouseBut_callback(const int button, const int action, const int m
         WindowBase::osMouseUpLeft();
     }
 
+    if (button == ARA_MOUSE_BUTTON_MIDDLE && action == ARA_PRESS) {
+        WindowBase::osMouseDownMiddle(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & ARA_MOD_SHIFT,
+                                    mods & ARA_MOD_CONTROL, mods & ARA_MOD_ALT);
+    }
+
+    if (button == ARA_MOUSE_BUTTON_MIDDLE && action == ARA_RELEASE) {
+        WindowBase::osMouseUpMiddle();
+    }
+
     if (button == ARA_MOUSE_BUTTON_RIGHT && action == ARA_PRESS) {
         WindowBase::osMouseDownRight(static_cast<float>(m_lastMouseX), static_cast<float>(m_lastMouseY), mods & ARA_MOD_SHIFT,
                                      mods & ARA_MOD_CONTROL, mods & ARA_MOD_ALT);
@@ -697,7 +707,7 @@ void UIWindow::scroll_callback(double, const double yOffset) {
     iterate();
 }
 
-/** xpos, ypos -> top left corner of the window in relation to workarea */
+/** xpos, ypos -> top left corner of the window in relation to the workarea */
 void UIWindow::window_pos_callback(int xpos, int ypos) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
     WindowBase::osSetWinPos([this, xpos, ypos] {
@@ -705,12 +715,11 @@ void UIWindow::window_pos_callback(int xpos, int ypos) {
         // numbers, we have to filter those calls
 
         // check if the window will be completely invisible
-        auto wa = m_winHandle->getWorkArea();
-        if (wa.z && wa.w &&
-            !(xpos > wa.z                                   // outside right bounds
-              || xpos > wa.w                                // outside bottom bounds
-              || (xpos + m_winHandle->getSize().x < wa.x)   // outside left bounds
-              || (ypos + m_winHandle->getSize().y < wa.y))  // outside top bounds
+        if (const auto wa = m_winHandle->getWorkArea(); wa.z && wa.w
+            && !(xpos > wa.z                                // outside right bounds
+                || xpos > wa.w                              // outside bottom bounds
+                || xpos + m_winHandle->getSize().x < wa.x   // outside left bounds
+                || ypos + m_winHandle->getSize().y < wa.y)  // outside top bounds
         ) {
             getActualMonitorMaxArea(xpos, ypos);
             for (auto &val: m_globalWinPosCb | views::values) {
@@ -731,31 +740,31 @@ void UIWindow::window_maximize_callback(int maximized) {
     iterate();
 }
 
-void UIWindow::window_minimize_callback(const int iconified) {
+void UIWindow::window_minimize_callback(const int minimized) {
 #if defined(ARA_USE_GLFW) || defined(ARA_USE_EGL)
-    WindowBase::osMinimize([this, iconified] {
+    WindowBase::osMinimize([this, minimized] {
         // if the window is modal, be sure that the main window is also
         // minimized
-        if (iconified && m_isModal && getApplicationHandle()) {
-            auto mainWin = getApplicationHandle()->getMainWindow();
-            if (mainWin && mainWin != this && mainWin->getWinHandle()->isOpen()) {
+        if (minimized && m_isModal && getApplicationHandle()) {
+            if (const auto mainWin = getApplicationHandle()->getMainWindow();
+                mainWin && mainWin != this && mainWin->getWinHandle()->isOpen()) {
                 mainWin->getWinHandle()->minimize();
             }
         }
 
         // if this window was restored and is a modal dialog, be sure that the
-        // mainwindow is also restored
-        if (!iconified && m_isModal && getApplicationHandle()) {
-            auto mainWin = getApplicationHandle()->getMainWindow();
-            if (mainWin && mainWin != this && mainWin->getWinHandle()->isMinimized()) {
+        // main window is also restored
+        if (!minimized && m_isModal && getApplicationHandle()) {
+            if (const auto mainWin = getApplicationHandle()->getMainWindow();
+                mainWin && mainWin != this && mainWin->getWinHandle()->isMinimized()) {
                 mainWin->getWinHandle()->restore();
             }
         }
 
-        // if the mainwindow was restored, be sure that in case there is any
+        // if the main window was restored, be sure that in case there is any
         // modal dialog present, it also gets restored
-        if (!iconified && getApplicationHandle() && getApplicationHandle()->getMainWindow() == this)
-            for (auto &w : *getApplicationHandle()->getUIWindows()) {
+        if (!minimized && getApplicationHandle() && getApplicationHandle()->getMainWindow() == this)
+            for (const auto &w : *getApplicationHandle()->getUIWindows()) {
                 if (w->isModal() && w->getWinHandle()->isMinimized()) {
                     w->getWinHandle()->restore();
                 }
@@ -767,8 +776,8 @@ void UIWindow::window_minimize_callback(const int iconified) {
 
         // if the main window is minimized, be sure all modal dialogues are
         // hidden
-        if (iconified && getApplicationHandle() && getApplicationHandle()->getMainWindow() == this) {
-            for (auto &w : *getApplicationHandle()->getUIWindows()) {
+        if (minimized && getApplicationHandle() && getApplicationHandle()->getMainWindow() == this) {
+            for (const auto &w : *getApplicationHandle()->getUIWindows()) {
                 if (w->isModal()) w->getWinHandle()->hide();
             }
         }
@@ -786,7 +795,7 @@ void UIWindow::window_size_callback(const int width, const int height) {
 
 void UIWindow::window_close_callback() {
 #ifdef ARA_USE_GLFW
-    // when alt+F4 pressed on windows, prevent to close -> there should be a dialog before
+    // when alt+F4 pressed on Windows, prevent to close -> there should be a dialog before
     glfwSetWindowShouldClose(static_cast<GLFWwindow *>(m_winHandle->getWin()), GLFW_FALSE);
 #endif
 }
@@ -800,11 +809,11 @@ void UIWindow::window_refresh_callback() {
 
 /** HID callbacks, called from the gl draw loop */
 
-void UIWindow::onKeyDown(const int key, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
-    if (key == ARA_KEY_O && shiftPressed) {
+void UIWindow::onKeyDown(const int keyNum, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
+    if (keyNum == ARA_KEY_O && shiftPressed) {
         m_showObjMap = !m_showObjMap;
         m_sharedRes.setDrawFlag();
-    } else if (key == ARA_KEY_D && shiftPressed && !ctrlPressed) {
+    } else if (keyNum == ARA_KEY_D && shiftPressed && !ctrlPressed) {
         m_uiRoot.dump();
     }
 
@@ -812,7 +821,7 @@ void UIWindow::onKeyDown(const int key, const bool shiftPressed, const bool ctrl
     m_hidData.ctrlPressed  = ctrlPressed;
     m_hidData.altPressed   = altPressed;
     m_hidData.procSteps    = &m_procSteps;
-    m_hidData.key          = key;
+    m_hidData.key          = keyNum;
 
     if (m_inputFocusNode) {
         m_inputFocusNode->keyDown(m_hidData);
@@ -826,7 +835,7 @@ void UIWindow::onKeyDown(const int key, const bool shiftPressed, const bool ctrl
     }
 }
 
-void UIWindow::onKeyUp(const int key, const bool shiftReleased, const bool ctrlReleased, const bool altReleased) {
+void UIWindow::onKeyUp(const int keyNum, const bool shiftReleased, const bool ctrlReleased, const bool altReleased) {
     if (shiftReleased) {
         m_hidData.shiftPressed = false;
     }
@@ -838,7 +847,7 @@ void UIWindow::onKeyUp(const int key, const bool shiftReleased, const bool ctrlR
     }
 
     m_hidData.procSteps = &m_procSteps;
-    m_hidData.key       = key;
+    m_hidData.key       = keyNum;
 
     if (m_inputFocusNode) {
         m_inputFocusNode->keyUp(m_hidData);
@@ -863,7 +872,9 @@ void UIWindow::onChar(const unsigned int codepoint) {
 }
 
 void UIWindow::fillHidData(const hidEvent evt, const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
-    if (evt == hidEvent::MouseDownLeft || evt == hidEvent::MouseDownRight) {
+    std::array mouseDowns = { hidEvent::MouseDownLeft, hidEvent::MouseDownMiddle, hidEvent::MouseDownRight };
+
+    if (ranges::any_of(mouseDowns, [evt](auto &it) { return evt == it; })) {
         m_hidData.dragStart = true;
         m_mouseDownPos.x = xPos;
         m_mouseDownPos.y = yPos;
@@ -872,29 +883,27 @@ void UIWindow::fillHidData(const hidEvent evt, const float xPos, const float yPo
         m_hidData.altPressed   = altPressed;
     }
 
-    if (evt == hidEvent::MouseDownLeft) {
-        m_hidData.mousePressed = true;
-    }
-
-    if (evt == hidEvent::MouseDownRight) {
-        m_hidData.mouseRightPressed = true;
+    for (int32_t i=0; i<3; ++i) {
+        if (evt == mouseDowns[i]) {
+            m_hidData.mousePressed[static_cast<mouseButt>(i)] = true;
+        }
     }
 
     // window relative mouse position in virtual pixels (origin top,left)
     m_hidData.mousePos.x = xPos;
     m_hidData.mousePos.y = yPos;
 
-    // window relative mouse position in hardware pixels (origin bottom,left) for direct usage in opengl
+    // window relative mouse position in hardware pixels (origin bottom, left) for direct usage in opengl
     m_hidData.mousePosFlipY.x = xPos / s_windowViewport.z;
-    m_hidData.mousePosFlipY.y = 1.f - (yPos / s_windowViewport.w);
+    m_hidData.mousePosFlipY.y = 1.f - yPos / s_windowViewport.w;
 
     m_hidData.mousePosNorm.x = xPos / s_windowViewport.z;
     m_hidData.mousePosNorm.y = yPos / s_windowViewport.w;
 
     m_hidData.mousePosNormFlipY.x = xPos / s_windowViewport.z;
-    m_hidData.mousePosNormFlipY.y = 1.f - (yPos / s_windowViewport.w);
+    m_hidData.mousePosNormFlipY.y = 1.f - yPos / s_windowViewport.w;
 
-    if (evt == hidEvent::MouseDownLeft || evt == hidEvent::MouseDownRight) {
+    if (evt == hidEvent::MouseDownLeft || evt == hidEvent::MouseDownMiddle || evt == hidEvent::MouseDownRight) {
         m_hidData.mouseClickPosFlipY = m_hidData.mousePosNormFlipY;
     }
 
@@ -902,7 +911,7 @@ void UIWindow::fillHidData(const hidEvent evt, const float xPos, const float yPo
     m_hidData.hitNode[evt] = m_opi.foundNode;
 
     // store mouseDown ObjId for dragging (objId must not change while dragging)
-    if (evt == hidEvent::MouseDownLeft || evt == hidEvent::MouseDownRight) {
+    if (evt == hidEvent::MouseDownLeft || evt == hidEvent::MouseDownMiddle || evt == hidEvent::MouseDownRight) {
         m_hidData.clickedObjId = m_hidData.objId;
     }
 
@@ -918,11 +927,11 @@ void UIWindow::fillHidData(const hidEvent evt, const float xPos, const float yPo
 void UIWindow::onMouseDownLeft(const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
     fillHidData(hidEvent::MouseDownLeft, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
 
-    // check if double click
+    // check if double-click
     const auto   now  = chrono::system_clock::now();
     const double diff = chrono::duration<double, milli>(now - m_lastLeftMouseDown).count();
 
-    m_hidData.isDoubleClick = glm::length(m_lastClickedPos - vec2{xPos, yPos}) < 7.f && (diff < 500.f);
+    m_hidData.isDoubleClick = length(m_lastClickedPos - vec2{xPos, yPos}) < 7.f && diff < 500.f;
     m_lastLeftMouseDown     = now;
     m_hidData.movedPix.x    = 0.f;
     m_hidData.movedPix.y    = 0.f;
@@ -949,7 +958,7 @@ void UIWindow::onMouseDownLeft(const float xPos, const float yPos, const bool sh
 
 void UIWindow::procInputFocus() {
     if (m_hidData.hitNode[hidEvent::MouseDownLeft]) {
-        auto lastFocusNode = m_inputFocusNode;
+        const auto lastFocusNode = m_inputFocusNode;
 
         // old focused node loses focus
         if (m_inputFocusNode && m_inputFocusNode != m_hidData.hitNode[hidEvent::MouseDownLeft]) {
@@ -997,24 +1006,30 @@ void UIWindow::onMouseUpLeft() {
     }
 
     m_hidData.hitNode[hidEvent::MouseDownLeft] = nullptr;
-    m_hidData.mousePressed                     = false;
+    m_hidData.mousePressed[mouseButt::left]    = false;
     m_hidData.dragStart                        = true;
     m_hidData.dragging                         = false;
     m_hidData.objId                            = 0;
     m_draggingNode                             = nullptr;
 }
 
-void UIWindow::onMouseDownRight(const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
+void UIWindow::onMouseDown(const hidEvent evt, const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
     // ignore mouseDownRight, when in dragging mode
     if (m_hidData.dragging) {
         return;
     }
 
-    fillHidData(hidEvent::MouseDownRight, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
+    fillHidData(evt, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
 
     // callbacks that are not related to a specific UINode
-    for (const auto &it : m_globalMouseDownRightCb | views::values) {
-        it(m_hidData);
+    if (evt == hidEvent::MouseDownMiddle) {
+        for (const auto &it : m_globalMouseDownMiddleCb | views::values) {
+            it(m_hidData);
+        }
+    } else if (evt == hidEvent::MouseDownRight) {
+        for (const auto &it : m_globalMouseDownRightCb | views::values) {
+            it(m_hidData);
+        }
     }
 
     m_draggingNodeTree.clear();
@@ -1023,33 +1038,58 @@ void UIWindow::onMouseDownRight(const float xPos, const float yPos, const bool s
     // iterate mouse click through UINode - Tree
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()) {
-        UINode::hidIt(m_hidData, hidEvent::MouseDownRight, m_opi.localTree.begin(), m_opi.localTree);
+        UINode::hidIt(m_hidData, evt, m_opi.localTree.begin(), m_opi.localTree);
     }
 }
+void UIWindow::onMouseDownMiddle(const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
+    onMouseDown(hidEvent::MouseDownMiddle, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
+}
 
-void UIWindow::onMouseUpRight() {
+void UIWindow::onMouseDownRight(const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
+    onMouseDown(hidEvent::MouseDownRight, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
+}
+
+void UIWindow::onMouseUp(const hidEvent evt) {
     m_hidData.releasedObjId = m_hidData.objId;
 
     // in case an object id changed during mouseDrag explicitly call the mouseup on this element
     if (m_hidData.dragging && m_draggingNode && !m_draggingNode->isHIDBlocked()) {
-        m_draggingNode->mouseUpRight(m_hidData);
-        for (const auto &key: m_draggingNode->getMouseUpRightCb() | views::keys) {
-            key(m_hidData);
+        if (evt == hidEvent::MouseUpRight) {
+            m_draggingNode->mouseUpRight(m_hidData);
+            for (const auto &key: m_draggingNode->getMouseUpRightCb() | views::keys) {
+                key(m_hidData);
+            }
+        } else if (evt == hidEvent::MouseUpMiddle) {
+            m_draggingNode->mouseUpMiddle(m_hidData);
+            for (const auto &key: m_draggingNode->getMouseUpMiddleCb() | views::keys) {
+                key(m_hidData);
+            }
         }
     }
 
     m_hidData.reset();
     if (m_opi.foundNode && !m_opi.localTree.empty()) {
-        UINode::hidIt(m_hidData, hidEvent::MouseUpRight, m_opi.localTree.begin(), m_opi.localTree);
+        UINode::hidIt(m_hidData, evt, m_opi.localTree.begin(), m_opi.localTree);
     }
 
-    m_hidData.mousePressed                      = false;
-    m_hidData.mouseRightPressed                 = false;
+    for (auto& it : { mouseButt::left, mouseButt::middle, mouseButt::right }) {
+        m_hidData.mousePressed[it] = false;
+    }
+
     m_hidData.dragStart                         = false;
     m_hidData.dragging                          = false;
     m_hidData.objId                             = 0;
+    m_hidData.hitNode[hidEvent::MouseDownMiddle] = nullptr;
     m_hidData.hitNode[hidEvent::MouseDownRight] = nullptr;
     m_draggingNode                              = nullptr;
+}
+
+void UIWindow::onMouseUpMiddle() {
+    onMouseUp(hidEvent::MouseUpMiddle);
+}
+
+void UIWindow::onMouseUpRight() {
+    onMouseUp(hidEvent::MouseUpRight);
 }
 
 void UIWindow::onMouseMove(const float xPos, const float yPos, ushort _mode) {
@@ -1087,11 +1127,10 @@ void UIWindow::onMouseMove(const float xPos, const float yPos, ushort _mode) {
     m_lastHoverFound = foundNode;
 
     if (const bool isValidDrag = length(m_hidData.movedPix) > 4.f * s_devicePixelRatio;
-        (m_hidData.mousePressed || m_hidData.mouseRightPressed)
+        (m_hidData.mousePressed[mouseButt::left] || m_hidData.mousePressed[mouseButt::middle] || m_hidData.mousePressed[mouseButt::right])
         && !m_draggingNodeTree.empty()
         && (!m_hidData.dragStart || isValidDrag)) {
-        // since a minimum distance is used for validating drag gestures, movedPix has to be corrected
-        // to avoid jumps
+        // since a minimum distance is used for validating drag gestures, movedPix has to be corrected to avoid jumps
         if (m_hidData.dragStart && isValidDrag) {
             m_mouseDownPos       = m_hidData.mousePos;
             m_hidData.movedPix.x = 0.f;
@@ -1140,8 +1179,6 @@ void UIWindow::onScale(const float fact, float focusX, float focusY) {
 
 // input always in virtual pixels
 void UIWindow::onSetViewport(const int x, const int y, const int width, const int height) {
-    bool clearFonts = false;
-
 #ifdef ARA_USE_GLFW
     if (m_winHandle) {
         s_devicePixelRatio = m_winHandle->getContentScale().x;
@@ -1175,16 +1212,16 @@ void UIWindow::onSetViewport(const int x, const int y, const int width, const in
 
     glViewport(0, 0, static_cast<GLsizei>(s_viewPort.z), static_cast<GLsizei>(s_viewPort.w));
 
-    if (clearFonts && m_sharedRes.res && m_sharedRes.drawMan) {
+/*    if (clearFonts && m_sharedRes.res && m_sharedRes.drawMan) {
         m_sharedRes.res->clearGLFonts();
         m_sharedRes.drawMan->clearFonts();
-    }
+    }*/
 
     update();
 
     // callbacks that are not related to a specific UINode
-    for (auto &it : m_globalSetViewportCb) {
-        it.second(x, y, width, height);
+    for (auto &func: m_globalSetViewportCb | views::values) {
+        func(x, y, width, height);
     }
 }
 
@@ -1195,12 +1232,10 @@ void UIWindow::onNodeRemove(UINode *node) {
         m_inputFocusNode = nullptr;
     }
 
-    if (m_hidData.hitNode[hidEvent::MouseDownLeft] == node) {
-        m_hidData.hitNode[hidEvent::MouseDownLeft] = nullptr;
-    }
-
-    if (m_hidData.hitNode[hidEvent::MouseDownRight] == node) {
-        m_hidData.hitNode[hidEvent::MouseDownRight] = nullptr;
+    for (auto& it : { hidEvent::MouseDownLeft, hidEvent::MouseDownMiddle, hidEvent::MouseDownRight }) {
+        if (m_hidData.hitNode[it] == node) {
+            m_hidData.hitNode[it] = nullptr;
+        }
     }
 
     if (m_lastHoverFound == node) {
@@ -1279,7 +1314,6 @@ void UIWindow::setInputFocusNode(UINode *node, const bool procLostFocus) {
     }
 
     m_inputFocusNode = node;
-
     if (m_inputFocusNode) {
         m_inputFocusNode->onGotFocus();
     }
@@ -1294,7 +1328,7 @@ void UIWindow::setAppIcon(string &path) {
         return;
     }
 
-    auto bitmap = FreeImage::Load(vp);
+    const auto bitmap = FreeImage::Load(vp);
     FreeImage_FlipVertical(bitmap);
 
     GLFWimage logo;
@@ -1307,7 +1341,7 @@ void UIWindow::setAppIcon(string &path) {
     for (int y = 0; y < logo.height; y++) {
         for (int x = 0; x < logo.width; x++) {
             constexpr int nrChan = 4;
-            const int idx = ((y * logo.width) + x) * nrChan;
+            const int idx = (y * logo.width + x) * nrChan;
 
             t[0] = logo.pixels[idx + 2];
             t[1] = logo.pixels[idx + 1];
@@ -1391,6 +1425,32 @@ void UIWindow::removeGlobalMouseUpLeftCb(void* ptr) {
     }
 }
 
+void UIWindow::addGlobalMouseDownMiddleCb(void* ptr, const function<void(hidData&)>& f) {
+    m_globalMouseDownMiddleCb[ptr] = f;
+}
+
+void UIWindow::removeGlobalMouseDownMiddleCb(void* ptr) {
+    if (m_globalMouseDownMiddleCb.empty()) {
+        return;
+    }
+    if (const auto it = m_globalMouseDownMiddleCb.find(ptr); it != m_globalMouseDownMiddleCb.end()) {
+        m_globalMouseDownMiddleCb.erase(it);
+    }
+}
+
+void UIWindow::addGlobalMouseUpMiddleCb(void* ptr, const function<void(hidData&)>& f) {
+    m_globalMouseUpMiddleCb[ptr] = f;
+}
+
+void UIWindow::removeGlobalMouseUpMiddleCb(void* ptr) {
+    if (m_globalMouseUpMiddleCb.empty()) {
+        return;
+    }
+    if (const auto it = m_globalMouseUpMiddleCb.find(ptr); it != m_globalMouseUpMiddleCb.end()) {
+        m_globalMouseUpMiddleCb.erase(it);
+    }
+}
+
 void UIWindow::addGlobalMouseDownRightCb(void* ptr, const function<void(hidData&)>& f) {
     m_globalMouseDownRightCb[ptr] = f;
 }
@@ -1438,12 +1498,12 @@ void UIWindow::removeGlobalKeyUpCb(void* ptr) {
     if (m_globalKeyUpCb.empty()) {
         return;
     }
-    if (auto it = m_globalKeyUpCb.find(ptr); it != m_globalKeyUpCb.end()) {
+    if (const auto it = m_globalKeyUpCb.find(ptr); it != m_globalKeyUpCb.end()) {
         m_globalKeyUpCb.erase(it);
     }
 }
 
-void UIWindow::setEnableMenuBar(bool val) {
+void UIWindow::setEnableMenuBar(const bool val) {
     m_menuBarEnabled = val;
     if (m_menuBar) {
         m_menuBar->setVisibility(val);
@@ -1451,10 +1511,10 @@ void UIWindow::setEnableMenuBar(bool val) {
     }
 }
 
-void UIWindow::setEnableWindowResizeHandles(bool val) {
+void UIWindow::setEnableWindowResizeHandles(const bool val) {
     m_windowResizeHandlesEnabled = val;
-    auto children = m_uiRoot.findChildrenByType<WindowResizeArea>();
-    for (auto it  : children) {
+    for (const auto children = m_uiRoot.findChildrenByType<WindowResizeArea>();
+        const auto it  : children) {
         it->setVisibility(val);
     }
 }
@@ -1463,7 +1523,7 @@ void UIWindow::setEnableMinMaxButtons(const bool val) const {
     m_menuBar->setEnableMinMaxButtons(val);
 }
 
-void UIWindow::setMonitorMaxArea(int x, int y, int w, int h) {
+void UIWindow::setMonitorMaxArea(const int x, const int y, const int w, const int h) {
     monitorMaxArea.x = x;
     monitorMaxArea.y = y;
     monitorMaxArea.z = w;
@@ -1483,7 +1543,7 @@ void UIWindow::stopRenderLoop() {
     }
 }
 
-void UIWindow::setResChanged(bool val) {
+void UIWindow::setResChanged(const bool val) {
     m_resChanged = val;
     m_uiRoot.reqTreeChanged();
 }

@@ -32,10 +32,10 @@ public:
     virtual void initFromWinMan(const std::string& name, GLFWWindow *win);
 #endif
 
-    virtual void     initGL();
-    virtual void     loadTypo(const std::filesystem::path& typoPath);
-    virtual void     update();
-    virtual void     iterate();
+    virtual void initGL();
+    virtual void loadTypo(const std::filesystem::path& typoPath);
+    virtual void update();
+    virtual void iterate();
 
     bool draw(double time, double dt, int ctxNr) override;
 
@@ -46,7 +46,7 @@ public:
         if (s_inited && m_winHandle) m_winHandle->swap();
     }
 
-    void makeCurrent(bool value = true) const {
+    void makeCurrent(const bool value = true) const {
         if (s_inited && m_winHandle) {
             value ? m_winHandle->makeCurrent() : glfwMakeContextCurrent(nullptr);
         }
@@ -79,7 +79,7 @@ public:
     bool         isInited() const { return s_inited; }
 
 #ifdef ARA_USE_GLFW
-    bool        isOpen() const { return (s_inited && m_winHandle) ? m_winHandle->isOpen() : false; }
+    bool        isOpen() const { return s_inited && m_winHandle ? m_winHandle->isOpen() : false; }
     GLFWWindow *getWin() const { return m_winHandle; }
     glm::ivec2  getPosition() const { return m_winHandle ? m_winHandle->getPosition() : glm::ivec2(0.f, 0.f); }
 #endif
@@ -93,6 +93,8 @@ public:
     void            onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
     void            onMouseDownLeftNoDrag(float xPos, float yPos) override {}
     void            onMouseUpLeft() override {}
+    void            onMouseDownMiddle(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
+    void            onMouseUpMiddle() override {}
     void            onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override {}
     void            onMouseUpRight() override {}
     void            onMouseMove(float xPos, float yPos, ushort mode) override {}

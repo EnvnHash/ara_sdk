@@ -50,6 +50,7 @@ public:
     void setZoomRange(const float mi, const float ma) { m_zoomProp.setMinMax(mi, ma); }
     void setZoom(const float val) { m_zoomProp = val; }
     void setCenterAndScaleOnReset(const bool val) { m_centerAndScaleOnReset = val; }
+    void setDragButton(const mouseButt val) { m_dragButt = val; }
 
 private:
     void setZoomPropChangeCb();
@@ -57,6 +58,7 @@ private:
 
     void keyDown(hidData& data) override;
     void mouseDown(hidData& data) override;
+    void mouseDownMiddle(hidData& data) override;
     void mouseWheel(hidData& data) override;
     void scaleGest(hidData& data) override;
 
@@ -86,6 +88,8 @@ private:
     bool  m_showResetButton = true;
     bool  m_centerAndScaleOnReset = false;
     bool  m_blockZoomPropCb = false;
+
+    mouseButt m_dragButt = mouseButt::left;
 
     std::function<void()>            m_updtCb;
     std::function<void(UINode*)>     m_initContFunc;

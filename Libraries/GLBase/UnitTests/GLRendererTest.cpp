@@ -13,7 +13,7 @@ TEST(GLBaseTest, GLRendererTest) {
     ASSERT_TRUE(m_glbase.init()); // needs the resources for TestPattern to work
     m_glbase.startGlCallbackProcLoop();
 
-    int nrIt = 10;
+    constexpr int nrIt = 10;
     for (int i = 0; i < nrIt; i++) {
         GLRenderer rend;
         rend.setGlBase(&m_glbase);
@@ -34,7 +34,7 @@ TEST(GLBaseTest, GLRendererTest) {
                 rend.init("renderer", glm::ivec2(0, 0), glm::ivec2(1920, 1080), true);
                 rend.close(true);
                 std::cout << "." << std::flush;
-                if (i == (nrItr - 1))
+                if (i == nrItr - 1)
                     finSenma.notify();
                 return true;
             });

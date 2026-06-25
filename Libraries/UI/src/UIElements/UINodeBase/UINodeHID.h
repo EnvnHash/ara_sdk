@@ -44,8 +44,10 @@ public:
     virtual void mouseMove(hidData& data) {}
     virtual void mouseDrag(hidData& data) {}
     virtual void mouseDown(hidData& data) {}
+    virtual void mouseDownMiddle(hidData& data) {}
     virtual void mouseDownRight(hidData& data) {}
     virtual void mouseUp(hidData& data) {}
+    virtual void mouseUpMiddle(hidData& data) {}
     virtual void mouseUpRight(hidData& data) {}
     virtual void mouseWheel(hidData& data) {}
     virtual void scaleGest(hidData& data) {}
@@ -65,8 +67,10 @@ public:
 
     void addMouseHidCb(hidEvent evt, const std::function<void(hidData&)>& func, bool onHit = true);
     void addMouseClickCb(const std::function<void(hidData&)>& func, bool onHit = true);
+    void addMouseClickMiddleCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void addMouseClickRightCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void addMouseUpCb(const std::function<void(hidData&)>& func, bool onHit = true);
+    void addMouseUpMiddleCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void addMouseUpRightCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void addMouseDragCb(const std::function<void(hidData&)>& func, bool onHit = true);
     void addMouseMoveCb(const std::function<void(hidData&)>& func, bool onHit = true);
@@ -81,6 +85,8 @@ public:
     std::list<mouseCb>&             getMouseHidCb(hidEvent evt) { return m_mouseHidCb[evt]; }
     std::list<mouseCb>&             getMouseDownCb() { return m_mouseHidCb[hidEvent::MouseDownLeft]; }
     std::list<mouseCb>&             getMouseUpCb() { return m_mouseHidCb[hidEvent::MouseUpLeft]; }
+    std::list<mouseCb>&             getMouseDownMiddleCb() { return m_mouseHidCb[hidEvent::MouseDownMiddle]; }
+    std::list<mouseCb>&             getMouseUpMiddleCb() { return m_mouseHidCb[hidEvent::MouseUpMiddle]; }
     std::list<mouseCb>&             getMouseDownRightCb() { return m_mouseHidCb[hidEvent::MouseDownRight]; }
     std::list<mouseCb>&             getMouseUpRightCb() { return m_mouseHidCb[hidEvent::MouseUpRight]; }
     std::list<mouseCb>&             getMouseDragCb() { return m_mouseHidCb[hidEvent::MouseDrag]; }

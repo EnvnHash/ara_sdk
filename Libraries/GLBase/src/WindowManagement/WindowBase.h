@@ -52,19 +52,31 @@ public:
 
     virtual void osMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents[hidEvent::MouseDownLeft] = [this, xPos, yPos, shiftPressed, ctrlPressed, altPressed]() {
+        s_hidEvents[hidEvent::MouseDownLeft] = [this, xPos, yPos, shiftPressed, ctrlPressed, altPressed] {
             onMouseDownLeft(xPos, yPos, shiftPressed, ctrlPressed, altPressed);
         };
     }
 
     virtual void osMouseDownLeftNoDrag(float xPos, float yPos) {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents[hidEvent::MouseDownLeftNoDrag] = [this, xPos, yPos]() { onMouseDownLeftNoDrag(xPos, yPos); };
+        s_hidEvents[hidEvent::MouseDownLeftNoDrag] = [this, xPos, yPos] { onMouseDownLeftNoDrag(xPos, yPos); };
     }
 
     virtual void osMouseUpLeft() {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents[hidEvent::MouseUpLeft] = [this]() { onMouseUpLeft(); };
+        s_hidEvents[hidEvent::MouseUpLeft] = [this] { onMouseUpLeft(); };
+    }
+
+    virtual void osMouseDownMiddle(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
+        std::unique_lock lock(s_procHidMtx);
+        s_hidEvents[hidEvent::MouseDownMiddle] = [this, xPos, yPos, shiftPressed, ctrlPressed, altPressed] {
+            onMouseDownMiddle(xPos, yPos, shiftPressed, ctrlPressed, altPressed);
+        };
+    }
+
+    virtual void osMouseUpMiddle() {
+        std::unique_lock lock(s_procHidMtx);
+        s_hidEvents[hidEvent::MouseUpMiddle] = [this] { onMouseUpMiddle(); };
     }
 
     virtual void osMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) {
@@ -76,7 +88,7 @@ public:
 
     virtual void osMouseUpRight() {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents[hidEvent::MouseUpRight] = [this]() { onMouseUpRight(); };
+        s_hidEvents[hidEvent::MouseUpRight] = [this] { onMouseUpRight(); };
     }
 
     virtual void osMouseMove(float xPos, float yPos, ushort mode) {
@@ -86,7 +98,7 @@ public:
 
     virtual void osWheel(float deg) {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents[hidEvent::MouseWheel] = [this, deg]() { onWheel(deg); };
+        s_hidEvents[hidEvent::MouseWheel] = [this, deg] { onWheel(deg); };
     }
 
     virtual void osScale(float fact, float focusX, float focusY) {
@@ -98,14 +110,14 @@ public:
 
     virtual void osScaleEnd() {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents[hidEvent::ScaleEnd] = [this]() {
+        s_hidEvents[hidEvent::ScaleEnd] = [this] {
             onScaleEnd();
         };
     }
 
     virtual void osScaleBegin() {
         std::unique_lock lock(s_procHidMtx);
-        s_hidEvents[hidEvent::ScaleBegin] = [this]() {
+        s_hidEvents[hidEvent::ScaleBegin] = [this] {
             onScaleBegin();
         };
     }
@@ -145,6 +157,8 @@ public:
     virtual void onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) = 0;
     virtual void onMouseDownLeftNoDrag(float xPos, float yPos) = 0;
     virtual void onMouseUpLeft() = 0;
+    virtual void onMouseDownMiddle(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) = 0;
+    virtual void onMouseUpMiddle() = 0;
     virtual void onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) = 0;
     virtual void onMouseUpRight() = 0;
     virtual void onMouseMove(float xPos, float yPos, ushort mode) = 0;

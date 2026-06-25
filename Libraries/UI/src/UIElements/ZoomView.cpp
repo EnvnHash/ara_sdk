@@ -91,7 +91,7 @@ void ZoomView::addWorkingArea() {
 
 void ZoomView::dragContent(hidData& data) const {
     // translate the working area view
-    if (data.mousePressed && !data.altPressed && !data.shiftPressed) {
+    if (data.mousePressed[m_dragButt] && !data.altPressed && !data.shiftPressed) {
         const auto moved    = vec2(data.mousePos) - m_mouseDownPos;
         const auto resTrans = static_cast<vec2>(m_mouseDownViewTrans) + moved / static_cast<vec2>(m_workingArea->getContentTransScale());
 
@@ -162,6 +162,14 @@ void ZoomView::keyDown(hidData& data) {
 }
 
 void ZoomView::mouseDown(hidData& data) {
+    // working area movement
+    if (m_workingArea) {
+        m_mouseDownViewTrans = m_workingArea->getContentTransTransl();
+    }
+    m_mouseDownPos = data.mousePos;
+}
+
+void ZoomView::mouseDownMiddle(hidData& data) {
     // working area movement
     if (m_workingArea) {
         m_mouseDownViewTrans = m_workingArea->getContentTransTransl();

@@ -730,16 +730,16 @@ void Scene3DBase::mouseDrag(hidData& data) {
 
     s_mousePos = data.mousePos - getWinPos();
 
-    if (data.mousePressed && !data.shiftPressed && !data.altPressed && !data.ctrlPressed)  {
+    if (data.mousePressed[mouseButt::left] && !data.shiftPressed && !data.altPressed && !data.ctrlPressed)  {
         m_forceMouseUp = true;  // process the object map at the position of the mouse
     }
 
-    if (data.mousePressed) {
+    if (data.mousePressed[mouseButt::left]) {
         m_objSel->mouseMove(s_mousePos.x, s_mousePos.y);
     }
 
     if (m_sceneRenderCam->getInteractCam()) {
-        if (data.mousePressed && !data.shiftPressed && !data.altPressed && data.ctrlPressed && m_forceMouseUp) { // left mouse with ctrl pressed
+        if (data.mousePressed[mouseButt::left] && !data.shiftPressed && !data.altPressed && data.ctrlPressed && m_forceMouseUp) { // left mouse with ctrl pressed
             m_forceMouseUp = false;
             hidData d;
             mouseUp(d);

@@ -599,7 +599,7 @@ vec3 Gizmo::getAxisEnd(const mat4& pvm, float yVal) {
 }
 
 void Gizmo::mouseDrag(hidData& data) {
-    if (data.mouseRightPressed) {
+    if (data.mousePressed[mouseButt::right]) {
         return;
     }
 

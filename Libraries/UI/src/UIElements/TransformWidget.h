@@ -34,7 +34,7 @@ public:
     void checkCamFlags() const;
     void checkPlaneSwitchIdx();
 
-    void       setTransAlign(transAlign t) { m_tRel = t; }
+    void       setTransAlign(const transAlign t) { m_tRel = t; }
     void       setModelNode(SceneNode* node) { m_modelNode = node; }
 
     [[nodiscard]] SceneNode* getModelNode() const { return m_modelNode; }
@@ -42,20 +42,20 @@ public:
     [[nodiscard]] transMode  getTransMode() const { return m_transMode; }
 
     void       setEnableCb(std::function<void()> f) { m_enableCb = std::move(f); }
-    void       setCoarseFine(cfState st) { m_cfState = st; }
+    void       setCoarseFine(const cfState st) { m_cfState = st; }
 
-    void       setKeyRotStep(float fine, float normal, float coarse) {
+    void       setKeyRotStep(const float fine, const float normal, const float coarse) {
         m_rotAmt[0] = fine;
         m_rotAmt[1] = normal;
         m_rotAmt[2] = coarse;
     }
-    void setKeyTransStep(float fine, float normal, float coarse) {
+    void setKeyTransStep(const float fine, const float normal, const float coarse) {
         m_transAmt[0] = fine;
         m_transAmt[1] = normal;
         m_transAmt[2] = coarse;
     }
     void setPlaneSwitchCb(std::function<void(transMode, twPlane)> f) { m_planeSwCb = std::move(f); }
-    void setBlockStateChange(bool val) { m_blockStateChange = val; }
+    void setBlockStateChange(const bool val) { m_blockStateChange = val; }
 
 private:
     transMode                    m_transMode         = transMode::translate;

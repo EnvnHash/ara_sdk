@@ -120,10 +120,14 @@ public:
     void onKeyDown(int keyNum, bool shiftPressed, bool ctrlPressed, bool altPressed) override;
     void onKeyUp(int keyNum, bool shiftReleased, bool ctrlReleased, bool altReleased) override;
     void onChar(unsigned int codepoint) override;
+    void onMouseDown(hidEvent evt, float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed);
     void onMouseDownLeft(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override;
     void onMouseDownLeftNoDrag(float xPos, float yPos) override {}
-    void onMouseUpLeft() override;
+    void onMouseDownMiddle(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override;
     void onMouseDownRight(float xPos, float yPos, bool shiftPressed, bool ctrlPressed, bool altPressed) override;
+    void onMouseUp(hidEvent evt);
+    void onMouseUpLeft() override;
+    void onMouseUpMiddle() override;
     void onMouseUpRight() override;
     void onMouseMove(float xPos, float yPos, ushort _mode) override;
     void onWheel(float deg) override;
@@ -140,8 +144,11 @@ public:
 
 protected:
     std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseDownLeftCb;
+    std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseDownMiddleCb;
     std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseDownRightCb;
     std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseUpLeftCb;
+    std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseUpMiddleCb;
+    std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseUpRightCb;
     std::unordered_map<void*, std::function<void(int, int, int, int)>> m_globalSetViewportCb;
     std::unordered_map<void*, std::function<void(int, int)>>           m_globalWinPosCb;
     std::unordered_map<void*, std::function<void(hidData&)>>           m_globalMouseMoveCb;
@@ -157,8 +164,14 @@ public:
     void removeGlobalMouseDownLeftCb(void* ptr);
     void addGlobalMouseUpLeftCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalMouseUpLeftCb(void* ptr);
+    void addGlobalMouseUpMiddleCb(void* ptr, const std::function<void(hidData&)>& f);
+    void removeGlobalMouseUpMiddleCb(void* ptr);
+    void addGlobalMouseDownMiddleCb(void* ptr, const std::function<void(hidData&)>& f);
+    void removeGlobalMouseDownMiddleCb(void* ptr);
     void addGlobalMouseDownRightCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalMouseDownRightCb(void* ptr);
+    void addGlobalMouseUpRightCb(void* ptr, const std::function<void(hidData&)>& f);
+    void removeGlobalMouseUpRightCb(void* ptr);
     void addGlobalMouseMoveCb(void* ptr, const std::function<void(hidData&)>& f);
     void removeGlobalMouseMoveCb(void* ptr);
     void addGlobalKeyDownCb(void* ptr, const std::function<void(hidData&)>& f);
@@ -266,7 +279,7 @@ public:
     virtual void hide() {}
     void         setExtWinHnd(void* hnd) { m_winHandle = hnd; }
 #endif
-    bool    isMousePressed() const { return m_hidData.mousePressed; }
+    bool    isMousePressed() { return m_hidData.mousePressed[mouseButt::left]; }
     void    setResChanged(bool val);
 
     auto    resChanged() const { return m_resChanged; }
@@ -328,7 +341,7 @@ protected:
     std::unordered_map<uiColors, glm::vec4>                   m_colors;
     Shaders*                                                  m_stdTexMulti = nullptr;
 
-    // Pseudo Event Based Structure
+    // Pseudo Event-Based Structure
     std::map<winProcStep, ProcStep> m_procSteps;
 
     glm::ivec4 monitorMaxArea{};
