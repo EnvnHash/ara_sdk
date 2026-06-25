@@ -51,6 +51,7 @@ public:
     void setZoomRange(const float mi, const float ma) { m_zoomProp.setMinMax(mi, ma); }
     void setZoom(const float val) { m_zoomProp = val; }
     void setCenterAndScaleOnReset(const bool val) { m_centerAndScaleOnReset = val; }
+    void setOnZoomChanged(const std::function<void()>& f)   { m_zoomProp.onPostChange(f, this); }
     void setDragButton(const mouseButt val) { m_dragButt = val; }
 
 private:
