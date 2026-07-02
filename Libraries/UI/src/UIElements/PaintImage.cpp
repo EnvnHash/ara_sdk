@@ -4,6 +4,8 @@
 #include <Utils/Texture.h>
 #include <GLBase.h>
 
+using namespace glm;
+
 namespace ara {
 
 PaintImage::PaintImage() {
@@ -15,7 +17,7 @@ void PaintImage::init() {
     Image::init();
 
     if (m_sharedRes && m_sharedRes->shCol) {
-        std::string vert = ShaderCollector::getShaderHeader() + STRINGIFY(
+        const auto vert = ShaderCollector::getShaderHeader() + STRINGIFY(
             layout(location = 0) in vec3 position;
             uniform float size;
             uniform vec2 pos;
@@ -27,7 +29,7 @@ void PaintImage::init() {
             }
         );
 
-        std::string frag = ShaderCollector::getShaderHeader() + STRINGIFY(
+        const auto frag = ShaderCollector::getShaderHeader() + STRINGIFY(
             layout(location = 0) out vec4 fragColor;
             in vec2 texCoord;
             struct Brush {
@@ -78,7 +80,7 @@ void PaintImage::mouseDrag(hidData& data) {
     paint(data.mousePosNodeRel);
 }
 
-void PaintImage::paint(const glm::vec2& mousePos) {
+void PaintImage::paint(const vec2& mousePos) {
     if (!m_tex || !m_paintShader) {
         return;
     }
@@ -95,11 +97,19 @@ void PaintImage::paint(const glm::vec2& mousePos) {
 
     // Set uniform block
     m_scaledBrush = m_brush.size / static_cast<float>(m_fbo->getWidth());
+    if (m_secSize.x != 0 && m_secSize.y != 0) {
+        m_scaledBrush *= m_secSize.x / m_fbo->getWidth();
+    }
     m_brushBlock.update();
     m_brushBlock.bind();
 
-    const auto pos = glm::vec2{mousePos.x / static_cast<float>(m_fbo->getWidth()) * 2.f - 1.f,
+    auto pos = vec2{mousePos.x / static_cast<float>(m_fbo->getWidth()) * 2.f - 1.f,
                           mousePos.y / static_cast<float>(m_fbo->getHeight()) * -2.f + 1.f};
+    if (m_secSize.x != 0 && m_secSize.y != 0) {
+        const auto trans =  translate(vec3{ m_secPos.x / m_fbo->getWidth(), m_secPos.y / m_fbo->getHeight(), 0.f}) *
+        scale(vec3{ m_secSize.x / m_fbo->getWidth(), m_secSize.y / m_fbo->getHeight(), 1.f}) ;
+        pos = vec2(trans * vec4{pos, 0.f, 1.f});
+    }
     m_paintShader->setUniform2f("pos", pos.x, pos.y);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

@@ -29,7 +29,7 @@ public:
     void fromSharedExtractLayer(FBO *sharedFbo, int layer);
     void fromSharedSelectAttachment(FBO *sharedFbo, int attNr);
     void initFromShared(FBO *sharedFbo);
-    void fromTex(GLuint texId, int32_t width, int32_t height, GLenum intFmt, int32_t mipMapLevels, const int32_t magFilter, const int32_t minFilter);
+    void fromTex(GLuint texId, int32_t width, int32_t height, GLenum intFmt, int32_t mipMapLevels, int32_t magFilter, int32_t minFilter);
     void fromTexMan(const Texture *texMan);
     void init();
     void allocColorTexture();

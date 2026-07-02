@@ -120,7 +120,7 @@ void FBO::fromTex(const GLuint texId, const int32_t width, const int32_t height,
     glGenFramebuffers(1, &m_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-    // Attach the texture to the s_fbo,  iterate through the different types
+    // Attach the texture to the s_fbo, iterate through the different types
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_target, m_textures[0], 0);
 
     checkFbo();
