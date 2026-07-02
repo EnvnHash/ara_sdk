@@ -69,67 +69,72 @@ void FBO::fromShared(FBO *sharedFbo) {
     }
 }
 
+void FBO::fromTex(const GLuint texId, const int32_t width, const int32_t height, const GLenum intFmt,
+    const int32_t mipMapLevels, const int32_t magFilter, const int32_t minFilter) {
+    getActStates();
+
+    if (m_inited) {
+        remove();
+    }
+
+    m_textures.resize(1);
+    m_bufModes.resize(1);
+
+    m_target        = GL_TEXTURE_2D;
+    m_textures[0]   = texId;
+    m_bufModes[0]   = GL_COLOR_ATTACHMENT0;
+    m_tex_width     = width;
+    m_tex_height    = height;
+    m_tex_depth     = 1;
+    m_f_tex_depth   = 1;
+    m_f_tex_width   = static_cast<float>(m_tex_width);
+    m_f_tex_height  = static_cast<float>(m_tex_height);
+    m_isShared      = false;
+    m_type          = intFmt;
+    m_extType       = ara::getExtType(m_type);
+    m_pixType       = ara::getPixelType(m_type);
+    m_hasDepthBuf   = false;
+    m_layered       = false;
+    m_nrAttachments = 1;
+    m_mipMapLevels  = mipMapLevels;
+    m_nrSamples     = 1;
+    m_wrapMode      = Texture::getWrapMode();
+    m_magFilterType = magFilter;
+    m_minFilterType = minFilter;
+
+    m_quad = make_unique<Quad>(QuadInitParams{});
+
+    // get standard shaders for clearing the FBO
+    if (!m_shCol && m_glbase) {
+        m_shCol = &m_glbase->shaderCollector();
+    } else {
+        LOGE << "FBO::fromTexMan Warning, No shader collector present on FBO";
+    }
+
+    if (m_shCol) {
+        m_colShader     = m_shCol->getStdCol();
+        m_clearShader   = m_shCol->getStdClear(m_layered, static_cast<int>(m_tex_depth));
+        m_toAlphaShader = m_shCol->getStdTex();
+    }
+
+    glGenFramebuffers(1, &m_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+    // Attach the texture to the s_fbo,  iterate through the different types
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_target, m_textures[0], 0);
+
+    checkFbo();
+    m_inited = true;
+    restoreStates();
+}
+
 void FBO::fromTexMan(const Texture *texMan) {
     if (texMan) {
-        getActStates();
-
-        if (m_inited) {
-            remove();
-        }
-
-        m_textures.resize(1);
-        m_bufModes.resize(1);
-
-        m_target        = GL_TEXTURE_2D;
-        m_textures[0]   = texMan->getId();
-        m_bufModes[0]   = GL_COLOR_ATTACHMENT0;
-        m_tex_width     = texMan->getWidth();
-        m_tex_height    = texMan->getHeight();
-        m_tex_depth     = 1;
-        m_f_tex_depth   = 1;
-        m_f_tex_width   = static_cast<float>(m_tex_width);
-        m_f_tex_height  = static_cast<float>(m_tex_height);
-        m_isShared      = false;
-        m_type          = texMan->getInternalFormat();
-        m_extType       = ara::getExtType(m_type);
-        m_pixType       = ara::getPixelType(m_type);
-        m_hasDepthBuf   = false;
-        m_layered       = false;
-        m_nrAttachments = 1;
-        m_mipMapLevels  = static_cast<int>(texMan->getMipMapLevels());
-        m_nrSamples     = 1;
-        m_wrapMode      = Texture::getWrapMode();
-        m_magFilterType = texMan->getMagnificationFilter();
-        m_minFilterType = texMan->getMinificationFilter();
-
-        m_quad = make_unique<Quad>(QuadInitParams{});
-
-        // get standard shaders for clearing the FBO
-        if (!m_shCol && m_glbase) {
-            m_shCol = &m_glbase->shaderCollector();
-        } else {
-            LOGE << "FBO::fromTexMan Warning, No shader collector present on FBO";
-        }
-
-        if (m_shCol) {
-            m_colShader     = m_shCol->getStdCol();
-            m_clearShader   = m_shCol->getStdClear(m_layered, static_cast<int>(m_tex_depth));
-            m_toAlphaShader = m_shCol->getStdTex();
-        }
-
-        glGenFramebuffers(1, &m_fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-
-        // Attach the texture to the s_fbo,  iterate through the different types
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_target, m_textures[0], 0);
-
-        checkFbo();
-        m_inited = true;
-        restoreStates();
+        fromTex(texMan->getId(), texMan->getWidth(), texMan->getHeight(), texMan->getInternalFormat(), static_cast<int>(texMan->getMipMapLevels()), texMan->getMagnificationFilter(), texMan->getMinificationFilter());
     }
 }
 
-void FBO::fromSharedSelectAttachment(FBO *sharedFbo, int attNr) {
+void FBO::fromSharedSelectAttachment(FBO *sharedFbo, const int attNr) {
     if (sharedFbo) {
         getActStates();
         initFromShared(sharedFbo);
@@ -182,7 +187,7 @@ void FBO::fromSharedSelectAttachment(FBO *sharedFbo, int attNr) {
     }
 }
 
-void FBO::fromSharedExtractLayer(FBO *sharedFbo, int layerNr) {
+void FBO::fromSharedExtractLayer(FBO *sharedFbo, const int layerNr) {
 #ifndef ARA_USE_GLES31
     // fromShared(sharedFbo);
     m_sharedLayer = layerNr;
@@ -204,7 +209,7 @@ void FBO::fromSharedExtractLayer(FBO *sharedFbo, int layerNr) {
         m_bufModes.resize(sharedFbo->getBufModes()->size());
         ranges::copy(*sharedFbo->getBufModes(), m_bufModes.begin());
 
-        // generate a textureview onto the s_fbo's layered color texture
+        // generate a textureview onto the Fbos layered color texture
         glGenTextures(1, &m_textures[0]);
 
         // Now, create a view of the depth textures
@@ -218,7 +223,7 @@ void FBO::fromSharedExtractLayer(FBO *sharedFbo, int layerNr) {
         glGenFramebuffers(1, &m_fbo);
         glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-        // Attach the texture to the s_fbo,  iterate through the different types
+        // Attach the texture to the s_fbo, iterate through the different types
         switch (m_target) {
             case GL_TEXTURE_1D:
                 glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_target, m_textures[0], 0);

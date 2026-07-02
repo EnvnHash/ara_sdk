@@ -94,12 +94,12 @@ void PaintImage::paint(const glm::vec2& mousePos) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
     // Set uniform block
-    m_scaledBrush = m_brush.size / m_fbo->getWidth();
+    m_scaledBrush = m_brush.size / static_cast<float>(m_fbo->getWidth());
     m_brushBlock.update();
     m_brushBlock.bind();
 
-    auto pos = glm::vec2{mousePos.x / static_cast<float>(m_fbo->getWidth()) * 2.f - 1.f,
-                        mousePos.y / static_cast<float>(m_fbo->getHeight()) * -2.f + 1.f};
+    const auto pos = glm::vec2{mousePos.x / static_cast<float>(m_fbo->getWidth()) * 2.f - 1.f,
+                          mousePos.y / static_cast<float>(m_fbo->getHeight()) * -2.f + 1.f};
     m_paintShader->setUniform2f("pos", pos.x, pos.y);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
