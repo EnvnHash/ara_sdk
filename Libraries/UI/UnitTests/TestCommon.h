@@ -123,7 +123,7 @@ static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesyst
     auto ySlices = height / static_cast<uint32_t>(tc);
     
     for (uint32_t i=0; i<tc; i++) {
-        futures.emplace_back(g_thread_pool.submit_task([&data, pBitmap, width, ySlices, i, eps]() {
+        futures.emplace_back(g_thread_pool.submit_task([&data, pBitmap, width, ySlices, i, eps] {
             auto texData = &data[0];
             auto refTex = FreeImage_GetBits(pBitmap);
 
@@ -162,6 +162,20 @@ struct checkPix {
     glm::ivec2 pos{};
     glm::vec4 col{};
 };
+
+static void compareTwoFiles(const std::filesystem::path& path1, const std::filesystem::path& path2, uint8_t eps = 0) {
+
+    auto* bitmap = ara::FreeImage::Load(path1.string(), nullptr);
+    ASSERT_TRUE(bitmap);
+
+    auto size = ara::FreeImage::GetSizeFromBitmap(bitmap);
+    std::vector<GLubyte> data(size[0] * size[1] * 4);
+    std::memcpy(data.data(), ara::FreeImage::GetBits(bitmap), size[0] * size[1] * 4);
+
+    compareBitmaps(data, path2, size[0], size[1], eps);
+
+    ara::FreeImage::Unload(bitmap);
+}
 
 static void checkVals(const std::vector<GLubyte>& data, const ara::GLWindow* mainWin, const std::vector<checkPix>& cv) {
     for (const auto &[pos, col] : cv) {

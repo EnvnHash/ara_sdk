@@ -25,6 +25,7 @@ public:
 
     void setBrush(const Brush& brush) { m_brush = brush; }
     Brush& getBrush() { return m_brush; }
+    void saveToFile(const std::filesystem::path &filename) const;
 
 protected:
     void paint(const glm::vec2& mousePos);
