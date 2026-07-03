@@ -23,6 +23,7 @@ public:
     void mouseDown(hidData& data) override;
     void mouseDrag(hidData& data) override;
 
+    void lock(const bool val) { m_locked = val; }
     void setBrush(const Brush& brush) { m_brush = brush; }
     Brush& getBrush() { return m_brush; }
     void saveToFile(const std::filesystem::path &filename) const;
@@ -36,6 +37,7 @@ protected:
     Shaders*                    m_paintShader = nullptr;
     UniformBlock                m_brushBlock{};
     float                       m_scaledBrush{};
+    bool                        m_locked{};
 };
 
 } // namespace ara
