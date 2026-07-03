@@ -54,7 +54,7 @@ public:
 
 #ifndef __EMSCRIPTEN__
 #ifdef ARA_USE_FREEIMAGE
-    GLuint loadTexture2D(FIBITMAP *fib, int nrMipMaps, bool flipH = false) {
+    GLuint loadTexture2D(FIBITMAP *fib, const int nrMipMaps, const bool flipH = false) {
         return loadFromFib(fib, GL_TEXTURE_2D, nrMipMaps, flipH);
     }
 
@@ -84,10 +84,10 @@ public:
     void releaseTexture();
     void generateSampler();
 
-    void keepBitmap(bool val)               { m_keepBitmap = val; }
+    void keepBitmap(const bool val)         { m_keepBitmap = val; }
     void setFileName(const std::string &fn) { m_filename = fn; }
-    void setWidth(float w)                  { m_texData.width = static_cast<uint32_t>(w); }
-    void setHeight(float h)                 { m_texData.height = static_cast<uint32_t>(h); }
+    void setWidth(const float w)            { m_texData.width = static_cast<uint32_t>(w); }
+    void setHeight(const float h)           { m_texData.height = static_cast<uint32_t>(h); }
     void setGlbase(GLBase *glbase)          { m_glbase = glbase; }
 
     static void getGlFormatAndType(GLenum glInternalFormat, GLenum &glFormat, GLenum &type);

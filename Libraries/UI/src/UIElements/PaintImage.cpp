@@ -5,6 +5,7 @@
 #include <GLBase.h>
 
 using namespace glm;
+using namespace std;
 
 namespace ara {
 
@@ -64,7 +65,7 @@ void PaintImage::init() {
     }
 
     if (m_tex) {
-        m_fbo = std::make_unique<FBO>();
+        m_fbo = make_unique<FBO>();
         m_fbo->setGlbase(getSharedRes()->glbase);
         m_fbo->fromTexMan(m_tex);
     }
@@ -81,13 +82,18 @@ void PaintImage::mouseDrag(hidData& data) {
 }
 
 void PaintImage::paint(const vec2& mousePos) {
-    if (!m_tex || !m_paintShader) {
+    if (!(m_tex || m_texId) || !m_paintShader || m_locked) {
         return;
     }
 
     if (!m_fbo) {
-        m_fbo = std::make_unique<FBO>();
-        m_fbo->fromTexMan(m_tex);
+        m_fbo = make_unique<FBO>();
+        if (m_tex) {
+            m_fbo->fromTexMan(m_tex);
+        } else if (m_texId) {
+            m_fbo->setGlbase(getSharedRes()->glbase);
+            m_fbo->fromTex(m_texId, m_extTexWidth, m_extTexHeight, GL_RGBA8, 1, GL_LINEAR, GL_LINEAR);
+        }
     }
 
     m_fbo->bind();
@@ -98,24 +104,35 @@ void PaintImage::paint(const vec2& mousePos) {
     // Set uniform block
     m_scaledBrush = m_brush.size / static_cast<float>(m_fbo->getWidth());
     if (m_secSize.x != 0 && m_secSize.y != 0) {
-        m_scaledBrush *= m_secSize.x / m_fbo->getWidth();
+        m_scaledBrush = m_brush.size / m_secSize.x;
     }
     m_brushBlock.update();
     m_brushBlock.bind();
 
     auto pos = vec2{mousePos.x / static_cast<float>(m_fbo->getWidth()) * 2.f - 1.f,
-                          mousePos.y / static_cast<float>(m_fbo->getHeight()) * -2.f + 1.f};
+                    mousePos.y / static_cast<float>(m_fbo->getHeight()) * -2.f + 1.f};
+
     if (m_secSize.x != 0 && m_secSize.y != 0) {
-        const auto trans =  translate(vec3{ m_secPos.x / m_fbo->getWidth(), m_secPos.y / m_fbo->getHeight(), 0.f}) *
-        scale(vec3{ m_secSize.x / m_fbo->getWidth(), m_secSize.y / m_fbo->getHeight(), 1.f}) ;
+        auto tMat = translate(vec3{ static_cast<float>(m_secPos.x) / static_cast<float>(m_fbo->getWidth()),
+            static_cast<float>(m_secPos.y) / static_cast<float>(m_fbo->getHeight()),
+            0.f});
+
+        auto sMat = scale(vec3{
+            static_cast<float>(m_secSize.x) / static_cast<float>(m_fbo->getWidth()),
+            static_cast<float>(m_secSize.y) / static_cast<float>(m_fbo->getHeight()),
+            1.f});
+
+        const auto trans = tMat * sMat;
+
         pos = vec2(trans * vec4{pos, 0.f, 1.f});
     }
+
     m_paintShader->setUniform2f("pos", pos.x, pos.y);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     m_fbo->unbind();
-    
+
     // Request redraw of the UI
     if (m_sharedRes) {
         m_sharedRes->setDrawFlag(true);
