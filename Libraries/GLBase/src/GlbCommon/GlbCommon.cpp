@@ -47,7 +47,7 @@ quat RotationBetweenVectors(vec3 start, vec3 dest) {
     return {s * 0.5f, rotationAxis.x * invs, rotationAxis.y * invs, rotationAxis.z * invs};
 }
 
-void catmullRom(const std::vector<vec2> &inPoints, std::vector<vec2> &outPoints, unsigned int dstNrPoints) {
+void catmullRom(const std::vector<vec2> &inPoints, std::vector<vec2> &outPoints, const unsigned int dstNrPoints) {
     outPoints.resize(dstNrPoints);
     float nrIntPointPerSeg = static_cast<float>(dstNrPoints) / static_cast<float>(inPoints.size() - 1);
 
@@ -84,7 +84,7 @@ void catmullRom(const std::vector<vec2> &inPoints, std::vector<vec2> &outPoints,
     }
 }
 
-float perlinOct1D(float x, int octaves, float persistence) {
+float perlinOct1D(const float x, const int octaves, const float persistence) {
     float r    = 0.f;
     float a    = 1.f;
     float freq = 1.f;
@@ -100,15 +100,15 @@ float perlinOct1D(float x, int octaves, float persistence) {
 }
 
 // index ranges from 0-1
-vec4 linInterpolVec4(float inInd, const std::vector<vec4> *array) {
+vec4 linInterpolVec4(const float inInd, const std::vector<vec4> *array) {
     vec4 outVal = vec4(0.f);
     if (!array->empty()) {
-        auto  fArraySize = static_cast<float>(array->size());
-        float fInd       = fmod(fmin(fmax(inInd, 0.f), 1.f), 1.0f) * (fArraySize - 1.0f);
+        const auto  fArraySize = static_cast<float>(array->size());
+        const float fInd       = fmod(fmin(fmax(inInd, 0.f), 1.f), 1.0f) * (fArraySize - 1.0f);
 
-        int   lowerInd = static_cast<int>(floor(fInd));
-        int   upperInd = static_cast<int>(glm::min(lowerInd + 1.f, fArraySize - 1.f));
-        float weight   = fInd - lowerInd;
+        const int   lowerInd = static_cast<int>(floor(fInd));
+        const int   upperInd = static_cast<int>(glm::min(lowerInd + 1.f, fArraySize - 1.f));
+        const float weight   = fInd - lowerInd;
 
         outVal = weight == 0.0 ? array->at(lowerInd) : mix(array->at(lowerInd), array->at(upperInd), weight);
     } else {
@@ -118,7 +118,7 @@ vec4 linInterpolVec4(float inInd, const std::vector<vec4> *array) {
     return outVal;
 }
 
-pair<bool, vec2> projPointToLine(vec2 point, vec2 l1Start, vec2 l1End) {
+pair<bool, vec2> projPointToLine(vec2 point, vec2 l1Start, const vec2 l1End) {
     vec2 out;
     bool      pointInsideLine;
 
@@ -154,7 +154,7 @@ pair<bool, vec2> projPointToLine(vec2 point, vec2 l1Start, vec2 l1End) {
     return make_pair(pointInsideLine, out);
 }
 
-pair<bool, vec2> lineIntersect(vec2 l1Start, vec2 l1End, vec2 l2Start, vec2 l2End) {
+pair<bool, vec2> lineIntersect(const vec2 l1Start, const vec2 l1End, const vec2 l2Start, const vec2 l2End) {
     double m1 = 0, c1 = 0, m2 = 0, c2 = 0;
     vec2   intersection     = vec2(0.f, 0.f);
     std::array<std::array<vec2, 2>, 2> linePoints{};
@@ -232,7 +232,7 @@ inline double Det2D(const vec2 &p1, const vec2 &p2, const vec2 &p3) {
     return +p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y);
 }
 
-void CheckTriWinding(const vec2 &p1, vec2 &p2, vec2 &p3, bool allowReversed) {
+void CheckTriWinding(const vec2 &p1, vec2 &p2, vec2 &p3, const bool allowReversed) {
     double detTri = Det2D(p1, p2, p3);
     if (detTri < 0.0) {
         if (allowReversed) {
@@ -244,13 +244,13 @@ void CheckTriWinding(const vec2 &p1, vec2 &p2, vec2 &p3, bool allowReversed) {
     }
 }
 
-bool BoundaryCollideChk(const vec2 &p1, const vec2 &p2, const vec2 &p3, double eps) { return Det2D(p1, p2, p3) < eps; }
+bool BoundaryCollideChk(const vec2 &p1, const vec2 &p2, const vec2 &p3, const double eps) { return Det2D(p1, p2, p3) < eps; }
 
-bool BoundaryDoesntCollideChk(const vec2 &p1, const vec2 &p2, const vec2 &p3, double eps) {
+bool BoundaryDoesntCollideChk(const vec2 &p1, const vec2 &p2, const vec2 &p3, const double eps) {
     return Det2D(p1, p2, p3) <= eps;
 }
 
-bool TriTri2D(vec2 *t1, vec2 *t2, double eps = 0.0, bool allowReversed = false, bool onBoundary = true) {
+bool TriTri2D(vec2 *t1, vec2 *t2, const double eps = 0.0, const bool allowReversed = false, const bool onBoundary = true) {
     // Trangles must be expressed anti-clockwise
     CheckTriWinding(t1[0], t1[1], t1[2], allowReversed);
     CheckTriWinding(t2[0], t2[1], t2[2], allowReversed);
@@ -288,7 +288,7 @@ bool TriTri2D(vec2 *t1, vec2 *t2, double eps = 0.0, bool allowReversed = false, 
     return true;
 }
 
-float distPointLine(vec2 _point, vec2 _lineP1, vec2 _lineP2, bool *projIsOutside, float *projAngle) {
+float distPointLine(const vec2 _point, const vec2 _lineP1, const vec2 _lineP2, bool *projIsOutside, float *projAngle) {
     // return minimum distance between line segment P1P2 and point
     float l2 = length(_lineP2 - _lineP1);
     l2 *= l2;
@@ -326,7 +326,7 @@ float distPointLine(vec2 _point, vec2 _lineP1, vec2 _lineP2, bool *projIsOutside
     return distance(_point, proj);
 }
 
-float minDistancePointToRectangle(const glm::vec2& point, const glm::vec2& topLeft, const glm::vec2& size) {
+float minDistancePointToRectangle(const vec2& point, const vec2& topLeft, const vec2& size) {
     // Calculate the clamped point within the rectangle bounds
     glm::vec2 clampedPoint = glm::clamp(point, topLeft, topLeft + size);
 
@@ -337,11 +337,11 @@ float minDistancePointToRectangle(const glm::vec2& point, const glm::vec2& topLe
     return glm::length(difference);
 }
 
-float sign(vec2 p1, vec2 p2, vec2 p3) {
+float sign(const vec2 p1, const vec2 p2, const vec2 p3) {
     return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 }
 
-bool pointInTriangle(vec2 pt, vec2 v1, vec2 v2, vec2 v3) {
+bool pointInTriangle(const vec2 pt, const vec2 v1, const vec2 v2, const vec2 v3) {
     float d1 = sign(pt, v1, v2);
     float d2 = sign(pt, v2, v3);
     float d3 = sign(pt, v3, v1);
@@ -352,27 +352,26 @@ bool pointInTriangle(vec2 pt, vec2 v1, vec2 v2, vec2 v3) {
     return !(has_neg && has_pos);
 }
 
-float map(float value, float inputMin, float inputMax, float outputMin, float outputMax, bool clamp) {
+float map(const float value, const float inputMin, const float inputMax, const float outputMin, const float outputMax, const bool clamp) {
     if (std::fabs(inputMin - inputMax) < FLT_EPSILON) {
         return outputMin;
-    } else {
-        float outVal = ((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin);
-
-        if (clamp) {
-            if (outputMax < outputMin) {
-                if (outVal < outputMax)
-                    outVal = outputMax;
-                else if (outVal > outputMin)
-                    outVal = outputMin;
-            } else {
-                if (outVal > outputMax)
-                    outVal = outputMax;
-                else if (outVal < outputMin)
-                    outVal = outputMin;
-            }
-        }
-        return outVal;
     }
+    float outVal = ((value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin);
+
+    if (clamp) {
+        if (outputMax < outputMin) {
+            if (outVal < outputMax)
+                outVal = outputMax;
+            else if (outVal > outputMin)
+                outVal = outputMin;
+        } else {
+            if (outVal > outputMax)
+                outVal = outputMax;
+            else if (outVal < outputMin)
+                outVal = outputMin;
+        }
+    }
+    return outVal;
 }
 
 // Function to generate a random point within a plane defined by three points
@@ -382,11 +381,11 @@ vec3 getRandomPointOnPlane(const vec3& base, const vec3& v0, const vec3& v1) {
 
 float angleBetweenVectors(const vec3& a, const vec3& b) {
     // Calculate dot product of a and b
-    float dotProduct = dot(a, b);
+    const float dotProduct = dot(a, b);
 
     // Calculate magnitudes of a and b
-    float magnitudeA = length(a);
-    float magnitudeB = length(b);
+    const float magnitudeA = length(a);
+    const float magnitudeB = length(b);
 
     // Calculate cos(theta)
     float cosTheta = dotProduct / (magnitudeA * magnitudeB);
@@ -418,8 +417,8 @@ void decomposeRot(const mat4 &m, quat &rot) {
 
 /** there is no glGetTexImage in GLES, so bind the texture to a FBO and use
  * glReadPixels */
-void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pixelType, int width,
-                     int height, GLubyte *pixels) {
+void glesGetTexImage(const GLuint textureObj, const GLenum target, const GLenum format, const GLenum pixelType, const int width,
+                     const int height, GLubyte *pixels) {
     GLuint fbo;
     GLint lastBoundFbo;
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &lastBoundFbo);
@@ -432,12 +431,12 @@ void glesGetTexImage(GLuint textureObj, GLenum target, GLenum format, GLenum pix
     glDeleteFramebuffers(1, &fbo);
 }
 
-vector<vec2> get2DRing(int nrPoints) {
+vector<vec2> get2DRing(const int nrPoints) {
     vector<vec2> ringPos(nrPoints);
 
     for (int i = 0; i < nrPoints; i++) {
         // define a circle with n points
-        float fInd = static_cast<float>(i) / static_cast<float>(nrPoints);
+        const float fInd = static_cast<float>(i) / static_cast<float>(nrPoints);
 
         // tip and cap
         ringPos[i].x = std::cos(fInd * static_cast<float>(M_PI) * 2.f);
@@ -450,8 +449,7 @@ vector<vec2> get2DRing(int nrPoints) {
 bool initGLEW() {
 #ifndef ARA_USE_GLES31
     glewExperimental = GL_TRUE;
-    GLuint err       = glewInit();
-    if (GLEW_OK != err) {
+    if (const GLuint err = glewInit(); GLEW_OK != err) {
         LOGE << "Error couldn't init GLEW : " << glewGetErrorString(err);
         return false;
     }
