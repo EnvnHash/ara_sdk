@@ -8,6 +8,7 @@ namespace ara {
 
 class PaintImage : public Image {
 public:
+    enum class mode : int32_t { add=0, subtract };
     struct Brush {
         float size = 10.0f;
         float hardness = 0.5f;
@@ -23,10 +24,12 @@ public:
     void mouseDown(hidData& data) override;
     void mouseDrag(hidData& data) override;
 
+    Brush& getBrush() { return m_brush; }
+
     void lock(const bool val) { m_locked = val; }
     void setBrush(const Brush& brush) { m_brush = brush; }
+    void setMode(const mode& mode) { m_paintMode = mode; }
     void setBrushSize(float brushSize);
-    Brush& getBrush() { return m_brush; }
     void saveToFile(const std::filesystem::path &filename) const;
 
 protected:
@@ -39,6 +42,7 @@ protected:
     UniformBlock                m_brushBlock{};
     float                       m_scaledBrush{};
     bool                        m_locked{};
+    mode                        m_paintMode = mode::add;
 };
 
 } // namespace ara

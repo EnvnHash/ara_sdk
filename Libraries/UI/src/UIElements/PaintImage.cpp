@@ -105,6 +105,7 @@ void PaintImage::paint(const vec2& mousePos) {
     m_fbo->bind();
     m_paintShader->begin();
 
+    glBlendEquation(m_paintMode == mode::add ? GL_FUNC_ADD : GL_FUNC_SUBTRACT);
     glBlendFunc(GL_ONE, GL_ONE);
 
     const vec2 fboSize{ static_cast<float>(m_fbo->getWidth()), static_cast<float>(m_fbo->getHeight()) };
@@ -123,16 +124,6 @@ void PaintImage::paint(const vec2& mousePos) {
         }
     }
 
-/*    vec2 fboPos = mousePos;
-    if (m_secSize.x != 0 && m_secSize.y != 0) {
-        fboPos = vec2(m_secPos) + (mousePos / m_size * vec2(m_secSize)); // fbo pos in pixels
-    }
-
-    const auto pos = vec2{ fboPos.x / fboSize.x * 2.f - 1.f,
-                           fboPos.y / fboSize.y * -2.f + 1.f }; // normalized fbo pos
-    m_paintShader->setUniform2f("pos", pos.x, pos.y);
-
-*/
     m_paintShader->setUniform2f("pos", transPos[0].x, transPos[0].y);
     m_paintShader->setUniform4f("limits", transPos[1].x, transPos[1].y, transPos[2].x, transPos[2].y);
 
@@ -140,6 +131,7 @@ void PaintImage::paint(const vec2& mousePos) {
 
     m_fbo->unbind();
 
+    glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_sharedRes->setDrawFlag(true); // Request redrawing of the UI
