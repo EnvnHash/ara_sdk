@@ -371,6 +371,7 @@ glm::vec3 getRandomPointOnPlane(const glm::vec3&, const glm::vec3&, const glm::v
 GLenum postGLError(bool silence = false);
 GLenum getExtType(GLenum inType);
 GLenum getPixelType(GLenum inType);
+std::array<GLenum, 2> getCurrentBlendFunc();
 short  getNrColChans(GLenum internalType);
 uint   getBitCount(GLenum inType);
 void   decomposeMtx(const glm::mat4 &m, glm::vec3 &pos, glm::quat &rot, glm::vec3 &scale);

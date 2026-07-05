@@ -570,7 +570,7 @@ void FBO::allocDepthTexture() {
 /**
  * attach color and depth textures to the FrameBufferObject
  */
-void FBO::attachTextures(bool doCheckFbo) const {
+void FBO::attachTextures(const bool doCheckFbo) const {
     // Attach the texture to the s_fbo,  iterate through the different types
     for (auto i = 0; i < m_nrAttachments; i++) {
         switch (m_target) {
@@ -671,7 +671,7 @@ void FBO::bind(const bool saveStates) {
     }
 }
 
-void FBO::unbind(bool doRestoreStates) {
+void FBO::unbind(const bool doRestoreStates) {
     if (doRestoreStates) {
         restoreStates();
         glViewport(m_csVp[0], m_csVp[1], m_csVp[2], m_csVp[3]);
@@ -689,7 +689,7 @@ void FBO::unbind(bool doRestoreStates) {
 }
 
 // OpenGLES 3.0
-void FBO::blit(uint scrWidth, uint scrHeight, GLenum interp) const {
+void FBO::blit(const uint scrWidth, const uint scrHeight, const GLenum interp) const {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_lastBoundFbo);
     glBlitFramebuffer(0, 0, m_tex_width, m_tex_height, 0, 0, scrWidth, scrHeight, GL_COLOR_BUFFER_BIT, interp);
@@ -712,7 +712,7 @@ void FBO::blitTo(const FBO *dst) const {
     }
 }
 
-void FBO::resize(float width, float height, float depth, bool checkStates) {
+void FBO::resize(const float width, const float height, const float depth, const bool checkStates) {
     resize( static_cast<uint>(width), static_cast<uint>(height), static_cast<uint>(depth), checkStates);
 }
 
@@ -720,7 +720,7 @@ void FBO::resize(float width, float height, float depth, bool checkStates) {
  * Best practise is to use OpenGL immutable storage (glTexStorage*) which can't be resized. So for resizing all textures
  * get destroyed and reallocated with the same parameters
  */
-void FBO::resize(uint width, uint height, uint depth, bool checkStates) {
+void FBO::resize(const uint width, const uint height, uint depth, const bool checkStates) {
     if (!width) {
         return;
     }
@@ -770,7 +770,6 @@ void FBO::getActStates() {
     }
 }
 
-
 void FBO::restoreStates() {
     // rebind last s_fbo
     glBindFramebuffer(GL_FRAMEBUFFER, m_lastBoundFbo);
@@ -808,7 +807,7 @@ void FBO::deleteDepthTextures() const {
     }
 }
 
-void FBO::clearAlpha(float alpha, float col) const {
+void FBO::clearAlpha(const float alpha, const float col) const {
     glClearColor(col, col, col, 1.f - alpha);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -818,7 +817,7 @@ void FBO::clearAlpha(float alpha, float col) const {
     }
 }
 
-void FBO::clearToAlpha(float alpha) const {
+void FBO::clearToAlpha(const float alpha) const {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glDisable(GL_DEPTH_TEST);
 
@@ -837,7 +836,7 @@ void FBO::clearToAlpha(float alpha) const {
     }
 }
 
-void FBO::clearToColor(float r, float g, float b, float a) const {
+void FBO::clearToColor(const float r, const float g, const float b, const float a) const {
     if (m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8) {
         glDrawBuffers(m_nrAttachments, &m_bufModes[0]);
         glClearColor(r, g, b, a);
@@ -850,7 +849,7 @@ void FBO::clearToColor(float r, float g, float b, float a) const {
     }
 }
 
-void FBO::clearToColor(float r, float g, float b, float a, size_t bufIndx) const {
+void FBO::clearToColor(const float r, const float g, const float b, const float a, const size_t bufIndx) const {
     if (m_nrAttachments >= static_cast<int>(bufIndx) && m_type != GL_DEPTH24_STENCIL8) {
         std::array col = {r, g, b, a};
         glClearBufferfv(GL_COLOR, static_cast<GLint>(bufIndx), &col[0]);
@@ -895,7 +894,7 @@ void FBO::clearWhite() const {
     }
 }
 
-void FBO::setMinFilter(GLint type) {
+void FBO::setMinFilter(const GLint type) {
     m_minFilterType = type;
 
     for (int i = 0; i < m_nrAttachments; i++) {
@@ -904,7 +903,7 @@ void FBO::setMinFilter(GLint type) {
     }
 }
 
-void FBO::setMagFilter(GLint type) {
+void FBO::setMagFilter(const GLint type) {
     m_magFilterType = type;
 
     for (int i = 0; i < m_nrAttachments; i++) {
@@ -913,21 +912,21 @@ void FBO::setMagFilter(GLint type) {
     }
 }
 
-void FBO::setMinFilter(GLint type, int attNr) const {
+void FBO::setMinFilter(const GLint type, const int attNr) const {
     if (attNr < m_nrAttachments) {
         glBindTexture(m_target, m_textures[attNr]);
         glTexParameteri(m_target, GL_TEXTURE_MIN_FILTER, type);
     }
 }
 
-void FBO::setMagFilter(GLint type, int attNr) const {
+void FBO::setMagFilter(const GLint type, const int attNr) const {
     if (attNr < m_nrAttachments) {
         glBindTexture(m_target, m_textures[attNr]);
         glTexParameteri(m_target, GL_TEXTURE_MAG_FILTER, type);
     }
 }
 
-void FBO::set3DLayer(int attachment, int offset) const {
+void FBO::set3DLayer(const int attachment, const int offset) const {
 #ifndef ARA_USE_GLES31
     if (m_target == GL_TEXTURE_3D && static_cast<GLuint>(offset) < m_tex_depth) {
         // glFramebufferTextureLayer(GL_FRAMEBUFFER,
@@ -979,7 +978,7 @@ void FBO::checkFbo() {
     }
 }
 
-bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum intFormat) {
+bool FBO::saveToFile(const filesystem::path &filename, const size_t attachNr, const GLenum intFormat) {
 #ifdef ARA_USE_FREEIMAGE
     if (!m_inited || static_cast<int>(attachNr) >= m_nrAttachments) return false;
 
@@ -1104,7 +1103,7 @@ bool FBO::saveToFile(const filesystem::path &filename, size_t attachNr, GLenum i
     return true;
 }
 
-void FBO::getTexImage(FIBITMAP* bitmap, GLuint texId, GLenum saveTarget, GLenum format) const {
+void FBO::getTexImage(FIBITMAP* bitmap, GLuint texId, const GLenum saveTarget, const GLenum format) const {
     if (bitmap) {
         auto bits = FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
@@ -1117,7 +1116,7 @@ void FBO::getTexImage(FIBITMAP* bitmap, GLuint texId, GLenum saveTarget, GLenum 
     }
 }
 
-void FBO::download(void *ptr, GLenum intFormat, GLenum extFormat) const {
+void FBO::download(void *ptr, const GLenum intFormat, const GLenum extFormat) const {
     glBindTexture(m_target, getColorImg());
     glPixelStorei(GL_PACK_ALIGNMENT, 4);  // should be 4
 
@@ -1146,7 +1145,7 @@ GLuint FBO::getColorImg() const {
     return !m_textures.empty() && m_nrAttachments > 0 && m_type != GL_DEPTH24_STENCIL8 ? m_textures[0] : 0;
 }
 
-GLuint FBO::getColorImg(int index) const {
+GLuint FBO::getColorImg(const int index) const {
     return static_cast<int>(m_textures.size()) > index && m_nrAttachments > index && m_type != GL_DEPTH24_STENCIL8 ? m_textures[index] : 0;
 }
 

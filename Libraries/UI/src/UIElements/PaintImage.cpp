@@ -46,8 +46,10 @@ void PaintImage::init() {
                 float dist = distance(texCoord, pos);
                 float edge = clamp((1.0 - brush.hardness), 0.0001, 1.0);
                 float falloff = 1.0 - smoothstep(brush.size * (1.0 - edge), brush.size, dist);
-                fragColor = brush.color * falloff * brush.opacity;
-                fragColor.a = brush.opacity;
+                if (falloff == 0.0) {
+                    discard;
+                }
+                fragColor = vec4(brush.color.rgb, brush.opacity * falloff * brush.color.a);
             }
         );
 
@@ -81,27 +83,29 @@ void PaintImage::mouseDrag(hidData& data) {
 }
 
 void PaintImage::paint(const vec2& mousePos) {
-    if (!m_tex || !m_paintShader) {
+    if (!(m_tex || m_texId) || !m_paintShader || !m_sharedRes) {
         return;
     }
 
     if (!m_fbo) {
         m_fbo = std::make_unique<FBO>();
-        m_fbo->fromTexMan(m_tex);
+        if (m_tex) {
+            m_fbo->fromTexMan(m_tex);
+        } else if (m_texId) {
+            m_fbo->setGlbase(m_sharedRes->glbase);
+            m_fbo->fromTex(m_texId, m_texSize.x, m_texSize.y, GL_RGBA8, 1, GL_LINEAR, GL_LINEAR);
+        }
     }
 
     m_fbo->bind();
     m_paintShader->begin();
 
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glBlendFunc(GL_ONE, GL_ONE);
 
-    vec2 fboSize{ static_cast<float>(m_fbo->getWidth()), static_cast<float>(m_fbo->getHeight()) };
+    const vec2 fboSize{ static_cast<float>(m_fbo->getWidth()), static_cast<float>(m_fbo->getHeight()) };
 
     // Set uniform block
     m_scaledBrush = m_brush.size / fboSize.x;
-    if (m_secSize.x != 0 && m_secSize.y != 0) {
-        //m_scaledBrush *= m_secSize.x / fboSize.x;
-    }
     m_brushBlock.update();
     m_brushBlock.bind();
 
@@ -115,15 +119,13 @@ void PaintImage::paint(const vec2& mousePos) {
 
     m_paintShader->setUniform2f("pos", pos.x, pos.y);
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+   // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     m_fbo->unbind();
 
-    
-    // Request redraw of the UI
-    if (m_sharedRes) {
-        m_sharedRes->setDrawFlag(true);
-    }
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    m_sharedRes->setDrawFlag(true); // Request redrawing of the UI
 }
 
 void PaintImage::saveToFile(const std::filesystem::path &filename) const {
