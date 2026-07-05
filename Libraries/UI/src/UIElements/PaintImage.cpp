@@ -5,6 +5,7 @@
 #include <GLBase.h>
 
 using namespace glm;
+using namespace std;
 
 namespace ara {
 
@@ -39,10 +40,14 @@ void PaintImage::init() {
                 float opacity;
             };
             uniform vec2 pos;
+            uniform vec4 limits;
             layout(std140) uniform BrushBlock {
                 Brush brush;
             };
             void main() {
+                if (texCoord.x < limits.x || texCoord.x > limits.z || texCoord.y > limits.y || texCoord.y < limits.w) {
+                    discard;
+                }
                 float dist = distance(texCoord, pos);
                 float edge = clamp((1.0 - brush.hardness), 0.0001, 1.0);
                 float falloff = 1.0 - smoothstep(brush.size * (1.0 - edge), brush.size, dist);
@@ -109,15 +114,27 @@ void PaintImage::paint(const vec2& mousePos) {
     m_brushBlock.update();
     m_brushBlock.bind();
 
-    vec2 fboPos = mousePos;
+    std::array transPos = { mousePos, vec2(0.0), vec2(m_secSize) };
+    if (m_secSize.x != 0 && m_secSize.y != 0) {
+        for (auto &it : transPos) {
+            it = vec2(m_secPos) + it / m_size * vec2(m_secSize); // fbo pos in pixels
+            it = vec2{ it.x / fboSize.x * 2.f - 1.f,
+                        it.y / fboSize.y * -2.f + 1.f }; // normalized fbo pos
+        }
+    }
+
+/*    vec2 fboPos = mousePos;
     if (m_secSize.x != 0 && m_secSize.y != 0) {
         fboPos = vec2(m_secPos) + (mousePos / m_size * vec2(m_secSize)); // fbo pos in pixels
     }
 
     const auto pos = vec2{ fboPos.x / fboSize.x * 2.f - 1.f,
                            fboPos.y / fboSize.y * -2.f + 1.f }; // normalized fbo pos
-
     m_paintShader->setUniform2f("pos", pos.x, pos.y);
+
+*/
+    m_paintShader->setUniform2f("pos", transPos[0].x, transPos[0].y);
+    m_paintShader->setUniform4f("limits", transPos[1].x, transPos[1].y, transPos[2].x, transPos[2].y);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -128,7 +145,7 @@ void PaintImage::paint(const vec2& mousePos) {
     m_sharedRes->setDrawFlag(true); // Request redrawing of the UI
 }
 
-void PaintImage::setBrushSize(const int32_t brushSize) {
+void PaintImage::setBrushSize(const float brushSize) {
     m_brush.size = brushSize;
 }
 

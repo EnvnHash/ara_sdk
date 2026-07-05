@@ -10,7 +10,7 @@ PaintImage& addImageBase(const UIApplication &app) {
     auto& img = app.getMainWindow()->getRootNode()->push<PaintImage>();
     img.setSize(200, 200);
     img.setAlign(align::center, valign::center);
-    img.setBackgroundColor(0.2f, 0.2f, 0.2f, 1.f);
+    img.setBackgroundColor(0.f, 0.f, 0.f, 1.f);
     return img;
 }
 
@@ -22,7 +22,7 @@ PaintImage& addImage(const UIApplication &app) {
 
 PaintImage::Brush getStdBrush() {
     return PaintImage::Brush {
-        .size = 50.f,
+        .size = 25.f,
         .hardness = 0.2f,
         .color = glm::vec4(1.f, 1.f, 1.f, 1.f),
         .opacity = 1.0f
@@ -32,9 +32,8 @@ PaintImage::Brush getStdBrush() {
 TEST(UITest, PaintImageBasic) {
     appBody([&](const UIApplication &app) {
         auto& img = addImage(app);
-        auto brush = getStdBrush();
+        const auto brush = getStdBrush();
         img.setBrush(brush);
-
         iterate(app);
         simulateMouseClick(app, 150, 150);
     }, [&](const UIApplication &app) {
@@ -114,15 +113,18 @@ TEST(UITest, PaintImageSubImageTest) {
 
         const auto brush = getStdBrush();
         img.setBrush(brush);
+        iterate(app);
 
-        iterate(app);
-        simulateMouseClick(app, 150, 150);
-        iterate(app);
+        for (auto& it : { glm::ivec2{150,150}, glm::ivec2{50,50}, glm::ivec2{249,249}}) {
+            simulateMouseClick(app, it.x, it.y);
+            iterate(app);
+        }
+
         img.saveToFile(filesystem::current_path() / "PaintImageSubImageTest.png");
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "brush_subimage.png",
                           app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
-//        compareTwoFiles(filesystem::current_path() / "PaintImageSubImageTest_ref.png", filesystem::current_path() / "PaintImageSubImageTest.png", 3);
+        compareTwoFiles(filesystem::current_path() / "PaintImageSubImageTest_ref.png", filesystem::current_path() / "PaintImageSubImageTest.png", 3);
     }, 300, 300);
 }
 

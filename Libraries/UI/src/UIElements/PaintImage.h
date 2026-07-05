@@ -25,7 +25,7 @@ public:
 
     void lock(const bool val) { m_locked = val; }
     void setBrush(const Brush& brush) { m_brush = brush; }
-    void setBrushSize(const int32_t brushSize);
+    void setBrushSize(float brushSize);
     Brush& getBrush() { return m_brush; }
     void saveToFile(const std::filesystem::path &filename) const;
 
