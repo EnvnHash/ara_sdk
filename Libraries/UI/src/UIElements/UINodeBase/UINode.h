@@ -172,9 +172,9 @@ public:
     }
 
     template <typename T>
-    void onPreChanged(ListProperty<T>& prop, std::function<void(std::any)> f) {
-        m_onValPreChangeCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);
-        prop.onChanged(m_onValPreChangeCb[&prop]);
+    void onPostChange(ListProperty<T>& prop, std::function<void(std::any)> f) {
+        m_onValPostChangeCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);
+        prop.onPostChange(m_onValPostChangeCb[&prop]);
     }
 
     // utility method to also immediately execute the function

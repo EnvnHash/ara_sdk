@@ -69,7 +69,7 @@ void DemoView_DataBinding::setupPropertyEdit() {
 
     // here goes an alternative way of registering an onchange listener. This one unregisters itself automatically
     // thus is safer to use, although the syntax is a bit more complicated
-    onChanged<float>(m_prop, [](const std::any &val) {
+    onPreChange<float>(m_prop, [](const std::any &val) {
         LOG << "2nd listener: value changed " << any_cast<float>(val);      // note: the value store inside the std::any is the same as the template class
     });
 

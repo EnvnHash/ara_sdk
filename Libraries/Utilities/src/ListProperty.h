@@ -98,7 +98,7 @@ public:
     /** add a callback which will be called when the property changes it's
      * value. The shared_ptr is store as a weak_ptr and remove from the list,
      * when it can't be locked, which means that it's owner was deleted */
-    void onPostChanged(std::shared_ptr<std::function<void(std::any)>> funcPtr) {
+    void onPostChange(std::shared_ptr<std::function<void(std::any)>> funcPtr) {
         m_valPostChangeChecking.emplace_back(funcPtr);
     }
 
@@ -107,7 +107,7 @@ public:
      * still exists. It has to be removed when the caller is destroyed with
      * removeOnPreChange() This is meant to be used when the property is part of
      * the same class as the callback */
-    void onPostChanged(std::function<void(std::list<T> *)> func, void *ptr) {
+    void onPostChange(std::function<void(std::list<T> *)> func, void *ptr) {
         m_valPostChange[ptr] = func;
     }
 
