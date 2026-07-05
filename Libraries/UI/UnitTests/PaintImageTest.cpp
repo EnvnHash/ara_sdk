@@ -16,7 +16,7 @@ PaintImage& addImageBase(const UIApplication &app) {
 
 PaintImage& addImage(const UIApplication &app) {
     auto& img = addImageBase(app);
-    img.setImg(( std::filesystem::path("test") / "black.png").string(), 1);
+    img.setImg(filesystem::current_path() / "black.png", 1);
     return img;
 }
 
@@ -99,6 +99,23 @@ TEST(UITest, PaintImagePAddTest) {
         simulateMouseClick(app, 200, 200);
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "brush_hardness_add.png",
+                                  app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
+    }, 300, 300);
+}
+
+TEST(UITest, PaintImageSubtrTest) {
+    appBody([&](const UIApplication &app) {
+        auto& img = addImageBase(app);
+        img.setImg(filesystem::current_path() / "white.png", 1);
+
+        const auto brush = getStdBrush();
+        img.setBrush(brush);
+        img.setMode(PaintImage::mode::subtract);
+
+        iterate(app);
+        simulateMouseClick(app, 150, 150);
+    }, [&](const UIApplication &app) {
+        compareFrameBufferToImage(filesystem::current_path() / "brush_hardness_subtr.png",
                                   app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
     }, 300, 300);
 }

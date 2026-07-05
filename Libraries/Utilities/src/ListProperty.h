@@ -96,8 +96,8 @@ public:
     // out; }
 
     /** add a callback which will be called when the property changes it's
-     * value. The shared_ptr is store as a weak_ptr and remove from the list,
-     * when it can't be locked, which means that it's owner was deleted */
+     * value. The shared_ptr is stored as a weak_ptr and removed from the list
+     * when it can't be locked, which means that its owner was deleted */
     void onPostChange(std::shared_ptr<std::function<void(std::any)>> funcPtr) {
         m_valPostChangeChecking.emplace_back(funcPtr);
     }

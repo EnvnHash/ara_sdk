@@ -105,8 +105,8 @@ void PaintImage::paint(const vec2& mousePos) {
     m_fbo->bind();
     m_paintShader->begin();
 
-    glBlendEquation(m_paintMode == mode::add ? GL_FUNC_ADD : GL_FUNC_SUBTRACT);
-    glBlendFunc(GL_ONE, GL_ONE);
+    glBlendEquation(m_paintMode == mode::add ? GL_FUNC_ADD : GL_FUNC_REVERSE_SUBTRACT);
+    glBlendFunc(m_paintMode == mode::add ? GL_ONE : GL_SRC_ALPHA, GL_ONE);
 
     const vec2 fboSize{ static_cast<float>(m_fbo->getWidth()), static_cast<float>(m_fbo->getHeight()) };
 
