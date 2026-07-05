@@ -302,6 +302,8 @@ public:
     [[nodiscard]] float getFixAspect() const { return m_fixAspect; }
     [[nodiscard]] float getPixRatio() const;
 
+    glm::vec2           windowToNodeContentPos(const glm::vec2& winPos);
+
     virtual glm::mat4*  getContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPaddingAndBorder = false);
     virtual glm::mat4*  getFlatContentMat(bool excludedFromParentContentTrans = false, bool excludedFromPaddingAndBorder = false);
 

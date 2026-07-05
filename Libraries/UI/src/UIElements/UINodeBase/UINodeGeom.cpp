@@ -383,6 +383,15 @@ vec2& UINodeGeom::getParentContentScale() {
     return m_parentContScale;
 }
 
+vec2 UINodeGeom::windowToNodeContentPos(const vec2& winPos) {
+    checkUpdateMatrix();
+
+    // First remove the node's window-space position, then undo this node's
+    // content transform so callers receive stable node-local coordinates even
+    // when the content is translated, scaled, or rotated.
+    return vec2(inverse(m_contentTransMatRel) * vec4(winPos - getWinPos(), 0.f, 1.f));
+}
+
 mat4* UINodeGeom::getContentMat(const bool excludedFromParentContentTrans, const bool excludedFromPaddingAndBorder) {
     return excludedFromPaddingAndBorder ? (!excludedFromParentContentTrans ? &m_nodeTransMat : &m_nodeMat)
                                : (!excludedFromParentContentTrans ? &m_contentTransMat : &m_contentMat);

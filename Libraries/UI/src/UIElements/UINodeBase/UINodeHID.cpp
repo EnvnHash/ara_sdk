@@ -29,7 +29,7 @@ void UINodeHID::hidIt(hidData& data, const hidEvent evt, std::list<UINode*>::ite
     }
 
     // calculate the mouse position relative to this node
-    data.mousePosNodeRel = data.mousePos - node->getWinPos();  // virtual pixels
+    data.mousePosNodeRel = node->windowToNodeContentPos(data.mousePos);  // virtual pixels
 
     static std::unordered_map<hidEvent, std::function<void(hidData&, UINode*)> > evtMap = {
         { hidEvent::MouseDownLeft, [](hidData& d, UINode* n) { n->mouseDown(d); } },
