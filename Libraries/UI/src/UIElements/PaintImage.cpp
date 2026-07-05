@@ -141,6 +141,10 @@ void PaintImage::setBrushSize(const float brushSize) {
     m_brush.size = brushSize;
 }
 
+void PaintImage::setBrushHardness(const float hardness) {
+    m_brush.hardness = hardness;
+}
+
 void PaintImage::saveToFile(const std::filesystem::path &filename) const {
     if (!m_fbo) {
         return;

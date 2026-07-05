@@ -30,6 +30,7 @@ public:
     void setBrush(const Brush& brush) { m_brush = brush; }
     void setMode(const mode& mode) { m_paintMode = mode; }
     void setBrushSize(float brushSize);
+    void setBrushHardness(float hardness);
     void saveToFile(const std::filesystem::path &filename) const;
 
 protected:
