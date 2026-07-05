@@ -285,7 +285,7 @@ void ImageButton::mouseUp(hidData& data) {
 }
 
 void ImageButton::setProp(Property<bool>& prop) {
-    onChanged<bool>(prop, [this](const std::any &val) {
+    onPreChange<bool>(prop, [this](const std::any &val) {
         if (const bool v = std::any_cast<bool>(val); isSelected() != v) {
             setSelected(v);
         }

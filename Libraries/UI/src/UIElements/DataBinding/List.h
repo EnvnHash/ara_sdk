@@ -195,7 +195,7 @@ public:
             return;
         }
         m_listProp = dataProp;
-        UINode::onChanged<T>(*dataProp, [this, doRebuild](const std::any &v) {
+        UINode::onPreChange<T>(*dataProp, [this, doRebuild](const std::any &v) {
             auto sess = std::any_cast<std::list<T>*>(v);
             if (sess && doRebuild) {
                 UINode::addGlCb(std::to_string(reinterpret_cast<int64_t>(this)), [this] {

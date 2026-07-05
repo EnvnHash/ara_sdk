@@ -47,12 +47,12 @@ PropSlider::PropSlider() {
 
 void PropSlider::setProp(Property<vec2>& prop, int idx) {
     // update elements when property changes
-    onChanged<vec2>(prop, [this, &prop, idx](const std::any &val) {
+    onPreChange<vec2>(prop, [this, &prop, idx](const std::any &val) {
         auto v = std::any_cast<vec2>(val);
         m_slider->setValue((v[idx] - prop.getMin()[idx]) / (prop.getMax()[idx] - prop.getMin()[idx]));
         m_edit->setValue(v[idx]);
-        if (m_valChangeCb) {
-            m_valChangeCb();
+        if (m_valPreChangeCb) {
+            m_valPreChangeCb();
         }
     });
 

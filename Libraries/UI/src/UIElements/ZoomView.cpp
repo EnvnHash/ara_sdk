@@ -47,7 +47,7 @@ void ZoomView::init() {
 }
 
 void ZoomView::setZoomPropChangeCb() {
-    onChanged<float>(m_zoomProp, [this](const std::any& val) {
+    onPreChange<float>(m_zoomProp, [this](const std::any& val) {
         if (m_blockZoomPropCb) {
             return;
         }
@@ -110,11 +110,10 @@ void ZoomView::addZoomSlider() {
     m_zoomSlider->setProp(m_zoomProp);
     m_zoomSlider->setLabel("Zoom");
     m_zoomSlider->setPrecision(1);
-    m_zoomSlider->setValueChgCb([this] { m_zoomUseWheel = false; });
+    m_zoomSlider->setValuePreChangeCb([this] { m_zoomUseWheel = false; });
     m_zoomSlider->setOnLostFocusCb([this] { getWindow()->setInputFocusNode(this, false); });
     m_zoomSlider->getEdit()->addStyleClass(getStyleClass()+ ".edit");
     m_zoomSlider->getLabel()->addStyleClass(getStyleClass()+ ".label");
-
 }
 
 void ZoomView::addResetButton() {
@@ -128,7 +127,6 @@ void ZoomView::addResetButton() {
     });
     m_resetZoom->setText("Reset");
     m_resetZoom->setSnapToHwPix(true);
-
     m_resetZoom->setClickedCb([this] {
         resetZoom();
     });

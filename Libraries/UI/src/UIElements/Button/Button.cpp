@@ -101,7 +101,7 @@ void Button::toggle(const bool val) {
     }
 
     if (m_prop && (*m_prop)() != val) {
-        (*m_prop) = val;
+        *m_prop = val;
     }
 
     setDrawFlag();
@@ -109,7 +109,7 @@ void Button::toggle(const bool val) {
 
 void Button::setProp(Property<bool>& prop) {
     m_prop = &prop;
-    onChanged<bool>(prop, [this](const std::any &val) {
+    onPreChange<bool>(prop, [this](const std::any &val) {
         if (const bool v = std::any_cast<bool>(val); v != (m_state == state::selected)) {
             toggle(v);
             setDrawFlag();

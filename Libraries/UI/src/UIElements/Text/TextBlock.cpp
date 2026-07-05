@@ -587,16 +587,14 @@ void TextBlock::updateStyleIt(ResNode *node, const state st, const std::string& 
 
 void TextBlock::clearProp() {
     if (m_stringProp) {
-        removeOnChanged<std::string>(*m_stringProp);
+        removeOnPreChange<std::string>(*m_stringProp);
         setOnLostFocusCb(nullptr);
     }
 }
 
 void TextBlock::setPropItem(Item *item) {
-    if (item && item->isPropertyItem) {
-        if (item->m_typeId == tpi::tp_string) {
-            setProp<std::string>( *dynamic_cast<PropertyItemUi<std::string>*>(item)->getPtr());
-        }
+    if (item && item->isPropertyItem && item->m_typeId == tpi::tp_string) {
+        setProp<std::string>( *dynamic_cast<PropertyItemUi<std::string>*>(item)->getPtr());
     }
 }
 

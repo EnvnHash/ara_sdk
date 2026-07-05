@@ -145,16 +145,22 @@ public:
     // which will store a reference to it as a weak pointer. on dtor() the referring pointer is freed and by
     // weak_ptr.lock() checking its weak_ptr reference inside the Property is deleted implicitly
     template <typename T>
-    void onChanged(Property<T>& prop, std::function<void(std::any)> f) {
-        m_onValChangedCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);
-        prop.onPreChange(m_onValChangedCb[&prop]);
+    void onPreChange(Property<T>& prop, std::function<void(std::any)> f) {
+        m_onValPreChangeCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);
+        prop.onPreChange(m_onValPreChangeCb[&prop]);
     }
 
     template <typename T>
-    void onChanged(PropertyPtr<T>& prop, std::function<void(std::any)> f) {
-        m_onValChangedCb[prop.ptr] = std::make_shared<std::function<void(std::any)>>(f);
+    void onPostChange(Property<T>& prop, std::function<void(std::any)> f) {
+        m_onValPostChangeCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);
+        prop.onPostChange(m_onValPostChangeCb[&prop]);
+    }
+
+    template <typename T>
+    void onPreChange(PropertyPtr<T>& prop, std::function<void(std::any)> f) {
+        m_onValPreChangeCb[prop.ptr] = std::make_shared<std::function<void(std::any)>>(f);
         if (prop.ptr) {
-            prop.onPreChange(m_onValChangedCb[prop.ptr]);
+            prop.onPreChange(m_onValPreChangeCb[prop.ptr]);
         }
     }
 
@@ -166,9 +172,9 @@ public:
     }
 
     template <typename T>
-    void onChanged(ListProperty<T>& prop, std::function<void(std::any)> f) {
-        m_onValChangedCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);
-        prop.onChanged(m_onValChangedCb[&prop]);
+    void onPreChanged(ListProperty<T>& prop, std::function<void(std::any)> f) {
+        m_onValPreChangeCb[&prop] = std::make_shared<std::function<void(std::any)>>(f);
+        prop.onChanged(m_onValPreChangeCb[&prop]);
     }
 
     // utility method to also immediately execute the function
@@ -179,8 +185,13 @@ public:
     }
 
     template <typename T>
-    void removeOnChanged(Property<T>& prop) {
-        m_onValChangedCb[&prop] = nullptr;
+    void removeOnPreChange(Property<T>& prop) {
+        m_onValPreChangeCb[&prop] = nullptr;
+    }
+
+    template <typename T>
+    void removeOnPostChange(Property<T>& prop) {
+        m_onValPostChangeCb[&prop] = nullptr;
     }
 
     virtual void swapChildren(UINode* node1, UINode* node2);
@@ -333,7 +344,8 @@ protected:
     bool m_reqTreeChanged       = false;
     bool m_referenceDrawing     = false;
 
-    std::unordered_map<void*, std::shared_ptr<std::function<void(std::any)>>> m_onValChangedCb;
+    std::unordered_map<void*, std::shared_ptr<std::function<void(std::any)>>> m_onValPreChangeCb;
+    std::unordered_map<void*, std::shared_ptr<std::function<void(std::any)>>> m_onValPostChangeCb;
 
     std::filesystem::path m_filepath;
     virtual void dumpIt(UINode* node, int32_t* depth, bool dumpLocalTree);

@@ -55,7 +55,7 @@ public:
     requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
     void setProp(Property<T> &prop) {
         m_stringProp = &prop;
-        onChanged<T>(prop, [this](const std::any &val) { setText(std::any_cast<T>(val)); });
+        onPreChange<T>(prop, [this](const std::any &val) { setText(std::any_cast<T>(val)); });
     }
 
 protected:

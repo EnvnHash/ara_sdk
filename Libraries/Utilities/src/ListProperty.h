@@ -66,15 +66,15 @@ public:
 
     void procCb() {
         // call the onChange callbacks (m_valChgChecking and m_valPreChange)
-        for (auto it = m_valChgChecking.begin(); it != m_valChgChecking.end();)
-            if (auto p = it->lock()) {
+        for (auto it = m_valPostChangeChecking.begin(); it != m_valPostChangeChecking.end();)
+            if (const auto p = it->lock()) {
                 p->operator()(std::any(&m_list));
                 ++it;
             } else {
-                it = m_valChgChecking.erase(it);
+                it = m_valPostChangeChecking.erase(it);
             }
 
-        for (auto &it : m_valChanged) {
+        for (auto &it : m_valPostChange) {
             it.second(&m_list);
         }
     }
@@ -98,8 +98,8 @@ public:
     /** add a callback which will be called when the property changes it's
      * value. The shared_ptr is store as a weak_ptr and remove from the list,
      * when it can't be locked, which means that it's owner was deleted */
-    void onChanged(std::shared_ptr<std::function<void(std::any)>> funcPtr) {
-        m_valChgChecking.emplace_back(funcPtr);
+    void onPostChanged(std::shared_ptr<std::function<void(std::any)>> funcPtr) {
+        m_valPostChangeChecking.emplace_back(funcPtr);
     }
 
     /** add a callback which will be called when the property changes it's
@@ -107,22 +107,22 @@ public:
      * still exists. It has to be removed when the caller is destroyed with
      * removeOnPreChange() This is meant to be used when the property is part of
      * the same class as the callback */
-    void onChanged(std::function<void(std::list<T> *)> func, void *ptr) {
-        m_valChanged[ptr] = func;
+    void onPostChanged(std::function<void(std::list<T> *)> func, void *ptr) {
+        m_valPostChange[ptr] = func;
     }
 
-    void removeOnValueChanged(void *ptr) {
+    void removeOnValuePostChange(void *ptr) {
         if (ptr) {
-            auto it = m_valChanged.find(ptr);
-            if (it != m_valChanged.end()) {
-                m_valChanged.erase(it);
+            auto it = m_valPostChange.find(ptr);
+            if (it != m_valPostChange.end()) {
+                m_valPostChange.erase(it);
             }
         }
     }
 
 private:
     std::list<T>                                                    m_list;
-    std::list<std::weak_ptr<std::function<void(std::any)>>>         m_valChgChecking;
-    std::unordered_map<void *, std::function<void(std::list<T> *)>> m_valChanged;
+    std::list<std::weak_ptr<std::function<void(std::any)>>>         m_valPostChangeChecking;
+    std::unordered_map<void *, std::function<void(std::list<T> *)>> m_valPostChange;
 };
 }  // namespace ara

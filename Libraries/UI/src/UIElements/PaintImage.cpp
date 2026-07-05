@@ -105,7 +105,7 @@ void PaintImage::paint(const vec2& mousePos) {
     const vec2 fboSize{ static_cast<float>(m_fbo->getWidth()), static_cast<float>(m_fbo->getHeight()) };
 
     // Set uniform block
-    m_scaledBrush = m_brush.size / fboSize.x;
+    m_scaledBrush = m_brush.size * 2.f / fboSize.x;
     m_brushBlock.update();
     m_brushBlock.bind();
 
@@ -119,13 +119,17 @@ void PaintImage::paint(const vec2& mousePos) {
 
     m_paintShader->setUniform2f("pos", pos.x, pos.y);
 
-   // glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     m_fbo->unbind();
 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_sharedRes->setDrawFlag(true); // Request redrawing of the UI
+}
+
+void PaintImage::setBrushSize(const int32_t brushSize) {
+    m_brush.size = brushSize;
 }
 
 void PaintImage::saveToFile(const std::filesystem::path &filename) const {

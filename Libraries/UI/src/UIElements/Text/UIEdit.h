@@ -100,7 +100,7 @@ public:
     requires std::is_same_v<T, std::string> || std::is_same_v<T, std::filesystem::path>
     void setProp(Property<T> &prop) {
         m_stringProp = &prop;
-        onChanged<T>(prop, [this](const std::any &val) { setText(std::any_cast<T>(val)); });
+        onPreChange<T>(prop, [this](const std::any &val) { setText(std::any_cast<T>(val)); });
         addEnterCb([&prop](const std::string &txt) { prop = txt; }, &prop);
         setOnLostFocusCb([this, &prop] { prop = T(m_text); });
         setTextDist(prop());
@@ -110,7 +110,7 @@ public:
     void setProp(Property<CoordinateType> &prop) {
         setOpt(single_line | (std::is_floating_point_v<CoordinateType> ? num_fp : num_int));
 
-        onChanged<CoordinateType>(prop, [this](const std::any &val) { setText(std::to_string(std::any_cast<CoordinateType>(val))); });
+        onPreChange<CoordinateType>(prop, [this](const std::any &val) { setText(std::to_string(std::any_cast<CoordinateType>(val))); });
         addEnterCb([&prop](const std::string &txt) {
             prop = std::is_floating_point_v<CoordinateType> ? static_cast<CoordinateType>(atof(txt.c_str()))
                                                             : atoi(txt.c_str());

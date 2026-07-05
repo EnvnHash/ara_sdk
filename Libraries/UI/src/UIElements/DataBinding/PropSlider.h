@@ -17,10 +17,19 @@ public:
 
     template <class T>
     void setProp(Property<T>& prop) {
-        onChanged<T>(prop, [this, &prop](std::any val) {
+        onPreChange<T>(prop, [this, &prop](std::any val) {
             m_slider->setValue(static_cast<float>((std::any_cast<T>(val) - prop.getMin()) /
                                                   static_cast<float>(prop.getMax() - prop.getMin())));
             m_edit->setValue(std::any_cast<T>(val));
+            if (m_valPreChangeCb) {
+                m_valPreChangeCb();
+            }
+        });
+
+        onPostChange<T>(prop, [this, &prop](std::any val) {
+            if (m_valPostChangeCb) {
+                m_valPostChangeCb();
+            }
         });
 
         if (typeid(T) == typeid(int)) {
@@ -74,22 +83,31 @@ public:
             m_label->setText(txt);
         }
     }
+
     void setUseWheel(const bool value) const {
         if (m_edit) {
             m_edit->setUseWheel(value);
         }
     }
+
     void setPrecision(const int precision) const {
         if (m_edit) {
             m_edit->setPrecision(precision);
         }
     }
+
     void setSliderOnMouseUpUpdtMode(bool val) {
         m_onMouseUpUpdtMode = val;
     }
-    void setValueChgCb(const std::function<void()>& f) {
-        m_valChangeCb = f;
+
+    void setValuePreChangeCb(const std::function<void()>& f) {
+        m_valPreChangeCb = f;
     }
+
+    void setValuePostChangeCb(const std::function<void()>& f) {
+        m_valPostChangeCb = f;
+    }
+
     [[nodiscard]] UIEdit* getEdit() const {
         return m_edit;
     }
@@ -102,7 +120,8 @@ private:
     Slider*               m_slider            = nullptr;
     UIEdit*               m_edit              = nullptr;
     bool                  m_onMouseUpUpdtMode = false;
-    std::function<void()> m_valChangeCb;
+    std::function<void()> m_valPreChangeCb;
+    std::function<void()> m_valPostChangeCb;
 };
 
 }  // namespace ara
