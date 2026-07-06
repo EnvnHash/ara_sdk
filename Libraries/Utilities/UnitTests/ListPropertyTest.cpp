@@ -95,42 +95,42 @@ TEST_F(ListPropertyTest, Clear) {
 
 TEST_F(ListPropertyTest, Insert) {
     lp.push_back(130);
-    auto it = lp.begin();
+    const auto it = lp.begin();
     lp.insert(it, 140);
     EXPECT_EQ(lp.front(), 140);
     EXPECT_EQ(lp.size(), 2);
 }
 
 TEST_F(ListPropertyTest, CallbacksWithSharedPtr) {
-    auto funcPtr = std::make_shared<std::function<void(std::any)>>([](std::any listPtr) {
-                auto lst = std::any_cast<std::list<int>*>(listPtr);
+    const auto funcPtr = std::make_shared<std::function<void(std::any)>>([](const std::any &listPtr) {
+                const auto lst = std::any_cast<std::list<int>*>(listPtr);
                 EXPECT_EQ(lst->size(), 1);
                 EXPECT_EQ(lst->front(), 150);
             });
 
-    lp.onChanged(funcPtr);
+    lp.onPostChange(funcPtr);
     lp.push_back(150); // This should trigger the callback
 }
 
 TEST_F(ListPropertyTest, CallbacksWithFunction) {
-    auto func = [](std::list<int> *listPtr) {
+    auto func = [](const std::list<int> *listPtr) {
         EXPECT_EQ(listPtr->size(), 1);
         EXPECT_EQ(listPtr->front(), 160);
     };
 
-    lp.onChanged(func, this);
+    lp.onPostChange(func, this);
     lp.push_back(160); // This should trigger the callback
 }
 
 TEST_F(ListPropertyTest, RemoveCallback) {
-    auto func = [](std::list<int> *listPtr) {
+    auto func = [](const std::list<int> *listPtr) {
         EXPECT_EQ(listPtr->size(), 1);
         EXPECT_EQ(listPtr->front(), 170);
     };
 
-    lp.onChanged(func, this);
+    lp.onPostChange(func, this);
     lp.push_back(170); // This should trigger the callback
-    lp.removeOnValueChanged(this);
+    lp.removeOnValuePostChange(this);
     lp.push_back(180); // This should not trigger the callback again
 }
 
