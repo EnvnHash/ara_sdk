@@ -16,7 +16,7 @@ PaintImage& addImageBase(const UIApplication &app) {
 
 PaintImage& addImage(const UIApplication &app) {
     auto& img = addImageBase(app);
-    img.setImg(filesystem::current_path() / "black.png", 1);
+    img.setImg((filesystem::current_path() / "black.png").string(), 1);
     return img;
 }
 
@@ -106,7 +106,7 @@ TEST(UITest, PaintImagePAddTest) {
 TEST(UITest, PaintImageSubtrTest) {
     appBody([&](const UIApplication &app) {
         auto& img = addImageBase(app);
-        img.setImg(filesystem::current_path() / "white.png", 1);
+        img.setImg((filesystem::current_path() / "white.png").string(), 1);
 
         const auto brush = getStdBrush();
         img.setBrush(brush);
