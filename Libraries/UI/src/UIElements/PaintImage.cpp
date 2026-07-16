@@ -88,7 +88,7 @@ void PaintImage::mouseDrag(hidData& data) {
 }
 
 void PaintImage::paint(const vec2& mousePos) {
-    if (!(m_tex || m_texId) || !m_paintShader || !m_sharedRes) {
+    if (!(m_tex || m_texId) || !m_paintShader || !m_sharedRes || m_locked) {
         return;
     }
 
