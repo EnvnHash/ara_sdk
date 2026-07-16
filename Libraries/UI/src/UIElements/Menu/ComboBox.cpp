@@ -42,6 +42,7 @@ void ComboBox::init() {
 
     if (!getStyleClass().empty()) {
         downIcon.addStyleClass(getStyleClass() + ".downIcon");
+        m_menuEntryButt->addStyleClass(getStyleClass() + ".entryButton");
     }
 
     m_menuEntryButt->setFontSize(19);
