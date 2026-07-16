@@ -24,8 +24,80 @@
 #endif
 
 #include <GLBase.h>
+#include "threadpool/BS_thread_pool.hpp"
+
+static inline BS::thread_pool g_thread_pool;
 
 namespace ara::GLBaseUnitTest{
+
+static void compareBitmaps(const GLubyte* data1, const GLubyte* data2, uint32_t width, const uint32_t height, uint8_t eps, bool bgra_to_rgba) {
+    std::list<std::future<void>> futures;
+    const auto tc = g_thread_pool.get_thread_count();
+    auto ySlices = height / static_cast<uint32_t>(tc);
+
+    for (uint32_t i=0; i<tc; i++) {
+        futures.emplace_back(g_thread_pool.submit_task([&data1, &data2, width, ySlices, i, eps, bgra_to_rgba] {
+            auto dataPtr1 = &data1[0];
+            auto dataPtr2 = &data2[0];
+
+            const uint32_t offs = ySlices * width * 4 * i;
+            dataPtr1 += offs;
+            dataPtr2 += offs;
+
+            for (uint32_t y = 0; y < ySlices; y++) {
+                for (uint32_t x = 0; x < width; x++, dataPtr2 += 4, dataPtr1 += 4) {
+                    // freeimage reads in BGRA format, but textures are supposed to be in RGBA
+                    if (bgra_to_rgba) {
+                        EXPECT_NEAR(*(dataPtr2+2),  *dataPtr1, eps);
+                        EXPECT_NEAR(*(dataPtr2+1),  *(dataPtr1 +1), eps);
+                        EXPECT_NEAR(*dataPtr2,      *(dataPtr1 +2), eps);
+                    } else {
+                        EXPECT_NEAR(*dataPtr2,      *dataPtr1, eps);
+                        EXPECT_NEAR(*(dataPtr2+1),  *(dataPtr1 +1), eps);
+                        EXPECT_NEAR(*(dataPtr2+2),  *(dataPtr1 +2), eps);
+                    }
+                    EXPECT_NEAR(*(dataPtr2+3),  *(dataPtr1 +3), eps);
+                }
+            }
+        }));
+    }
+
+    for (auto &it : futures) {
+        if (it.valid()) {
+            it.wait();
+        }
+    }
+}
+
+static void compareBitmapToFile(const std::vector<GLubyte>& data, const std::filesystem::path& p, uint32_t width, const uint32_t height, const uint8_t eps) {
+    if (!std::filesystem::exists(p)) {
+        LOGE << "compareBitmaps error, couldn't load " << p.string();
+        return;
+    }
+    const auto pBitmap = FreeImage::Load(p.string(), nullptr);
+    ASSERT_TRUE(pBitmap);
+    const auto data2 = FreeImage_GetBits(pBitmap);
+
+    compareBitmaps(data.data(), data2, width, height, eps, true);
+
+    FreeImage::Unload(pBitmap);
+}
+
+static void compareTwoFiles(const std::filesystem::path& path1, const std::filesystem::path& path2, uint8_t eps = 0) {
+
+    const std::array bitmap = { FreeImage::Load(path1.string(), nullptr), FreeImage::Load(path1.string(), nullptr) };
+    ASSERT_TRUE(bitmap[0]);
+    ASSERT_TRUE(bitmap[1]);
+
+    const auto size = FreeImage::GetSizeFromBitmap(bitmap[0]);
+
+    const std::array data = { FreeImage::GetBits(bitmap[0]),  FreeImage::GetBits(bitmap[1]) };
+
+    compareBitmaps(data[0], data[1], size[0], size[1], eps, false);
+
+    FreeImage::Unload(bitmap[0]);
+    FreeImage::Unload(bitmap[1]);
+}
 
 static std::vector<GLubyte> readBack(const glm::ivec2& size) {
     std::vector<GLubyte> data(size.x * size.y * 4);    // make some space to download
@@ -39,7 +111,7 @@ static std::vector<GLubyte> readBack(const glm::ivec2& size) {
     return data;
 }
 
-static void createThreads(int nrThreads, std::vector<GLFWWindow>& windows, GLBase* glBase=nullptr) {
+static void createThreads(const int nrThreads, std::vector<GLFWWindow>& windows, GLBase* glBase=nullptr) {
     // create windows, must be not threaded
     for (int i = 0; i < nrThreads; i++) {
         ASSERT_TRUE(windows[i].init(

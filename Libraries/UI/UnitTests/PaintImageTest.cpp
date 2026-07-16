@@ -141,7 +141,8 @@ TEST(UITest, PaintImageSubImageTest) {
     }, [&](const UIApplication &app) {
         compareFrameBufferToImage(filesystem::current_path() / "brush_subimage.png",
                           app.getWinBase()->getWidth(), app.getWinBase()->getHeight(), 3);
-        compareTwoFiles(filesystem::current_path() / "PaintImageSubImageTest_ref.png", filesystem::current_path() / "PaintImageSubImageTest.png", 3);
+        GLBaseUnitTest::compareTwoFiles(filesystem::current_path() / "PaintImageSubImageTest_ref.png",
+            filesystem::current_path() / "PaintImageSubImageTest.png", 3);
     }, 300, 300);
 }
 

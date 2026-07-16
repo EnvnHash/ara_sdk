@@ -46,7 +46,7 @@ FIBITMAP* Load(const std::string& path, FREE_IMAGE_FORMAT* fif) {
     }
 
     // check that the plugin has reading capabilities ...
-    if ((f != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(f)) {
+    if (f != FIF_UNKNOWN && FreeImage_FIFSupportsReading(f)) {
         // ok, let's load the file
         return FreeImage_Load(f, path.c_str(), 0);
     } else {
@@ -202,64 +202,78 @@ void vFlip(std::vector<uint8_t>& input, const uint32_t width, const uint32_t hei
 }
 
 void CropAndScale(const std::string& path, const glm::vec2& cropStart, const glm::vec2& cropEnd,
-                  const glm::vec2& destSize, const std::string& destPath) {
-    FREE_IMAGE_FORMAT fmt{};
-    auto* src = Load(path, &fmt);
-    if (!src) {
-        LOGE << "CropAndScale could not load: " << path;
-        return;
-    }
+                      const glm::vec2& destSize, const std::string& destPath) {
+        FREE_IMAGE_FORMAT fmt{};
+        auto* src = Load(path, &fmt);
+        if (!src) {
+            LOGE << "CropAndScale could not load: " << path;
+            return;
+        }
 
-    auto* src32 = ConvertTo32Bits(src);
-    if (!src32) {
-        Unload(src);
-        LOGE << "CropAndScale failed to load/convert: " << path;
-        return;
-    }
+        const glm::vec2 srcSize{
+            static_cast<float>(FreeImage_GetWidth(src)),
+            static_cast<float>(FreeImage_GetHeight(src))
+        };
 
-    const glm::vec2 srcSize{
-        static_cast<float>(FreeImage_GetWidth(src32)),
-        static_cast<float>(FreeImage_GetHeight(src32))
-    };
+        auto clampCoord = [](const float v, const float maxVal) {
+            return std::clamp(static_cast<int32_t>(std::round(v)), 0, static_cast<int32_t>(maxVal));
+        };
 
-    auto clampCoord = [](const float v, const float maxVal) {
-        return std::clamp(static_cast<int32_t>(std::round(v)), 0, static_cast<int32_t>(maxVal));
-    };
+        const int32_t left = clampCoord(cropStart.x, srcSize.x);
+        const int32_t top = clampCoord(cropStart.y, srcSize.y);
+        const int32_t right = clampCoord(cropEnd.x, srcSize.x);
+        const int32_t bottom = clampCoord(cropEnd.y, srcSize.y);
 
-    const int32_t left = clampCoord(cropStart.x, srcSize.x);
-    const int32_t top = clampCoord(cropStart.y, srcSize.y);
-    const int32_t right = clampCoord(cropEnd.x, srcSize.x);
-    const int32_t bottom = clampCoord(cropEnd.y, srcSize.y);
+        if (right <= left || bottom <= top) {
+            LOGE << "SceneBackgroundEditor::cropImage invalid crop rect";
+            Unload(src);
+            return;
+        }
 
-    if (right <= left || bottom <= top) {
-        LOGE << "SceneBackgroundEditor::cropImage invalid crop rect";
-        Unload(src); Unload(src32);
-        return;
-    }
+        auto* cropped = FreeImage_Copy(src, left, top, right, bottom);
+        if (!cropped) {
+            LOGE << "SceneBackgroundEditor::cropImage crop failed";
+            Unload(src);
+            return;
+        }
 
-    auto* cropped = FreeImage_Copy(src32, left, top, right, bottom);
-
-    auto* scaled = cropped
-        ? FreeImage_Rescale(
+        auto* scaled = FreeImage_Rescale(
             cropped,
             static_cast<int32_t>(std::round(destSize.x)),
             static_cast<int32_t>(std::round(destSize.y)),
             FILTER_LANCZOS3
-        )
-        : nullptr;
+        );
 
-    if (scaled) {
-        if (!FreeImage_Save(FIF_PNG, scaled, destPath.c_str())) {
-            LOGE << "SceneBackgroundEditor::cropImage failed to save: " << destPath;
+        if (scaled) {
+            FIBITMAP* rgba_scaled = nullptr;
+            const bool is_rgba = FreeImage_GetBPP(scaled) == 32;
+
+            if (!is_rgba) {
+                rgba_scaled = FreeImage_ConvertTo32Bits(scaled);
+                FreeImage_SetTransparent(rgba_scaled, true);
+                const auto b = FreeImage_GetBits(rgba_scaled);
+                b[FI_RGBA_ALPHA] = 254; // dirty hack to avoid libpng stripping away the alpha channel
+
+            } else {
+                rgba_scaled = scaled;
+            }
+
+            if (rgba_scaled) {
+                if (!FreeImage_Save(FIF_PNG, rgba_scaled, destPath.c_str(), 0)) {
+                    LOGE << "SceneBackgroundEditor::cropImage failed to save: " << destPath;
+                }
+                if (!is_rgba) {
+                    Unload(rgba_scaled);
+                }
+            }
+            Unload(scaled);
+        } else {
+            LOGE << "SceneBackgroundEditor::cropImage crop/rescale failed";
         }
-    } else {
-        LOGE << "SceneBackgroundEditor::cropImage crop/rescale failed";
-    }
 
-    Unload(scaled);
-    Unload(src);
-    Unload(src32);
-}
+        Unload(cropped);
+        Unload(src);
+    }
 }
 
 #endif

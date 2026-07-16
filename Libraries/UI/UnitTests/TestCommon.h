@@ -11,10 +11,9 @@
 #include <UIElements/DataBinding/NodeEdit.h>
 #include <UIElements/Button/Button.h>
 
-#include "threadpool/BS_thread_pool.hpp"
+#include <GLBaseUnitTestCommon.h>
 
-static inline BS::thread_pool g_thread_pool;
-static inline glm::vec2       contentScale{1.f, 1.f};
+static inline glm::vec2 contentScale{1.f, 1.f};
 
 static void iterate(const ara::UIApplication& app) {
     app.getWinBase()->draw(0, 0, 0);
@@ -110,72 +109,17 @@ static std::vector<GLubyte> getPixels(const int x, const int y, const uint32_t w
     return data;
 }
 
-static void compareBitmaps(const std::vector<GLubyte>& data, const std::filesystem::path& p, uint32_t width, const uint32_t height, uint8_t eps) {
-    if (!std::filesystem::exists(p)) {
-        LOGE << "compareBitmaps error, couldn't load " << p.string();
-        return;
-    }
-    auto pBitmap = ara::FreeImage::Load(p.string(), nullptr);
-    ASSERT_TRUE(pBitmap);
 
-    std::list<std::future<void>> futures;
-    const auto tc = g_thread_pool.get_thread_count();
-    auto ySlices = height / static_cast<uint32_t>(tc);
-    
-    for (uint32_t i=0; i<tc; i++) {
-        futures.emplace_back(g_thread_pool.submit_task([&data, pBitmap, width, ySlices, i, eps] {
-            auto texData = &data[0];
-            auto refTex = FreeImage_GetBits(pBitmap);
-
-            const uint32_t offs = (ySlices * width * 4) * i;
-            texData += offs;
-            refTex += offs;
-
-            for (uint32_t y = 0; y < ySlices; y++) {
-                for (uint32_t x = 0; x < width; x++) {
-                    // freeimage reads in BGRA format, but textures are supposed to be in RGBA
-                    EXPECT_NEAR(*(refTex+2),  *(texData), eps);
-                    EXPECT_NEAR(*(refTex+1),  *(texData +1), eps);
-                    EXPECT_NEAR(*(refTex),    *(texData +2), eps);
-                    EXPECT_NEAR(*(refTex+3),  *(texData +3), eps);
-
-                    refTex += 4;
-                    texData += 4;
-                }
-            }
-        }));
-    }
-
-    for (auto &it : futures) {
-        if (it.valid()) {
-            it.wait();
-        }
-    };
-}
 
 static void compareFrameBufferToImage(const std::filesystem::path& p, const uint32_t width, const uint32_t height, const uint8_t eps=0) {
     const auto data = getPixels(0, 0, width, height);
-    compareBitmaps(data, p, width, height, eps);
+    ara::GLBaseUnitTest::compareBitmapToFile(data, p, width, height, eps);
 }
 
 struct checkPix {
     glm::ivec2 pos{};
     glm::vec4 col{};
 };
-
-static void compareTwoFiles(const std::filesystem::path& path1, const std::filesystem::path& path2, uint8_t eps = 0) {
-
-    auto* bitmap = ara::FreeImage::Load(path1.string(), nullptr);
-    ASSERT_TRUE(bitmap);
-
-    auto size = ara::FreeImage::GetSizeFromBitmap(bitmap);
-    std::vector<GLubyte> data(size[0] * size[1] * 4);
-    std::memcpy(data.data(), ara::FreeImage::GetBits(bitmap), size[0] * size[1] * 4);
-
-    compareBitmaps(data, path2, size[0], size[1], eps);
-
-    ara::FreeImage::Unload(bitmap);
-}
 
 static void checkVals(const std::vector<GLubyte>& data, const ara::GLWindow* mainWin, const std::vector<checkPix>& cv) {
     for (const auto &[pos, col] : cv) {
