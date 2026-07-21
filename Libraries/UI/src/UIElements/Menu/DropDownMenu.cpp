@@ -184,6 +184,9 @@ void DropDownMenu::rebuildEntryList() {
 
         butt.setClickedCb([this, entry] {
             entry.second();
+            if (m_updateTitleOnClick) {
+                m_menuEntryButt->setText(entry.first);
+            }
             // push to window gl callbacks which are processed after next
             // iteration to have the mouseUp still find this node
             if (getWindow()) {

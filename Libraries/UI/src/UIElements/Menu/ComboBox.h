@@ -17,11 +17,13 @@ public:
 
     void init() override;
     void open() override;
-    void rebuildEntryList() override;
 
     void clearEntries() { m_entries.clear(); }
     void setSelectedEntryName(const std::string& str) { setMenuName(str); }
     void setMaxListEntries(const int count) { m_maxListEntries = count; }
+
+protected:
+    void rebuildEntryList() override;
 
 private:
     int    m_maxListEntries = 100;

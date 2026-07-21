@@ -24,6 +24,7 @@ public:
 
     Button* getEntry(const std::string& name);
     virtual void setMenuName(const std::string& str);
+    void setUpdateTitleOnClick(const bool val) { m_updateTitleOnClick = val; }
 
 protected:
     /** Called when the DropDown Menu is opened. It's unnecessary to call this from outside */
@@ -35,6 +36,7 @@ protected:
     std::list<std::pair<std::string, std::function<void()>>> m_entries;
     std::list<Button*>                                       m_entryButts;
     bool                                                     m_open            = false;
+    bool                                                     m_updateTitleOnClick = false;
     bool                                                     m_closing         = false;
     int                                                      m_listEntryHeight = 30;
 };
