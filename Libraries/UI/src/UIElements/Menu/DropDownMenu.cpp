@@ -39,6 +39,10 @@ void DropDownMenu::init() {
     m_menuEntryButt->setFont("regular", 20, align::left, valign::center, m_sharedRes->colors->at(uiColors::font));
     m_menuEntryButt->setBackgroundColor(0.f, 0.f, 0.f, 0.f);
 
+    if (m_currentEntry >= 0) {
+        setEntry(m_currentEntry);
+    }
+
     // selected
     m_menuEntryButt->setColor(m_sharedRes->colors->at(uiColors::black), state::selected);
     m_menuEntryButt->setBackgroundColor(m_sharedRes->colors->at(uiColors::highlight), state::selected);
@@ -223,6 +227,15 @@ void DropDownMenu::setMenuName(const std::string& str) {
 Button* DropDownMenu::getEntry(const std::string& name) {
     const auto ret = std::ranges::find_if(m_entryButts, [&](Button* but){ return name == but->getText(); });
     return ret != m_entryButts.end() ? *ret : nullptr;
+}
+
+void DropDownMenu::setEntry(const int32_t nr) {
+    m_currentEntry = nr;
+    if (nr >= m_entries.size() || !m_menuEntryButt) {
+        return;
+    }
+
+    m_menuEntryButt->setText(std::next(m_entries.begin(), nr)->first);
 }
 
 }  // namespace ara

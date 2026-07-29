@@ -18,11 +18,12 @@ public:
     void mouseDown(hidData& data) override;
     virtual void globalMouseDown(hidData& data);
 
+    void clearEntries() { m_entries.clear(); }
     void addEntry(const std::string& name, const std::function<void()>& f) {
         m_entries.emplace_back(name, f);
     }
-
     Button* getEntry(const std::string& name);
+    void setEntry(int32_t nr);
     virtual void setMenuName(const std::string& str);
     void setUpdateTitleOnClick(const bool val) { m_updateTitleOnClick = val; }
 
@@ -39,5 +40,6 @@ protected:
     bool                                                     m_updateTitleOnClick = false;
     bool                                                     m_closing         = false;
     int                                                      m_listEntryHeight = 30;
+    int32_t                                                  m_currentEntry = -1;
 };
 }  // namespace ara

@@ -18,7 +18,6 @@ public:
     void init() override;
     void open() override;
 
-    void clearEntries() { m_entries.clear(); }
     void setSelectedEntryName(const std::string& str) { setMenuName(str); }
     void setMaxListEntries(const int count) { m_maxListEntries = count; }
 
