@@ -19,6 +19,7 @@ ResizableHandle::ResizableHandle() {
 }
 
 void ResizableHandle::mouseIn(hidData& data) {
+#ifdef ARA_USE_GLFW
     if (m_corner == Corner::topLeft || m_corner == Corner::bottomRight) {
         getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::lbtrResize);
     } else if (m_corner == Corner::topRight || m_corner == Corner::bottomLeft) {
@@ -31,11 +32,14 @@ void ResizableHandle::mouseIn(hidData& data) {
         getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::move);
         getSharedRes()->reqRedraw();
     }
+#endif
     data.consumed = true;
 }
 
 void ResizableHandle::mouseOut(hidData& data) {
+#ifdef ARA_USE_GLFW
     getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::arrow);
+#endif
     data.consumed = true;
 }
 

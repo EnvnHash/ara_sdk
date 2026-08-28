@@ -14,7 +14,7 @@ macro (create_settings_files
 
 # /gradle/wrapper/gradle-wrapper.properties
     FILE(WRITE ${ANDROID_STUDIO_PROJ}/gradle/wrapper/gradle-wrapper.properties "distributionBase=GRADLE_USER_HOME
-distributionUrl=https://services.gradle.org/distributions/gradle-8.9-bin.zip
+distributionUrl=https://services.gradle.org/distributions/gradle-9.5.0-bin.zip
 distributionPath=wrapper/dists
 zipStorePath=wrapper/dists
 zipStoreBase=GRADLE_USER_HOME")
@@ -74,7 +74,7 @@ android.enableJetifier=true")
        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.1'
+        classpath 'com.android.tools.build:gradle:9.3.1'
     }
 }
 

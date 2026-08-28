@@ -12,8 +12,8 @@ using namespace glm;
 
 namespace ara {
 
-void WindowResizeAreas::addResizeAreas(UINode& root, GLWindow* win) {
 #ifdef ARA_USE_GLFW
+void WindowResizeAreas::addResizeAreas(UINode& root, GLWindow* win) {
     //auto m_win = m_sharedRes->winHandle;
 
     // since we are using undecorated windows in order to have our own MenuBars
@@ -74,7 +74,7 @@ void WindowResizeAreas::addResizeAreas(UINode& root, GLWindow* win) {
             win->setMouseCursor(WinMouseIcon::arrow);
         });
     }
-#endif
 }
+#endif
 
 }  // namespace ara

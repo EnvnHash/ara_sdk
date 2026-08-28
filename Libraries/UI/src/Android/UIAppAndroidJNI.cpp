@@ -31,7 +31,7 @@ void UIAppAndroidJNI::setDisplayDensity(float density, float w, float h, float x
     m_cmd_data.ydpi           = ydpi;
     m_cmd_data.width_meters   = (w / xdpi) * kMetersPerInch;
     m_cmd_data.height_meters  = (h / ydpi) * kMetersPerInch;
-    m_glbase.g_androidDensity = density;
+    m_glbase.m_androidDensity = density;
     m_winSizeReal.x           = w;
     m_winSizeReal.y           = h;
     m_winSize.x               = static_cast<int>(w / density + 0.5f);

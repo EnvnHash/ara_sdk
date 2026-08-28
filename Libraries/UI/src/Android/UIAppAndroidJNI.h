@@ -57,7 +57,7 @@ public:
     void OnTouched(float x, float y);
     void set_requested_screen_orientation(ANativeActivity* activity, int an_orientation);
 
-    float getDisplayDensity() { return m_glbase.g_androidDensity; }
+    float getDisplayDensity() { return m_glbase.m_androidDensity; }
     void*   m_jniEglContext = nullptr;
 
 private:

@@ -10,7 +10,9 @@ namespace ara {
 
 class WindowResizeAreas {
 public:
+#ifdef ARA_USE_GLFW
     static void addResizeAreas(UINode& root, GLFWWindow* win);
+#endif
 };
 
 }  // namespace ara

@@ -174,6 +174,7 @@ void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, co
     });
 
     m_browseButt->setBackgroundColor(0.4f, 0.4f, 0.4f, 1.f, state::highlighted);
+#ifdef ARA_USE_GLFW
     m_browseButt->setClickedCb([&] {
         if (m_memVar) {
             const auto& suffixes = !m_options->allowSuffixes.empty() ? m_options->allowSuffixes : m_stdSuffixes;
@@ -183,6 +184,7 @@ void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, co
             }
         }
     });
+#endif
 }
 
 void NodeMemberVariableEdit::setLabelText(const std::string& text) {

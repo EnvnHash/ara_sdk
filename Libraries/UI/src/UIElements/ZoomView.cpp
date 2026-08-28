@@ -235,6 +235,10 @@ void ZoomView::scaleAndCenterContent() {
 }
 
 void ZoomView::checkWorkAreaSize() const {
+    if (!m_workingArea) {
+        return;
+    }
+
     if (m_showSlider || m_showResetButton) {
         m_workingArea->setHeight(-m_bottMenHeight);
     } else {

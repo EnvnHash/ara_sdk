@@ -35,7 +35,9 @@ void Resizable::init() {
     });
 
     getWindow()->addGlobalMouseUpLeftCb(this, [this](const hidData& data) {
+#ifdef ARA_USE_GLFW
         getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::arrow);
+#endif
         m_dragging = false;
     });
 }

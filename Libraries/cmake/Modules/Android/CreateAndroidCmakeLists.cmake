@@ -3,7 +3,7 @@ macro (create_android_cmakelists
 )
 
     # create the CMakeList.txt
-    list(APPEND ANDROID_CMAKELIST "cmake_minimum_required(VERSION ${CMAKE_VERSION})
+    list(APPEND ANDROID_CMAKELIST "cmake_minimum_required(VERSION ${DST_CMAKE_VERSION})
 
 project(${PROJECT_NAME})
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

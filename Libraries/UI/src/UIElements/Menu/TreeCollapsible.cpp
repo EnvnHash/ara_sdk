@@ -19,7 +19,9 @@
 #include <UIElements/Image.h>
 #include "UIElements/Menu/TreeCollapsible.h"
 
+#ifdef ARA_USE_CLIP
 #include "clip.h"
+#endif
 #include "UIElements/Button/ImageButton.h"
 
 using namespace glm;
@@ -60,7 +62,7 @@ void TreeCollapsible::rebuildUiElements() {
     rebuildIt(m_tree, 0, yOffs);
 }
 
-void TreeCollapsible::rebuildIt(Node* nd, size_t tabIdx, int32_t& yOffs) {
+void TreeCollapsible::rebuildIt(Node* nd, const size_t tabIdx, int32_t& yOffs) {
     if (nd) {
         if (!nd->children().empty()) {
             auto& arrowButt = push<ImageButton>(UINodePars{
