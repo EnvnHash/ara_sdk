@@ -62,7 +62,7 @@ TEST(FreeImageHandlerTest, ExpandImage) {
     const auto newHeight = origSize[1] + 100;
 
     // Perform expansion
-    ExpandImage(testPath, newWidth, newHeight);
+    ExpandImage(testPath, newWidth, newHeight, true);
 
     // Verify size
     auto resultSize = GetSize(testPath.string());

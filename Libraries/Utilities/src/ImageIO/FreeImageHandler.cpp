@@ -76,7 +76,7 @@ FIMULTIBITMAP* LoadMulti(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
 }
 
 // expansion is towards right top corner
-void ExpandImage(const std::filesystem::path& path, const int32_t newWidth, const int32_t newHeight) {
+void ExpandImage(const std::filesystem::path& path, const int32_t newWidth, const int32_t newHeight, bool expandToTop) {
     if (!path.empty() && filesystem::exists(path)) {
         auto fif = FreeImage_GetFileType(path.c_str(), 0);
 
@@ -87,11 +87,7 @@ void ExpandImage(const std::filesystem::path& path, const int32_t newWidth, cons
                 // We need to copy old content.
                 const auto oldHeight = FreeImage_GetHeight(oldBitmap);
 
-                // Copy oldBitmap to newBitmap.
-                // Since both are 32-bit and we want to keep positions consistent:
-                // In a top-left origin system, old content is at (0,0) to (oldWidth, oldHeight).
-                // In FreeImage (bottom-left), old content is at (0, newHeight - oldHeight) to (oldWidth, newHeight).
-                FreeImage_Paste(newBitmap, oldBitmap, 0, newHeight - oldHeight, 255);
+                FreeImage_Paste(newBitmap, oldBitmap, 0, expandToTop ? newHeight - oldHeight : 0, 255);
 
                 FreeImage_GetHeight(oldBitmap);
 

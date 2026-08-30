@@ -43,7 +43,7 @@ FIBITMAP*               Load(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif = nu
 FIMULTIBITMAP*          LoadMulti(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif = nullptr);
 FIMULTIBITMAP*          LoadMulti(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif);
 void                    Load(std::vector<uint8_t>& vp, Handle& hnd);
-void                    ExpandImage(const std::filesystem::path& path, int32_t newWidth, int32_t newHeight);
+void                    ExpandImage(const std::filesystem::path& path, int32_t newWidth, int32_t newHeight, bool expandToTop);
 
 std::tuple<FREE_IMAGE_FORMAT, FIMEMORY*> LoadPrepare(void* ptr, size_t size, FREE_IMAGE_FORMAT* fif);
 
