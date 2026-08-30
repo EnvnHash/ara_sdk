@@ -75,7 +75,8 @@ FIMULTIBITMAP* LoadMulti(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
     return LoadMulti(vp.data(), vp.size(), fif);
 }
 
-void ExpandImage(std::filesystem::path& path, int32_t newWidth, int32_t newHeight) {
+// expansion is towards right top corner
+void ExpandImage(const std::filesystem::path& path, const int32_t newWidth, const int32_t newHeight) {
     if (!path.empty() && filesystem::exists(path)) {
         auto fif = FreeImage_GetFileType(path.c_str(), 0);
 

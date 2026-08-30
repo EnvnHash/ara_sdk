@@ -18,9 +18,9 @@ file(GLOB UTILITIES_UT_SRC
     PropertyTest.cpp
     RwBinFileTest.cpp
     StringUtilsTest.cpp
-    #UdpSignalTest.cpp
     TableTest.cpp
     TypeDeductionTest.cpp
+    FreeImageHandlerTest.cpp
 )
 
 add_executable(${PROJECT_NAME} ${UTILITIES_UT_SRC})
@@ -40,6 +40,10 @@ endif ()
 target_link_libraries(${PROJECT_NAME} ${TARGET_LIBS})
 
 include(ResCompInclude)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/data ${CMAKE_CURRENT_BINARY_DIR}
+)
 
 FOREACH(binary ${ara_sdk_BINARIES})
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${binary} ${CMAKE_CURRENT_BINARY_DIR})
