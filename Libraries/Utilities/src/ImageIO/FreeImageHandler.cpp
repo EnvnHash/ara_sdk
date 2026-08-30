@@ -75,6 +75,37 @@ FIMULTIBITMAP* LoadMulti(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
     return LoadMulti(vp.data(), vp.size(), fif);
 }
 
+void ExpandImage(std::filesystem::path& path, int32_t newWidth, int32_t newHeight) {
+    if (!path.empty() && filesystem::exists(path)) {
+        auto fif = FreeImage_GetFileType(path.c_str(), 0);
+
+        if (auto* oldBitmap = Load(path.string(), &fif)) {
+            if (auto* newBitmap = FreeImage_AllocateT(FIT_BITMAP, newWidth, newHeight, 32)) {
+                // FreeImage coordinates are bottom-up, but our grid is top-down (PaintImage sectionPos)
+                // Actually, sectionPos in PaintImage is used for UVs.
+                // We need to copy old content.
+                const auto oldHeight = FreeImage_GetHeight(oldBitmap);
+
+                // Copy oldBitmap to newBitmap.
+                // Since both are 32-bit and we want to keep positions consistent:
+                // In a top-left origin system, old content is at (0,0) to (oldWidth, oldHeight).
+                // In FreeImage (bottom-left), old content is at (0, newHeight - oldHeight) to (oldWidth, newHeight).
+                FreeImage_Paste(newBitmap, oldBitmap, 0, newHeight - oldHeight, 255);
+
+                FreeImage_GetHeight(oldBitmap);
+
+                if (FreeImage_Save(fif, newBitmap, path.c_str(), 0)) {
+                    LOG << "Expanded segmented image to " << newWidth << "x" << newHeight;
+                } else {
+                    LOGE << "Failed to save expanded segmented image";
+                }
+                FreeImage_Unload(newBitmap);
+            }
+            FreeImage_Unload(oldBitmap);
+        }
+    }
+}
+
 std::tuple<FREE_IMAGE_FORMAT, FIMEMORY*> LoadPrepare(void* ptr, const size_t size, FREE_IMAGE_FORMAT* fif) {
     if (size == 0) {
         LOGE << "FreeImage::Load failed, size of memory to load to is zero";
