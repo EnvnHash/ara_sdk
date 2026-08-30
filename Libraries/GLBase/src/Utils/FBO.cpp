@@ -125,6 +125,7 @@ void FBO::fromTex(const GLuint texId, const int32_t width, const int32_t height,
 
     checkFbo();
     m_inited = true;
+    m_isShared = true;
     restoreStates();
 }
 
@@ -959,8 +960,12 @@ void FBO::checkFbo() {
 
     if (GL_FRAMEBUFFER_COMPLETE != status) {
         switch (status) {
-            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: LOGE << "FBO Error: Attachment Point Unconnected"; break;
-            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: LOGE << "FBO Error: Missing Attachment"; break;
+            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+                LOGE << "FBO Error: Attachment Point Unconnected";
+                break;
+            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+                LOGE << "FBO Error: Missing Attachment";
+                break;
 #ifndef ARA_USE_GLES31
             case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
                 LOGE << "FBO Error: GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";

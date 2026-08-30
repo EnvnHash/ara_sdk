@@ -173,7 +173,6 @@ macro (gen_android_proj)
         create_app_build_gradle()
         create_android_cmakelists()
         create_app_key()
-        message(STATUS "###ARASDK_APP_TYPE: ${APP_TYPE}")
 
         if (${use_billing})
             create_billing_client()
