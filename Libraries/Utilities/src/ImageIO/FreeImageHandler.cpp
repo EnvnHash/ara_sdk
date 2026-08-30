@@ -78,7 +78,7 @@ FIMULTIBITMAP* LoadMulti(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
 // expansion is towards right top corner
 void ExpandImage(const std::filesystem::path& path, const int32_t newWidth, const int32_t newHeight, bool expandToTop) {
     if (!path.empty() && filesystem::exists(path)) {
-        auto fif = FreeImage_GetFileType(path.c_str(), 0);
+        auto fif = FreeImage_GetFileType(path.string().c_str(), 0);
 
         if (auto* oldBitmap = Load(path.string(), &fif)) {
             if (auto* newBitmap = FreeImage_AllocateT(FIT_BITMAP, newWidth, newHeight, 32)) {
@@ -91,7 +91,7 @@ void ExpandImage(const std::filesystem::path& path, const int32_t newWidth, cons
 
                 FreeImage_GetHeight(oldBitmap);
 
-                if (FreeImage_Save(fif, newBitmap, path.c_str(), 0)) {
+                if (FreeImage_Save(fif, newBitmap, path.string().c_str(), 0)) {
                     LOG << "Expanded segmented image to " << newWidth << "x" << newHeight;
                 } else {
                     LOGE << "Failed to save expanded segmented image";
