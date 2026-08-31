@@ -76,7 +76,8 @@ FIMULTIBITMAP* LoadMulti(std::vector<uint8_t>& vp, FREE_IMAGE_FORMAT* fif) {
 }
 
 // expansion is towards right top corner
-void ExpandImage(const std::filesystem::path& path, const int32_t newWidth, const int32_t newHeight, bool expandToTop) {
+void ExpandImage(const std::filesystem::path& path, const std::filesystem::path& outPath, const int32_t newWidth,
+                const int32_t newHeight, const bool expandToTop) {
     if (!path.empty() && filesystem::exists(path)) {
         auto fif = FreeImage_GetFileType(path.string().c_str(), 0);
 
@@ -86,12 +87,9 @@ void ExpandImage(const std::filesystem::path& path, const int32_t newWidth, cons
                 // Actually, sectionPos in PaintImage is used for UVs.
                 // We need to copy old content.
                 const auto oldHeight = FreeImage_GetHeight(oldBitmap);
-
                 FreeImage_Paste(newBitmap, oldBitmap, 0, expandToTop ? newHeight - oldHeight : 0, 255);
-
                 FreeImage_GetHeight(oldBitmap);
-
-                if (FreeImage_Save(fif, newBitmap, path.string().c_str(), 0)) {
+                if (FreeImage_Save(fif, newBitmap, outPath.string().c_str(), 0)) {
                     LOG << "Expanded segmented image to " << newWidth << "x" << newHeight;
                 } else {
                     LOGE << "Failed to save expanded segmented image";
