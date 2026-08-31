@@ -46,9 +46,9 @@ static void compareImages(const std::filesystem::path& path1, const std::filesys
 }
 
 TEST(FreeImageHandlerTest, ExpandImage) {
-    std::filesystem::path inputPath = "expand_test_input.png";
-    std::filesystem::path testPath = "expand_test_output.png";
-    std::filesystem::path goldenPath = "expand_test_golden.png";
+    std::filesystem::path inputPath = std::filesystem::current_path() / "expand_test_input.png";
+    std::filesystem::path testPath = std::filesystem::current_path() / "expand_test_output.png";
+    std::filesystem::path goldenPath = std::filesystem::current_path() / "expand_test_golden.png";
 
     // Ensure we start from a fresh copy of the input
     if (std::filesystem::exists(testPath)) {
