@@ -46,26 +46,17 @@ static void compareImages(const std::filesystem::path& path1, const std::filesys
 }
 
 TEST(FreeImageHandlerTest, ExpandImage) {
-    std::filesystem::path inputPath = std::filesystem::current_path() / "expand_test_input.png";
-    std::filesystem::path testPath = std::filesystem::current_path() / "expand_test_output.png";
-    std::filesystem::path goldenPath = std::filesystem::current_path() / "expand_test_golden.png";
-
-    // Ensure we start from a fresh copy of the input
-    if (std::filesystem::exists(testPath)) {
-        std::filesystem::remove(testPath);
-    }
-    std::filesystem::copy_file(inputPath, testPath);
-
-    // Get original size
-    const auto origSize = GetSize(testPath.string());
+    const auto inputPath = std::filesystem::current_path() / "expand_test_input.png";
+    const auto goldenPath = std::filesystem::current_path() / "expand_test_golden.png";
+    const auto origSize = GetSize(inputPath.string());
     const auto newWidth = origSize[0] + 100;
     const auto newHeight = origSize[1] + 100;
 
     // Perform expansion
-    ExpandImage(testPath, newWidth, newHeight, true);
+    ExpandImage(inputPath, newWidth, newHeight, true);
 
     // Verify size
-    auto resultSize = GetSize(testPath.string());
+    const auto resultSize = GetSize(inputPath.string());
     EXPECT_EQ(resultSize[0], newWidth);
     EXPECT_EQ(resultSize[1], newHeight);
 
@@ -73,10 +64,7 @@ TEST(FreeImageHandlerTest, ExpandImage) {
     ASSERT_TRUE(std::filesystem::exists(goldenPath)) << "Golden image not found at " << goldenPath;
 
     // Use internal compareImages
-    compareImages(testPath, goldenPath);
-
-    // Cleanup
-    std::filesystem::remove(testPath);
+    compareImages(inputPath, goldenPath);
 }
 
 } // namespace ara::FreeImage::Test
