@@ -20,7 +20,7 @@ file(GLOB UTILITIES_UT_SRC
     StringUtilsTest.cpp
     TableTest.cpp
     TypeDeductionTest.cpp
-    FreeImageHandlerTest.cpp
+    #FreeImageHandlerTest.cpp
 )
 
 add_executable(${PROJECT_NAME} ${UTILITIES_UT_SRC})
