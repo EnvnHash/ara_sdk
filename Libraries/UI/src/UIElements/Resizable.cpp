@@ -116,9 +116,9 @@ void Resizable::setHandleVisibility(const bool val) {
 }
 
 void Resizable::resizeFromCorner(const Corner corner, const vec2& movedPix) {
-    ivec2 newSize = getNewSize(corner, movedPix);
+    auto newSize = getNewSize(corner, movedPix);
     if (m_fixedAspect) {
-        newSize.x = newSize.y * m_dragStartAspect;
+        newSize.x = newSize.y * static_cast<int32_t>(m_dragStartAspect);
     }
 
     setSize(newSize);
@@ -131,22 +131,24 @@ void Resizable::resizeFromCorner(const Corner corner, const vec2& movedPix) {
 
 ivec2 Resizable::getNewSize(const Corner corner, const vec2& movedPix) const {
     static unordered_map<Corner, function<ivec2(const dragPar&)>> funcMap{
-        {Corner::bottomRight, [](const dragPar& dp) {
-            return max(dp.minSize, ivec2((dp.dragStartSize + dp.movedPix)));
-        }}, {Corner::topLeft, [](const dragPar& dp) {
-            return max(dp.minSize, ivec2(dp.dragStartSize - dp.movedPix));
-        }}, {Corner::bottomLeft, [](const dragPar& dp) {
-            return max(dp.minSize, ivec2{dp.dragStartSize.x - dp.movedPix.x, dp.dragStartSize.y + dp.movedPix.y});
-        }}, {Corner::topRight, [](const dragPar& dp) {
-            return max(dp.minSize, ivec2{dp.dragStartSize.x + dp.movedPix.x, dp.dragStartSize.y - dp.movedPix.y});
-        }}, {Corner::top, [](const dragPar& dp) {
-            return max(dp.minSize, ivec2(dp.dragStartSize.x, dp.dragStartSize.y - dp.movedPix.y));
-        }}, {Corner::bottom, [](const dragPar& dp) {
-            return max(dp.minSize, ivec2(dp.dragStartSize.x, dp.dragStartSize.y + dp.movedPix.y));
-        }}, {Corner::right, [](const dragPar& dp) {
-            return max(dp.minSize, ivec2(dp.dragStartSize.x + dp.movedPix.x, dp.dragStartSize.y));
-        }}, {Corner::left, [](const dragPar& dp) {
-            return max(dp.minSize, ivec2(dp.dragStartSize.x - dp.movedPix.x, dp.dragStartSize.y));
+        {Corner::bottomRight, [this](const dragPar& dp) {
+            return max(dp.minSize, ivec2((dp.dragStartSize + dp.movedPix / m_parentContScale)));
+        }}, {Corner::topLeft, [this](const dragPar& dp) {
+            return max(dp.minSize, ivec2(dp.dragStartSize - dp.movedPix / m_parentContScale));
+        }}, {Corner::bottomLeft, [this](const dragPar& dp) {
+            return max(dp.minSize, ivec2{dp.dragStartSize.x - dp.movedPix.x / m_parentContScale.x,
+                dp.dragStartSize.y + dp.movedPix.y / m_parentContScale.y });
+        }}, {Corner::topRight, [this](const dragPar& dp) {
+            return max(dp.minSize, ivec2{dp.dragStartSize.x + dp.movedPix.x / m_parentContScale.x,
+                dp.dragStartSize.y - dp.movedPix.y / m_parentContScale.y });
+        }}, {Corner::top, [this](const dragPar& dp) {
+            return max(dp.minSize, ivec2(dp.dragStartSize.x, dp.dragStartSize.y - dp.movedPix.y / m_parentContScale.y));
+        }}, {Corner::bottom, [this](const dragPar& dp) {
+            return max(dp.minSize, ivec2(dp.dragStartSize.x, dp.dragStartSize.y + dp.movedPix.y / m_parentContScale.y));
+        }}, {Corner::right, [this](const dragPar& dp) {
+            return max(dp.minSize, ivec2(dp.dragStartSize.x + dp.movedPix.x / m_parentContScale.x, dp.dragStartSize.y));
+        }}, {Corner::left, [this](const dragPar& dp) {
+            return max(dp.minSize, ivec2(dp.dragStartSize.x - dp.movedPix.x / m_parentContScale.x, dp.dragStartSize.y));
         }}, {Corner::center, [](const dragPar& dp) {
             return dp.dragStartSize;
         }}
