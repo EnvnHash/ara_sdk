@@ -34,7 +34,7 @@ public:
     void saveToFile(const std::filesystem::path &filename) const;
 
 protected:
-    void paint(const glm::vec2& mousePos);
+    virtual void paint(const glm::vec2& mousePos);
 
     Brush                       m_brush{};
     std::unique_ptr<FBO>        m_fbo;

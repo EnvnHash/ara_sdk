@@ -35,7 +35,8 @@ void Spinner::init() {
     }
 
     if ((m_shader = m_shCol->get("UI_UISpinner")) == nullptr) {
-        string vert = STRINGIFY(layout(location = 0) in vec4 position;\n
+        string vert = STRINGIFY(
+            layout(location = 0) in vec4 position;\n
             layout(location = 1) in vec4 normal;\n
             uniform mat4 m_pvm;\n
             uniform vec2 size;\n

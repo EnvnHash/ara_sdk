@@ -21,6 +21,7 @@ file(GLOB UI_UT_SRC
     HidTest.cpp
     ImageTest.cpp
     PaintImageTest.cpp
+    PaintImageIdMapTest.cpp
     ReloadGLContextTest.cpp
     ResizableTest.cpp
     ScrollViewTest.cpp

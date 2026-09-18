@@ -146,7 +146,7 @@ class DemoView_Table_2 : public DemoView {
 public:
     DemoView_Table_2();
     void                init() override;
-    UITable*		ui_Table=nullptr;
+    UITable*		    ui_Table=nullptr;
 };
 
 class DemoView_Resources : public DemoView {
@@ -164,6 +164,22 @@ class DemoView_ZoomView : public DemoView {
 public:
     DemoView_ZoomView();
     void                init() override;
+};
+
+class PaintImageIdMap;
+
+class DemoView_PaintImageIdMap : public DemoView {
+public:
+    DemoView_PaintImageIdMap();
+    void                init() override;
+
+private:
+    PaintImageIdMap* m_paintImage = nullptr;
+
+    ComboBox*        m_brushCombo = nullptr;
+    ComboBox*        m_visCombo = nullptr;
+    Label*           m_sizeLabel = nullptr;
+    Property<float> m_prop {15.f, 3.f, 100.f, 1.0f};   // create a property {default-value, min, max, step}
 };
 
 }
