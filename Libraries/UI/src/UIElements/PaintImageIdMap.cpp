@@ -32,6 +32,7 @@ void PaintImageIdMap::init() {
 
         const auto frag = ShaderCollector::getShaderHeader() + STRINGIFY(
             layout(location = 0) out vec4 fragColor;
+
             in vec2 texCoord;
             struct Brush {
                 float size;
@@ -41,7 +42,9 @@ void PaintImageIdMap::init() {
             };
             uniform vec2 pos;
             uniform vec4 limits;
+            uniform ivec2 texSize;
             uniform int maskBit;
+            uniform sampler2D tex;
             layout(std140) uniform BrushBlock {
                 Brush brush;
             };
@@ -55,10 +58,14 @@ void PaintImageIdMap::init() {
                 if (falloff == 0.0) {
                     discard;
                 }
-                vec4 col = vec4(0.0, 0.0, 0.0, 0.0);
+
+                vec2 ntexCoord = texCoord * vec2(0.5) + vec2(0.5);
+                vec4 col = texture(tex, ntexCoord);
+
                 uint packedColor = packUnorm4x8(col);
                 uint mask = uint(1) << maskBit;
                 packedColor |= mask;
+
                 fragColor = unpackUnorm4x8(packedColor);
             }
         );
@@ -153,21 +160,10 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
         return;
     }
 
-    if (!m_fbo) {
-        m_fbo = std::make_unique<FBO>();
-        if (m_tex) {
-            m_fbo->fromTexMan(m_tex);
-        } else if (m_texId) {
-            m_fbo->setGlbase(m_sharedRes->glbase);
-            m_fbo->fromTex(m_texId, m_texSize.x, m_texSize.y, GL_RGBA8, 1, GL_LINEAR, GL_LINEAR);
-        }
-    }
-
     m_fbo->bind();
     m_paintShader->begin();
 
-//    glBlendEquation(GL_FUNC_ADD);
-    glBlendFunc(GL_ONE, GL_ONE);
+    glBlendFunc(GL_ONE, GL_ZERO);
 
     const vec2 fboSize{ static_cast<float>(m_fbo->getWidth()), static_cast<float>(m_fbo->getHeight()) };
 
@@ -188,11 +184,18 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
     m_paintShader->setUniform2f("pos", transPos[0].x, transPos[0].y);
     m_paintShader->setUniform4f("limits", transPos[1].x, transPos[1].y, transPos[2].x, transPos[2].y);
     m_paintShader->setUniform1i("maskBit", m_drawID);
+    m_paintShader->setUniform2i("texSize", static_cast<int>(m_tex->getWidth()), static_cast<int>(m_tex->getHeight()));
+    m_paintShader->setUniform1i("tex", 0);
+
+    if (m_tex) {
+        m_tex->bind(0);
+    } else if (m_texId) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_texId);
+    }
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
     m_fbo->unbind();
-
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_sharedRes->setDrawFlag(true); // Request redrawing of the UI

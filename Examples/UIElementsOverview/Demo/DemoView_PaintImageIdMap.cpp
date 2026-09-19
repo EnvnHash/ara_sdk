@@ -143,7 +143,7 @@ void DemoView_PaintImageIdMap::init() {
         if (m_sizeLabel) {
             m_sizeLabel->setText("Brush Size: " + std::to_string(static_cast<int>(m_prop())) + " px");
         }
-    }, this); // in order to have multiple onChanged listeners, the listener needs to be identified somehow. the sdk uses void* ptr, so e.g., we can simply use this
+    }, this);
     curY += 40;
 
     // Clear / Reset Canvas Button

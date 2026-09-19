@@ -21,7 +21,7 @@ void UITestApp::init(std::function<void(UINode&)>) {
         });
         tabView.setPadding(10.f);
 
-        /*tabView.addTab<DemoView_Carrousel>("Carrousel");
+        tabView.addTab<DemoView_Carrousel>("Carrousel");
         tabView.addTab<DemoView_Collapsibles>("Collapsibles");
         tabView.addTab<DemoView_DataBinding>("Data Binding");
         tabView.addTab<DemoView_Edit>("Edit");
@@ -36,9 +36,9 @@ void UITestApp::init(std::function<void(UINode&)>) {
         tabView.addTab<DemoView_ScrollViewList>("Scroll View List");
         tabView.addTab<DemoView_Spinner>("Spinner");
         tabView.addTab<DemoView_Table>("Table");
-        tabView.addTab<DemoView_Table_2>("Table 2");*/
+        tabView.addTab<DemoView_Table_2>("Table 2");
         tabView.addTab<DemoView_PaintImageIdMap>("Paint ID Map");
-        //tabView.addTab<DemoView_ZoomView>("ZoomView");
+        tabView.addTab<DemoView_ZoomView>("ZoomView");
 
         tabView.setActivateTab(0);
     });
