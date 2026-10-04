@@ -40,19 +40,23 @@ NodeMemberVariableEdit::NodeMemberVariableEdit(const EditPar& par) {
 void NodeMemberVariableEdit::init() {
     setHeight(m_lineHeight);
 
-    m_label = &push<Label>(LabelPars{
-        .pos = ivec2{ 0, 0 },
-        .size = ivec2{ m_labelWidth, m_lineHeight },
-        .style = getStyleClass()+".label",
-        .align = align::left,
-        .valign = valign::top,
-        .color = vec4{ 1.f, 1.f, 1.f, 1.f },
-        .text = m_text + ":",
-        .textAlignX = align::left,
-        .textAlignY = valign::center,
-        .fontType = "regular",
-        .fontHeight = 22
-    });
+    m_label = &push<Label>(
+        UINodePars{
+            .pos = ivec2{ 0, 0 },
+            .size = ivec2{ m_labelWidth, m_lineHeight },
+            .fgColor = vec4{ 1.f, 1.f, 1.f, 1.f },
+            .style = getStyleClass()+".label",
+            .align = align::left,
+            .valign = valign::top,
+        },
+        LabelPars{
+            .text = m_text + ":",
+            .textAlignX = align::left,
+            .textAlignY = valign::center,
+            .fontType = "regular",
+            .fontHeight = 22
+        }
+    );
 
     if (m_memVar) {
         setEditValFromMemberVar();
@@ -135,16 +139,20 @@ void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, co
         remove(m_pathLabel);
     }
 
-    m_pathLabel = &push<Label>(LabelPars{
-        .pos = ivec2{ m_labelWidth + m_spacing.x, 0 },
-        .size = { ivec2{ stdWidth - m_stdBrowseButtWidth - m_spacing.x, m_lineHeight } },
-        .style = getStyleClass()+".path",
-        .bgColor = m_stdBgColor,
-        .borderWidth = m_stdBorderWidth,
-        .borderRadius = m_stdBorderRadius,
-        .borderColor = m_stdBorderColor,
-        .text = val.string(),
-    });
+    m_pathLabel = &push<Label>(
+        UINodePars {
+            .pos = ivec2{ m_labelWidth + m_spacing.x, 0 },
+            .size = { ivec2{ stdWidth - m_stdBrowseButtWidth - m_spacing.x, m_lineHeight } },
+            .bgColor = m_stdBgColor,
+            .style = getStyleClass()+".path",
+            .borderWidth = m_stdBorderWidth,
+            .borderRadius = m_stdBorderRadius,
+            .borderColor = m_stdBorderColor,
+        },
+        LabelPars{
+            .text = val.string(),
+        }
+    );
     m_pathLabel->setOpt(Label::single_line | Label::front_ellipsis);
 
     // two way binding
@@ -162,16 +170,20 @@ void NodeMemberVariableEdit::createPathEdit(const std::filesystem::path &val, co
         remove(m_browseButt);
     }
 
-    m_browseButt = &push<Button>(LabelPars{
-        .size = { ivec2{ m_stdBrowseButtWidth, m_lineHeight } },
-        .style = getStyleClass()+".browseButton",
-        .align = align::right,
-        .bgColor = m_stdButtBgColor,
-        .borderWidth = m_stdBorderWidth,
-        .borderRadius = m_stdBorderRadius,
-        .borderColor = m_stdBorderColor,
-        .text = "Browse"
-    });
+    m_browseButt = &push<Button>(
+        UINodePars {
+            .size = { ivec2{ m_stdBrowseButtWidth, m_lineHeight } },
+            .bgColor = m_stdButtBgColor,
+            .style = getStyleClass()+".browseButton",
+            .align = align::right,
+            .borderWidth = m_stdBorderWidth,
+            .borderRadius = m_stdBorderRadius,
+            .borderColor = m_stdBorderColor,
+        },
+        LabelPars{
+            .text = "Browse"
+        }
+    );
 
     m_browseButt->setBackgroundColor(0.4f, 0.4f, 0.4f, 1.f, state::highlighted);
 #ifdef ARA_USE_GLFW

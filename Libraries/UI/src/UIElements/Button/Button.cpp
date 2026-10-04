@@ -14,7 +14,7 @@ Button::Button() {
     setScissorChildren(true);
 }
 
-Button::Button(const LabelPars &initData) : Label(initData) {
+Button::Button(const UINodePars& initData, const LabelPars& labelInitData) : Label(initData, labelInitData) {
     setTypeName<Button>();
     setName(getTypeName<Button>());
     setFocusAllowed(false);
@@ -23,16 +23,18 @@ Button::Button(const LabelPars &initData) : Label(initData) {
 
 Button::Button(const vec2 pos, const vec2 size, const vec4 text_color, const vec4 bg_color, const std::string& text,
                const pair<align, valign> align, const std::string& fontType, int fontHeight)
-    : Label(LabelPars{
-          .pos = static_cast<ivec2>(pos),
-          .size = static_cast<ivec2>(size),
-          .color = text_color,
-          .bgColor = bg_color,
-          .text = text,
-          .textAlignX = align.first,
-          .textAlignY = align.second,
-          .fontType = fontType,
-          .fontHeight=0
+    : Label(UINodePars{
+            .pos = static_cast<ivec2>(pos),
+            .size = static_cast<ivec2>(size),
+            .fgColor = text_color,
+            .bgColor = bg_color,
+        },
+        LabelPars{
+            .text = text,
+            .textAlignX = align.first,
+            .textAlignY = align.second,
+            .fontType = fontType,
+            .fontHeight=0
       }), m_typoColor({0.f, 0.f, 0.f, 1.f}) {
     setName(getTypeName<Button>());
     setFocusAllowed(false);

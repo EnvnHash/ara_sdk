@@ -19,6 +19,7 @@ public:
     bool drawIndirect(uint32_t &objId) override;
     void updateDrawData() override;
     void pushVaoUpdtOffsets() override;
+    void parseInitPars(const UINodePars&);
 
 protected:
     static inline std::string m_objIdName = "objId";

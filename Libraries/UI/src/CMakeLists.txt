@@ -29,6 +29,7 @@ static void registerDefaultUITypes() {
 
 set(EXCLUDE_CLASSES
     LabelPars
+    NumberEditPars
     ListItem
     ListBase
     List

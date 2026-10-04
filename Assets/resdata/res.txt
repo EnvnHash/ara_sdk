@@ -436,6 +436,21 @@ demos {
             width: 300px
             height: 20px
         }
+
+        numEditHeadl {
+            y:520px
+            width: 300px
+            height: 20px
+            font {font:"Fonts/verdana.ttf" size:22}
+            text: "NumberEdit"
+            text-align: left
+        }
+
+        intNumberEdit{
+            y:550px
+            width: 300px
+            height: 20px
+        }
     }
 
 	edit {

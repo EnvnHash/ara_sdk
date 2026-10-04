@@ -4,7 +4,12 @@
 
 #include "DemoView.h"
 #include "UIElements/DataBinding/NodeEdit.h"
+#include "UIElements/DataBinding/NumberEdit.h"
 #include "UIElements/DataBinding/PropSlider.h"
+
+namespace hfc {
+    class NumberEdit;
+}
 
 using namespace ara;
 using namespace glm;
@@ -19,6 +24,7 @@ DemoView_DataBinding::DemoView_DataBinding() : DemoView("Data Binding",vec4(.15f
 void DemoView_DataBinding::init() {
     setupNodeEdit();
     setupPropertyEdit();
+    setupNumberEdit();
 }
 
 void DemoView_DataBinding::setupNodeEdit() {
@@ -91,4 +97,22 @@ void DemoView_DataBinding::setupPropertyEdit() {
     });
     slider.setLabel("Slider");
     slider.setProp(m_prop);
+}
+
+void DemoView_DataBinding::setupNumberEdit() {
+    push<Label>({ .style = "demos.dataBinding.numEditHeadl" });
+
+    auto& numEdit = push<NumberEdit>(
+        UINodePars{ .style = "demos.dataBinding.intNumberEdit" },
+        NumberEditPars{
+            .labelText = "Int Edit",
+            .labelWidth = 100,
+            .lineHeight = 22,
+            .borderWidth = 2
+        }
+    );
+    numEdit.bind(m_int);
+    numEdit.onChange([this] {
+        LOG << "Number Edit changed: " << m_int;
+    });
 }

@@ -26,15 +26,18 @@ TabView::TabView() {
 }
 
 Button& TabView::addTabLabelButton(const std::string& title) {
-    auto& tab = m_tabArea->push<Button>(LabelPars{
-        .style = getStyleClass()+".button",
-        .color = m_sharedRes->colors->at(uiColors::white),
-        .bgColor = m_tabButtBgColDeSel,
-        .text = title,
-        .textAlignX = align::center,
-        .textAlignY = valign::center,
-        .fontType = "regular",
-        .fontHeight = 17,
+    auto& tab = m_tabArea->push<Button>(
+        UINodePars{
+            .fgColor = m_sharedRes->colors->at(uiColors::white),
+            .bgColor = m_tabButtBgColDeSel,
+            .style = getStyleClass()+".button",
+        },
+        LabelPars{
+            .text = title,
+            .textAlignX = align::center,
+            .textAlignY = valign::center,
+            .fontType = "regular",
+            .fontHeight = 17,
     });
 
     tab.setPadding(5.f, 0.f, 5.f, 0.f);

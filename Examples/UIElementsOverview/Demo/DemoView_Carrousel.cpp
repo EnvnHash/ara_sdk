@@ -19,17 +19,21 @@ void DemoView_Carrousel::addCarrousel(CarrouselMode cm, int yOffs) {
         { CarrouselMode::leftAlign, "leftAlign"},
     };
 
-    push<Label>(LabelPars{
-        .pos = ivec2{ 0, yOffs },
-        .size = ivec2{ 200, 30 },
-        .align = align::left,
-        .valign = valign::top,
-        .color = white,
-        .text = carModeMap[cm],
-        .textAlignX = align::left,
-        .fontType = "regular",
-        .fontHeight = 18
-    });
+    push<Label>(
+        UINodePars{
+            .pos = ivec2{ 0, yOffs },
+            .size = ivec2{ 200, 30 },
+            .fgColor = white,
+            .align = align::left,
+            .valign = valign::top,
+        },
+        LabelPars{
+            .text = carModeMap[cm],
+            .textAlignX = align::left,
+            .fontType = "regular",
+            .fontHeight = 18
+        }
+    );
 
     auto& caru = push<Carrousel>(UINodePars{
         .pos = ivec2{ 0, yOffs + 30 },

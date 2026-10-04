@@ -125,4 +125,43 @@ bool Div::drawIndirect(uint32_t& objId) {
     return true;  // count up objId
 }
 
+void Div::parseInitPars(const UINodePars& initData) {
+    std::visit([this](auto&& argument) {
+        if (argument.x != 0 || argument.y != 0) {
+            setPos(argument);
+        }
+    }, initData.pos);
+
+    std::visit([this](auto&& argument) {
+        if (argument.x != 0 || argument.y != 0) {
+            setSize(argument);
+        }
+    }, initData.size);
+
+    if (initData.fgColor.has_value()) {
+        Div::setColor(initData.fgColor.value());
+    }
+    if (initData.bgColor.has_value()) {
+        Div::setBackgroundColor(initData.bgColor.value());
+    }
+    if (initData.borderColor.has_value()) {
+        Div::setBorderColor(initData.borderColor.value());
+    }
+    if (initData.borderRadius.has_value()) {
+        setBorderWidth(initData.borderRadius.value());
+    }
+    if (initData.borderRadius.has_value()) {
+        setBorderRadius(initData.borderRadius.value());
+    }
+    if (initData.align.has_value()) {
+        setAlignX(initData.align.value());
+    }
+    if (initData.valign.has_value()) {
+        setAlignY(initData.valign.value());
+    }
+    if (initData.style.has_value()) {
+        UINodeStyle::addStyleClass(initData.style.value());
+    }
+}
+
 }  // namespace ara

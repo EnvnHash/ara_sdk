@@ -27,16 +27,20 @@ void JsonEditor::init() {
         addExpandButt();
     }
 
-    m_label = &push<Label>(LabelPars{
-        .size = ivec2{ m_labelWidth, m_lineHeight },
-        .style = getStyleClass()+".label",
-        .color = vec4{ 1.f, 1.f, 1.f, 1.f },
-        .text = m_key + ":",
-        .textAlignX = align::left,
-        .textAlignY = valign::center,
-        .fontType = "regular",
-        .fontHeight = 22
-    });
+    m_label = &push<Label>(
+        UINodePars{
+            .size = ivec2{ m_labelWidth, m_lineHeight },
+            .fgColor = vec4{ 1.f, 1.f, 1.f, 1.f },
+            .style = getStyleClass()+".label",
+        },
+        LabelPars{
+            .text = m_key + ":",
+            .textAlignX = align::left,
+            .textAlignY = valign::center,
+            .fontType = "regular",
+            .fontHeight = 22
+        }
+    );
 
     if (m_nodeValueType != nodeValueType::object && m_nodeValueType != nodeValueType::array) {
         m_edit = &push<UIEdit>(UINodePars{

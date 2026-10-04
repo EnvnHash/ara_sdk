@@ -18,19 +18,23 @@ TEST(UITest, SerializeLabelSaveAndReload) {
     appBody([&](const UIApplication &app) {
         const auto root = app.getMainWindow()->getRootNode();
 
-        auto& lbl = root->push<Label>(LabelPars{
-          .pos = ivec2{ 10, 10},
-          .size = ivec2{ 200, 100 },
-          .align = align::center,
-          .valign = valign::center,
-          .color = vec4{ 0.8f, 0.6f, 1.f, 1.f },
-          .bgColor = vec4{ 0.2f, 0.2f, 0.2f, 1.f },
-          .text = "SerializeLabel",
-          .textAlignX = align::center,
-          .textAlignY = valign::center,
-          .fontType = "regular",
-          .fontHeight=24
-        });
+        auto& lbl = root->push<Label>(
+            UINodePars{
+                .pos = ivec2{ 10, 10},
+                .size = ivec2{ 200, 100 },
+                .fgColor = vec4{ 0.8f, 0.6f, 1.f, 1.f },
+                .bgColor = vec4{ 0.2f, 0.2f, 0.2f, 1.f },
+                .align = align::center,
+                .valign = valign::center,
+            },
+            LabelPars{
+                .text = "SerializeLabel",
+                .textAlignX = align::center,
+                .textAlignY = valign::center,
+                .fontType = "regular",
+                .fontHeight=24
+            }
+        );
 
         root->saveAs("test.json");
         root->remove(lbl);

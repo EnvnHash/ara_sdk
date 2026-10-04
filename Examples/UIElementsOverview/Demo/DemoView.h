@@ -45,9 +45,11 @@ public:
     void                init() override;
     void                setupNodeEdit();
     void                setupPropertyEdit();
+    void                setupNumberEdit();
 private:
     Property<float>     m_prop {0.f, 0.f, 1.f, 0.1f};   // create a property {default-value, min, max, step}
     DataBindingTestNode m_node;
+    int32_t             m_int{};
 };
 
 class DemoView_Edit : public DemoView {

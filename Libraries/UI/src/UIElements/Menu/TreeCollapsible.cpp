@@ -86,17 +86,21 @@ void TreeCollapsible::rebuildIt(Node* nd, const size_t tabIdx, int32_t& yOffs) {
             });
         }
 
-        push<Label>(LabelPars{
-            .pos = ivec2{ 30 + tabIdx * 20, yOffs },
-            .size = ivec2{ 200, m_fontHeight },
-            .align = align::left,
-            .valign = valign::top,
-            .color = m_color,
-            .text = nd->name(),
-            .textAlignX = align::left,
-            .fontType = "regular",
-            .fontHeight = m_fontHeight
-        });
+        push<Label>(
+            UINodePars{
+                .pos = ivec2{ 30 + tabIdx * 20, yOffs },
+                .size = ivec2{ 200, m_fontHeight },
+                .fgColor = m_color,
+                .align = align::left,
+                .valign = valign::top,
+            },
+            LabelPars{
+                .text = nd->name(),
+                .textAlignX = align::left,
+                .fontType = "regular",
+                .fontHeight = m_fontHeight
+            }
+        );
 
         yOffs += m_fontHeight + m_ySpacing;
 

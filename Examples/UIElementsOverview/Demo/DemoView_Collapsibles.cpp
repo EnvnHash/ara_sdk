@@ -11,16 +11,20 @@ DemoView_Collapsibles::DemoView_Collapsibles() : DemoView("Collapsibles", vec4(.
 }
 
 void DemoView_Collapsibles::init() {
-    push<Label>(LabelPars {
-        .pos = ivec2{0,50},
-        .size = ivec2 {200, 40},
-        .color = vec4{ 1.f, 1.f, 1.f, 1.f },
-        .text = "ComboBoxes",
-        .textAlignX = align::left,
-        .textAlignY = valign::top,
-        .fontType = "regular",
-        .fontHeight = 20,
-    });
+    push<Label>(
+        UINodePars{
+            .pos = ivec2{0,50},
+            .size = ivec2 {200, 40},
+            .fgColor = vec4{ 1.f, 1.f, 1.f, 1.f },
+        },
+        LabelPars {
+            .text = "ComboBoxes",
+            .textAlignX = align::left,
+            .textAlignY = valign::top,
+            .fontType = "regular",
+            .fontHeight = 20,
+        }
+    );
 
     auto pars = UINodePars{
         .pos = ivec2{0,80},
@@ -42,16 +46,20 @@ void DemoView_Collapsibles::init() {
     m_combo->addEntry("Entry 4", []{ LOG << " entry four "; });
 
 
-    push<Label>(LabelPars {
-        .pos = ivec2{250,50},
-        .size = ivec2 {200, 40},
-        .color = vec4{ 1.f, 1.f, 1.f, 1.f },
-        .text = "Collapsibles Trees",
-        .textAlignX = align::left,
-        .textAlignY = valign::top,
-        .fontType = "regular",
-        .fontHeight = 20,
-    });
+    push<Label>(
+        UINodePars {
+            .pos = ivec2{250,50},
+            .size = ivec2 {200, 40},
+            .fgColor = vec4{ 1.f, 1.f, 1.f, 1.f },
+        },
+        LabelPars {
+            .text = "Collapsibles Trees",
+            .textAlignX = align::left,
+            .textAlignY = valign::top,
+            .fontType = "regular",
+            .fontHeight = 20,
+        }
+    );
 
     // Tree View must use the ara sdk Node class or a derivative
     const std::string str = R"({"children":[{"children":[{"name":"sub1_1_1","uuid":"1"}],"name":"sub1_1","uuid":"0"},{"children":[{"name":"sub1_2_1","uuid":"3"},{"name":"sub1_2_2","uuid":"4"}],"name":"sub1_2","uuid":"2"}],"name":"root","uuid":"10"})";

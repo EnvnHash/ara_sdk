@@ -34,18 +34,22 @@ void DemoView_ScrollView_3::init() {
 void DemoView_ScrollView_3::Unit::init() {
     setPadding(10.f);
 
-    push<Label>(LabelPars{
-        .pos = {0, 0},
-        .size = {180, 24},
-        .valign = valign::top,
-        .color = getColor(),
-        .bgColor = {.1f, .1f, .2f, 1.f},
-        .text = m_Title,
-        .textAlignX = align::center,
-        .textAlignY = valign::center,
-        .fontType = "bold",
-        .fontHeight = 22
-    });
+    push<Label>(
+        UINodePars{
+            .pos = ivec2{0, 0},
+            .size = ivec2{180, 24},
+            .fgColor = getColor(),
+            .bgColor = vec4{.1f, .1f, .2f, 1.f},
+            .valign = valign::top,
+        },
+        LabelPars{
+
+            .text = m_Title,
+            .textAlignX = align::center,
+            .textAlignY = valign::center,
+            .fontType = "bold",
+            .fontHeight = 22
+        });
 
     push<Image>({
         .size = ivec2{110, 110},
@@ -53,18 +57,22 @@ void DemoView_ScrollView_3::Unit::init() {
         .valign = valign::center
     }).setImg(std::rand() & 1 ? "trigrid.png" : "FullHD_Pattern.png",1);
 
-    push<Label>(LabelPars{
-        .pos = {0, 0},
-        .size = {180, 24},
-        .align = align::center,
-        .valign = valign::bottom,
-        .color = {.4f, .4f, .4f, 1.f},
-        .bgColor = getBackgroundColor(),
-        .text = "More text here",
-        .textAlignX = align::center,
-        .textAlignY = valign::center,
-        .fontType = "regular",
-        .fontHeight = 22
-    });
+    push<Label>(
+        UINodePars{
+            .pos = ivec2{0, 0},
+            .size = ivec2{180, 24},
+            .fgColor = vec4{.4f, .4f, .4f, 1.f},
+            .bgColor = getBackgroundColor(),
+            .align = align::center,
+            .valign = valign::bottom,
+        },
+        LabelPars{
+            .text = "More text here",
+            .textAlignX = align::center,
+            .textAlignY = valign::center,
+            .fontType = "regular",
+            .fontHeight = 22
+        }
+    );
 
 }

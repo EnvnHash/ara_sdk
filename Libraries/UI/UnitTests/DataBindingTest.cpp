@@ -5,10 +5,63 @@
 #include "TestCommon.h"
 #include "UIApplication.h"
 #include <UIElements/DataBinding/NodeEdit.h>
+#include <UIElements/DataBinding/NumberEdit.h>
 
 using namespace std;
 
 namespace ara::UiUnitTest::DataBindingTests {
+
+TEST(UITest, NumberEditIntBindingTest) {
+    int32_t val = 42;
+    NumberEdit* numEditPtr = nullptr;
+
+    appBody([&](const UIApplication &app) {
+        const auto root = app.getMainWindow()->getRootNode();
+        auto& numEdit = root->push<NumberEdit>(
+            UINodePars{ .size = glm::ivec2{ 300, 30 } },
+            NumberEditPars{
+                .labelText = "Test Int",
+                .labelWidth = 100,
+                .lineHeight = 22
+            }
+        );
+        numEdit.bind(val);
+        numEditPtr = &numEdit;
+
+        EXPECT_EQ(val, 42);
+
+        // Change var externally
+        val = 200;
+    }, [&](const UIApplication &app) {
+        EXPECT_EQ(val, 200);
+    }, 400, 200);
+}
+
+TEST(UITest, NumberEditFloatBindingTest) {
+    float val = 3.14f;
+    NumberEdit* numEditPtr = nullptr;
+
+    appBody([&](const UIApplication &app) {
+        const auto root = app.getMainWindow()->getRootNode();
+        auto& numEdit = root->push<NumberEdit>(
+            UINodePars{ .size = glm::ivec2{ 300, 30 } },
+            NumberEditPars{
+                .labelText = "Test Float",
+                .labelWidth = 100,
+                .lineHeight = 22
+            }
+        );
+        numEdit.bind(val);
+        numEditPtr = &numEdit;
+
+        EXPECT_NEAR(val, 3.14f, 0.001f);
+
+        // Change var externally
+        val = 15.25f;
+    }, [&](const UIApplication &app) {
+        EXPECT_NEAR(val, 15.25f, 0.001f);
+    }, 400, 200);
+}
 
 TEST(UITest, NodeEditBasicTest) {
     TestNode<int32_t> testNode;

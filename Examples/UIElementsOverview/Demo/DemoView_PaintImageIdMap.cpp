@@ -18,28 +18,36 @@ void DemoView_PaintImageIdMap::init() {
     setPadding(10.f);
 
     // Header / Description
-    push<Label>(LabelPars{
-        .pos = ivec2{20, 45},
-        .size = ivec2{750, 40},
-        .color = vec4{0.9f, 0.9f, 0.9f, 1.f},
-        .text = "PaintImageIdMap allows painting 32 distinct layer ID bitmasks into a single texture and visualizing any selected ID.",
-        .textAlignX = align::left,
-        .textAlignY = valign::top,
-        .fontType = "regular",
-        .fontHeight = 16,
-    });
+    push<Label>(
+        UINodePars{
+            .pos = ivec2{20, 45},
+            .size = ivec2{750, 40},
+            .fgColor = vec4{0.9f, 0.9f, 0.9f, 1.f},
+        },
+        LabelPars{
+            .text = "PaintImageIdMap allows painting 32 distinct layer ID bitmasks into a single texture and visualizing any selected ID.",
+            .textAlignX = align::left,
+            .textAlignY = valign::top,
+            .fontType = "regular",
+            .fontHeight = 16,
+        }
+    );
 
     // Instructions
-    push<Label>(LabelPars{
-        .pos = ivec2{20, 75},
-        .size = ivec2{750, 30},
-        .color = vec4{0.7f, 0.7f, 0.7f, 1.f},
-        .text = "Select a Brush ID to paint into that ID layer. Select a Visualization ID to display only that layer.",
-        .textAlignX = align::left,
-        .textAlignY = valign::top,
-        .fontType = "regular",
-        .fontHeight = 14,
-    });
+    push<Label>(
+        UINodePars{
+            .pos = ivec2{20, 75},
+            .size = ivec2{750, 30},
+            .fgColor = vec4{0.7f, 0.7f, 0.7f, 1.f},
+        },
+        LabelPars{
+            .text = "Select a Brush ID to paint into that ID layer. Select a Visualization ID to display only that layer.",
+            .textAlignX = align::left,
+            .textAlignY = valign::top,
+            .fontType = "regular",
+            .fontHeight = 14,
+        }
+    );
 
     // Paint Image Node
     ivec2 paintImageSize = ivec2{400, 400};
@@ -112,16 +120,20 @@ void DemoView_PaintImageIdMap::init() {
     curY += 45;
 
     // Brush Size label and slider
-    m_sizeLabel = &push<Label>(LabelPars{
-        .pos = ivec2{panelX, curY},
-        .size = ivec2{220, 25},
-        .color = vec4{1.f, 1.f, 1.f, 1.f},
-        .text = "Brush Size: 30 px",
-        .textAlignX = align::left,
-        .textAlignY = valign::center,
-        .fontType = "regular",
-        .fontHeight = 16,
-    });
+    m_sizeLabel = &push<Label>(
+        UINodePars{
+            .pos = ivec2{panelX, curY},
+            .size = ivec2{220, 25},
+            .fgColor = vec4{1.f, 1.f, 1.f, 1.f},
+        },
+        LabelPars{
+            .text = "Brush Size: 30 px",
+            .textAlignX = align::left,
+            .textAlignY = valign::center,
+            .fontType = "regular",
+            .fontHeight = 16,
+        }
+    );
     curY += 30;
 
     m_prop = 10.f;

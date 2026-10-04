@@ -11,16 +11,6 @@ namespace ara {
 class Font;
 
 struct LabelPars {
-    glm::ivec2 pos{};
-    glm::ivec2 size{};
-    std::string style{};
-    ara::align align = align::left; // gcc fails without the namespace specification
-    ara::valign valign = valign::top;
-    glm::vec4 color{ 1.f, 1.f, 1.f, 1.f };
-    glm::vec4 bgColor{};
-    int32_t borderWidth{};
-    int32_t borderRadius{};
-    glm::vec4 borderColor{};
     const std::string& text;
     ara::align textAlignX{};
     ara::valign textAlignY{};
@@ -43,7 +33,7 @@ public:
     };
 
     Label();
-    explicit Label(const LabelPars& initData);
+    Label(const UINodePars& initData, const LabelPars& labelInitData);
     ~Label() override;
 
     [[nodiscard]] unsigned long getOpt() const { return m_tOpt; }

@@ -14,19 +14,23 @@ namespace ara::UiUnitTest::LabelTest {
 const std::string ellipsisTestText = "This is a line of text to test the label, long enough to see the ellipsis at the end.";
 
 auto& addLabel(UINode* root, const int32_t fontSize) {
-    return root->push<Label>(LabelPars{
-         .pos = ivec2{ 10, 10 },
-         .size = ivec2{ 200, 100 },
-         .align = align::center,
-         .valign = valign::center,
-         .color = vec4{ 0.8f, 0.6f, 1.f, 1.f },
-         .bgColor = vec4{ 0.2f, 0.2f, 0.2f, 1.f },
-         .text = "!7DK67/ú",
-         .textAlignX = align::center,
-         .textAlignY = valign::center,
-         .fontType = "regular",
-         .fontHeight = fontSize
-    });
+    return root->push<Label>(
+        UINodePars{
+            .pos = ivec2{ 10, 10 },
+            .size = ivec2{ 200, 100 },
+            .fgColor = vec4{ 0.8f, 0.6f, 1.f, 1.f },
+            .bgColor = vec4{ 0.2f, 0.2f, 0.2f, 1.f },
+            .align = align::center,
+            .valign = valign::center,
+        },
+        LabelPars{
+            .text = "!7DK67/ú",
+            .textAlignX = align::center,
+            .textAlignY = valign::center,
+            .fontType = "regular",
+            .fontHeight = fontSize
+        }
+    );
 }
 
 TEST(UITest, LabelTest) {

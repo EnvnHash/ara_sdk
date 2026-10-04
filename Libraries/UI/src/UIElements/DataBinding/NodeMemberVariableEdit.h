@@ -97,7 +97,7 @@ public:
         if (m_options && m_options->step) {
             edit.setStep(m_options->step);
         }
-        if (m_options && m_options->step) {
+        if (m_options && m_options->precision) {
             edit.setPrecision(m_options->precision);
         }
         setSingleEditValue(edit, val);

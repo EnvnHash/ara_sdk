@@ -15,9 +15,9 @@ constexpr int nrTestQuads = 2;
 bool clicked = false;
 constexpr ivec2 winSize = { 600, 600 };
 constexpr ivec2 imgButtonStdPos = { 50, 50 };
-std::array quadSize { ivec2{100, 100}, ivec2{50, 50} };
-std::array quadPos { ivec2{0, 0}, winSize/2 - quadSize[1]/2 };
-std::array quadCol { vec4{1.f, 0.f, 0.f, 1.f}, vec4{0.f, 1.f, 0.f, 1.f} };
+static std::array quadSize { ivec2{100, 100}, ivec2{50, 50} };
+static std::array quadPos { ivec2{0, 0}, winSize/2 - quadSize[1]/2 };
+static std::array quadCol { vec4{1.f, 0.f, 0.f, 1.f}, vec4{0.f, 1.f, 0.f, 1.f} };
 
 static ZoomView& addZoomView(const UIApplication& app, const bool showControls, UINode* root=nullptr) {
     ZoomView* zv = nullptr;

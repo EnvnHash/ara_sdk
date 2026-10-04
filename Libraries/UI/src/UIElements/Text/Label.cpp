@@ -20,7 +20,7 @@ Label::Label() {
     setFocusAllowed(false);
 }
 
-Label::Label(const LabelPars &initData) {
+Label::Label(const UINodePars& initData, const LabelPars& labelInitData) {
 #ifndef FORCE_INMEDIATEMODE_RENDERING
     m_drawImmediate = false;
 #endif
@@ -28,19 +28,11 @@ Label::Label(const LabelPars &initData) {
     setFocusAllowed(false);
     setTypeName<Label>();
     setName(getTypeName<Label>());
-    setPos(initData.pos.x, initData.pos.y);
-    setSize(initData.size.x, initData.size.y);
-    Div::setBackgroundColor(initData.bgColor);
-    Div::setColor(initData.color);
-    Div::setBorderColor(initData.borderColor);
-    Div::setBorderWidth(initData.borderWidth);
-    Div::setBorderRadius(initData.borderRadius);
-    setText(initData.text);
-    setTextAlign(initData.textAlignX, initData.textAlignY);
-    setFontSize(initData.fontHeight ? initData.fontHeight : 17);
-    setAlignX(initData.align);
-    setAlignY(initData.valign);
-    UINodeStyle::addStyleClass(initData.style);
+
+    parseInitPars(initData);
+    setText(labelInitData.text);
+    setTextAlign(labelInitData.textAlignX, labelInitData.textAlignY);
+    setFontSize(labelInitData.fontHeight ? labelInitData.fontHeight : 17);
 }
 
 void Label::loadStyleDefaults() {
