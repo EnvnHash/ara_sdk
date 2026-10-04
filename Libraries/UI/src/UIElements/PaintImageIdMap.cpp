@@ -100,7 +100,15 @@ void PaintImageIdMap::init() {
             in vec2 tex_coord;
             uniform sampler2D tex;
             uniform int visualizationID;
+            uniform vec4 nodeViewPort;\n
+
             void main() {
+                if (gl_FragCoord.x < nodeViewPort.x
+                    || gl_FragCoord.x > nodeViewPort.x + nodeViewPort.z
+                    || gl_FragCoord.y < nodeViewPort.y
+                    || gl_FragCoord.y > nodeViewPort.y + nodeViewPort.w) {
+                   discard;
+                }\n
                 vec4 col = texture(tex, tex_coord);
                 uint packedColor = packUnorm4x8(col);
                 uint mask = uint(1) << visualizationID; // 0x00000020
@@ -145,6 +153,7 @@ bool PaintImageIdMap::drawFunc(const uint32_t&) {
     m_visShader->setUniform2fv("size", &getSize()[0]);
     m_visShader->setUniform1i("visualizationID", m_visualizationID);
     m_visShader->setUniform1i("tex", 0);
+    m_visShader->setUniform4fv("nodeViewPort", &m_sc[0]);
 
     glActiveTexture(GL_TEXTURE0);
     m_tex->bind(0);
