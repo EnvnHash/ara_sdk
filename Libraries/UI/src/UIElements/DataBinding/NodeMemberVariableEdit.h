@@ -6,11 +6,10 @@
 
 #include "UIElements/Div.h"
 #include "UIElements/Text/Label.h"
+#include "UIElements/Button/Button.h"
 #include "UIElements/Text/UIEdit.h"
 
 namespace ara {
-
-class Button;
 
 class NodeMemberVariableEdit : public Div {
 public:
@@ -42,9 +41,9 @@ public:
             m_editAlign == arrange::vertical ? (idx >= 0 ? idx * (m_lineHeight + m_spacing.y) : 0) : 0
         };
 
-        auto& edit = push<UIEdit>(UINodePars{
+        auto edit = &push<UIEdit>(UINodePars{
             .pos = glm::ivec2{ m_labelWidth + m_spacing.x + offset.x, offset.y },
-            .size = { glm::ivec2{ width, m_lineHeight } },
+            .size = { glm::ivec2{ width - m_incDecButtWidth * 2 * static_cast<int32_t>(m_options && m_options->showButtons), m_lineHeight } },
             .bgColor = m_stdBgColor,
             .style = getStyleClass()+".edit",
             .borderWidth = m_stdBorderWidth,
@@ -52,12 +51,39 @@ public:
             .borderColor = m_stdBorderColor,
             .padding = glm::vec4{2.f, 2.f, 2.f, 2.f},
         });
-        edit.setFontSize(22);
-        edit.setUseWheel(true);
+        edit->setFontSize(m_fontSize);
+        edit->setUseWheel(true);
 
-        setUIEditValues(edit, val);
-        setTwoWayBinding<T, Container>(edit, idx);
-        return &edit;
+        if (m_options && m_options->showButtons) {
+            for (int i=0; i<2; i++) {
+                auto& b = push<Button>(UINodePars{
+                    .pos = glm::ivec2{-m_incDecButtWidth * i, offset.y},
+                    .size = glm::ivec2{m_incDecButtWidth, m_lineHeight},
+                    .fgColor = glm::vec4{1.f, 1.f, 1.f, 1.f},
+                    .bgColor = m_stdBgColor,
+                    .align = align::right,
+                    .borderWidth = m_stdBorderWidth,
+                    .borderRadius = m_stdBorderRadius,
+                    .borderColor = m_stdBorderColor,
+                });
+                b.setText(i ? "-" : "+");
+                b.setFontSize(m_fontSize -2);
+                b.setFontType("regular");
+                if constexpr (std::is_same_v<T, int32_t> || std::is_same_v<T, float>) {
+                    b.setClickedCb([this, edit, i] {
+                        if (i == 0) {
+                            edit->incValue<T>(1.f);
+                        } else {
+                            edit->decValue<T>(1.f);
+                        }
+                    });
+                }
+            }
+        }
+
+        setUIEditValues(*edit, val);
+        setTwoWayBinding<T, Container>(*edit, idx);
+        return edit;
     }
 
     template<typename T>
@@ -199,11 +225,11 @@ public:
     auto getLabel() const { return m_label; }
     auto getEdit() const { return m_edit; }
     auto getMemVar() const { return m_memVar; }
-    auto getPathLabel()  { return m_pathLabel; }
-    auto getCheckBox()  { return m_checkBoxButt; }
+    auto getPathLabel() const { return m_pathLabel; }
+    auto getCheckBox() const { return m_checkBoxButt; }
     auto getLabel()  { return m_label; }
     auto getEdit()  { return m_edit; }
-    auto getBrowseButt()  { return m_browseButt; }
+    auto getBrowseButt() const { return m_browseButt; }
 
 protected:
     Label*                  m_label = nullptr;
@@ -214,6 +240,7 @@ protected:
     std::vector<UIEdit*>    m_arrayEdit;
     int32_t                 m_labelWidth = 180;
     int32_t                 m_lineHeight = 22;
+    int32_t                 m_incDecButtWidth = 23;
     int32_t                 m_stdBorderWidth = 2;
     int32_t                 m_stdBorderRadius = 4;
     int32_t                 m_stdBrowseButtWidth = 60;
@@ -222,6 +249,7 @@ protected:
     glm::vec4               m_stdButtBgColor = glm::vec4{.25f, .25f, .25f, 1.f};
     glm::ivec2              m_spacing = { 3, 3 };
     int32_t                 m_yOffs = 0;
+    int32_t                 m_fontSize = 22;
     size_t                  m_numEditsPerRow = 4;
     glm::ivec2              m_custPos {};
     std::string             m_text;

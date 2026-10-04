@@ -30,14 +30,24 @@ void DemoView_DataBinding::setupNodeEdit() {
     ne.setLineHeight(22);
     ne.setSpacing({10, 10});
     ne.setLabelWidth(100);
-    ne.setOptPerKey(unordered_map<string, VariableEditOption<>>{ {
-        "vectorFloat",
-        VariableEditOption{
-            arrange::vertical,
-            0.f,
-            1.f,
-            0.1f
-        }}
+    ne.setOptPerKey(unordered_map<string, VariableEditOption<>>{
+        {
+            "floatVal",
+            VariableEditOption{ .showButtons = true }
+        },
+        {
+            "intVal",
+            VariableEditOption{ .showButtons = true }
+        },
+        {
+            "vectorFloat",
+            VariableEditOption{
+                arrange::vertical,
+                0.f,
+                1.f,
+                0.1f
+            }
+        }
     });
     ne.setNode(m_node);
 

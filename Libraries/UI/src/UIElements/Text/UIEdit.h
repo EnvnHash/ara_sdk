@@ -75,6 +75,11 @@ public:
         setValue<T>(std::get<T>(m_val) + std::get<T>(m_step) * static_cast<T>(amt));
     }
 
+    template <typename T>
+    void decValue(float amt) {
+        setValue<T>(std::get<T>(m_val) - std::get<T>(m_step) * static_cast<T>(amt));
+    }
+
     template <typename CoordinateType>
     void setMinMax(CoordinateType min, CoordinateType max) {
         setMin<CoordinateType>(min);
