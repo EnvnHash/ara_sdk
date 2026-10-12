@@ -148,16 +148,32 @@ bool UINode::isInBounds(vec2& pos) {
     return !(!m_visible || m_referenceDrawing) && UINodeGeom::isInBounds(pos);
 }
 
+bool UINode::isDescendantOf(const UINode* ancestor) {
+    if (!ancestor) {
+        return false;
+    }
+    auto p = getParent();
+    while (p) {
+        if (p == ancestor) {
+            return true;
+        }
+        p = p->getParent();
+    }
+    return false;
+}
+
 // node argument refers to a child node
 bool UINode::recChildrenBoundBox(vec4& ref) {
     if (!m_visible || m_excludeFromParentContentTrans) {
         return false;
     }
 
-    m_bb.x = !m_children.empty() ? m_pos.x + m_childBoundBox.x : m_pos.x;
-    m_bb.y = !m_children.empty() ? m_pos.y + m_childBoundBox.y : m_pos.y;
-    m_bb.z = !m_children.empty() ? m_pos.x + std::max<float>(m_size.x, m_childBoundBox.z) : m_pos.x + m_size.x;
-    m_bb.w = !m_children.empty() ? m_pos.y + std::max<float>(m_size.y, m_childBoundBox.w) : m_pos.y + m_size.y;
+    const vec2 pos = { m_nodePosMat[3][0], m_nodePosMat[3][1] };
+
+    m_bb.x = !m_children.empty() ? pos.x + m_childBoundBox.x : pos.x;
+    m_bb.y = !m_children.empty() ? pos.y + m_childBoundBox.y : pos.y;
+    m_bb.z = !m_children.empty() ? pos.x + std::max<float>(m_size.x, m_childBoundBox.z) : pos.x + m_size.x;
+    m_bb.w = !m_children.empty() ? pos.y + std::max<float>(m_size.y, m_childBoundBox.w) : pos.y + m_size.y;
 
     ref.x = m_bb.x < ref.x ? m_bb.x : ref.x;
     ref.y = m_bb.y < ref.y ? m_bb.y : ref.y;
@@ -545,12 +561,8 @@ bool UINode::objPosIt(ObjPosIt& opi) {
     const bool inBounds = opiIt->isInBounds(opi.pos);
 
     // optional callback for additional ui elements there are not part of the regular tree
-    if (opiIt->m_outOfTreeObjId) {
-        bool foundOot = false;
-        foundOot = opiIt->m_outOfTreeObjId(opi);
-        if (foundOot) {
-            return false;
-        }
+    if (opiIt->m_outOfTreeObjId && opiIt->m_outOfTreeObjId(opi)) {
+        return false;
     }
 
     const bool inAndVisible = inBounds && !opiIt->isExcludedFromObjMap() && opiIt->isVisible();

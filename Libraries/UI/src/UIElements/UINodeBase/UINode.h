@@ -288,6 +288,7 @@ public:
     UIApplication*          getApp() const;
 
     bool isInBounds(glm::vec2& pos) override;
+    bool isDescendantOf(const UINode* potentialAncestor);
     bool recChildrenBoundBox(glm::vec4& ref);
 
     void            runOnMainThread(const std::function<bool()>& func, bool forcePush = false) const;

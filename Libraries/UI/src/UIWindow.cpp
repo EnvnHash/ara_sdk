@@ -1041,6 +1041,7 @@ void UIWindow::onMouseDown(const hidEvent evt, const float xPos, const float yPo
         UINode::hidIt(m_hidData, evt, m_opi.localTree.begin(), m_opi.localTree);
     }
 }
+
 void UIWindow::onMouseDownMiddle(const float xPos, const float yPos, const bool shiftPressed, const bool ctrlPressed, const bool altPressed) {
     onMouseDown(hidEvent::MouseDownMiddle, xPos, yPos, shiftPressed, ctrlPressed, altPressed);
 }
@@ -1118,7 +1119,7 @@ void UIWindow::onMouseMove(const float xPos, const float yPos, ushort _mode) {
     }
 
     if (foundNode
-        && (!m_lastHoverFound || (m_lastHoverFound != foundNode && !foundNode->isInBounds(m_lastMousePos)))
+        && (!m_lastHoverFound || (m_lastHoverFound != foundNode && !m_lastHoverFound->isDescendantOf(foundNode)))
         && !m_hidData.dragging
         && !foundNode->isHIDBlocked()) {
         foundNode->mouseIn(m_hidData);
