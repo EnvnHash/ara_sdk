@@ -16,119 +16,165 @@ PaintImageIdMap::PaintImageIdMap() {
 
 void PaintImageIdMap::init() {
     Image::init();
-
     if (m_sharedRes && m_sharedRes->shCol) {
-        const auto vert = ShaderCollector::getShaderHeader() + STRINGIFY(
-            layout(location = 0) in vec3 position;
-            uniform float size;
-            uniform vec2 pos;
-            out vec2 texCoord;
-            void main() {
-                const vec2[4] quadVertices = vec2[4](vec2(-1., -1.), vec2(1., -1.), vec2(-1., 1.), vec2(1., 1.));
-                texCoord = quadVertices[gl_VertexID];
-                gl_Position = vec4(quadVertices[gl_VertexID], 0.0, 1.0);
-            }
-        );
+        initPaintShader();
+        initVisualizationShader();
+        initFillShader();
 
-        const auto frag = ShaderCollector::getShaderHeader() + STRINGIFY(
-            layout(location = 0) out vec4 fragColor;
-
-            in vec2 texCoord;
-            struct Brush {
-                float size;
-                float hardness;
-                vec4 color;
-                float opacity;
-            };
-            uniform vec2 pos;
-            uniform vec4 limits;
-            uniform vec2 texSize;
-            uniform int maskBit;
-            uniform sampler2D tex;
-            layout(std140) uniform BrushBlock {
-                Brush brush;
-            };
-            void main() {
-                vec2 tc = (texCoord - pos);
-                tc.y *= texSize.y / texSize.x;
-                tc += pos;
-                if (tc.x < limits.x || tc.x > limits.z || tc.y > limits.y || tc.y < limits.w) {
-                    discard;
-                }
-
-                float dist = distance(tc, pos);
-                float falloff = 1.0 - smoothstep(brush.size, brush.size, dist);
-                if (falloff == 0.0) {
-                    discard;
-                }
-
-                vec4 col = texture(tex, tc);
-                uint packedColor = packUnorm4x8(col);
-                uint mask = uint(1) << maskBit;
-                packedColor |= mask;
-
-                fragColor = unpackUnorm4x8(packedColor);
-            }
-        );
-
-        m_paintShader = m_sharedRes->shCol->add("paintImageIdMapShader", vert, frag);
-
-        if (m_paintShader) {
-            m_scaledBrush = m_brush.size;
-            m_brushBlock.init(m_paintShader->getProgram(), "BrushBlock");
-            m_brushBlock.addVarName("brush.size", &m_scaledBrush, GL_FLOAT);
-            m_brushBlock.addVarName("brush.hardness", &m_brush.hardness, GL_FLOAT);
-            m_brushBlock.addVarName("brush.color", &m_brush.color, GL_FLOAT_VEC4);
-            m_brushBlock.addVarName("brush.opacity", &m_brush.opacity, GL_FLOAT);
+        if (m_tex) {
+            m_fbo = std::make_unique<FBO>();
+            m_fbo->setGlbase(getSharedRes()->glbase);
+            m_fbo->fromTexMan(m_tex);
         }
-
-        const auto visVert = ShaderCollector::getShaderHeader() + STRINGIFY(
-            layout(location = 0) in vec4 position;
-            layout(location = 2) in vec2 texCoord;
-            uniform mat4 m_pvm;
-            uniform vec2 size;
-            out vec2 tex_coord;
-            const vec2[4] quadVertices = vec2[4](vec2(0., 0.), vec2(1., 0.), vec2(0., 1.), vec2(1., 1.));
-            void main() {
-                tex_coord = quadVertices[gl_VertexID];
-                tex_coord.y = 1.0 - tex_coord.y;
-                gl_Position = m_pvm * vec4(quadVertices[gl_VertexID] * size, 0.0, 1.0);
-            }
-        );
-
-        const auto visFrag = ShaderCollector::getShaderHeader() + STRINGIFY(
-            layout(location = 0) out vec4 fragColor;
-            in vec2 tex_coord;
-            uniform sampler2D tex;
-            uniform int visualizationID;
-            uniform vec4 nodeViewPort;\n
-
-            void main() {
-                if (gl_FragCoord.x < nodeViewPort.x
-                    || gl_FragCoord.x > nodeViewPort.x + nodeViewPort.z
-                    || gl_FragCoord.y < nodeViewPort.y
-                    || gl_FragCoord.y > nodeViewPort.y + nodeViewPort.w) {
-                   discard;
-                }\n
-                vec4 col = texture(tex, tex_coord);
-                uint packedColor = packUnorm4x8(col);
-                uint mask = uint(1) << visualizationID; // 0x00000020
-                bool isSet = (packedColor & mask) != 0u;
-                if (!isSet) {
-                    discard;
-                }
-                fragColor = vec4(1.0, 1.0, 1.0, 1.0);
-            }
-        );
-
-        m_visShader = m_sharedRes->shCol->add("paintImageIdMapVisShader", visVert, visFrag);
     }
+}
 
-    if (m_tex) {
-        m_fbo = std::make_unique<FBO>();
-        m_fbo->setGlbase(getSharedRes()->glbase);
-        m_fbo->fromTexMan(m_tex);
+void PaintImageIdMap::initPaintShader() {
+    const auto vert = ShaderCollector::getShaderHeader() + STRINGIFY(
+        layout(location = 0) in vec3 position;
+        uniform float size;
+        uniform vec2 pos;
+        out vec2 texCoord;
+        void main() {
+            const vec2[4] quadVertices = vec2[4](vec2(-1., -1.), vec2(1., -1.), vec2(-1., 1.), vec2(1., 1.));
+            texCoord = quadVertices[gl_VertexID];
+            gl_Position = vec4(quadVertices[gl_VertexID], 0.0, 1.0);
+        }
+    );
+
+    const auto frag = ShaderCollector::getShaderHeader() + STRINGIFY(
+        layout(location = 0) out vec4 fragColor;
+
+        in vec2 texCoord;
+        struct Brush {
+            float size;
+            float hardness;
+            vec4 color;
+            float opacity;
+        };
+        uniform vec2 pos;
+        uniform vec4 limits;
+        uniform vec2 texSize;
+        uniform int maskBit;
+        uniform sampler2D tex;
+        layout(std140) uniform BrushBlock {
+            Brush brush;
+        };
+        void main() {
+            vec2 tc = (texCoord - pos);
+            tc.y *= texSize.y / texSize.x;
+            tc += pos;
+            if (tc.x < limits.x || tc.x > limits.z || tc.y > limits.y || tc.y < limits.w) {
+                discard;
+            }
+
+            float dist = distance(tc, pos);
+            float falloff = 1.0 - smoothstep(brush.size, brush.size, dist);
+            if (falloff == 0.0) {
+                discard;
+            }
+
+            vec4 col = texture(tex, tc);
+            uint packedColor = packUnorm4x8(col);
+            uint mask = uint(1) << maskBit;
+            packedColor |= mask;
+
+            fragColor = unpackUnorm4x8(packedColor);
+        }
+    );
+
+    m_paintShader = m_sharedRes->shCol->add("paintImageIdMapShader", vert, frag);
+
+    if (m_paintShader) {
+        m_scaledBrush = m_brush.size;
+        m_brushBlock.init(m_paintShader->getProgram(), "BrushBlock");
+        m_brushBlock.addVarName("brush.size", &m_scaledBrush, GL_FLOAT);
+        m_brushBlock.addVarName("brush.hardness", &m_brush.hardness, GL_FLOAT);
+        m_brushBlock.addVarName("brush.color", &m_brush.color, GL_FLOAT_VEC4);
+        m_brushBlock.addVarName("brush.opacity", &m_brush.opacity, GL_FLOAT);
     }
+}
+
+void PaintImageIdMap::initVisualizationShader() {
+    const auto visVert = ShaderCollector::getShaderHeader() + STRINGIFY(
+        layout(location = 0) in vec4 position;
+        layout(location = 2) in vec2 texCoord;
+        uniform mat4 m_pvm;
+        uniform vec2 size;
+        out vec2 tex_coord;
+        const vec2[4] quadVertices = vec2[4](vec2(0., 0.), vec2(1., 0.), vec2(0., 1.), vec2(1., 1.));
+        void main() {
+            tex_coord = quadVertices[gl_VertexID];
+            tex_coord.y = 1.0 - tex_coord.y;
+            gl_Position = m_pvm * vec4(quadVertices[gl_VertexID] * size, 0.0, 1.0);
+        }
+    );
+
+    const auto visFrag = ShaderCollector::getShaderHeader() + STRINGIFY(
+        layout(location = 0) out vec4 fragColor;
+        in vec2 tex_coord;
+        uniform sampler2D tex;
+        uniform int visualizationID;
+        uniform vec4 nodeViewPort;\n
+
+        void main() {
+            if (gl_FragCoord.x < nodeViewPort.x
+                || gl_FragCoord.x > nodeViewPort.x + nodeViewPort.z
+                || gl_FragCoord.y < nodeViewPort.y
+                || gl_FragCoord.y > nodeViewPort.y + nodeViewPort.w) {
+               discard;
+            }\n
+            vec4 col = texture(tex, tex_coord);
+            uint packedColor = packUnorm4x8(col);
+            uint mask = uint(1) << visualizationID; // 0x00000020
+            bool isSet = (packedColor & mask) != 0u;
+            if (!isSet) {
+                discard;
+            }
+            fragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        }
+    );
+
+    m_visShader = m_sharedRes->shCol->add("paintImageIdMapVisShader", visVert, visFrag);
+}
+
+void PaintImageIdMap::initFillShader() {
+    const auto fillVert = ShaderCollector::getShaderHeader() + STRINGIFY(
+        layout(location = 0) in vec3 position;
+        out vec2 texCoord;
+        void main() {
+            const vec2[4] quadVertices = vec2[4](vec2(-1., -1.), vec2(1., -1.), vec2(-1., 1.), vec2(1., 1.));
+            texCoord = (quadVertices[gl_VertexID] + vec2(1.0)) * 0.5;
+            gl_Position = vec4(quadVertices[gl_VertexID], 0.0, 1.0);
+        }
+    );
+
+    const auto fillFrag = ShaderCollector::getShaderHeader() + STRINGIFY(
+        layout(location = 0) out vec4 fragColor;
+
+        in vec2 texCoord;
+        uniform sampler2D inputTex;
+        uniform sampler2D idMapTex;
+        uniform vec4 selectColor;
+        uniform int destBit;
+        uniform float epsilon;
+
+        void main() {
+            vec4 inputCol = texture(inputTex, texCoord);
+            if (distance(inputCol, selectColor) > epsilon) {
+                discard;
+            }
+
+            vec4 col = texture(idMapTex, texCoord);
+            uint packedColor = packUnorm4x8(col);
+            uint mask = uint(1) << destBit;
+            packedColor |= mask;
+
+            fragColor = unpackUnorm4x8(packedColor);
+        }
+    );
+
+    m_fillByTextureShader = m_sharedRes->shCol->add("paintImageIdMapFillByTextureShader", fillVert, fillFrag);
 }
 
 bool PaintImageIdMap::draw(uint32_t& objId) {
@@ -213,6 +259,54 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
 
 void PaintImageIdMap::clear() const {
     m_tex->clear();
+}
+
+void PaintImageIdMap::fillByTexture(const GLuint texId, const vec4 selectColor, const uint32_t destBit) {
+    if (!(m_tex || m_texId) || !m_fillByTextureShader || !m_sharedRes || m_locked || texId == 0) {
+        return;
+    }
+
+    if (!m_fbo) {
+        m_fbo = std::make_unique<FBO>();
+        m_fbo->setGlbase(getSharedRes()->glbase);
+        if (m_tex) {
+            m_fbo->fromTexMan(m_tex);
+        } else if (m_texId) {
+            m_fbo->fromTex(m_texId, m_texSize.x, m_texSize.y, GL_RGBA8, 1, GL_LINEAR, GL_LINEAR);
+        }
+    }
+
+    m_fbo->bind();
+    m_fillByTextureShader->begin();
+
+    glBlendFunc(GL_ONE, GL_ZERO);
+
+    m_fillByTextureShader->setUniform1i("inputTex", 0);
+    m_fillByTextureShader->setUniform1i("idMapTex", 1);
+    m_fillByTextureShader->setUniform4f("selectColor", selectColor.r, selectColor.g, selectColor.b, selectColor.a);
+    m_fillByTextureShader->setUniform1i("destBit", static_cast<int>(destBit));
+    m_fillByTextureShader->setUniform1f("epsilon", 0.01f);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texId);
+
+    if (m_tex) {
+        m_tex->bind(1);
+    } else if (m_texId) {
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m_texId);
+    }
+
+    if (m_sharedRes && m_sharedRes->nullVao) {
+        glBindVertexArray(*m_sharedRes->nullVao);
+    }
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+
+    m_fbo->unbind();
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    m_sharedRes->setDrawFlag(true); // Request redrawing of the UI
 }
 
 } // namespace ara
