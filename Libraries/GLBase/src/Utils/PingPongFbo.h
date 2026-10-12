@@ -22,18 +22,24 @@ namespace ara {
 
 class FBO;
 class GLBase;
+class Texture;
 
 class PingPongFbo {
 public:
+    PingPongFbo() = default;
     explicit PingPongFbo(const FboInitParams&);
     virtual ~PingPongFbo() = default;
 
     void swap();
+    void bind() const;
+    void unbind() const;
     void clear(float alpha = 1.f) const;
     void clearWhite() const;
     void clearAlpha(float alpha, float col) const;
+    void saveDstToFile(const std::filesystem::path &filename, size_t attachNr, GLenum intFormat) const;
+    void saveSrcToFile(const std::filesystem::path &filename, size_t attachNr, GLenum intFormat) const;
 
-    FBO* operator[](int n) const { return m_fbos[n].get(); }
+    FBO* operator[](const int n) const { return m_fbos[n].get(); }
 
     [[nodiscard]] GLuint getWidth() const;
     [[nodiscard]] GLuint getHeight() const;
@@ -43,17 +49,19 @@ public:
 
     void setMinFilter(GLenum type) const;
     void setMagFilter(GLenum type) const;
+    void setGLBase(GLBase *glbase);
 
     [[nodiscard]] GLuint getSrcTexId() const;
     [[nodiscard]] GLuint getDstTexId() const;
     [[nodiscard]] GLuint getSrcTexId(int index) const;
     [[nodiscard]] GLuint getDstTexId(int index) const;
 
-    FBO *m_src = nullptr;  // Source       ->  Ping
-    FBO *m_dst = nullptr;  // Destination  ->  Pong
+    FBO *m_src = nullptr;  // Source
+    FBO *m_dst = nullptr;  // Destination
 
 private:
     std::array<std::unique_ptr<FBO>, 2> m_fbos;
+    GLBase*                             m_glBase = nullptr;
     int                                 m_flag   = 0;        // Integer for making a quick swap
     bool                                m_inited = false;
 };

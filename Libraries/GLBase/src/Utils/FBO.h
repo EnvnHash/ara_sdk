@@ -21,7 +21,7 @@ class Quad;
 class FBO {
 public:
     FBO() = default;
-    FBO(const FboInitParams&);
+    explicit FBO(const FboInitParams&);
     virtual ~FBO();
 
     void remove();

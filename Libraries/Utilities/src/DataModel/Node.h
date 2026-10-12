@@ -323,8 +323,8 @@ public:
     void                saveAs(const std::filesystem::path& filePath);
     void                save(bool skipNonClass=false);
     void                saveState();
-    void                undo();
-    void                redo();
+    virtual void                undo();
+    virtual void                redo();
     void                signalChange(cbType cbType, Node* node);
     static bool         iterateChildren(Node& node, const std::function<void(Node&)>& f);
     bool                iterateChildren(const std::function<void(Node&)>& f) const;

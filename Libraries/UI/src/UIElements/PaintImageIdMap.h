@@ -17,7 +17,7 @@ public:
 
     bool draw(uint32_t& objId) override;
     bool drawIndirect(uint32_t& objId) override;
-    void clear() const;
+    void clear();
 
     void fillByTexture(GLuint texId, glm::vec4 selectColor, uint32_t destBit) const;
 

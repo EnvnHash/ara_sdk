@@ -40,6 +40,18 @@ void PingPongFbo::swap() {
     m_dst  = m_fbos[(m_flag + 1) % 2].get();
 }
 
+void PingPongFbo::bind() const {
+    if (m_dst) {
+        m_dst->bind();
+    }
+}
+
+void PingPongFbo::unbind() const {
+    if (m_dst) {
+        m_dst->unbind();
+    }
+}
+
 void PingPongFbo::clear(float _alpha) const {
     for (int i = 0; i < 2; i++) {
         m_fbos[i]->bind();
@@ -62,6 +74,19 @@ void PingPongFbo::clearAlpha(float alpha, float col) const {
     }
 }
 
+void PingPongFbo::saveDstToFile(const std::filesystem::path &filename, const size_t attachNr, const GLenum intFormat) const {
+    if (m_dst) {
+        m_dst->saveToFile(filename, attachNr, intFormat);
+    }
+}
+
+void PingPongFbo::saveSrcToFile(const std::filesystem::path &filename, const size_t attachNr, const GLenum intFormat) const {
+    if (m_src) {
+        m_src->saveToFile(filename, attachNr, intFormat);
+    }
+}
+
+
 void PingPongFbo::setMinFilter(GLenum type) const {
     for (int i = 0; i < 2; i++) {
         m_fbos[i]->setMinFilter(type);
@@ -71,6 +96,15 @@ void PingPongFbo::setMinFilter(GLenum type) const {
 void PingPongFbo::setMagFilter(GLenum type) const {
     for (int i = 0; i < 2; i++) {
         m_fbos[i]->setMagFilter(type);
+    }
+}
+
+void PingPongFbo::setGLBase(GLBase *glBase) {
+    m_glBase = glBase;
+    for (int i = 0; i < 2; i++) {
+        if (m_fbos[i]) {
+            m_fbos[i]->setGlbase(glBase);
+        }
     }
 }
 

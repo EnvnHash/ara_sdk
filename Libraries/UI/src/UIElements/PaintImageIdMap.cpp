@@ -20,12 +20,7 @@ void PaintImageIdMap::init() {
         initPaintShader();
         initVisualizationShader();
         initFillShader();
-
-        if (m_tex) {
-            m_fbo = std::make_unique<FBO>();
-            m_fbo->setGlbase(getSharedRes()->glbase);
-            m_fbo->fromTexMan(m_tex);
-        }
+        initFbo();
     }
 }
 
@@ -265,8 +260,10 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
     m_sharedRes->setDrawFlag(true); // Request redrawing of the UI
 }
 
-void PaintImageIdMap::clear() const {
+void PaintImageIdMap::clear() {
+    createBackup();
     m_tex->clear();
+    saveCurrentState();
 }
 
 void PaintImageIdMap::fillByTexture(const GLuint texId, vec4 selectColor, const uint32_t destBit) const {

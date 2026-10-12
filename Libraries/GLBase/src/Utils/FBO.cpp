@@ -1006,10 +1006,10 @@ bool FBO::saveToFile(const filesystem::path &filename, const size_t attachNr, co
         fileFormat = FIF_TARGA;
     }
 
-    GLenum format     = ara::getExtType(intFormat);
+    const auto format = ara::getExtType(intFormat);
     m_extType         = format;
     m_pixType         = ara::getPixelType(intFormat);
-    int    nrChan     = getNrColChans(intFormat);
+    const int nrChan  = getNrColChans(intFormat);
     GLuint texId      = m_textures[attachNr];
     GLenum saveTarget = m_target;
 
@@ -1017,7 +1017,7 @@ bool FBO::saveToFile(const filesystem::path &filename, const size_t attachNr, co
     // then download
     if (m_isMultiSample) {
         saveTarget = GL_TEXTURE_2D;
-        auto tempFbo = make_unique<FBO>(FboInitParams{
+        const auto tempFbo = make_unique<FBO>(FboInitParams{
             m_glbase,
             static_cast<int>(m_tex_width),
             static_cast<int>(m_tex_height),
@@ -1028,7 +1028,7 @@ bool FBO::saveToFile(const filesystem::path &filename, const size_t attachNr, co
             GL_REPEAT, false
         });
 
-        auto copyShader = m_shCol->getStdTexAlpha(true);
+        const auto copyShader = m_shCol->getStdTexAlpha(true);
 
         glDisable(GL_BLEND);
         tempFbo->bind();
@@ -1061,7 +1061,7 @@ bool FBO::saveToFile(const filesystem::path &filename, const size_t attachNr, co
             }
 
             if (bitmap) {
-                auto bits = FreeImage_GetBits(bitmap);
+                const auto bits = FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
                 glesGetTexImage(texId, GL_TEXTURE_2D, GL_RED, GL_UNSIGNED_SHORT, m_tex_width, m_tex_height, bits);
 #else
