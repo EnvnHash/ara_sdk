@@ -56,6 +56,7 @@ void PaintImageIdMap::initPaintShader() {
         uniform vec4 limits;
         uniform vec2 texSize;
         uniform int maskBit;
+        uniform int drawAdditive;
         uniform sampler2D tex;
         layout(std140) uniform BrushBlock {
             Brush brush;
@@ -77,7 +78,11 @@ void PaintImageIdMap::initPaintShader() {
             vec4 col = texture(tex, tc);
             uint packedColor = packUnorm4x8(col);
             uint mask = uint(1) << maskBit;
-            packedColor |= mask;
+            if (bool(drawAdditive)) {
+                packedColor |= mask;
+            } else {
+                packedColor &= ~mask;
+            }
 
             fragColor = unpackUnorm4x8(packedColor);
         }
@@ -242,6 +247,7 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
     m_paintShader->setUniform1i("maskBit", m_drawID);
     m_paintShader->setUniform2f("texSize", m_tex->getWidth(), m_tex->getHeight());
     m_paintShader->setUniform1i("tex", 0);
+    m_paintShader->setUniform1i("drawAdditive", m_drawAdditive);
 
     if (m_tex) {
         m_tex->bind(0);

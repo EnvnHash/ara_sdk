@@ -22,6 +22,7 @@ public:
     void fillByTexture(GLuint texId, glm::vec4 selectColor, uint32_t destBit);
 
     void setDrawId(const int id) { m_drawID = id; }
+    void setPaintMode(const bool additive) { m_drawAdditive = additive; }
     void setVisualizationID(const int id) { m_visualizationID = id; }
     [[nodiscard]] int getVisualizationID() const { return m_visualizationID; }
 
@@ -29,6 +30,7 @@ protected:
     bool drawFunc(const uint32_t& objId);
     void paint(const glm::vec2& mousePos) override;
 
+    bool m_drawAdditive = true;
     int m_drawID = 0;
     int m_visualizationID = 0;
     Shaders* m_visShader = nullptr;
