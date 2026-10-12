@@ -157,11 +157,13 @@ void PaintImageIdMap::initFillShader() {
         uniform sampler2D idMapTex;
         uniform vec4 selectColor;
         uniform int destBit;
-        uniform float epsilon;
 
         void main() {
             vec4 inputCol = texture(inputTex, texCoord);
-            if (distance(inputCol, selectColor) > epsilon) {
+            if (inputCol.r != selectColor.r
+                && inputCol.g != selectColor.g
+                && inputCol.b != selectColor.b
+                && inputCol.a != selectColor.a) {
                 discard;
             }
 
@@ -240,7 +242,6 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
     m_paintShader->setUniform2f("pos", transPos[0].x, transPos[0].y);
     m_paintShader->setUniform4f("limits", transPos[1].x, transPos[1].y, transPos[2].x, transPos[2].y);
     m_paintShader->setUniform1i("maskBit", m_drawID);
-    m_paintShader->setUniform2f("texSize", m_tex->getWidth(), m_tex->getHeight());
     m_paintShader->setUniform1i("tex", 0);
 
     if (m_tex) {
@@ -261,19 +262,9 @@ void PaintImageIdMap::clear() const {
     m_tex->clear();
 }
 
-void PaintImageIdMap::fillByTexture(const GLuint texId, const vec4 selectColor, const uint32_t destBit) {
+void PaintImageIdMap::fillByTexture(const GLuint texId, vec4 selectColor, const uint32_t destBit) {
     if (!(m_tex || m_texId) || !m_fillByTextureShader || !m_sharedRes || m_locked || texId == 0) {
         return;
-    }
-
-    if (!m_fbo) {
-        m_fbo = std::make_unique<FBO>();
-        m_fbo->setGlbase(getSharedRes()->glbase);
-        if (m_tex) {
-            m_fbo->fromTexMan(m_tex);
-        } else if (m_texId) {
-            m_fbo->fromTex(m_texId, m_texSize.x, m_texSize.y, GL_RGBA8, 1, GL_LINEAR, GL_LINEAR);
-        }
     }
 
     m_fbo->bind();
@@ -283,9 +274,8 @@ void PaintImageIdMap::fillByTexture(const GLuint texId, const vec4 selectColor, 
 
     m_fillByTextureShader->setUniform1i("inputTex", 0);
     m_fillByTextureShader->setUniform1i("idMapTex", 1);
-    m_fillByTextureShader->setUniform4f("selectColor", selectColor.r, selectColor.g, selectColor.b, selectColor.a);
+    m_fillByTextureShader->setUniform4fv("selectColor", &selectColor[0]);
     m_fillByTextureShader->setUniform1i("destBit", static_cast<int>(destBit));
-    m_fillByTextureShader->setUniform1f("epsilon", 0.01f);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texId);
@@ -297,12 +287,7 @@ void PaintImageIdMap::fillByTexture(const GLuint texId, const vec4 selectColor, 
         glBindTexture(GL_TEXTURE_2D, m_texId);
     }
 
-    if (m_sharedRes && m_sharedRes->nullVao) {
-        glBindVertexArray(*m_sharedRes->nullVao);
-    }
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glBindVertexArray(0);
-
     m_fbo->unbind();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
