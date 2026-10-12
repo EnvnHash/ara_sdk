@@ -42,26 +42,27 @@ void PaintImageIdMap::init() {
             };
             uniform vec2 pos;
             uniform vec4 limits;
-            uniform ivec2 texSize;
+            uniform vec2 texSize;
             uniform int maskBit;
             uniform sampler2D tex;
             layout(std140) uniform BrushBlock {
                 Brush brush;
             };
             void main() {
-                if (texCoord.x < limits.x || texCoord.x > limits.z || texCoord.y > limits.y || texCoord.y < limits.w) {
+                vec2 tc = (texCoord - pos);
+                tc.y *= texSize.y / texSize.x;
+                tc += pos;
+                if (tc.x < limits.x || tc.x > limits.z || tc.y > limits.y || tc.y < limits.w) {
                     discard;
                 }
 
-                float dist = distance(texCoord, pos);
+                float dist = distance(tc, pos);
                 float falloff = 1.0 - smoothstep(brush.size, brush.size, dist);
                 if (falloff == 0.0) {
                     discard;
                 }
 
-                vec2 ntexCoord = texCoord * vec2(0.5) + vec2(0.5);
-                vec4 col = texture(tex, ntexCoord);
-
+                vec4 col = texture(tex, tc);
                 uint packedColor = packUnorm4x8(col);
                 uint mask = uint(1) << maskBit;
                 packedColor |= mask;
@@ -186,14 +187,14 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
         for (auto &it : transPos) {
             it = vec2(m_secPos) + it / m_size * vec2(m_secSize); // fbo pos in pixels
             it = vec2{ it.x / fboSize.x * 2.f - 1.f,
-                        it.y / fboSize.y * -2.f + 1.f }; // normalized fbo pos
+                       it.y / fboSize.y * -2.f + 1.f }; // normalized fbo pos
         }
     }
 
     m_paintShader->setUniform2f("pos", transPos[0].x, transPos[0].y);
     m_paintShader->setUniform4f("limits", transPos[1].x, transPos[1].y, transPos[2].x, transPos[2].y);
     m_paintShader->setUniform1i("maskBit", m_drawID);
-    m_paintShader->setUniform2i("texSize", static_cast<int>(m_tex->getWidth()), static_cast<int>(m_tex->getHeight()));
+    m_paintShader->setUniform2f("texSize", m_tex->getWidth(), m_tex->getHeight());
     m_paintShader->setUniform1i("tex", 0);
 
     if (m_tex) {
@@ -208,6 +209,10 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_sharedRes->setDrawFlag(true); // Request redrawing of the UI
+}
+
+void PaintImageIdMap::clear() const {
+    m_tex->clear();
 }
 
 } // namespace ara

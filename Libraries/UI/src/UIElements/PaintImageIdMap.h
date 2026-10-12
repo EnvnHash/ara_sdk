@@ -13,6 +13,7 @@ public:
 
     bool draw(uint32_t& objId) override;
     bool drawIndirect(uint32_t& objId) override;
+    void clear() const;
 
     void setDrawId(const int id) { m_drawID = id; }
     void setVisualizationID(const int id) { m_visualizationID = id; }

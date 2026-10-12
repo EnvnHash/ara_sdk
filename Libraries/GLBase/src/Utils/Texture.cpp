@@ -76,7 +76,7 @@ std::array<float, 2> Texture::getFileImageSize(const std::string &filename) {
     return sz;
 }
 
-GLuint Texture::loadFromFile(const std::string &filename, GLenum textTarget, int nrMipMaps, bool flipH) {
+GLuint Texture::loadFromFile(const std::string &filename, const GLenum textTarget, int nrMipMaps, bool flipH) {
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
     if (std::filesystem::exists(std::filesystem::path(filename))) {
         m_filename        = filename;
@@ -93,7 +93,7 @@ GLuint Texture::loadFromFile(const std::string &filename, GLenum textTarget, int
     return 0;
 }
 
-GLuint Texture::loadFromMemPtr(void *ptr, size_t size, GLenum textTarget, int nrMipMaps, bool flipH) {
+GLuint Texture::loadFromMemPtr(void *ptr, const size_t size, const GLenum textTarget, const int nrMipMaps, const bool flipH) {
 #ifdef ARA_USE_FREEIMAGE
     if (!ptr || !size) {
         return {};
@@ -463,7 +463,7 @@ GLuint Texture::procTextureData() {
     return m_texData.textureID;
 }
 
-void Texture::genTexture(GLuint& id) {
+void Texture::genTexture(GLuint& id) const {
     if (id) {
         glDeleteTextures(1, &id);
     }
@@ -546,8 +546,8 @@ GLuint Texture::allocate3D(const uint w, const uint h, const uint d, const GLenu
     return m_texData.textureID;
 }
 
-GLuint Texture::allocate2D(uint w, uint h, GLenum internalGlDataType, GLenum extGlDataType, GLenum textTarget,
-                           GLenum pixelType, uint samples, GLboolean fixedsamplelocations) {
+GLuint Texture::allocate2D(const uint w, const uint h, const GLenum internalGlDataType, const GLenum extGlDataType,
+    const GLenum textTarget, const GLenum pixelType, const uint samples, const GLboolean fixedsamplelocations) {
     m_texData.width  = w;
     m_texData.height = h;
 
@@ -703,7 +703,8 @@ void Texture::upload(const void *dataPtr) const {
     glBindTexture(m_texData.target, 0);
 }
 
-void Texture::upload(const void *dataPtr, int width, int height, int depth, int xOffs, int yOffs, int zOffs, GLenum uplFormat, GLenum uplPixType) const {
+void Texture::upload(const void *dataPtr, const int width, const int height, const int depth, const int xOffs,
+    const int yOffs, const int zOffs, const GLenum uplFormat, const GLenum uplPixType) const {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 
@@ -748,7 +749,7 @@ void Texture::upload(const void *dataPtr, int width, int height, int depth, int 
     glBindTexture(m_texData.target, 0);
 }
 
-void Texture::setSamplerFiltering(int a_tfMagnification, int a_tfMinification) {
+void Texture::setSamplerFiltering(const int a_tfMagnification, const int a_tfMinification) {
     // Set magnification filter
     if (a_tfMagnification == TEXTURE_FILTER_MAG_NEAREST)
         glSamplerParameteri(m_samplerID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -771,7 +772,7 @@ void Texture::setSamplerFiltering(int a_tfMagnification, int a_tfMinification) {
     m_tfMagnification = a_tfMagnification;
 }
 
-void Texture::setFiltering(GLenum magFilter, GLenum minFilter) const {
+void Texture::setFiltering(const GLenum magFilter, const GLenum minFilter) const {
     if (m_texData.target != GL_TEXTURE_2D_MULTISAMPLE) {
         GLint val;
         switch (m_texData.target) {
@@ -791,7 +792,7 @@ void Texture::setFiltering(GLenum magFilter, GLenum minFilter) const {
     }
 }
 
-void Texture::setWraping(GLfloat wrap) const {
+void Texture::setWraping(const GLfloat wrap) const {
     // Set magnification filter
     glBindTexture(m_texData.target, m_texData.textureID);
 
@@ -803,12 +804,12 @@ void Texture::bind() const {
     glBindTexture(m_texData.target, m_texData.textureID);
 }
 
-void Texture::bind(GLuint texUnit) const {
+void Texture::bind(const GLuint texUnit) const {
     glActiveTexture(GL_TEXTURE0 + texUnit);
     glBindTexture(m_texData.target, m_texData.textureID);
 }
 
-void Texture::bind(GLuint su, GLuint si, GLuint tu) {
+void Texture::bind(const GLuint su, const GLuint si, GLuint tu) {
     m_samplerUnit = static_cast<GLint>(su);
     glActiveTexture(GL_TEXTURE0 + tu);
     glBindTexture(m_texData.target, m_texData.textureID);
@@ -817,6 +818,10 @@ void Texture::bind(GLuint su, GLuint si, GLuint tu) {
 
 void Texture::unbind() const {
     glBindTexture(m_texData.target, 0);
+}
+
+void Texture::clear() const {
+    glClearTexImage(m_texData.textureID, 0, m_texData.format, m_texData.pixelType, nullptr);
 }
 
 void Texture::releaseTexture() {
