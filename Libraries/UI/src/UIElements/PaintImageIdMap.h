@@ -19,7 +19,7 @@ public:
     bool drawIndirect(uint32_t& objId) override;
     void clear() const;
 
-    void fillByTexture(GLuint texId, glm::vec4 selectColor, uint32_t destBit);
+    void fillByTexture(GLuint texId, glm::vec4 selectColor, uint32_t destBit) const;
 
     void setDrawId(const int id) { m_drawID = id; }
     void setPaintMode(const bool additive) { m_drawAdditive = additive; }
