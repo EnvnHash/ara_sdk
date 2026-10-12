@@ -67,7 +67,7 @@ public:
     GLuint loadSDL(GLenum _textTarget, int nrMipMaps);
 #endif
 
-    void genTexture(GLuint& id);
+    void genTexture(GLuint& id) const;
     GLuint allocate2D(uint32_t w, uint32_t h, GLenum internalGlDataType, GLenum extGlDataType, GLenum textTarget,
                       GLenum pixelType, uint32_t samples = 1, GLboolean fixedsamplelocations = GL_FALSE);
     GLuint gen(GLenum target);
@@ -83,6 +83,7 @@ public:
     void unbind() const;
     void releaseTexture();
     void generateSampler();
+    void clear() const;
 
     void keepBitmap(const bool val)         { m_keepBitmap = val; }
     void setFileName(const std::string &fn) { m_filename = fn; }
