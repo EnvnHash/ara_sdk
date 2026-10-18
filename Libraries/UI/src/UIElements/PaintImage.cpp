@@ -192,7 +192,6 @@ void PaintImage::saveState() {
     // if the undo queue is filled, delete the first element
     if (m_backupCopies.size() + 1 >= m_maxUndoBufSize) {
         std::filesystem::remove(m_backupCopies.front(), ec);
-        LOG << "erase " << m_backupCopies.front();
         m_backupCopies.erase(m_backupCopies.begin());
     }
 
@@ -200,7 +199,6 @@ void PaintImage::saveState() {
     const std::string uuidCurrent = generateUUID();
     const auto currentBackupPath = AssetLoader::getAssetPath() / m_backupPath / (uuidCurrent + ext);
     m_fbo->saveToFile(currentBackupPath, 0, GL_RGBA8);
-    LOG << " saveState to [" << m_backupCopies.size() << "] " << currentBackupPath;
     m_backupCopies.emplace_back(currentBackupPath);
     m_backupCopiesIt = m_backupCopies.end() - 1; // set the undoBufPtr to the new entry
 }
@@ -214,7 +212,6 @@ void PaintImage::undo() {
 
     m_undoing = true;
     if (const auto& restorePath = *m_backupCopiesIt; std::filesystem::exists(restorePath)) {
-        LOG << " restore [" << std::distance(m_backupCopies.begin(), m_backupCopiesIt) << "] " << restorePath;
         restoreFile(restorePath);
     }
     m_undoing = false;
@@ -233,7 +230,6 @@ void PaintImage::redo() {
         ++m_backupCopiesIt;
         m_undoing = true;
         if (const auto& restorePath = *m_backupCopiesIt; std::filesystem::exists(restorePath)) {
-            LOG << " restore [" << std::distance(m_backupCopies.begin(), m_backupCopiesIt) << "]" << restorePath;
             restoreFile(restorePath);
         }
         m_undoing = false;
@@ -251,7 +247,7 @@ void PaintImage::clear() {
 
 void PaintImage::restoreFile(const std::filesystem::path &filename) {
     const auto tf = m_imageFile;
-    setImg(filename);
+    setImg(filename.string());
     loadImg(true);
     m_imageFile = tf;
     initFbo();
