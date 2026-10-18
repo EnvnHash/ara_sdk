@@ -198,7 +198,7 @@ void PaintImage::saveState() {
 
     // serialize the actual state to a binary json and push it to the undo queue
     const std::string uuidCurrent = generateUUID();
-    const auto currentBackupPath = m_backupPath / m_backupSubPath / (uuidCurrent + ext);
+    const auto currentBackupPath = AssetLoader::getAssetPath() / m_backupPath / (uuidCurrent + ext);
     m_fbo->saveToFile(currentBackupPath, 0, GL_RGBA8);
     LOG << " saveState to [" << m_backupCopies.size() << "] " << currentBackupPath;
     m_backupCopies.emplace_back(currentBackupPath);
@@ -206,7 +206,7 @@ void PaintImage::saveState() {
 }
 
 void PaintImage::undo() {
-    if (m_backupCopies.empty()) {
+    if (m_backupCopies.empty() || m_backupCopiesIt == m_backupCopies.begin()) {
         return;
     }
 
@@ -229,7 +229,7 @@ void PaintImage::redo() {
         return;
     }
 
-    if (m_backupCopiesIt != --m_backupCopies.end()) {
+    if (m_backupCopiesIt != std::prev(m_backupCopies.end())) {
         ++m_backupCopiesIt;
         m_undoing = true;
         if (const auto& restorePath = *m_backupCopiesIt; std::filesystem::exists(restorePath)) {
@@ -240,10 +240,19 @@ void PaintImage::redo() {
     }
 }
 
+void PaintImage::clear() {
+    if (m_tex) {
+        m_tex->clear();
+    } else if (m_fbo) {
+        m_fbo->clear();
+    }
+    saveState();
+}
+
 void PaintImage::restoreFile(const std::filesystem::path &filename) {
     const auto tf = m_imageFile;
     setImg(filename);
-    loadImg();
+    loadImg(true);
     m_imageFile = tf;
     initFbo();
     if (getSharedRes()) {
@@ -253,14 +262,15 @@ void PaintImage::restoreFile(const std::filesystem::path &filename) {
 
 void PaintImage::setBackupPath(const std::filesystem::path& p) {
     m_backupPath = p;
-    if (const auto bp = m_backupPath / m_backupSubPath; !std::filesystem::exists(bp)) {
+    if (const auto bp = AssetLoader::getAssetPath() / m_backupPath; !std::filesystem::exists(bp)) {
         std::filesystem::create_directory(bp);
     }
 }
 
 void PaintImage::clearBackupPath() const {
-    for (const auto p = m_backupPath / m_backupSubPath; const auto& entry : std::filesystem::directory_iterator(p))
+    for (const auto p = AssetLoader::getAssetPath() / m_backupPath; const auto& entry : std::filesystem::directory_iterator(p)) {
         std::filesystem::remove_all(entry.path());
+    }
 }
 
 } // namespace ara

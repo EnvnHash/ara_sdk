@@ -40,7 +40,7 @@ public:
     bool            drawIndirect(uint32_t& objId) override;
     void            pushTexture(DrawSet& ds);
     void            pushVaoUpdtOffsets() override;
-    virtual void    loadImg();
+    virtual void    loadImg(bool forceReload=false);
     virtual void    reload();
     virtual bool    setTexId(GLuint inTexId, int width, int height, int bitCount);
     virtual void    updateTexId(GLuint inTexId);

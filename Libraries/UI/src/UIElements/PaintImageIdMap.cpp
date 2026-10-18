@@ -261,12 +261,6 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
     m_sharedRes->setDrawFlag(true); // Request redrawing of the UI
 }
 
-void PaintImageIdMap::clear() {
-    m_tex->clear();
-    LOG << " --- clear";
-    saveState();
-}
-
 void PaintImageIdMap::fillByTexture(const GLuint texId, vec4 selectColor, const uint32_t destBit) const {
     if (!(m_tex || m_texId) || !m_fillByTextureShader || !m_sharedRes || m_locked || texId == 0) {
         return;

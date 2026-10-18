@@ -49,7 +49,7 @@ Texture *TextureCollector::addFromMem(const std::filesystem::path &fileName, con
         return  nullptr;
     }
 
-    auto fn = fileName.string();
+    const auto fn = fileName.string();
     return checkForExistence(fn, &dataPath,[&]  {
         std::vector<uint8_t> vp;
         ReadBinFile(vp, dataPath / fn);
@@ -57,19 +57,17 @@ Texture *TextureCollector::addFromMem(const std::filesystem::path &fileName, con
     });
 }
 
-Texture *TextureCollector::addFromAssetManager(const std::string &fn, int mipMapLevel) {
-    return checkForExistence(fn, nullptr, [&]  {
-/*#ifdef ARA_USE_CMRC
-        auto& al = m_glBase->getAssetManager()->getAssetLoader();
-        auto ret = al.loadAssetToMem(fn);
-        return add(std::get<const char*>(ret), std::get<size_t>(ret), fn, &al.getAssetPath(), mipMapLevel);
-#else*/
+Texture *TextureCollector::addFromAssetManager(const std::string &fn, const int mipMapLevel, const bool forceReload) {
+    auto f = [&]  {
         std::vector<uint8_t> vp;
-        auto& al = m_glBase->getAssetManager()->getAssetLoader();
-        al.loadAssetToMem(vp, fn);
-        return add(vp, fn, &al.getAssetPath(), mipMapLevel);
-//#endif
-    });
+        AssetLoader::loadAssetToMem(vp, fn);
+        return add(vp, fn, &AssetLoader::getAssetPath(), mipMapLevel);
+    };
+
+    if (forceReload) {
+        return f();
+    }
+    return checkForExistence(fn, nullptr, f);
 }
 
 void TextureCollector::addCommon(const std::string &fn, int32_t mipMapLevel, const std::filesystem::path *dataPath) {
@@ -115,10 +113,9 @@ Texture *TextureCollector::add(std::vector<uint8_t>& vp, const std::string &fn, 
 }
 
 auto TextureCollector::remove(const std::filesystem::path &fileName) {
-    auto fn = fileName.string();
+    const auto fn = fileName.string();
     if (!m_texMap.empty() && !fileName.empty()) {
-        auto it = m_texMap.find(fn);
-        if (it != m_texMap.end()) {
+        if (const auto it = m_texMap.find(fn); it != m_texMap.end()) {
             for (auto &cb : it->second.removeCbs | views::values) {
                 cb();
             }
@@ -129,32 +126,26 @@ auto TextureCollector::remove(const std::filesystem::path &fileName) {
 }
 
 void TextureCollector::addRemoveCb(const std::string &fileName, const std::function<void()>& f) {
-    const auto it = m_texMap.find(fileName);
-    if (it != m_texMap.end()) {
+    if (const auto it = m_texMap.find(fileName); it != m_texMap.end()) {
         it->second.removeCbs.emplace(fileName, f);
     }
 }
 
 void TextureCollector::removeRemoveCb(const std::string &fileName) {
-    auto it = m_texMap.find(fileName);
-    if (it != m_texMap.end()) {
+    if (const auto it = m_texMap.find(fileName); it != m_texMap.end()) {
         it->second.removeCbs.erase(fileName);
     }
 }
 
-Texture* TextureCollector::checkForExistence(const std::string &fn, const std::filesystem::path *dataPath,
+Texture* TextureCollector::checkForExistence(const std::string &fileName, const std::filesystem::path*,
                                              const std::function<Texture*()>& f) {
     if (!m_texMap.empty() && m_glBase) {
-        auto it = m_texMap.find(fn);
-        if (it != m_texMap.end()) {
-            auto al = m_glBase->getAssetManager()->getAssetLoader();
-            auto ft = al.getLastFileUpdate(fn);
-            if (ft != m_texMap[fn].time) {
+        if (const auto it = m_texMap.find(fileName); it != m_texMap.end()) {
+            if (const auto ft = AssetLoader::getLastFileUpdate(fileName); ft != m_texMap[fileName].time) {
                 it->second.texture.releaseTexture();
                 return f();
-            } else {
-                return &it->second.texture;
             }
+            return &it->second.texture;
         }
     }
 

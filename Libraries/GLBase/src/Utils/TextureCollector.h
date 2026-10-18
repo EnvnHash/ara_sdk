@@ -40,7 +40,7 @@ public:
     Texture *add(const char* filePtr, size_t size, const std::string &fn, const std::filesystem::path *dataPath, int32_t mipMapLevel);
     Texture *add(std::vector<uint8_t>& vp, const std::string &fileName, const std::filesystem::path *dataPath, int32_t mipMapLevel);
     Texture *addFromMem(const std::filesystem::path &fileName, const std::filesystem::path &dataPath, int32_t mipMapLevel);
-    Texture *addFromAssetManager(const std::string &fn, int mipMapLevel);
+    Texture *addFromAssetManager(const std::string &fn, int mipMapLevel, bool forceReload=false);
     void addRemoveCb(const std::string &fileName, const std::function<void()>& f);
     void removeRemoveCb(const std::string &fileName);
     auto remove(const std::filesystem::path &fileName);

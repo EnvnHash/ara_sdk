@@ -28,6 +28,7 @@ public:
     void undo() override;
     void redo() override;
     void saveState() override;
+    virtual void clear();
     void clearBackupPath() const;
 
     Brush& getBrush() { return m_brush; }
@@ -44,7 +45,7 @@ public:
     [[nodiscard]] const std::vector<std::filesystem::path>& getBackupCopies() const { return m_backupCopies; }
 
 protected:
-    void initFbo();
+    virtual void initFbo();
     void restoreFile(const std::filesystem::path &filename);
     virtual void paint(const glm::vec2& mousePos);
 
@@ -59,7 +60,6 @@ protected:
     std::vector<std::filesystem::path>              m_backupCopies;
     std::vector<std::filesystem::path>::iterator    m_backupCopiesIt;
     std::filesystem::path                           m_backupPath;
-    static inline std::filesystem::path             m_backupSubPath = "paintImage";
 };
 
 } // namespace ara

@@ -146,4 +146,129 @@ TEST(UITest, PaintImageSubImageTest) {
     }, 300, 300);
 }
 
+TEST(UITest, PaintImageUndoRedoSequence) {
+    appBody([&](const UIApplication &app) {
+        auto& img = addImage(app);
+        auto brush = getStdBrush();
+        brush.hardness = 1.0f;
+        img.setBrush(brush);
+        iterate(app);
+
+        // Sequence: paint, paint, undo, undo, clear, paint, paint, undo, undo, undo
+        // Initial state has 1 backup copy (initial state)
+        EXPECT_EQ(img.getBackupCopies().size(), 1);
+
+        // Undoing at initial state should be safely ignored
+        img.undo();
+        EXPECT_EQ(img.getBackupCopies().size(), 1);
+
+        // paint 1: at (100, 100)
+        simulateMouseClick(app, 100, 100);
+        img.saveState();
+        iterate(app);
+        EXPECT_EQ(img.getBackupCopies().size(), 2);
+
+        // paint 2: at (200, 200)
+        simulateMouseClick(app, 200, 200);
+        img.saveState();
+        iterate(app);
+        EXPECT_EQ(img.getBackupCopies().size(), 3);
+
+        // undo 1
+        img.undo();
+        iterate(app);
+
+        // undo 2
+        img.undo();
+        iterate(app);
+
+        // extra undo at boundary
+        img.undo();
+        iterate(app);
+
+        // clear
+        img.clear();
+        iterate(app);
+        // S1 and S2 should have been erased, S_clear added: [S0, S_clear]
+        EXPECT_EQ(img.getBackupCopies().size(), 2);
+
+        // paint 1 (after clear): at (100, 100)
+        simulateMouseClick(app, 100, 100);
+        img.saveState();
+        iterate(app);
+        EXPECT_EQ(img.getBackupCopies().size(), 3);
+
+        // paint 2 (after clear): at (200, 200)
+        simulateMouseClick(app, 200, 200);
+        img.saveState();
+        iterate(app);
+        EXPECT_EQ(img.getBackupCopies().size(), 4);
+
+        // undo 1: undoes paint 2
+        img.undo();
+        iterate(app);
+
+        // undo 2: undoes paint 1
+        img.undo();
+        iterate(app);
+
+        // undo 3: undoes clear (restores S0)
+        img.undo();
+        iterate(app);
+
+        // extra undo should be safe
+        img.undo();
+        iterate(app);
+    }, [&](const UIApplication &app) {
+        // Since all operations are undone back to initial state, image at (100, 100) and (200, 200) should be black
+        auto pixels1 = getPixels(100, 100, 1, 1);
+        EXPECT_EQ(pixels1[0], 0);
+        EXPECT_EQ(pixels1[1], 0);
+        EXPECT_EQ(pixels1[2], 0);
+
+        auto pixels2 = getPixels(200, 200, 1, 1);
+        EXPECT_EQ(pixels2[0], 0);
+        EXPECT_EQ(pixels2[1], 0);
+        EXPECT_EQ(pixels2[2], 0);
+    }, 300, 300);
+}
+
+TEST(UITest, PaintImageRedoAndHistoryBranch) {
+    appBody([&](const UIApplication &app) {
+        auto& img = addImage(app);
+        auto brush = getStdBrush();
+        brush.hardness = 1.0f;
+        img.setBrush(brush);
+        iterate(app);
+
+        // Initial state: redo should do nothing
+        img.redo();
+        EXPECT_EQ(img.getBackupCopies().size(), 1);
+
+        // Paint at (150, 150)
+        simulateMouseClick(app, 150, 150);
+        img.saveState();
+        iterate(app);
+        EXPECT_EQ(img.getBackupCopies().size(), 2);
+
+        // Undo
+        img.undo();
+        iterate(app);
+
+        // Redo
+        img.redo();
+        iterate(app);
+
+        // Redo again beyond end should do nothing
+        img.redo();
+        iterate(app);
+    }, [&](const UIApplication &app) {
+        // Redone state should have white pixel at center
+        auto pixels = getPixels(150, 150, 1, 1);
+        EXPECT_EQ(pixels[0], 255);
+        EXPECT_EQ(pixels[1], 255);
+        EXPECT_EQ(pixels[2], 255);
+    }, 300, 300);
+}
+
 } // namespace ara::UiUnitTest::PaintImageTests

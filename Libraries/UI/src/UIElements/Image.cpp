@@ -508,10 +508,10 @@ void Image::pushTexture(DrawSet& ds) {
     }
 }
 
-void Image::loadImg() {
+void Image::loadImg(const bool forceReload) {
     m_useTexId    = false;
     auto& texCol = getSharedRes()->glbase->textureCollector();
-    m_tex = texCol.addFromAssetManager(m_imageFile, m_mipMapLevel);
+    m_tex = texCol.addFromAssetManager(m_imageFile, m_mipMapLevel, forceReload);
     if (m_tex){
         m_loaded    = true;
         m_texAspect = m_tex->getWidthF() / m_tex->getHeightF();
