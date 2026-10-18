@@ -12,6 +12,7 @@ namespace ara {
 PaintImage::PaintImage() {
     setTypeName<PaintImage>();
     setName(getTypeName<PaintImage>());
+    m_maxUndoBufSize = 40;
 }
 
 void PaintImage::init() {
@@ -71,14 +72,14 @@ void PaintImage::init() {
     }
 
     initFbo();
+    saveState();
 }
 
 void PaintImage::initFbo() {
     if (!m_fbo) {
         m_fbo = std::make_unique<FBO>();
+        m_fbo->setGlbase(getSharedRes()->glbase);
     }
-
-    m_fbo->setGlbase(getSharedRes()->glbase);
 
     if (m_tex) {
         m_fbo->fromTexMan(m_tex);
@@ -100,16 +101,13 @@ void PaintImage::mouseDown(hidData& data) {
 
 void PaintImage::mouseDrag(hidData& data) {
     Image::mouseDrag(data);
-    if (data.dragStart) {
-        createBackup();
-    }
     paint(data.mousePosNodeRel);
 }
 
 void PaintImage::mouseUp(hidData& data) {
     Image::mouseUp(data);
     if (data.dragging) {
-        saveCurrentState();
+        saveState();
     }
 }
 
@@ -172,83 +170,84 @@ void PaintImage::saveToFile(const std::filesystem::path &filename) const {
     m_fbo->saveToFile(filename, 0, GL_RGBA8);
 }
 
-void PaintImage::createBackup() {
-    if (!m_fbo || m_imageFile.empty()) {
+void PaintImage::saveState() {
+    if (m_undoing || !m_fbo || m_imageFile.empty()) {
         return;
     }
+
     const auto p = AssetLoader::getAssetPath() / std::filesystem::path(m_imageFile);
     const auto ext = p.extension().empty() ? ".png" : p.extension().string();
+    std::error_code ec;
 
-    // If history had undone steps, truncate redo history and delete old redo files
-    if (m_historyIndex >= 0 && m_historyIndex < static_cast<int>(m_backupCopies.size()) - 1) {
-        for (size_t i = m_historyIndex + 1; i < m_backupCopies.size(); ++i) {
-            std::error_code ec;
-            std::filesystem::remove(m_backupCopies[i], ec);
-            LOG << " truncate undo  " << m_backupCopies[i];
+    // if there were new changes after one or several undos
+    // remove all entries which lie in the future after the actual entry
+    if (!m_backupCopies.empty() && m_backupCopiesIt != m_backupCopies.end() - 1) {
+        for (auto it = std::next(m_backupCopiesIt, 1); it != m_backupCopies.end(); ++it) {
+            std::filesystem::remove(*it, ec);
+            LOG << "erase " << *it;
         }
-        m_backupCopies.erase(m_backupCopies.begin() + (m_historyIndex + 1), m_backupCopies.end());
+        m_backupCopies.erase(std::next(m_backupCopiesIt, 1), m_backupCopies.end());
     }
 
-    // Save old state from PingPongFbo memory backup
+    // if the undo queue is filled, delete the first element
+    if (m_backupCopies.size() + 1 >= m_maxUndoBufSize) {
+        std::filesystem::remove(m_backupCopies.front(), ec);
+        LOG << "erase " << m_backupCopies.front();
+        m_backupCopies.erase(m_backupCopies.begin());
+    }
+
+    // serialize the actual state to a binary json and push it to the undo queue
     const std::string uuidCurrent = generateUUID();
     const auto currentBackupPath = m_backupPath / m_backupSubPath / (uuidCurrent + ext);
-
     m_fbo->saveToFile(currentBackupPath, 0, GL_RGBA8);
+    LOG << " saveState to [" << m_backupCopies.size() << "] " << currentBackupPath;
     m_backupCopies.emplace_back(currentBackupPath);
-    m_historyIndex++;
-    LOG << "createBackup " << currentBackupPath << " m_historyIndex " << m_historyIndex;
-
-    // If backup list exceeds maximum amount, delete oldest backup copies
-    while (m_backupCopies.size() > m_maxBackupCopies) {
-        const auto oldest = m_backupCopies.front();
-        std::error_code ec;
-        std::filesystem::remove(oldest, ec);
-        m_backupCopies.erase(m_backupCopies.begin());
-        if (m_historyIndex > 0) {
-            m_historyIndex--;
-        }
-    }
-}
-
-void PaintImage::saveCurrentState() const {
-    const auto p = AssetLoader::getAssetPath() / std::filesystem::path(m_imageFile);
-    LOG << "saveCurrentState to " << p;
-    m_fbo->saveToFile(p, 0, GL_RGBA8);
+    m_backupCopiesIt = m_backupCopies.end() - 1; // set the undoBufPtr to the new entry
 }
 
 void PaintImage::undo() {
-    if (m_backupCopies.empty() || m_historyIndex <= 0) {
+    if (m_backupCopies.empty()) {
         return;
     }
 
-    m_historyIndex--;
-    if (const auto& restorePath = m_backupCopies[m_historyIndex]; std::filesystem::exists(restorePath)) {
-        setImg(restorePath);
-        loadImg();
-        if (!m_imageFile.empty()) {
-            saveToFile(m_imageFile);
-        }
-        if (getSharedRes()) {
-            getSharedRes()->reqRedraw();
-        }
+    --m_backupCopiesIt;  // set back one entry
+
+    m_undoing = true;
+    if (const auto& restorePath = *m_backupCopiesIt; std::filesystem::exists(restorePath)) {
+        LOG << " restore [" << std::distance(m_backupCopies.begin(), m_backupCopiesIt) << "] " << restorePath;
+        restoreFile(restorePath);
+    }
+    m_undoing = false;
+
+    for (auto &it : collectCallbacks(cbType::undo, true)) {
+        it(this, "");
     }
 }
 
 void PaintImage::redo() {
-    if (m_historyIndex < 0 || m_historyIndex >= static_cast<int>(m_backupCopies.size()) - 1) {
+    if (m_backupCopies.empty()) {
         return;
     }
 
-    m_historyIndex++;
-    if (const auto& restorePath = m_backupCopies[m_historyIndex]; std::filesystem::exists(restorePath)) {
-        setImg(restorePath);
-        loadImg();
-        if (!m_imageFile.empty()) {
-            saveToFile(m_imageFile);
+    if (m_backupCopiesIt != --m_backupCopies.end()) {
+        ++m_backupCopiesIt;
+        m_undoing = true;
+        if (const auto& restorePath = *m_backupCopiesIt; std::filesystem::exists(restorePath)) {
+            LOG << " restore [" << std::distance(m_backupCopies.begin(), m_backupCopiesIt) << "]" << restorePath;
+            restoreFile(restorePath);
         }
-        if (getSharedRes()) {
-            getSharedRes()->reqRedraw();
-        }
+        m_undoing = false;
+    }
+}
+
+void PaintImage::restoreFile(const std::filesystem::path &filename) {
+    const auto tf = m_imageFile;
+    setImg(filename);
+    loadImg();
+    m_imageFile = tf;
+    initFbo();
+    if (getSharedRes()) {
+        getSharedRes()->reqRedraw();
     }
 }
 
@@ -260,8 +259,7 @@ void PaintImage::setBackupPath(const std::filesystem::path& p) {
 }
 
 void PaintImage::clearBackupPath() const {
-    const auto p = m_backupPath / m_backupSubPath;
-    for (const auto& entry : std::filesystem::directory_iterator(p))
+    for (const auto p = m_backupPath / m_backupSubPath; const auto& entry : std::filesystem::directory_iterator(p))
         std::filesystem::remove_all(entry.path());
 }
 

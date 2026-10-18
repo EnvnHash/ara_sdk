@@ -27,6 +27,7 @@ public:
 
     void undo() override;
     void redo() override;
+    void saveState() override;
     void clearBackupPath() const;
 
     Brush& getBrush() { return m_brush; }
@@ -40,29 +41,25 @@ public:
     void saveToFile(const std::filesystem::path &filename) const;
     virtual void setSharedTexture(const std::shared_ptr<Texture>& tex);
 
-    void setMaxBackupCopies(const size_t maxCopies) { m_maxBackupCopies = maxCopies; }
-    [[nodiscard]] size_t getMaxBackupCopies() const { return m_maxBackupCopies; }
     [[nodiscard]] const std::vector<std::filesystem::path>& getBackupCopies() const { return m_backupCopies; }
 
 protected:
     void initFbo();
-    void createBackup();
-    void saveCurrentState() const;
+    void restoreFile(const std::filesystem::path &filename);
     virtual void paint(const glm::vec2& mousePos);
 
-    Brush                               m_brush{};
-    std::unique_ptr<FBO>                m_fbo;
-    std::shared_ptr<Texture>            m_ownedTex;
-    Shaders*                            m_paintShader = nullptr;
-    UniformBlock                        m_brushBlock{};
-    float                               m_scaledBrush{};
-    bool                                m_locked{};
-    mode                                m_paintMode = mode::add;
-    size_t                              m_maxBackupCopies = 20;
-    std::vector<std::filesystem::path>  m_backupCopies;
-    std::filesystem::path               m_backupPath;
-    static inline std::filesystem::path m_backupSubPath = "paintImage";
-    int                                 m_historyIndex = -1;
+    Brush                                           m_brush{};
+    std::unique_ptr<FBO>                            m_fbo;
+    std::shared_ptr<Texture>                        m_ownedTex;
+    Shaders*                                        m_paintShader = nullptr;
+    UniformBlock                                    m_brushBlock{};
+    float                                           m_scaledBrush{};
+    bool                                            m_locked{};
+    mode                                            m_paintMode = mode::add;
+    std::vector<std::filesystem::path>              m_backupCopies;
+    std::vector<std::filesystem::path>::iterator    m_backupCopiesIt;
+    std::filesystem::path                           m_backupPath;
+    static inline std::filesystem::path             m_backupSubPath = "paintImage";
 };
 
 } // namespace ara

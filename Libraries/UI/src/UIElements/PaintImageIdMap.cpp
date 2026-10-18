@@ -21,6 +21,7 @@ void PaintImageIdMap::init() {
         initVisualizationShader();
         initFillShader();
         initFbo();
+        saveState();
     }
 }
 
@@ -261,9 +262,9 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
 }
 
 void PaintImageIdMap::clear() {
-    createBackup();
     m_tex->clear();
-    saveCurrentState();
+    LOG << " --- clear";
+    saveState();
 }
 
 void PaintImageIdMap::fillByTexture(const GLuint texId, vec4 selectColor, const uint32_t destBit) const {

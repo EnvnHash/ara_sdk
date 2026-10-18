@@ -105,10 +105,12 @@ void FBO::fromTex(const GLuint texId, const int32_t width, const int32_t height,
     m_quad = make_unique<Quad>(QuadInitParams{});
 
     // get standard shaders for clearing the FBO
-    if (!m_shCol && m_glbase) {
-        m_shCol = &m_glbase->shaderCollector();
-    } else {
-        LOGE << "FBO::fromTexMan Warning, No shader collector present on FBO";
+    if (!m_shCol) {
+        if (m_glbase) {
+            m_shCol = &m_glbase->shaderCollector();
+        } else {
+            LOGE << "FBO::fromTexMan Warning, No shader collector present on FBO";
+        }
     }
 
     if (m_shCol) {
