@@ -284,7 +284,7 @@ void PaintImage::clearBackupPath() const {
 void PaintImage::setCircleCursor() {
 #ifdef ARA_USE_GLFW
     const auto glfwWin = getWindow()->getWinHandle();
-    m_cursor = GLFWWindow::createCircularMouseCursor(static_cast<int>(m_brush.size), {0.7f, 0.7f, 0.7f, 0.6f});
+    m_cursor = GLFWWindow::createCircularMouseCursor(static_cast<int>(m_brush.size * getParentContentScale().x), {0.7f, 0.7f, 0.7f, 0.6f});
     glfwSetCursor(static_cast<GLFWwindow*>(glfwWin->getWin()), m_cursor);
 #endif
 }
