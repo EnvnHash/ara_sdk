@@ -4,6 +4,8 @@
 #include <Utils/Texture.h>
 #include <GLBase.h>
 
+#include "UIWindow.h"
+
 using namespace glm;
 using namespace std;
 
@@ -109,6 +111,16 @@ void PaintImage::mouseUp(hidData& data) {
     if (data.dragging) {
         saveState();
     }
+}
+
+void PaintImage::mouseIn(hidData& data) {
+    Image::mouseIn(data);
+    setCircleCursor();
+}
+
+void PaintImage::mouseOut(hidData& data) {
+    Image::mouseIn(data);
+    resetCursor();
 }
 
 void PaintImage::paint(const vec2& mousePos) {
@@ -267,6 +279,23 @@ void PaintImage::clearBackupPath() const {
     for (const auto p = AssetLoader::getAssetPath() / m_backupPath; const auto& entry : std::filesystem::directory_iterator(p)) {
         std::filesystem::remove_all(entry.path());
     }
+}
+
+void PaintImage::setCircleCursor() {
+#ifdef ARA_USE_GLFW
+    const auto glfwWin = getWindow()->getWinHandle();
+    m_cursor = GLFWWindow::createCircularMouseCursor(static_cast<int>(m_brush.size), {0.7f, 0.7f, 0.7f, 0.6f});
+    glfwSetCursor(static_cast<GLFWwindow*>(glfwWin->getWin()), m_cursor);
+#endif
+}
+
+void PaintImage::resetCursor() {
+#ifdef ARA_USE_GLFW
+    if (m_cursor) {
+        glfwDestroyCursor(m_cursor);
+        m_cursor = nullptr;
+    }
+#endif
 }
 
 } // namespace ara

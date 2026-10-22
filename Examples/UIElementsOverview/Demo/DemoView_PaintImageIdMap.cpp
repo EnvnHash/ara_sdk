@@ -50,7 +50,7 @@ void DemoView_PaintImageIdMap::init() {
     );
 
     // Paint Image Node
-    ivec2 paintImageSize = ivec2{400, 400};
+    auto paintImageSize = ivec2{400, 400};
 
     m_paintImage = &push<PaintImageIdMap>(UINodePars{
         .pos = ivec2{20, 110},
@@ -70,7 +70,7 @@ void DemoView_PaintImageIdMap::init() {
     });
     m_paintImage->setVisualizationID(0);
 
-    const int panelX = 450;
+    constexpr int panelX = 450;
     int curY = 110;
 
     // Brush ID dropdown
@@ -173,7 +173,7 @@ void DemoView_PaintImageIdMap::init() {
     clearBtn.setFontType("regular");
     clearBtn.setClickedCb([this] {
         if (m_paintImage) {
-            m_paintImage->setImg("test/black.png", 1);
+            m_paintImage->clear();
         }
     });
 }

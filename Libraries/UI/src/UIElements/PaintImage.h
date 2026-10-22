@@ -24,6 +24,8 @@ public:
     void mouseDown(hidData& data) override;
     void mouseDrag(hidData& data) override;
     void mouseUp(hidData& data) override;
+    void mouseIn(hidData& data) override;
+    void mouseOut(hidData& data) override;
 
     void undo() override;
     void redo() override;
@@ -48,6 +50,8 @@ protected:
     virtual void initFbo();
     void restoreFile(const std::filesystem::path &filename);
     virtual void paint(const glm::vec2& mousePos);
+    void setCircleCursor();
+    void resetCursor();
 
     Brush                                           m_brush{};
     std::unique_ptr<FBO>                            m_fbo;
@@ -60,6 +64,9 @@ protected:
     std::vector<std::filesystem::path>              m_backupCopies;
     std::vector<std::filesystem::path>::iterator    m_backupCopiesIt;
     std::filesystem::path                           m_backupPath;
+#ifdef ARA_USE_GLFW
+    GLFWcursor*                                     m_cursor{};
+#endif
 };
 
 } // namespace ara
