@@ -45,10 +45,10 @@ public:
     virtual void setSharedTexture(const std::shared_ptr<Texture>& tex);
 
     [[nodiscard]] const std::vector<std::filesystem::path>& getBackupCopies() const { return m_backupCopies; }
+    void restoreFile(const std::filesystem::path &filename);
 
 protected:
     virtual void initFbo();
-    void restoreFile(const std::filesystem::path &filename);
     virtual void paint(const glm::vec2& mousePos);
     void setCircleCursor();
     void resetCursor();

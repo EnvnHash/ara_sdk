@@ -196,7 +196,6 @@ void PaintImage::saveState() {
     if (!m_backupCopies.empty() && m_backupCopiesIt != m_backupCopies.end() - 1) {
         for (auto it = std::next(m_backupCopiesIt, 1); it != m_backupCopies.end(); ++it) {
             std::filesystem::remove(*it, ec);
-            LOG << "erase " << *it;
         }
         m_backupCopies.erase(std::next(m_backupCopiesIt, 1), m_backupCopies.end());
     }
