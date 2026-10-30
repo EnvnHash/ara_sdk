@@ -1077,7 +1077,7 @@ bool FBO::saveToFile(const filesystem::path &filename, const size_t attachNr, co
         case GL_UNSIGNED_BYTE: {
             bitmap = FreeImage_Allocate(m_tex_width, m_tex_height, nrChan * 8);
             if (bitmap) {
-                FreeImage_SetTransparent(bitmap, ara::getExtType(m_type) == GL_RGBA);
+                FreeImage_SetTransparent(bitmap, ara::getExtType(m_type) == GL_RGBA || format == GL_BGRA);
                 getTexImage(bitmap, texId, saveTarget, format);
             } else {
                 LOGE << "Texture::saveTexToFile2D Error: could not allocate bitmap";
