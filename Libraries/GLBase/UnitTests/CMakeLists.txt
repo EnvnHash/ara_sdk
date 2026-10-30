@@ -17,6 +17,7 @@ file(GLOB GLBASE_UT_SRC
     CtrlPointSerialization.cpp
     DrawQuad.cpp
     FreeImageTest.cpp
+    FBOTest.cpp
     MemLeakTests/DrawQuadMemLeak.cpp
     GLBaseCreationDestruction.cpp
     GLBaseStopStart.cpp

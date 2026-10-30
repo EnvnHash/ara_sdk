@@ -9,9 +9,8 @@
 using namespace std;
 
 namespace ara::UiUnitTest::ImageTests {
-
-Image* addImage(const UIApplication &app, const std::string& imageFile, const glm::ivec2& size={400,400},
-    const glm::vec4& bgCol = {0.5f, 0.2f, 0.2f, 1.f}, const int mipMap=1) {
+    static Image* addImage(const UIApplication &app, const std::string& imageFile, const glm::ivec2& size={400,400},
+                           const glm::vec4& bgCol = {0.5f, 0.2f, 0.2f, 1.f}, const int mipMap=1) {
     auto& img = app.getMainWindow()->getRootNode()->push<Image>();
     img.setImg(( std::filesystem::path("test") / imageFile).string(), mipMap);
     img.setSize(size.x, size.y);

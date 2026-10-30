@@ -4,15 +4,15 @@
 using namespace std;
 
 namespace ara::GLBaseUnitTest::DrawQuad {
-    ShaderCollector shCol;  // create a ShaderCollector
-    GLFWWindow gwin;
-    unique_ptr<Quad> quad;
-    Shaders *colShader;
+    static ShaderCollector shCol;  // create a ShaderCollector
+    static GLFWWindow gwin;
+    static unique_ptr<Quad> quad;
+    static Shaders *colShader;
     glWinPar gp;             // define Parameters for windows instanciating
 
-    bool didRun = false;
+    static bool didRun = false;
 
-    void staticDrawFunc() {
+    static void staticDrawFunc() {
         // set some OpenGL parameters
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                    // clear the screen
         glViewport(0, 0, static_cast<GLsizei>(gp.size.x), static_cast<GLsizei>(gp.size.y));        // set the drawable arean

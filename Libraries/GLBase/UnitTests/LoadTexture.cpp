@@ -15,9 +15,9 @@ namespace ara::GLBaseUnitTest::LoadTexture {
     Texture tex(&m_glbase);
     glWinPar gp;             // define Parameters for windows instantiating
 
-    bool didRun = false;
+    static bool didRun = false;
 
-    void staticDrawFunc() {
+    static void staticDrawFunc() {
         // set some OpenGL parameters
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);              // clear the screen
         glViewport(0, 0, gp.size.x, gp.size.y);        // set the drawable area
@@ -61,7 +61,7 @@ namespace ara::GLBaseUnitTest::LoadTexture {
         checkColors.emplace_back(segStep * 3 + segStepHalf, segStep * 3 + segStepHalf, glm::ivec3(0, 255, 255));
 
         for (auto &it: checkColors) {
-            size_t ptr = (std::get<0>(it) + std::get<1>(it) * gp.size.x) * 4;
+            const size_t ptr = (std::get<0>(it) + std::get<1>(it) * gp.size.x) * 4;
             for (int i = 0; i < 3; i++) {
                 ASSERT_EQ(static_cast<int>(data[ptr + i]), std::get<2>(it)[i]);
             }
@@ -72,14 +72,7 @@ namespace ara::GLBaseUnitTest::LoadTexture {
     }
 
     TEST(GLBaseTest, LoadTexture) {
-        // direct window creation
-        gp.size.x = 64;              // set the window's width
-        gp.size.y = 64;             // set the window's height
-        gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
-        gp.createHidden = false;    // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
-
-        ASSERT_TRUE(gwin.create(gp));    // now pass the arguments and create the window
-        ASSERT_EQ(true, initGLEW());
+        createGlBaseCtx(gwin);
 
         quad = make_unique<Quad>(QuadInitParams{.color = { 1.f, 0.f, 0.f, 1.f} });  // create a Quad, standard width and height (normalized into -1|1), static red
         texShader = m_glbase.shaderCollector().getStdTex(); // get a simple standard color shader

@@ -30,6 +30,17 @@ static inline BS::thread_pool g_thread_pool;
 
 namespace ara::GLBaseUnitTest{
 
+static void createGlBaseCtx(GLFWWindow& gwin) {
+    glWinPar gp;             // define Parameters for windows instantiating
+    gp.size.x = 4;              // set the window's width
+    gp.size.y = 4;             // set the window's height
+    gp.scaleToMonitor = false;  // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
+    gp.createHidden = false;    // maintain pixels to canvas 1:1 if set to true, on windows scaling according to the monitor system scaling
+
+    ASSERT_TRUE(gwin.create(gp));    // now pass the arguments and create the window
+    ASSERT_EQ(true, initGLEW());
+}
+
 static void compareBitmaps(const GLubyte* data1, const GLubyte* data2, uint32_t width, const uint32_t height, uint8_t eps, bool bgra_to_rgba) {
     std::list<std::future<void>> futures;
     const auto tc = g_thread_pool.get_thread_count();
