@@ -251,7 +251,8 @@ void PaintImage::redo() {
 void PaintImage::clear() {
     if (m_tex) {
         m_tex->clear();
-    } else if (m_fbo) {
+    }
+    if (m_fbo) {
         m_fbo->clear();
     }
     saveState();
