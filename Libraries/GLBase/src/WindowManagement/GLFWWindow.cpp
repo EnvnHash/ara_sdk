@@ -524,6 +524,7 @@ GLFWcursor* GLFWWindow::createCircularMouseCursor(const int radius, const vec4& 
     const int     radiusSq         = radius * radius;
     const int     innerRadius      = radius - outlineThickness;
     const int     innerRadiusSq    = innerRadius > 0 ? innerRadius * innerRadius : 0;
+    const auto    numDivision      = static_cast<float>(radius);
 
     for (int y = 0; y < diameter; ++y) {
         for (int x = 0; x < diameter; ++x) {
@@ -531,19 +532,24 @@ GLFWcursor* GLFWWindow::createCircularMouseCursor(const int radius, const vec4& 
             const int dy = y - radius;
 
             if (const auto distSq = dx * dx + dy * dy; distSq <= radiusSq && distSq >= innerRadiusSq) {
-                const size_t idx = static_cast<size_t>((y * diameter + x) * 4);
-                pixels[idx]      = col.r * 255;
-                pixels[idx + 1]  = col.g * 255;
-                pixels[idx + 2]  = col.b * 255;
-                pixels[idx + 3]  = col.a * 255;
+                vec2 pos { x, y };
+                pos -= vec2{ radius, radius};
+                const float alpha = (atan2(pos.y, pos.x) + static_cast<float>(M_PI)) / static_cast<float>(M_PI * 2.0);
+                const auto  idx = static_cast<size_t>((y * diameter + x) * 4);
+                const uint8_t val = std::fmod(alpha * 2.f * numDivision, 2.f) < 1.f ? 0 : 255;
+                pixels[idx]       = val;
+                pixels[idx + 1]   = val;
+                pixels[idx + 2]   = val;
+                pixels[idx + 3]   = 255;
             }
         }
     }
 
-    GLFWimage image{};
-    image.width  = diameter;
-    image.height = diameter;
-    image.pixels = pixels.data();
+    const GLFWimage image{
+        .width  = diameter,
+        .height = diameter,
+        .pixels = pixels.data()
+    };
 
     return glfwCreateCursor(&image, radius, radius);
 }
