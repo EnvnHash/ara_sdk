@@ -210,6 +210,7 @@ void PaintImage::saveState() {
     const std::string uuidCurrent = generateUUID();
     const auto currentBackupPath = AssetLoader::getAssetPath() / m_backupPath / (uuidCurrent + ext);
     m_fbo->saveToFile(currentBackupPath, 0, GL_RGBA8);
+    m_fbo->saveToFile(p, 0, GL_RGBA8);
     m_backupCopies.emplace_back(currentBackupPath);
     m_backupCopiesIt = m_backupCopies.end() - 1; // set the undoBufPtr to the new entry
 }
@@ -250,7 +251,8 @@ void PaintImage::redo() {
 void PaintImage::clear() {
     if (m_tex) {
         m_tex->clear();
-    } else if (m_fbo) {
+    }
+    if (m_fbo) {
         m_fbo->clear();
     }
     saveState();

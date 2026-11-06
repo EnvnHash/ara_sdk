@@ -254,6 +254,9 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
         glBindTexture(GL_TEXTURE_2D, m_texId);
     }
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     m_fbo->unbind();
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
