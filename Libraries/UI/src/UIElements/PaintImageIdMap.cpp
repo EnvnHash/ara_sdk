@@ -71,7 +71,7 @@ void PaintImageIdMap::initPaintShader() {
                 discard;
             }
 
-            vec4 col = texture(tex, tc);
+            vec4 col = texture(tex, texCoord * vec2(0.5) + vec2(0.5));
             uint packedColor = packUnorm4x8(col);
             uint mask = uint(1) << maskBit;
             if (bool(drawAdditive)) {
@@ -222,7 +222,8 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
     m_fbo->bind();
     m_paintShader->begin();
 
-    glBlendFunc(GL_ONE, GL_ZERO);
+    glDisable(GL_BLEND);
+    //glBlendFunc(GL_ONE, GL_ZERO);
 
     const vec2 fboSize{ static_cast<float>(m_fbo->getWidth()), static_cast<float>(m_fbo->getHeight()) };
 
@@ -259,7 +260,9 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     m_fbo->unbind();
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     m_sharedRes->setDrawFlag(true); // Request redrawing of the UI
 }
