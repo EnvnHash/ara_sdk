@@ -103,7 +103,13 @@ void PaintImage::mouseDown(hidData& data) {
 
 void PaintImage::mouseDrag(hidData& data) {
     Image::mouseDrag(data);
-    paint(data.mousePosNodeRel);
+    if (data.mousePressed[mouseButt::left]) {
+        paint(data.mousePosNodeRel);
+    }
+}
+
+void PaintImage::mouseWheel(hidData& data) {
+    setCircleCursor();
 }
 
 void PaintImage::mouseUp(hidData& data) {

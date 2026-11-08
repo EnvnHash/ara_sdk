@@ -23,6 +23,7 @@ public:
 
     void mouseDown(hidData& data) override;
     void mouseDrag(hidData& data) override;
+    void mouseWheel(hidData& data) override;
     void mouseUp(hidData& data) override;
     void mouseIn(hidData& data) override;
     void mouseOut(hidData& data) override;
