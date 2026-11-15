@@ -208,6 +208,9 @@ bool PaintImageIdMap::drawFunc(const uint32_t&) {
     glActiveTexture(GL_TEXTURE0);
     m_tex->bind(0);
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
     glBindVertexArray(*m_sharedRes->nullVao);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
