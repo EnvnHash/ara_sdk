@@ -247,7 +247,7 @@ void PaintImageIdMap::paint(const vec2& mousePos) {
     m_paintShader->setUniform2f("pos", transPos[0].x, transPos[0].y);
     m_paintShader->setUniform4f("limits", transPos[1].x, transPos[1].y, transPos[2].x, transPos[2].y);
     m_paintShader->setUniform1i("maskBit", m_drawID);
-    m_paintShader->setUniform2f("texSize", m_tex->getWidth(), m_tex->getHeight());
+    m_paintShader->setUniform2f("texSize", static_cast<float>(m_tex->getWidth()), static_cast<float>(m_tex->getHeight()));
     m_paintShader->setUniform1i("tex", 0);
     m_paintShader->setUniform1i("drawAdditive", m_drawAdditive);
 

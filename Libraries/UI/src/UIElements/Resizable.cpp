@@ -72,7 +72,7 @@ void Resizable::initHandles() {
             .bgColor = vec4{0.4f, 0.4f, 0.4f, 1.f},
             .align = aligns[i],
             .valign = vAligns[i],
-            .borderWidth = 1.f,
+            .borderWidth = 1,
             .borderColor = vec4{1.f, 1.f, 1.f, 1.f}
         });
         m_handles[i]->setCorner(static_cast<Corner>(i));
@@ -186,7 +186,7 @@ ivec2 Resizable::getNewPos(const Corner corner, const vec2& movedPix, const vec2
 }
 
 int32_t Resizable::getNewXPosCenterHandle(const dragPar& dp) {
-    return dp.dragStartPos.x;
+    return static_cast<int32_t>(dp.dragStartPos.x);
 }
 
 int32_t Resizable::getNewXPosLeftHandle(const dragPar& dp) {
@@ -200,7 +200,7 @@ int32_t Resizable::getNewXPosRightHandle(const dragPar& dp) {
 }
 
 int32_t Resizable::getNewYPosCenterHandle(const dragPar& dp) {
-    return dp.dragStartPos.y;
+    return static_cast<int32_t>(dp.dragStartPos.y);
 }
 
 int32_t Resizable::getNewYPosTopHandle(const dragPar& dp) {
