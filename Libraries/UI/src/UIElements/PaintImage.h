@@ -8,7 +8,7 @@ namespace ara {
 
 class PaintImage : public Image {
 public:
-    enum class mode : int32_t { add=0, subtract, colorPick };
+    enum class mode : int32_t { add=0, subtract, colorPick, mask };
     struct Brush {
         float size = 10.0f;
         float hardness = 0.5f;
@@ -20,6 +20,8 @@ public:
     ~PaintImage() override = default;
 
     void init() override;
+    virtual void initPaintShader();
+    void initColorMaskShader();
 
     void mouseDown(hidData& data) override;
     void mouseDrag(hidData& data) override;
@@ -45,6 +47,7 @@ public:
     void setMasking(bool val);
     void setCursor();
     void pickColor(const glm::vec2& mousePos);
+    void colorSelect(const glm::vec2& mousePos, glm::vec4& col, float tolerance);
     [[nodiscard]] glm::vec4 getPickColor() const { return m_pickColor; }
     void saveToFile(const std::filesystem::path &filename) const;
     virtual void setSharedTexture(const std::shared_ptr<Texture>& tex);
@@ -53,6 +56,7 @@ public:
     void restoreFile(const std::filesystem::path &filename);
 
 protected:
+    std::optional<glm::ivec2> getMousePosInTexPixSpace(Texture* tex, const glm::vec2& mousePos);
     virtual void initFbo();
     void initMaskTex();
     virtual void paint(const glm::vec2& mousePos);
@@ -63,15 +67,18 @@ protected:
     std::unique_ptr<FBO>                            m_fbo;
     std::shared_ptr<Texture>                        m_ownedTex;
     Shaders*                                        m_paintShader = nullptr;
+    Shaders*                                        m_colMaskSeedShdr = nullptr;
+    Shaders*                                        m_colMaskShdr = nullptr;
     UniformBlock                                    m_brushBlock{};
     float                                           m_scaledBrush{};
     bool                                            m_locked{};
+    int32_t                                         m_maskSeedReadIdx{};
     mode                                            m_paintMode = mode::add;
     std::vector<std::filesystem::path>              m_backupCopies;
     std::vector<std::filesystem::path>::iterator    m_backupCopiesIt;
     std::filesystem::path                           m_backupPath;
     glm::vec4                                       m_pickColor{0.f};
-    std::shared_ptr<Texture>                        m_maskTex;
+    std::array<std::shared_ptr<Texture>, 2>         m_maskTex;
     bool                                            m_drawMasked = false;
 #ifdef ARA_USE_GLFW
     GLFWcursor*                                     m_cursor{};
