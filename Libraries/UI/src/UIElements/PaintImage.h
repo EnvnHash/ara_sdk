@@ -42,6 +42,7 @@ public:
     void setBackupPath(const std::filesystem::path& p);
     void setBrushSize(float brushSize);
     void setBrushHardness(float hardness);
+    void setMasking(bool val);
     void setCursor();
     void pickColor(const glm::vec2& mousePos);
     [[nodiscard]] glm::vec4 getPickColor() const { return m_pickColor; }
@@ -53,6 +54,7 @@ public:
 
 protected:
     virtual void initFbo();
+    void initMaskTex();
     virtual void paint(const glm::vec2& mousePos);
     void setCircleCursor();
     void resetCursor();
@@ -69,6 +71,8 @@ protected:
     std::vector<std::filesystem::path>::iterator    m_backupCopiesIt;
     std::filesystem::path                           m_backupPath;
     glm::vec4                                       m_pickColor{0.f};
+    std::shared_ptr<Texture>                        m_maskTex;
+    bool                                            m_drawMasked = false;
 #ifdef ARA_USE_GLFW
     GLFWcursor*                                     m_cursor{};
 #endif

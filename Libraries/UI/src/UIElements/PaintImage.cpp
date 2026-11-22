@@ -44,6 +44,8 @@ void PaintImage::init() {
             };
             uniform vec2 pos;
             uniform vec4 limits;
+            uniform int masked;
+            uniform sampler2D maskTex;
             layout(std140) uniform BrushBlock {
                 Brush brush;
             };
@@ -53,11 +55,18 @@ void PaintImage::init() {
                 }
                 float dist = distance(texCoord, pos);
                 float edge = clamp((1.0 - brush.hardness), 0.0001, 1.0);
+                float maskAlpha = 1.0;
+                if (bool(masked)) {
+                    maskAlpha = texture(maskTex, texCoord).r;
+                    if (maskAlpha == 0.0) {
+                        discard;
+                    }
+                }
                 float falloff = 1.0 - smoothstep(brush.size * (1.0 - edge), brush.size, dist);
                 if (falloff == 0.0) {
                     discard;
                 }
-                fragColor = vec4(brush.color.rgb, brush.opacity * falloff * brush.color.a);
+                fragColor = vec4(brush.color.rgb, brush.opacity * falloff * brush.color.a * maskAlpha);
             }
         );
 
@@ -94,6 +103,35 @@ void PaintImage::setSharedTexture(const std::shared_ptr<Texture>& tex) {
     m_tex = tex.get();
     m_ownedTex = tex;
     initFbo();
+    if (m_drawMasked) {
+        initMaskTex();
+    }
+}
+
+void PaintImage::setMasking(const bool val) {
+    m_drawMasked = val;
+    if (val) {
+        initMaskTex();
+    }
+}
+
+void PaintImage::initMaskTex() {
+    if (!m_ownedTex) {
+        return;
+    }
+
+    const int width = m_ownedTex->getWidth();
+    const int height = m_ownedTex->getHeight();
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    if (!m_maskTex || m_maskTex->getWidth() != width || m_maskTex->getHeight() != height) {
+        m_maskTex = std::make_shared<Texture>();
+        m_maskTex->setGlbase(getSharedRes()->glbase);
+        m_maskTex->allocate2D(width, height, GL_R8, GL_RED, GL_TEXTURE_2D, GL_UNSIGNED_BYTE);
+        m_maskTex->clear();
+    }
 }
 
 void PaintImage::mouseDown(hidData& data) {
@@ -167,7 +205,21 @@ void PaintImage::paint(const vec2& mousePos) {
     m_paintShader->setUniform2f("pos", transPos[0].x, transPos[0].y);
     m_paintShader->setUniform4f("limits", transPos[1].x, transPos[1].y, transPos[2].x, transPos[2].y);
 
+    // Bind mask texture and set masking uniforms
+    if (m_drawMasked && m_maskTex) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_maskTex->getId());
+        m_paintShader->setUniform1i("masked", 1);
+        m_paintShader->setUniform1i("maskTex", 0);
+    } else {
+        m_paintShader->setUniform1i("masked", 0);
+    }
+
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    if (m_drawMasked && m_maskTex) {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
     m_fbo->unbind();
 
