@@ -98,30 +98,34 @@ void PaintImage::setSharedTexture(const std::shared_ptr<Texture>& tex) {
 
 void PaintImage::mouseDown(hidData& data) {
     Image::mouseDown(data);
-    paint(data.mousePosNodeRel);
+    if (m_paintMode != mode::colorPick) {
+        paint(data.mousePosNodeRel);
+    }
 }
 
 void PaintImage::mouseDrag(hidData& data) {
     Image::mouseDrag(data);
-    if (data.mousePressed[mouseButt::left]) {
+    if (m_paintMode != mode::colorPick && data.mousePressed[mouseButt::left]) {
         paint(data.mousePosNodeRel);
     }
 }
 
 void PaintImage::mouseWheel(hidData& data) {
-    setCircleCursor();
+    setCursor();
 }
 
 void PaintImage::mouseUp(hidData& data) {
     Image::mouseUp(data);
-    if (data.dragging) {
+    if (m_paintMode == mode::colorPick) {
+        pickColor(data.mousePosNodeRel);
+    } else if (data.dragging) {
         saveState();
     }
 }
 
 void PaintImage::mouseIn(hidData& data) {
     Image::mouseIn(data);
-    setCircleCursor();
+    setCursor();
 }
 
 void PaintImage::mouseOut(hidData& data) {
@@ -286,6 +290,56 @@ void PaintImage::clearBackupPath() const {
     for (const auto p = AssetLoader::getAssetPath() / m_backupPath; const auto& entry : std::filesystem::directory_iterator(p)) {
         std::filesystem::remove_all(entry.path());
     }
+}
+
+void PaintImage::pickColor(const glm::vec2& mousePos) {
+    const auto tex = getTexture();
+    if (!tex) {
+        return;
+    }
+
+    const int width = tex->getWidth();
+    const int height = tex->getHeight();
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    // Convert mouse position to pixel coordinates in the texture
+    const float x = mousePos.x / getSize().x * width;
+    const float y = (1.f - mousePos.y / getSize().y) * height;
+
+    // Clamp to valid range
+    const int px = std::max(0, std::min(width - 1, static_cast<int>(x)));
+    const int py = std::max(0, std::min(height - 1, static_cast<int>(y)));
+
+    // Create a temporary FBO to read from the texture
+    FBO readFbo;
+    readFbo.setGlbase(getSharedRes()->glbase);
+    readFbo.fromTex(tex->getId(), width, height, GL_RGBA8, 1, GL_NEAREST, GL_NEAREST);
+    readFbo.bind();
+
+    // Read the pixel color using glReadPixels
+    std::array<GLubyte, 4> pixelData;
+    glReadPixels(px, py, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixelData.data());
+    readFbo.unbind();
+
+    // Store the picked color (normalize to 0-1 range)
+    m_pickColor = glm::vec4(
+        pixelData[0] / 255.f,
+        pixelData[1] / 255.f,
+        pixelData[2] / 255.f,
+        pixelData[3] / 255.f
+    );
+}
+
+void PaintImage::setCursor() {
+#ifdef ARA_USE_GLFW
+    if (m_paintMode == mode::colorPick) {
+        getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::crossHair);
+    } else {
+        setCircleCursor();
+    }
+#endif
 }
 
 void PaintImage::setCircleCursor() {

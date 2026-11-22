@@ -8,7 +8,7 @@ namespace ara {
 
 class PaintImage : public Image {
 public:
-    enum class mode : int32_t { add=0, subtract };
+    enum class mode : int32_t { add=0, subtract, colorPick };
     struct Brush {
         float size = 10.0f;
         float hardness = 0.5f;
@@ -42,6 +42,9 @@ public:
     void setBackupPath(const std::filesystem::path& p);
     void setBrushSize(float brushSize);
     void setBrushHardness(float hardness);
+    void setCursor();
+    void pickColor(const glm::vec2& mousePos);
+    [[nodiscard]] glm::vec4 getPickColor() const { return m_pickColor; }
     void saveToFile(const std::filesystem::path &filename) const;
     virtual void setSharedTexture(const std::shared_ptr<Texture>& tex);
 
@@ -65,6 +68,7 @@ protected:
     std::vector<std::filesystem::path>              m_backupCopies;
     std::vector<std::filesystem::path>::iterator    m_backupCopiesIt;
     std::filesystem::path                           m_backupPath;
+    glm::vec4                                       m_pickColor{0.f};
 #ifdef ARA_USE_GLFW
     GLFWcursor*                                     m_cursor{};
 #endif
