@@ -11,7 +11,7 @@ public:
     ~PaintImageIdMap() override = default;
 
     void init() override;
-    void initPaintShader();
+    void initPaintShader() override;
     void initVisualizationShader();
     void initFillShader();
 

@@ -92,8 +92,7 @@ void PaintImage::initPaintShader() {
 }
 
 void PaintImage::initColorMaskShader() {
-
-    auto seedShdrSrc = ShaderCollector::getShaderHeader() + STRINGIFY(
+    const auto seedShdrSrc = ShaderCollector::getShaderHeader() + STRINGIFY(
     layout(local_size_x = 16, local_size_y = 16) in;
 
     layout(rgba8, binding = 0) uniform readonly image2D srcImage;
@@ -122,6 +121,7 @@ void PaintImage::initColorMaskShader() {
 
     m_colMaskSeedShdr = m_shCol->add("PaintImageColMaskSeedShader", seedShdrSrc);
 
+    postGLError();
 
     auto shdrSrc = STRINGIFY(
         layout(rgba8, binding = 0) uniform readonly image2D srcImage;
@@ -166,9 +166,8 @@ void PaintImage::initColorMaskShader() {
 
             float currentMask = imageLoad(maskIn, coord).r;
 
-            // Already filled -> preserve and exit early
             if (currentMask > 0.5) {
-                imageStore(uMaskOut, coord, vec4(1.0, 0.0, 0.0, 0.0));
+                imageStore(maskOut, coord, vec4(1.0, 0.0, 0.0, 0.0));
                 return;
             }
 
@@ -188,20 +187,22 @@ void PaintImage::initColorMaskShader() {
                 vec3 targetLab = rgbToLab(targetColor.rgb);
                 float dist = distance(pixelLab, targetLab) / 100.0;
 
-                if (dist <= uTolerance) {
+                if (dist <= tolerance) {
                     imageStore(maskOut, coord, vec4(1.0, 0.0, 0.0, 0.0));
-                    atomicCounterIncrement(uChangedCount);
+                    atomicCounterIncrement(changedCount);
                     return;
                 }
             }
-
-            imageStore(uMaskOut, coord, vec4(0.0));
+            imageStore(maskOut, coord, vec4(0.0));
         }
     );
 
     const auto hdr = ShaderCollector::getShaderHeader() + "layout(local_size_x=16, local_size_y=16,local_size_z=1) in;\n";
     const auto src = hdr + shdrSrc;
-    m_colMaskShdr    = m_shCol->add("SpriteBBGenerator", src);
+    m_colMaskShdr = m_shCol->add("SpriteBBGenerator", src);
+    postGLError();
+
+    LOG << " inre";
 }
 
 void PaintImage::initFbo() {
@@ -215,6 +216,12 @@ void PaintImage::initFbo() {
     } else if (m_texId) {
         m_fbo->fromTex(m_texId, m_texSize.x, m_texSize.y, GL_RGBA8, 1, GL_LINEAR, GL_LINEAR);
     }
+}
+
+void PaintImage::loadImg(const bool forceReload) {
+    Image::loadImg(forceReload);
+    m_ownedTex = std::make_shared<Texture>(*m_tex);
+    initFbo();
 }
 
 void PaintImage::setSharedTexture(const std::shared_ptr<Texture>& tex) {
@@ -250,14 +257,14 @@ void PaintImage::initMaskTex() {
 
 void PaintImage::mouseDown(hidData& data) {
     Image::mouseDown(data);
-    if (m_paintMode != mode::colorPick) {
+    if (m_paintMode != mode::colorPick && m_paintMode != mode::mask) {
         paint(data.mousePosNodeRel);
     }
 }
 
 void PaintImage::mouseDrag(hidData& data) {
     Image::mouseDrag(data);
-    if (m_paintMode != mode::colorPick && data.mousePressed[mouseButt::left]) {
+    if (m_paintMode != mode::colorPick && m_paintMode != mode::mask && data.mousePressed[mouseButt::left]) {
         paint(data.mousePosNodeRel);
     }
 }
@@ -270,6 +277,9 @@ void PaintImage::mouseUp(hidData& data) {
     Image::mouseUp(data);
     if (m_paintMode == mode::colorPick) {
         pickColor(data.mousePosNodeRel);
+    } else if (m_paintMode == mode::mask) {
+        auto col = pickColor(data.mousePosNodeRel);
+        colorSelect(data.mousePos, col, m_selTolerance);
     } else if (data.dragging) {
         saveState();
     }
@@ -450,53 +460,55 @@ void PaintImage::clearBackupPath() const {
     }
 }
 
-std::optional<ivec2> PaintImage::getMousePosInTexPixSpace(Texture* tex, const vec2& mousePos) {
-    const int width = tex->getWidth();
-    const int height = tex->getHeight();
+std::optional<ivec2> PaintImage::getMousePosInTexPixSpace(const Texture* tex, const vec2& mousePos) {
+    const auto width = tex->getWidth();
+    const auto height = tex->getHeight();
     if (width <= 0 || height <= 0) {
         return std::nullopt;
     }
 
     // Convert mouse position to pixel coordinates in the texture
-    const float x = mousePos.x / getSize().x * width;
-    const float y = (1.f - mousePos.y / getSize().y) * height;
+    const auto x = mousePos.x / getSize().x * static_cast<float>(width);
+    const auto y = (1.f - mousePos.y / getSize().y) * static_cast<float>(height);
 
     // Clamp to valid range
     return ivec2{
-        std::max(0, std::min(width - 1, static_cast<int>(x))),
-        std::max(0, std::min(height - 1, static_cast<int>(y)))
+        std::max(0.f, std::min(static_cast<float>(width) - 1.f, x)),
+        std::max(0.f, std::min(static_cast<float>(height) - 1.f, y))
     };
 }
 
-void PaintImage::pickColor(const vec2& mousePos) {
+glm::vec4 PaintImage::pickColor(const vec2& mousePos) {
     const auto tex = getTexture();
     if (!tex) {
-        return;
+        return {};
     }
 
     const auto mp = getMousePosInTexPixSpace(tex, mousePos);
     if (mp == std::nullopt) {
-        return;
+        return {};
     }
 
     // Create a temporary FBO to read from the texture
     FBO readFbo;
     readFbo.setGlbase(getSharedRes()->glbase);
-    readFbo.fromTex(tex->getId(), tex->getWidth(),  tex->getHeight(), GL_RGBA8, 1, GL_NEAREST, GL_NEAREST);
+    readFbo.fromTex(tex->getId(), tex->getWidthF(),  tex->getHeightF(), GL_RGBA8, 1, GL_NEAREST, GL_NEAREST);
     readFbo.bind();
 
     // Read the pixel color using glReadPixels
-    std::array<GLubyte, 4> pixelData;
+    std::array<GLubyte, 4> pixelData{};
     glReadPixels(mp.value().x, mp.value().y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixelData.data());
     readFbo.unbind();
 
     // Store the picked color (normalize to 0-1 range)
-    m_pickColor = glm::vec4(
-        pixelData[0] / 255.f,
-        pixelData[1] / 255.f,
-        pixelData[2] / 255.f,
-        pixelData[3] / 255.f
+    m_pickColor = vec4(
+        static_cast<float>(pixelData[0]) / 255.f,
+        static_cast<float>(pixelData[1]) / 255.f,
+        static_cast<float>(pixelData[2]) / 255.f,
+        static_cast<float>(pixelData[3]) / 255.f
     );
+
+    return m_pickColor;
 }
 
 void PaintImage::colorSelect(const vec2& mousePos, vec4& col, const float tolerance) {
@@ -539,11 +551,11 @@ void PaintImage::colorSelect(const vec2& mousePos, vec4& col, const float tolera
     m_maskSeedReadIdx = 0;
     GLuint changed = 1;
     GLuint atomicBuffer = 0;
-    GLuint zero = 0;
+    constexpr GLuint initZero = 0;
 
     glGenBuffers(1, &atomicBuffer);
     glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer);
-    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), &zero, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), &initZero, GL_DYNAMIC_DRAW);
     glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicBuffer);
 
     while (changed > 0) {
@@ -572,7 +584,7 @@ void PaintImage::colorSelect(const vec2& mousePos, vec4& col, const float tolera
 
 void PaintImage::setCursor() {
 #ifdef ARA_USE_GLFW
-    if (m_paintMode == mode::colorPick) {
+    if (m_paintMode == mode::colorPick || m_paintMode == mode::mask) {
         getSharedRes()->winHandle->setMouseCursor(WinMouseIcon::crossHair);
     } else {
         setCircleCursor();

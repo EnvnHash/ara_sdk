@@ -552,8 +552,8 @@ void SPSpotLightShadowVsm::clear(renderPass pass) {
     }
 }
 
-void SPSpotLightShadowVsm::sendPar(CameraSet *cs, double time, SceneNode *node, SceneNode *parent, renderPass pass,
-                                   uint loopNr) {
+void SPSpotLightShadowVsm::sendPar(CameraSet *cs, const double time, SceneNode *node, SceneNode *parent, const renderPass pass,
+                                   const uint loopNr) {
     if (!m_shadowGen) {
         return;
     }
@@ -568,7 +568,7 @@ void SPSpotLightShadowVsm::sendPar(CameraSet *cs, double time, SceneNode *node, 
     // check if it is necessary to rebuild a individual light (parameters and shadow maps)
     for (auto i = 0; i < s_lights.size(); i++)
         if (s_lights[i]->s_needsRecalc.load()) {
-            auto ptr = m_lightSb->map(GL_MAP_WRITE_BIT);
+            const auto ptr = m_lightSb->map(GL_MAP_WRITE_BIT);
             calcLight(cs, s_lights[i], &ptr[i]);
             m_lightSb->unmap();
             s_lights[i]->s_needsRecalc = false;
@@ -590,7 +590,7 @@ void SPSpotLightShadowVsm::sendParShadowMapPass(SceneNode *node, SceneNode *pare
         m_pv_mats.resize(s_lights.size());
     }
 
-    for (uint i = 0; i < s_lights.size(); ++i) {
+    for (int i = 0; i < s_lights.size(); ++i) {
         m_pv_mats[i] = s_lights[i]->s_proj_mat * s_lights[i]->s_view_mat;
 
         // check if we are rendering a light source, in this case, avoid that it casts light onto itself
@@ -605,13 +605,13 @@ void SPSpotLightShadowVsm::sendParShadowMapPass(SceneNode *node, SceneNode *pare
     }
 }
 
-void SPSpotLightShadowVsm::estimateNumPasses(uint loopNr) {
+void SPSpotLightShadowVsm::estimateNumPasses(const uint loopNr) {
     // estimate nr passes to render all active surfaces and lights one sceneNode con only contain one active surface,
     // so the maximum of active surfaces textures bound is one
     if (loopNr == 0) {
         if (s_lights.size() > m_maxNrParLights) {
-            float div  = static_cast<float>(s_lights.size()) / static_cast<float>(m_maxNrParLights);
-            float frac = fmod(div, 1.f);
+            const auto div  = static_cast<float>(s_lights.size()) / static_cast<float>(m_maxNrParLights);
+            const float frac = fmod(div, 1.f);
             s_nrPasses = static_cast<uint>(round(div + (frac > 0.f ? 0.5f : 0.f)));
         } else {
             s_nrPasses = 1;
@@ -619,12 +619,12 @@ void SPSpotLightShadowVsm::estimateNumPasses(uint loopNr) {
     }
 }
 
-void SPSpotLightShadowVsm::sendParSceneAndGizmoPass(SceneNode *node, SceneNode *parent, uint loopNr) {
+void SPSpotLightShadowVsm::sendParSceneAndGizmoPass(SceneNode *node, SceneNode *parent, const uint loopNr) {
     estimateNumPasses(loopNr);
 
     if (s_shader && !s_lights.empty()) {
-        uint lightOffs        = loopNr * static_cast<int>(m_maxNrParLights);
-        int nrLightsThisPass = std::min<int>(static_cast<int>(s_lights.size() - lightOffs), static_cast<int>(m_maxNrParLights));
+        const uint lightOffs        = loopNr * static_cast<int>(m_maxNrParLights);
+        const int nrLightsThisPass = std::min<int>(static_cast<int>(s_lights.size() - lightOffs), static_cast<int>(m_maxNrParLights));
         s_shader->setUniform1i("lightIndIsActMesh", -1);
 
         // if the number of lights has changed, adjust the shadowTexture lists
@@ -670,7 +670,7 @@ void SPSpotLightShadowVsm::sendParSceneAndGizmoPass(SceneNode *node, SceneNode *
     s_shader->setUniform1i("showProjBright", s_showProjBright);
 }
 
-void SPSpotLightShadowVsm::sendLightPar(SceneNode *node, SceneNode *parent, int nrLightsThisPass, uint lightOffs) {
+void SPSpotLightShadowVsm::sendLightPar(SceneNode *node, SceneNode *parent, const int nrLightsThisPass, const uint lightOffs) {
     for (int i = 0; i < nrLightsThisPass; i++) {
         m_shadowMat[i]        = s_lights[i + lightOffs]->s_shadow_mat * node->getModelMat(parent);
         m_lightColTexUnits[i] = i + 2;
@@ -689,7 +689,7 @@ void SPSpotLightShadowVsm::sendLightPar(SceneNode *node, SceneNode *parent, int 
     }
 }
 
-bool SPSpotLightShadowVsm::begin(CameraSet *cs, renderPass pass, uint loopNr) {
+bool SPSpotLightShadowVsm::begin(CameraSet *cs, const renderPass pass, uint) {
     // init a ShadowMap Generator. Has to be done here, since the FboSize is not known before ShadowMapArray ->
     // one ShadowMap generates all ShadowMaps for all lights
     if (!m_shadowGen && !s_lights.empty()) {
@@ -719,7 +719,7 @@ bool SPSpotLightShadowVsm::begin(CameraSet *cs, renderPass pass, uint loopNr) {
     }
 }
 
-bool SPSpotLightShadowVsm::end(renderPass pass, uint loopNr) {
+bool SPSpotLightShadowVsm::end(const renderPass pass, const uint loopNr) {
     if (pass == renderPass::shadowMap) {
         if (m_shadowGen) {
             m_shadowGen->end();
@@ -737,11 +737,11 @@ bool SPSpotLightShadowVsm::end(renderPass pass, uint loopNr) {
     return loopNr < (s_nrPasses - 1);
 }
 
-void SPSpotLightShadowVsm::postRender(renderPass pass) {
+void SPSpotLightShadowVsm::postRender(const renderPass pass) {
     if (pass == renderPass::shadowMap && m_shadowGen) m_shadowGen->blur();
 }
 
-Shaders *SPSpotLightShadowVsm::getShader(renderPass pass, uint loopNr) {
+Shaders *SPSpotLightShadowVsm::getShader(const renderPass pass, uint) {
     switch (pass) {
         case renderPass::shadowMap:
             return m_shadowGen ? m_shadowGen->getShader() : nullptr;
@@ -754,7 +754,7 @@ Shaders *SPSpotLightShadowVsm::getShader(renderPass pass, uint loopNr) {
     }
 }
 
-void SPSpotLightShadowVsm::setScreenSize(uint width, uint height) {
+void SPSpotLightShadowVsm::setScreenSize(const uint width, const uint height) {
     s_scrWidth = width, s_scrHeight = height;
     if (m_shadowGen) {
         m_shadowGen->setScreenSize(width, height);
@@ -764,12 +764,12 @@ void SPSpotLightShadowVsm::setScreenSize(uint width, uint height) {
     }
 }
 
-void SPSpotLightShadowVsm::setNrCams(int nrCams) {
+void SPSpotLightShadowVsm::setNrCams(const int nrCams) {
     s_nrCams = nrCams;
     rebuildShader(s_nrCams);
 }
 
-std::string SPSpotLightShadowVsm::getUbPar(uint32_t nrCameras) {
+std::string SPSpotLightShadowVsm::getUbPar(const uint32_t nrCameras) {
     return ShaderProto::getUbPar(nrCameras) +
        "\t vec2 texMin;\n"
        "\t vec2 texMax;\n"

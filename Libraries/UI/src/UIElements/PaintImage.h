@@ -39,24 +39,28 @@ public:
     Brush& getBrush() { return m_brush; }
 
     void lock(const bool val) { m_locked = val; }
+    void loadImg(bool forceReload) override;
+
     void setBrush(const Brush& brush) { m_brush = brush; }
     void setMode(const mode& mode) { m_paintMode = mode; }
+    void setTolerance(const float& val) { m_selTolerance = val; }
     void setBackupPath(const std::filesystem::path& p);
     void setBrushSize(float brushSize);
     void setBrushHardness(float hardness);
     void setMasking(bool val);
     void setCursor();
-    void pickColor(const glm::vec2& mousePos);
-    void colorSelect(const glm::vec2& mousePos, glm::vec4& col, float tolerance);
+
+    void                    colorSelect(const glm::vec2& mousePos, glm::vec4& col, float tolerance);
+    glm::vec4               pickColor(const glm::vec2& mousePos);
     [[nodiscard]] glm::vec4 getPickColor() const { return m_pickColor; }
-    void saveToFile(const std::filesystem::path &filename) const;
-    virtual void setSharedTexture(const std::shared_ptr<Texture>& tex);
+    void                    saveToFile(const std::filesystem::path &filename) const;
+    virtual void            setSharedTexture(const std::shared_ptr<Texture>& tex);
 
     [[nodiscard]] const std::vector<std::filesystem::path>& getBackupCopies() const { return m_backupCopies; }
     void restoreFile(const std::filesystem::path &filename);
 
 protected:
-    std::optional<glm::ivec2> getMousePosInTexPixSpace(Texture* tex, const glm::vec2& mousePos);
+    std::optional<glm::ivec2> getMousePosInTexPixSpace(const Texture* tex, const glm::vec2& mousePos);
     virtual void initFbo();
     void initMaskTex();
     virtual void paint(const glm::vec2& mousePos);
@@ -71,6 +75,7 @@ protected:
     Shaders*                                        m_colMaskShdr = nullptr;
     UniformBlock                                    m_brushBlock{};
     float                                           m_scaledBrush{};
+    float                                           m_selTolerance=0.15f;
     bool                                            m_locked{};
     int32_t                                         m_maskSeedReadIdx{};
     mode                                            m_paintMode = mode::add;

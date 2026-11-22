@@ -184,4 +184,18 @@ private:
     Property<float> m_prop {15.f, 3.f, 100.f, 1.0f};   // create a property {default-value, min, max, step}
 };
 
+class PaintImage;
+
+class DemoView_PaintImage : public DemoView {
+public:
+    DemoView_PaintImage();
+    void                init() override;
+
+private:
+    PaintImage*     m_paintImage = nullptr;
+    Property<float> m_sizeProp {15.f, 3.f, 100.f, 1.0f};   // create a property {default-value, min, max, step}
+    Property<float> m_hardProp {0.5f, 0.f, 1.f, 0.01f};   // create a property {default-value, min, max, step}
+    Property<float> m_tolProp {0.15f, 0.f, 1.f, 0.01f};   // create a property {default-value, min, max, step}
+};
+
 }
