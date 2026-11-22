@@ -13,7 +13,9 @@ namespace ara::GLBaseUnitTest::LoadTexture {
     Shaders *texShader;
     GLBase m_glbase;
     Texture tex(&m_glbase);
-    glWinPar gp;             // define Parameters for windows instantiating
+    glWinPar gp{
+        .size = glm::ivec2{ 64, 64 }
+    };             // define Parameters for windows instantiating
 
     static bool didRun = false;
 
@@ -34,8 +36,8 @@ namespace ara::GLBaseUnitTest::LoadTexture {
         // that's all to draw a quad, now we are reading back the framebuffer and check that everything was drawn correctly
 
         // read back
-        auto data= readBack(gp.size);
-        int segStep = gp.size.x / 4;
+        const auto data= readBack(gp.size);
+        const int segStep = gp.size.x / 4;
         int segStepHalf = segStep / 2;
 
         // define colors to expect and their position

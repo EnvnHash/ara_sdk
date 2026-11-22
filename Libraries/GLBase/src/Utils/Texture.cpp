@@ -80,7 +80,7 @@ GLuint Texture::loadFromFile(const std::string &filename, const GLenum textTarge
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
     if (std::filesystem::exists(std::filesystem::path(filename))) {
         m_filename        = filename;
-        auto pBitmap = FreeImage::Load(filename, nullptr);
+        const auto pBitmap = FreeImage::Load(filename, nullptr);
         return loadFromFib(pBitmap, textTarget, nrMipMaps, flipH);
 #else
     if (fs::exists(fs::path(filename))) {

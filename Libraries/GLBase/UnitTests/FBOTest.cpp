@@ -28,7 +28,7 @@ namespace ara::GLBaseUnitTest::Fbo {
         EXPECT_TRUE(bitmap);
         const auto data = FreeImage_GetBits(bitmap);
 
-        for (uint32_t y = 0; y < testImageSize.x * testImageSize.y *4; y++) {
+        for (auto y = 0; y < testImageSize.x * testImageSize.y *4; y++) {
             EXPECT_EQ(static_cast<int32_t>(data[y]), 0);
         }
     }
