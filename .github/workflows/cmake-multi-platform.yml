@@ -8,11 +8,6 @@ on:
   pull_request:
     branches: [ "master" ]
 
-steps:
-  - uses: actions/checkout@v4
-    with:
-      lfs: true
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -53,6 +48,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        lfs: true
 
     - name: Set reusable strings
       id: strings
