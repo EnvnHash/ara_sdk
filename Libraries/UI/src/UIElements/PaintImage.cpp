@@ -57,7 +57,7 @@ void PaintImage::init() {
                 float edge = clamp((1.0 - brush.hardness), 0.0001, 1.0);
                 float maskAlpha = 1.0;
                 if (bool(masked)) {
-                    maskAlpha = texture(maskTex, texCoord).r;
+                    maskAlpha = texture(maskTex, texCoord).a;
                     if (maskAlpha == 0.0) {
                         discard;
                     }
@@ -205,14 +205,10 @@ void PaintImage::paint(const vec2& mousePos) {
     m_paintShader->setUniform2f("pos", transPos[0].x, transPos[0].y);
     m_paintShader->setUniform4f("limits", transPos[1].x, transPos[1].y, transPos[2].x, transPos[2].y);
 
-    // Bind mask texture and set masking uniforms
-    if (m_drawMasked && m_maskTex) {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_maskTex->getId());
-        m_paintShader->setUniform1i("masked", 1);
+    m_paintShader->setUniform1i("masked", m_drawMasked);
+    if (m_maskTex) {
+        m_maskTex->bind(0);
         m_paintShader->setUniform1i("maskTex", 0);
-    } else {
-        m_paintShader->setUniform1i("masked", 0);
     }
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
