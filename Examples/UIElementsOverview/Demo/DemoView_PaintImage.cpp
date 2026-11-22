@@ -117,6 +117,7 @@ void DemoView_PaintImage::init() {
         if (m_paintImage) {
             m_paintImage->setMode(val ? PaintImage::mode::mask : PaintImage::mode::add);
             m_paintImage->setCursor();
+            m_paintImage->setShowMask(true);
             getSharedRes()->reqRedraw();
         }
     });

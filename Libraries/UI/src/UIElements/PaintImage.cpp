@@ -121,8 +121,6 @@ void PaintImage::initColorMaskShader() {
 
     m_colMaskSeedShdr = m_shCol->add("PaintImageColMaskSeedShader", seedShdrSrc);
 
-    postGLError();
-
     auto shdrSrc = STRINGIFY(
         layout(rgba8, binding = 0) uniform readonly image2D srcImage;
         layout(r8, binding = 1) uniform readonly image2D maskIn;
@@ -200,9 +198,6 @@ void PaintImage::initColorMaskShader() {
     const auto hdr = ShaderCollector::getShaderHeader() + "layout(local_size_x=16, local_size_y=16,local_size_z=1) in;\n";
     const auto src = hdr + shdrSrc;
     m_colMaskShdr = m_shCol->add("SpriteBBGenerator", src);
-    postGLError();
-
-    LOG << " inre";
 }
 
 void PaintImage::initFbo() {
@@ -279,6 +274,7 @@ void PaintImage::mouseUp(hidData& data) {
         pickColor(data.mousePosNodeRel);
     } else if (m_paintMode == mode::mask) {
         auto col = pickColor(data.mousePosNodeRel);
+        LOG << "sel col " << glm::to_string(col);
         colorSelect(data.mousePos, col, m_selTolerance);
     } else if (data.dragging) {
         saveState();
@@ -576,10 +572,19 @@ void PaintImage::colorSelect(const vec2& mousePos, vec4& col, const float tolera
         glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &changed);
 
         m_maskSeedReadIdx = writeIdx;
+        LOG << "m_maskSeedReadIdx: " << m_maskSeedReadIdx;
     }
 
     Shaders::unbindProgramPipeline();
     Shaders::end();
+
+    m_maskTex[m_maskSeedReadIdx]->saveTexToFile2D("mask.png", FIF_PNG,  m_maskTex[m_maskSeedReadIdx]->getWidth(), m_maskTex[m_maskSeedReadIdx]->getHeight(), GL_R8, m_maskTex[m_maskSeedReadIdx]->getId());
+
+
+    if (m_showMask && m_maskUiImg) {
+        LOG << "id: " << m_maskTex[m_maskSeedReadIdx]->getId();
+        m_maskUiImg->setTexId(m_maskTex[m_maskSeedReadIdx]->getId(), m_maskTex[m_maskSeedReadIdx]->getWidth(), m_maskTex[m_maskSeedReadIdx]->getHeight(), 8);
+    }
 }
 
 void PaintImage::setCursor() {
@@ -607,6 +612,21 @@ void PaintImage::resetCursor() {
         m_cursor = nullptr;
     }
 #endif
+}
+
+void PaintImage::setShowMask(const bool& val) {
+    m_showMask = val;
+    if (val) {
+        if (!m_maskUiImg) {
+            m_maskUiImg = &push<Image>(UINodePars{
+                .pos = ivec2{0,0},
+                .size = vec2{1.f, 1.f}
+            });
+        }
+        if (m_maskTex[m_maskSeedReadIdx]) {
+            m_maskUiImg->setTexId(m_maskTex[m_maskSeedReadIdx]->getId(), m_maskTex[m_maskSeedReadIdx]->getWidth(), m_maskTex[m_maskSeedReadIdx]->getHeight(), 8);
+        }
+    }
 }
 
 } // namespace ara

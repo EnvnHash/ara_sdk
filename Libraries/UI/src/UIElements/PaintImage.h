@@ -41,6 +41,7 @@ public:
     void lock(const bool val) { m_locked = val; }
     void loadImg(bool forceReload) override;
 
+    void setShowMask(const bool& val);
     void setBrush(const Brush& brush) { m_brush = brush; }
     void setMode(const mode& mode) { m_paintMode = mode; }
     void setTolerance(const float& val) { m_selTolerance = val; }
@@ -75,8 +76,10 @@ protected:
     Shaders*                                        m_colMaskShdr = nullptr;
     UniformBlock                                    m_brushBlock{};
     float                                           m_scaledBrush{};
-    float                                           m_selTolerance=0.15f;
+    float                                           m_selTolerance=0.001f;
     bool                                            m_locked{};
+    bool                                            m_showMask{};
+    Image*                                          m_maskUiImg{};
     int32_t                                         m_maskSeedReadIdx{};
     mode                                            m_paintMode = mode::add;
     std::vector<std::filesystem::path>              m_backupCopies;
