@@ -92,112 +92,90 @@ void PaintImage::initPaintShader() {
 }
 
 void PaintImage::initColorMaskShader() {
-    const auto seedShdrSrc = ShaderCollector::getShaderHeader() + STRINGIFY(
-    layout(local_size_x = 16, local_size_y = 16) in;
+    constexpr auto wandPropagate = STRINGIFY(
+        layout(local_size_x = 16, local_size_y = 16) in;
 
-    layout(rgba8, binding = 0) uniform readonly image2D srcImage;
-    layout(r8, binding = 1) uniform writeonly image2D maskOut;
+        layout(rgba8, binding = 0) readonly uniform image2D uSourceImg;
+        layout(r8ui, binding = 1) readonly uniform uimage2D uMaskIn;
+        layout(r8ui, binding = 2) writeonly uniform uimage2D uMaskOut;
 
-    // Store the sampled target color in an SSBO so CPU doesn't have to glReadPixels
-    layout(std430, binding = 0) buffer SeedData {
-        vec4 targetColor;
-    };
+        layout(binding = 0, offset = 0) uniform atomic_uint uChangedCount;
 
-    uniform ivec2 mousePos; // Pixel coordinates [0, width-1], [0, height-1]
-
-    void main() {
-        ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-        ivec2 size = imageSize(srcImage);
-        if (coord.x >= size.x || coord.y >= size.y) return;
-
-        // Thread at mouse coordinate samples the target color into the SSBO
-        if (coord == mousePos) {
-            targetColor = imageLoad(srcImage, mousePos);
-            imageStore(maskOut, coord, vec4(1.0));
-        } else {
-            imageStore(maskOut, coord, vec4(0.0));
-        }
-    });
-
-    m_colMaskSeedShdr = m_shCol->add("PaintImageColMaskSeedShader", seedShdrSrc);
-
-    auto shdrSrc = STRINGIFY(
-        layout(rgba8, binding = 0) uniform readonly image2D srcImage;
-        layout(r8, binding = 1) uniform readonly image2D maskIn;
-        layout(r8, binding = 2) uniform writeonly image2D maskOut;
-
-        layout(std430, binding = 0) buffer SeedData {
-            vec4 targetColor;
-        };
-
-        layout(binding = 0, offset = 0) uniform atomic_uint changedCount;
-        uniform float tolerance; // e.g., 0.15
-
-        vec3 srgbToLinear(vec3 c) {
-            return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(0.04045, c));
-        }
-
-        vec3 rgbToLab(vec3 rgb) {
-            vec3 lin = srgbToLinear(rgb);
-            mat3 toXYZ = mat3(
-                0.4124564, 0.2126729, 0.0193339,
-                0.3575761, 0.7151522, 0.1191920,
-                0.1804375, 0.0721750, 0.9503041
-            );
-            vec3 xyz = (toXYZ * lin) / vec3(0.95047, 1.00000, 1.08883);
-            vec3 f = mix((7.787 * xyz) + (16.0 / 116.0), pow(xyz, vec3(1.0 / 3.0)), step(0.008856, xyz));
-            return vec3((116.0 * f.y) - 16.0, 500.0 * (f.x - f.y), 200.0 * (f.y - f.z));
-        }
-
-        // Check 4-connected neighbors (use 8 offsets if 8-way Magic Wand is desired)
-        const ivec2 offsets[4] = ivec2[4](
-            ivec2( 1,  0),
-            ivec2(-1,  0),
-            ivec2( 0,  1),
-            ivec2( 0, -1)
-        );
+        layout(location = 0) uniform vec4 uTargetColor;
+        layout(location = 1) uniform float uTolerance;
+        layout(location = 2) uniform int uEightWay;
 
         void main() {
-            ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
-            ivec2 size = imageSize(srcImage);
-            if (coord.x >= size.x || coord.y >= size.y) return;
+         ivec2 pos = ivec2(gl_GlobalInvocationID.xy);
+         ivec2 size = imageSize(uSourceImg);
+         if (pos.x >= size.x || pos.y >= size.y) return;
 
-            float currentMask = imageLoad(maskIn, coord).r;
+         uint state = imageLoad(uMaskIn, pos).r;
+         // State 1 = Selected, State 2 = Rejected
+         if (state != 0u) {
+             imageStore(uMaskOut, pos, uvec4(state, 0, 0, 0));
+             return;
+         }
 
-            if (currentMask > 0.5) {
-                imageStore(maskOut, coord, vec4(1.0, 0.0, 0.0, 0.0));
-                return;
+         // Check color distance
+         vec4 col = imageLoad(uSourceImg, pos);
+         if (distance(col.rgb, uTargetColor.rgb) > uTolerance) {
+             imageStore(uMaskOut, pos, uvec4(2u, 0, 0, 0)); // Mark rejected permanently
+             return;
+         }
+
+         // Check 4-way or 8-way neighbors
+         const ivec2 offsets[8] = ivec2[](
+             ivec2(-1, 0), ivec2(1, 0), ivec2(0, -1), ivec2(0, 1),
+             ivec2(-1, -1), ivec2(1, -1), ivec2(-1, 1), ivec2(1, 1)
+         );
+         int count = uEightWay == 1 ? 8 : 4;
+
+         for (int i = 0; i < count; ++i) {
+             ivec2 nPos = pos + offsets[i];
+             if (nPos.x >= 0 && nPos.y >= 0 && nPos.x < size.x && nPos.y < size.y) {
+                 if (imageLoad(uMaskIn, nPos).r == 1u) {
+                     imageStore(uMaskOut, pos, uvec4(1u, 0, 0, 0));
+                     atomicCounterIncrement(uChangedCount);
+                     return;
+                 }
+             }
+         }
+
+         imageStore(uMaskOut, pos, uvec4(0u, 0, 0, 0));
+    });
+
+    auto src = ShaderCollector::getShaderHeader() + wandPropagate;
+    m_colMaskPropagateShdr = m_shCol->add("PaintImageColMaskShdr", src);
+
+    constexpr auto updtIndir = STRINGIFY(
+        layout(local_size_x = 1) in;
+        layout(binding = 0, offset = 0) uniform atomic_uint uChangedCount;
+        layout(std430, binding = 0) writeonly buffer IndirectCmd {
+            uint num_groups_x;
+            uint num_groups_y;
+            uint num_groups_z;
+        };
+
+        layout(location = 0) uniform uvec2 uDispatchGroups;
+
+        void main() {
+            uint changed = atomicCounterExchange(uChangedCount, 0u);
+            if (changed > 0u) {
+                num_groups_x = uDispatchGroups.x;
+                num_groups_y = uDispatchGroups.y;
+                num_groups_z = 1u;
+            } else {
+                // Setting any group count to 0 turns future indirect dispatches into hardware no-ops
+                num_groups_x = 0u;
+                num_groups_y = 0u;
+                num_groups_z = 0u;
             }
-
-            bool hasFilledNeighbor = false;
-            for (int i = 0; i < 4; ++i) {
-                ivec2 nCoord = coord + offsets[i];
-                if (nCoord.x >= 0 && nCoord.x < size.x && nCoord.y >= 0 && nCoord.y < size.y) {
-                    if (imageLoad(maskIn, nCoord).r > 0.5) {
-                        hasFilledNeighbor = true;
-                        break;
-                    }
-                }
-            }
-
-            if (hasFilledNeighbor) {
-                vec3 pixelLab = rgbToLab(imageLoad(srcImage, coord).rgb);
-                vec3 targetLab = rgbToLab(targetColor.rgb);
-                float dist = distance(pixelLab, targetLab) / 100.0;
-
-                if (dist <= tolerance) {
-                    imageStore(maskOut, coord, vec4(1.0, 0.0, 0.0, 0.0));
-                    atomicCounterIncrement(changedCount);
-                    return;
-                }
-            }
-            imageStore(maskOut, coord, vec4(0.0));
         }
     );
 
-    const auto hdr = ShaderCollector::getShaderHeader() + "layout(local_size_x=16, local_size_y=16,local_size_z=1) in;\n";
-    const auto src = hdr + shdrSrc;
-    m_colMaskShdr = m_shCol->add("SpriteBBGenerator", src);
+    src = ShaderCollector::getShaderHeader() + updtIndir;
+    m_colMaskIndirUpdtShdr = m_shCol->add("PaintImageColMaskUpdtIndirShdr", src);
 }
 
 void PaintImage::initFbo() {
@@ -244,9 +222,17 @@ void PaintImage::initMaskTex() {
         for (auto& it : m_maskTex) {
             it = std::make_shared<Texture>();
             it->setGlbase(getSharedRes()->glbase);
-            it->allocate2D(m_ownedTex->getWidth(), m_ownedTex->getHeight(), GL_R8, GL_RED, GL_TEXTURE_2D, GL_UNSIGNED_BYTE);
+            it->allocate2D(m_ownedTex->getWidth(), m_ownedTex->getHeight(), GL_R8UI, GL_RED_INTEGER, GL_TEXTURE_2D, GL_UNSIGNED_BYTE);
+            it->setSamplerFiltering(GL_NEAREST, GL_NEAREST);
             it->clear();
         }
+
+        glCreateBuffers(1, &m_atomicBuffer);
+        constexpr GLuint zero = 0;
+        glNamedBufferStorage(m_atomicBuffer, sizeof(GLuint), &zero, GL_DYNAMIC_STORAGE_BIT);
+
+        glCreateBuffers(1, &m_indirectBuffer);
+        glNamedBufferStorage(m_indirectBuffer, sizeof(DispatchIndirectCommand), nullptr, GL_DYNAMIC_STORAGE_BIT);
     }
 }
 
@@ -275,7 +261,7 @@ void PaintImage::mouseUp(hidData& data) {
     } else if (m_paintMode == mode::mask) {
         auto col = pickColor(data.mousePosNodeRel);
         LOG << "sel col " << glm::to_string(col);
-        colorSelect(data.mousePos, col, m_selTolerance);
+        colorSelect(data.mousePosNodeRel, col, m_selTolerance);
     } else if (data.dragging) {
         saveState();
     }
@@ -508,6 +494,8 @@ glm::vec4 PaintImage::pickColor(const vec2& mousePos) {
 }
 
 void PaintImage::colorSelect(const vec2& mousePos, vec4& col, const float tolerance) {
+    postGLError();
+
     const auto tex = getTexture();
     if (!tex) {
         return;
@@ -518,73 +506,87 @@ void PaintImage::colorSelect(const vec2& mousePos, vec4& col, const float tolera
         return;
     }
 
+    LOG << "mp " << glm::to_string(mp.value()) << " col " << glm::to_string(col);
     setMasking(true);
 
-    const auto targetCol = make_unique<ShaderBuffer<vec4>>(1);
-    const auto ptr = targetCol->map();
-    for (int i=0; i<4; ++i) {
-        (*ptr)[i] = col[i];
-    }
-    targetCol->unmap();
+    constexpr GLuint zero = 0;
+    constexpr GLuint one = 1;
 
+    // Clear masks to 0 and seed the clicked pixel to 1
+    glClearTexImage(m_maskTex[0]->getId(), 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, &zero);
+    glClearTexImage(m_maskTex[1]->getId(), 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, &zero);
+    glTextureSubImage2D(m_maskTex[0]->getId(), 0, mp.value().x, mp.value().y, 1, 1, GL_RED_INTEGER, GL_UNSIGNED_BYTE, &one);
 
-    // seeding
-    m_colMaskSeedShdr->begin();
-    m_colMaskSeedShdr->bindProgramPipeline();
-    m_colMaskSeedShdr->setUniform2i("mousePos", mp.value().x, mp.value().y);
+    // Initialize indirect buffer with full dispatch dimensions
+    const GLuint groupsX = (tex->getWidth() + 15) / 16;
+    const GLuint groupsY = (tex->getHeight() + 15) / 16;
+    const DispatchIndirectCommand initCmd{ groupsX, groupsY, 1 };
+    glNamedBufferSubData(m_indirectBuffer, 0, sizeof(initCmd), &initCmd);
+    glNamedBufferSubData(m_atomicBuffer, 0, sizeof(GLuint), &zero);
 
+    // Bind static resources
     glBindImageTexture(0, tex->getId(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
-    glBindImageTexture(1, m_maskTex[0]->getId(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, targetCol->getBuffer());
-    glDispatchCompute((tex->getWidth() + 15) / 16, (tex->getHeight() + 15) / 16, 1);
-    glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_SHADER_STORAGE_BARRIER_BIT);
+    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, m_atomicBuffer);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_indirectBuffer);
+    glBindBuffer(GL_DISPATCH_INDIRECT_BUFFER, m_indirectBuffer);
 
-    // 2. Ping-pong expand until wavefront stops
-    m_colMaskShdr->begin();
-    m_colMaskShdr->bindProgramPipeline();
-    m_colMaskShdr->setUniform1f("tolerance", tolerance);
 
-    m_maskSeedReadIdx = 0;
-    GLuint changed = 1;
-    GLuint atomicBuffer = 0;
-    constexpr GLuint initZero = 0;
+    m_colMaskIndirUpdtShdr->begin();
+    m_colMaskIndirUpdtShdr->bindProgramPipeline();
+    m_colMaskIndirUpdtShdr->setUniform2ui("uDispatchGroups", groupsX, groupsY);
 
-    glGenBuffers(1, &atomicBuffer);
-    glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer);
-    glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), &initZero, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 0, atomicBuffer);
+    m_colMaskPropagateShdr->begin();
+    m_colMaskPropagateShdr->bindProgramPipeline();
+    m_colMaskPropagateShdr->setUniform1f("uTolerance", tolerance);
+    m_colMaskPropagateShdr->setUniform4fv("uTargetColor", &col[0]);
+    m_colMaskPropagateShdr->setUniform1i("uEightWay", 0);
 
-    while (changed > 0) {
-        // Reset atomic counter to 0
-        GLuint zero = 0;
-        glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomicBuffer);
-        glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &zero);
+    int readIdx = 0;
+    // Max iterations bounded by worst-case Manhattan/Chebyshev path (e.g., width + height)
+    // In practice, batches of 64-256 dispatches take < 0.2ms on modern GPUs
+    const int maxIterations = tex->getWidth() + tex->getHeight();
 
-        const int writeIdx = 1 - m_maskSeedReadIdx;
-        glBindImageTexture(0, tex->getId(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA8);
-        glBindImageTexture(1, m_maskTex[m_maskSeedReadIdx]->getId(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
-        glBindImageTexture(2, m_maskTex[writeIdx]->getId(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8);
+    for (int i = 0; i < maxIterations; ++i) {
+        const int writeIdx = 1 - readIdx;
 
-        glDispatchCompute((tex->getWidth() + 15) / 16, (tex->getHeight() + 15) / 16, 1);
+        LOG << i;
+        m_colMaskPropagateShdr->begin();
+        m_colMaskPropagateShdr->bindProgramPipeline();
+
+        glBindImageTexture(1, m_maskTex[readIdx]->getId(), 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8UI);
+        glBindImageTexture(2, m_maskTex[writeIdx]->getId(), 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8UI);
+        glDispatchComputeIndirect(0);
+
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
 
-        // Note: In real-time loops, check atomic counter every ~32 steps to avoid GPU-CPU sync stalls
-        glGetBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &changed);
+        // 2. Update indirect command & reset atomic counter on GPU
+        m_colMaskIndirUpdtShdr->begin();
+        m_colMaskIndirUpdtShdr->bindProgramPipeline();
+        glDispatchCompute(1, 1, 1);
 
-        m_maskSeedReadIdx = writeIdx;
-        LOG << "m_maskSeedReadIdx: " << m_maskSeedReadIdx;
+        glMemoryBarrier(GL_COMMAND_BARRIER_BIT | GL_ATOMIC_COUNTER_BARRIER_BIT);
+
+        readIdx = writeIdx;
     }
+
+    m_maskSeedReadIdx = readIdx;
 
     Shaders::unbindProgramPipeline();
     Shaders::end();
 
-    m_maskTex[m_maskSeedReadIdx]->saveTexToFile2D("mask.png", FIF_PNG,  m_maskTex[m_maskSeedReadIdx]->getWidth(), m_maskTex[m_maskSeedReadIdx]->getHeight(), GL_R8, m_maskTex[m_maskSeedReadIdx]->getId());
+    postGLError();
+
+    m_maskTex[m_maskSeedReadIdx]->saveTexToFile2D("mask.png", FIF_PNG,  m_maskTex[m_maskSeedReadIdx]->getWidth(), m_maskTex[m_maskSeedReadIdx]->getHeight(), GL_R8UI, m_maskTex[m_maskSeedReadIdx]->getId());
+
+    postGLError();
 
 
+    /*
     if (m_showMask && m_maskUiImg) {
-        LOG << "id: " << m_maskTex[m_maskSeedReadIdx]->getId();
+        LOG << "id: " << m_maskTex[m_maskSeedReadIdx]->getId() << " W:" << m_maskTex[m_maskSeedReadIdx]->getWidth() << " H:" << m_maskTex[m_maskSeedReadIdx]->getHeight();
         m_maskUiImg->setTexId(m_maskTex[m_maskSeedReadIdx]->getId(), m_maskTex[m_maskSeedReadIdx]->getWidth(), m_maskTex[m_maskSeedReadIdx]->getHeight(), 8);
-    }
+        getSharedRes()->reqRedraw();
+    }*/
 }
 
 void PaintImage::setCursor() {
@@ -627,6 +629,11 @@ void PaintImage::setShowMask(const bool& val) {
             m_maskUiImg->setTexId(m_maskTex[m_maskSeedReadIdx]->getId(), m_maskTex[m_maskSeedReadIdx]->getWidth(), m_maskTex[m_maskSeedReadIdx]->getHeight(), 8);
         }
     }
+}
+
+PaintImage::~PaintImage() {
+    glDeleteBuffers(1, &m_atomicBuffer);
+    glDeleteBuffers(1, &m_indirectBuffer);
 }
 
 } // namespace ara

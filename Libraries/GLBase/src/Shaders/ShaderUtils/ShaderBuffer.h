@@ -45,7 +45,7 @@ public:
         glBindBuffer(target, 0);
     }
 
-    T *map(GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT) {
+    T *map(const GLbitfield access = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT) {
         bind();
         return static_cast<T *>(glMapBufferRange(target, 0, m_size * sizeof(T), access));
     }
@@ -58,7 +58,7 @@ public:
     [[nodiscard]] GLuint getBuffer() const { return m_buffer; }
     [[nodiscard]] size_t getSize() const { return m_size; }
 
-    void resize(size_t size) {
+    void resize(const size_t size) {
         // in opengl it's not possible to resize buffers, so create a new one
         // copy the old contents, destroy the old one, and exchange the ids
         GLuint new_buffer;

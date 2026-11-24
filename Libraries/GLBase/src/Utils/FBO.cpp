@@ -1056,7 +1056,7 @@ bool FBO::saveToFile(const filesystem::path &filename, const size_t attachNr, co
 
     switch (m_pixType) {
         case GL_UNSIGNED_SHORT: {
-            if (format == GL_RED) {
+            if (format == GL_RED || format == GL_RED_INTEGER) {
                 bitmap = FreeImage_AllocateT(FIT_UINT16, m_tex_width, m_tex_height);
             } else {
                 LOGE << "Texture::saveTexToFile2D Error: unknown m_format";
@@ -1065,7 +1065,7 @@ bool FBO::saveToFile(const filesystem::path &filename, const size_t attachNr, co
             if (bitmap) {
                 const auto bits = FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
-                glesGetTexImage(texId, GL_TEXTURE_2D, GL_RED, GL_UNSIGNED_SHORT, m_tex_width, m_tex_height, bits);
+                glesGetTexImage(texId, GL_TEXTURE_2D, format, GL_UNSIGNED_SHORT, m_tex_width, m_tex_height, bits);
 #else
                 glGetTexImage(saveTarget, 0, format, m_pixType, bits);
 #endif
@@ -1079,6 +1079,25 @@ bool FBO::saveToFile(const filesystem::path &filename, const size_t attachNr, co
             if (bitmap) {
                 FreeImage_SetTransparent(bitmap, ara::getExtType(m_type) == GL_RGBA || format == GL_BGRA);
                 getTexImage(bitmap, texId, saveTarget, format);
+            } else {
+                LOGE << "Texture::saveTexToFile2D Error: could not allocate bitmap";
+            }
+            break;
+        }
+        case GL_UNSIGNED_INT: {
+            if (format == GL_RED_INTEGER) {
+                bitmap = FreeImage_AllocateT(FIT_UINT32, m_tex_width, m_tex_height);
+            } else {
+                LOGE << "Texture::saveTexToFile2D Error: unknown m_format";
+            }
+
+            if (bitmap) {
+                const auto bits = FreeImage_GetBits(bitmap);
+#ifdef ARA_USE_GLES31
+                glesGetTexImage(texId, GL_TEXTURE_2D, format, GL_UNSIGNED_INT, m_tex_width, m_tex_height, bits);
+#else
+                glGetTexImage(saveTarget, 0, format, m_pixType, bits);
+#endif
             } else {
                 LOGE << "Texture::saveTexToFile2D Error: could not allocate bitmap";
             }

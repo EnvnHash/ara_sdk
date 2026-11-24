@@ -26,6 +26,7 @@ file(GLOB GLBASE_UT_SRC
     LoadTextureMipMap.cpp
     LoadTexture.cpp
     NativeWindow.cpp
+    SaveTexture.cpp
     PolygonTest.cpp
     PolygonSerializationHps.cpp
     PolygonSerialization.cpp

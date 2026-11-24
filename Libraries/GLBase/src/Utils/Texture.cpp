@@ -561,11 +561,11 @@ GLuint Texture::allocate2D(const uint w, const uint h, const GLenum internalGlDa
     m_texData.fixedsamplelocations = fixedsamplelocations;
 
     if (m_texData.textureID) {
-        glDeleteTextures(1, (GLuint *)&m_texData.textureID);
+        glDeleteTextures(1, &m_texData.textureID);
     }
 
-    glGenTextures(1, (GLuint *)&m_texData.textureID);  // could be more than one, but for now, just one
-    glBindTexture(m_texData.target, (GLuint)m_texData.textureID);
+    glGenTextures(1, &m_texData.textureID);  // could be more than one, but for now, just one
+    glBindTexture(m_texData.target, m_texData.textureID);
 
 #ifndef __EMSCRIPTEN__
     if (m_texData.target != GL_TEXTURE_2D_MULTISAMPLE)
@@ -574,7 +574,33 @@ GLuint Texture::allocate2D(const uint w, const uint h, const GLenum internalGlDa
         glTexStorage2DMultisample(m_texData.target, m_texData.samples, m_texData.internalFormat, m_texData.width,
                                   m_texData.height, GL_FALSE);
 #endif
-    vector<float> nullImg(m_texData.width * m_texData.height * 4);
+
+    // Create a null image buffer with the correct size for the texture format
+    const short nrChannels = getNrColChans(m_texData.internalFormat);
+    const GLenum pxType = getPixelType(m_texData.internalFormat);
+    size_t bytesPerComponent;
+    switch (pxType) {
+        case GL_BYTE:
+            bytesPerComponent = 1; break;
+        case GL_UNSIGNED_BYTE:
+            bytesPerComponent = 1; break;
+        case GL_SHORT:
+            bytesPerComponent = 2; break;
+        case GL_UNSIGNED_SHORT:
+            bytesPerComponent = 2; break;
+        case GL_INT:
+            bytesPerComponent = 4; break;
+        case GL_UNSIGNED_INT:
+            bytesPerComponent = 4; break;
+        case GL_FLOAT:
+            bytesPerComponent = 4; break;
+        case GL_HALF_FLOAT:
+            bytesPerComponent = 2; break;
+        default:
+            bytesPerComponent = 1; break;
+    }
+    const size_t nullImgSize = m_texData.width * m_texData.height * nrChannels * bytesPerComponent;
+    vector<uint8_t> nullImg(nullImgSize, 0);
 
     // Specify the data for the texture
     switch (m_texData.target) {
@@ -593,7 +619,10 @@ GLuint Texture::allocate2D(const uint w, const uint h, const GLenum internalGlDa
                             0,                 // mipmap level
                             0, 0,              // x and y offset
                             m_texData.width,   // width and height
-                            m_texData.height, m_texData.format, m_texData.pixelType, &nullImg[0]);
+                            m_texData.height,
+                            m_texData.format,
+                            m_texData.pixelType,
+                            &nullImg[0]);
             break;
         case GL_TEXTURE_2D_MULTISAMPLE:
             /*	glTexImage2DMultisample(
@@ -631,29 +660,25 @@ GLuint Texture::allocate2D(const uint w, const uint h, const GLenum internalGlDa
 #endif
         default: break;
     }
-
     if (m_texData.target != GL_TEXTURE_2D_MULTISAMPLE) {
         glTexParameterf(m_texData.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(m_texData.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameterf(m_texData.target, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameterf(m_texData.target, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
-
     // glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 #ifndef ARA_USE_GLES31
-    glm::vec4 colBlack = glm::vec4(0.f, 0.f, 0.f, 0.f);
+    auto colBlack = vec4(0.f, 0.f, 0.f, 0.f);
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &colBlack[0]);
 #endif
-
     m_texData.width      = w;
     m_texData.height     = h;
     m_texData.bAllocated = true;
-
     return m_texData.textureID;
 }
 
-GLuint Texture::gen(GLenum target) {
+GLuint Texture::gen(const GLenum target) {
     m_texData.target = target;
 
     if (m_texData.textureID) {
@@ -839,11 +864,23 @@ void Texture::generateSampler() {
     glBindSampler(m_samplerUnit, m_samplerID);
 }
 
-void Texture::getGlFormatAndType(GLenum glInternalFormat, GLenum &glFormat, GLenum &type) {
+void Texture::getGlFormatAndType(const GLenum glInternalFormat, GLenum &glFormat, GLenum &type) {
     switch (glInternalFormat) {
         case GL_R8:
             glFormat = GL_RED;
             type     = GL_UNSIGNED_BYTE;
+            break;
+        case GL_R8UI:
+            glFormat = GL_RED_INTEGER;
+            type     = GL_UNSIGNED_BYTE;
+            break;
+        case GL_R16UI:
+            glFormat = GL_RED_INTEGER;
+            type     = GL_UNSIGNED_SHORT;
+            break;
+        case GL_R32UI:
+            glFormat = GL_RED_INTEGER;
+            type     = GL_UNSIGNED_INT;
             break;
         case GL_RGBA:
 #ifndef TARGET_OPENGLES
@@ -1038,8 +1075,8 @@ SDL_Surface *Texture::flip_surface(SDL_Surface *surface, int flags) {
 #endif
 
 #if !defined(__EMSCRIPTEN__) && defined(ARA_USE_FREEIMAGE)
-void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, GLenum internalFormat,
-                              GLint texNr) {
+void Texture::saveTexToFile2D(const char *filename, const FREE_IMAGE_FORMAT filetype, const int w, const int h, const GLenum internalFormat,
+                              const GLint texNr) {
     GLenum    format;
     GLenum    type;
     FIBITMAP *bitmap = nullptr;
@@ -1049,7 +1086,7 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
 
     switch (type) {
         case GL_UNSIGNED_SHORT: {
-            if (format == GL_RED) {
+            if (format == GL_RED || format == GL_RED_INTEGER) {
                 bitmap = FreeImage_AllocateT(FIT_UINT16, w, h); break;
             } else {
                 LOGE << "Texture::saveTexToFile2D Error: unknown format";
@@ -1075,6 +1112,7 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
 
             switch (format) {
                 case GL_RED: nrChan = 1; break;
+                case GL_RED_INTEGER: nrChan = 1; break;
                 case GL_RG: nrChan = 2; break;
                 case GL_RGB: nrChan = 3; break;
                 case GL_RGBA: nrChan = 4; break;
@@ -1083,7 +1121,7 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
 
             bitmap = FreeImage_Allocate(w, h, nrChan * 8);
             if (bitmap) {
-                BYTE *bits = (BYTE *)FreeImage_GetBits(bitmap);
+                const auto bits = FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
                 glesGetTexImage(texNr, GL_TEXTURE_2D, format, GL_UNSIGNED_BYTE, w, h, bits);
 #else
@@ -1093,6 +1131,26 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
                 printf(
                     "Texture::saveTexToFile2D Error: could not allocate bitmap "
                     "\n");
+            }
+            break;
+        }
+        case GL_UNSIGNED_INT: {
+            if (format == GL_RED_INTEGER) {
+                bitmap = FreeImage_AllocateT(FIT_UINT32, w, h); break;
+            } else {
+                LOGE << "Texture::saveTexToFile2D Error: unknown format";
+                break;
+            }
+
+            if (bitmap) {
+                auto bits = (GLubyte *)FreeImage_GetBits(bitmap);
+#ifdef ARA_USE_GLES31
+                glesGetTexImage(texNr, GL_TEXTURE_2D, format, GL_UNSIGNED_INT, w, h, bits);
+#else
+                glGetTexImage(GL_TEXTURE_2D, 0, format, type, bits);
+#endif
+            } else {
+                LOGE << "Texture::saveTexToFile2D Error: could not allocate bitmap";
             }
             break;
         }
@@ -1107,7 +1165,7 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
             }
 
             if (bitmap) {
-                BYTE *bits = (BYTE *)FreeImage_GetBits(bitmap);
+                const auto bits = FreeImage_GetBits(bitmap);
 #ifdef ARA_USE_GLES31
                 glesGetTexImage(texNr, GL_TEXTURE_2D, format, GL_FLOAT, w, h, bits);
 #else
@@ -1129,12 +1187,12 @@ void Texture::saveTexToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
     }
 }
 
-void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, int w, int h, int nrChan, uint8_t *buf, bool vFlip) {
+void Texture::saveBufToFile2D(const char *filename, const FREE_IMAGE_FORMAT filetype, const int w, const int h, const int nrChan, uint8_t *buf, const bool vFlip) {
     FreeImage_SetOutputMessage(Texture::FreeImageErrorHandler);
 
     // Determine image color type and pitch (row size in bytes)
-    int bpp = nrChan * 8; // bits per pixel
-    int pitch = w * nrChan; // bytes per row
+    const int bpp = nrChan * 8; // bits per pixel
+    const int pitch = w * nrChan; // bytes per row
 
     // FreeImage expects BGR(A) format, not RGB(A), so we might need to swap channels manually if necessary
     auto bitmap = FreeImage_ConvertFromRawBits(
@@ -1158,7 +1216,7 @@ void Texture::saveBufToFile2D(const char *filename, FREE_IMAGE_FORMAT filetype, 
     }
 
     if (filetype == FIF_JPEG && nrChan == 4) {
-        auto bgrImage = FreeImage_ConvertTo24Bits(bitmap);
+        const auto bgrImage = FreeImage_ConvertTo24Bits(bitmap);
         if (!bgrImage) {
             return;
         }

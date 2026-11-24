@@ -15,9 +15,14 @@ public:
         glm::vec4 color = glm::vec4(1.0f);
         float opacity = 1.0f;
     };
+    struct DispatchIndirectCommand {
+        GLuint num_groups_x;
+        GLuint num_groups_y;
+        GLuint num_groups_z;
+    };
 
     PaintImage();
-    ~PaintImage() override = default;
+    ~PaintImage() override;
 
     void init() override;
     virtual void initPaintShader();
@@ -72,11 +77,11 @@ protected:
     std::unique_ptr<FBO>                            m_fbo;
     std::shared_ptr<Texture>                        m_ownedTex;
     Shaders*                                        m_paintShader = nullptr;
-    Shaders*                                        m_colMaskSeedShdr = nullptr;
-    Shaders*                                        m_colMaskShdr = nullptr;
+    Shaders*                                        m_colMaskPropagateShdr = nullptr;
+    Shaders*                                        m_colMaskIndirUpdtShdr = nullptr;
     UniformBlock                                    m_brushBlock{};
     float                                           m_scaledBrush{};
-    float                                           m_selTolerance=0.001f;
+    float                                           m_selTolerance=0.8f;
     bool                                            m_locked{};
     bool                                            m_showMask{};
     Image*                                          m_maskUiImg{};
@@ -88,6 +93,10 @@ protected:
     glm::vec4                                       m_pickColor{0.f};
     std::array<std::shared_ptr<Texture>, 2>         m_maskTex;
     bool                                            m_drawMasked = false;
+
+    GLuint                                          m_atomicBuffer = 0;
+    GLuint                                          m_indirectBuffer = 0;
+
 #ifdef ARA_USE_GLFW
     GLFWcursor*                                     m_cursor{};
 #endif
